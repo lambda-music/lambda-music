@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/jaudiolibs"/>
+	<classpathentry kind="lib" path="/home/ats/Documents/works/java/workspace/jna-platform-4.5.0.jar"/>
+	<classpathentry kind="lib" path="/home/ats/Documents/works/java/workspace/jna-4.5.0.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
