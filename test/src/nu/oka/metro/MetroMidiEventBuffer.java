@@ -34,8 +34,8 @@ public class MetroMidiEventBuffer implements Iterable<MetroMidiEvent>{
 		return lengthInFrames;
 	}
 	
-	public void prepare( JackClient client, JackPosition position ) throws JackException {
-		int barInFrames = Metro.calcBarInFrames(client, position);
+	public void prepare( Metro metro, JackClient client, JackPosition position ) throws JackException {
+		int barInFrames = Metro.calcBarInFrames( metro, client, position );
 		this.calcInFrames( barInFrames );
 	}
 	

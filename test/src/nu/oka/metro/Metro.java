@@ -36,22 +36,24 @@ import org.jaudiolibs.jnajack.JackPosition;
 import org.jaudiolibs.jnajack.JackProcessCallback;
 import org.jaudiolibs.jnajack.JackShutdownCallback;
 import org.jaudiolibs.jnajack.JackStatus;
+import org.jaudiolibs.jnajack.JackTimebaseCallback;
+import org.jaudiolibs.jnajack.JackTransportState;
 
 
-public class Metro implements JackProcessCallback, JackShutdownCallback, Runnable {
+public class Metro implements JackProcessCallback, JackShutdownCallback, JackTimebaseCallback, Runnable {
 //	private final static boolean DEBUG = true;
 	static final boolean DEBUG = false;
 	
 	private final Jack jack;
     private final JackClient client;
     private final JackPort inputPort;
-    private final JackPort outputPort;
+    // private final JackPort outputPort;
     private final List<JackPort> outputPortList;
     
     private final JackMidi.Event midiEvent = new JackMidi.Event();
     private byte[] data;
 //	private BlockingQueue<String> debugQueue = new LinkedBlockingQueue<String>();
-    private StringBuilder sb = new StringBuilder();
+//    private StringBuilder sb = new StringBuilder();
     
     private List<MetroMidiEventBufferSequence> sequences = new ArrayList<MetroMidiEventBufferSequence>();
     List<MetroMidiEventBufferSequence> registeredSequences = new ArrayList<MetroMidiEventBufferSequence>();
@@ -60,6 +62,25 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, Runnabl
 	private JackPosition position = new JackPosition();
 
 	private MetroMasterLogic rootLogic;
+	
+	// zero means that to get the current bpm from Jack Transport.
+	private long beatsPerMinute = 0;
+	public long getBeatsPerMinute() {
+		return beatsPerMinute;
+	}
+	public void setBeatsPerMinute(long barPerMinute) throws JackException {
+		this.beatsPerMinute = barPerMinute < 0 ? 0 : barPerMinute;
+		prepareSequence();
+	}
+
+	private long beatsPerBar = 4;
+	public long getBeatsPerBar() {
+		return beatsPerBar;
+	}
+	public void setBeatsPerBar(long beatsPerBar) throws JackException {
+		this.beatsPerBar = beatsPerBar;
+		prepareSequence();
+	}
 
     // private MetroLogic logic;
     
@@ -85,7 +106,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, Runnabl
             }
             
             this.inputPort = this.client.registerPort("MIDI in", JackPortType.MIDI, JackPortFlags.JackPortIsInput);
-            this.outputPort = this.client.registerPort("MIDI out", JackPortType.MIDI, JackPortFlags.JackPortIsOutput);
+            // this.outputPort = this.client.registerPort("MIDI out", JackPortType.MIDI, JackPortFlags.JackPortIsOutput);
             this.outputPortList = new ArrayList<JackPort>();
             	
             for ( String outputPortName : logic.outputPortNameList() ) {
@@ -93,6 +114,15 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, Runnabl
                 		this.client.registerPort(
 	                		outputPortName, 
 	                		JackPortType.MIDI, JackPortFlags.JackPortIsOutput
+	                	)
+            		);
+            }
+
+            for ( String inputPortName : logic.inputPortNameList() ) {
+                this.outputPortList.add( 
+                		this.client.registerPort(
+	                		inputPortName, 
+	                		JackPortType.MIDI, JackPortFlags.JackPortIsInput
 	                	)
             		);
             }
@@ -110,6 +140,8 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, Runnabl
 
     public void start() throws JackException, InterruptedException {
     	this.rootLogic.initialize();
+    	this.rootLogic.setParent( this );
+    	
         this.activate();
         new Thread( this ).start();
 //    	this.run();
@@ -122,22 +154,21 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, Runnabl
 	//        	System.out.println("Metro.run()");
 	//        	String s = this.debugQueue.take();
 	//        	System.err.println( s );
-	        	
 				
 	        	for ( MetroMidiEventBufferSequence sequence : this.sequences  ) {
-	        		sequence.checkBuffer( this.client, this.position );
+	        		sequence.checkBuffer( this,  this.client, this.position );
 	        	}
 				synchronized ( this.sequences ) {
 					this.sequences.removeAll(this.unregisteredSeqences );
 					this.sequences.addAll( this.registeredSequences );
 					
 					if ( ! this.registeredSequences.isEmpty() ) {
-						int barInFrames = Metro.calcBarInFrames(client, position);
+						int barInFrames = Metro.calcBarInFrames( this, client, position);
 						
 						for ( MetroMidiEventBufferSequence sequence : this.registeredSequences ) {
 							sequence.prepare( barInFrames );
 						}
-					}
+					}		
 					
 					this.unregisteredSeqences.clear();
 					this.registeredSequences.clear();
@@ -149,9 +180,19 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, Runnabl
 			throw new RuntimeException( e );
 		}
 	}
+	
+	void prepareSequence() throws JackException {
+		synchronized ( this.sequences ) {
+			int barInFrames = Metro.calcBarInFrames( this, this.client, this.position );
+			for ( MetroMidiEventBufferSequence sequence : this.sequences ) {
+				sequence.reprepare( this, this.client, this.position );
+			}
+		}
+	}
 
     private void activate() throws JackException {
         this.client.setProcessCallback(this);
+        this.client.setTimebaseCallback(this, false);
         this.client.onShutdown(this);
         this.client.activate();
         
@@ -185,10 +226,11 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, Runnabl
     @Override
     public boolean process(JackClient client, int nframes) {
 		try {
-            JackMidi.clearBuffer(this.outputPort)
+            // JackMidi.clearBuffer(this.outputPort);
+            for ( JackPort p : Metro.this.outputPortList )
+            	JackMidi.clearBuffer( p );
             
-            ;
-            int eventCount = JackMidi.getEventCount(this.inputPort);
+            int eventCount = JackMidi.getEventCount( this.inputPort );
             for (int i = 0; i < eventCount; ++i) {
                 JackMidi.eventGet(this.midiEvent, this.inputPort, i);
                 
@@ -198,16 +240,17 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, Runnabl
                 }
                 this.midiEvent.read(this.data);
 
-                this.sb.setLength(0);
-                this.sb.append(this.midiEvent.time());
-                this.sb.append(": ");
-                for (int j = 0; j < size; j++) {
-                    this.sb.append((j == 0) ? "" : ", ");
-                    this.sb.append(this.data[j] & 0xFF);
-                }
-                // debugQueue.offer(sb.toString());
+//                this.sb.setLength(0);
+//                this.sb.append(this.midiEvent.time());
+//                this.sb.append(": ");
+//                for (int j = 0; j < size; j++) {
+//                    this.sb.append((j == 0) ? "" : ", ");
+//                    this.sb.append(this.data[j] & 0xFF);
+//                }
+//                 debugQueue.offer(sb.toString());
 
-                JackMidi.eventWrite(this.outputPort, this.midiEvent.time(), this.data, this.midiEvent.size());
+                if ( 0 < Metro.this.outputPortList.size() )
+                	JackMidi.eventWrite( Metro.this.outputPortList.get( 0 ), this.midiEvent.time(), this.data, this.midiEvent.size());
             }
             
             synchronized ( this.sequences ) {
@@ -226,6 +269,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, Runnabl
             				e.getData().length 
             				);
             	}
+            	
 //    			JackMidi.eventWrite( 
 //    					Metro.this.outputPortList.get( e.getOutputPortNo() ), 
 //    					e.getOffsetInFrames() - this.cursor, 
@@ -257,8 +301,14 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, Runnabl
     public void clientShutdown(JackClient client) {
         System.out.println("Java MIDI thru test shutdown");
     }
+	@Override
+	public void updatePosition(JackClient invokingClient, JackTransportState state, int nframes, JackPosition position,
+			boolean newPosition) {
+		System.err.println("*****************************************TEMPO");
+		
+	}
 
-	public static int calcBarInFrames(JackClient client, JackPosition position) throws JackException {
+	public static int calcBarInFrames( Metro metro, JackClient client, JackPosition position) throws JackException {
 		// System.out.println("Metro.offerNewBuffer()" + this.buffers.size() );
 		// beat per minute
 		double bpm;
@@ -276,8 +326,17 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, Runnabl
 			throw e;
 		}
 		
+		long ownBeatPerMinute = metro.getBeatsPerMinute();
+		long ownBeatPerBar    = metro.getBeatsPerBar();
+		
+		if ( 0 < ownBeatPerMinute ) {
+			bpm = ownBeatPerMinute;
+			bpb = ownBeatPerBar;
+		}
+		
 		double beatInSecond = 1.0d / ( bpm / 60.0d /*seconds*/ );
 		int barInFrames = (int) (beatInSecond * frameRate * bpb);
 		return barInFrames;
 	}
+
 }

@@ -15,6 +15,8 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.jaudiolibs.jnajack.JackException;
+
 import nu.oka.metro.Metro;
 import nu.oka.metro.MetroLogic;
 import nu.oka.metro.MetroMasterLogic;
@@ -50,7 +52,6 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
 	public List<String> inputPortNameList() {
 		return Arrays.asList( "MIDI Input0", "MIDI Input1" );
 	}
-	
 
 	private boolean flag;
 	private void notifyFlag() {
@@ -65,6 +66,7 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
 		
 		buf.noteShot( 0.0d  , 1 , 0, 57, 105 );
 		buf.noteShot( 0.02d , 1 , 0, 74, 127 );
+//		buf.noteShot( 0.00d , 1 , 0, 74, 127 );
 		buf.noteShot( 0.2d  , 1 , 0, 73, 100 );
 		buf.noteShot( 0.4d  , 1 , 0, 73, 100 );
 		buf.noteShot( 0.6d  , 1 , 0, 73, 100 );
@@ -124,6 +126,14 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
 				case "7 Meter" :
 					System.out.println("7 Meter");
 					break;
+				case "Change Tempo" :
+					try {
+						logic.getParent().setBeatsPerMinute(300);
+					} catch (JackException e1) {
+						throw new RuntimeException(e1);
+						// e1.printStackTrace();
+					}
+					break;
 				default :
 				}
 			}
@@ -145,7 +155,7 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
 		
 		panel.add(bld.makeButton("5", "5 Meter"));
 		panel.add(bld.makeButton("7", "7 Meter"));
-		panel.add(bld.makeButton("Button 3", "Button 3"));
+		panel.add(bld.makeButton("Change Tempo", "Change Tempo"));
 		panel.add(bld.makeButton("Button 4", "Button 4"));
 		panel.add(bld.makeButton("Button 5", "Button 5"));
 		panel.add(bld.makeButton("Button 6", "Button 6"));

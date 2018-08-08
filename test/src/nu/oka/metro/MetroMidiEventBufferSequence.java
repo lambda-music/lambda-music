@@ -15,6 +15,7 @@ class MetroMidiEventBufferSequence {
 	 */
 	private final Metro metro;
 
+	@SuppressWarnings("unused")
 	private static final boolean DEBUG = false;
 
 	int id = (int) (Math.random()* Integer.MAX_VALUE);
@@ -141,7 +142,8 @@ class MetroMidiEventBufferSequence {
 
 
 		this.cursor = nextCursor;
-		System.out.println( this.cursor + "/" + (this.buffers.isEmpty() ? "empty" : this.buffers.peek().getLengthInFrames()  ) );
+		if ( Metro.DEBUG )
+			System.out.println( this.cursor + "/" + (this.buffers.isEmpty() ? "empty" : this.buffers.peek().getLengthInFrames()  ) );
 	}
 
 	public void prepare( int barInFrames ) throws JackException {
@@ -149,17 +151,23 @@ class MetroMidiEventBufferSequence {
 		this.cursor = parentCursor + (int) (-1.0d * this.offset * barInFrames) ;
 	}
 
-	public void checkBuffer( JackClient client, JackPosition position ) throws JackException {
-		if ( this.buffers.size() < 2 ) {
-			this.offerNewBuffer( client, position );
+	public void reprepare( Metro metro, JackClient client, JackPosition position ) throws JackException {
+		for ( MetroMidiEventBuffer buffer : this.buffers ) {
+			buffer.prepare(metro, client, position);
 		}
 	}
 
-	private void offerNewBuffer( JackClient client, JackPosition position ) throws JackException {
+	public void checkBuffer( Metro metro, JackClient client, JackPosition position ) throws JackException {
+		if ( this.buffers.size() < 2 ) {
+			this.offerNewBuffer( metro, client, position );
+		}
+	}
+
+	private void offerNewBuffer( Metro metro, JackClient client, JackPosition position ) throws JackException {
 		MetroMidiEventBuffer buf = new MetroMidiEventBuffer();
 		boolean result = this.logic.processBuffer( buf );
 
-		buf.prepare( client, position );
+		buf.prepare( metro, client, position );
 
 		if ( result ) {
 			this.buffers.offer(buf);
@@ -168,4 +176,4 @@ class MetroMidiEventBufferSequence {
 		}
 		// buf.dump();
 	}
-}
+} 
