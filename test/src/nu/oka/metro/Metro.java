@@ -64,7 +64,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 	private MetroMasterLogic rootLogic;
 	
 	// zero means that to get the current bpm from Jack Transport.
-	private long beatsPerMinute = 0;
+	private long beatsPerMinute = 60;
 	public long getBeatsPerMinute() {
 		return beatsPerMinute;
 	}

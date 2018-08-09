@@ -7,10 +7,13 @@ public interface MetroLogic {
 	public static double rnd(double d) {
 		return rnd(-d,d);
 	}
+	
 	public abstract Metro getParent();
 	public abstract void setParent( Metro metro );
 	public abstract void setLogicHandle( MetroLogicHandle handle );
+	
 	public abstract boolean processBuffer( MetroMidiEventBuffer buf );
+	// public abstract boolean processInput( MetroMidiEventBuffer buf );
 	
 	public static abstract class Default implements MetroLogic {
 		protected Metro parent;
