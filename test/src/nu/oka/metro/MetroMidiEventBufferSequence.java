@@ -18,6 +18,9 @@ class MetroMidiEventBufferSequence {
 	@SuppressWarnings("unused")
 	private static final boolean DEBUG = false;
 
+	// static final int BUFFER_SIZE = 2;
+	static final int BUFFER_SIZE = 2;
+
 	int id = (int) (Math.random()* Integer.MAX_VALUE);
 
 	private MetroLogicHandle handle = new MetroLogicHandle() {
@@ -138,7 +141,6 @@ class MetroMidiEventBufferSequence {
 				break;
 			}
 		}
-			
 
 
 		this.cursor = nextCursor;
@@ -158,7 +160,7 @@ class MetroMidiEventBufferSequence {
 	}
 
 	public void checkBuffer( Metro metro, JackClient client, JackPosition position ) throws JackException {
-		if ( this.buffers.size() < 2 ) {
+		if ( this.buffers.size() < BUFFER_SIZE ) {
 			this.offerNewBuffer( metro, client, position );
 		}
 	}

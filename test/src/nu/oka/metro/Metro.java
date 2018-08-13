@@ -64,11 +64,11 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 	private MetroMasterLogic rootLogic;
 	
 	// zero means that to get the current bpm from Jack Transport.
-	private long beatsPerMinute = 60;
-	public long getBeatsPerMinute() {
+	private double beatsPerMinute = 60;
+	public double getBeatsPerMinute() {
 		return beatsPerMinute;
 	}
-	public void setBeatsPerMinute(long barPerMinute) throws JackException {
+	public void setBeatsPerMinute(double barPerMinute) throws JackException {
 		this.beatsPerMinute = barPerMinute < 0 ? 0 : barPerMinute;
 		prepareSequence();
 	}
@@ -183,7 +183,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 	
 	void prepareSequence() throws JackException {
 		synchronized ( this.sequences ) {
-			int barInFrames = Metro.calcBarInFrames( this, this.client, this.position );
+			// int barInFrames = Metro.calcBarInFrames( this, this.client, this.position );
 			for ( MetroMidiEventBufferSequence sequence : this.sequences ) {
 				sequence.reprepare( this, this.client, this.position );
 			}
@@ -326,7 +326,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 			throw e;
 		}
 		
-		long ownBeatPerMinute = metro.getBeatsPerMinute();
+		double ownBeatPerMinute = metro.getBeatsPerMinute();
 		long ownBeatPerBar    = metro.getBeatsPerBar();
 		
 		if ( 0 < ownBeatPerMinute ) {
