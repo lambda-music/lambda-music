@@ -1,6 +1,6 @@
 package ats.pulsar;
 
-import nu.oka.metro.MetroMidiEventBuffer;
+import ats.metro.MetroMidiEventBuffer;
 
 public interface Pulsable {
 	void pulse( MetroMidiEventBuffer buf );

@@ -1,6 +1,6 @@
-package nu.oka.metro;
+package ats.metro;
 
-import static nu.oka.metro.Metro.DEBUG;
+import static ats.metro.Metro.DEBUG;
 
 import java.util.ArrayList;
 import java.util.Iterator;

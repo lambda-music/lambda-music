@@ -1,4 +1,4 @@
-package nu.oka.metro;
+package ats.metro;
 
 public interface MetroLogic {
 	public static double rnd(double from, double to) {

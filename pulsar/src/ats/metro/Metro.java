@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this work; if not, see http://www.gnu.org/licenses/
  */
-package nu.oka.metro;
+package ats.metro;
 
 import java.util.ArrayList;
 import java.util.EnumSet;

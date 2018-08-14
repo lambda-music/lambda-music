@@ -15,10 +15,10 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import nu.oka.metro.Metro;
-import nu.oka.metro.MetroLogic;
-import nu.oka.metro.MetroMasterLogic;
-import nu.oka.metro.MetroMidiEventBuffer;
+import ats.metro.Metro;
+import ats.metro.MetroLogic;
+import ats.metro.MetroMasterLogic;
+import ats.metro.MetroMidiEventBuffer;
 
 final class MetroLogicFiveTimes extends MetroMasterLogic.Default {
 	public MetroLogicFiveTimes() {

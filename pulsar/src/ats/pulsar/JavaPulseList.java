@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import nu.oka.metro.MetroMidiEventBuffer;
+import ats.metro.MetroMidiEventBuffer;
 
 public class JavaPulseList implements Pulsable {
 	static List<Set<JavaPulse>> asList( JavaPulse[][] list, int repeatCount ) {

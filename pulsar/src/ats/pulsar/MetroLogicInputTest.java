@@ -33,6 +33,10 @@ import javax.swing.Timer;
 
 import org.jaudiolibs.jnajack.JackException;
 
+import ats.metro.Metro;
+import ats.metro.MetroLogic;
+import ats.metro.MetroMasterLogic;
+import ats.metro.MetroMidiEventBuffer;
 import gnu.lists.AbstractSequence;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
@@ -42,10 +46,6 @@ import gnu.mapping.ProcedureN;
 import gnu.mapping.SimpleSymbol;
 import gnu.math.IntNum;
 import kawa.standard.Scheme;
-import nu.oka.metro.Metro;
-import nu.oka.metro.MetroLogic;
-import nu.oka.metro.MetroMasterLogic;
-import nu.oka.metro.MetroMidiEventBuffer;
 
 final class MetroLogicInputTest extends MetroMasterLogic.Default {
 	public MetroLogicInputTest() {
