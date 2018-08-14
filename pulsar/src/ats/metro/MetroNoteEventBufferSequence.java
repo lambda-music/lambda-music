@@ -9,7 +9,7 @@ import org.jaudiolibs.jnajack.JackClient;
 import org.jaudiolibs.jnajack.JackException;
 import org.jaudiolibs.jnajack.JackPosition;
 
-class MetroMidiEventBufferSequence {
+class MetroNoteEventBufferSequence {
 	/**
 	 * 
 	 */
@@ -26,20 +26,20 @@ class MetroMidiEventBufferSequence {
 	private MetroLogicHandle handle = new MetroLogicHandle() {
 		@Override
 		public void spawn( double offset, MetroLogic logic ) {
-			MetroMidiEventBufferSequence sequence = 
-					new MetroMidiEventBufferSequence( metro, MetroMidiEventBufferSequence.this, logic, offset );
+			MetroNoteEventBufferSequence sequence = 
+					new MetroNoteEventBufferSequence( metro, MetroNoteEventBufferSequence.this, logic, offset );
 			
 			metro.registerSequence( sequence );
 		}
 	};
 
-	private MetroMidiEventBufferSequence parentSequence;
-	private BlockingQueue<MetroMidiEventBuffer> buffers = new LinkedBlockingQueue<>();
+	private MetroNoteEventBufferSequence parentSequence;
+	private BlockingQueue<MetroNoteEventBuffer> buffers = new LinkedBlockingQueue<>();
 	private int cursor = 0;
 	private MetroLogic logic;
 	private double offset=0.0d;
 
-	public MetroMidiEventBufferSequence( Metro metro, MetroMidiEventBufferSequence parent, MetroLogic logic, double offset ) {
+	public MetroNoteEventBufferSequence( Metro metro, MetroNoteEventBufferSequence parent, MetroLogic logic, double offset ) {
 		this.metro = metro;
 		this.parentSequence = parent;
 		this.logic = logic;
@@ -52,7 +52,7 @@ class MetroMidiEventBufferSequence {
 	}
 
 
-	public void progressCursor( int nframes, List<MetroMatchedEvent> result ) throws JackException {
+	public void progressCursor( int nframes, List<MetroMidiEvent> result ) throws JackException {
 		synchronized ( this.buffers ) {
 			this.metro.clearAllPorts();
 
@@ -64,23 +64,23 @@ class MetroMidiEventBufferSequence {
 			//    	System.out.println( cursor + "/" + nextCursor );
 			int accrossCount = 0;
 			
-			for ( Iterator<MetroMidiEventBuffer> ibuf = this.buffers.iterator(); ibuf.hasNext(); ) {
-				MetroMidiEventBuffer buf = ibuf.next();
+			for ( Iterator<MetroNoteEventBuffer> ibuf = this.buffers.iterator(); ibuf.hasNext(); ) {
+				MetroNoteEventBuffer buf = ibuf.next();
 
 				int actualCursor = this.cursor - cursorOffset;
 				int actualNextCursor = nextCursor - cursorOffset;
 
 				//    		System.out.println( "AFTER::::" );
 				//    		buf.dump();
-				for ( Iterator<MetroMidiEvent> ie = buf.iterator(); ie.hasNext();  ) {
-					MetroMidiEvent e = ie.next();
+				for ( Iterator<MetroNoteEvent> ie = buf.iterator(); ie.hasNext();  ) {
+					MetroNoteEvent e = ie.next();
 
 					
 					if ( e.between( actualCursor, actualNextCursor ) ) {
 						//		    			System.out.println("VALUE" + ( e.getOffsetInFrames() - this.cursor ) );
 						//        			System.out.println( e.("***" ));
 
-						result.add( new MetroMatchedEvent( 
+						result.add( new MetroMidiEvent( 
 								e.getOutputPortNo(), 
 								e.getOffsetInFrames() - actualCursor, 
 								e.getData() 
@@ -156,7 +156,7 @@ class MetroMidiEventBufferSequence {
 	}
 
 	public void reprepare( Metro metro, JackClient client, JackPosition position ) throws JackException {
-		for ( MetroMidiEventBuffer buffer : this.buffers ) {
+		for ( MetroNoteEventBuffer buffer : this.buffers ) {
 			buffer.prepare(metro, client, position);
 		}
 	}
@@ -174,8 +174,8 @@ class MetroMidiEventBufferSequence {
 	}
 
 	private void offerNewBuffer( Metro metro, JackClient client, JackPosition position ) throws JackException {
-		MetroMidiEventBuffer buf = new MetroMidiEventBuffer();
-		boolean result = this.logic.processBuffer( buf );
+		MetroNoteEventBuffer buf = new MetroNoteEventBuffer();
+		boolean result = this.logic.processOutputNoteBuffer( buf );
 
 		buf.prepare( metro, client, position );
 

@@ -29,7 +29,6 @@ public interface MetroMasterLogic extends MetroLogic {
 		public void setParent(Metro parent) {
 			this.parent = parent;
 		}
-
 		protected MetroLogicHandle handle;
 		@Override
 		public void setLogicHandle(MetroLogicHandle handle) {

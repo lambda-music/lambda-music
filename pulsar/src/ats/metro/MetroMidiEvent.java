@@ -1,52 +1,48 @@
 package ats.metro;
 
-import java.util.Arrays;
+import java.util.Comparator;
 
-public class MetroMidiEvent {
-	int outputPortNo;
-	double offset;
-	int offsetInFrames;
-	byte[] data;
-	
-	public MetroMidiEvent(int outputPortNo, double offset, byte[] data) {
-		super();
+public class MetroMidiEvent implements Comparable<MetroMidiEvent> {
+	public static final Comparator<? super MetroMidiEvent> COMPARATOR = new Comparator<MetroMidiEvent>( ) {
+		@Override
+		public int compare(MetroMidiEvent o1, MetroMidiEvent o2) {
+			return o1.compareTo( o2 );
+		}
+	};
+
+	private int outputPortNo;
+	private int offset;
+	private byte[] data;
+	public MetroMidiEvent(int outputPortNo, int offset, byte[] data ) {
 		this.outputPortNo = outputPortNo;
 		this.offset = offset;
 		this.data = data;
 	}
-	
 	public int getOutputPortNo() {
 		return outputPortNo;
 	}
-	public double getOffset() {
+	public void setOutputPortNo(int outputPortNo) {
+		this.outputPortNo = outputPortNo;
+	}
+	public int getOffset() {
 		return offset;
 	}
-	public int getOffsetInFrames() {
-		return offsetInFrames;
+	public void setOffset(int offset) {
+		this.offset = offset;
 	}
 	public byte[] getData() {
 		return data;
 	}
-	public final void calcInFrames( int barInFrames ){
-		this.offsetInFrames = (int)(this.offset * barInFrames );
+	public void setData(byte[] data) {
+		this.data = data;
 	}
-	public boolean between(int from, int to ) {
-		return from <= this.offsetInFrames && this.offsetInFrames < to;
+	@Override
+	public int compareTo(MetroMidiEvent o) {
+		return this.offset - o.offset;
 	}
-
-	public String dump(String string) {
-		MetroMidiEvent e = this;
-		StringBuilder sb = new StringBuilder();
-		sb.append(string).append( "      outputPortNo: " + e.outputPortNo ).append( "\n" );
-		sb.append(string).append( "            offset: " + e.offset ).append( "\n" );
-		sb.append(string).append( "    offsetInFrames: " + e.offsetInFrames ).append( "\n" );
-		sb.append(string).append( "              data: " + Arrays.toString( e.data ) ).append( "\n" );
-		return sb.toString();
+	
+	@Override
+	public String toString() {
+		return "offset : " + Integer.toString( this.offset ) ;
 	}
-//	public static void main(String[] args) {
-//		MetroMidiEvent event = new MetroMidiEvent(1, 0.0d, new byte[] {} );
-//		event.calcInFrames(48000);
-//		boolean b = event.between(-1, 4);
-//		System.out.println( b );
-//	}
 }

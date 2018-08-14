@@ -18,7 +18,8 @@ import javax.swing.JPanel;
 import ats.metro.Metro;
 import ats.metro.MetroLogic;
 import ats.metro.MetroMasterLogic;
-import ats.metro.MetroMidiEventBuffer;
+import ats.metro.MetroMidiEvent;
+import ats.metro.MetroNoteEventBuffer;
 
 final class MetroLogicFiveTimes extends MetroMasterLogic.Default {
 	public MetroLogicFiveTimes() {
@@ -51,9 +52,13 @@ final class MetroLogicFiveTimes extends MetroMasterLogic.Default {
 	private void notifyFlag() {
 		this.flag = true;
 	}
+	
+	@Override
+	public void processInputMidiBuffer(List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
+	}
 
 	@Override
-	public boolean processBuffer( MetroMidiEventBuffer buf) {
+	public boolean processOutputNoteBuffer( MetroNoteEventBuffer buf) {
 		// System.out.println("Metro.logic.new MetroLogic() {...}.initBuffer()" );
 
 		buf.humanize( 0.0d, 3 );
@@ -70,7 +75,7 @@ final class MetroLogicFiveTimes extends MetroMasterLogic.Default {
 			handle.spawn( 0.1d, new MetroLogic.Default() {
 				int cnt = 2;
 				@Override
-				public boolean processBuffer(MetroMidiEventBuffer buf) {
+				public boolean processOutputNoteBuffer(MetroNoteEventBuffer buf) {
 					//				buf.noteShot( 0.5d  , 1 , 0, 57, 127 );
 
 					buf.noteShot( 0.0d  , 1 , 0, 63, 127 );
@@ -81,7 +86,9 @@ final class MetroLogicFiveTimes extends MetroMasterLogic.Default {
 					buf.length(1.0d);
 					return 0<cnt--;
 				}
-
+				@Override
+				public void processInputMidiBuffer(List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
+				}
 			});
 			flag = false;
 		}

@@ -1,8 +1,8 @@
 package ats.pulsar;
 
-import ats.metro.MetroMidiEventBuffer;
+import ats.metro.MetroNoteEventBuffer;
 
 public interface Pulsable {
-	void pulse( MetroMidiEventBuffer buf );
+	void pulse( MetroNoteEventBuffer buf );
 	double getBars();
 }

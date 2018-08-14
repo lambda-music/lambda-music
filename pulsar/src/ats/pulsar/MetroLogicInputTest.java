@@ -36,7 +36,8 @@ import org.jaudiolibs.jnajack.JackException;
 import ats.metro.Metro;
 import ats.metro.MetroLogic;
 import ats.metro.MetroMasterLogic;
-import ats.metro.MetroMidiEventBuffer;
+import ats.metro.MetroMidiEvent;
+import ats.metro.MetroNoteEventBuffer;
 import gnu.lists.AbstractSequence;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
@@ -106,7 +107,7 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
 		}
 
 		@Override
-		public void pulse(MetroMidiEventBuffer buf) {
+		public void pulse(MetroNoteEventBuffer buf) {
 			AbstractSequence<Object> pattern ;
 			try {
 				pattern = (AbstractSequence<Object>) procedure.applyN( new Object[] {} );
@@ -281,10 +282,17 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
 		MetroLogicInputTest logic = this;
 		
 	}
+	
+	@Override
+	public void processInputMidiBuffer(List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
+		out.addAll( in );
+		System.err.println( "in.size()" + in.size() );
+		System.err.println( "out.size()" + out.size() );
+	}
 
 
 	@Override
-	public boolean processBuffer( MetroMidiEventBuffer buf ) {
+	public boolean processOutputNoteBuffer( MetroNoteEventBuffer buf ) {
 		// System.out.println("Metro.logic.new MetroLogic() {...}.initBuffer()" );
 
 		buf.humanize( 0.0d, 3 );
@@ -313,7 +321,7 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
 			handle.spawn( 0.1d, new MetroLogic.Default() {
 				int cnt = 2;
 				@Override
-				public boolean processBuffer(MetroMidiEventBuffer buf) {
+				public boolean processOutputNoteBuffer(MetroNoteEventBuffer buf) {
 					//				buf.noteShot( 0.5d  , 1 , 0, 57, 127 );
 
 					buf.noteShot( 0.0d  , 1 , 0, 63, 127 );
@@ -324,7 +332,9 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
 					buf.length(1.0d);
 					return 0<cnt--;
 				}
-
+				@Override
+				public void processInputMidiBuffer(List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
+				}
 			});
 			flag = false;
 		}

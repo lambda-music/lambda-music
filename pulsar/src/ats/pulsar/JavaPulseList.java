@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import ats.metro.MetroMidiEventBuffer;
+import ats.metro.MetroNoteEventBuffer;
 
 public class JavaPulseList implements Pulsable {
 	static List<Set<JavaPulse>> asList( JavaPulse[][] list, int repeatCount ) {
@@ -66,7 +66,7 @@ public class JavaPulseList implements Pulsable {
 	}
 	
 	@Override
-	public void pulse( MetroMidiEventBuffer buf ) {
+	public void pulse( MetroNoteEventBuffer buf ) {
 		JavaPulseList pattern = this;
 		List<Set<JavaPulse>> pulseSetList = pattern.getPulseSetList();
 		double bars = (double)pattern.getBars();

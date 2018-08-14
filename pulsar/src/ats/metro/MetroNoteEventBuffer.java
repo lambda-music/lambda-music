@@ -10,14 +10,14 @@ import org.jaudiolibs.jnajack.JackClient;
 import org.jaudiolibs.jnajack.JackException;
 import org.jaudiolibs.jnajack.JackPosition;
 
-public class MetroMidiEventBuffer implements Iterable<MetroMidiEvent>{
+public class MetroNoteEventBuffer implements Iterable<MetroNoteEvent>{
 	private double humanizeFactorOffset=0;
 	private double humanizeFactorVelocity=0;
 
 	private double offset;
 	private double length = 1.0d;
 	private int lengthInFrames;
-	private final List<MetroMidiEvent> list = new ArrayList<MetroMidiEvent>(10);
+	private final List<MetroNoteEvent> list = new ArrayList<MetroNoteEvent>(10);
 	public double getLength() {
 		return length;
 	}
@@ -41,7 +41,7 @@ public class MetroMidiEventBuffer implements Iterable<MetroMidiEvent>{
 	
 	private void calcInFrames( int barInFrames ) {
 //		System.out.println("MetroMidiEventBuffer.calcInFrames() barInFrames="  + barInFrames );
-		for ( MetroMidiEvent e : this ) {
+		for ( MetroNoteEvent e : this ) {
 			e.calcInFrames( barInFrames );
 		}
 		this.lengthInFrames = (int) (this.length * barInFrames);
@@ -49,14 +49,14 @@ public class MetroMidiEventBuffer implements Iterable<MetroMidiEvent>{
 	}
 	
 	@Override
-	public Iterator<MetroMidiEvent> iterator() {
+	public Iterator<MetroNoteEvent> iterator() {
 		return this.list.iterator();
 	}
 
 	private void note(int outputPortNo, int midiEventValue, double offset, int channel, int note, int velocity) {
 //		System.out.println( "note 1:" + Integer.toUnsignedString( midiEventValue , 2) );
 
-		MetroMidiEvent event = new MetroMidiEvent(
+		MetroNoteEvent event = new MetroNoteEvent(
 				outputPortNo,
 				offset,
 				new byte[] {
@@ -110,7 +110,7 @@ public class MetroMidiEventBuffer implements Iterable<MetroMidiEvent>{
 		System.out.println( "length         : " + this.length );
 		System.out.println( "lengthInFrames : " + this.lengthInFrames );
 		int i = 0;
-		for ( MetroMidiEvent e : this ) {
+		for ( MetroNoteEvent e : this ) {
 			System.out.println( "    No" + i );
 			System.out.println( e.dump( "    " ) );
 			i++;

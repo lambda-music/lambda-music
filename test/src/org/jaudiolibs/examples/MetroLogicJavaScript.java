@@ -20,7 +20,8 @@ import ats.metro.Metro;
 import ats.metro.MetroLogic;
 import ats.metro.MetroLogicHandle;
 import ats.metro.MetroMasterLogic;
-import ats.metro.MetroMidiEventBuffer;
+import ats.metro.MetroMidiEvent;
+import ats.metro.MetroNoteEventBuffer;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
 final class MetroLogicJavaScript extends MetroMasterLogic.Default {
@@ -34,10 +35,14 @@ final class MetroLogicJavaScript extends MetroMasterLogic.Default {
 		public void spawn( double offset, ScriptObjectMirror subProcessor ) {
 			MetroLogicJavaScript.this.handle.spawn(offset, new MetroLogic.Default() {
 				@Override
-				public boolean processBuffer( MetroMidiEventBuffer buf ) {
+				public boolean processOutputNoteBuffer( MetroNoteEventBuffer buf ) {
 					// System.out.println("Metro.logic.new MetroLogic() {...}.initBuffer()" );
 					Object result = subProcessor.call( null , buf );
 					return checkReturnValue( result );
+				}
+
+				@Override
+				public void processInputMidiBuffer(List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
 				}
 			});
 		}
@@ -128,7 +133,11 @@ final class MetroLogicJavaScript extends MetroMasterLogic.Default {
 	}
 
 	@Override
-	public boolean processBuffer( MetroMidiEventBuffer buf ) {
+	public void processInputMidiBuffer(List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
+	}
+
+	@Override
+	public boolean processOutputNoteBuffer( MetroNoteEventBuffer buf ) {
 		// System.out.println("Metro.logic.new MetroLogic() {...}.initBuffer()" );
 		Object result = this.processor.call( null , buf );
 		return checkReturnValue( result );
