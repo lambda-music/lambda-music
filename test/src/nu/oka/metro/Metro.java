@@ -147,6 +147,14 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 //    	this.run();
     }
     
+    public void clearSequences() {
+		synchronized ( this.sequences ) {
+			for ( MetroMidiEventBufferSequence s : this.sequences ) {
+				s.clearBuffer();
+			}
+		}
+    }
+    
 	public void run()  {
 		try {
 			System.out.println("Metro.run()");
@@ -174,7 +182,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 					this.registeredSequences.clear();
 				}
 //				System.out.println( this.sequences.size() );
-	        	Thread.sleep(0);
+	        	Thread.sleep(500);
 	        }
 		} catch ( Throwable e ) {
 			throw new RuntimeException( e );

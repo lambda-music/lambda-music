@@ -2,10 +2,14 @@ package ats.pulsar;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -18,9 +22,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import javax.swing.Timer;
 
 import org.jaudiolibs.jnajack.JackException;
@@ -227,12 +235,16 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
 
 	List<Pulsable> pulsableList = new ArrayList<Pulsable>(); 
 	{
+		System.err.println("set-current-pulsable (from init)" );
 		setCurrentPulsable( new SamplePulsableBuilder() );
 	}
 	
 	public void setCurrentPulsable( PulsableBuilder pulsableBuilder ) {
+		System.err.println( "set current pulsable "  + pulsableBuilder.getName() );
 		pulsableList.clear();
 		pulsableList.addAll( pulsableBuilder.create() );
+//		if ( getParent() != null )
+//			getParent().clearSequences();
 	}
 	
 	
@@ -256,6 +268,7 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
 		b.addActionListener( new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				System.err.println( "Set current pulsable object to " + pulsableBuilder.getName()  );
 				setCurrentPulsable( pulsableBuilder );
 			}
 		});
@@ -330,6 +343,24 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
     }
 	
     void initScheme(Scheme scheme) {
+    	{
+    		
+    		InputStream in = null;
+    		try {
+    			in = this.getClass().getResource( "init.scm" ).openStream();
+    			scheme.eval( new InputStreamReader( in ) );
+    		} catch (Throwable e) {
+				new RuntimeException( e );
+			} finally {
+    			try {
+    				if ( in != null)
+    					in.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+    		}
+    	}
+    	
     	scheme.getEnvironment().define( SimpleSymbol.make( "", "sum-aa" ), null, new ProcedureN() {
     		@Override
     		public Object applyN(Object[] args) throws Throwable {
@@ -348,10 +379,15 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
 				if ( args.length == 1 ) {
 					String name = ((IString) args[0]).toString();
 					for ( PulsableBuilder b : pulsableBuilderList ) {
-						// XXX
+						if ( b.getName().equals( name ) ) {
+							System.err.println("set-current-pulsable (from scheme)" );
+							setCurrentPulsable( b );
+							break;
+						}
 					}
 					
 				} else {
+					// Set the passed object as a builder function directly.
 					String name = ((IString) args[0]).toString();
 					String description = ((IString) args[1]).toString();
 					ArrayList<Pair> pairs = parseListOfPairs( (Pair) args[2] );
@@ -375,7 +411,7 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
     	scheme.getEnvironment().define( SimpleSymbol.make( "", "add-pattern" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
-				System.err.println("add-pattern");
+				// System.err.println("add-pattern");
     			String name = ((IString) args[0]).toString();
 				String description = ((IString) args[1]).toString();
 				ArrayList<Pair> pairs = parseListOfPairs( (Pair) args[2] );
@@ -399,6 +435,7 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
     Container rootPane = null; 
 	JPanel staticPane = new JPanel();
 	JPanel userPane = new JPanel();
+	JLabel tempoLabel = new JLabel("", SwingConstants.CENTER );
     
     private void createAndShowGUI() {
     	MetroLogicInputTest logic = this;
@@ -409,58 +446,14 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
         //Create and set up the content pane.
         rootPane = frame.getContentPane();
 
-        ActionListener listener = new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				switch ( e.getActionCommand() ) {
-				case "5 Meter" :
-					System.out.println("5 Meter");
-					logic.notifyFlag();
-					break;
-				case "7 Meter" :
-					System.out.println("7 Meter");
-					break;
-				case "Change Tempo" :
-					try {
-						logic.getParent().setBeatsPerMinute(120);
-					} catch (JackException e1) {
-						throw new RuntimeException(e1);
-						// e1.printStackTrace();
-					}
-					break;
-				default :
-				}
-			}
-		};
-		
-
-		final class Builder {
-			JButton makeButton( String caption, String actionCommand ) {
-				JButton b = new JButton( caption );
-				b.setActionCommand(actionCommand);
-				b.addActionListener( listener );
-				return b;
-			}
-		}
-		Builder bld = new Builder();
-        
-		//Create the "cards".
-		// JPanel panel = new JPanel();
-		
-		userPane.add(bld.makeButton("5", "5 Meter"));
-		userPane.add(bld.makeButton("7", "7 Meter"));
-		userPane.add(bld.makeButton("Change Tempo", "Change Tempo"));
-		userPane.add(bld.makeButton("Button 4", "Button 4"));
-		userPane.add(bld.makeButton("Button 5", "Button 5"));
-		userPane.add(bld.makeButton("Button 6", "Button 6"));
-		
-		
 		rootPane.add( staticPane, BorderLayout.PAGE_START );
 		rootPane.add( userPane, BorderLayout.CENTER );
-		
+		staticPane.setLayout(new BorderLayout());
+
+		// Tempo Button
 		{
-			JButton b = new JButton( "Tempo" );
-			b.addActionListener( new ActionListener() {
+			JButton tempoTapButton = new JButton( "Tempo" );
+			tempoTapButton.addActionListener( new ActionListener() {
 				long prev_time = 0;
 				int BUF_SIZE = 3;
 				long TIMEOUT = 1000L*1000L*1000L*2L;
@@ -515,19 +508,28 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
 						try {
 							double avg = (double)sum / t.length;
 							double onemin = 1000L*1000L*1000L*60L;
-							double beatPerMinute = (long)( onemin / avg  );
+							double beatPerMinute =  onemin / avg  ;
 							System.err.println( String.format( "%.2f / %.2f = %.2f", onemin , avg , beatPerMinute  ) );
 							logic.getParent().setBeatsPerMinute( (long) beatPerMinute );
+							tempoTapButton.setText( String.format( "Tempo=%.2f", beatPerMinute  ) );
+							
+//							tempoLabel.setText( String.format( "%.2f", beatPerMinute  ) );
+//							tempoLabel.setAlignmentX(0);
+//							tempoLabel.setAlignmentY(0);
 						} catch (JackException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
 				}
 			});
-			staticPane.add( b );
+			staticPane.add( tempoTapButton, BorderLayout.CENTER );
+			staticPane.setBorder( BorderFactory.createEmptyBorder(20,20,20,20) );
+			
+			tempoTapButton.setPreferredSize(new Dimension(200, 100));
+			tempoTapButton.setMargin(new Insets(20, 20, 20, 20));
 		}
 		
-		
+		// a watchdog Timer
 		{
 			final File configFile = new File( System.getProperty("user.home"), ".pulsar" );
 			Timer timer = new Timer(1000, new ActionListener() {
@@ -536,7 +538,7 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
 				public void actionPerformed(ActionEvent e) {
 					long current = configFile.lastModified();
 					if ( current != last ) {
-						System.err.println( "MODIFIED" );
+						System.err.println( "Detected that the config file was modified." );
 						try {
 							String text = new String(Files.readAllBytes( Paths.get( configFile.toURI() ) ), StandardCharsets.UTF_8);
 							Scheme scheme = new Scheme();
@@ -553,13 +555,18 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
 					this.last= current;
 				}
 			});
-			timer.setInitialDelay(1000);
+			timer.setInitialDelay(250);
 			timer.start(); 
 		}
 		
+		{
+			staticPane.add( tempoLabel, BorderLayout.PAGE_START );
+		}
+		((JComponent)rootPane).setBorder( BorderFactory.createEmptyBorder() );
+		
         //Display the window.
         frame.pack();
-        frame.setSize(300, frame.getHeight());
+        frame.setSize(400, frame.getHeight()+20);
         frame.setVisible(true);
     }
     

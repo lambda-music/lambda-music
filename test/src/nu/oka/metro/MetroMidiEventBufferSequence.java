@@ -53,99 +53,101 @@ class MetroMidiEventBufferSequence {
 
 
 	public void progressCursor( int nframes, List<MetroMatchedEvent> result ) throws JackException {
-		this.metro.clearAllPorts();
+		synchronized ( this.buffers ) {
+			this.metro.clearAllPorts();
 
-		int nextCursor = this.cursor + nframes;
-		
-		// This keeps negative offset value for the current cursor position. 
-		int cursorOffset = 0;
+			int nextCursor = this.cursor + nframes;
+			
+			// This keeps negative offset value for the current cursor position. 
+			int cursorOffset = 0;
 
-		//    	System.out.println( cursor + "/" + nextCursor );
-		int accrossCount = 0;
-		
-		for ( Iterator<MetroMidiEventBuffer> ibuf = this.buffers.iterator(); ibuf.hasNext(); ) {
-			MetroMidiEventBuffer buf = ibuf.next();
+			//    	System.out.println( cursor + "/" + nextCursor );
+			int accrossCount = 0;
+			
+			for ( Iterator<MetroMidiEventBuffer> ibuf = this.buffers.iterator(); ibuf.hasNext(); ) {
+				MetroMidiEventBuffer buf = ibuf.next();
 
-			int actualCursor = this.cursor - cursorOffset;
-			int actualNextCursor = nextCursor - cursorOffset;
+				int actualCursor = this.cursor - cursorOffset;
+				int actualNextCursor = nextCursor - cursorOffset;
 
-			//    		System.out.println( "AFTER::::" );
-			//    		buf.dump();
-			for ( Iterator<MetroMidiEvent> ie = buf.iterator(); ie.hasNext();  ) {
-				MetroMidiEvent e = ie.next();
+				//    		System.out.println( "AFTER::::" );
+				//    		buf.dump();
+				for ( Iterator<MetroMidiEvent> ie = buf.iterator(); ie.hasNext();  ) {
+					MetroMidiEvent e = ie.next();
 
+					
+					if ( e.between( actualCursor, actualNextCursor ) ) {
+						//		    			System.out.println("VALUE" + ( e.getOffsetInFrames() - this.cursor ) );
+						//        			System.out.println( e.("***" ));
+
+						result.add( new MetroMatchedEvent( 
+								e.getOutputPortNo(), 
+								e.getOffsetInFrames() - actualCursor, 
+								e.getData() 
+								) );
+
+						//        			System.out.println( "event.getData()" + event.getData() );
+						//        			System.out.println( "event.getData()" + Integer.toUnsignedString(event.getData()[0] , 2 ) );
+					}
+				}
+
+				// System.out.println( buf.getLengthInFrames() );
+
+//				/* 
+//				 * (Sat, 23 Dec 2017 23:16:25 +0900)
+//				 * 1. 
+//				 * This "if" statement should not be like :
+//				 *     buf.getLengthInFrames() <= nextCursor
+//				 * This should be :
+//				 *     buf.getLengthInFrames() <   nextCursor
+//				 *  
+//				 * Because there might be a note on the last position.
+//				 * This may often be a note off event.
+//				 * 
+//				 * 2.
+//				 *    this.cursor= this.cursor - buf.getLengthInFrames();
+//				 *    
+//				 * In this statement `this.cursor` could be lower than zero.
+//				 * This value is used when when we call JackMidi.eventWrite() afterwards 
+//				 * as offset value of the current frame.  
+//				 * 
+//				 */
+//				if ( buf.getLengthInFrames() <   actualNextCursor  ) {
+//					// if ( DEBUG ) System.out.println( "1 cursor=" + this.cursor  + "/nextCursor=" + nextCursor  + " buf.getLengthInFrames=" + buf.getLengthInFrames());
+////					nextCursor =  nextCursor - buf.getLengthInFrames();
+////					this.cursor= this.cursor - buf.getLengthInFrames() ;
+//					cursorOffset = cursorOffset + buf.getLengthInFrames();
+//					// if ( DEBUG ) System.out.println( "2 cursor=" + this.cursor  + "/nextCursor=" + nextCursor );
+//					// accrossCount ++;
+//					//        		break;
+//				} else {
+//					break;
+//				}
+				cursorOffset = cursorOffset + buf.getLengthInFrames();
+//				System.out.println( cursorOffset );
+			}
+			//		for ( int i=0; i< accrossCount; i++ )
+			//		this.buffers.poll();
+			
+			for (;;) {
+				if ( this.buffers.isEmpty() )
+					break;
+				int lengthInFrames = this.buffers.peek().getLengthInFrames();
 				
-				if ( e.between( actualCursor, actualNextCursor ) ) {
-					//		    			System.out.println("VALUE" + ( e.getOffsetInFrames() - this.cursor ) );
-					//        			System.out.println( e.("***" ));
-
-					result.add( new MetroMatchedEvent( 
-							e.getOutputPortNo(), 
-							e.getOffsetInFrames() - actualCursor, 
-							e.getData() 
-							) );
-
-					//        			System.out.println( "event.getData()" + event.getData() );
-					//        			System.out.println( "event.getData()" + Integer.toUnsignedString(event.getData()[0] , 2 ) );
+				if (  lengthInFrames < this.cursor ) {
+					this.cursor -= lengthInFrames;
+					nextCursor -= lengthInFrames;
+					this.buffers.poll();
+				} else {
+					break;
 				}
 			}
 
-			// System.out.println( buf.getLengthInFrames() );
 
-//			/* 
-//			 * (Sat, 23 Dec 2017 23:16:25 +0900)
-//			 * 1. 
-//			 * This "if" statement should not be like :
-//			 *     buf.getLengthInFrames() <= nextCursor
-//			 * This should be :
-//			 *     buf.getLengthInFrames() <   nextCursor
-//			 *  
-//			 * Because there might be a note on the last position.
-//			 * This may often be a note off event.
-//			 * 
-//			 * 2.
-//			 *    this.cursor= this.cursor - buf.getLengthInFrames();
-//			 *    
-//			 * In this statement `this.cursor` could be lower than zero.
-//			 * This value is used when when we call JackMidi.eventWrite() afterwards 
-//			 * as offset value of the current frame.  
-//			 * 
-//			 */
-//			if ( buf.getLengthInFrames() <   actualNextCursor  ) {
-//				// if ( DEBUG ) System.out.println( "1 cursor=" + this.cursor  + "/nextCursor=" + nextCursor  + " buf.getLengthInFrames=" + buf.getLengthInFrames());
-////				nextCursor =  nextCursor - buf.getLengthInFrames();
-////				this.cursor= this.cursor - buf.getLengthInFrames() ;
-//				cursorOffset = cursorOffset + buf.getLengthInFrames();
-//				// if ( DEBUG ) System.out.println( "2 cursor=" + this.cursor  + "/nextCursor=" + nextCursor );
-//				// accrossCount ++;
-//				//        		break;
-//			} else {
-//				break;
-//			}
-			cursorOffset = cursorOffset + buf.getLengthInFrames();
-//			System.out.println( cursorOffset );
+			this.cursor = nextCursor;
+			if ( Metro.DEBUG )
+				System.out.println( this.cursor + "/" + (this.buffers.isEmpty() ? "empty" : this.buffers.peek().getLengthInFrames()  ) );
 		}
-		//		for ( int i=0; i< accrossCount; i++ )
-		//		this.buffers.poll();
-		
-		for (;;) {
-			if ( this.buffers.isEmpty() )
-				break;
-			int lengthInFrames = this.buffers.peek().getLengthInFrames();
-			
-			if (  lengthInFrames < this.cursor ) {
-				this.cursor -= lengthInFrames;
-				nextCursor -= lengthInFrames;
-				this.buffers.poll();
-			} else {
-				break;
-			}
-		}
-
-
-		this.cursor = nextCursor;
-		if ( Metro.DEBUG )
-			System.out.println( this.cursor + "/" + (this.buffers.isEmpty() ? "empty" : this.buffers.peek().getLengthInFrames()  ) );
 	}
 
 	public void prepare( int barInFrames ) throws JackException {
@@ -162,6 +164,12 @@ class MetroMidiEventBufferSequence {
 	public void checkBuffer( Metro metro, JackClient client, JackPosition position ) throws JackException {
 		if ( this.buffers.size() < BUFFER_SIZE ) {
 			this.offerNewBuffer( metro, client, position );
+		}
+	}
+	
+	public void clearBuffer() {
+		synchronized ( this.buffers ) {
+			this.buffers.clear();
 		}
 	}
 
