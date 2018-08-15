@@ -1,6 +1,8 @@
 package ats.pulsar;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -24,6 +26,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -47,7 +51,6 @@ import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 import gnu.mapping.ProcedureN;
 import gnu.mapping.SimpleSymbol;
-import gnu.math.IntNum;
 import kawa.standard.Scheme;
 
 final class MetroLogicInputTest extends MetroMasterLogic.Default {
@@ -274,90 +277,42 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
 				setCurrentPulsable( pulsableBuilder );
 			}
 		});
-		userPane.add( b );
-		userPane.revalidate();
-		userPane.repaint();
+		addComponentToGui(b);
+
 		return b;
 	}
 	
-	int constraintNextCount= 0;
-	public void putConstraintNext() {
-		int count = userPane.getComponentCount();
-		if ( 2 < count ) {
-			System.out.println("HELLO");
-			userLayout.putConstraint( 
-					SpringLayout.WEST,
-					userPane.getComponent( count -1 ),
-					3,
-					SpringLayout.EAST,
-					userPane.getComponent( count -2 )
-					);
-			constraintNextCount = constraintNextCount +1;
-			System.err.println( userPane.getComponent( count -1 ).getName() );
-			System.err.println( userPane.getComponent( count -2 ).getName() );
-			System.err.println( "=============" );
-		}
-	}
-	public void putConstraintNewLine() {
-		int count = userPane.getComponentCount();
-		if ( 2 < count ) {
-			System.out.println("NEWLINE");
-			userLayout.putConstraint( 
-					SpringLayout.NORTH,
-					userPane.getComponent( count -1 ),
-					3,
-					SpringLayout.SOUTH,
-					userPane.getComponent( count - constraintNextCount )
-					);
-			constraintNextCount = 0;
-		}
-	}
 
 	public void initGui() {
+		newlineGui();
 	}
 
-	public void initGuiBak() {
-		JButton b01 = new JButton( "HELLO1" );
-		JButton b02 = new JButton( "HELLO2" );
-		JButton b03 = new JButton( "HELLO3" );
-//		JButton b04 = new JButton( "HELLO4" );
-//		JButton b05 = new JButton( "HELLO5" );
-		userPane.add( b01 );
-		userPane.add( b02 );
-		userPane.add( b03 );
-//		userPane.add( b04 );
-//		userPane.add( b05 );
-		
-		SpringLayoutUtil util = new SpringLayoutUtil(userLayout, userPane);
-//
-		int gap = 5;
-
-		util.putConstraint( "N", b01, gap, "N", userPane );
-//		util.putConstraint( "E", b01, gap, "W", b02 );
-		util.putConstraint( "W", b01, gap, "W", userPane );
-		util.putConstraint( "S", b01, -gap, "S", userPane );
-		
-		util.putConstraint( "N", b02, gap, "N", userPane );
-//		helper.putConstraint( "E", b02, gap, "W", b03 );
-		util.putConstraint( "W", b02, gap, "E", b01 );
-		util.putConstraint( "S", b02, -gap, "S", userPane );
-
-		util.putConstraint( "N", b03, gap, "N", userPane );
-		util.putConstraint( "E", b03, - gap, "E", userPane );
-		util.putConstraint( "W", b03, gap, "E", b02 );
-		util.putConstraint( "S", b03, -gap, "S", userPane );
-
-//		userPane.add( new JButton("HELLO3") );
-//		putConstraint( "East",  -1,   3, "West",   0 );
-//		putConstraint( "North",9999,  3, "North",  0 );
-	}
 	
 	public void refreshGui() {
 		userPane.revalidate();
 		userPane.repaint();
         frame.pack();
 	}
+	public void addComponentToGui( JComponent c ) {
+//		JPanel pane = userPane;
+		JPanel pane = currentLinePane;
+		pane.add( c );
+		pane.revalidate();
+		pane.repaint();
+	}
+	public void newlineGui() {
+		currentLinePane = new JPanel( new FlowLayout() );
+		userPane.add( currentLinePane );
+		currentLinePane.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.red),
+                currentLinePane.getBorder()));
+		userPane.revalidate();
+		userPane.repaint();
+	}
 
+	public void endlineGui() {
+		userPane.add( Box.createVerticalStrut(500 ) );
+	}
 	
 	@Override
 	public void processInputMidiBuffer(List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
@@ -446,18 +401,6 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
     		}
     	}
     	
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "sum-aa" ), null, new ProcedureN() {
-    		@Override
-    		public Object applyN(Object[] args) throws Throwable {
-    			int sum=0;
-    			for ( int i=0; i<args.length; i++ ) {
-    				if ( args[i] instanceof IntNum  ) {
-    					sum += IntNum.intValue( args[i] );
-    				}
-    			}
-    			return sum;
-    		}
-    	});
     	scheme.getEnvironment().define( SimpleSymbol.make( "", "set-current-pattern" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
@@ -540,7 +483,7 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
 							}
 						}
 					});
-					userPane.add( button );
+					addComponentToGui( button );
 					return button;
 				} else {
 					throw new RuntimeException( "add-button has two parameters( caption user-handle lambda )." );
@@ -552,6 +495,22 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
     		public Object applyN(Object[] args) throws Throwable {
 				System.err.println("refresh-gui");
 				refreshGui();
+    			return EmptyList.emptyList;
+    		}
+    	});
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "newline-gui" ), null, new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				System.err.println("newline-gui");
+				newlineGui();
+    			return EmptyList.emptyList;
+    		}
+    	});
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "endline-gui" ), null, new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				System.err.println("newline-gui");
+				endlineGui();
     			return EmptyList.emptyList;
     		}
     	});
@@ -577,7 +536,18 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
     Container rootPane = null; 
 	JPanel staticPane = new JPanel( new FlowLayout( FlowLayout.CENTER ) );
 	SpringLayout userLayout = new SpringLayout();
-	JPanel userPane = new JPanel( userLayout );
+	
+	JPanel userPane = new JPanel();
+	BoxLayout userBoxLayout = new BoxLayout( userPane, BoxLayout.PAGE_AXIS );
+	{
+		userPane.setLayout( userBoxLayout );
+	}
+
+	JPanel currentLinePane = null;
+	{
+		newlineGui();
+	}
+	
 	JLabel tempoLabel = new JLabel("", SwingConstants.CENTER );
     
     private void createAndShowGUI() {
