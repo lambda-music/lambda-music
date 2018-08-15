@@ -145,8 +145,8 @@ class SpringLayoutUtil {
 		System.err.println( "=============="  );
 		;
 		
-		if ( e1.equals( "South") || e1.equals( "East") )
-			pad = - pad;
+//		if ( e1.equals( "South") || e1.equals( "East") )
+//			pad = - pad;
 		
 		springLayout.putConstraint( e1, c1, pad, e2, c2);
 	}

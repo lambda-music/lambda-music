@@ -1,12 +1,13 @@
 package ats.pulsar;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -26,8 +27,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -254,64 +253,40 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
 //			getParent().clearSequences();
 	}
 	
-	
 
-	List<PulsableBuilder> pulsableBuilderList = new ArrayList<PulsableBuilder>();
-	public void clearPulseableBuilderList() {
-		pulsableBuilderList.clear();
+	public void guiInit() {
 		userPane.removeAll();
-		
-		initGui();
-		addPulsableBuilderList( new SamplePulsableBuilder() );
-		refreshGui();
 	}
-	
-	public JButton addPulsableBuilderList( PulsableBuilder pulsableBuilder ) {
-		pulsableBuilderList.add( pulsableBuilder );
-
-		JButton b = new JButton( pulsableBuilder.getName() );
-		b.addActionListener( new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				System.err.println( "Set current pulsable object to " + pulsableBuilder.getName()  );
-				setCurrentPulsable( pulsableBuilder );
-			}
-		});
-		addComponentToGui(b);
-
-		return b;
+	public void guiSpringLayout() {
+		userLayout = new SpringLayout();
+		userPane.setLayout(userLayout);
 	}
-	
-
-	public void initGui() {
-		newlineGui();
+	public void guiFlowLayout() {
+		userLayout = new WrapLayout();
+		userPane.setLayout(userLayout);
 	}
-
-	
-	public void refreshGui() {
+	public void guiGridBagLayout() {
+		userLayout = new GridBagLayout();
+		userPane.setLayout(userLayout);
+	}
+	public void guiRefresh() {
 		userPane.revalidate();
 		userPane.repaint();
-        frame.pack();
+        // frame.pack();
 	}
-	public void addComponentToGui( JComponent c ) {
-//		JPanel pane = userPane;
-		JPanel pane = currentLinePane;
+	public void guiAdd( JComponent c ) {
+		JPanel pane = userPane;
 		pane.add( c );
 		pane.revalidate();
 		pane.repaint();
 	}
 	public void newlineGui() {
-		currentLinePane = new JPanel( new FlowLayout() );
-		userPane.add( currentLinePane );
-		currentLinePane.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.red),
-                currentLinePane.getBorder()));
 		userPane.revalidate();
 		userPane.repaint();
 	}
 
 	public void endlineGui() {
-		userPane.add( Box.createVerticalStrut(500 ) );
+		// userPane.add( Box.createVerticalStrut(500 ) );
 	}
 	
 	@Override
@@ -400,112 +375,140 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
 				}
     		}
     	}
-    	
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "set-current-pattern" ), null, new ProcedureN() {
+
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-get-pane" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
-				if ( args.length == 1 ) {
-					String name = ((IString) args[0]).toString();
-					for ( PulsableBuilder b : pulsableBuilderList ) {
-						if ( b.getName().equals( name ) ) {
-							System.err.println("set-current-pulsable (from scheme)" );
-							setCurrentPulsable( b );
-							break;
-						}
-					}
-					
-				} else {
-					// Set the passed object as a builder function directly.
-					String name = ((IString) args[0]).toString();
-					String description = ((IString) args[1]).toString();
-					ArrayList<Pair> pairs = parseListOfPairs( (Pair) args[2] );
-					
-					SchemePulsableBuilder pulsableBuilder = new SchemePulsableBuilder( name,description, pairs );
-					setCurrentPulsable( pulsableBuilder );
-				}
-    			return EmptyList.emptyList;
-    		}
-    	});
-
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "clear-pattern" ), null, new ProcedureN() {
-			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-				clearPulseableBuilderList();
-    			return EmptyList.emptyList;
-    		}
-
-    	});
-
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "add-pattern" ), null, new ProcedureN() {
-			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-				// System.err.println("add-pattern");
-    			String name = ((IString) args[0]).toString();
-				String description = ((IString) args[1]).toString();
-				ArrayList<Pair> pairs = parseListOfPairs( (Pair) args[2] );
-				SchemePulsableBuilder pulsableBuilder = new SchemePulsableBuilder( name,description, pairs );
-
-				
-    			return addPulsableBuilderList( pulsableBuilder );
-    		}
-
-    	});
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "get-gui" ), null, new ProcedureN() {
-			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-				System.err.println("get-gui");
+				System.err.println("gui-get-pane");
     			return userPane;
     		}
     	});
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "get-frame" ), null, new ProcedureN() {
+    	
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-get-frame" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
-				System.err.println("get-frame");
-				// System.err.println( frame );
+				System.err.println("gui-get-frame");
     			return frame;
     		}
     	});
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "add-button" ), null, new ProcedureN() {
+
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-init" ), null, new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				guiInit();
+    			return EmptyList.emptyList;
+    		}
+
+    	});
+
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-new" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				if ( args.length == 3 ) {
-					ProcedureN p = (ProcedureN) args[2];
-					String caption = ((IString) args[0]).toString();
-					Object userHandle = args[1];
-					JButton button = new JButton( caption );
-					button.addActionListener(new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							try {
-								p.applyN( new Object[] { userHandle } );
-							} catch (Throwable e1) {
-								e1.printStackTrace();
-							}
+					if ( args[2] instanceof ProcedureN ) {
+						ProcedureN p = (ProcedureN) args[2];
+						String caption = ((IString) args[0]).toString();
+						Object userHandle = args[1];
+						{
+							JButton button = new JButton( caption );
+							button.addActionListener( new PulsarAction() {
+								@Override
+								public void invoke() {
+									try {
+										p.applyN( new Object[] { userHandle } );
+									} catch (Throwable e1) {
+										e1.printStackTrace();
+									}
+								}
+							});
+							return button;
 						}
-					});
-					addComponentToGui( button );
-					return button;
+					} else if ( args[2] instanceof Pair ) {
+
+						// System.err.println("add-pattern");
+		    			String name = SchemeUtils.toString( args[0] );
+						String description = SchemeUtils.toString( args[1] );
+						ArrayList<Pair> pairs = parseListOfPairs( (Pair) args[2] );
+						
+						SchemePulsableBuilder pulsableBuilder = new SchemePulsableBuilder( name,description, pairs );
+						{
+							JButton button = new JButton( pulsableBuilder.getName() );
+							button.addActionListener( new PulsarAction() {
+								@Override
+								public void invoke() {
+									System.err.println( "Set current pulsable object to " + pulsableBuilder.getName()  );
+									setCurrentPulsable( pulsableBuilder );
+								}
+							});
+							return button; 
+						}
+					} else {
+						throw new RuntimeException( "add-button unsupported type of args[2]." + SchemeUtils.className( args[2] ) );
+					}
+					
+					
 				} else {
 					throw new RuntimeException( "add-button has two parameters( caption user-handle lambda )." );
 				}
     		}
     	});
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "refresh-gui" ), null, new ProcedureN() {
+    	
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-invoke" ), null, new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				if ( args.length == 1 ) {
+					((JButton)args[0]).doClick(); 
+				}
+    			return EmptyList.emptyList;
+    		}
+    	});
+    	
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-add" ), null, new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				System.err.println("get-add");
+				if ( args.length == 1 ) {
+					userPane.add( (JComponent)args[0] );
+				} else if ( args.length == 2 ) {
+					userPane.add( (JComponent)args[0], SchemeUtils.map2constraint( args[1] ) );
+				}
+    			return frame;
+    		}
+    	});
+
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-refresh" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				System.err.println("refresh-gui");
-				refreshGui();
+				guiRefresh();
     			return EmptyList.emptyList;
     		}
     	});
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "newline-gui" ), null, new ProcedureN() {
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-gridbag-layout" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
-				System.err.println("newline-gui");
-				newlineGui();
+				System.err.println( "gui-gridbag-layout" );
+				guiGridBagLayout();
     			return EmptyList.emptyList;
     		}
     	});
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-spring-layout" ), null, new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				System.err.println( "gui-spring-layout" );
+				guiSpringLayout();
+    			return EmptyList.emptyList;
+    		}
+    	});
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-flow-layout" ), null, new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				System.err.println( "gui-flow-layout" );
+				guiFlowLayout();
+    			return EmptyList.emptyList;
+    		}
+    	});
+    	// TODO
     	scheme.getEnvironment().define( SimpleSymbol.make( "", "endline-gui" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
@@ -514,18 +517,20 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
     			return EmptyList.emptyList;
     		}
     	});
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "put-constraint" ), null, new ProcedureN() {
+
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-put-constraint" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				System.err.println("refresh-gui");
+			 	SpringLayout springLayout = ((SpringLayout)userLayout);
 				if ( args.length == 5 ) {
-					new SpringLayoutUtil(userLayout, userPane).putConstraint( args[0],args[1],args[2],args[3],args[4] );
+					new SpringLayoutUtil(springLayout, userPane).putConstraint( args[0],args[1],args[2],args[3],args[4]  );
 				} else if ( args.length == 4 ) {
-					new SpringLayoutUtil(userLayout, userPane).putConstraint( args[0],args[1],5, args[2],args[3] );
+					new SpringLayoutUtil(springLayout, userPane).putConstraint( args[0],args[1], 5,     args[2], args[3] );
 				} else {
 					throw new RuntimeException( "put-constraint has five parameters( constraint1 component1 pad constraint2 component2  )." );
 				}
-				refreshGui();
+				guiRefresh();
     			return EmptyList.emptyList;
     		}
     	});
@@ -535,18 +540,10 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
     JFrame frame = null;
     Container rootPane = null; 
 	JPanel staticPane = new JPanel( new FlowLayout( FlowLayout.CENTER ) );
-	SpringLayout userLayout = new SpringLayout();
-	
-	JPanel userPane = new JPanel();
-	BoxLayout userBoxLayout = new BoxLayout( userPane, BoxLayout.PAGE_AXIS );
-	{
-		userPane.setLayout( userBoxLayout );
-	}
 
-	JPanel currentLinePane = null;
-	{
-		newlineGui();
-	}
+	LayoutManager userLayout = null; 
+	JPanel userPane = new JPanel();
+
 	
 	JLabel tempoLabel = new JLabel("", SwingConstants.CENTER );
     
