@@ -19,6 +19,7 @@ package ats.metro;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -46,9 +47,9 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 	
 	private final Jack jack;
     private final JackClient client;
-    private final JackPort inputPort;
+//    private final JackPort inputPort;
     // private final JackPort outputPort;
-//    private final List<JackPort> inputPortList;
+    private final List<JackPort> inputPortList;
     private final List<JackPort> outputPortList;
     
     private final JackMidi.Event midiEvent = new JackMidi.Event();
@@ -106,8 +107,9 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
                 System.out.println("JACK client status : " + status);
             }
             
-            this.inputPort = this.client.registerPort("MIDI in", JackPortType.MIDI, JackPortFlags.JackPortIsInput);
+            // this.inputPort = this.client.registerPort("MIDI in", JackPortType.MIDI, JackPortFlags.JackPortIsInput);
             // this.outputPort = this.client.registerPort("MIDI out", JackPortType.MIDI, JackPortFlags.JackPortIsOutput);
+            this.inputPortList = new ArrayList<JackPort>();
             this.outputPortList = new ArrayList<JackPort>();
             	
             for ( String outputPortName : logic.outputPortNameList() ) {
@@ -120,7 +122,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
             }
 
             for ( String inputPortName : logic.inputPortNameList() ) {
-                this.outputPortList.add( 
+                this.inputPortList.add( 
                 		this.client.registerPort(
 	                		inputPortName, 
 	                		JackPortType.MIDI, JackPortFlags.JackPortIsInput
@@ -153,6 +155,14 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 			for ( MetroNoteEventBufferSequence s : this.sequences ) {
 				s.clearBuffer();
 			}
+        	for ( MetroNoteEventBufferSequence sequence : this.sequences  ) {
+        		try {
+					sequence.checkBuffer( this,  this.client, this.position );
+				} catch (JackException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        	}
 		}
     }
     
@@ -205,12 +215,27 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
         this.client.onShutdown(this);
         this.client.activate();
         
+        System.err.println( "========================");
+        System.err.println( "a list of all Jack ports" );
+        System.err.println( "// INPUT //");
         {
         	String[] ports = this.jack.getPorts( this.client, "", JackPortType.MIDI, EnumSet.of( JackPortFlags.JackPortIsInput ) );
         	for ( String s : ports ) {
-        		System.out.println( s );
+        		System.err.println( s );
         	}
         }
+        System.err.println( "// OUTPUT //");
+                {
+        	String[] ports = this.jack.getPorts( this.client, "", JackPortType.MIDI, EnumSet.of( JackPortFlags.JackPortIsOutput ) );
+        	for ( String s : ports ) {
+        		System.err.println( s );
+        	}
+        }
+
+        System.err.println( "========================");
+        
+        
+        
         /*
          * At this point, `(MetroMasterLogic)sequence.getLogic()` 
          *   always returns a MetroMasterLogic instance. 
@@ -219,8 +244,14 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
         	for ( Entry<String, String> outputPortName : ((MetroMasterLogic)sequence.getLogic()).optionalConnection() ) {
         		String key = outputPortName.getKey();
         		String value = outputPortName.getValue();
-        		if ( key != null && value != null )
-        			this.jack.connect( this.client, key, value);
+        		if ( key != null && value != null ) {
+        			try {
+        				this.jack.connect( this.client, key, value);
+        			} catch (JackException e ) {
+        				e.printStackTrace();
+        			}
+        			
+        		}
         	}
         }
     }
@@ -243,29 +274,33 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
             this.inputMidiEventList.clear();
         	this.outputMidiEventList.clear();
             
-//        	for ( Iterator<> i = this.inputPortList )
-        	
-            int eventCount = JackMidi.getEventCount( this.inputPort );
-            for (int i = 0; i < eventCount; ++i) {
-                JackMidi.eventGet( this.midiEvent, this.inputPort, i );
-                int size = this.midiEvent.size();
-                byte[] data = new byte[size];
-                this.midiEvent.read( data );
-                this.inputMidiEventList.add( new MetroMidiEvent( 0 /* TODO */, this.midiEvent.time(), data ) );
+        	int inputPortNo = 0;
+        	for ( Iterator<JackPort> pi = this.inputPortList.iterator(); pi.hasNext(); ) {
+        		JackPort inputPort = pi.next();
+        		
+                int eventCount = JackMidi.getEventCount( inputPort );
+                for (int i = 0; i < eventCount; ++i) {
+                	JackMidi.eventGet( this.midiEvent, inputPort, i );
+                	int size = this.midiEvent.size();
+                	byte[] data = new byte[size];
+                	this.midiEvent.read( data );
+                	this.inputMidiEventList.add( new MetroMidiEvent( inputPortNo, this.midiEvent.time(), data ) );
 
-//                this.sb.setLength(0);
-//                this.sb.append(this.midiEvent.time());
-//                this.sb.append(": ");
-//                for (int j = 0; j < size; j++) {
-//                    this.sb.append((j == 0) ? "" : ", ");
-//                    this.sb.append(this.data[j] & 0xFF);
-//                }
-//                 debugQueue.offer(sb.toString());
+//                    this.sb.setLength(0);
+//                    this.sb.append(this.midiEvent.time());
+//                    this.sb.append(": ");
+//                    for (int j = 0; j < size; j++) {
+//                        this.sb.append((j == 0) ? "" : ", ");
+//                        this.sb.append(this.data[j] & 0xFF);
+//                    }
+//                     debugQueue.offer(sb.toString());
 
-//                if ( 0 < Metro.this.outputPortList.size() )
-//                	JackMidi.eventWrite( Metro.this.outputPortList.get( 0 ), this.midiEvent.time(), this.data, this.midiEvent.size());
-            }
-//            System.err.println( "ev:" + eventCount + " this.outputMidiEventList  : " + this.outputMidiEventList.size() );
+//                    if ( 0 < Metro.this.outputPortList.size() )
+//                    	JackMidi.eventWrite( Metro.this.outputPortList.get( 0 ), this.midiEvent.time(), this.data, this.midiEvent.size());
+                }
+//                System.err.println( "ev:" + eventCount + " this.outputMidiEventList  : " + this.outputMidiEventList.size() );
+        	}
+        		
 
             if ( 0 < this.inputMidiEventList.size() )
             	this.logic.processInputMidiBuffer( this.inputMidiEventList, this.outputMidiEventList );
@@ -277,7 +312,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
             	this.outputMidiEventList.sort( MetroMidiEvent.COMPARATOR );
             	
             	if ( ! this.outputMidiEventList.isEmpty() )
-            		if ( DEBUG ) System.out.println( this.outputMidiEventList );
+            		if ( DEBUG ) System.err.println( this.outputMidiEventList );
 
             	for ( MetroMidiEvent e : this.outputMidiEventList ) {
             		JackMidi.eventWrite( 
@@ -299,7 +334,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
             
             return true;
         } catch (JackException ex) {
-            System.out.println("ERROR : " + ex);
+            System.err.println("ERROR : " + ex);
             return false;
         }
     }
@@ -356,5 +391,4 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 		int barInFrames = (int) (beatInSecond * frameRate * bpb);
 		return barInFrames;
 	}
-
 }

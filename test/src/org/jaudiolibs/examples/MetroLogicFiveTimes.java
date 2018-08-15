@@ -26,6 +26,7 @@ final class MetroLogicFiveTimes extends MetroMasterLogic.Default {
 		super();
 	}
 
+	@SuppressWarnings("unused")
 	private int cnt=1;
 
 	@Override

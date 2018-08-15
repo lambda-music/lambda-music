@@ -2,10 +2,6 @@ package ats.pulsar;
 
 import java.util.function.Function;
 
-import gnu.mapping.Procedure;
-import gnu.mapping.ProcedureN;
-import gnu.mapping.SimpleSymbol;
-import gnu.math.IntNum;
 import kawa.standard.Scheme;
 
 public class SchemeTest2 {
