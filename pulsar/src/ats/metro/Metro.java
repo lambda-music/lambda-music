@@ -64,7 +64,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
     private ArrayList<MetroMidiEvent> outputMidiEventList = new ArrayList<MetroMidiEvent>();
 	private JackPosition position = new JackPosition();
 
-	private MetroLogic logic;
+	protected MetroLogic logic;
 	
 	// zero means that to get the current bpm from Jack Transport.
 	private double beatsPerMinute = 60;
@@ -104,9 +104,6 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
             Metro metro = new Metro( clientName, logic );
             metro.start();
             return metro;
-        } catch (InterruptedException ex) {
-        	Logger.getLogger(Metro.class.getName()).log(Level.SEVERE, null, ex);
-        	throw new JackException( ex );
         } catch (JackException ex) {
             Logger.getLogger(Metro.class.getName()).log(Level.SEVERE, null, ex);
             throw ex;
@@ -163,7 +160,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 			);
 	}
 
-    public void start() throws JackException, InterruptedException {
+    public void start() throws JackException {
     	this.logic.setParent( this );
         this.activate();
         new Thread( this ).start();
