@@ -9,8 +9,6 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import ats.pulsar.lib.SpringUtilities;
-
 public class BoxTest {
 	private JFrame frame;
 	private BoxLayout layout;

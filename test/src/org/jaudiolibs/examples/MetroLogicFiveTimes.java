@@ -4,50 +4,28 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.jaudiolibs.jnajack.JackException;
+
 import ats.metro.Metro;
 import ats.metro.MetroLogic;
-import ats.metro.MetroMasterLogic;
 import ats.metro.MetroMidiEvent;
 import ats.metro.MetroNoteEventBuffer;
 
-final class MetroLogicFiveTimes extends MetroMasterLogic.Default {
+final class MetroLogicFiveTimes extends MetroLogic.Default {
 	public MetroLogicFiveTimes() {
 		super();
 	}
 
 	@SuppressWarnings("unused")
 	private int cnt=1;
-
-	@Override
-	public String clientName() {
-		return "Metro";
-	}
-
-	@Override
-	public Set<Entry<String, String>> optionalConnection() {
-		Map<String,String> outputPortList = new LinkedHashMap<String,String>();
-		// outputPortList.put( "MIDI Output0", null );
-		outputPortList.put( "Metro:MIDI Output1", "hydrogen-midi:RX" );
-		// outputPortList.put( "Metro:MIDI Output1", "system:midi_playback_1" );
-
-		return outputPortList.entrySet();
-	}
-
-	@Override
-	public List<String> outputPortNameList() {
-		return Arrays.asList("MIDI Output0", "MIDI Output1" );
-	}
 
 	private boolean flag;
 	private void notifyFlag() {
@@ -98,14 +76,6 @@ final class MetroLogicFiveTimes extends MetroMasterLogic.Default {
 		return true;
 	}
 	
-    @Override
-    public void initialize() {
-		javax.swing.SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				createAndShowGUI( MetroLogicFiveTimes.this );
-			}
-		});
-    }
 	
 
     private static void createAndShowGUI( MetroLogicFiveTimes logic ) {
@@ -164,8 +134,14 @@ final class MetroLogicFiveTimes extends MetroMasterLogic.Default {
     }
     
   
-	public static void main(String[] args) {
+	public static void main(String[] args) throws JackException {
         MetroLogicFiveTimes logic = new MetroLogicFiveTimes();
-		Metro.startClient( logic );
+		Metro metro = Metro.startClient( "Metro", logic );
+
+		metro.createOutputPort( "MIDI Output0" );
+		metro.createOutputPort( "MIDI Output1" );
+		metro.connectPort( "Metro:MIDI Output1", "hydrogen-midi:RX" );
+		createAndShowGUI( logic );
+		metro.setPlaying(true);
 	}
 }

@@ -13,7 +13,6 @@ public interface MetroLogic {
 	public abstract Metro getParent();
 	public abstract void setParent( Metro metro );
 	public abstract void setLogicHandle( MetroLogicHandle handle );
-	
 	public abstract boolean processOutputNoteBuffer( MetroNoteEventBuffer buf );
 	public abstract void processInputMidiBuffer( List<MetroMidiEvent> in, List<MetroMidiEvent> out );
 	

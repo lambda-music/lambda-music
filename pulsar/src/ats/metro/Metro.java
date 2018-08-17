@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,7 +64,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
     private ArrayList<MetroMidiEvent> outputMidiEventList = new ArrayList<MetroMidiEvent>();
 	private JackPosition position = new JackPosition();
 
-	private MetroMasterLogic logic;
+	private MetroLogic logic;
 	
 	// zero means that to get the current bpm from Jack Transport.
 	private double beatsPerMinute = 60;
@@ -98,23 +99,28 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 	
     // private MetroLogic logic;
     
-	public static void startClient( MetroMasterLogic logic ) {
+	public static Metro startClient( String clientName, MetroLogic logic ) throws JackException {
 		try {
-            Metro metro = new Metro( logic );
+            Metro metro = new Metro( clientName, logic );
             metro.start();
-        } catch (Exception ex) {
+            return metro;
+        } catch (InterruptedException ex) {
+        	Logger.getLogger(Metro.class.getName()).log(Level.SEVERE, null, ex);
+        	throw new JackException( ex );
+        } catch (JackException ex) {
             Logger.getLogger(Metro.class.getName()).log(Level.SEVERE, null, ex);
+            throw ex;
         }
 	}
     
-	public Metro( MetroMasterLogic logic ) throws JackException {
+	public Metro( String clientName, MetroLogic logic ) throws JackException {
 		this.logic = logic;
 		this.sequences.add( new MetroNoteEventBufferSequence( this, null, logic, 0.0d ) );
 		
         EnumSet<JackStatus> status = EnumSet.noneOf(JackStatus.class);
         try {
             this.jack = Jack.getInstance();
-            this.client = this.jack.openClient( logic.clientName() , EnumSet.of(JackOptions.JackNoStartServer), status);
+            this.client = this.jack.openClient( clientName , EnumSet.of(JackOptions.JackNoStartServer), status);
             if (!status.isEmpty()) {
                 System.out.println("JACK client status : " + status);
             }
@@ -124,25 +130,13 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
             this.inputPortList = new ArrayList<JackPort>();
             this.outputPortList = new ArrayList<JackPort>();
             	
-            for ( String outputPortName : logic.outputPortNameList() ) {
-                this.outputPortList.add( 
-                		this.client.registerPort(
-	                		outputPortName, 
-	                		JackPortType.MIDI, JackPortFlags.JackPortIsOutput
-	                	)
-            		);
-            }
-
-            for ( String inputPortName : logic.inputPortNameList() ) {
-                this.inputPortList.add( 
-                		this.client.registerPort(
-	                		inputPortName, 
-	                		JackPortType.MIDI, JackPortFlags.JackPortIsInput
-	                	)
-            		);
-            }
-            
-            
+//            for ( String outputPortName : logic.outputPortNameList() ) {
+//                createOutputPort(outputPortName);
+//            }
+//
+//            for ( String inputPortName : logic.inputPortNameList() ) {
+//                createInputPort(inputPortName);
+//            }
             
         } catch (JackException ex) {
             if (!status.isEmpty()) {
@@ -152,11 +146,25 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
         }
 
     }
+	public void createInputPort(String inputPortName) throws JackException {
+		this.inputPortList.add( 
+				this.client.registerPort(
+		    		inputPortName, 
+		    		JackPortType.MIDI, JackPortFlags.JackPortIsInput
+		    	)
+			);
+	}
+	public void createOutputPort(String outputPortName) throws JackException {
+		this.outputPortList.add( 
+				this.client.registerPort(
+		    		outputPortName, 
+		    		JackPortType.MIDI, JackPortFlags.JackPortIsOutput
+		    	)
+			);
+	}
 
     public void start() throws JackException, InterruptedException {
-    	this.logic.initialize();
     	this.logic.setParent( this );
-    	
         this.activate();
         new Thread( this ).start();
 //    	this.run();
@@ -237,36 +245,30 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
         	}
         }
         System.err.println( "// OUTPUT //");
-                {
+        {
         	String[] ports = this.jack.getPorts( this.client, "", JackPortType.MIDI, EnumSet.of( JackPortFlags.JackPortIsOutput ) );
         	for ( String s : ports ) {
         		System.err.println( s );
         	}
         }
-
-        System.err.println( "========================");
-        
-        
-        
-        /*
-         * At this point, `(MetroMasterLogic)sequence.getLogic()` 
-         *   always returns a MetroMasterLogic instance. 
-         */
-        for ( MetroNoteEventBufferSequence sequence : this.sequences ) {
-        	for ( Entry<String, String> outputPortName : ((MetroMasterLogic)sequence.getLogic()).optionalConnection() ) {
-        		String key = outputPortName.getKey();
-        		String value = outputPortName.getValue();
-        		if ( key != null && value != null ) {
-        			try {
-        				this.jack.connect( this.client, key, value);
-        			} catch (JackException e ) {
-        				e.printStackTrace();
-        			}
-        			
-        		}
-        	}
-        }
     }
+    
+	public void connectPort( Map<String, String> map ) {
+		for ( Entry<String, String> portName : map.entrySet() ) {
+			String key = portName.getKey();
+			String value = portName.getValue();
+			if ( key != null && value != null ) {
+				try {
+					connectPort(key, value);
+				} catch (JackException e ) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	public void connectPort(String source, String desitination) throws JackException {
+		this.jack.connect( this.client, source, desitination);
+	}
     
 	public void clearAllPorts() throws JackException {
 		Metro metro = this;

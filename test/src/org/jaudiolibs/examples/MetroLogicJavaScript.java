@@ -16,17 +16,17 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import org.jaudiolibs.jnajack.JackException;
+
 import ats.metro.Metro;
 import ats.metro.MetroLogic;
 import ats.metro.MetroLogicHandle;
-import ats.metro.MetroMasterLogic;
 import ats.metro.MetroMidiEvent;
 import ats.metro.MetroNoteEventBuffer;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
-final class MetroLogicJavaScript extends MetroMasterLogic.Default {
+final class MetroLogicJavaScript extends MetroLogic.Default {
 	
-	private String clientName;
 	private List<String> outputPortNameList;
 	private Set<Entry<String, String>> optionalConnection;
 	private ScriptObjectMirror mirror;
@@ -52,21 +52,7 @@ final class MetroLogicJavaScript extends MetroMasterLogic.Default {
 	private ScriptEngine engine;
 
 
-	@Override
-	public String clientName() {
-		return this.clientName;
-	}
 
-	@Override
-	public Set<Entry<String, String>> optionalConnection() {
-		return this.optionalConnection;
-	}
-
-	@Override
-	public List<String> outputPortNameList() {
-		return this.outputPortNameList;
-	}
-	
 	public void setHandle(MetroLogicHandle handle) {
 		super.setLogicHandle( handle );
 	}
@@ -78,7 +64,8 @@ final class MetroLogicJavaScript extends MetroMasterLogic.Default {
 		engine.put( "metro", metroAPI  );
 		
 		this.mirror = (ScriptObjectMirror) engine.eval( "(" + script + ")" );
-		this.clientName = (String) mirror.get( "clientName" );
+		// ********** TODO ************
+		// this.clientName = (String) mirror.get( "clientName" );
 		
 		// Retrieve outputPortNameList
 		{
@@ -120,9 +107,6 @@ final class MetroLogicJavaScript extends MetroMasterLogic.Default {
 		
 	}
 
-	@Override
-	public void initialize() {
-	}
 	
 	boolean checkReturnValue( Object result ) {
 		if ( ( result instanceof Boolean ) && ((Boolean)result) == false ) {
@@ -143,10 +127,12 @@ final class MetroLogicJavaScript extends MetroMasterLogic.Default {
 		return checkReturnValue( result );
 	}
 
-	public static void main(String[] args) throws ScriptException, IOException, URISyntaxException {
+	public static void main(String[] args) throws ScriptException, IOException, URISyntaxException, JackException {
         MetroLogicJavaScript logic = new MetroLogicJavaScript( new File( "test.js" ).toPath() );
-		Metro.startClient( logic );
-
+		Metro metro = Metro.startClient( /* TODO */ "", logic );
+		
+		// TODO
+		// metro.connectPort(...)
 	}
 
 }

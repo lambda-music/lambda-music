@@ -16,13 +16,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -38,7 +34,6 @@ import org.jaudiolibs.jnajack.JackException;
 
 import ats.metro.Metro;
 import ats.metro.MetroLogic;
-import ats.metro.MetroMasterLogic;
 import ats.metro.MetroMidiEvent;
 import ats.metro.MetroNoteEventBuffer;
 import ats.pulsar.lib.FlawLayout;
@@ -53,34 +48,14 @@ import gnu.mapping.ProcedureN;
 import gnu.mapping.SimpleSymbol;
 import kawa.standard.Scheme;
 
-final class Pulsar extends MetroMasterLogic.Default {
+final class Pulsar extends MetroLogic.Default {
 	public Pulsar() {
 		super();
-	}
-	@Override
-	public String clientName() {
-		return "Metro";
-	}
-
-	@Override
-	public Set<Entry<String, String>> optionalConnection() {
-		Map<String,String> outputPortList = new LinkedHashMap<String,String>();
-		// outputPortList.put( "MIDI Output0", null );
-		outputPortList.put( "Metro:MIDI Output1", "hydrogen-midi:RX" );
-		outputPortList.put("a2j:Xkey37 [20] (capture): Xkey37 MIDI 1", "Metro:MIDI Input0" );
-		
-		// outputPortList.put( "Metro:MIDI Output1", "system:midi_playback_1" );
-
-		return outputPortList.entrySet();
-	}
-
-	@Override
-	public List<String> outputPortNameList() {
-		return Arrays.asList( "MIDI Output0", "MIDI Output1" );
-	}
-	@Override
-	public List<String> inputPortNameList() {
-		return Arrays.asList( "MIDI Input0", "MIDI Input1" );
+		javax.swing.SwingUtilities.invokeLater( new Runnable() {
+			public void run() {
+				createAndShowGUI();
+			}
+		});
 	}
 
 	private boolean flag;
@@ -110,8 +85,9 @@ final class Pulsar extends MetroMasterLogic.Default {
 			this.procedure = procedure;
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
-		public void pulse(MetroNoteEventBuffer buf) {
+		public void pulse( MetroNoteEventBuffer buf ) {
 			AbstractSequence<Object> pattern ;
 			try {
 				pattern = (AbstractSequence<Object>) procedure.applyN( new Object[] {} );
@@ -237,7 +213,6 @@ final class Pulsar extends MetroMasterLogic.Default {
 		}
 	}
 
-
 	List<Pulsable> pulsableList = new ArrayList<Pulsable>(); 
 	{
 		System.err.println("set-current-pulsable (from init)" );
@@ -350,14 +325,6 @@ final class Pulsar extends MetroMasterLogic.Default {
 		return true;
 	}
 	
-    @Override
-    public void initialize() {
-		javax.swing.SwingUtilities.invokeLater( new Runnable() {
-			public void run() {
-				createAndShowGUI();
-			}
-		});
-    }
 	
     void initScheme(Scheme scheme) {
     	{
@@ -727,7 +694,7 @@ final class Pulsar extends MetroMasterLogic.Default {
     }
     public void playing( boolean value ) {
 		parent.setPlaying( value );
-		System.err.println( false ? "playing" : "stop" );
+		System.err.println( value ? "playing" : "stop" );
     }
     public void reset() { 
     	System.err.println( "===reset" );
@@ -856,8 +823,15 @@ final class Pulsar extends MetroMasterLogic.Default {
 	}
     
   
-	public static void main(String[] args) {
+	public static void main(String[] args) throws JackException {
         Pulsar logic = new Pulsar();
-		Metro.startClient( logic );
+		Metro metro = Metro.startClient( "Metro", logic );
+		
+		metro.createOutputPort("MIDI Output0");
+		metro.createOutputPort("MIDI Output1");
+		metro.createInputPort("MIDI Input0");
+		metro.createInputPort("MIDI Input1");
+		metro.connectPort( "Metro:MIDI Output1", "hydrogen-midi:RX" );
+		metro.connectPort( "a2j:Xkey37 [20] (capture): Xkey37 MIDI 1", "Metro:MIDI Input0" );
 	}
 }
