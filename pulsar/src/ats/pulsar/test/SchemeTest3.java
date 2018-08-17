@@ -1,4 +1,4 @@
-package ats.pulsar;
+package ats.pulsar.test;
 
 import java.util.function.Function;
 

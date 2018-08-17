@@ -1,9 +1,8 @@
-package ats.pulsar;
+package ats.pulsar.test.lib;
 
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Insets;
 
 import javax.swing.JScrollPane;
@@ -12,7 +11,7 @@ import javax.swing.SwingUtilities;
 /**
  *  FlowLayout subclass that fully supports wrapping of components.
  */
-public class WrapLayout extends FlowLayout
+public class WrapLayout extends FlowlessLayout0
 {
 //	private Dimension preferredLayoutSize;
 

@@ -84,6 +84,18 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 		prepareSequence();
 	}
 
+	private transient boolean playing = false;
+	public boolean getPlaying() {
+		return this.playing;
+	}
+	public void setPlaying( boolean playing ) {
+		this.playing = playing;
+	}
+	public boolean togglePlaying() {
+		this.playing = ! this.playing;
+		return this.playing ; 
+	}
+	
     // private MetroLogic logic;
     
 	public static void startClient( MetroMasterLogic logic ) {
@@ -265,6 +277,10 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 
     @Override
     public boolean process(JackClient client, int nframes) {
+    	if ( ! this.playing ) {
+    		return true;
+    	}
+    	
 		try {
             // JackMidi.clearBuffer(this.outputPort);
             for ( JackPort p : Metro.this.outputPortList )

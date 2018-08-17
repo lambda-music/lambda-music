@@ -1,4 +1,4 @@
-package ats.pulsar;
+package ats.pulsar.test;
 
 import gnu.mapping.ProcedureN;
 import gnu.math.IntNum;

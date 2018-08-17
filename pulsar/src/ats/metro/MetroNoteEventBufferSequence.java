@@ -170,8 +170,15 @@ class MetroNoteEventBufferSequence {
 	public void clearBuffer() {
 		synchronized ( this.buffers ) {
 			this.buffers.clear();
+			this.cursor =0;
 		}
 	}
+//	public void resetBuffer() {
+//		synchronized ( this.buffers ) {
+//			this.buffers.clear();
+//			this.cursor =0;
+//		}
+//	}
 
 	private void offerNewBuffer( Metro metro, JackClient client, JackPosition position ) throws JackException {
 		MetroNoteEventBuffer buf = new MetroNoteEventBuffer();

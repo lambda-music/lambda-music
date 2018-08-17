@@ -1,4 +1,4 @@
-package ats.pulsar;
+package ats.pulsar.lib;
 
 import java.awt.Component;
 
@@ -10,7 +10,7 @@ import javax.swing.SpringLayout;
 import gnu.lists.IString;
 import gnu.mapping.Symbol;
 
-class SpringLayoutUtil {
+public class SpringLayoutUtil {
 	final SpringLayout springLayout;
 	final JComponent parent;
 	public SpringLayoutUtil(SpringLayout springLayout, JComponent parent) {
@@ -118,6 +118,7 @@ class SpringLayoutUtil {
 		}
 		return s;
 	}
+	boolean DEBUG = false;
 	public void putConstraint( Object _e1, Object _c1, Object _pad, Object _e2, Object _c2 ) {
 		String e1;
 		Component c1; 
@@ -129,21 +130,22 @@ class SpringLayoutUtil {
 		pad = o2n(_pad );
 		e2 = o2s(_e2 );
 		c2 = n2c(_c2);
-		
-		System.err.println( e1 );
-		if ( c1 instanceof JButton )
-			System.err.println( ((JButton)c1).getText() );
-		if ( c1 instanceof JPanel)
-			System.err.println( "Panel" );
-		
-		System.err.println( e2 );
-		if ( c2 instanceof JButton )
-			System.err.println( ((JButton)c2).getText() );
-		if ( c2 instanceof JPanel)
-			System.err.println( "Panel" );
-		
-		System.err.println( "=============="  );
-		;
+
+		if ( DEBUG ) {
+			System.err.println( e1 );
+			if ( c1 instanceof JButton )
+				System.err.println( ((JButton)c1).getText() );
+			if ( c1 instanceof JPanel)
+				System.err.println( "Panel" );
+			
+			System.err.println( e2 );
+			if ( c2 instanceof JButton )
+				System.err.println( ((JButton)c2).getText() );
+			if ( c2 instanceof JPanel)
+				System.err.println( "Panel" );
+			
+			System.err.println( "=============="  );
+		}
 		
 //		if ( e1.equals( "South") || e1.equals( "East") )
 //			pad = - pad;

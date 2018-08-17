@@ -3,8 +3,6 @@ package ats.pulsar;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.LayoutManager;
@@ -43,6 +41,9 @@ import ats.metro.MetroLogic;
 import ats.metro.MetroMasterLogic;
 import ats.metro.MetroMidiEvent;
 import ats.metro.MetroNoteEventBuffer;
+import ats.pulsar.lib.FlawLayout;
+import ats.pulsar.lib.LayoutUtils;
+import ats.pulsar.lib.SpringLayoutUtil;
 import gnu.lists.AbstractSequence;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
@@ -52,8 +53,8 @@ import gnu.mapping.ProcedureN;
 import gnu.mapping.SimpleSymbol;
 import kawa.standard.Scheme;
 
-final class MetroLogicInputTest extends MetroMasterLogic.Default {
-	public MetroLogicInputTest() {
+final class Pulsar extends MetroMasterLogic.Default {
+	public Pulsar() {
 		super();
 	}
 	@Override
@@ -253,6 +254,7 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
 //			getParent().clearSequences();
 	}
 	
+	
 
 	public void guiInit() {
 		userPane.removeAll();
@@ -262,7 +264,7 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
 		userPane.setLayout(userLayout);
 	}
 	public void guiFlowLayout() {
-		userLayout = new WrapLayout();
+		userLayout = new FlawLayout();
 		userPane.setLayout(userLayout);
 	}
 	public void guiGridBagLayout() {
@@ -375,7 +377,42 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
 				}
     		}
     	}
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "set-main" ), null, new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				System.err.println("set-main");
+				if ( args.length == 1 ) {
+					setMainAction( (JButton)args[0] );
+				} else {
+					throw new RuntimeException( "invalid argument length" );
+				}
+    			return EmptyList.emptyList;
+    		}
+    	});
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "playing" ), null, new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				if ( args.length == 0 ) {
+					togglePlaying();
+				} else if ( args.length == 1 ) {
+					playing( (Boolean)args[0] );
+				} else {
+					throw new RuntimeException( "invalid argument length" );
+				}
+    			return EmptyList.emptyList;
+    		}
+    	});
 
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "cue" ), null, new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				cue();
+    			return EmptyList.emptyList;
+    		}
+    	});
+
+
+    	
     	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-get-pane" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
@@ -383,7 +420,6 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
     			return userPane;
     		}
     	});
-    	
     	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-get-frame" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
@@ -470,7 +506,7 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
 				if ( args.length == 1 ) {
 					userPane.add( (JComponent)args[0] );
 				} else if ( args.length == 2 ) {
-					userPane.add( (JComponent)args[0], SchemeUtils.map2constraint( args[1] ) );
+					userPane.add( (JComponent)args[0], LayoutUtils.map2constraint( args[1] ) );
 				}
     			return frame;
     		}
@@ -539,18 +575,16 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
 	//Create the "cards".
     JFrame frame = null;
     Container rootPane = null; 
-	JPanel staticPane = new JPanel( new FlowLayout( FlowLayout.CENTER ) );
+	JPanel staticPane = new JPanel();
 
 	LayoutManager userLayout = null; 
-	JPanel userPane = new JPanel();
-
-	
+	JPanel userPane = new JPanel( new FlawLayout() );
 	JLabel tempoLabel = new JLabel("", SwingConstants.CENTER );
     
     private void createAndShowGUI() {
-    	MetroLogicInputTest logic = this;
+    	Pulsar logic = this;
         //Create and set up the window.
-        frame = new JFrame("Metro Logic");
+        frame = new JFrame( "Pulsar" );
         
 //        // https://stackoverflow.com/questions/17493207/java-how-to-let-jframe-to-resize-to-only-something-smaller-than-set-size
 //        {
@@ -583,16 +617,44 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
         rootPane = new JPanel( new BorderLayout() );
 		rootPane.add( staticPane, BorderLayout.PAGE_START );
 		rootPane.add( userPane, BorderLayout.CENTER );
-		staticPane.setLayout( new BorderLayout() );
+		staticPane.setLayout( new BorderLayout(10,10) );
         frame.getContentPane().add ( rootPane );
 
 		// Tempo Button
+		staticPane.add( createStartStopButton(), BorderLayout.LINE_START );
 		staticPane.add( createTempoTapButton(), BorderLayout.CENTER );
-		staticPane.setBorder( BorderFactory.createEmptyBorder(20,20,20,20) );
+		staticPane.add( createResetButton(), BorderLayout.LINE_END );
+		staticPane.add( createCueButton(), BorderLayout.PAGE_END );
+
+//		SpringUtilities.makeCompactGrid(staticPane, 1, 3, 1, 1 , 1, 1 );
 		
+//		for ( int i=0; i<staticPane.getComponentCount(); i++ ) {
+//			JComponent c = (JComponent) staticPane.getComponent(i);
+//			c.setPreferredSize( null );
+//			c.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+//		}
+		
+		 staticPane.setBorder( BorderFactory.createEmptyBorder(20,20,20,20) );
+		
+		// Config Directory
+		final File configDir = new File( System.getProperty("user.home"), ".pulsar" );
+		if ( ! configDir.isDirectory() ) {
+			if (! configDir.mkdir() ) {
+				System.err.println( "WARNING : Failed to create the config directory." );
+			}
+		}
+		final File configFile = new File( configDir, "pulsar.scm" );
+		if ( ! configFile.isFile() ) {
+			try {
+				configDir.createNewFile();
+			} catch (IOException e) {
+				System.err.println( "WARNING : Failed to create the main config file." );
+				e.printStackTrace();
+			}
+		}
+						
 		// a watchdog Timer
 		{
-			final File configFile = new File( System.getProperty("user.home"), ".pulsar" );
 			Timer timer = new Timer(1000, new ActionListener() {
 				private long last=-1;
 				@Override
@@ -645,14 +707,79 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
 
 		
 		// frame.setMaximizedBounds(new Rectangle(0, 0, 400, 1000));
-		frame.setSize(400, 600 );
 		frame.pack();
+		frame.setSize( 600, 500 );
 		frame.setVisible(true);
     }
     
+	JButton mainAction = null;
+	public void setMainAction(JButton mainAction) {
+		this.mainAction = mainAction;
+		reset();
+	}
+	public JButton getMainAction() {
+		return mainAction;
+	}
+
+    public void togglePlaying() {
+		boolean playing = parent.togglePlaying();
+		System.err.println( playing ? "playing" : "stop" );
+    }
+    public void playing( boolean value ) {
+		parent.setPlaying( value );
+		System.err.println( false ? "playing" : "stop" );
+    }
+    public void reset() { 
+    	System.err.println( "===reset" );
+    	parent.setPlaying(false);
+		mainAction.doClick();
+		parent.clearSequences();
+    }
+    public void cue() {
+    	System.err.println( "===cue" );
+    }
+    
+	public JButton createStartStopButton() {
+		JButton b = new JButton( "<</II" );
+		b.addActionListener( new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				togglePlaying();
+			}
+		});
+		return b;
+	}
+	public JButton createResetButton() {
+		JButton b = new JButton( "RESET" );
+		b.addActionListener( new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				reset();
+			}
+		});
+		return b;
+	}
+    
+	public JButton createCueButton() {
+		@SuppressWarnings("serial")
+		JButton b = new JButton( "=== CUE ===" ) {
+			@Override
+			public Dimension getPreferredSize() {
+				return new Dimension( super.getPreferredSize().width, 100 );
+			}
+		};
+		b.addActionListener( new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				cue();
+			}
+		});
+		return b;
+	}
+    
     public JButton createTempoTapButton() {
-    	MetroLogicInputTest logic = this;
-    	JButton tempoTapButton = new JButton( "Tempo" );
+    	Pulsar logic = this;
+    	JButton tempoTapButton = new JButton( "TEMPO" );
     	tempoTapButton.addActionListener( new ActionListener() {
     		long prev_time = 0;
     		int BUF_SIZE = 3;
@@ -730,7 +857,7 @@ final class MetroLogicInputTest extends MetroMasterLogic.Default {
     
   
 	public static void main(String[] args) {
-        MetroLogicInputTest logic = new MetroLogicInputTest();
+        Pulsar logic = new Pulsar();
 		Metro.startClient( logic );
 	}
 }
