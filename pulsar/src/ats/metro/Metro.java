@@ -19,6 +19,7 @@ package ats.metro;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -46,20 +47,19 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 //	private final static boolean DEBUG = true;
 	static final boolean DEBUG = false;
 	
-	private final Jack jack;
-    private final JackClient client;
-//    private final JackPort inputPort;
-    // private final JackPort outputPort;
-    private final List<JackPort> inputPortList;
-    private final List<JackPort> outputPortList;
+	protected Jack jack = null;
+    protected JackClient client = null;
+    protected final List<JackPort> inputPortList = new ArrayList<JackPort>();
+    protected final List<JackPort> outputPortList = new ArrayList<JackPort>();;
     
+
     private final JackMidi.Event midiEvent = new JackMidi.Event();
 //	private BlockingQueue<String> debugQueue = new LinkedBlockingQueue<String>();
 //    private StringBuilder sb = new StringBuilder();
     
-    private List<MetroNoteEventBufferSequence> sequences = new ArrayList<MetroNoteEventBufferSequence>();
-    List<MetroNoteEventBufferSequence> registeredSequences = new ArrayList<MetroNoteEventBufferSequence>();
-    List<MetroNoteEventBufferSequence> unregisteredSeqences = new ArrayList<MetroNoteEventBufferSequence>();
+    protected List<MetroNoteEventBufferSequence> sequences = new ArrayList<MetroNoteEventBufferSequence>();
+    protected List<MetroNoteEventBufferSequence> registeredSequences = new ArrayList<MetroNoteEventBufferSequence>();
+    protected List<MetroNoteEventBufferSequence> unregisteredSeqences = new ArrayList<MetroNoteEventBufferSequence>();
     private ArrayList<MetroMidiEvent> inputMidiEventList = new ArrayList<MetroMidiEvent>();
     private ArrayList<MetroMidiEvent> outputMidiEventList = new ArrayList<MetroMidiEvent>();
 	private JackPosition position = new JackPosition();
@@ -97,12 +97,10 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 		return this.playing ; 
 	}
 	
-    // private MetroLogic logic;
-    
 	public static Metro startClient( String clientName, MetroLogic logic ) throws JackException {
 		try {
-            Metro metro = new Metro( clientName, logic );
-            metro.start();
+            Metro metro = new Metro( logic );
+            metro.start( clientName );
             return metro;
         } catch (JackException ex) {
             Logger.getLogger(Metro.class.getName()).log(Level.SEVERE, null, ex);
@@ -110,38 +108,9 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
         }
 	}
     
-	public Metro( String clientName, MetroLogic logic ) throws JackException {
-		this.logic = logic;
-		this.sequences.add( new MetroNoteEventBufferSequence( this, null, logic, 0.0d ) );
-		
-        EnumSet<JackStatus> status = EnumSet.noneOf(JackStatus.class);
-        try {
-            this.jack = Jack.getInstance();
-            this.client = this.jack.openClient( clientName , EnumSet.of(JackOptions.JackNoStartServer), status);
-            if (!status.isEmpty()) {
-                System.out.println("JACK client status : " + status);
-            }
-            
-            // this.inputPort = this.client.registerPort("MIDI in", JackPortType.MIDI, JackPortFlags.JackPortIsInput);
-            // this.outputPort = this.client.registerPort("MIDI out", JackPortType.MIDI, JackPortFlags.JackPortIsOutput);
-            this.inputPortList = new ArrayList<JackPort>();
-            this.outputPortList = new ArrayList<JackPort>();
-            	
-//            for ( String outputPortName : logic.outputPortNameList() ) {
-//                createOutputPort(outputPortName);
-//            }
-//
-//            for ( String inputPortName : logic.inputPortNameList() ) {
-//                createInputPort(inputPortName);
-//            }
-            
-        } catch (JackException ex) {
-            if (!status.isEmpty()) {
-                System.out.println("JACK exception client status : " + status);
-            }
-            throw ex;
-        }
-
+	public Metro( MetroLogic logic ) throws JackException {
+//		this.logic = logic;
+//		this.sequences.add( new MetroNoteEventBufferSequence( this, null, logic, 0.0d ) );
     }
 	public void createInputPort(String inputPortName) throws JackException {
 		this.inputPortList.add( 
@@ -159,12 +128,49 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 		    	)
 			);
 	}
+	
+	/*
+	 * Note that  There is no `this.logics`. Instead of that all of Logic objects are 
+	 * wrapped by MetroNoteEventBufferSequence and stored as `this.sequences`.   
+	 * (Sat, 18 Aug 2018 19:03:18 +0900)
+	 */
+	public void registerLogic( String name, MetroLogic logic ) {
+		this.sequences.add( new MetroNoteEventBufferSequence( name, this, null, logic, 0.0d ) );
+	}
+	public void unregisterLogic( String name ) {
+		name = name.intern();
+		for ( Iterator<MetroNoteEventBufferSequence> i=sequences.iterator(); i.hasNext(); ) {
+			MetroNoteEventBufferSequence sequence = i.next();
+			if ( sequence.name == name ) {
+				i.remove();
+				break;
+			}
+		}
+	}
+	public void unregisterAllLogic() {
+		this.sequences.clear();
+	}
 
-    public void start() throws JackException {
-    	this.logic.setParent( this );
+    public void start( String clientName ) throws JackException {
+    	// Create a Jack client.
+        EnumSet<JackStatus> status = EnumSet.noneOf(JackStatus.class);
+        try {
+            this.jack = Jack.getInstance();
+            this.client = this.jack.openClient( clientName , EnumSet.of(JackOptions.JackNoStartServer), status);
+            if (!status.isEmpty()) {
+                System.out.println("JACK client status : " + status);
+            }
+        } catch (JackException ex) {
+            if (!status.isEmpty()) {
+                System.out.println("JACK exception client status : " + status);
+            }
+            throw ex;
+        }
+
+        // Create a thread.
+//    	this.logic.setParent( this );
         this.activate();
         new Thread( this ).start();
-//    	this.run();
     }
     
     public void clearSequences() {
@@ -317,8 +323,12 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
         	}
         		
 
-            if ( 0 < this.inputMidiEventList.size() )
-            	this.logic.processInputMidiBuffer( this.inputMidiEventList, this.outputMidiEventList );
+            if ( 0 < this.inputMidiEventList.size() ) {
+            	for ( MetroNoteEventBufferSequence sequence : this.sequences ) {
+            		sequence.progressCursor( nframes, this.outputMidiEventList );
+            		sequence.logic.processInputMidiBuffer( this.inputMidiEventList, this.outputMidiEventList );
+            	}
+            }
             
             synchronized ( this.sequences ) {
             	for ( MetroNoteEventBufferSequence sequence : this.sequences ) {

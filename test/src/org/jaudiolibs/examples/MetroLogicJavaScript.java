@@ -33,7 +33,7 @@ final class MetroLogicJavaScript extends MetroLogic.Default {
 	
 	public class MetroAPI {
 		public void spawn( double offset, ScriptObjectMirror subProcessor ) {
-			MetroLogicJavaScript.this.handle.spawn(offset, new MetroLogic.Default() {
+			MetroLogicJavaScript.this.handle.spawn(XXX, offset, new MetroLogic.Default() {
 				@Override
 				public boolean processOutputNoteBuffer( MetroNoteEventBuffer buf ) {
 					// System.out.println("Metro.logic.new MetroLogic() {...}.initBuffer()" );

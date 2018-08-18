@@ -8,11 +8,12 @@ import java.util.Map;
 import ats.metro.MetroLogic;
 import ats.metro.MetroMidiEvent;
 import ats.metro.MetroNoteEventBuffer;
+import ats.pulsar.old.SamplePulsableBuilder;
 import gnu.lists.AbstractSequence;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 
-public class PulsarLogic extends MetroLogic.Default {
+public class SchemePulsarLogic extends MetroLogic.Default {
 	/*
 	 * (list
 	 *     (cons 1.0  (lambda() ... ))
@@ -123,45 +124,7 @@ public class PulsarLogic extends MetroLogic.Default {
 		}
 	}
 	
-	static class SamplePulsableBuilder implements PulsableBuilder {
-		String name;
-		@Override
-		public String getName() {
-			return "default";
-		}
-		
-		@Override
-		public List<Pulsable> create() {
-			ArrayList<Pulsable> result = new ArrayList<Pulsable>();
-			
-			result = new ArrayList<Pulsable>();
-			{
-				JavaPulse[][] arr = {
-						{ new JavaPulse(73) },
-						{},
-						{},
-						{ new JavaPulse(73) },
-						{},
-						{ new JavaPulse(true, 73,90) },
-				};
-				result.add( new JavaPulseList( arr, 7,2, 3 ) );
-			}
-			{
-				JavaPulse[][] arr = {
-					{ new JavaPulse(63,80) },
-				};
-				result.add( new JavaPulseList( arr, 4 ,2, 0 ) );
-			}
-			{
-				JavaPulse[][] arr = {
-					{ new JavaPulse(57,80) },
-				};
-				result.add( new JavaPulseList( arr, 1 ,2, 0 ) );
-			}
-			
-			return result;
-		}
-	}
+	
 
 	////////////////////////////////////////////////////////////////////////////////////////
 	//
@@ -177,7 +140,15 @@ public class PulsarLogic extends MetroLogic.Default {
 	List<Pulsable> pulsableList = new ArrayList<Pulsable>(); 
 	{
 		System.err.println("set-current-pulsable (from init)" );
+//		setCurrentPulsable( new SamplePulsableBuilder() );
+	}
+
+	public SchemePulsarLogic() {
 		setCurrentPulsable( new SamplePulsableBuilder() );
+	}
+
+	public SchemePulsarLogic ( String name, String description, List<Pair> pairs ) {
+		setCurrentPulsable( new SchemePulsableBuilder( name, description, pairs ));
 	}
 	
 	public void setCurrentPulsable( PulsableBuilder pulsableBuilder ) {
@@ -225,7 +196,7 @@ public class PulsarLogic extends MetroLogic.Default {
 //		buf.length(     1.00d );
 
 		if ( flag ) {
-			handle.spawn( 0.1d, new MetroLogic.Default() {
+			handle.spawn( "LogcChildXXX", 0.1d, new MetroLogic.Default() {
 				int cnt = 2;
 				@Override
 				public boolean processOutputNoteBuffer(MetroNoteEventBuffer buf) {
@@ -248,6 +219,4 @@ public class PulsarLogic extends MetroLogic.Default {
 		
 		return true;
 	}
-
-
 }

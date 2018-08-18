@@ -4,15 +4,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.jaudiolibs.jnajack.JackClient;
 import org.jaudiolibs.jnajack.JackException;
 import org.jaudiolibs.jnajack.JackPosition;
 
-class MetroNoteEventBufferSequence {
+public class MetroNoteEventBufferSequence {
 	/**
 	 * 
 	 */
+	final String name;
 	private final Metro metro;
 
 	@SuppressWarnings("unused")
@@ -25,9 +28,9 @@ class MetroNoteEventBufferSequence {
 
 	private MetroLogicHandle handle = new MetroLogicHandle() {
 		@Override
-		public void spawn( double offset, MetroLogic logic ) {
+		public void spawn( String name, double offset, MetroLogic logic ) {
 			MetroNoteEventBufferSequence sequence = 
-					new MetroNoteEventBufferSequence( metro, MetroNoteEventBufferSequence.this, logic, offset );
+					new MetroNoteEventBufferSequence( name, metro, MetroNoteEventBufferSequence.this, logic, offset );
 			
 			metro.registerSequence( sequence );
 		}
@@ -36,10 +39,12 @@ class MetroNoteEventBufferSequence {
 	private MetroNoteEventBufferSequence parentSequence;
 	private BlockingQueue<MetroNoteEventBuffer> buffers = new LinkedBlockingQueue<>();
 	private int cursor = 0;
-	private MetroLogic logic;
+	MetroLogic logic;
 	private double offset=0.0d;
 
-	public MetroNoteEventBufferSequence( Metro metro, MetroNoteEventBufferSequence parent, MetroLogic logic, double offset ) {
+	
+	public MetroNoteEventBufferSequence( String name, Metro metro, MetroNoteEventBufferSequence parent, MetroLogic logic, double offset ) {
+		this.name = name.intern();
 		this.metro = metro;
 		this.parentSequence = parent;
 		this.logic = logic;
@@ -50,6 +55,16 @@ class MetroNoteEventBufferSequence {
 	public MetroLogic getLogic() {
 		return this.logic;
 	}
+	
+//	@Override
+//	public boolean equals(Object obj) {
+//		try {
+//			return this.name == ((MetroNoteEventBufferSequence)obj).name;
+//		} catch ( ClassCastException e ) {
+//            Logger.getLogger( Metro.class.getName()).log(Level.WARNING, null, e );
+//			return false;
+//		}
+//	}
 
 
 	public void progressCursor( int nframes, List<MetroMidiEvent> result ) throws JackException {

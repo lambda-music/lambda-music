@@ -51,7 +51,7 @@ final class MetroLogicFiveTimes extends MetroLogic.Default {
 		buf.length(     1.00d );
 
 		if ( flag ) {
-			handle.spawn( 0.1d, new MetroLogic.Default() {
+			handle.spawn( XXX, 0.1d, new MetroLogic.Default() {
 				int cnt = 2;
 				@Override
 				public boolean processOutputNoteBuffer(MetroNoteEventBuffer buf) {

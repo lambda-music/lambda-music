@@ -1,5 +1,5 @@
 package ats.metro;
 
 public interface MetroLogicHandle {
-	void spawn( double offset, MetroLogic logic );
+	void spawn( String name, double offset, MetroLogic logic );
 }

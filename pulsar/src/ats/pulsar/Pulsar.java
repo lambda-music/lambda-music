@@ -30,7 +30,7 @@ import javax.swing.Timer;
 import org.jaudiolibs.jnajack.JackException;
 
 import ats.metro.Metro;
-import ats.pulsar.PulsarLogic.SchemePulsableBuilder;
+import ats.pulsar.SchemePulsarLogic.SchemePulsableBuilder;
 import ats.pulsar.lib.FlawLayout;
 import ats.pulsar.lib.LayoutUtils;
 import ats.pulsar.lib.SpringLayoutUtil;
@@ -43,8 +43,8 @@ import kawa.standard.Scheme;
 
 public final class Pulsar extends Metro {
 	Pulsar parent = this;
-	public Pulsar(String clientName ) throws JackException {
-		super(clientName, new PulsarLogic() );
+	public Pulsar() throws JackException {
+		super( new SchemePulsarLogic() );
 		javax.swing.SwingUtilities.invokeLater( new Runnable() {
 			public void run() {
 				createAndShowGUI();
@@ -52,7 +52,6 @@ public final class Pulsar extends Metro {
 		});
 	}
 	
-
 	public void guiInit() {
 		userPane.removeAll();
 	}
@@ -87,8 +86,6 @@ public final class Pulsar extends Metro {
 	public void endlineGui() {
 		// userPane.add( Box.createVerticalStrut(500 ) );
 	}
-	
-	
 	
     void initScheme(Scheme scheme) {
     	{
@@ -195,20 +192,36 @@ public final class Pulsar extends Metro {
 						// System.err.println("add-pattern");
 		    			String name = SchemeUtils.toString( args[0] );
 						String description = SchemeUtils.toString( args[1] );
-						ArrayList<Pair> pairs = PulsarLogic.parseListOfPairs( (Pair) args[2] );
-						
-						SchemePulsableBuilder pulsableBuilder = new SchemePulsableBuilder( name,description, pairs );
+						ArrayList<Pair> pairs = SchemePulsarLogic.parseListOfPairs( (Pair) args[2] );
+
+						SchemePulsarLogic logic = new SchemePulsarLogic( name, description, pairs );
 						{
-							JButton button = new JButton( pulsableBuilder.getName() );
+							JButton button = new JButton( name );
 							button.addActionListener( new PulsarAction() {
 								@Override
 								public void invoke() {
-									System.err.println( "Set current pulsable object to " + pulsableBuilder.getName()  );
-									((PulsarLogic)logic).setCurrentPulsable( pulsableBuilder );
+									unregisterAllLogic();
+									registerLogic(name, logic);
 								}
 							});
 							return button; 
 						}
+
+//						SchemePulsableBuilder pulsableBuilder = new SchemePulsableBuilder( name, description, pairs );
+//						{
+//							JButton button = new JButton( pulsableBuilder.getName() );
+//							button.addActionListener( new PulsarAction() {
+//								@Override
+//								public void invoke() {
+//									System.err.println( "Set current pulsable object to " + pulsableBuilder.getName()  );
+//									// FIXME BOGUS BOGUS BOGUS BOGUS BOGUS BOGUS BOGUS BOGUS BOGUS BOGUS BOGUS
+//									((SchemePulsarLogic)sequences.get(0).getLogic()).setCurrentPulsable( pulsableBuilder );
+//									// ((PulsarLogic)logic).setCurrentPulsable( pulsableBuilder );
+//									// FIXME BOGUS BOGUS BOGUS BOGUS BOGUS BOGUS BOGUS BOGUS BOGUS BOGUS BOGUS
+//								}
+//							});
+//							return button; 
+//						}
 					} else {
 						throw new RuntimeException( "add-button unsupported type of args[2]." + SchemeUtils.className( args[2] ) );
 					}
@@ -313,8 +326,6 @@ public final class Pulsar extends Metro {
 	JLabel tempoLabel = new JLabel("", SwingConstants.CENTER );
     
     private void createAndShowGUI() {
-    	Pulsar metro = this;
-    	
         //Create and set up the window.
         frame = new JFrame( "Pulsar" );
         
@@ -453,16 +464,6 @@ public final class Pulsar extends Metro {
 		return mainAction;
 	}
 
-	
-//    public boolean togglePlaying() {
-//		boolean playing = parent.togglePlaying();
-//		System.err.println( playing ? "playing" : "stop" );
-//		return playing;
-//    }
-//    public void getPlaying( boolean value ) {
-//		parent.setPlaying( value );
-//		System.err.println( value ? "playing" : "stop" );
-//    }
     public void reset() { 
     	System.err.println( "===reset" );
     	parent.setPlaying(false);
@@ -591,8 +592,8 @@ public final class Pulsar extends Metro {
     
   
 	public static void main(String[] args) throws JackException, InterruptedException {
-        Pulsar metro = new Pulsar( "Metro" );
-        metro.start();
+        Pulsar metro = new Pulsar( );
+        metro.start( "Metro" );
 
 		metro.createOutputPort("MIDI Output0");
 		metro.createOutputPort("MIDI Output1");

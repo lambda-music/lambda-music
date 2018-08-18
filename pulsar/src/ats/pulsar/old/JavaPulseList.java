@@ -1,4 +1,4 @@
-package ats.pulsar;
+package ats.pulsar.old;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,8 +8,9 @@ import java.util.List;
 import java.util.Set;
 
 import ats.metro.MetroNoteEventBuffer;
+import ats.pulsar.Pulsable;
 
-public class JavaPulseList implements Pulsable {
+class JavaPulseList implements Pulsable {
 	static List<Set<JavaPulse>> asList( JavaPulse[][] list, int repeatCount ) {
 		List<Set<JavaPulse>> result = new ArrayList<Set<JavaPulse>>();
 		for ( int i=0; i<repeatCount; i++) {

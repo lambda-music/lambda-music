@@ -1,4 +1,4 @@
-package ats.pulsar;
+package ats.pulsar.old;
 
 final class JavaPulse {
 	static final int DEFAULT_PORT = 1;
