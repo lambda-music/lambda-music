@@ -88,20 +88,22 @@ public class LayoutUtils {
 					break;
 				case "insets" :
 					Map<String,Object> imap = 
-						SchemeUtils.list2map((Pair)entry.getValue(), (idx)->{
-							switch (idx) {
-								case 0 :
-									return "top";
-								case 1 :
-									return "left";
-								case 2 :
-									return "bottom";
-								case 3 :
-									return "right";
-								default :
-									throw new RuntimeException( "Error : undefined index of array." );
-							}
-					});
+						SchemeUtils.list2map((Pair)entry.getValue(), (Object type)->{
+							return (idx)->{
+								switch (idx) {
+									case 0 :
+										return "top";
+									case 1 :
+										return "left";
+									case 2 :
+										return "bottom";
+									case 3 :
+										return "right";
+									default :
+										throw new RuntimeException( "Error : undefined index of array." );
+								}
+							};	
+						});
 	
 					if ( map.containsKey( "top" ) )
 						gbc.insets.top = SchemeUtils.toInteger( imap.get( "top" ) );

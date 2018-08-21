@@ -10,23 +10,11 @@ public interface MetroLogic {
 		return rnd(-d,d);
 	}
 	
-	public abstract Metro getParent();
-	public abstract void setParent( Metro metro );
 	public abstract void setLogicHandle( MetroLogicHandle handle );
-	public abstract boolean processOutputNoteBuffer( MetroNoteEventBuffer buf );
-	public abstract void processInputMidiBuffer( List<MetroMidiEvent> in, List<MetroMidiEvent> out );
+	public abstract void processInputMidiBuffer( Metro metro, List<MetroMidiEvent> in, List<MetroMidiEvent> out );
+	public abstract boolean processOutputNoteBuffer( Metro metro, MetroNoteEventBufferSequence sequence, MetroNoteEventBuffer buf );
 	
 	public static abstract class Default implements MetroLogic {
-		protected Metro parent;
-		@Override
-		public Metro getParent() {
-			return this.parent;
-		}
-		@Override
-		public void setParent(Metro parent) {
-			this.parent = parent;
-		}
-
 		protected MetroLogicHandle handle;
 		@Override
 		public void setLogicHandle(MetroLogicHandle handle) {

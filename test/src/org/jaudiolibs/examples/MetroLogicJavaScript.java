@@ -23,6 +23,7 @@ import ats.metro.MetroLogic;
 import ats.metro.MetroLogicHandle;
 import ats.metro.MetroMidiEvent;
 import ats.metro.MetroNoteEventBuffer;
+import ats.metro.MetroNoteEventBufferSequence;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
 final class MetroLogicJavaScript extends MetroLogic.Default {
@@ -33,16 +34,16 @@ final class MetroLogicJavaScript extends MetroLogic.Default {
 	
 	public class MetroAPI {
 		public void spawn( double offset, ScriptObjectMirror subProcessor ) {
-			MetroLogicJavaScript.this.handle.spawn(XXX, offset, new MetroLogic.Default() {
+			MetroLogicJavaScript.this.handle.spawn("XXX", offset, new MetroLogic.Default() {
 				@Override
-				public boolean processOutputNoteBuffer( MetroNoteEventBuffer buf ) {
+				public boolean processOutputNoteBuffer( Metro metro, MetroNoteEventBufferSequence sequence, MetroNoteEventBuffer buf ) {
 					// System.out.println("Metro.logic.new MetroLogic() {...}.initBuffer()" );
 					Object result = subProcessor.call( null , buf );
 					return checkReturnValue( result );
 				}
 
 				@Override
-				public void processInputMidiBuffer(List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
+				public void processInputMidiBuffer(Metro metro, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
 				}
 			});
 		}
@@ -117,11 +118,11 @@ final class MetroLogicJavaScript extends MetroLogic.Default {
 	}
 
 	@Override
-	public void processInputMidiBuffer(List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
+	public void processInputMidiBuffer(Metro metro, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
 	}
 
 	@Override
-	public boolean processOutputNoteBuffer( MetroNoteEventBuffer buf ) {
+	public boolean processOutputNoteBuffer( Metro metro, MetroNoteEventBufferSequence sequence, MetroNoteEventBuffer buf ) {
 		// System.out.println("Metro.logic.new MetroLogic() {...}.initBuffer()" );
 		Object result = this.processor.call( null , buf );
 		return checkReturnValue( result );

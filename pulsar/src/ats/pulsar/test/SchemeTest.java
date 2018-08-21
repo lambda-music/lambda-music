@@ -63,8 +63,10 @@ public class SchemeTest {
 		exec( "(hello 1 2 3)" );
 		
 		exec( "'((hello . HELLO) 1 (world . WORLD ) 2 3)", (o)->{
-			Map<String,Object> map = SchemeUtils.list2map( (Pair)o, (Integer i )-> { 
-				return "arg" + Integer.toString(i);
+			Map<String,Object> map = SchemeUtils.list2map( (Pair)o, (type)->{
+				return (Integer i )-> { 
+					return "arg" + Integer.toString(i);
+				};
 			});
 			// System.out.println( map );
 			return map;

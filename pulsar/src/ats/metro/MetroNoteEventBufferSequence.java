@@ -4,8 +4,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.jaudiolibs.jnajack.JackClient;
 import org.jaudiolibs.jnajack.JackException;
@@ -15,14 +13,14 @@ public class MetroNoteEventBufferSequence {
 	/**
 	 * 
 	 */
-	final String name;
+	protected final String name;
 	private final Metro metro;
 
 	@SuppressWarnings("unused")
 	private static final boolean DEBUG = false;
 
 	// static final int BUFFER_SIZE = 2;
-	static final int BUFFER_SIZE = 2;
+	private static final int BUFFER_SIZE = 2;
 
 	int id = (int) (Math.random()* Integer.MAX_VALUE);
 
@@ -38,22 +36,25 @@ public class MetroNoteEventBufferSequence {
 
 	private MetroNoteEventBufferSequence parentSequence;
 	private BlockingQueue<MetroNoteEventBuffer> buffers = new LinkedBlockingQueue<>();
-	private int cursor = 0;
-	MetroLogic logic;
+	protected int cursor = 0;
+	protected MetroLogic logic;
 	private double offset=0.0d;
-
 	
-	public MetroNoteEventBufferSequence( String name, Metro metro, MetroNoteEventBufferSequence parent, MetroLogic logic, double offset ) {
+	public MetroNoteEventBufferSequence( String name, Metro metro, MetroNoteEventBufferSequence parentSequence, MetroLogic logic, double offset ) {
 		this.name = name.intern();
 		this.metro = metro;
-		this.parentSequence = parent;
+		this.parentSequence = parentSequence;
 		this.logic = logic;
 		this.offset = offset;
 		
 		this.logic.setLogicHandle( handle );
 	}
+	
 	public MetroLogic getLogic() {
 		return this.logic;
+	}
+	public String getName() {
+		return name;
 	}
 	
 //	@Override
@@ -66,8 +67,16 @@ public class MetroNoteEventBufferSequence {
 //		}
 //	}
 
+// ???
+//	public int getCursor() {
+//		return cursor;
+//	}
+//	public void setCursor( int cursor ) {
+//		this.cursor = cursor; 
+//	}
 
-	public void progressCursor( int nframes, List<MetroMidiEvent> result ) throws JackException {
+
+	protected void progressCursor( int nframes, List<MetroMidiEvent> result ) throws JackException {
 		synchronized ( this.buffers ) {
 			this.metro.clearAllPorts();
 
@@ -153,6 +162,7 @@ public class MetroNoteEventBufferSequence {
 					this.cursor -= lengthInFrames;
 					nextCursor -= lengthInFrames;
 					this.buffers.poll();
+					metro.notifyCheckBuffer();
 				} else {
 					break;
 				}
@@ -165,24 +175,26 @@ public class MetroNoteEventBufferSequence {
 		}
 	}
 
-	public void prepare( int barInFrames ) throws JackException {
+	protected void prepare( int barInFrames ) throws JackException {
 		int parentCursor = this.parentSequence.cursor;
 		this.cursor = parentCursor + (int) (-1.0d * this.offset * barInFrames) ;
+//		this.cursor =                (int) (-1.0d * this.offset * barInFrames) ;
+//		 System.out.println( this.cursor );
 	}
 
-	public void reprepare( Metro metro, JackClient client, JackPosition position ) throws JackException {
+	protected  void reprepare( Metro metro, JackClient client, JackPosition position ) throws JackException {
 		for ( MetroNoteEventBuffer buffer : this.buffers ) {
 			buffer.prepare(metro, client, position);
 		}
 	}
 
-	public void checkBuffer( Metro metro, JackClient client, JackPosition position ) throws JackException {
+	protected  void checkBuffer( Metro metro, JackClient client, JackPosition position ) throws JackException {
 		if ( this.buffers.size() < BUFFER_SIZE ) {
 			this.offerNewBuffer( metro, client, position );
 		}
 	}
 	
-	public void clearBuffer() {
+	protected  void clearBuffer() {
 		synchronized ( this.buffers ) {
 			this.buffers.clear();
 			this.cursor =0;
@@ -197,12 +209,11 @@ public class MetroNoteEventBufferSequence {
 
 	private void offerNewBuffer( Metro metro, JackClient client, JackPosition position ) throws JackException {
 		MetroNoteEventBuffer buf = new MetroNoteEventBuffer();
-		boolean result = this.logic.processOutputNoteBuffer( buf );
-
+		boolean result = this.logic.processOutputNoteBuffer( metro, this, buf );
 		buf.prepare( metro, client, position );
 
 		if ( result ) {
-			this.buffers.offer(buf);
+			this.buffers.offer( buf );
 		} else {
 			metro.unregisterSequence( this );
 		}

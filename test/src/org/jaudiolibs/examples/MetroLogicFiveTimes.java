@@ -4,9 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -18,6 +16,7 @@ import ats.metro.Metro;
 import ats.metro.MetroLogic;
 import ats.metro.MetroMidiEvent;
 import ats.metro.MetroNoteEventBuffer;
+import ats.metro.MetroNoteEventBufferSequence;
 
 final class MetroLogicFiveTimes extends MetroLogic.Default {
 	public MetroLogicFiveTimes() {
@@ -33,40 +32,40 @@ final class MetroLogicFiveTimes extends MetroLogic.Default {
 	}
 	
 	@Override
-	public void processInputMidiBuffer(List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
+	public void processInputMidiBuffer(Metro metro, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
 	}
 
 	@Override
-	public boolean processOutputNoteBuffer( MetroNoteEventBuffer buf) {
+	public boolean processOutputNoteBuffer( Metro metro, MetroNoteEventBufferSequence sequence, MetroNoteEventBuffer buf) {
 		// System.out.println("Metro.logic.new MetroLogic() {...}.initBuffer()" );
 
 		buf.humanize( 0.0d, 3 );
 		
-		buf.noteShot( 0.0d  , 1 , 0, 57, 105 );
-		buf.noteShot( 0.02d , 1 , 0, 74, 127 );
-		buf.noteShot( 0.2d  , 1 , 0, 73, 100 );
-		buf.noteShot( 0.4d  , 1 , 0, 73, 100 );
-		buf.noteShot( 0.6d  , 1 , 0, 73, 100 );
-		buf.noteShot( 0.8d  , 1 , 0, 73, 100 );
+		buf.noteHit( 0.0d  , 1 , 0, 57, 105 );
+		buf.noteHit( 0.01d , 1 , 0, 74, 127 );
+		buf.noteHit( 0.2d  , 1 , 0, 73, 100 );
+		buf.noteHit( 0.4d  , 1 , 0, 73, 100 );
+		buf.noteHit( 0.6d  , 1 , 0, 73, 100 );
+		buf.noteHit( 0.8d  , 1 , 0, 73, 100 );
 		buf.length(     1.00d );
 
 		if ( flag ) {
-			handle.spawn( XXX, 0.1d, new MetroLogic.Default() {
-				int cnt = 2;
+			handle.spawn( "Temp", 0.00d, new MetroLogic.Default() {
+				int counter = 2;
 				@Override
-				public boolean processOutputNoteBuffer(MetroNoteEventBuffer buf) {
+				public boolean processOutputNoteBuffer(Metro metro, MetroNoteEventBufferSequence sequence, MetroNoteEventBuffer buf) {
 					//				buf.noteShot( 0.5d  , 1 , 0, 57, 127 );
 
-					buf.noteShot( 0.0d  , 1 , 0, 63, 127 );
-					buf.noteShot( 0.2d  , 1 , 0, 63, 80 );
-					buf.noteShot( 0.4d  , 1 , 0, 63, 80 );
-					buf.noteShot( 0.6d  , 1 , 0, 63, 80 );
-					buf.noteShot( 0.8d  , 1 , 0, 63, 80 );
+					buf.noteHit( 0.0d  , 1 , 0, 63, 128 );
+					buf.noteHit( 0.2d  , 1 , 0, 63, 80 );
+					buf.noteHit( 0.4d  , 1 , 0, 63, 80 );
+					buf.noteHit( 0.6d  , 1 , 0, 63, 80 );
+					buf.noteHit( 0.8d  , 1 , 0, 63, 80 );
 					buf.length(1.0d);
-					return 0<cnt--;
+					return 0<counter--;
 				}
 				@Override
-				public void processInputMidiBuffer(List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
+				public void processInputMidiBuffer(Metro metro, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
 				}
 			});
 			flag = false;

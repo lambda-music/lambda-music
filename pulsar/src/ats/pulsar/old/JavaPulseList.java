@@ -7,8 +7,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import ats.metro.Metro;
 import ats.metro.MetroNoteEventBuffer;
-import ats.pulsar.Pulsable;
+import ats.metro.MetroNoteEventBufferSequence;
 
 class JavaPulseList implements Pulsable {
 	static List<Set<JavaPulse>> asList( JavaPulse[][] list, int repeatCount ) {
@@ -45,7 +46,7 @@ class JavaPulseList implements Pulsable {
 		return pulseSetList;
 	}
 	@Override
-	public double getBars() {
+	public double getBarLength() {
 		return bars;
 	}
 	public JavaPulseList rotate( int distance ) {
@@ -67,16 +68,16 @@ class JavaPulseList implements Pulsable {
 	}
 	
 	@Override
-	public void pulse( MetroNoteEventBuffer buf ) {
+	public void pulse( Metro metro, MetroNoteEventBufferSequence sequence, MetroNoteEventBuffer buf ) {
 		JavaPulseList pattern = this;
 		List<Set<JavaPulse>> pulseSetList = pattern.getPulseSetList();
-		double bars = (double)pattern.getBars();
+		double bars = (double)pattern.getBarLength();
 		double pulseLength = bars / pulseSetList.size();
 		double pulseIndex = 0;
 		for ( Set<JavaPulse> pulseSet : pulseSetList ) {
 			double pulsePos = ( pulseIndex * pulseLength );
 			for ( JavaPulse note : pulseSet ) {
-				buf.noteShot( pulsePos, note.port , note.channel, note.note, note.velocity );
+				buf.noteHit( pulsePos, note.port , note.channel, note.note, note.velocity );
 			}
 			pulseIndex ++;
 		}

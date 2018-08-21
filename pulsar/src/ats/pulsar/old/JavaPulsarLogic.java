@@ -3,11 +3,11 @@ package ats.pulsar.old;
 import java.util.ArrayList;
 import java.util.List;
 
+import ats.metro.Metro;
 import ats.metro.MetroLogic;
 import ats.metro.MetroMidiEvent;
 import ats.metro.MetroNoteEventBuffer;
-import ats.pulsar.Pulsable;
-import ats.pulsar.PulsableBuilder;
+import ats.metro.MetroNoteEventBufferSequence;
 
 public class JavaPulsarLogic extends MetroLogic.Default {
 	public JavaPulsarLogic() {
@@ -31,7 +31,7 @@ public class JavaPulsarLogic extends MetroLogic.Default {
 	}
 	
 	@Override
-	public void processInputMidiBuffer(List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
+	public void processInputMidiBuffer(Metro metro, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
 		out.addAll( in );
 		System.err.println( "in.size()" + in.size() );
 		System.err.println( "out.size()" + out.size() );
@@ -39,16 +39,16 @@ public class JavaPulsarLogic extends MetroLogic.Default {
 
 
 	@Override
-	public boolean processOutputNoteBuffer( MetroNoteEventBuffer buf ) {
+	public boolean processOutputNoteBuffer( Metro metro, MetroNoteEventBufferSequence sequence, MetroNoteEventBuffer buf ) {
 		// System.out.println("Metro.logic.new MetroLogic() {...}.initBuffer()" );
 
 		buf.humanize( 0.0d, 3 );
 
 		double maxBars = 0.0d;
 		for ( Pulsable pulsable : pulsableList ) {
-			pulsable.pulse( buf );
-			if ( maxBars < pulsable.getBars() )
-				maxBars = pulsable.getBars();
+			pulsable.pulse( metro, sequence, buf );
+			if ( maxBars < pulsable.getBarLength() )
+				maxBars = pulsable.getBarLength();
 		}
 		
 		// System.err.println( "maxBars" +  maxBars );
@@ -68,19 +68,19 @@ public class JavaPulsarLogic extends MetroLogic.Default {
 			handle.spawn( "TEmp"/* FIXME */, 0.1d, new MetroLogic.Default() {
 				int cnt = 2;
 				@Override
-				public boolean processOutputNoteBuffer(MetroNoteEventBuffer buf) {
+				public boolean processOutputNoteBuffer(Metro metro, MetroNoteEventBufferSequence sequence, MetroNoteEventBuffer buf) {
 					//				buf.noteShot( 0.5d  , 1 , 0, 57, 127 );
 
-					buf.noteShot( 0.0d  , 1 , 0, 63, 127 );
-					buf.noteShot( 0.2d  , 1 , 0, 63, 80 );
-					buf.noteShot( 0.4d  , 1 , 0, 63, 80 );
-					buf.noteShot( 0.6d  , 1 , 0, 63, 80 );
-					buf.noteShot( 0.8d  , 1 , 0, 63, 80 );
+					buf.noteHit( 0.0d  , 1 , 0, 63, 127 );
+					buf.noteHit( 0.2d  , 1 , 0, 63, 80 );
+					buf.noteHit( 0.4d  , 1 , 0, 63, 80 );
+					buf.noteHit( 0.6d  , 1 , 0, 63, 80 );
+					buf.noteHit( 0.8d  , 1 , 0, 63, 80 );
 					buf.length(1.0d);
 					return 0<cnt--;
 				}
 				@Override
-				public void processInputMidiBuffer(List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
+				public void processInputMidiBuffer(Metro metro, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
 				}
 			});
 			flag = false;

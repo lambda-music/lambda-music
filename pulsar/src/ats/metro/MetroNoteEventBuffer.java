@@ -72,10 +72,18 @@ public class MetroNoteEventBuffer implements Iterable<MetroNoteEvent>{
 		this.list.add(event);
 	}
 
-	public void noteShot( double offset, int outputPortNo, int channel, int note, int velocity ) {
-		noteOn( offset, outputPortNo, channel, note, velocity );
-		noteOff( offset+0.0025d, outputPortNo, channel, note, velocity );
+	public void noteHit( double offset, int outputPortNo, int channel, int note, int velocity ) {
+		noteHit( offset, outputPortNo, channel, note, velocity, -1 );
+//		noteOn(  offset, outputPortNo, channel, note, velocity );
+//		noteOff( offset + 0.0025d, outputPortNo, channel, note, velocity );
+//		noteOff( offset + 0.0025d, outputPortNo, channel, note, velocity );
 //		noteOff( offset+1.000d, outputPortNo, channel, note, velocity );
+	}
+	public void noteHit( double offset, int outputPortNo, int channel, int note, int velocity, double duration ) {
+		if ( 0 < duration )
+			duration = 0.0025d;
+		noteOn(  offset, outputPortNo, channel, note, velocity );
+		noteOff( offset + duration, outputPortNo, channel, note, velocity );
 	}
 
 	public void noteOn( double offset, int outputPortNo, int channel, int note, int velocity ) {

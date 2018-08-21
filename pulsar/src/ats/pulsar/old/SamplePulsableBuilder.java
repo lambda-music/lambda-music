@@ -3,9 +3,6 @@ package ats.pulsar.old;
 import java.util.ArrayList;
 import java.util.List;
 
-import ats.pulsar.Pulsable;
-import ats.pulsar.PulsableBuilder;
-
 public class SamplePulsableBuilder implements PulsableBuilder {
 	String name;
 	@Override

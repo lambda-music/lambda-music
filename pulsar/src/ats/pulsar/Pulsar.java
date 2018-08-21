@@ -15,7 +15,8 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -30,13 +31,13 @@ import javax.swing.Timer;
 import org.jaudiolibs.jnajack.JackException;
 
 import ats.metro.Metro;
-import ats.pulsar.SchemePulsarLogic.SchemePulsableBuilder;
 import ats.pulsar.lib.FlawLayout;
 import ats.pulsar.lib.LayoutUtils;
 import ats.pulsar.lib.SpringLayoutUtil;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
-import gnu.lists.Pair;
+import gnu.mapping.Environment;
+import gnu.mapping.Procedure;
 import gnu.mapping.ProcedureN;
 import gnu.mapping.SimpleSymbol;
 import kawa.standard.Scheme;
@@ -44,7 +45,6 @@ import kawa.standard.Scheme;
 public final class Pulsar extends Metro {
 	Pulsar parent = this;
 	public Pulsar() throws JackException {
-		super( new SchemePulsarLogic() );
 		javax.swing.SwingUtilities.invokeLater( new Runnable() {
 			public void run() {
 				createAndShowGUI();
@@ -87,9 +87,30 @@ public final class Pulsar extends Metro {
 		// userPane.add( Box.createVerticalStrut(500 ) );
 	}
 	
+	static final class SchemeProcedureRunnable implements Runnable {
+		private Environment environment;
+		private final Procedure procedure;
+		SchemeProcedureRunnable(Procedure procedure) {
+			this( Environment.getCurrent(), procedure );
+		}
+		SchemeProcedureRunnable(Environment environment, Procedure procedure) {
+			this.environment = environment;
+			this.procedure = procedure;
+		}
+		@Override
+		public void run() {
+			try {
+				Environment.setCurrent( this.environment );
+				procedure.applyN( new Object[] {} );
+			} catch (Throwable e) {
+	            Logger.getLogger(Metro.class.getName()).log(Level.SEVERE, null, e);
+				throw new RuntimeException(e);
+			}
+		}
+	}
+
     void initScheme(Scheme scheme) {
     	{
-    		
     		InputStream in = null;
     		try {
     			in = this.getClass().getResource( "init.scm" ).openStream();
@@ -105,19 +126,20 @@ public final class Pulsar extends Metro {
 				}
     		}
     	}
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "set-main" ), null, new ProcedureN() {
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "set-main!" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				System.err.println("set-main");
 				if ( args.length == 1 ) {
-					setMainAction( (JButton)args[0] );
+					Procedure procedure = (Procedure)args[0];
+					setMain( new SchemeProcedureRunnable( procedure ));
 				} else {
 					throw new RuntimeException( "invalid argument length" );
 				}
     			return EmptyList.emptyList;
     		}
     	});
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "playing" ), null, new ProcedureN() {
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "playing!" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				if ( args.length == 0 ) {
@@ -131,16 +153,84 @@ public final class Pulsar extends Metro {
     		}
     	});
 
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "cue" ), null, new ProcedureN() {
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "cue!" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				cue();
     			return EmptyList.emptyList;
     		}
     	});
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "reset!" ), null, new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				reset();
+    			return EmptyList.emptyList;
+    		}
+    	});
 
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "put-seq!" ), null, new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				if ( args.length == 2 ) {
+					String name = SchemeUtils.toString( args[0] );
+					Procedure procedure = (Procedure) args[1];
+					SchemePulsarLogic logic = new SchemePulsarLogic(procedure);
+		
+					putLogic(name, logic);
+					
+					return EmptyList.emptyList;
+				} else {
+					throw new RuntimeException( "Invalid parameter. usage : (-seq [name] [lambda] ) " );
+				}
+			}
+    	});
 
-    	
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "put-seq-sync!" ), null, new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				if ( args.length == 4 ) {
+					String name = SchemeUtils.toString( args[0] );
+					Procedure procedure = (Procedure) args[1];
+					String syncSequenceName = SchemeUtils.anyToString( args[2] );
+					double offset = SchemeUtils.toDouble( args[3] );
+					
+					SchemePulsarLogic logic = new SchemePulsarLogic(procedure);
+					putLogicSync(name, logic, syncSequenceName, offset );
+					
+					return EmptyList.emptyList;
+				} else {
+					throw new RuntimeException( "Invalid parameter. usage : (new-seq [name] [lambda] ) " );
+				}
+			}
+    	});
+   	    	
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "remove-seq!" ), null, new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				if ( args.length == 1 ) {
+					String name = SchemeUtils.toString( args[0] );
+					removeLogic(name);
+					return EmptyList.emptyList;
+				} else {
+					throw new RuntimeException( "Invalid parameter. usage : (new-logic [name] [lambda] ) " );
+				}
+			}
+    	});
+
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "has-seq?" ), null, new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				if ( args.length == 1 ) {
+					String name = SchemeUtils.toString( args[0] );
+					hasLogic(name);
+					return EmptyList.emptyList;
+				} else {
+					throw new RuntimeException( "Invalid parameter. usage : (new-logic [name] [lambda] ) " );
+				}
+			}
+    	});
+  	
+    	// ???
     	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-get-pane" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
@@ -148,6 +238,8 @@ public final class Pulsar extends Metro {
     			return userPane;
     		}
     	});
+ 
+    	// ???
     	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-get-frame" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
@@ -156,7 +248,7 @@ public final class Pulsar extends Metro {
     		}
     	});
 
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-init" ), null, new ProcedureN() {
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-init!" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				guiInit();
@@ -165,85 +257,41 @@ public final class Pulsar extends Metro {
 
     	});
 
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-new" ), null, new ProcedureN() {
+
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "new-button" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				if ( args.length == 3 ) {
 					if ( args[2] instanceof ProcedureN ) {
-						ProcedureN p = (ProcedureN) args[2];
 						String caption = ((IString) args[0]).toString();
 						Object userHandle = args[1];
+						ProcedureN procedure = (ProcedureN) args[2];
+						Environment env= Environment.getCurrent();
 						{
 							JButton button = new JButton( caption );
-							button.addActionListener( new PulsarAction() {
+							button.addActionListener( new ActionListener() {
 								@Override
-								public void invoke() {
+								public void actionPerformed(ActionEvent e) {
 									try {
-										p.applyN( new Object[] { userHandle } );
+										Environment.setCurrent(env);
+										procedure.applyN( new Object[] { userHandle } );
 									} catch (Throwable e1) {
-										e1.printStackTrace();
+							            Logger.getLogger(Metro.class.getName()).log(Level.SEVERE, null, e1);
 									}
 								}
 							});
 							return button;
 						}
-					} else if ( args[2] instanceof Pair ) {
-
-						// System.err.println("add-pattern");
-		    			String name = SchemeUtils.toString( args[0] );
-						String description = SchemeUtils.toString( args[1] );
-						ArrayList<Pair> pairs = SchemePulsarLogic.parseListOfPairs( (Pair) args[2] );
-
-						SchemePulsarLogic logic = new SchemePulsarLogic( name, description, pairs );
-						{
-							JButton button = new JButton( name );
-							button.addActionListener( new PulsarAction() {
-								@Override
-								public void invoke() {
-									unregisterAllLogic();
-									registerLogic(name, logic);
-								}
-							});
-							return button; 
-						}
-
-//						SchemePulsableBuilder pulsableBuilder = new SchemePulsableBuilder( name, description, pairs );
-//						{
-//							JButton button = new JButton( pulsableBuilder.getName() );
-//							button.addActionListener( new PulsarAction() {
-//								@Override
-//								public void invoke() {
-//									System.err.println( "Set current pulsable object to " + pulsableBuilder.getName()  );
-//									// FIXME BOGUS BOGUS BOGUS BOGUS BOGUS BOGUS BOGUS BOGUS BOGUS BOGUS BOGUS
-//									((SchemePulsarLogic)sequences.get(0).getLogic()).setCurrentPulsable( pulsableBuilder );
-//									// ((PulsarLogic)logic).setCurrentPulsable( pulsableBuilder );
-//									// FIXME BOGUS BOGUS BOGUS BOGUS BOGUS BOGUS BOGUS BOGUS BOGUS BOGUS BOGUS
-//								}
-//							});
-//							return button; 
-//						}
 					} else {
 						throw new RuntimeException( "add-button unsupported type of args[2]." + SchemeUtils.className( args[2] ) );
 					}
-					
-					
 				} else {
 					throw new RuntimeException( "add-button has two parameters( caption user-handle lambda )." );
 				}
     		}
     	});
     	
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-invoke" ), null, new ProcedureN() {
-			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-				if ( args.length == 1 ) {
-					((JButton)args[0]).doClick(); 
-				}
-    			return EmptyList.emptyList;
-    		}
-    	});
-    	
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-add" ), null, new ProcedureN() {
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-add!" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				System.err.println("get-add");
@@ -252,7 +300,7 @@ public final class Pulsar extends Metro {
 				} else if ( args.length == 2 ) {
 					userPane.add( (JComponent)args[0], LayoutUtils.map2constraint( args[1] ) );
 				}
-    			return frame;
+    			return args[0];
     		}
     	});
 
@@ -455,20 +503,20 @@ public final class Pulsar extends Metro {
 		frame.setVisible(true);
     }
     
-	JButton mainAction = null;
-	public void setMainAction(JButton mainAction) {
-		this.mainAction = mainAction;
+	Runnable main = null;
+	public void setMain( Runnable mainAction ) {
+		this.main = mainAction;
 		reset();
 	}
-	public JButton getMainAction() {
-		return mainAction;
+	public Runnable getMain() {
+		return main;
 	}
 
     public void reset() { 
     	System.err.println( "===reset" );
     	parent.setPlaying(false);
-		mainAction.doClick();
-		parent.clearSequences();
+		main.run();
+		parent.resetSequences();
     }
     public void cue() {
     	System.err.println( "===cue" );
@@ -496,7 +544,6 @@ public final class Pulsar extends Metro {
 	}
     
 	public JButton createCueButton() {
-		@SuppressWarnings("serial")
 		JButton b = new JButton( "=== CUE ===" ) {
 			@Override
 			public Dimension getPreferredSize() {
@@ -599,8 +646,9 @@ public final class Pulsar extends Metro {
 		metro.createOutputPort("MIDI Output1");
 		metro.createInputPort("MIDI Input0");
 		metro.createInputPort("MIDI Input1");
-		metro.connectPort( "Metro:MIDI Output1", "hydrogen-midi:RX" );
-		metro.connectPort( "a2j:Xkey37 [20] (capture): Xkey37 MIDI 1", "Metro:MIDI Input0" );
+		metro.connectPort( "Metro:MIDI Output0", "hydrogen-midi:RX" );
+		// metro.connectPort( "a2j:Xkey37 [20] (capture): Xkey37 MIDI 1", "Metro:MIDI Input0" );
 		
 	}
 }
+	
