@@ -48,7 +48,7 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 	@Override
 	public boolean processOutputNoteBuffer( Metro metro, MetroNoteEventBufferSequence sequence, MetroNoteEventBuffer buf ) {
 		// System.out.println("Metro.logic.new MetroLogic() {...}.initBuffer()" );
-		buf.humanize( 0.0d, 3 );
+//		buf.humanize( 0.0d, 3 );
 		scheme2buf(metro, sequence, procedure, buf);
 		return true;
 	}
@@ -150,7 +150,7 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 						double offset    = map.containsKey( "offset"   ) ? SchemeUtils.toDouble(        map.get("offset"    ) ) : 0.0d;  
 						int note         = map.containsKey( "note"     ) ? SchemeUtils.toInteger(       map.get("note"      ) ) : 63;  
 						int velocity     = map.containsKey( "velocity" ) ? SchemeUtils.toInteger(       map.get("velocity"  ) ) : 63;
-						double length    = map.containsKey( "length"   ) ? SchemeUtils.toInteger(       map.get("length"    ) ) : -1;
+//						double length    = map.containsKey( "length"   ) ? SchemeUtils.toInteger(       map.get("length"    ) ) : -1;
 
 						buf.noteOn(offset, port, channel, note, velocity );
 						break;
@@ -161,7 +161,7 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 						double offset    = map.containsKey( "offset"   ) ? SchemeUtils.toDouble(        map.get("offset"    ) ) : 0.0d;  
 						int note         = map.containsKey( "note"     ) ? SchemeUtils.toInteger(       map.get("note"      ) ) : 63;  
 						int velocity     = map.containsKey( "velocity" ) ? SchemeUtils.toInteger(       map.get("velocity"  ) ) : 63;
-						double length    = map.containsKey( "length"   ) ? SchemeUtils.toInteger(       map.get("length"    ) ) : -1;
+//						double length    = map.containsKey( "length"   ) ? SchemeUtils.toInteger(       map.get("length"    ) ) : -1;
 						
 						buf.noteOff(offset, port, channel, note, velocity );
 						break;
@@ -180,15 +180,15 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 //
 //						break;
 //					}
-					case  "start-new" : {
-						double    offset    = map.containsKey( "offset"   ) ? SchemeUtils.toDouble(        map.get("offset"    ) ) : 0.0d;  
-						String    name      = map.containsKey( "name"     ) ? SchemeUtils.toString(        map.get( "name"      ) ) : "";
-						Procedure proc      = (Procedure) map.get( "procedure" );
-						SchemePulsarLogic logic = new SchemePulsarLogic( procedure );
-						metro.putLogicSync( name, logic, sequence, offset );
-
-						break;
-					}
+//					case  "start-new" : {
+//						double    offset    = map.containsKey( "offset"   ) ? SchemeUtils.toDouble(        map.get("offset"    ) ) : 0.0d;  
+//						String    name      = map.containsKey( "name"     ) ? SchemeUtils.toString(        map.get( "name"      ) ) : "";
+//						Procedure proc      = (Procedure) map.get( "procedure" );
+//						SchemePulsarLogic logic = new SchemePulsarLogic( procedure );
+//						metro.putLogicSync( name, logic, MetroNoteEventBufferSequence.SyncType.PARALLEL, sequence, offset );
+//
+//						break;
+//					}
 					default : {
 						Logger.getLogger(Metro.class.getName()).log(Level.WARNING, null, "unknown type (" +  type + ")" );
 					}

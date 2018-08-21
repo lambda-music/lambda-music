@@ -31,6 +31,7 @@ import javax.swing.Timer;
 import org.jaudiolibs.jnajack.JackException;
 
 import ats.metro.Metro;
+import ats.metro.MetroNoteEventBufferSequence.SyncType;
 import ats.pulsar.lib.FlawLayout;
 import ats.pulsar.lib.LayoutUtils;
 import ats.pulsar.lib.SpringLayoutUtil;
@@ -168,39 +169,43 @@ public final class Pulsar extends Metro {
     		}
     	});
 
+//    	scheme.getEnvironment().define( SimpleSymbol.make( "", "put-seq!" ), null, new ProcedureN() {
+//			@Override
+//    		public Object applyN(Object[] args) throws Throwable {
+//				if ( args.length == 2 ) {
+//					String name = SchemeUtils.toString( args[0] );
+//					Procedure procedure = (Procedure) args[1];
+//					SchemePulsarLogic logic = new SchemePulsarLogic(procedure);
+//		
+//					putLogic(name, logic);
+//					
+//					return EmptyList.emptyList;
+//				} else {
+//					throw new RuntimeException( "Invalid parameter. usage : (-seq [name] [lambda] ) " );
+//				}
+//			}
+//    	});
+
     	scheme.getEnvironment().define( SimpleSymbol.make( "", "put-seq!" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
-				if ( args.length == 2 ) {
-					String name = SchemeUtils.toString( args[0] );
-					Procedure procedure = (Procedure) args[1];
-					SchemePulsarLogic logic = new SchemePulsarLogic(procedure);
-		
-					putLogic(name, logic);
-					
-					return EmptyList.emptyList;
-				} else {
-					throw new RuntimeException( "Invalid parameter. usage : (-seq [name] [lambda] ) " );
-				}
-			}
-    	});
-
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "put-seq-sync!" ), null, new ProcedureN() {
-			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-				if ( args.length == 4 ) {
-					String name = SchemeUtils.toString( args[0] );
-					Procedure procedure = (Procedure) args[1];
-					String syncSequenceName = SchemeUtils.anyToString( args[2] );
-					double offset = SchemeUtils.toDouble( args[3] );
+				if ( 2 <= args.length  ) {
+					String name             = SchemeUtils.toString( args[0] );
+					Procedure procedure     = (Procedure) args[1];
+					SyncType syncType       = 3<=args.length ? str2sync( args[2] ) : SyncType.IMMEDIATE;
+					String syncSequenceName = 4<=args.length ? SchemeUtils.anyToString( args[3] ) : null;
+					double offset           = 5<=args.length ? SchemeUtils.toDouble( args[4] ) : 0.0d;
 					
 					SchemePulsarLogic logic = new SchemePulsarLogic(procedure);
-					putLogicSync(name, logic, syncSequenceName, offset );
+					putLogic(name, logic, syncType, syncSequenceName, offset );
 					
 					return EmptyList.emptyList;
 				} else {
 					throw new RuntimeException( "Invalid parameter. usage : (new-seq [name] [lambda] ) " );
 				}
+			}
+			private SyncType str2sync(Object object) {
+				return SyncType.valueOf( SchemeUtils.anyToString( object ).toUpperCase() );
 			}
     	});
    	    	
@@ -294,7 +299,6 @@ public final class Pulsar extends Metro {
     	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-add!" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
-				System.err.println("get-add");
 				if ( args.length == 1 ) {
 					userPane.add( (JComponent)args[0] );
 				} else if ( args.length == 2 ) {

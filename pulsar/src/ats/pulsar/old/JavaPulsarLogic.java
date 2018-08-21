@@ -14,6 +14,7 @@ public class JavaPulsarLogic extends MetroLogic.Default {
 	}
 
 	private boolean flag;
+	@SuppressWarnings("unused")
 	private void notifyFlag() {
 		this.flag = true;
 	}

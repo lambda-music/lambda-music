@@ -4,12 +4,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.jaudiolibs.jnajack.JackClient;
 import org.jaudiolibs.jnajack.JackException;
 import org.jaudiolibs.jnajack.JackPosition;
 
 public class MetroNoteEventBufferSequence {
+	
+	public enum SyncType {
+		IMMEDIATE, PARALLEL, SERIAL,  
+	}
 	/**
 	 * 
 	 */
@@ -28,24 +34,28 @@ public class MetroNoteEventBufferSequence {
 		@Override
 		public void spawn( String name, double offset, MetroLogic logic ) {
 			MetroNoteEventBufferSequence sequence = 
-					new MetroNoteEventBufferSequence( name, metro, MetroNoteEventBufferSequence.this, logic, offset );
+					new MetroNoteEventBufferSequence( metro, name, logic, syncType, MetroNoteEventBufferSequence.this, offset );
 			
 			metro.registerSequence( sequence );
 		}
 	};
 
-	private MetroNoteEventBufferSequence parentSequence;
+	private SyncType syncType;
+	private MetroNoteEventBufferSequence syncSequence;
+	private double syncOffset=0.0d;
 	private BlockingQueue<MetroNoteEventBuffer> buffers = new LinkedBlockingQueue<>();
 	protected int cursor = 0;
 	protected MetroLogic logic;
-	private double offset=0.0d;
 	
-	public MetroNoteEventBufferSequence( String name, Metro metro, MetroNoteEventBufferSequence parentSequence, MetroLogic logic, double offset ) {
+	public MetroNoteEventBufferSequence( Metro metro, String name, MetroLogic logic, SyncType syncType, MetroNoteEventBufferSequence syncSequence, double syncOffset ) {
 		this.name = name.intern();
 		this.metro = metro;
-		this.parentSequence = parentSequence;
 		this.logic = logic;
-		this.offset = offset;
+		this.syncType = syncType;
+		this.syncSequence = syncSequence;
+		this.syncOffset = syncOffset;
+		
+//		System.err.println(/ "" );
 		
 		this.logic.setLogicHandle( handle );
 	}
@@ -86,7 +96,7 @@ public class MetroNoteEventBufferSequence {
 			int cursorOffset = 0;
 
 			//    	System.out.println( cursor + "/" + nextCursor );
-			int accrossCount = 0;
+//			int accrossCount = 0;
 			
 			for ( Iterator<MetroNoteEventBuffer> ibuf = this.buffers.iterator(); ibuf.hasNext(); ) {
 				MetroNoteEventBuffer buf = ibuf.next();
@@ -176,10 +186,45 @@ public class MetroNoteEventBufferSequence {
 	}
 
 	protected void prepare( int barInFrames ) throws JackException {
-		int parentCursor = this.parentSequence.cursor;
-		this.cursor = parentCursor + (int) (-1.0d * this.offset * barInFrames) ;
-//		this.cursor =                (int) (-1.0d * this.offset * barInFrames) ;
-//		 System.out.println( this.cursor );
+		int offset = (int) (-1.0d * this.syncOffset * barInFrames);
+
+		switch ( this.syncType ) {
+			case IMMEDIATE :
+			{
+				this.cursor = offset;
+				if ( this.syncSequence != null ) {
+					Logger.getLogger( Metro.class.getName()).log(Level.WARNING, "syncSequence was passed but ignored by the process because syncType was `immediate`." );
+				}
+			}
+			break;
+			case PARALLEL :
+			{
+				if ( this.syncSequence == null ) {
+					this.cursor = offset;
+					Logger.getLogger( Metro.class.getName()).log(Level.WARNING, "`parallel` was specified but syncSequence was not passed." );
+				} else {
+					this.cursor = this.syncSequence.cursor + offset ;
+				}
+
+			}
+			break;
+			case SERIAL :
+				if ( this.syncSequence == null ) {
+					this.cursor = offset;
+		            Logger.getLogger( Metro.class.getName()).log(Level.WARNING, "`serial` was specified but syncSequence was not passed." );
+				} else {
+					synchronized ( this.syncSequence.buffers ) {
+						this.cursor =
+								this.syncSequence.cursor - 
+								this.syncSequence.buffers.peek().getLengthInFrames() + 
+								offset;
+					}
+				}
+				break;
+			default :
+				throw new RuntimeException( "Internal Error"); // this won't occur.
+		}
+
 	}
 
 	protected  void reprepare( Metro metro, JackClient client, JackPosition position ) throws JackException {

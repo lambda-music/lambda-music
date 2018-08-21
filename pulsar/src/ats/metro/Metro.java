@@ -41,6 +41,8 @@ import org.jaudiolibs.jnajack.JackStatus;
 import org.jaudiolibs.jnajack.JackTimebaseCallback;
 import org.jaudiolibs.jnajack.JackTransportState;
 
+import ats.metro.MetroNoteEventBufferSequence.SyncType;
+
 
 public class Metro implements JackProcessCallback, JackShutdownCallback, JackTimebaseCallback, Runnable {
 //	private final static boolean DEBUG = true;
@@ -99,7 +101,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 	public static Metro startClient( String clientName, MetroLogic logic ) throws JackException {
 		try {
             Metro metro = new Metro();
-            metro.putLogic("main", logic );
+            metro.putLogic( "main", logic );
             metro.start( clientName );
             return metro;
         } catch (JackException ex) {
@@ -125,6 +127,10 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 		    	)
 			);
 	}
+	public void putLogicOld( String name, MetroLogic logic ) {
+		MetroNoteEventBufferSequence sequence = new MetroNoteEventBufferSequence( this, name, logic, SyncType.PARALLEL , null, 0.0d );
+		this.sequences.add( sequence );
+	}
 	
 	/*
 	 * Note that  There is no `this.logics`. Instead of that all of Logic objects are 
@@ -132,25 +138,27 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 	 * (Sat, 18 Aug 2018 19:03:18 +0900)
 	 */
 	public void putLogic( String name, MetroLogic logic ) {
-		MetroNoteEventBufferSequence sequence = new MetroNoteEventBufferSequence( name, this, null, logic, 0.0d );
-		this.sequences.add( sequence );
+		putLogic( name, logic, SyncType.PARALLEL, null, 0.0d );
 	}
-	
-	public void putLogicSync( String name, MetroLogic logic, Object syncSequenceObj, double offset ) {
-		MetroNoteEventBufferSequence sequence = new MetroNoteEventBufferSequence( name, this, null, logic, 0.0d );
 
+	public void putLogic( String name, MetroLogic logic, SyncType syncType, Object syncSequenceObj, double syncOffset ) {
+		
 		MetroNoteEventBufferSequence syncSequence;
-		if ( syncSequenceObj instanceof MetroNoteEventBufferSequence ) {
+		if ( syncSequenceObj == null ) {
+			syncSequence = null;
+		} else if ( syncSequenceObj instanceof MetroNoteEventBufferSequence ) {
 			syncSequence = (MetroNoteEventBufferSequence) syncSequenceObj;
 		} else if ( syncSequenceObj instanceof String ) {
 			syncSequence = searchSequence( (String) syncSequenceObj );
+//			System.out.println( "syncSequenceObj" + syncSequenceObj );
+//			System.out.println( "syncSequence" + syncSequence );
 		} else {
 			throw new RuntimeException( "Unsupported object on syncSequence" );
 		}
 		
-		if ( syncSequence != null  ) {
-			registerSequenceImmediately( sequence, syncSequence, offset );
-		}
+		MetroNoteEventBufferSequence sequence = 
+				new MetroNoteEventBufferSequence( this, name, logic, syncType, syncSequence, syncOffset );
+		registerSequence( sequence );
 	}
 	
 	
@@ -236,6 +244,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
     public void resetSequences() {
 		synchronized ( this.sequences ) {
 			this.sequences.clear();
+			this.notifyCheckBuffer();
 		}
     }
     
@@ -261,7 +270,8 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 					}		
 					this.unregisteredSeqences.clear();
 					this.registeredSequences.clear();
-					this.sequences.wait( 500 );
+					
+					this.sequences.wait( 1 );
 				}
 //				System.out.println( this.sequences.size() );
 //	        	Thread.sleep(0);
@@ -415,7 +425,16 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
             return false;
         }
     }
-    
+    /*
+     * NOTE : DON'T FORGET THIS
+     * 
+     * Two methods registerSequence() and unregisterSequence() are registering 
+     * the given sequence object via two cues : registeredSequences / unregisteredSequences.
+     * These lists are referred by Metro.run() method which is executed by another thread. 
+     * 
+     * 
+     * 
+     */
     protected void registerSequence( MetroNoteEventBufferSequence sequence ) {
 		if ( DEBUG ) 
 			System.err.println( "****** CREATED a new sequence is created " + sequence.id );
@@ -435,26 +454,17 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 		}
 	}
 
-	public void registerSequenceImmediately(MetroNoteEventBufferSequence sequence, MetroNoteEventBufferSequence syncSequence, 
-			double offset) 
-	{
-		if ( DEBUG ) 
-			System.err.println( "****** CREATED a new sequence is created " + sequence.id );
-		
-		int cursor = syncSequence.cursor;
-		
-		if ( offset == 0.0  ) {
-			sequence.cursor = cursor;
-		} else {
-			try {
-				int barInFrames = Metro.calcBarInFrames( this, client, position );
-				sequence.cursor = cursor - (int)(offset * barInFrames);
-			} catch (JackException e) {
-		        Logger.getLogger(Metro.class.getName()).log(Level.SEVERE, null, e);
-			}
-		}
-		this.sequences.add( sequence );
-	}
+//	public void registerSequenceImmediately(MetroNoteEventBufferSequence sequence, MetroNoteEventBufferSequence syncSequence, 
+//			double offset) 
+//	{
+//		if ( DEBUG ) 
+//			System.err.println( "****** CREATED a new sequence is created " + sequence.id );
+//		
+//		synchronized ( this.sequences ) {
+//			this.sequences.add( sequence );
+//			sequence.prepare(barInFrames);
+//		}
+//	}
 
 
     @Override

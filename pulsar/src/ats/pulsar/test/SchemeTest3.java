@@ -34,6 +34,7 @@ public class SchemeTest3 {
 		scheme.getEnvironment().define( SimpleSymbol.make( "", "reflect" ), null, new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
+				@SuppressWarnings("unused")
 				int sum=0;
 				for ( int i=0; i<args.length; i++ ) {
 					System.err.println(  args[i].getClass() );
