@@ -10,6 +10,8 @@ import org.jaudiolibs.jnajack.JackClient;
 import org.jaudiolibs.jnajack.JackException;
 import org.jaudiolibs.jnajack.JackPosition;
 
+import gnu.mapping.Procedure;
+
 public class MetroNoteEventBuffer implements Iterable<MetroNoteEvent>{
 	private double humanizeFactorOffset=0;
 	private double humanizeFactorVelocity=0;
@@ -35,6 +37,7 @@ public class MetroNoteEventBuffer implements Iterable<MetroNoteEvent>{
 	}
 	
 	public void prepare( Metro metro, JackClient client, JackPosition position ) throws JackException {
+		this.list.sort( MetroNoteEvent.comparator );
 		int barInFrames = Metro.calcBarInFrames( metro, client, position );
 		this.calcInFrames( barInFrames );
 	}
@@ -54,8 +57,6 @@ public class MetroNoteEventBuffer implements Iterable<MetroNoteEvent>{
 	}
 
 	private void note(int outputPortNo, int midiEventValue, double offset, int channel, int note, int velocity) {
-//		System.out.println( "note 1:" + Integer.toUnsignedString( midiEventValue , 2) );
-
 		MetroNoteEvent event = new MetroNoteEvent(
 				outputPortNo,
 				offset,
@@ -65,19 +66,11 @@ public class MetroNoteEventBuffer implements Iterable<MetroNoteEvent>{
 						(byte) velocity
 				}
 		);
-//		if ( this.length < offset ) {
-//			this.length = offset;
-//		}
-//		System.out.println( "note 2:" + Integer.toUnsignedString(event.data[0] , 2) );
 		this.list.add(event);
 	}
 
 	public void noteHit( double offset, int outputPortNo, int channel, int note, int velocity ) {
 		noteHit( offset, outputPortNo, channel, note, velocity, -1 );
-//		noteOn(  offset, outputPortNo, channel, note, velocity );
-//		noteOff( offset + 0.0025d, outputPortNo, channel, note, velocity );
-//		noteOff( offset + 0.0025d, outputPortNo, channel, note, velocity );
-//		noteOff( offset+1.000d, outputPortNo, channel, note, velocity );
 	}
 	public void noteHit( double offset, int outputPortNo, int channel, int note, int velocity, double duration ) {
 		if ( 0 < duration )
@@ -128,5 +121,9 @@ public class MetroNoteEventBuffer implements Iterable<MetroNoteEvent>{
 	public void humanize( double offset, double velocity ) {
 		this.humanizeFactorOffset = offset;
 		this.humanizeFactorVelocity = velocity;
+	}
+	public void exec( double offset, Procedure proc ) {
+		// TODO Auto-generated method stub
+		
 	}
 }

@@ -84,6 +84,40 @@ public class MetroNoteEventBufferSequence {
 //	public void setCursor( int cursor ) {
 //		this.cursor = cursor; 
 //	}
+	
+	/*
+	 * === About `found` flag ===
+	 * There are three stages :
+	 *
+	 * 1. WHile between() function returns false,
+	 * the current position should be before the area.
+	 * 2. While between() function returns true,
+	 * the current position should be in the area. 
+	 * 3. When between() function return false 
+	 * after between() function return true,
+	 * the current position should be after the area.
+	 * 
+	 * If it entered to the stage-3, between() function will not
+	 * return true again; therefore the searching process is
+	 * not necessary to continue anymore.
+	 * 
+	 * * Asterisk denotes a Note Event Object. 
+	 * 
+	 * 
+	 *                    | THE AREA   |
+	 *  *                 |            |
+	 *    *               |            |
+	 *         *          |            |
+	 *              *     |            |
+	 *                    | *          |
+	 *                    |     *      |
+	 *                    |            |
+	 *                    |          * |
+	 *                    |            |*  
+	 *                    |            |        *
+	 *                    |            |           *
+	 *                    |            |             *
+	 */
 
 
 	protected void progressCursor( int nframes, List<MetroMidiEvent> result ) throws JackException {
@@ -106,14 +140,14 @@ public class MetroNoteEventBufferSequence {
 
 				//    		System.out.println( "AFTER::::" );
 				//    		buf.dump();
+				boolean found= false;
 				for ( Iterator<MetroNoteEvent> ie = buf.iterator(); ie.hasNext();  ) {
 					MetroNoteEvent e = ie.next();
-
 					
 					if ( e.between( actualCursor, actualNextCursor ) ) {
 						//		    			System.out.println("VALUE" + ( e.getOffsetInFrames() - this.cursor ) );
 						//        			System.out.println( e.("***" ));
-
+						found= true;
 						result.add( new MetroMidiEvent( 
 								e.getOutputPortNo(), 
 								e.getOffsetInFrames() - actualCursor, 
@@ -122,6 +156,9 @@ public class MetroNoteEventBufferSequence {
 
 						//        			System.out.println( "event.getData()" + event.getData() );
 						//        			System.out.println( "event.getData()" + Integer.toUnsignedString(event.getData()[0] , 2 ) );
+					} else {
+						if ( found )
+							break;
 					}
 				}
 

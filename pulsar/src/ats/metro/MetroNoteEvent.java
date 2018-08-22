@@ -1,8 +1,16 @@
 package ats.metro;
 
 import java.util.Arrays;
+import java.util.Comparator;
 
 public class MetroNoteEvent {
+	public static Comparator<? super MetroNoteEvent> comparator = new Comparator<MetroNoteEvent>() {
+		@Override
+		public int compare(MetroNoteEvent o1, MetroNoteEvent o2) {
+			return (int)(o1.offset - o2.offset);
+		}
+	};
+	
 	int outputPortNo;
 	double offset;
 	int offsetInFrames;

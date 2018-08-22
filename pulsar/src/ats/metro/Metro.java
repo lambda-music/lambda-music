@@ -385,17 +385,17 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
         	}
         		
 
-            if ( 0 < this.inputMidiEventList.size() ) {
-            	for ( MetroNoteEventBufferSequence sequence : this.sequences ) {
-            		sequence.progressCursor( nframes, this.outputMidiEventList );
-            		sequence.logic.processInputMidiBuffer( this, this.inputMidiEventList, this.outputMidiEventList );
-            	}
-            }
             
             synchronized ( this.sequences ) {
-            	for ( MetroNoteEventBufferSequence sequence : this.sequences ) {
-            		sequence.progressCursor( nframes, this.outputMidiEventList );
-            	}
+                if ( 0 < this.inputMidiEventList.size() )
+	            	for ( MetroNoteEventBufferSequence sequence : this.sequences ) {
+	            		sequence.logic.processInputMidiBuffer( this, this.inputMidiEventList, this.outputMidiEventList );
+	            	}
+                if ( true )
+	            	for ( MetroNoteEventBufferSequence sequence : this.sequences ) {
+	            		sequence.progressCursor( nframes, this.outputMidiEventList );
+	            	}
+                
             	this.outputMidiEventList.sort( MetroMidiEvent.COMPARATOR );
             	
             	if ( ! this.outputMidiEventList.isEmpty() )

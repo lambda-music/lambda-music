@@ -174,6 +174,13 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 						buf.setLength( length );
 						break;
 					}
+					case  "exec" : {
+						double offset        = map.containsKey( "offset"   )  ? SchemeUtils.toDouble(     map.get( "offset"    ) ) : 0.0d;
+						Procedure proc       = map.containsKey( "procedure" ) ?                (Procedure)map.get( "procedure" ) : null;
+						
+						buf.exec( offset, proc );
+						break;
+					}
 //					case  "end" : {
 //						double    offset    = map.containsKey( "offset"   ) ? SchemeUtils.toDouble(        map.get("offset"    ) ) : 0.0d;  
 //						buf.end( offset );
