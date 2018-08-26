@@ -18,6 +18,14 @@ import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 
 public class PulsableLogic extends MetroLogic.Default {
+    static void logInfo( Object msg ) {
+    	System.err.println( msg );
+		// Logger.getLogger(PulsableLogic.class.getName()).log(Level.INFO, msg );
+    }
+    static void logError( String msg, Throwable e ) {
+		Logger.getLogger(PulsableLogic.class.getName()).log(Level.SEVERE, msg, e);
+    }
+
 	/*
 	 * (list
 	 *     (cons 1.0  (lambda() ... ))
@@ -41,7 +49,7 @@ public class PulsableLogic extends MetroLogic.Default {
 
 	List<Pulsable> pulsableList = new ArrayList<Pulsable>(); 
 	{
-		System.err.println("set-current-pulsable (from init)" );
+		logInfo( "set-current-pulsable (from init)");
 //		setCurrentPulsable( new SamplePulsableBuilder() );
 	}
 
@@ -54,7 +62,7 @@ public class PulsableLogic extends MetroLogic.Default {
 	}
 	
 	public void setCurrentPulsable( PulsableBuilder pulsableBuilder ) {
-		System.err.println( "set current pulsable "  + pulsableBuilder.getName() );
+		logInfo( "set current pulsable "  + pulsableBuilder.getName());
 		pulsableList.clear();
 		pulsableList.addAll( pulsableBuilder.create() );
 		
@@ -66,8 +74,8 @@ public class PulsableLogic extends MetroLogic.Default {
 	@Override
 	public void processInputMidiBuffer(Metro metro, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
 		out.addAll( in );
-		System.err.println( "in.size()" + in.size() );
-		System.err.println( "out.size()" + out.size() );
+		logInfo( "in.size()" + in.size());
+		logInfo( "out.size()" + out.size());
 	}
 
 

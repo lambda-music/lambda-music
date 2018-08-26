@@ -5,11 +5,21 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Insets;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
 public class FlawLayout extends FlowLayout {
+    static void logInfo( Object msg ) {
+    	// System.err.println( msg );
+		// Logger.getLogger(FlawLayout.class.getName()).log(Level.INFO, msg );
+    }
+    static void logError( String msg, Throwable e ) {
+		Logger.getLogger(FlawLayout.class.getName()).log(Level.SEVERE, msg, e);
+    }
+
     static class NewLineComponent extends Component {
 		private static final long serialVersionUID = 2264471865909859221L;
     }
@@ -72,7 +82,7 @@ public class FlawLayout extends FlowLayout {
 
         for (int i = 0 ; i < nmembers ; i++) {
             Component m = target.getComponent(i);
-        	System.err.println( i );
+        	logInfo( i );
 
             if (m.isVisible()) {
                 Dimension d = m.getPreferredSize();
@@ -98,7 +108,7 @@ public class FlawLayout extends FlowLayout {
                     x += d.width;
                     rowh = Math.max(rowh, d.height);
                 } else {
-                	System.err.println( "WRAP" );
+                	logInfo( "WRAP" );
                     rowh = moveComponents(target, insets.left + getHgap(), y,
                                    maxwidth - x, rowh, start, i, ltr,
                                    useBaseline, ascent, descent);

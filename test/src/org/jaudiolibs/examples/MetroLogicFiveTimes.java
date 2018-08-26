@@ -90,11 +90,11 @@ final class MetroLogicFiveTimes extends MetroLogic.Default {
 			public void actionPerformed(ActionEvent e) {
 				switch ( e.getActionCommand() ) {
 				case "5 Meter" :
-					System.out.println("5 Meter");
+						System.out.print( "5 Meter" );
 					logic.notifyFlag();
 					break;
 				case "7 Meter" :
-					System.out.println("7 Meter");
+						System.out.print( "7 Meter" );
 					break;
 				default :
 				}

@@ -67,13 +67,10 @@ public final class Pulsar extends Metro {
 
 		// See the comment.
 		setCurrentFile( null , currentFile );
-
-		javax.swing.SwingUtilities.invokeLater( new Runnable() {
-			public void run() {
-				createAndShowGUI();
-			}
-		});
 	}
+	public Pulsar() {
+	}
+
 
 	/**
 	 * timer frequently check the file that the {@link Pulsar#currentFile} points if its
@@ -85,17 +82,21 @@ public final class Pulsar extends Metro {
 		}
 		
 		Pulsar pulsar = new Pulsar( new File( args[0] ) );
-		pulsar.start( "Metro" );
+		
+//		pulsar.open( "Metro" );
+//
+//		pulsar.createOutputPort("MIDI Output0");
+//		pulsar.createOutputPort("MIDI Output1");
+//		pulsar.createInputPort("MIDI Input0");
+//		pulsar.createInputPort("MIDI Input1");
+//		pulsar.connectPort( "Metro:MIDI Output0", "hydrogen-midi:RX" );
 
-		pulsar.createOutputPort("MIDI Output0");
-		pulsar.createOutputPort("MIDI Output1");
-		pulsar.createInputPort("MIDI Input0");
-		pulsar.createInputPort("MIDI Input1");
-		pulsar.connectPort( "Metro:MIDI Output0", "hydrogen-midi:RX" );
 		// metro.connectPort( "a2j:Xkey37 [20] (capture): Xkey37 MIDI 1", "Metro:MIDI Input0" );
 	}
-	
-	
+
+	static void pulsarError( String msg, Throwable e ) {
+        Logger.getLogger(Pulsar.class.getName()).log(Level.SEVERE, null, e);
+	}
 
 	static final int BORDER = 10;
 	
@@ -223,21 +224,23 @@ public final class Pulsar extends Metro {
 				// }
 			}
 		} catch (FileNotFoundException e1) {
-			Logger.getLogger(Pulsar.class.getName()).log(Level.SEVERE,"",e1);
+			pulsarError( "" , e1 );
 		} catch (IOException e1) {
-			Logger.getLogger(Pulsar.class.getName()).log(Level.SEVERE,"",e1);
+			pulsarError( "" , e1 );
 		} finally {
 			if ( in != null )
 				try {
 					in.close();
 				} catch (IOException e1) {
-					Logger.getLogger(Pulsar.class.getName()).log(Level.SEVERE,"",e1);
+					pulsarError( "" , e1 );
 				}
 		}
 	}
 	
+	private static final int NOT_DEFINED = -1;
+
 	final File configFile = getConfigFile();
-	long lastModifiedOfConfigFile=-1;
+	long lastModifiedOfConfigFile=NOT_DEFINED;
 
 	/**
 	 * This stores the File object that point to the current opening scheme file.
@@ -247,23 +250,23 @@ public final class Pulsar extends Metro {
 	 * watchdog timer invoke {@link Pulsar#loadScheme(File)} method to load the
 	 * script.
 	 */
-	File currentFile;
+	File currentFile=null;
 	
 	/**
 	 * This path is used whenever a relative path is given to the
 	 * {@link Pulsar#loadScheme(File)} method.
 	 */
-	File currentParentFile;
+	File currentParentFile=null;
 
 	/**
 	 * This field stores the last value of timestamp of the {@link Pulsar#currentFile }
 	 */
-	long lastModifiedOfCurrentFile=-1;
+	long lastModifiedOfCurrentFile=NOT_DEFINED;
 	
 	void setCurrentFile( File currentParentFile, File currentFile ) {
 		this.currentFile = currentFile;
 		this.currentParentFile = currentParentFile;
-		this.lastModifiedOfCurrentFile = -1;
+		this.lastModifiedOfCurrentFile = NOT_DEFINED;
 	}
 	
 	// a watchdog Timer
@@ -277,7 +280,7 @@ public final class Pulsar extends Metro {
 
 			long checkLastModified( File file, long lastModified ) {
 				if ( file == null ) 
-					return lastModified;
+					return NOT_DEFINED; // lastModified;
 				
 				long newLastModified = file.lastModified();
 				if ( newLastModified != lastModified ) {
@@ -285,7 +288,7 @@ public final class Pulsar extends Metro {
 					try {
 						loadScheme( file );
 					} catch (FileNotFoundException e) {
-			            Logger.getLogger(Pulsar.class.getName()).log(Level.SEVERE, null, e);
+						pulsarError( "" , e );
 					}
 				}
 				return newLastModified;
@@ -312,7 +315,7 @@ public final class Pulsar extends Metro {
 				Environment.setCurrent( this.environment );
 				procedure.applyN( new Object[] {} );
 			} catch (Throwable e) {
-	            Logger.getLogger(Pulsar.class.getName()).log(Level.SEVERE, null, e);
+				pulsarError( "" , e );
 				throw new RuntimeException(e);
 			}
 		}
@@ -376,6 +379,74 @@ public final class Pulsar extends Metro {
 				}
     		}
     	}
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "open?" ), null, new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				return running;
+    		}
+    	});
+
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "open!" ), null, new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				for ( Object o : args ) {
+					String name = SchemeUtils.toString( o );
+					open( name );
+				}
+				return EmptyList.emptyList;
+    		}
+    	});
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "close!" ), null, new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				close();
+				return EmptyList.emptyList;
+    		}
+    	});
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "output!" ), null, new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				for ( Object o : args ) {
+					String name = SchemeUtils.toString( o );
+					createOutputPort( name );
+				}
+				return EmptyList.emptyList;
+    		}
+    	});
+
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "input!" ), null, new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				for ( Object o : args ) {
+					String name = SchemeUtils.toString( o );
+					createInputPort( name );
+				}
+				return EmptyList.emptyList;
+    		}
+    	});
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "connect!" ), null, new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				ArrayDeque<Object> deque = new ArrayDeque<>( Arrays.asList( args ) );
+				while ( 0 < deque.size() ) {
+					Object fromObj = deque.pop();
+					Object toObj = deque.pop();
+					if ( fromObj == null || toObj == null ) {
+						break;
+					}
+					String from = fromObj != null ? SchemeUtils.toString( fromObj ) : null;
+					String to   = toObj   != null ? SchemeUtils.toString( toObj   ) : null;
+					try {
+						connectPort( from, to );
+					} catch ( JackException e  ) {
+						pulsarError( "" , e );
+					}
+				}
+				return EmptyList.emptyList;
+    		}
+    	});
+    	
+
     	scheme.getEnvironment().define( SimpleSymbol.make( "", "set-main!" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
@@ -402,6 +473,27 @@ public final class Pulsar extends Metro {
     			return EmptyList.emptyList;
     		}
     	});
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "playing?" ), null, new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				return getPlaying();
+    		}
+    	});
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "play!" ), null, new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				setPlaying( true ); 
+    			return EmptyList.emptyList;
+    		}
+    	});
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "stop!" ), null, new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				setPlaying( false ); 
+    			return EmptyList.emptyList;
+    		}
+    	});
+    	
 
     	scheme.getEnvironment().define( SimpleSymbol.make( "", "set-related-files!" ), null, new ProcedureN() {
     		@Override
@@ -528,71 +620,7 @@ public final class Pulsar extends Metro {
 			}
     	});
 
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "running?" ), null, new ProcedureN() {
-			@Override
-			public Object applyN(Object[] args) throws Throwable {
-				return running;
-    		}
-    	});
 
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "run!" ), null, new ProcedureN() {
-			@Override
-			public Object applyN(Object[] args) throws Throwable {
-				for ( Object o : args ) {
-					if ( running ) {
-						throw new RuntimeException( "There is an already running server." );
-					} else {
-						running = true;
-					}
-					String name = SchemeUtils.toString( o );
-					start( name );
-				}
-				return EmptyList.emptyList;
-    		}
-    	});
-
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "output!" ), null, new ProcedureN() {
-			@Override
-			public Object applyN(Object[] args) throws Throwable {
-				for ( Object o : args ) {
-					String name = SchemeUtils.toString( o );
-					createOutputPort( name );
-				}
-				return EmptyList.emptyList;
-    		}
-    	});
-
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "input!" ), null, new ProcedureN() {
-			@Override
-			public Object applyN(Object[] args) throws Throwable {
-				for ( Object o : args ) {
-					String name = SchemeUtils.toString( o );
-					createInputPort( name );
-				}
-				return EmptyList.emptyList;
-    		}
-    	});
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "connect!" ), null, new ProcedureN() {
-			@Override
-			public Object applyN(Object[] args) throws Throwable {
-				ArrayDeque<Object> deque = new ArrayDeque<>( Arrays.asList( args ) );
-				while ( 0 < deque.size() ) {
-					Object fromObj = deque.pop();
-					Object toObj = deque.pop();
-					if ( fromObj == null || toObj == null ) {
-						break;
-					}
-					String from = fromObj != null ? SchemeUtils.toString( fromObj ) : null;
-					String to   = toObj   != null ? SchemeUtils.toString( toObj   ) : null;
-					try {
-						connectPort( from, to );
-					} catch ( JackException e  ) {
-			            Logger.getLogger(Pulsar.class.getName()).log(Level.SEVERE, null, e);
-					}
-				}
-				return EmptyList.emptyList;
-    		}
-    	});
   	
     	// ???
     	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-get-pane" ), null, new ProcedureN() {
@@ -642,7 +670,7 @@ public final class Pulsar extends Metro {
 										Environment.setCurrent(env);
 										procedure.applyN( new Object[] { userHandle } );
 									} catch (Throwable e1) {
-							            Logger.getLogger(Pulsar.class.getName()).log(Level.SEVERE, null, e1);
+										pulsarError( "" , e1 );
 									}
 								}
 							});
@@ -743,7 +771,6 @@ public final class Pulsar extends Metro {
     transient boolean isComboBoxUpdating = false;
 	JComboBox<String> cb_relatedFiles;
 	JTextField tf_currentFile;
-
 	
 	public void guiClear() {
 		userPane.removeAll();
@@ -779,6 +806,17 @@ public final class Pulsar extends Metro {
 
 	public void newlineGui() {
 		// userPane.add( Box.createVerticalStrut(500 ) );
+	}
+
+	/**
+	 * Initialize GUI 
+	 */
+	{
+		javax.swing.SwingUtilities.invokeLater( new Runnable() {
+			public void run() {
+				createAndShowGUI();
+			}
+		});
 	}
 
     private void createAndShowGUI() {

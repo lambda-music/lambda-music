@@ -1,12 +1,15 @@
 package ats.pulsar.lib;
 
 import java.awt.Component;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SpringLayout;
 
+import ats.metro.Metro;
 import gnu.lists.IString;
 import gnu.mapping.Symbol;
 
@@ -19,7 +22,14 @@ public class SpringLayoutUtil {
 		this.parent = parent;
 	}
 	
-	
+    static void logInfo( String msg ) {
+    	System.err.println( msg );
+		// Logger.getLogger(Metro.class.getName()).log(Level.INFO, msg );
+    }
+    static void logError( String msg, Throwable e ) {
+		Logger.getLogger(Metro.class.getName()).log(Level.SEVERE, msg, e);
+    }
+
 	public int o2n(Object o ) {
 		int n;
 		if ( o instanceof Integer ) {
@@ -132,19 +142,19 @@ public class SpringLayoutUtil {
 		c2 = n2c(_c2);
 
 		if ( DEBUG ) {
-			System.err.println( e1 );
+			logInfo( e1);
 			if ( c1 instanceof JButton )
-				System.err.println( ((JButton)c1).getText() );
+				logInfo( ((JButton)c1).getText());
 			if ( c1 instanceof JPanel)
-				System.err.println( "Panel" );
+				logInfo( "Panel");
 			
-			System.err.println( e2 );
+			logInfo( e2);
 			if ( c2 instanceof JButton )
-				System.err.println( ((JButton)c2).getText() );
+				logInfo( ((JButton)c2).getText());
 			if ( c2 instanceof JPanel)
-				System.err.println( "Panel" );
+				logInfo( "Panel");
 			
-			System.err.println( "=============="  );
+			logInfo( "==============");
 		}
 		
 //		if ( e1.equals( "South") || e1.equals( "East") )

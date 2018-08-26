@@ -12,7 +12,14 @@ import org.jaudiolibs.jnajack.JackException;
 import org.jaudiolibs.jnajack.JackPosition;
 
 public class MetroNoteEventBufferSequence {
-	
+    static void logInfo( String msg ) {
+    	System.err.println( msg );
+		// Logger.getLogger(MetroNoteEventBufferSequence.class.getName()).log(Level.INFO, msg );
+    }
+    static void logError( String msg, Throwable e ) {
+		Logger.getLogger(MetroNoteEventBufferSequence.class.getName()).log(Level.SEVERE, msg, e);
+    }
+
 	public enum SyncType {
 		IMMEDIATE, PARALLEL, SERIAL,  
 	}
@@ -229,7 +236,7 @@ public class MetroNoteEventBufferSequence {
 
 			this.cursor = nextCursor;
 			if ( Metro.DEBUG )
-				System.out.println( this.cursor + "/" + (this.buffers.isEmpty() ? "empty" : this.buffers.peek().getLengthInFrames()  ) );
+				logInfo( this.cursor + "/" + (this.buffers.isEmpty() ? "empty" : this.buffers.peek().getLengthInFrames()  ));
 		}
 	}
 

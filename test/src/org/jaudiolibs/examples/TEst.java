@@ -14,14 +14,14 @@ public class TEst {
 			d.offer( Integer.toString(i));
 		}
 		
-		System.out.println("");
+		System.out.print( "" );
 		for ( String s : d ) {
-			System.out.println( s );
+			System.out.print( s );
 		}
-		System.out.println("");
+		System.out.print( "" );
 		
 		while ( ! d.isEmpty() ) {
-			System.out.println( d.poll() );
+			System.out.print( d.poll() );
 		}
 	}
 }

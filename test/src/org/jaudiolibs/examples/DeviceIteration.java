@@ -2,6 +2,7 @@
 package org.jaudiolibs.examples;
 
 import java.util.ServiceLoader;
+
 import org.jaudiolibs.audioservers.AudioServerProvider;
 import org.jaudiolibs.audioservers.ext.Device;
 
@@ -16,12 +17,12 @@ public class DeviceIteration {
      */
     public static void main(String[] args) {
         for (AudioServerProvider provider : ServiceLoader.load(AudioServerProvider.class)) {
-            System.out.println("Found library : " + provider.getLibraryName());
-            System.out.println("==============================================");
-            System.out.println("Devices");
-            System.out.println("----------------------------------------------");
+            System.out.print( "Found library : " + provider.getLibraryName() );
+            System.out.print( "==============================================" );
+            System.out.print( "Devices" );
+            System.out.print( "----------------------------------------------" );
             for (Device dev : provider.findAll(Device.class)) {
-                System.out.println(dev.getName() + " (inputs: " + dev.getMaxInputChannels() + ", outputs: " + dev.getMaxOutputChannels() + ")");
+                System.out.print( dev.getName() + " (inputs: " + dev.getMaxInputChannels() + ", outputs: " + dev.getMaxOutputChannels() + ")" );
                 
             }
         }

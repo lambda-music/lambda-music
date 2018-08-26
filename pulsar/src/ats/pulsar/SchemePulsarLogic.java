@@ -43,8 +43,8 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 	@Override
 	public void processInputMidiBuffer(Metro metro, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
 		// out.addAll( in ); TODO ******************************
-		System.err.println( "in.size()" + in.size() );
-		System.err.println( "out.size()" + out.size() );
+		System.err.println( "in.size()" + in.size());
+		System.err.println( "out.size()" + out.size());
 	}
 
 

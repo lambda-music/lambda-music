@@ -32,7 +32,7 @@ public class SchemeTest4 {
 		});
 		t.start();
 		t.join();
-		System.out.println("START");
+		System.out.print( "START" );
 
 		scheme.getEnvironment().define( SimpleSymbol.make( "", "f0" ), null, f0 );
 
@@ -63,9 +63,9 @@ public class SchemeTest4 {
 
 
 	public static void display(String script, Object o) {
-		System.out.println( "script:" +  script + "=>" + o.toString() );
-		System.out.println( "string:" +  o.toString() );
-		System.out.println( "class :" +  o.getClass() );
+		System.out.print( "script:" +  script + "=>" + o.toString() );
+		System.out.print( "string:" +  o.toString() );
+		System.out.print( "class :" +  o.getClass() );
 		System.out.println();
 	}
 }

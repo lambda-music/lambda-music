@@ -59,7 +59,7 @@ public class MidiThru4 implements JackProcessCallback, JackShutdownCallback {
             while (true) {
                 if (DEBUG) {
                     String msg = midiSource.debugQueue.take();
-                    System.out.println(msg);
+                    System.out.print( msg );
                 } else {
                     Thread.sleep(100000);
                 }
@@ -75,7 +75,7 @@ public class MidiThru4 implements JackProcessCallback, JackShutdownCallback {
             jack = Jack.getInstance();
             client = jack.openClient("Java MIDI thru test", EnumSet.of(JackOptions.JackNoStartServer), status);
             if (!status.isEmpty()) {
-                System.out.println("JACK client status : " + status);
+                System.out.print( "JACK client status : " + status );
             }
             inputPort = client.registerPort("MIDI in", JackPortType.MIDI, JackPortFlags.JackPortIsInput);
             outputPort = client.registerPort("MIDI out", JackPortType.MIDI, JackPortFlags.JackPortIsOutput);
@@ -87,7 +87,7 @@ public class MidiThru4 implements JackProcessCallback, JackShutdownCallback {
             
         } catch (JackException ex) {
             if (!status.isEmpty()) {
-                System.out.println("JACK exception client status : " + status);
+                System.out.print( "JACK exception client status : " + status );
             }
             throw ex;
         }
@@ -133,7 +133,7 @@ public class MidiThru4 implements JackProcessCallback, JackShutdownCallback {
             
             return true;
         } catch (JackException ex) {
-            System.out.println("ERROR : " + ex);
+            System.out.print( "ERROR : " + ex );
             return false;
         }
     }
@@ -152,7 +152,7 @@ public class MidiThru4 implements JackProcessCallback, JackShutdownCallback {
         		ctr = 0;
 
         		if ( client.transportQuery(position) == JackTransportState.JackTransportRolling ) {
-        			System.out.println( nframes + "/" + ( ( position.getFrame() - lastValue ) / nframes ) + "/" +  position.getFrame()  + " / "  + position.getFrameRate() + " BPM:" + position.getBeatsPerMinute() );
+        			System.out.print( nframes + "/" + ( ( position.getFrame() - lastValue ) / nframes ) + "/" +  position.getFrame()  + " / "  + position.getFrameRate() + " BPM:" + position.getBeatsPerMinute() );
         			System.out.println( (double)nframes /  position.getFrameRate() );
         			System.out.println();
         			lastValue = position.getFrame();
@@ -168,6 +168,6 @@ public class MidiThru4 implements JackProcessCallback, JackShutdownCallback {
 
 	@Override
     public void clientShutdown(JackClient client) {
-        System.out.println("Java MIDI thru test shutdown");
+        System.out.print( "Java MIDI thru test shutdown" );
     }
 }

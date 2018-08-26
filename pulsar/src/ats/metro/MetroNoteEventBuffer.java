@@ -5,6 +5,8 @@ import static ats.metro.Metro.DEBUG;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.jaudiolibs.jnajack.JackClient;
 import org.jaudiolibs.jnajack.JackException;
@@ -14,6 +16,15 @@ import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 
 public class MetroNoteEventBuffer implements Iterable<MetroEvent>{
+    static void logInfo( String msg ) {
+    	System.err.println( msg );
+		// Logger.getLogger(MetroNoteEventBuffer.class.getName()).log(Level.INFO, msg );
+    }
+    static void logError( String msg, Throwable e ) {
+		Logger.getLogger(MetroNoteEventBuffer.class.getName()).log(Level.SEVERE, msg, e);
+    }
+	
+	
 	private double humanizeFactorOffset=0;
 	private double humanizeFactorVelocity=0;
 
@@ -49,7 +60,7 @@ public class MetroNoteEventBuffer implements Iterable<MetroEvent>{
 			e.calcInFrames( barInFrames );
 		}
 		this.lengthInFrames = (int) (this.length * barInFrames);
-		if ( DEBUG ) System.out.println("MetroMidiEventBuffer.calcInFrames() barInFrames="  + barInFrames + " / lengthInFrames=" + this.lengthInFrames  + "/ length=" + this.length  );
+		if ( DEBUG ) logInfo( "MetroMidiEventBuffer.calcInFrames() barInFrames="  + barInFrames + " / lengthInFrames=" + this.lengthInFrames  + "/ length=" + this.length);
 	}
 	
 	@Override
@@ -119,15 +130,15 @@ public class MetroNoteEventBuffer implements Iterable<MetroEvent>{
 		this.length = length;
 	}
 	public void dump() {
-		System.out.println( "length         : " + this.length );
-		System.out.println( "lengthInFrames : " + this.lengthInFrames );
+		logInfo( "length         : " + this.length);
+		logInfo( "lengthInFrames : " + this.lengthInFrames);
 		int i = 0;
 		for ( MetroEvent e : this ) {
-			System.out.println( "    No" + i );
-			System.out.println( e.dump( "    " ) );
+			logInfo( "    No" + i);
+			logInfo( e.dump( "    " ));
 			i++;
 		}
-		System.out.println( "    END" );
+		logInfo( "    END");
 	}
 	public void humanize( double offset, double velocity ) {
 		this.humanizeFactorOffset = offset;

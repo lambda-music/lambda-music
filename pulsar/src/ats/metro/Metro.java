@@ -46,11 +46,20 @@ import ats.metro.MetroNoteEventBufferSequence.SyncType;
 
 
 public class Metro implements JackProcessCallback, JackShutdownCallback, JackTimebaseCallback, Runnable {
+    static void logInfo( String msg ) {
+    	System.err.println( msg );
+		// Logger.getLogger(Metro.class.getName()).log(Level.INFO, msg );
+    }
+    static void logError( String msg, Throwable e ) {
+		Logger.getLogger(Metro.class.getName()).log(Level.SEVERE, msg, e);
+    }
+
 //	private final static boolean DEBUG = true;
 	static final boolean DEBUG = false;
 	
 	protected Jack jack = null;
     protected JackClient client = null;
+    protected Thread thread = null;
     protected final List<JackPort> inputPortList = new ArrayList<JackPort>();
     protected final List<JackPort> outputPortList = new ArrayList<JackPort>();;
     
@@ -106,10 +115,10 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 		try {
             Metro metro = new Metro();
             metro.putLogic( "main", logic );
-            metro.start( clientName );
+            metro.open( clientName );
             return metro;
         } catch (JackException ex) {
-            Logger.getLogger(Metro.class.getName()).log(Level.SEVERE, null, ex);
+            logError( null, ex);
             throw ex;
         }
 	}
@@ -154,8 +163,8 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 			syncSequence = (MetroNoteEventBufferSequence) syncSequenceObj;
 		} else if ( syncSequenceObj instanceof String ) {
 			syncSequence = searchSequence( (String) syncSequenceObj );
-//			System.out.println( "syncSequenceObj" + syncSequenceObj );
-//			System.out.println( "syncSequence" + syncSequence );
+//			logInfo( "syncSequenceObj" + syncSequenceObj );
+//			logInfo( "syncSequence" + syncSequence );
 		} else {
 			throw new RuntimeException( "Unsupported object on syncSequence" );
 		}
@@ -208,10 +217,14 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 		this.sequences.clear();
 	}
 
-	protected boolean running = false;
-    public void start( String clientName ) throws JackException {
+	protected volatile boolean running = false;
+    public void open( String clientName ) throws JackException {
+    	logInfo( running + "===open()");
     	if ( running )
     		throw new RuntimeException( "Already Started" );
+    	
+    	logInfo("===open()");
+    	
     	this.running = true;
     	
     	// Create a Jack client.
@@ -220,11 +233,11 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
             this.jack = Jack.getInstance();
             this.client = this.jack.openClient( clientName , EnumSet.of(JackOptions.JackNoStartServer ), status);
             if (!status.isEmpty()) {
-                System.out.println("JACK client status : " + status);
+                logInfo("JACK client status : " + status);
             }
         } catch (JackException ex) {
             if (!status.isEmpty()) {
-                System.out.println("JACK exception client status : " + status);
+                logInfo("JACK exception client status : " + status);
             }
             throw ex;
         }
@@ -232,8 +245,54 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
         // Create a thread.
 //    	this.logic.setParent( this );
         this.activate();
-        new Thread( this ).start();
+        this.thread = new Thread( this );
+        this.thread.start();
     }
+    
+    public void close() {
+    	logInfo( running + "===close()");
+    	if ( ! running )
+    		return;
+    	
+    	logInfo("===close()");
+    	
+    	try {
+    		try {
+    			clearSequences();
+    		} catch ( Exception e ) {
+				logError("", e);
+    		}
+    		if ( thread != null ) {
+    			thread.interrupt();
+    			try {
+    				thread.join();
+    			} catch (InterruptedException e) {
+    				logError("", e);
+    			}
+    		}
+    		if ( this.client != null ) {
+    			this.client.close();
+    		}
+    	} finally {
+    		this.running = false;
+    		this.client = null;
+    		this.thread = null;
+    	}
+    }
+    
+    /*
+     * NOTE : 
+     * The reason that the start() method throws an exception when it is called
+	 * duplicately in the meantime the stop() method just ignores it.
+	 * 
+	 * When a user duplicately start a server, this maybe because of mistakenly
+	 * starting the server without any clean up the before state; therefore it
+	 * should report it to the user.
+	 * 
+	 * When a user duplicately stop a server, this maybe because of the user want to
+	 * clean up the server's state. In this case, the user usually want to stop the
+	 * server no matter it is already running or not.
+	 */
     
     // ???
     public void refreshSequences() {
@@ -260,9 +319,9 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
     
 	public void run()  {
 		try {
-			System.out.println("Metro.run()");
+			logInfo("Metro.run()");
 	        while ( true ) {
-	//        	System.out.println("Metro.run()");
+	//        	logInfo("Metro.run()");
 	//        	String s = this.debugQueue.take();
 	//        	System.err.println( s );
 	        	for ( MetroNoteEventBufferSequence sequence : this.sequences  ) {
@@ -273,7 +332,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 						try {
 							r.run();
 						} catch ( Throwable e ) {
-							Logger.getLogger(Metro.class.getName()).log(Level.SEVERE, "An error occured in a message object", e);
+							logError( "An error occured in a message object", e);
 						}
 					}
 					
@@ -292,9 +351,11 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 					
 					this.sequences.wait( 1 );
 				}
-//				System.out.println( this.sequences.size() );
+//				logInfo( this.sequences.size() );
 //	        	Thread.sleep(0);
 	        }
+		} catch ( InterruptedException e ) {
+			// ignore
 		} catch ( Throwable e ) {
 			throw new RuntimeException( e );
 		}
@@ -324,20 +385,20 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
         this.client.onShutdown(this);
         this.client.activate();
         
-        System.err.println( "========================");
-        System.err.println( "a list of all Jack ports" );
-        System.err.println( "// INPUT //");
+        logInfo( "========================");
+        logInfo( "a list of all Jack ports" );
+        logInfo( "// INPUT //");
         {
         	String[] ports = this.jack.getPorts( this.client, "", JackPortType.MIDI, EnumSet.of( JackPortFlags.JackPortIsInput ) );
         	for ( String s : ports ) {
-        		System.err.println( s );
+        		logInfo( s );
         	}
         }
-        System.err.println( "// OUTPUT //");
+        logInfo( "// OUTPUT //");
         {
         	String[] ports = this.jack.getPorts( this.client, "", JackPortType.MIDI, EnumSet.of( JackPortFlags.JackPortIsOutput ) );
         	for ( String s : ports ) {
-        		System.err.println( s );
+        		logInfo( s );
         	}
         }
     }
@@ -409,7 +470,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 //                    if ( 0 < Metro.this.outputPortList.size() )
 //                    	JackMidi.eventWrite( Metro.this.outputPortList.get( 0 ), this.midiEvent.time(), this.data, this.midiEvent.size());
                 }
-//                System.err.println( "ev:" + eventCount + " this.outputMidiEventList  : " + this.outputMidiEventList.size() );
+//                logInfo( "ev:" + eventCount + " this.outputMidiEventList  : " + this.outputMidiEventList.size() );
         	}
         		
 
@@ -427,7 +488,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
             	this.outputMidiEventList.sort( MetroMidiEvent.COMPARATOR );
             	
             	if ( ! this.outputMidiEventList.isEmpty() )
-            		if ( DEBUG ) System.err.println( this.outputMidiEventList );
+            		if ( DEBUG ) logInfo( this.outputMidiEventList.toString() );
 
             	for ( MetroMidiEvent e : this.outputMidiEventList ) {
             		JackMidi.eventWrite( 
@@ -449,10 +510,11 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
             
             return true;
         } catch (JackException ex) {
-            System.err.println("ERROR : " + ex);
+            logError( "ERROR" , ex);
             return false;
         }
     }
+    
     /*
      * NOTE : DON'T FORGET THIS
      * 
@@ -460,12 +522,10 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
      * the given sequence object via two cues : registeredSequences / unregisteredSequences.
      * These lists are referred by Metro.run() method which is executed by another thread. 
      * 
-     * 
-     * 
      */
     protected void registerSequence( MetroNoteEventBufferSequence sequence ) {
 		if ( DEBUG ) 
-			System.err.println( "****** CREATED a new sequence is created " + sequence.id );
+			logInfo( "****** CREATED a new sequence is created " + sequence.id );
 		synchronized ( this.sequences ) {
 			this.registeredSequences.add( sequence );
 			this.notifyCheckBuffer();
@@ -473,7 +533,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 	}
 	protected void unregisterSequence( MetroNoteEventBufferSequence sequence ) {
 		if ( DEBUG ) 
-			System.err.println( "****** DESTROYED a sequence is destroyed " + sequence.id );
+			logInfo( "****** DESTROYED a sequence is destroyed " + sequence.id );
 		synchronized ( this.sequences ) {
 			this.unregisteredSeqences.add( sequence );
 			this.notifyCheckBuffer();
@@ -481,7 +541,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 	}
     protected void postMessage( Runnable runnable ) {
 		if ( DEBUG )
-			System.err.println( "****** postMessage 1");
+			logInfo( "****** postMessage 1");
 		synchronized ( this.sequences ) {
 			this.messageQueue.add( runnable );
 			this.notifyCheckBuffer();
@@ -498,7 +558,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 //			double offset) 
 //	{
 //		if ( DEBUG ) 
-//			System.err.println( "****** CREATED a new sequence is created " + sequence.id );
+//			logInfo( "****** CREATED a new sequence is created " + sequence.id );
 //		
 //		synchronized ( this.sequences ) {
 //			this.sequences.add( sequence );
@@ -509,17 +569,17 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 
     @Override
     public void clientShutdown(JackClient client) {
-        System.out.println("Java MIDI thru test shutdown");
+        logInfo("Java MIDI thru test shutdown");
     }
 	@Override
 	public void updatePosition(JackClient invokingClient, JackTransportState state, int nframes, JackPosition position,
 			boolean newPosition) {
-		System.err.println("*****************************************TEMPO");
+		logInfo("*****************************************TEMPO");
 		
 	}
 
 	public static int calcBarInFrames( Metro metro, JackClient client, JackPosition position) throws JackException {
-		// System.out.println("Metro.offerNewBuffer()" + this.buffers.size() );
+		// logInfo("Metro.offerNewBuffer()" + this.buffers.size() );
 		// beat per minute
 		double bpm;
 		// beat per bar 
@@ -531,7 +591,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 			bpb = position.getBeatsPerBar();
 			frameRate = position.getFrameRate();
 			
-			// System.out.println( "framerate" + frameRate + " bpb="+ bpb );
+			// logInfo( "framerate" + frameRate + " bpb="+ bpb );
 		} catch (JackException e) {
 			throw e;
 		}

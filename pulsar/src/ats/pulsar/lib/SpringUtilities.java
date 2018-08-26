@@ -34,6 +34,8 @@ package ats.pulsar.lib;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.Spring;
 import javax.swing.SpringLayout;
@@ -45,14 +47,22 @@ import javax.swing.SpringLayout;
  * SpringBox and SpringCompactGrid.
  */
 public class SpringUtilities {
+    static void logInfo( String msg ) {
+    	System.err.println( msg );
+		// Logger.getLogger(SpringUtilities.class.getName()).log(Level.INFO, msg );
+    }
+    static void logError( String msg, Throwable e ) {
+		Logger.getLogger(SpringUtilities.class.getName()).log(Level.SEVERE, msg, e);
+    }
+
     /**
      * A debugging utility that prints to stdout the component's
      * minimum, preferred, and maximum sizes.
      */
     public static void printSizes(Component c) {
-        System.out.println("minimumSize = " + c.getMinimumSize());
-        System.out.println("preferredSize = " + c.getPreferredSize());
-        System.out.println("maximumSize = " + c.getMaximumSize());
+        logInfo(  "minimumSize = " + c.getMinimumSize());
+        logInfo(  "preferredSize = " + c.getPreferredSize());
+        logInfo(  "maximumSize = " + c.getMaximumSize());
     }
 
     /**
@@ -77,7 +87,7 @@ public class SpringUtilities {
         try {
             layout = (SpringLayout)parent.getLayout();
         } catch (ClassCastException exc) {
-            System.err.println("The first argument to makeGrid must use SpringLayout.");
+            logInfo(  "The first argument to makeGrid must use SpringLayout.");
             return;
         }
 
@@ -180,7 +190,7 @@ public class SpringUtilities {
         try {
             layout = (SpringLayout)parent.getLayout();
         } catch (ClassCastException exc) {
-            System.err.println("The first argument to makeCompactGrid must use SpringLayout.");
+            logInfo(  "The first argument to makeCompactGrid must use SpringLayout.");
             return;
         }
 

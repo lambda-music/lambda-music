@@ -23,9 +23,9 @@ public class SchemeTest {
 		if ( proc != null ) {
 			o = proc.apply( o );
 		}
-		System.out.println( "script:" +  script + "=>" + o.toString() );
-		System.out.println( "string:" +  o.toString() );
-		System.out.println( "class :" +  o.getClass() );
+		System.out.print( "script:" +  script + "=>" + o.toString() );
+		System.out.print( "string:" +  o.toString() );
+		System.out.print( "class :" +  o.getClass() );
 		System.out.println();
 		return o;
 	}

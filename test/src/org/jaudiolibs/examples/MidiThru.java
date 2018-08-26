@@ -17,13 +17,12 @@
  */
 package org.jaudiolibs.examples;
 
-import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.jaudiolibs.jnajack.Jack;
 import org.jaudiolibs.jnajack.JackClient;
 import org.jaudiolibs.jnajack.JackException;
@@ -57,7 +56,7 @@ public class MidiThru implements JackProcessCallback, JackShutdownCallback {
             while (true) {
                 if (DEBUG) {
                     String msg = midiSource.debugQueue.take();
-                    System.out.println(msg);
+                    System.out.print( msg );
                 } else {
                     Thread.sleep(100000);
                 }
@@ -73,7 +72,7 @@ public class MidiThru implements JackProcessCallback, JackShutdownCallback {
             Jack jack = Jack.getInstance();
             client = jack.openClient("Java MIDI thru test", EnumSet.of(JackOptions.JackNoStartServer), status);
             if (!status.isEmpty()) {
-                System.out.println("JACK client status : " + status);
+                System.out.print( "JACK client status : " + status );
             }
             inputPort = client.registerPort("MIDI in", JackPortType.MIDI, JackPortFlags.JackPortIsInput);
             outputPort = client.registerPort("MIDI out", JackPortType.MIDI, JackPortFlags.JackPortIsOutput);
@@ -84,7 +83,7 @@ public class MidiThru implements JackProcessCallback, JackShutdownCallback {
             }
         } catch (JackException ex) {
             if (!status.isEmpty()) {
-                System.out.println("JACK exception client status : " + status);
+                System.out.print( "JACK exception client status : " + status );
             }
             throw ex;
         }
@@ -125,13 +124,13 @@ public class MidiThru implements JackProcessCallback, JackShutdownCallback {
             }
             return true;
         } catch (JackException ex) {
-            System.out.println("ERROR : " + ex);
+            System.out.print( "ERROR : " + ex );
             return false;
         }
     }
 
     @Override
     public void clientShutdown(JackClient client) {
-        System.out.println("Java MIDI thru test shutdown");
+        System.out.print( "Java MIDI thru test shutdown" );
     }
 }

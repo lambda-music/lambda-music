@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.jaudiolibs.audioservers.AudioClient;
 import org.jaudiolibs.audioservers.AudioConfiguration;
 import org.jaudiolibs.audioservers.AudioServer;
@@ -43,7 +44,7 @@ public class SineAudioClient implements AudioClient {
 
         AudioServerProvider provider = null;
         for (AudioServerProvider p : ServiceLoader.load(AudioServerProvider.class)) {
-        	System.err.println( p.getLibraryName() );
+        	System.err.print( p.getLibraryName() );
             if (lib.equals(p.getLibraryName())) {
                 provider = p;
                 break;
