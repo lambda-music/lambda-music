@@ -66,6 +66,8 @@ public class SchemeUtils {
 			return ((IString)schemeVal).toString();
 		} else if ( schemeVal instanceof Symbol ) {
 			return ((Symbol)schemeVal).getName();
+		} else if ( schemeVal instanceof String ) {
+			return (String) schemeVal;
 		} else {
 			return ((Quantity) schemeVal).toString();
 		}

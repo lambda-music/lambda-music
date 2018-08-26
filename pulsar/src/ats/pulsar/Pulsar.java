@@ -64,7 +64,7 @@ public final class Pulsar extends Metro {
 			throw new RuntimeException( "The specified file does not exist (" + currentFile.getAbsolutePath() + ")" );
 
 		// See the comment.
-		this.currentFile = currentFile;
+		setCurrentFile( currentFile );
 
 		javax.swing.SwingUtilities.invokeLater( new Runnable() {
 			public void run() {
@@ -189,7 +189,10 @@ public final class Pulsar extends Metro {
 		return historyFile;
 	}
 
-    
+    /**
+     * Currently this method is not used. 
+     * @param comboBox
+     */
 	public void readHistoryFile(JComboBox<String> comboBox) {
 		comboBox.removeAllItems();
 
@@ -236,6 +239,11 @@ public final class Pulsar extends Metro {
 	 */
 	long lastModifiedOfCurrentFile=-1;
 	
+	void setCurrentFile( File currentFile ) {
+		this.currentFile = currentFile;
+		this.lastModifiedOfCurrentFile = -1;
+	}
+	
 	// a watchdog Timer
 	{
 		Timer timer = new Timer(1000, new ActionListener() {
@@ -252,7 +260,11 @@ public final class Pulsar extends Metro {
 				long newLastModified = file.lastModified();
 				if ( newLastModified != lastModified ) {
 					System.err.println( "Detected that the file was modified." );
-					loadScheme( file );
+					try {
+						loadScheme( file );
+					} catch (FileNotFoundException e) {
+			            Logger.getLogger(Metro.class.getName()).log(Level.SEVERE, null, e);
+					}
 				}
 				return newLastModified;
 			}
@@ -284,7 +296,10 @@ public final class Pulsar extends Metro {
 		}
 	}
 
-	public void loadScheme(File file) {
+	public void loadScheme(File file) throws FileNotFoundException {
+		if ( ! file.isFile() ) {
+			throw new FileNotFoundException( file.getAbsolutePath() );
+		}
 		try {
 			String text = new String(Files.readAllBytes( Paths.get( file.toURI() ) ), StandardCharsets.UTF_8);
 			Scheme scheme = new Scheme();
@@ -360,6 +375,7 @@ public final class Pulsar extends Metro {
     			return EmptyList.emptyList;
     		}
     	});
+
     	scheme.getEnvironment().define( SimpleSymbol.make( "", "set-related-files!" ), null, new ProcedureN() {
     		@Override
     		public Object applyN(Object[] args) throws Throwable {
@@ -373,6 +389,19 @@ public final class Pulsar extends Metro {
     				throw new RuntimeException( "invalid argument length" );
     			}
     			return EmptyList.emptyList;
+    		}
+    	});
+
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "get-related-files" ), null, new ProcedureN() {
+    		@Override
+    		public Object applyN(Object[] args) throws Throwable {
+    			Pair p = new Pair();
+    			ArrayList<IString> ss = new ArrayList<>();
+    			for ( File f : relatedFiles ) {
+    				ss.add( IString.valueOf( f.getAbsolutePath() ) );
+    			}
+    			p.addAll( ss );
+    			return p;
     		}
     	});
 
@@ -397,6 +426,7 @@ public final class Pulsar extends Metro {
     			return EmptyList.emptyList;
     		}
     	});
+
 
 //    	scheme.getEnvironment().define( SimpleSymbol.make( "", "put-seq!" ), null, new ProcedureN() {
 //			@Override
@@ -745,14 +775,6 @@ public final class Pulsar extends Metro {
 	public JPanel createFilePanel() {
 		JPanel panel = new JPanel();
 		panel.setLayout( new BorderLayout(BORDER,BORDER) );
-		JButton fileButton = new JButton( "FILE" ) {
-			@Override
-			public Dimension getPreferredSize() {
-				Dimension s = super.getPreferredSize();
-				s.width = 75;
-				return s;
-			}
-		};
 		JButton execButton = new JButton( "EXEC" ) {
 			@Override
 			public Dimension getPreferredSize() {
@@ -765,54 +787,19 @@ public final class Pulsar extends Metro {
 		};
 		cb_relatedFiles.setEditable(false);
 		
-		fileButton.addActionListener(new ActionListener() {
+
+		execButton.addActionListener( new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JFileChooser fc = new JFileChooser();
-				fc.setFileFilter( new FileFilter() {
-					@Override
-					public String getDescription() {
-						return "*.scm (scheme)";
-					}
-					@Override
-					public boolean accept(File f) {
-						return ! f.isFile() || f.getName().endsWith( "scm" );
-					}
-				});
-				int result = fc.showOpenDialog( frame );
-				if ( result == JFileChooser.APPROVE_OPTION ) {
-					try {
-						isComboBoxUpdating = true;
-						cb_relatedFiles.addItem( fc.getSelectedFile().getAbsolutePath() );
-						cb_relatedFiles.setSelectedIndex( cb_relatedFiles.getItemCount() -1 );
-					} finally {
-						isComboBoxUpdating = false;
-					}
+				int i = cb_relatedFiles.getSelectedIndex();
+				if ( 0<=i ) {
+					File file = relatedFiles.get(i);
+					setCurrentFile(file);
 				}
 			}
 		});
-
-		execButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					isComboBoxUpdating = true;
-					int i = cb_relatedFiles.getSelectedIndex();
-					if ( 0<=i ) {
-						String item = cb_relatedFiles.getItemAt(i);
-						cb_relatedFiles.removeItemAt( i );
-						cb_relatedFiles.insertItemAt( item, 0 );
-						cb_relatedFiles.setSelectedIndex(0);
-					}
-				} finally {
-					isComboBoxUpdating = false;
-				}
-			}
-		});
-
 		
-		panel.add( fileButton , BorderLayout.LINE_START );
-		panel.add( execButton , BorderLayout.LINE_END );
+		panel.add( execButton , BorderLayout.LINE_START );
 
 		cb_relatedFiles.addPopupMenuListener( new PopupMenuListener() {
 			@Override
@@ -858,7 +845,8 @@ public final class Pulsar extends Metro {
 				}
 			}
 		});
-		readHistoryFile(cb_relatedFiles);
+		
+//		readHistoryFile(cb_relatedFiles);
 
 		panel.add( cb_relatedFiles, BorderLayout.CENTER );
 		
@@ -883,8 +871,7 @@ public final class Pulsar extends Metro {
 				});
 				int result = fc.showOpenDialog( frame );
 				if ( result == JFileChooser.APPROVE_OPTION ) {
-					currentFile = fc.getSelectedFile();
-					lastModifiedOfCurrentFile = -1;
+					setCurrentFile( fc.getSelectedFile() );
 				}
 			}
 		});
