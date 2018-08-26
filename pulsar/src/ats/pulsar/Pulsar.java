@@ -126,10 +126,10 @@ public final class Pulsar extends Metro {
 		}
 	}
 
-    /*
-     * This method reset the state and call main procedure 
-     * to back to the state of beginning of the project.
-     */
+    /**
+	 * {@link Pulsar#reset()} method resets the state of the object and calls main
+	 * procedure to back to the state of beginning of the project.
+	 */
     public void reset() { 
     	System.err.println( "===reset" );
     	setPlaying(false);
