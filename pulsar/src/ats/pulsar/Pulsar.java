@@ -20,7 +20,9 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -61,10 +63,10 @@ import kawa.standard.Scheme;
 public final class Pulsar extends Metro {
 	public Pulsar( File currentFile ) throws JackException {
 		if ( ! currentFile.isFile() )
-			throw new RuntimeException( "The specified file does not exist (" + currentFile.getAbsolutePath() + ")" );
+			throw new RuntimeException( "The specified file does not exist (" + currentFile.getPath() + ")" );
 
 		// See the comment.
-		setCurrentFile( currentFile );
+		setCurrentFile( null , currentFile );
 
 		javax.swing.SwingUtilities.invokeLater( new Runnable() {
 			public void run() {
@@ -82,14 +84,14 @@ public final class Pulsar extends Metro {
 			return;
 		}
 		
-		Pulsar metro = new Pulsar( new File( args[0] ) );
-		metro.start( "Metro" );
+		Pulsar pulsar = new Pulsar( new File( args[0] ) );
+		pulsar.start( "Metro" );
 
-		metro.createOutputPort("MIDI Output0");
-		metro.createOutputPort("MIDI Output1");
-		metro.createInputPort("MIDI Input0");
-		metro.createInputPort("MIDI Input1");
-		metro.connectPort( "Metro:MIDI Output0", "hydrogen-midi:RX" );
+		pulsar.createOutputPort("MIDI Output0");
+		pulsar.createOutputPort("MIDI Output1");
+		pulsar.createInputPort("MIDI Input0");
+		pulsar.createInputPort("MIDI Input1");
+		pulsar.connectPort( "Metro:MIDI Output0", "hydrogen-midi:RX" );
 		// metro.connectPort( "a2j:Xkey37 [20] (capture): Xkey37 MIDI 1", "Metro:MIDI Input0" );
 	}
 
@@ -104,6 +106,13 @@ public final class Pulsar extends Metro {
 		return mainProcedure;
 	}
 	
+	/**
+	 * Stores the file path which modified the related-file-list. This path is used
+	 * to resolve a relative path when a relative path is given to
+	 * {@link Pulsar#loadScheme(File) } method.
+	 */
+	File relatedFileParent=null;
+	
 	final List<File> relatedFiles = new ArrayList<>();
 	public List<File> getRelatedFiles() {
 		return Collections.unmodifiableList( relatedFiles );
@@ -111,18 +120,22 @@ public final class Pulsar extends Metro {
 	public void setRelatedFiles( List<File> fileList ) {
 		this.relatedFiles.clear();
 		this.relatedFiles.addAll( fileList );
+		this.relatedFileParent = currentFile;
 
 		if ( this.cb_relatedFiles != null ) {
 			this.cb_relatedFiles.removeAllItems();
 			for ( File f : this.relatedFiles ) {
-				this.cb_relatedFiles.addItem(f.getAbsolutePath());
+				this.cb_relatedFiles.addItem(f.getPath());
 			}
 		}
 	}
+	/*
+	 * This method is not used now.
+	 */
 	public void addRelatedFile( File f) {
 		this.relatedFiles.add( f );
 		if ( this.cb_relatedFiles != null ) {
-			this.cb_relatedFiles.addItem( f.getAbsolutePath() );
+			this.cb_relatedFiles.addItem( f.getPath() );
 		}
 	}
 
@@ -235,12 +248,19 @@ public final class Pulsar extends Metro {
 	File currentFile;
 	
 	/**
+	 * This path is used whenever a relative path is given to the
+	 * {@link Pulsar#loadScheme(File)} method.
+	 */
+	File currentParentFile;
+
+	/**
 	 * This field stores the last value of timestamp of the {@link Pulsar#currentFile }
 	 */
 	long lastModifiedOfCurrentFile=-1;
 	
-	void setCurrentFile( File currentFile ) {
+	void setCurrentFile( File currentParentFile, File currentFile ) {
 		this.currentFile = currentFile;
+		this.currentParentFile = currentParentFile;
 		this.lastModifiedOfCurrentFile = -1;
 	}
 	
@@ -263,7 +283,7 @@ public final class Pulsar extends Metro {
 					try {
 						loadScheme( file );
 					} catch (FileNotFoundException e) {
-			            Logger.getLogger(Metro.class.getName()).log(Level.SEVERE, null, e);
+			            Logger.getLogger(Pulsar.class.getName()).log(Level.SEVERE, null, e);
 					}
 				}
 				return newLastModified;
@@ -290,7 +310,7 @@ public final class Pulsar extends Metro {
 				Environment.setCurrent( this.environment );
 				procedure.applyN( new Object[] {} );
 			} catch (Throwable e) {
-	            Logger.getLogger(Metro.class.getName()).log(Level.SEVERE, null, e);
+	            Logger.getLogger(Pulsar.class.getName()).log(Level.SEVERE, null, e);
 				throw new RuntimeException(e);
 			}
 		}
@@ -298,8 +318,13 @@ public final class Pulsar extends Metro {
 
 	public void loadScheme(File file) throws FileNotFoundException {
 		if ( ! file.isFile() ) {
-			throw new FileNotFoundException( file.getAbsolutePath() );
+			throw new FileNotFoundException( file.getPath() );
 		}
+		
+		if ( ! file.isAbsolute() ) {
+			file = new File( currentParentFile.getParentFile(), file.getPath() );
+		}
+		
 		try {
 			String text = new String(Files.readAllBytes( Paths.get( file.toURI() ) ), StandardCharsets.UTF_8);
 			Scheme scheme = new Scheme();
@@ -314,7 +339,7 @@ public final class Pulsar extends Metro {
 		}
 		
 		if ( tf_currentFile != null ) {
-			tf_currentFile.setText( file.getAbsolutePath() );
+			tf_currentFile.setText( file.getPath() );
 		}
 		
 		if ( cb_relatedFiles != null ) {
@@ -398,7 +423,7 @@ public final class Pulsar extends Metro {
     			Pair p = new Pair();
     			ArrayList<IString> ss = new ArrayList<>();
     			for ( File f : relatedFiles ) {
-    				ss.add( IString.valueOf( f.getAbsolutePath() ) );
+    				ss.add( IString.valueOf( f.getPath() ) );
     			}
     			p.addAll( ss );
     			return p;
@@ -500,6 +525,49 @@ public final class Pulsar extends Metro {
 				}
 			}
     	});
+    	
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "new-output!" ), null, new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				for ( Object o : args ) {
+					String name = SchemeUtils.toString( o );
+					createOutputPort( name );
+				}
+				return EmptyList.emptyList;
+    		}
+    	});
+
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "new-input!" ), null, new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				for ( Object o : args ) {
+					String name = SchemeUtils.toString( o );
+					createInputPort( name );
+				}
+				return EmptyList.emptyList;
+    		}
+    	});
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "connect!" ), null, new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				ArrayDeque<Object> deque = new ArrayDeque<>( Arrays.asList( args ) );
+				while ( 0 < deque.size() ) {
+					Object fromObj = deque.pop();
+					Object toObj = deque.pop();
+					if ( fromObj == null || toObj == null ) {
+						break;
+					}
+					String from = fromObj != null ? SchemeUtils.toString( fromObj ) : null;
+					String to   = toObj   != null ? SchemeUtils.toString( toObj   ) : null;
+					try {
+						connectPort( from, to );
+					} catch ( JackException e  ) {
+			            Logger.getLogger(Pulsar.class.getName()).log(Level.SEVERE, null, e);
+					}
+				}
+				return EmptyList.emptyList;
+    		}
+    	});
   	
     	// ???
     	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-get-pane" ), null, new ProcedureN() {
@@ -527,6 +595,8 @@ public final class Pulsar extends Metro {
     		}
 
     	});
+    	
+    	
 
 
     	scheme.getEnvironment().define( SimpleSymbol.make( "", "new-button" ), null, new ProcedureN() {
@@ -547,7 +617,7 @@ public final class Pulsar extends Metro {
 										Environment.setCurrent(env);
 										procedure.applyN( new Object[] { userHandle } );
 									} catch (Throwable e1) {
-							            Logger.getLogger(Metro.class.getName()).log(Level.SEVERE, null, e1);
+							            Logger.getLogger(Pulsar.class.getName()).log(Level.SEVERE, null, e1);
 									}
 								}
 							});
@@ -794,7 +864,7 @@ public final class Pulsar extends Metro {
 				int i = cb_relatedFiles.getSelectedIndex();
 				if ( 0<=i ) {
 					File file = relatedFiles.get(i);
-					setCurrentFile(file);
+					setCurrentFile( relatedFileParent, file );
 				}
 			}
 		});
@@ -871,7 +941,7 @@ public final class Pulsar extends Metro {
 				});
 				int result = fc.showOpenDialog( frame );
 				if ( result == JFileChooser.APPROVE_OPTION ) {
-					setCurrentFile( fc.getSelectedFile() );
+					setCurrentFile( null, fc.getSelectedFile() );
 				}
 			}
 		});

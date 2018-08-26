@@ -18,6 +18,7 @@
 package ats.metro;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
@@ -301,6 +302,15 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 				sequence.reprepare( this, this.client, this.position );
 			}
 		}
+	}
+	
+	public List<String> getOutputPorts() throws JackException {
+    	String[] ports = this.jack.getPorts( this.client, "", JackPortType.MIDI, EnumSet.of( JackPortFlags.JackPortIsOutput ) );
+    	return new ArrayList<String>( Arrays.asList( ports ) );
+	}
+	public List<String> getInputPorts() throws JackException {
+    	String[] ports = this.jack.getPorts( this.client, "", JackPortType.MIDI, EnumSet.of( JackPortFlags.JackPortIsInput ) );
+    	return new ArrayList<String>( Arrays.asList( ports ) );
 	}
 
     private void activate() throws JackException {
