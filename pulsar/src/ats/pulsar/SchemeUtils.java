@@ -1,7 +1,9 @@
 package ats.pulsar;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -83,5 +85,12 @@ public class SchemeUtils {
 	}
 	public static String className(Object object) {
 		return object == null ? "null" : object.getClass().toString(); 
+	}
+
+	public static <T> List<T> convList(Pair p, Function<Object,T> conv ) {
+		ArrayList<T> list=  new ArrayList<>( p.size() );
+		for ( Object o : p )
+			list.add( conv.apply( o ) );
+		return list;
 	}
 }

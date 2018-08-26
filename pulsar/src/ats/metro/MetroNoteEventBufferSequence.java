@@ -141,18 +141,29 @@ public class MetroNoteEventBufferSequence {
 				//    		System.out.println( "AFTER::::" );
 				//    		buf.dump();
 				boolean found= false;
-				for ( Iterator<MetroNoteEvent> ie = buf.iterator(); ie.hasNext();  ) {
-					MetroNoteEvent e = ie.next();
+				for ( Iterator<MetroEvent> ie = buf.iterator(); ie.hasNext();  ) {
+					MetroEvent e = ie.next();
 					
 					if ( e.between( actualCursor, actualNextCursor ) ) {
 						//		    			System.out.println("VALUE" + ( e.getOffsetInFrames() - this.cursor ) );
 						//        			System.out.println( e.("***" ));
 						found= true;
-						result.add( new MetroMidiEvent( 
-								e.getOutputPortNo(), 
-								e.getOffsetInFrames() - actualCursor, 
-								e.getData() 
-								) );
+						
+						if ( e instanceof MetroNoteEvent ) {
+							MetroNoteEvent e0 = (MetroNoteEvent) e;
+							
+							result.add( new MetroMidiEvent( 
+									e0.getOutputPortNo(), 
+									e0.getOffsetInFrames() - actualCursor, 
+									e0.getData() 
+									) );
+						} else if ( e instanceof MetroSchemeProcedureEvent ) {
+							((MetroSchemeProcedureEvent)e).execute( metro );
+						} else {
+							Logger.getLogger(MetroNoteEventBufferSequence.class.getName()).log( 
+									Level.SEVERE, "Unknown Class " + e.getClass().getName() );
+						}
+						
 
 						//        			System.out.println( "event.getData()" + event.getData() );
 						//        			System.out.println( "event.getData()" + Integer.toUnsignedString(event.getData()[0] , 2 ) );

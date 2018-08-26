@@ -1,56 +1,28 @@
 package ats.metro;
 
 import java.util.Arrays;
-import java.util.Comparator;
 
-public class MetroNoteEvent {
-	public static Comparator<? super MetroNoteEvent> comparator = new Comparator<MetroNoteEvent>() {
-		@Override
-		public int compare(MetroNoteEvent o1, MetroNoteEvent o2) {
-			return (int)(o1.offset - o2.offset);
-		}
-	};
-	
-	int outputPortNo;
-	double offset;
-	int offsetInFrames;
+public class MetroNoteEvent extends MetroEvent {
+	final int outputPortNo;
 	byte[] data;
-	
-	public MetroNoteEvent(int outputPortNo, double offset, byte[] data) {
-		super();
+	public MetroNoteEvent( double offset, int outputPortNo, byte[] data ) {
+		super( offset );
 		this.outputPortNo = outputPortNo;
-		this.offset = offset;
 		this.data = data;
 	}
-	
-	public int getOutputPortNo() {
+	public final int getOutputPortNo() {
 		return outputPortNo;
-	}
-	public double getOffset() {
-		return offset;
-	}
-	public int getOffsetInFrames() {
-		return offsetInFrames;
 	}
 	public byte[] getData() {
 		return data;
 	}
-	public final void calcInFrames( int barInFrames ){
-		this.offsetInFrames = (int)(this.offset * barInFrames );
-	}
-	public boolean between(int from, int to ) {
-		return from <= this.offsetInFrames && this.offsetInFrames < to;
+	public void dumpProc( String prefix, StringBuilder sb ) {
+		MetroNoteEvent e = this;
+		sb.append(prefix).append( "      outputPortNo: " + e.outputPortNo ).append( "\n" );
+		sb.append(prefix).append( "              data: " + Arrays.toString( e.data ) ).append( "\n" );
 	}
 
-	public String dump(String string) {
-		MetroNoteEvent e = this;
-		StringBuilder sb = new StringBuilder();
-		sb.append(string).append( "      outputPortNo: " + e.outputPortNo ).append( "\n" );
-		sb.append(string).append( "            offset: " + e.offset ).append( "\n" );
-		sb.append(string).append( "    offsetInFrames: " + e.offsetInFrames ).append( "\n" );
-		sb.append(string).append( "              data: " + Arrays.toString( e.data ) ).append( "\n" );
-		return sb.toString();
-	}
+
 //	public static void main(String[] args) {
 //		MetroMidiEvent event = new MetroMidiEvent(1, 0.0d, new byte[] {} );
 //		event.calcInFrames(48000);

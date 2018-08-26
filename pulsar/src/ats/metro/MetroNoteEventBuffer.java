@@ -10,16 +10,17 @@ import org.jaudiolibs.jnajack.JackClient;
 import org.jaudiolibs.jnajack.JackException;
 import org.jaudiolibs.jnajack.JackPosition;
 
+import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 
-public class MetroNoteEventBuffer implements Iterable<MetroNoteEvent>{
+public class MetroNoteEventBuffer implements Iterable<MetroEvent>{
 	private double humanizeFactorOffset=0;
 	private double humanizeFactorVelocity=0;
 
 	private double offset;
 	private double length = 1.0d;
 	private int lengthInFrames;
-	private final List<MetroNoteEvent> list = new ArrayList<MetroNoteEvent>(10);
+	private final List<MetroEvent> list = new ArrayList<MetroEvent>(10);
 	public double getLength() {
 		return length;
 	}
@@ -44,7 +45,7 @@ public class MetroNoteEventBuffer implements Iterable<MetroNoteEvent>{
 	
 	private void calcInFrames( int barInFrames ) {
 //		System.out.println("MetroMidiEventBuffer.calcInFrames() barInFrames="  + barInFrames );
-		for ( MetroNoteEvent e : this ) {
+		for ( MetroEvent e : this ) {
 			e.calcInFrames( barInFrames );
 		}
 		this.lengthInFrames = (int) (this.length * barInFrames);
@@ -52,14 +53,14 @@ public class MetroNoteEventBuffer implements Iterable<MetroNoteEvent>{
 	}
 	
 	@Override
-	public Iterator<MetroNoteEvent> iterator() {
+	public Iterator<MetroEvent> iterator() {
 		return this.list.iterator();
 	}
 
 	private void note(int outputPortNo, int midiEventValue, double offset, int channel, int note, int velocity) {
 		MetroNoteEvent event = new MetroNoteEvent(
-				outputPortNo,
 				offset,
+				outputPortNo,
 				new byte[] {
 						(byte)( ( 0b11110000 & midiEventValue ) | ( 0b00001111 & channel ) ),
 						(byte) note,
@@ -104,6 +105,16 @@ public class MetroNoteEventBuffer implements Iterable<MetroNoteEvent>{
 
 		note( outputPortNo, 0b10000000, offset, channel, note, velocity );
 	}
+	public void exec( double offset, Environment environment, Procedure procedure ) {
+		MetroSchemeProcedureEvent event = 
+				new MetroSchemeProcedureEvent( 
+						offset,
+						environment,
+						procedure );
+
+		this.list.add( event );
+	}
+
 	public void length( double length ) {
 		this.length = length;
 	}
@@ -111,7 +122,7 @@ public class MetroNoteEventBuffer implements Iterable<MetroNoteEvent>{
 		System.out.println( "length         : " + this.length );
 		System.out.println( "lengthInFrames : " + this.lengthInFrames );
 		int i = 0;
-		for ( MetroNoteEvent e : this ) {
+		for ( MetroEvent e : this ) {
 			System.out.println( "    No" + i );
 			System.out.println( e.dump( "    " ) );
 			i++;
@@ -122,8 +133,5 @@ public class MetroNoteEventBuffer implements Iterable<MetroNoteEvent>{
 		this.humanizeFactorOffset = offset;
 		this.humanizeFactorVelocity = velocity;
 	}
-	public void exec( double offset, Procedure proc ) {
-		// TODO Auto-generated method stub
-		
-	}
+	
 }

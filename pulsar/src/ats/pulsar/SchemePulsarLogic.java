@@ -14,6 +14,7 @@ import ats.metro.MetroNoteEventBuffer;
 import ats.metro.MetroNoteEventBufferSequence;
 import gnu.lists.AbstractSequence;
 import gnu.lists.Pair;
+import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 
 public class SchemePulsarLogic extends MetroLogic.Default {
@@ -32,8 +33,10 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 		return pairs;
 	}
 
+	private Environment environment;
 	private Procedure procedure;
-	public SchemePulsarLogic ( Procedure procedure ) {
+	public SchemePulsarLogic ( Environment environment, Procedure procedure ) {
+		this.environment = environment;
 		this.procedure = procedure;
 	}
 	
@@ -49,14 +52,19 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 	public boolean processOutputNoteBuffer( Metro metro, MetroNoteEventBufferSequence sequence, MetroNoteEventBuffer buf ) {
 		// System.out.println("Metro.logic.new MetroLogic() {...}.initBuffer()" );
 //		buf.humanize( 0.0d, 3 );
-		scheme2buf(metro, sequence, procedure, buf);
+		try {
+			scheme2buf(metro, sequence, environment, procedure, buf);
+		} catch ( RuntimeException e ) {
+			Logger.getLogger(SchemePulsarLogic.class.getName()).log(Level.SEVERE, "", e);
+		}
 		return true;
 	}
 
 	@SuppressWarnings("unchecked")
-	public static boolean scheme2buf( Metro metro, MetroNoteEventBufferSequence sequence, Procedure procedure, MetroNoteEventBuffer buf) {
+	public static boolean scheme2buf( Metro metro, MetroNoteEventBufferSequence sequence, Environment environment, Procedure procedure, MetroNoteEventBuffer buf) {
 		AbstractSequence<Object> pattern ;
 		try {
+			Environment.setCurrent( environment );
 			pattern = (AbstractSequence<Object>) procedure.applyN( new Object[] {} );
 		} catch (Throwable e) {
 			e.printStackTrace();
@@ -103,6 +111,15 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 										switch ( idx ) {
 											case 0: return "type";
 											case 1: return "length";
+											default : throw new RuntimeException( "cannot omit the key object." );
+										}
+									};
+								case "exec":
+									return (Integer idx)->{
+										switch ( idx ) {
+											case 0: return "type";
+											case 1: return "offset";
+											case 2: return "procedure";
 											default : throw new RuntimeException( "cannot omit the key object." );
 										}
 									};
@@ -176,9 +193,9 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 					}
 					case  "exec" : {
 						double offset        = map.containsKey( "offset"   )  ? SchemeUtils.toDouble(     map.get( "offset"    ) ) : 0.0d;
-						Procedure proc       = map.containsKey( "procedure" ) ?                (Procedure)map.get( "procedure" ) : null;
+						Procedure procedure0 = map.containsKey( "procedure" ) ?                (Procedure)map.get( "procedure" ) : null;
 						
-						buf.exec( offset, proc );
+						buf.exec( offset, environment,  procedure0 );
 						break;
 					}
 //					case  "end" : {

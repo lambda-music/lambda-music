@@ -4,6 +4,7 @@ import ats.metro.Metro;
 import ats.metro.MetroNoteEventBuffer;
 import ats.metro.MetroNoteEventBufferSequence;
 import ats.pulsar.SchemePulsarLogic;
+import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 
 class SchemePulsable implements Pulsable {
@@ -15,7 +16,7 @@ class SchemePulsable implements Pulsable {
 	}
 	@Override
 	public void pulse( Metro metro, MetroNoteEventBufferSequence sequence, MetroNoteEventBuffer buf ) {
-		SchemePulsarLogic.scheme2buf( metro, sequence, procedure, buf);
+		SchemePulsarLogic.scheme2buf( metro, sequence, Environment.getCurrent(), procedure, buf);
 	}
 
 	@Override

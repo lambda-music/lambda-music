@@ -8,25 +8,39 @@ import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
+import javax.swing.filechooser.FileFilter;
 
 import org.jaudiolibs.jnajack.JackException;
 
@@ -37,6 +51,7 @@ import ats.pulsar.lib.LayoutUtils;
 import ats.pulsar.lib.SpringLayoutUtil;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
+import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.ProcedureN;
@@ -44,50 +59,209 @@ import gnu.mapping.SimpleSymbol;
 import kawa.standard.Scheme;
 
 public final class Pulsar extends Metro {
-	Pulsar parent = this;
-	public Pulsar() throws JackException {
+	public Pulsar( File currentFile ) throws JackException {
+		if ( ! currentFile.isFile() )
+			throw new RuntimeException( "The specified file does not exist (" + currentFile.getAbsolutePath() + ")" );
+
+		// See the comment.
+		this.currentFile = currentFile;
+
 		javax.swing.SwingUtilities.invokeLater( new Runnable() {
 			public void run() {
 				createAndShowGUI();
 			}
 		});
 	}
-	
-	public void guiInit() {
-		userPane.removeAll();
-	}
-	public void guiSpringLayout() {
-		userLayout = new SpringLayout();
-		userPane.setLayout(userLayout);
-	}
-	public void guiFlowLayout() {
-		userLayout = new FlawLayout();
-		userPane.setLayout(userLayout);
-	}
-	public void guiGridBagLayout() {
-		userLayout = new GridBagLayout();
-		userPane.setLayout(userLayout);
-	}
-	public void guiRefresh() {
-		userPane.revalidate();
-		userPane.repaint();
-        // frame.pack();
-	}
-	public void guiAdd( JComponent c ) {
-		JPanel pane = userPane;
-		pane.add( c );
-		pane.revalidate();
-		pane.repaint();
-	}
-	public void newlineGui() {
-		userPane.revalidate();
-		userPane.repaint();
+
+	/**
+	 * timer frequently check the file that the {@link Pulsar#currentFile} points if its
+	 */
+	public static void main(String[] args) throws JackException, InterruptedException {
+		if ( args.length == 0 ) {
+			System.err.println( "Usage : pulsar [.scm]" );
+			return;
+		}
+		
+		Pulsar metro = new Pulsar( new File( args[0] ) );
+		metro.start( "Metro" );
+
+		metro.createOutputPort("MIDI Output0");
+		metro.createOutputPort("MIDI Output1");
+		metro.createInputPort("MIDI Input0");
+		metro.createInputPort("MIDI Input1");
+		metro.connectPort( "Metro:MIDI Output0", "hydrogen-midi:RX" );
+		// metro.connectPort( "a2j:Xkey37 [20] (capture): Xkey37 MIDI 1", "Metro:MIDI Input0" );
 	}
 
-	public void endlineGui() {
-		// userPane.add( Box.createVerticalStrut(500 ) );
+	static final int BORDER = 10;
+	
+	Runnable mainProcedure = null;
+	public void setMainProcedure( Runnable mainAction ) {
+		this.mainProcedure = mainAction;
+		reset();
+	}
+	public Runnable getMainProcedure() {
+		return mainProcedure;
 	}
 	
+	final List<File> relatedFiles = new ArrayList<>();
+	public List<File> getRelatedFiles() {
+		return Collections.unmodifiableList( relatedFiles );
+	}
+	public void setRelatedFiles( List<File> fileList ) {
+		this.relatedFiles.clear();
+		this.relatedFiles.addAll( fileList );
+
+		if ( this.cb_relatedFiles != null ) {
+			this.cb_relatedFiles.removeAllItems();
+			for ( File f : this.relatedFiles ) {
+				this.cb_relatedFiles.addItem(f.getAbsolutePath());
+			}
+		}
+	}
+	public void addRelatedFile( File f) {
+		this.relatedFiles.add( f );
+		if ( this.cb_relatedFiles != null ) {
+			this.cb_relatedFiles.addItem( f.getAbsolutePath() );
+		}
+	}
+
+    /*
+     * This method reset the state and call main procedure 
+     * to back to the state of beginning of the project.
+     */
+    public void reset() { 
+    	System.err.println( "===reset" );
+    	setPlaying(false);
+    	if ( mainProcedure != null )
+    		mainProcedure.run();
+		clearSequences();
+    }
+    public void cue() {
+    	System.err.println( "===cue" );
+    }
+    
+    /*
+     * This method clears main procedure and state.
+     */
+    public void clear() { 
+    	System.err.println( "===clear" );
+    	this.setPlaying(false);
+    	this.mainProcedure = null;
+		clearSequences();
+    }
+
+	public File getConfigDir() {
+		final File configDir = new File( System.getProperty("user.home"), ".pulsar" );
+		if ( ! configDir.isDirectory() ) {
+			if (! configDir.mkdir() ) {
+				System.err.println( "WARNING : Failed to create the config directory." );
+			}
+		}
+		return configDir;
+	}
+
+	public File getConfigFile() {
+		// Configuration Directory
+		final File configFile = new File( getConfigDir(), "init.scm" );
+		if ( ! configFile.isFile() ) {
+			try {
+				configFile.createNewFile();
+			} catch (IOException e) {
+				System.err.println( "WARNING : Failed to create the main config file." );
+				e.printStackTrace();
+			}
+		}
+		return configFile;
+	}
+
+	public File getHistoryFile() {
+		// Configuration Directory
+		final File historyFile = new File( getConfigDir(), "history.txt" );
+		if ( ! historyFile.isFile() ) {
+			try {
+				historyFile.createNewFile();
+			} catch (IOException e) {
+				System.err.println( "WARNING : Failed to create the history file." );
+				e.printStackTrace();
+			}
+		}
+		return historyFile;
+	}
+
+    
+	public void readHistoryFile(JComboBox<String> comboBox) {
+		comboBox.removeAllItems();
+
+		BufferedReader in = null;
+		try {
+			in = new BufferedReader( new FileReader( getHistoryFile() ) );
+			String s = null;
+			for (;;) {
+				s = in.readLine();
+				if ( s == null ) break;
+				// if ( new File(s).isFile() ) {
+					comboBox.addItem( s );
+				// }
+			}
+		} catch (FileNotFoundException e1) {
+			Logger.getLogger(Pulsar.class.getName()).log(Level.SEVERE,"",e1);
+		} catch (IOException e1) {
+			Logger.getLogger(Pulsar.class.getName()).log(Level.SEVERE,"",e1);
+		} finally {
+			if ( in != null )
+				try {
+					in.close();
+				} catch (IOException e1) {
+					Logger.getLogger(Pulsar.class.getName()).log(Level.SEVERE,"",e1);
+				}
+		}
+	}
+
+	final File configFile = getConfigFile();
+	long lastModifiedOfConfigFile=-1;
+
+	/**
+	 * This stores the File object that point to the current opening scheme file.
+	 * Pulsar's process of opening file is depend on watchdog timer. The watchdog
+	 * timer frequently check the file that the {@link Pulsar#currentFile} points if
+	 * its timestamp value is modified. When it detect timestamp modification, the
+	 * watchdog timer invoke {@link Pulsar#loadScheme(File)} method to load the
+	 * script.
+	 */
+	File currentFile;
+	
+	/**
+	 * This field stores the last value of timestamp of the {@link Pulsar#currentFile }
+	 */
+	long lastModifiedOfCurrentFile=-1;
+	
+	// a watchdog Timer
+	{
+		Timer timer = new Timer(1000, new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				lastModifiedOfConfigFile = checkLastModified( configFile, lastModifiedOfConfigFile );
+				lastModifiedOfCurrentFile = checkLastModified( currentFile, lastModifiedOfCurrentFile );
+			}
+
+			long checkLastModified( File file, long lastModified ) {
+				if ( file == null ) 
+					return lastModified;
+				
+				long newLastModified = file.lastModified();
+				if ( newLastModified != lastModified ) {
+					System.err.println( "Detected that the file was modified." );
+					loadScheme( file );
+				}
+				return newLastModified;
+			}
+		});
+		timer.setInitialDelay(250);
+		timer.start(); 
+	}
+
+
 	static final class SchemeProcedureRunnable implements Runnable {
 		private Environment environment;
 		private final Procedure procedure;
@@ -106,6 +280,39 @@ public final class Pulsar extends Metro {
 			} catch (Throwable e) {
 	            Logger.getLogger(Metro.class.getName()).log(Level.SEVERE, null, e);
 				throw new RuntimeException(e);
+			}
+		}
+	}
+
+	public void loadScheme(File file) {
+		try {
+			String text = new String(Files.readAllBytes( Paths.get( file.toURI() ) ), StandardCharsets.UTF_8);
+			Scheme scheme = new Scheme();
+			initScheme( scheme );
+			scheme.eval( text );
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (Throwable e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		if ( tf_currentFile != null ) {
+			tf_currentFile.setText( file.getAbsolutePath() );
+		}
+		
+		if ( cb_relatedFiles != null ) {
+			int i = this.relatedFiles.indexOf( file );
+			if ( 0<=i ) {
+				if ( ! isComboBoxUpdating  ) {
+					try { 
+						isComboBoxUpdating = true;
+						this.cb_relatedFiles.setSelectedIndex( i );
+					} finally {
+						isComboBoxUpdating = false;
+					}
+				}
 			}
 		}
 	}
@@ -133,14 +340,14 @@ public final class Pulsar extends Metro {
 				System.err.println("set-main");
 				if ( args.length == 1 ) {
 					Procedure procedure = (Procedure)args[0];
-					setMain( new SchemeProcedureRunnable( procedure ));
+					setMainProcedure( new SchemeProcedureRunnable( procedure ));
 				} else {
 					throw new RuntimeException( "invalid argument length" );
 				}
     			return EmptyList.emptyList;
     		}
     	});
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "playing!" ), null, new ProcedureN() {
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "set-playing!" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				if ( args.length == 0 ) {
@@ -150,6 +357,21 @@ public final class Pulsar extends Metro {
 				} else {
 					throw new RuntimeException( "invalid argument length" );
 				}
+    			return EmptyList.emptyList;
+    		}
+    	});
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "set-related-files!" ), null, new ProcedureN() {
+    		@Override
+    		public Object applyN(Object[] args) throws Throwable {
+    			if ( args.length == 1  ) {
+    				Pair p = (Pair)args[0];
+    				List<File> files=  SchemeUtils.<File>convList( p, (o)->{
+    					return new File( SchemeUtils.anyToString( o ) );
+    				});
+    				setRelatedFiles( files );
+    			} else {
+    				throw new RuntimeException( "invalid argument length" );
+    			}
     			return EmptyList.emptyList;
     		}
     	});
@@ -165,6 +387,13 @@ public final class Pulsar extends Metro {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				reset();
+    			return EmptyList.emptyList;
+    		}
+    	});
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "clear!" ), null, new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				clear();
     			return EmptyList.emptyList;
     		}
     	});
@@ -196,7 +425,7 @@ public final class Pulsar extends Metro {
 					String syncSequenceName = 4<=args.length ? SchemeUtils.anyToString( args[3] ) : null;
 					double offset           = 5<=args.length ? SchemeUtils.toDouble( args[4] ) : 0.0d;
 					
-					SchemePulsarLogic logic = new SchemePulsarLogic(procedure);
+					SchemePulsarLogic logic = new SchemePulsarLogic( Environment.getCurrent(), procedure );
 					putLogic(name, logic, syncType, syncSequenceName, offset );
 					
 					return EmptyList.emptyList;
@@ -219,6 +448,13 @@ public final class Pulsar extends Metro {
 				} else {
 					throw new RuntimeException( "Invalid parameter. usage : (new-logic [name] [lambda] ) " );
 				}
+			}
+    	});
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "clear-seq!" ), null, new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				clearSequences();
+				return EmptyList.emptyList;
 			}
     	});
 
@@ -253,10 +489,10 @@ public final class Pulsar extends Metro {
     		}
     	});
 
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-init!" ), null, new ProcedureN() {
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-clear!" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
-				guiInit();
+				guiClear();
     			return EmptyList.emptyList;
     		}
 
@@ -307,6 +543,15 @@ public final class Pulsar extends Metro {
     			return args[0];
     		}
     	});
+    	// TODO
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-newline!" ), null, new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				System.err.println("newline-gui");
+				guiNewline();
+    			return EmptyList.emptyList;
+    		}
+    	});
 
     	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-refresh" ), null, new ProcedureN() {
 			@Override
@@ -340,15 +585,6 @@ public final class Pulsar extends Metro {
     			return EmptyList.emptyList;
     		}
     	});
-    	// TODO
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "endline-gui" ), null, new ProcedureN() {
-			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-				System.err.println("newline-gui");
-				endlineGui();
-    			return EmptyList.emptyList;
-    		}
-    	});
 
     	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-put-constraint" ), null, new ProcedureN() {
 			@Override
@@ -367,6 +603,8 @@ public final class Pulsar extends Metro {
     		}
     	});
     }
+    
+    ////////////////////////
 
 	//Create the "cards".
     JFrame frame = null;
@@ -376,7 +614,48 @@ public final class Pulsar extends Metro {
 	LayoutManager userLayout = null; 
 	JPanel userPane = new JPanel( new FlawLayout() );
 	JLabel tempoLabel = new JLabel("", SwingConstants.CENTER );
-    
+
+    transient boolean isComboBoxUpdating = false;
+	JComboBox<String> cb_relatedFiles;
+	JTextField tf_currentFile;
+
+	
+	public void guiClear() {
+		userPane.removeAll();
+		guiFlowLayout();
+	}
+	public void guiSpringLayout() {
+		userLayout = new SpringLayout();
+		userPane.setLayout(userLayout);
+	}
+	public void guiFlowLayout() {
+		userLayout = new FlawLayout( FlawLayout.LEFT, 2, 2 );
+		userPane.setLayout(userLayout);
+	}
+	public void guiGridBagLayout() {
+		userLayout = new GridBagLayout();
+		userPane.setLayout(userLayout);
+	}
+	public void guiRefresh() {
+		userPane.revalidate();
+		userPane.repaint();
+        // frame.pack();
+	}
+	public void guiAdd( JComponent c ) {
+		userPane.add( c );
+		userPane.revalidate();
+		userPane.repaint();
+	}
+	public void guiNewline() {
+		userPane.add( FlawLayout.createNewLine() );
+		userPane.revalidate();
+		userPane.repaint();
+	}
+
+	public void newlineGui() {
+		// userPane.add( Box.createVerticalStrut(500 ) );
+	}
+
     private void createAndShowGUI() {
         //Create and set up the window.
         frame = new JFrame( "Pulsar" );
@@ -412,10 +691,11 @@ public final class Pulsar extends Metro {
         rootPane = new JPanel( new BorderLayout() );
 		rootPane.add( staticPane, BorderLayout.PAGE_START );
 		rootPane.add( userPane, BorderLayout.CENTER );
-		staticPane.setLayout( new BorderLayout(10,10) );
+		staticPane.setLayout( new BorderLayout(BORDER,BORDER) );
         frame.getContentPane().add ( rootPane );
 
 		// Tempo Button
+        staticPane.add( createFilePanel(), BorderLayout.PAGE_START );
 		staticPane.add( createStartStopButton(), BorderLayout.LINE_START );
 		staticPane.add( createTempoTapButton(), BorderLayout.CENTER );
 		staticPane.add( createResetButton(), BorderLayout.LINE_END );
@@ -431,54 +711,9 @@ public final class Pulsar extends Metro {
 		
 		 staticPane.setBorder( BorderFactory.createEmptyBorder(20,20,20,20) );
 		
-		// Config Directory
-		final File configDir = new File( System.getProperty("user.home"), ".pulsar" );
-		if ( ! configDir.isDirectory() ) {
-			if (! configDir.mkdir() ) {
-				System.err.println( "WARNING : Failed to create the config directory." );
-			}
-		}
-		final File configFile = new File( configDir, "pulsar.scm" );
-		if ( ! configFile.isFile() ) {
-			try {
-				configDir.createNewFile();
-			} catch (IOException e) {
-				System.err.println( "WARNING : Failed to create the main config file." );
-				e.printStackTrace();
-			}
-		}
-						
-		// a watchdog Timer
-		{
-			Timer timer = new Timer(1000, new ActionListener() {
-				private long last=-1;
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					long current = configFile.lastModified();
-					if ( current != last ) {
-						System.err.println( "Detected that the config file was modified." );
-						try {
-							String text = new String(Files.readAllBytes( Paths.get( configFile.toURI() ) ), StandardCharsets.UTF_8);
-							Scheme scheme = new Scheme();
-							initScheme( scheme );
-							scheme.eval( text );
-						} catch (IOException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						} catch (Throwable e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-					}
-					this.last= current;
-				}
-			});
-			timer.setInitialDelay(250);
-			timer.start(); 
-		}
 		
 		{
-			staticPane.add( tempoLabel, BorderLayout.PAGE_START );
+//			staticPane.add( tempoLabel, BorderLayout.PAGE_START );
 		}
 		((JComponent)rootPane).setBorder( BorderFactory.createEmptyBorder() );
 		
@@ -500,34 +735,177 @@ public final class Pulsar extends Metro {
 //			}
 //		});
 
-		
 		// frame.setMaximizedBounds(new Rectangle(0, 0, 400, 1000));
 		frame.pack();
 		frame.setSize( 600, 500 );
 		frame.setVisible(true);
     }
-    
-	Runnable main = null;
-	public void setMain( Runnable mainAction ) {
-		this.main = mainAction;
-		reset();
-	}
-	public Runnable getMain() {
-		return main;
-	}
+     
 
-    public void reset() { 
-    	System.err.println( "===reset" );
-    	parent.setPlaying(false);
-		main.run();
-		parent.resetSequences();
-    }
-    public void cue() {
-    	System.err.println( "===cue" );
-    }
+	public JPanel createFilePanel() {
+		JPanel panel = new JPanel();
+		panel.setLayout( new BorderLayout(BORDER,BORDER) );
+		JButton fileButton = new JButton( "FILE" ) {
+			@Override
+			public Dimension getPreferredSize() {
+				Dimension s = super.getPreferredSize();
+				s.width = 75;
+				return s;
+			}
+		};
+		JButton execButton = new JButton( "EXEC" ) {
+			@Override
+			public Dimension getPreferredSize() {
+				Dimension s = super.getPreferredSize();
+				s.width = 75;
+				return s;
+			}
+		};
+		this.cb_relatedFiles = new JComboBox<String>() {;
+		};
+		cb_relatedFiles.setEditable(false);
+		
+		fileButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fc = new JFileChooser();
+				fc.setFileFilter( new FileFilter() {
+					@Override
+					public String getDescription() {
+						return "*.scm (scheme)";
+					}
+					@Override
+					public boolean accept(File f) {
+						return ! f.isFile() || f.getName().endsWith( "scm" );
+					}
+				});
+				int result = fc.showOpenDialog( frame );
+				if ( result == JFileChooser.APPROVE_OPTION ) {
+					try {
+						isComboBoxUpdating = true;
+						cb_relatedFiles.addItem( fc.getSelectedFile().getAbsolutePath() );
+						cb_relatedFiles.setSelectedIndex( cb_relatedFiles.getItemCount() -1 );
+					} finally {
+						isComboBoxUpdating = false;
+					}
+				}
+			}
+		});
+
+		execButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					isComboBoxUpdating = true;
+					int i = cb_relatedFiles.getSelectedIndex();
+					if ( 0<=i ) {
+						String item = cb_relatedFiles.getItemAt(i);
+						cb_relatedFiles.removeItemAt( i );
+						cb_relatedFiles.insertItemAt( item, 0 );
+						cb_relatedFiles.setSelectedIndex(0);
+					}
+				} finally {
+					isComboBoxUpdating = false;
+				}
+			}
+		});
+
+		
+		panel.add( fileButton , BorderLayout.LINE_START );
+		panel.add( execButton , BorderLayout.LINE_END );
+
+		cb_relatedFiles.addPopupMenuListener( new PopupMenuListener() {
+			@Override
+			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+				System.out.println("popupMenuWillBecomeVisible()");
+				// readHistoryFile(comboBox);
+			}
+			
+			@Override
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+				System.out.println( "popupMenuWillBecomeInvisible()");
+			}
+			
+			@Override
+			public void popupMenuCanceled(PopupMenuEvent e) {
+				System.out.println(".popupMenuCanceled()");
+			}
+		});
+		
+		cb_relatedFiles.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				System.out.println("Pulsar.createFilePanel().new ItemListener() {...}.itemStateChanged()");
+				if ( e.getStateChange() == ItemEvent.SELECTED ) {
+
+//					if ( ! isComboBoxUpdating )  
+//						SwingUtilities.invokeLater( new Runnable() {
+//							@Override
+//							public void run() {
+//								try {
+//									isComboBoxUpdating = true;
+//									int i = comboBox.getSelectedIndex();
+//									String item = comboBox.getItemAt(i);
+//									comboBox.removeItemAt(i);
+//									comboBox.insertItemAt(item, 0);
+//									comboBox.setSelectedIndex(0);
+//								} finally {
+//									isComboBoxUpdating = false;
+//								}
+//
+//							}
+//						});
+				}
+			}
+		});
+		readHistoryFile(cb_relatedFiles);
+
+		panel.add( cb_relatedFiles, BorderLayout.CENTER );
+		
+		JPanel mainFilePanel = new JPanel();
+		panel.add( mainFilePanel, BorderLayout.PAGE_START );
+		mainFilePanel.setLayout( new BorderLayout( BORDER , BORDER ) );
+		JButton openMainFileButton = new JButton( "OPEN" );
+		mainFilePanel.add( openMainFileButton, BorderLayout.LINE_START );
+		openMainFileButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fc = new JFileChooser();
+				fc.setFileFilter( new FileFilter() {
+					@Override
+					public String getDescription() {
+						return "*.scm (scheme)";
+					}
+					@Override
+					public boolean accept(File f) {
+						return ! f.isFile() || f.getName().endsWith( "scm" );
+					}
+				});
+				int result = fc.showOpenDialog( frame );
+				if ( result == JFileChooser.APPROVE_OPTION ) {
+					currentFile = fc.getSelectedFile();
+					lastModifiedOfCurrentFile = -1;
+				}
+			}
+		});
+
+		tf_currentFile = new JTextField();
+		mainFilePanel.add( tf_currentFile, BorderLayout.CENTER );
+		tf_currentFile.setEditable(false);
+		
+
+		return panel;
+	}
     
 	public JButton createStartStopButton() {
-		JButton b = new JButton( "<</II" );
+		JButton b = new JButton( "<</II" ) {
+			@Override
+			public Dimension getPreferredSize() {
+				Dimension s = super.getPreferredSize();
+				s.width =  75;
+				return s;
+			}
+		};
 		b.addActionListener( new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -564,7 +942,6 @@ public final class Pulsar extends Metro {
 	}
     
     public JButton createTempoTapButton() {
-    	Pulsar logic = this;
     	JButton tempoTapButton = new JButton( "TEMPO" );
     	tempoTapButton.addActionListener( new ActionListener() {
     		long prev_time = 0;
@@ -622,7 +999,7 @@ public final class Pulsar extends Metro {
     					double onemin = 1000L*1000L*1000L*60L;
     					double beatPerMinute =  onemin / avg  ;
     					System.err.println( String.format( "%.2f / %.2f = %.2f", onemin , avg , beatPerMinute  ) );
-    					logic.setBeatsPerMinute( (long) beatPerMinute );
+    					setBeatsPerMinute( (long) beatPerMinute );
     					tempoTapButton.setText( String.format( "Tempo=%.2f", beatPerMinute  ) );
 
     					//							tempoLabel.setText( String.format( "%.2f", beatPerMinute  ) );
@@ -641,18 +1018,5 @@ public final class Pulsar extends Metro {
     	return tempoTapButton;
 	}
     
-  
-	public static void main(String[] args) throws JackException, InterruptedException {
-        Pulsar metro = new Pulsar( );
-        metro.start( "Metro" );
-
-		metro.createOutputPort("MIDI Output0");
-		metro.createOutputPort("MIDI Output1");
-		metro.createInputPort("MIDI Input0");
-		metro.createInputPort("MIDI Input1");
-		metro.connectPort( "Metro:MIDI Output0", "hydrogen-midi:RX" );
-		// metro.connectPort( "a2j:Xkey37 [20] (capture): Xkey37 MIDI 1", "Metro:MIDI Input0" );
-		
-	}
 }
 	

@@ -61,6 +61,8 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
     protected List<MetroNoteEventBufferSequence> sequences = new ArrayList<MetroNoteEventBufferSequence>();
     protected List<MetroNoteEventBufferSequence> registeredSequences = new ArrayList<MetroNoteEventBufferSequence>();
     protected List<MetroNoteEventBufferSequence> unregisteredSeqences = new ArrayList<MetroNoteEventBufferSequence>();
+	private List<Runnable>  messageQueue = new ArrayList<Runnable>();
+	
     private ArrayList<MetroMidiEvent> inputMidiEventList = new ArrayList<MetroMidiEvent>();
     private ArrayList<MetroMidiEvent> outputMidiEventList = new ArrayList<MetroMidiEvent>();
 	private JackPosition position = new JackPosition();
@@ -74,7 +76,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 	}
 	public void setBeatsPerMinute(double barPerMinute) throws JackException {
 		this.beatsPerMinute = barPerMinute < 0 ? 0 : barPerMinute;
-		prepareSequence();
+		reprepareSequence();
 	}
 
 	private long beatsPerBar = 4;
@@ -83,10 +85,11 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 	}
 	public void setBeatsPerBar(long beatsPerBar) throws JackException {
 		this.beatsPerBar = beatsPerBar;
-		prepareSequence();
+		reprepareSequence();
 	}
 
 	private transient boolean playing = false;
+
 	public boolean getPlaying() {
 		return this.playing;
 	}
@@ -226,7 +229,8 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
         new Thread( this ).start();
     }
     
-    public void clearSequences() {
+    // ???
+    public void refreshSequences() {
 		synchronized ( this.sequences ) {
 			for ( MetroNoteEventBufferSequence s : this.sequences ) {
 				s.clearBuffer();
@@ -241,7 +245,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
         	}
 		}
     }
-    public void resetSequences() {
+    public void clearSequences() {
 		synchronized ( this.sequences ) {
 			this.sequences.clear();
 			this.notifyCheckBuffer();
@@ -259,6 +263,15 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 	        		sequence.checkBuffer( this,  this.client, this.position );
 	        	}
 				synchronized ( this.sequences ) {
+					for ( Runnable r : this.messageQueue ) {
+						try {
+							r.run();
+						} catch ( Throwable e ) {
+							Logger.getLogger(Metro.class.getName()).log(Level.SEVERE, "An error occured in a message object", e);
+						}
+					}
+					
+					
 					this.sequences.removeAll(this.unregisteredSeqences );
 					this.sequences.addAll( this.registeredSequences );
 					
@@ -281,7 +294,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 		}
 	}
 	
-	void prepareSequence() throws JackException {
+	void reprepareSequence() throws JackException {
 		synchronized ( this.sequences ) {
 			// int barInFrames = Metro.calcBarInFrames( this, this.client, this.position );
 			for ( MetroNoteEventBufferSequence sequence : this.sequences ) {
@@ -438,14 +451,26 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
     protected void registerSequence( MetroNoteEventBufferSequence sequence ) {
 		if ( DEBUG ) 
 			System.err.println( "****** CREATED a new sequence is created " + sequence.id );
-		this.registeredSequences.add( sequence );
-		this.notifyCheckBuffer();
+		synchronized ( this.sequences ) {
+			this.registeredSequences.add( sequence );
+			this.notifyCheckBuffer();
+		}
 	}
 	protected void unregisterSequence( MetroNoteEventBufferSequence sequence ) {
 		if ( DEBUG ) 
 			System.err.println( "****** DESTROYED a sequence is destroyed " + sequence.id );
-		this.unregisteredSeqences.add( sequence );
-		this.notifyCheckBuffer();
+		synchronized ( this.sequences ) {
+			this.unregisteredSeqences.add( sequence );
+			this.notifyCheckBuffer();
+		}
+	}
+    protected void postMessage( Runnable runnable ) {
+		if ( DEBUG )
+			System.err.println( "****** postMessage 1");
+		synchronized ( this.sequences ) {
+			this.messageQueue.add( runnable );
+			this.notifyCheckBuffer();
+		}
 	}
 
 	protected void notifyCheckBuffer() {
