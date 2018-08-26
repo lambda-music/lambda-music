@@ -94,6 +94,8 @@ public final class Pulsar extends Metro {
 		pulsar.connectPort( "Metro:MIDI Output0", "hydrogen-midi:RX" );
 		// metro.connectPort( "a2j:Xkey37 [20] (capture): Xkey37 MIDI 1", "Metro:MIDI Input0" );
 	}
+	
+	
 
 	static final int BORDER = 10;
 	
@@ -233,7 +235,7 @@ public final class Pulsar extends Metro {
 				}
 		}
 	}
-
+	
 	final File configFile = getConfigFile();
 	long lastModifiedOfConfigFile=-1;
 
@@ -525,8 +527,31 @@ public final class Pulsar extends Metro {
 				}
 			}
     	});
-    	
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "new-output!" ), null, new ProcedureN() {
+
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "running?" ), null, new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				return running;
+    		}
+    	});
+
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "run!" ), null, new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				for ( Object o : args ) {
+					if ( running ) {
+						throw new RuntimeException( "There is an already running server." );
+					} else {
+						running = true;
+					}
+					String name = SchemeUtils.toString( o );
+					start( name );
+				}
+				return EmptyList.emptyList;
+    		}
+    	});
+
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "output!" ), null, new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				for ( Object o : args ) {
@@ -537,7 +562,7 @@ public final class Pulsar extends Metro {
     		}
     	});
 
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "new-input!" ), null, new ProcedureN() {
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", "input!" ), null, new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				for ( Object o : args ) {

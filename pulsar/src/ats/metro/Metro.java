@@ -208,12 +208,17 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 		this.sequences.clear();
 	}
 
+	protected boolean running = false;
     public void start( String clientName ) throws JackException {
+    	if ( running )
+    		throw new RuntimeException( "Already Started" );
+    	this.running = true;
+    	
     	// Create a Jack client.
         EnumSet<JackStatus> status = EnumSet.noneOf(JackStatus.class);
         try {
             this.jack = Jack.getInstance();
-            this.client = this.jack.openClient( clientName , EnumSet.of(JackOptions.JackNoStartServer), status);
+            this.client = this.jack.openClient( clientName , EnumSet.of(JackOptions.JackNoStartServer ), status);
             if (!status.isEmpty()) {
                 System.out.println("JACK client status : " + status);
             }
