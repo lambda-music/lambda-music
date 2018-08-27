@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -77,11 +78,10 @@ public final class Pulsar extends Metro {
 	 */
 	public static void main(String[] args) throws JackException, InterruptedException {
 		if ( args.length == 0 ) {
-			System.err.println( "Usage : pulsar [.scm]" );
-			return;
+			new Pulsar();
+		} else {
+			new Pulsar( new File( args[0] ) );
 		}
-		
-		Pulsar pulsar = new Pulsar( new File( args[0] ) );
 		
 //		pulsar.open( "Metro" );
 //
@@ -274,11 +274,11 @@ public final class Pulsar extends Metro {
 		Timer timer = new Timer(1000, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				lastModifiedOfConfigFile = checkLastModified( configFile, lastModifiedOfConfigFile );
-				lastModifiedOfCurrentFile = checkLastModified( currentFile, lastModifiedOfCurrentFile );
+				lastModifiedOfConfigFile  = checkLastModified( configFile,  lastModifiedOfConfigFile , (file)->{}   );
+				lastModifiedOfCurrentFile = checkLastModified( currentFile, lastModifiedOfCurrentFile, (file)->updateFilename(file) );
 			}
 
-			long checkLastModified( File file, long lastModified ) {
+			long checkLastModified( File file, long lastModified, Consumer<File> updateProc ) {
 				if ( file == null ) 
 					return NOT_DEFINED; // lastModified;
 				
@@ -287,6 +287,7 @@ public final class Pulsar extends Metro {
 					System.err.println( "Detected that the file was modified." );
 					try {
 						loadScheme( file );
+						updateProc.accept( file );
 					} catch (FileNotFoundException e) {
 						pulsarError( "" , e );
 					}
@@ -341,24 +342,6 @@ public final class Pulsar extends Metro {
 		} catch (Throwable e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-		}
-		
-		if ( tf_currentFile != null ) {
-			tf_currentFile.setText( file.getPath() );
-		}
-		
-		if ( cb_relatedFiles != null ) {
-			int i = this.relatedFiles.indexOf( file );
-			if ( 0<=i ) {
-				if ( ! isComboBoxUpdating  ) {
-					try { 
-						isComboBoxUpdating = true;
-						this.cb_relatedFiles.setSelectedIndex( i );
-					} finally {
-						isComboBoxUpdating = false;
-					}
-				}
-			}
 		}
 	}
 
@@ -620,7 +603,6 @@ public final class Pulsar extends Metro {
 			}
     	});
 
-
   	
     	// ???
     	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-get-pane" ), null, new ProcedureN() {
@@ -650,8 +632,6 @@ public final class Pulsar extends Metro {
     	});
     	
     	
-
-
     	scheme.getEnvironment().define( SimpleSymbol.make( "", "new-button" ), null, new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
@@ -803,6 +783,27 @@ public final class Pulsar extends Metro {
 		userPane.revalidate();
 		userPane.repaint();
 	}
+	
+	public void updateFilename(File file) {
+		if ( tf_currentFile != null ) {
+			tf_currentFile.setText( file.getPath() );
+		}
+		
+		if ( cb_relatedFiles != null ) {
+			int i = this.relatedFiles.indexOf( file );
+			if ( 0<=i ) {
+				if ( ! isComboBoxUpdating  ) {
+					try { 
+						isComboBoxUpdating = true;
+						this.cb_relatedFiles.setSelectedIndex( i );
+					} finally {
+						isComboBoxUpdating = false;
+					}
+				}
+			}
+		}
+	}
+
 
 	public void newlineGui() {
 		// userPane.add( Box.createVerticalStrut(500 ) );

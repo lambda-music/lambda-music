@@ -4,7 +4,7 @@
     <!--ANT 1.7 is required                                        -->
     <!--define folder properties-->
     <property name="dir.buildfile" value="."/>
-    <property name="dir.workspace" value="${dir.buildfile}"/>
+    <property name="dir.workspace" value="${dir.buildfile}/.."/>
     <property name="dir.jarfile" value="/home/ats/Documents/works/java"/>
     <target name="create_run_jar">
         <jar destfile="${dir.jarfile}/pulsar.jar" filesetmanifest="mergewithoutmain">
@@ -12,7 +12,7 @@
                 <attribute name="Main-Class" value="ats.pulsar.Pulsar"/>
                 <attribute name="Class-Path" value="."/>
             </manifest>
-            <fileset dir="${dir.workspace}/pulsar/bin"/>
+            <fileset dir="${dir.buildfile}/bin"/>
             <fileset dir="${dir.workspace}/jaudiolibs/bin"/>
             <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/jna-platform-4.5.0.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/jna-4.5.0.jar"/>
