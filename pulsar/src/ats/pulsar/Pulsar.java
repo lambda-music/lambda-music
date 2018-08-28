@@ -35,11 +35,9 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
-import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
@@ -61,69 +59,188 @@ import gnu.mapping.ProcedureN;
 import gnu.mapping.SimpleSymbol;
 import kawa.standard.Scheme;
 
+/**
+ * Pulsar is a MIDI sequencer program which is controlled by a powerful computer
+ * language which is called Scheme. Pulsar is written in JAVA and uses JACK
+ * Audio Connection Kit to receive and send MIDI messages; Pulsar runs on any
+ * Linux boxes, hopefully OSX and Windows as well.
+ * <p>
+ * Pulsar dynamically composes music by writing programs by Scheme. Scheme is a
+ * dialect of a computer language which is called "lisp". Pulsar could be used
+ * to develop automatic DJ application or automatic backing track generators
+ * which composes on the fly.
+ * <h3>Workflow</h3>
+ * <i>TODO</i>
+ * <p>
+ * <h3>Document Model</h3>
+ * This application has a slightly different concept of open/close files
+ * comparative to those general music players. When a user opens a scheme script
+ * on Pulsar, Pulsar merely executes it without any clean ups nor
+ * initializations. For example, if a user opens an empty scheme script while
+ * Pulsar is playing music, nothing will be happened and keeps the former state.
+ * <p>
+ * In Pulsar, scripts should implicitly initialize the state of the sequencer if
+ * it is necessary because Pulsar does not do it automatically.
+ * <p>
+ * Pulsar has two important parameters :
+ * <p>
+ * <ul>
+ * <li>main-file
+ * <li>main-procedure
+ * </ul>
+ * <p>
+ * The <code>main-file</code> is a file path to the main file which Pulsar is
+ * currently referring. Pulsar keeps checking the timestamp of the file and
+ * trying to detect file modification. Whenever Pulsar detects any timestamp
+ * update on the file, Pulsar automatically reads it and execute.
+ * <p>
+ * The <code>main-procedure</code> is the procedure which initializes the state
+ * of the sequencer. This method is the place where Pulsar starts a new song.
+ * <p>
+ * If a script file sets <code>main-procedure</code>, this is effectively the
+ * application <i>opens</i> a new-file in the sense of general applications. A
+ * script file could also leave <code>main-procedure</code> untouched.
+ * <p>
+ * This behavior is designed to be useful in some scenarios. For example, when a
+ * user repeatedly updates/modifies the script file repeatedly in order to check
+ * how it sounds, this behavior might help the user. If Pulse initializes the
+ * sequencer whenever it reads a file, the music must restart from the
+ * beginning. Users usually prefer it to keep the music playing and modify the
+ * music slightly to see what will happen.
+ * <p>
+ * This behavior could probably be used as implementing sub-modules.
+ * <h3>Pulsar API<h3>
+ * 
+ * @author whatsupAts
+ */
 public final class Pulsar extends Metro {
-	public Pulsar( File currentFile ) throws JackException {
-		if ( ! currentFile.isFile() )
-			throw new RuntimeException( "The specified file does not exist (" + currentFile.getPath() + ")" );
+	/**
+	 * Creates an instance of Pulsar object without opening any specific scheme
+	 * file. When a user creates an object by this constructor, the sequencer
+	 * remains closed after the application boots up. The user must explicitly
+	 * open a file to use the application.
+	 */
+	public Pulsar() {
+	}
+
+	/**
+	 * Create an instance of Pulsar object and opens the specified scheme file.
+	 * @param file a scheme file to open. 
+	 */
+	public Pulsar( File file ) {
+		if ( ! file.isFile() )
+			throw new RuntimeException( "The specified file does not exist (" + file.getPath() + ")" );
 
 		// See the comment.
-		setCurrentFile( null , currentFile );
-	}
-	public Pulsar() {
+		setMainFile( null , file );
 	}
 
 
 	/**
-	 * timer frequently check the file that the {@link Pulsar#currentFile} points if its
+	 * The main method which starts up the application. The application opens a file
+	 * which is specified in argument values. When more than one arguments were
+	 * passed to the method, only the first argument is taken. 
 	 */
-	public static void main(String[] args) throws JackException, InterruptedException {
+	public static void main(String[] args) {
 		if ( args.length == 0 ) {
 			new Pulsar();
 		} else {
 			new Pulsar( new File( args[0] ) );
 		}
-		
-//		pulsar.open( "Metro" );
-//
-//		pulsar.createOutputPort("MIDI Output0");
-//		pulsar.createOutputPort("MIDI Output1");
-//		pulsar.createInputPort("MIDI Input0");
-//		pulsar.createInputPort("MIDI Input1");
-//		pulsar.connectPort( "Metro:MIDI Output0", "hydrogen-midi:RX" );
-
-		// metro.connectPort( "a2j:Xkey37 [20] (capture): Xkey37 MIDI 1", "Metro:MIDI Input0" );
 	}
 
-	static void pulsarError( String msg, Throwable e ) {
-        Logger.getLogger(Pulsar.class.getName()).log(Level.SEVERE, null, e);
+	static void logError( String msg, Throwable e ) {
+        Logger.getLogger(Pulsar.class.getName()).log(Level.SEVERE, msg, e);
 	}
+	static void logInfo( String msg ) {
+        Logger.getLogger(Pulsar.class.getName()).log(Level.INFO, msg);
+	}
+	
 
 	static final int BORDER = 10;
 	
+	/**
+	 * This field specifies the procedure to reset all of the states inside the
+	 * sequencer and effectively this method starts a song. Whenever a user call
+	 * {@link Pulsar#reset()}, this procedure will be invoked.
+	 */
 	Runnable mainProcedure = null;
-	public void setMainProcedure( Runnable mainAction ) {
-		this.mainProcedure = mainAction;
-		reset();
+
+	/**
+	 * Sets the main-procedure object.
+	 * 
+	 * @see Pulsar#mainProcedure 
+	 */
+	public void setMainProcedure( Runnable mainProcedure ) {
+		this.mainProcedure = mainProcedure;
 	}
+	
+	/**
+	 * Returns the main-procedure object.
+	 * 
+	 * @see Pulsar#mainProcedure 
+	 */
 	public Runnable getMainProcedure() {
 		return mainProcedure;
 	}
 	
+    /**
+	 * This application is designed to implement Variable-Song-Length. Basically the
+	 * sequencer is always playing a specific region of a song repeatedly and
+	 * remains in the region and only when the user send a "cue" to the sequencer,
+	 * the sequencer goes to next region. When users call {@link Pulsar#cue() },
+	 * this procedure is invoked. 
+	 */
+	Runnable cueProcedure = null;
 	/**
-	 * Stores the file path which modified the related-file-list. This path is used
-	 * to resolve a relative path when a relative path is given to
+	 * Sets the cue-procedure object.
+	 * 
+	 * @see Pulsar#cueProcedure 
+	 */
+	public void setCueProcedure( Runnable cueProcedure ) {
+		this.cueProcedure = cueProcedure;
+	}
+	/**
+	 * Returns the cue-procedure object.
+	 * 
+	 * @see Pulsar#cueProcedure 
+	 */
+	public Runnable getCueProcedure() {
+		return cueProcedure;
+	}
+
+	
+	/**
+	 * Stores the path of the file which modified the related-file-list property.
+	 * This path is used to resolve a relative path by
 	 * {@link Pulsar#loadScheme(File) } method.
 	 */
 	File relatedFileParent=null;
-	
+
+	/**
+	 * The "related-files" is a concept which could implement the "playlist"
+	 * function in Pulsar and maybe this could be use on other purposes,too.
+	 * 
+	 * The related-files is a place to stores a list of scheme script files and the
+	 * files are shown on the combobox on the main screen. Users can execute any
+	 * scheme script on the list anytime.
+	 */
 	final List<File> relatedFiles = new ArrayList<>();
+	
+	/**
+	 * @see #relatedFiles
+	 */
 	public List<File> getRelatedFiles() {
 		return Collections.unmodifiableList( relatedFiles );
 	}
+
+	/**
+	 * @see #relatedFiles
+	 */
 	public void setRelatedFiles( List<File> fileList ) {
 		this.relatedFiles.clear();
 		this.relatedFiles.addAll( fileList );
-		this.relatedFileParent = currentFile;
+		this.relatedFileParent = mainFile;
 
 		if ( this.cb_relatedFiles != null ) {
 			this.cb_relatedFiles.removeAllItems();
@@ -132,8 +249,10 @@ public final class Pulsar extends Metro {
 			}
 		}
 	}
-	/*
-	 * This method is not used now.
+	
+	/**
+	 * This method is not used now. The developers should not use this method in
+	 * order to keep consistency.
 	 */
 	public void addRelatedFile( File f) {
 		this.relatedFiles.add( f );
@@ -144,26 +263,34 @@ public final class Pulsar extends Metro {
 
     /**
 	 * {@link Pulsar#reset()} method resets the state of the object and calls main
-	 * procedure to back to the state of beginning of the project.
+	 * procedure to back to the state of beginning of the project. This method
+	 * effectively invoke the main procedure. See {@link Pulsar#mainProcedure}
 	 */
     public void reset() { 
-    	System.err.println( "===reset" );
+    	logInfo( "===reset" );
     	setPlaying(false);
     	if ( mainProcedure != null )
     		mainProcedure.run();
 		clearSequences();
     }
+
+    /**
+     * Invokes cue-procedure. See {@link Pulsar#cueProcedure } 
+     */
     public void cue() {
-    	System.err.println( "===cue" );
+    	logInfo( "===cue" );
+    	if ( cueProcedure != null )
+    		cueProcedure.run();
     }
     
-    /*
+    /**
      * This method clears main procedure and state.
      */
     public void clear() { 
-    	System.err.println( "===clear" );
+    	logInfo( "===clear" );
     	this.setPlaying(false);
     	this.mainProcedure = null;
+    	this.cueProcedure = null;
 		clearSequences();
     }
 
@@ -171,7 +298,7 @@ public final class Pulsar extends Metro {
 		final File configDir = new File( System.getProperty("user.home"), ".pulsar" );
 		if ( ! configDir.isDirectory() ) {
 			if (! configDir.mkdir() ) {
-				System.err.println( "WARNING : Failed to create the config directory." );
+				logInfo( "WARNING : Failed to create the config directory." );
 			}
 		}
 		return configDir;
@@ -184,13 +311,17 @@ public final class Pulsar extends Metro {
 			try {
 				configFile.createNewFile();
 			} catch (IOException e) {
-				System.err.println( "WARNING : Failed to create the main config file." );
+				logInfo( "WARNING : Failed to create the main config file." );
 				e.printStackTrace();
 			}
 		}
 		return configFile;
 	}
 
+	/**
+	 * This mechanism is currently not used. See {@link #readHistoryFile(JComboBox)}
+	 * @return
+	 */
 	public File getHistoryFile() {
 		// Configuration Directory
 		final File historyFile = new File( getConfigDir(), "history.txt" );
@@ -198,8 +329,7 @@ public final class Pulsar extends Metro {
 			try {
 				historyFile.createNewFile();
 			} catch (IOException e) {
-				System.err.println( "WARNING : Failed to create the history file." );
-				e.printStackTrace();
+				logError( "WARNING : Failed to create the history file.", e );
 			}
 		}
 		return historyFile;
@@ -224,15 +354,15 @@ public final class Pulsar extends Metro {
 				// }
 			}
 		} catch (FileNotFoundException e1) {
-			pulsarError( "" , e1 );
+			logError( "" , e1 );
 		} catch (IOException e1) {
-			pulsarError( "" , e1 );
+			logError( "" , e1 );
 		} finally {
 			if ( in != null )
 				try {
 					in.close();
 				} catch (IOException e1) {
-					pulsarError( "" , e1 );
+					logError( "" , e1 );
 				}
 		}
 	}
@@ -245,28 +375,33 @@ public final class Pulsar extends Metro {
 	/**
 	 * This stores the File object that point to the current opening scheme file.
 	 * Pulsar's process of opening file is depend on watchdog timer. The watchdog
-	 * timer frequently check the file that the {@link Pulsar#currentFile} points if
+	 * timer frequently check the file that the {@link Pulsar#mainFile} points if
 	 * its timestamp value is modified. When it detect timestamp modification, the
 	 * watchdog timer invoke {@link Pulsar#loadScheme(File)} method to load the
 	 * script.
 	 */
-	File currentFile=null;
+	File mainFile=null;
 	
 	/**
 	 * This path is used whenever a relative path is given to the
 	 * {@link Pulsar#loadScheme(File)} method.
 	 */
-	File currentParentFile=null;
+	File parentFile=null;
 
 	/**
-	 * This field stores the last value of timestamp of the {@link Pulsar#currentFile }
+	 * This field stores the last value of timestamp of the {@link Pulsar#mainFile }
 	 */
-	long lastModifiedOfCurrentFile=NOT_DEFINED;
+	long lastModifiedOfMainFile=NOT_DEFINED;
 	
-	void setCurrentFile( File currentParentFile, File currentFile ) {
-		this.currentFile = currentFile;
-		this.currentParentFile = currentParentFile;
-		this.lastModifiedOfCurrentFile = NOT_DEFINED;
+	/**
+	 * @see #mainFile
+	 * @param parentFile
+	 * @param mainFile
+	 */
+	void setMainFile( File parentFile, File mainFile ) {
+		this.mainFile   = mainFile;
+		this.parentFile = parentFile;
+		this.lastModifiedOfMainFile = NOT_DEFINED;
 	}
 	
 	// a watchdog Timer
@@ -275,7 +410,7 @@ public final class Pulsar extends Metro {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				lastModifiedOfConfigFile  = checkLastModified( configFile,  lastModifiedOfConfigFile , (file)->{}   );
-				lastModifiedOfCurrentFile = checkLastModified( currentFile, lastModifiedOfCurrentFile, (file)->updateFilename(file) );
+				lastModifiedOfMainFile    = checkLastModified( mainFile,    lastModifiedOfMainFile,    (file)->updateFilename(file) );
 			}
 
 			long checkLastModified( File file, long lastModified, Consumer<File> updateProc ) {
@@ -284,12 +419,12 @@ public final class Pulsar extends Metro {
 				
 				long newLastModified = file.lastModified();
 				if ( newLastModified != lastModified ) {
-					System.err.println( "Detected that the file was modified." );
+					logInfo( "Detected that the file was modified." );
 					try {
 						loadScheme( file );
 						updateProc.accept( file );
 					} catch (FileNotFoundException e) {
-						pulsarError( "" , e );
+						logError( "" , e );
 					}
 				}
 				return newLastModified;
@@ -299,7 +434,9 @@ public final class Pulsar extends Metro {
 		timer.start(); 
 	}
 
-
+	/**
+	 * A {@link Runnable} derived object to execute scheme functions.  
+	 */
 	static final class SchemeProcedureRunnable implements Runnable {
 		private Environment environment;
 		private final Procedure procedure;
@@ -316,19 +453,32 @@ public final class Pulsar extends Metro {
 				Environment.setCurrent( this.environment );
 				procedure.applyN( new Object[] {} );
 			} catch (Throwable e) {
-				pulsarError( "" , e );
+				logError( "" , e );
 				throw new RuntimeException(e);
 			}
 		}
 	}
 
-	public void loadScheme(File file) throws FileNotFoundException {
+	/**
+	 * Loads and executes the specified scheme script file.
+	 * 
+	 * If the specified path is a relative path, {@link Pulsar#loadScheme(File) }
+	 * try to resolve the path from the {@link Pulsar#parentFile}. If {@link Pulsar#parentFile}
+	 * is not specified, {@link Pulsar#loadScheme(File) } throws an exception.
+	 * 
+	 * @param file
+	 * @throws FileNotFoundException
+	 */
+	public void loadScheme( File file ) throws FileNotFoundException {
 		if ( ! file.isFile() ) {
 			throw new FileNotFoundException( file.getPath() );
 		}
 		
 		if ( ! file.isAbsolute() ) {
-			file = new File( currentParentFile.getParentFile(), file.getPath() );
+			if ( parentFile == null )
+				throw new FileNotFoundException( "cannot resolve relative path because no parent file is known." );
+			
+			file = new File( parentFile.getParentFile(), file.getPath() );
 		}
 		
 		try {
@@ -344,8 +494,18 @@ public final class Pulsar extends Metro {
 			e1.printStackTrace();
 		}
 	}
+	
+	private static final void defineVar( Scheme scheme, String name, Object value ) {
+    	scheme.getEnvironment().define( SimpleSymbol.make( "", name ), null, value );
+	}
 
-    void initScheme(Scheme scheme) {
+	/**
+	 * Initializes an environment of scheme engine and defines API for the scripts.
+	 * 
+	 * @param scheme
+	 *            the scheme instance to initialize.
+	 */
+    private void initScheme(Scheme scheme) {
     	{
     		InputStream in = null;
     		try {
@@ -362,14 +522,13 @@ public final class Pulsar extends Metro {
 				}
     		}
     	}
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "open?" ), null, new ProcedureN() {
+    	defineVar( scheme, "open?" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				return running;
     		}
     	});
-
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "open!" ), null, new ProcedureN() {
+    	defineVar( scheme, "open!" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				for ( Object o : args ) {
@@ -379,14 +538,14 @@ public final class Pulsar extends Metro {
 				return EmptyList.emptyList;
     		}
     	});
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "close!" ), null, new ProcedureN() {
+    	defineVar( scheme, "close!" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				close();
 				return EmptyList.emptyList;
     		}
     	});
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "output!" ), null, new ProcedureN() {
+    	defineVar( scheme, "output!" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				for ( Object o : args ) {
@@ -396,8 +555,7 @@ public final class Pulsar extends Metro {
 				return EmptyList.emptyList;
     		}
     	});
-
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "input!" ), null, new ProcedureN() {
+    	defineVar( scheme, "input!" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				for ( Object o : args ) {
@@ -407,7 +565,7 @@ public final class Pulsar extends Metro {
 				return EmptyList.emptyList;
     		}
     	});
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "connect!" ), null, new ProcedureN() {
+    	defineVar( scheme, "connect!" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				ArrayDeque<Object> deque = new ArrayDeque<>( Arrays.asList( args ) );
@@ -422,18 +580,16 @@ public final class Pulsar extends Metro {
 					try {
 						connectPort( from, to );
 					} catch ( JackException e  ) {
-						pulsarError( "" , e );
+						logError( "" , e );
 					}
 				}
 				return EmptyList.emptyList;
     		}
     	});
-    	
-
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "set-main!" ), null, new ProcedureN() {
+    	defineVar( scheme, "set-main!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
-				System.err.println("set-main");
+				logInfo("set-main");
 				if ( args.length == 1 ) {
 					Procedure procedure = (Procedure)args[0];
 					setMainProcedure( new SchemeProcedureRunnable( procedure ));
@@ -443,7 +599,20 @@ public final class Pulsar extends Metro {
     			return EmptyList.emptyList;
     		}
     	});
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "set-playing!" ), null, new ProcedureN() {
+    	defineVar( scheme, "set-cue!" , new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				logInfo("set-cue");
+				if ( args.length == 1 ) {
+					Procedure procedure = (Procedure)args[0];
+					setCueProcedure( new SchemeProcedureRunnable( procedure ));
+				} else {
+					throw new RuntimeException( "invalid argument length" );
+				}
+    			return EmptyList.emptyList;
+    		}
+    	});
+    	defineVar( scheme, "set-playing!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				if ( args.length == 0 ) {
@@ -456,29 +625,27 @@ public final class Pulsar extends Metro {
     			return EmptyList.emptyList;
     		}
     	});
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "playing?" ), null, new ProcedureN() {
+    	defineVar( scheme, "playing?" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				return getPlaying();
     		}
     	});
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "play!" ), null, new ProcedureN() {
+    	defineVar( scheme, "play!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				setPlaying( true ); 
     			return EmptyList.emptyList;
     		}
     	});
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "stop!" ), null, new ProcedureN() {
+    	defineVar( scheme, "stop!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				setPlaying( false ); 
     			return EmptyList.emptyList;
     		}
     	});
-    	
-
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "set-related-files!" ), null, new ProcedureN() {
+    	defineVar( scheme, "set-related-files!" , new ProcedureN() {
     		@Override
     		public Object applyN(Object[] args) throws Throwable {
     			if ( args.length == 1  ) {
@@ -493,8 +660,7 @@ public final class Pulsar extends Metro {
     			return EmptyList.emptyList;
     		}
     	});
-
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "get-related-files" ), null, new ProcedureN() {
+    	defineVar( scheme, "get-related-files" , new ProcedureN() {
     		@Override
     		public Object applyN(Object[] args) throws Throwable {
     			Pair p = new Pair();
@@ -506,48 +672,28 @@ public final class Pulsar extends Metro {
     			return p;
     		}
     	});
-
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "cue!" ), null, new ProcedureN() {
+    	defineVar( scheme, "cue!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				cue();
     			return EmptyList.emptyList;
     		}
     	});
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "reset!" ), null, new ProcedureN() {
+    	defineVar( scheme, "reset!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				reset();
     			return EmptyList.emptyList;
     		}
     	});
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "clear!" ), null, new ProcedureN() {
+    	defineVar( scheme, "clear!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				clear();
     			return EmptyList.emptyList;
     		}
     	});
-
-
-//    	scheme.getEnvironment().define( SimpleSymbol.make( "", "put-seq!" ), null, new ProcedureN() {
-//			@Override
-//    		public Object applyN(Object[] args) throws Throwable {
-//				if ( args.length == 2 ) {
-//					String name = SchemeUtils.toString( args[0] );
-//					Procedure procedure = (Procedure) args[1];
-//					SchemePulsarLogic logic = new SchemePulsarLogic(procedure);
-//		
-//					putLogic(name, logic);
-//					
-//					return EmptyList.emptyList;
-//				} else {
-//					throw new RuntimeException( "Invalid parameter. usage : (-seq [name] [lambda] ) " );
-//				}
-//			}
-//    	});
-
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "put-seq!" ), null, new ProcedureN() {
+    	defineVar( scheme, "put-seq!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				if ( 2 <= args.length  ) {
@@ -569,8 +715,7 @@ public final class Pulsar extends Metro {
 				return SyncType.valueOf( SchemeUtils.anyToString( object ).toUpperCase() );
 			}
     	});
-   	    	
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "remove-seq!" ), null, new ProcedureN() {
+    	defineVar( scheme, "remove-seq!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				if ( args.length == 1 ) {
@@ -582,15 +727,14 @@ public final class Pulsar extends Metro {
 				}
 			}
     	});
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "clear-seq!" ), null, new ProcedureN() {
+    	defineVar( scheme, "clear-seq!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				clearSequences();
 				return EmptyList.emptyList;
 			}
     	});
-
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "has-seq?" ), null, new ProcedureN() {
+    	defineVar( scheme, "has-seq?" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				if ( args.length == 1 ) {
@@ -602,27 +746,23 @@ public final class Pulsar extends Metro {
 				}
 			}
     	});
-
-  	
-    	// ???
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-get-pane" ), null, new ProcedureN() {
+    	defineVar( scheme, "gui-get-pane" , new ProcedureN() {
+			// TODO ???
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
-				System.err.println("gui-get-pane");
+				logInfo("gui-get-pane");
     			return userPane;
     		}
     	});
- 
-    	// ???
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-get-frame" ), null, new ProcedureN() {
+    	defineVar( scheme, "gui-get-frame" , new ProcedureN() {
+			// TODO ???
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
-				System.err.println("gui-get-frame");
+				logInfo("gui-get-frame");
     			return frame;
     		}
     	});
-
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-clear!" ), null, new ProcedureN() {
+    	defineVar( scheme, "gui-clear!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				guiClear();
@@ -630,9 +770,7 @@ public final class Pulsar extends Metro {
     		}
 
     	});
-    	
-    	
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "new-button" ), null, new ProcedureN() {
+    	defineVar( scheme, "new-button" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				if ( args.length == 3 ) {
@@ -650,7 +788,7 @@ public final class Pulsar extends Metro {
 										Environment.setCurrent(env);
 										procedure.applyN( new Object[] { userHandle } );
 									} catch (Throwable e1) {
-										pulsarError( "" , e1 );
+										logError( "" , e1 );
 									}
 								}
 							});
@@ -664,8 +802,7 @@ public final class Pulsar extends Metro {
 				}
     		}
     	});
-    	
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-add!" ), null, new ProcedureN() {
+    	defineVar( scheme, "gui-add!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				if ( args.length == 1 ) {
@@ -676,53 +813,50 @@ public final class Pulsar extends Metro {
     			return args[0];
     		}
     	});
-    	// TODO
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-newline!" ), null, new ProcedureN() {
+    	defineVar( scheme, "gui-newline!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
-				System.err.println("newline-gui");
+				logInfo("newline-gui");
 				guiNewline();
     			return EmptyList.emptyList;
     		}
     	});
-
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-refresh" ), null, new ProcedureN() {
+    	defineVar( scheme, "gui-refresh" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
-				System.err.println("refresh-gui");
+				logInfo("refresh-gui");
 				guiRefresh();
     			return EmptyList.emptyList;
     		}
     	});
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-gridbag-layout" ), null, new ProcedureN() {
+    	defineVar( scheme, "gui-gridbag-layout" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
-				System.err.println( "gui-gridbag-layout" );
+				logInfo( "gui-gridbag-layout" );
 				guiGridBagLayout();
     			return EmptyList.emptyList;
     		}
     	});
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-spring-layout" ), null, new ProcedureN() {
+    	defineVar( scheme, "gui-spring-layout" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
-				System.err.println( "gui-spring-layout" );
+				logInfo( "gui-spring-layout" );
 				guiSpringLayout();
     			return EmptyList.emptyList;
     		}
     	});
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-flow-layout" ), null, new ProcedureN() {
+    	defineVar( scheme, "gui-flow-layout" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
-				System.err.println( "gui-flow-layout" );
+				logInfo( "gui-flow-layout" );
 				guiFlowLayout();
     			return EmptyList.emptyList;
     		}
     	});
-
-    	scheme.getEnvironment().define( SimpleSymbol.make( "", "gui-put-constraint" ), null, new ProcedureN() {
+    	defineVar( scheme, "gui-put-constraint" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
-				System.err.println("refresh-gui");
+				logInfo("refresh-gui");
 			 	SpringLayout springLayout = ((SpringLayout)userLayout);
 				if ( args.length == 5 ) {
 					new SpringLayoutUtil(springLayout, userPane).putConstraint( args[0],args[1],args[2],args[3],args[4]  );
@@ -746,7 +880,6 @@ public final class Pulsar extends Metro {
 
 	LayoutManager userLayout = null; 
 	JPanel userPane = new JPanel( new FlawLayout() );
-	JLabel tempoLabel = new JLabel("", SwingConstants.CENTER );
 
     transient boolean isComboBoxUpdating = false;
 	JComboBox<String> cb_relatedFiles;
@@ -804,7 +937,6 @@ public final class Pulsar extends Metro {
 		}
 	}
 
-
 	public void newlineGui() {
 		// userPane.add( Box.createVerticalStrut(500 ) );
 	}
@@ -824,30 +956,6 @@ public final class Pulsar extends Metro {
         //Create and set up the window.
         frame = new JFrame( "Pulsar" );
         
-//        // https://stackoverflow.com/questions/17493207/java-how-to-let-jframe-to-resize-to-only-something-smaller-than-set-size
-//        {
-//			private static final long serialVersionUID = 1L;
-//
-//			@Override
-//            public void paint(Graphics g) {
-//                Dimension d = getSize();
-//                Dimension m = getMaximumSize();
-//                boolean resize = d.width > m.width || d.height > m.height;
-//                d.width = Math.min(m.width, d.width);
-//                d.height = Math.min(m.height, d.height);
-//
-//                if (resize) {
-//                    Point p = getLocation();
-//                    setVisible(false);
-//                    setSize(d);
-//                    setLocation(p);
-//                    setVisible(true);
-//                }
-//                super.paint(g);
-//            }        	
-//        };
-        
-        
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //Create and set up the content pane.
 
@@ -865,48 +973,17 @@ public final class Pulsar extends Metro {
 		staticPane.add( createResetButton(), BorderLayout.LINE_END );
 		staticPane.add( createCueButton(), BorderLayout.PAGE_END );
 
-//		SpringUtilities.makeCompactGrid(staticPane, 1, 3, 1, 1 , 1, 1 );
-		
-//		for ( int i=0; i<staticPane.getComponentCount(); i++ ) {
-//			JComponent c = (JComponent) staticPane.getComponent(i);
-//			c.setPreferredSize( null );
-//			c.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-//		}
-		
 		 staticPane.setBorder( BorderFactory.createEmptyBorder(20,20,20,20) );
 		
-		
-		{
-//			staticPane.add( tempoLabel, BorderLayout.PAGE_START );
-		}
 		((JComponent)rootPane).setBorder( BorderFactory.createEmptyBorder() );
-		
-		
-        //Display the window.
-//		frame.setPreferredSize( new Dimension( 400, 400));
-//		frame.setMaximumSize(new Dimension(300, Integer.MAX_VALUE ) );
-//		userPane.setPreferredSize( new Dimension(400, 0 ) );
-//		rootPane.setMaximumSize( new Dimension(400, 1000000 ) );
-		
-//		frame.addComponentListener( new ComponentAdapter() {
-//			@Override
-//			public void componentResized(ComponentEvent e) {
-//				Component c = e.getComponent();
-//				if ( 400 < c.getWidth() ) {
-//					c.setSize( new Dimension( 400 , c.getHeight() ));
-//					System.out.println( e.getClass() );
-//				}
-//			}
-//		});
 
 		// frame.setMaximizedBounds(new Rectangle(0, 0, 400, 1000));
 		frame.pack();
 		frame.setSize( 600, 500 );
 		frame.setVisible(true);
     }
-     
 
-	public JPanel createFilePanel() {
+	private JPanel createFilePanel() {
 		JPanel panel = new JPanel();
 		panel.setLayout( new BorderLayout(BORDER,BORDER) );
 		JButton execButton = new JButton( "EXEC" ) {
@@ -920,7 +997,6 @@ public final class Pulsar extends Metro {
 		this.cb_relatedFiles = new JComboBox<String>() {;
 		};
 		cb_relatedFiles.setEditable(false);
-		
 
 		execButton.addActionListener( new ActionListener() {
 			@Override
@@ -928,7 +1004,7 @@ public final class Pulsar extends Metro {
 				int i = cb_relatedFiles.getSelectedIndex();
 				if ( 0<=i ) {
 					File file = relatedFiles.get(i);
-					setCurrentFile( relatedFileParent, file );
+					setMainFile( relatedFileParent, file );
 				}
 			}
 		});
@@ -938,50 +1014,31 @@ public final class Pulsar extends Metro {
 		cb_relatedFiles.addPopupMenuListener( new PopupMenuListener() {
 			@Override
 			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-				System.out.println("popupMenuWillBecomeVisible()");
+				logInfo("popupMenuWillBecomeVisible()");
 				// readHistoryFile(comboBox);
 			}
 			
 			@Override
 			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-				System.out.println( "popupMenuWillBecomeInvisible()");
+				logInfo( "popupMenuWillBecomeInvisible()");
 			}
 			
 			@Override
 			public void popupMenuCanceled(PopupMenuEvent e) {
-				System.out.println(".popupMenuCanceled()");
+				logInfo(".popupMenuCanceled()");
 			}
 		});
 		
 		cb_relatedFiles.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				System.out.println("Pulsar.createFilePanel().new ItemListener() {...}.itemStateChanged()");
+				logInfo("Pulsar.createFilePanel().new ItemListener() {...}.itemStateChanged()");
 				if ( e.getStateChange() == ItemEvent.SELECTED ) {
-
-//					if ( ! isComboBoxUpdating )  
-//						SwingUtilities.invokeLater( new Runnable() {
-//							@Override
-//							public void run() {
-//								try {
-//									isComboBoxUpdating = true;
-//									int i = comboBox.getSelectedIndex();
-//									String item = comboBox.getItemAt(i);
-//									comboBox.removeItemAt(i);
-//									comboBox.insertItemAt(item, 0);
-//									comboBox.setSelectedIndex(0);
-//								} finally {
-//									isComboBoxUpdating = false;
-//								}
-//
-//							}
-//						});
+					// Do nothing.
 				}
 			}
 		});
 		
-//		readHistoryFile(cb_relatedFiles);
-
 		panel.add( cb_relatedFiles, BorderLayout.CENTER );
 		
 		JPanel mainFilePanel = new JPanel();
@@ -1005,7 +1062,7 @@ public final class Pulsar extends Metro {
 				});
 				int result = fc.showOpenDialog( frame );
 				if ( result == JFileChooser.APPROVE_OPTION ) {
-					setCurrentFile( null, fc.getSelectedFile() );
+					setMainFile( null, fc.getSelectedFile() );
 				}
 			}
 		});
@@ -1018,7 +1075,7 @@ public final class Pulsar extends Metro {
 		return panel;
 	}
     
-	public JButton createStartStopButton() {
+	private JButton createStartStopButton() {
 		JButton b = new JButton( "<</II" ) {
 			@Override
 			public Dimension getPreferredSize() {
@@ -1035,7 +1092,7 @@ public final class Pulsar extends Metro {
 		});
 		return b;
 	}
-	public JButton createResetButton() {
+	private JButton createResetButton() {
 		JButton b = new JButton( "RESET" );
 		b.addActionListener( new ActionListener() {
 			@Override
@@ -1046,7 +1103,7 @@ public final class Pulsar extends Metro {
 		return b;
 	}
     
-	public JButton createCueButton() {
+	private JButton createCueButton() {
 		JButton b = new JButton( "=== CUE ===" ) {
 			@Override
 			public Dimension getPreferredSize() {
@@ -1062,7 +1119,7 @@ public final class Pulsar extends Metro {
 		return b;
 	}
     
-    public JButton createTempoTapButton() {
+	private JButton createTempoTapButton() {
     	JButton tempoTapButton = new JButton( "TEMPO" );
     	tempoTapButton.addActionListener( new ActionListener() {
     		long prev_time = 0;
@@ -1090,7 +1147,7 @@ public final class Pulsar extends Metro {
     			}
 
     			long current_diff = current_time - prev_time ;
-    			System.out.println(  current_diff );
+    			logInfo( "Elapsed Time : " + current_diff );
 
     			tidx ++;
     			if( tidx < t.length ) {
@@ -1119,7 +1176,7 @@ public final class Pulsar extends Metro {
     					double avg = (double)sum / t.length;
     					double onemin = 1000L*1000L*1000L*60L;
     					double beatPerMinute =  onemin / avg  ;
-    					System.err.println( String.format( "%.2f / %.2f = %.2f", onemin , avg , beatPerMinute  ) );
+    					logInfo( String.format( "%.2f / %.2f = %.2f", onemin , avg , beatPerMinute  ) );
     					setBeatsPerMinute( (long) beatPerMinute );
     					tempoTapButton.setText( String.format( "Tempo=%.2f", beatPerMinute  ) );
 
@@ -1138,6 +1195,5 @@ public final class Pulsar extends Metro {
 
     	return tempoTapButton;
 	}
-    
 }
 	
