@@ -96,7 +96,7 @@ public class MetroNoteEventBufferSequence {
 	 * === About `found` flag ===
 	 * There are three stages :
 	 *
-	 * 1. WHile between() function returns false,
+	 * 1. While between() function returns false,
 	 * the current position should be before the area.
 	 * 2. While between() function returns true,
 	 * the current position should be in the area. 

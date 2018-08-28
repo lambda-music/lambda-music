@@ -1180,8 +1180,12 @@ public final class Pulsar extends Metro {
     					double avg = (double)sum / t.length;
     					double onemin = 1000L*1000L*1000L*60L;
     					double beatPerMinute =  onemin / avg  ;
+    					
+    					beatPerMinute = ( beatPerMinute + getBeatsPerMinute() ) / 2;
     					logInfo( String.format( "%.2f / %.2f = %.2f", onemin , avg , beatPerMinute  ) );
+    					
     					setBeatsPerMinute( (long) beatPerMinute );
+    					
     					tempoTapButton.setText( String.format( "Tempo=%.2f", beatPerMinute  ) );
 
     					//							tempoLabel.setText( String.format( "%.2f", beatPerMinute  ) );
