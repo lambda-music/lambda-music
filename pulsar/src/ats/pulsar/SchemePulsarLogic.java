@@ -26,6 +26,9 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 	private static final String ID_VELOCITY  = "velo";
 	private static final String ID_NOTE      = "note";
 	private static final String ID_OFFSET    = "pos";
+	private static final String ID_KEY       = "key";
+	private static final String ID_MIN       = "min";
+	private static final String ID_MAX       = "max";
 //	private static final Object ID_HUMANIZE  = "huma";
 	
 	/*
@@ -49,6 +52,14 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 		this.procedure = procedure;
 	}
 	
+	static void logError( String msg, Throwable e ) {
+        Logger.getLogger(SchemePulsarLogic.class.getName()).log(Level.SEVERE, msg, e);
+	}
+	static void logInfo( String msg ) {
+//        Logger.getLogger(SchemePulsarLogic.class.getName()).log(Level.INFO, msg);
+		System.err.println( msg );
+	}
+
 	@Override
 	public void processInputMidiBuffer(Metro metro, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
 		// out.addAll( in ); TODO ******************************
@@ -103,7 +114,7 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 								case "off":
 								case "hit":
 									return (Integer idx)->{
-										//	double offset, int outputPortNo, int channel, int note, int velocity 
+										//	double offset, int outputPortNo, int channel, int note, double velocity 
 										switch ( idx ) {
 											case 0: return ID_TYPE;
 											case 1: return ID_PORT_NO;
@@ -152,7 +163,7 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 							}
 						});
 	
-				String type      = map.containsKey( ID_TYPE     ) ? SchemeUtils.symbolToString(  map.get(ID_TYPE      ) ) : "";
+				String type      = map.containsKey( ID_TYPE     ) ? SchemeUtils.symbolToString(  map.get( ID_TYPE     ) ) : "";
 	
 				switch ( type ) {
 					case  "hit" : {
@@ -160,7 +171,7 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 						int channel      = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(       map.get(ID_CHANNEL   ) ) : 0; 
 						double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(        map.get(ID_OFFSET    ) ) : 0.0d;  
 						int note         = map.containsKey( ID_NOTE     ) ? SchemeUtils.toInteger(       map.get(ID_NOTE      ) ) : 63;  
-						int velocity     = map.containsKey( ID_VELOCITY ) ? SchemeUtils.toInteger(       map.get(ID_VELOCITY  ) ) : 63;
+						double velocity  = map.containsKey( ID_VELOCITY ) ? SchemeUtils.toDouble(       map.get(ID_VELOCITY  ) ) : 63;
 						double length    = map.containsKey( ID_LENGTH   ) ? SchemeUtils.toDouble(       map.get(ID_LENGTH    ) ) : -1d;
 
 						buf.noteHit(offset, port, channel, note, velocity, length );
@@ -171,7 +182,7 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 						int channel      = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(       map.get(ID_CHANNEL   ) ) : 0; 
 						double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(        map.get(ID_OFFSET    ) ) : 0.0d;  
 						int note         = map.containsKey( ID_NOTE     ) ? SchemeUtils.toInteger(       map.get(ID_NOTE      ) ) : 63;  
-						int velocity     = map.containsKey( ID_VELOCITY ) ? SchemeUtils.toInteger(       map.get(ID_VELOCITY  ) ) : 63;
+						double velocity  = map.containsKey( ID_VELOCITY ) ? SchemeUtils.toDouble(       map.get(ID_VELOCITY  ) ) : 63;
 //						double length    = map.containsKey( "length"   ) ? SchemeUtils.toInteger(       map.get("length"    ) ) : -1d;
 
 						buf.noteOn(offset, port, channel, note, velocity );
@@ -182,7 +193,7 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 						int channel      = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(       map.get(ID_CHANNEL   ) ) : 0; 
 						double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(        map.get(ID_OFFSET    ) ) : 0.0d;  
 						int note         = map.containsKey( ID_NOTE     ) ? SchemeUtils.toInteger(       map.get(ID_NOTE      ) ) : 63;  
-						int velocity     = map.containsKey( ID_VELOCITY ) ? SchemeUtils.toInteger(       map.get(ID_VELOCITY  ) ) : 63;
+						double velocity  = map.containsKey( ID_VELOCITY ) ? SchemeUtils.toDouble(       map.get(ID_VELOCITY  ) ) : 63;
 //						double length    = map.containsKey( "length"   ) ? SchemeUtils.toInteger(       map.get("length"    ) ) : -1d;
 						
 						buf.noteOff(offset, port, channel, note, velocity );
@@ -204,9 +215,20 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 						break;
 					}
 					case  "huma" : {
-						double offset      = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get( ID_OFFSET   ) ) : 0d;
-						double velocity    = map.containsKey( ID_VELOCITY ) ? SchemeUtils.toDouble(       map.get( ID_VELOCITY ) ) : 0d;
-						buf.humanize(offset, velocity);
+						String key         = map.containsKey( ID_KEY       ) ? SchemeUtils.anyToString(    map.get( ID_KEY      ) ) : "velo";
+						double min         = map.containsKey( ID_MIN       ) ? SchemeUtils.toDouble(       map.get( ID_MIN      ) ) : 0d;
+						double max         = map.containsKey( ID_MAX       ) ? SchemeUtils.toDouble(       map.get( ID_MAX      ) ) : 0d;
+						switch ( key ) {
+							case "pos" :
+								buf.setHumanizeOffset( min, max );
+								break;
+							case "velo" :
+								buf.setHumanizeVelocity( min, max );
+								break;
+							default :
+								Logger.getLogger(SchemePulsarLogic.class.getName()).log(Level.WARNING, null, "unknown key (" +  type + ")" );
+								break;
+						}
 						break;
 					}
 					case  "end" : {
@@ -214,7 +236,7 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 						break;
 					}
 					default : {
-						Logger.getLogger(Metro.class.getName()).log(Level.WARNING, null, "unknown type (" +  type + ")" );
+						Logger.getLogger(SchemePulsarLogic.class.getName()).log(Level.WARNING, null, "unknown type (" +  type + ")" );
 					}
 				}
 			} // end of the loop

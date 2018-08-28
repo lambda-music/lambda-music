@@ -3,6 +3,7 @@ package ats.metro;
 import static ats.metro.Metro.DEBUG;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -25,8 +26,23 @@ public class MetroNoteEventBuffer implements Iterable<MetroEvent>{
     }
 	
 	
-	private double humanizeFactorOffset=0;
-	private double humanizeFactorVelocity=0;
+	private double humanizeOffset_min = 0;
+	private double humanizeOffset_max = 0;
+	private double humanizeOffset_size = 0;
+	private double humanizeVelocity_min = 0;
+	private double humanizeVelocity_max = 0;
+	private double humanizeVelocity_size = 0;
+
+	public void setHumanizeOffset( double min, double max ) {
+		this.humanizeOffset_min = min;
+		this.humanizeOffset_max = max;
+		humanizeOffset_size = this.humanizeOffset_max - this.humanizeOffset_min;
+	}
+	public void setHumanizeVelocity( double min, double max ) {
+		this.humanizeVelocity_min = min;
+		this.humanizeVelocity_max = max;
+		this.humanizeVelocity_size = this.humanizeVelocity_max - this.humanizeVelocity_min;
+	}
 
 	private double offset;
 	private double length = 1.0d;
@@ -70,54 +86,69 @@ public class MetroNoteEventBuffer implements Iterable<MetroEvent>{
 		return this.list.iterator();
 	}
 
-	private void note(int outputPortNo, int midiEventValue, double offset, int channel, int note, int velocity) {
+	private void note(int outputPortNo, int midiEventValue, double offset, int channel, int note, double velocity) {
+		/*
+		 * DON'T CHECK MIN/MAX HERE
+		 * The offset may go beyond the minimum/maximum; now 
+		 * {@link MetroNoteEventBuffer} can process the MIDI 
+		 * signals which are beyond the region of the buffer.   
+		 */
+		// if ( offset < 0 )  offset=0;
+		// if ( 127 < offset  ) offset=127;
+
+		if ( velocity < 0 )  velocity =0d;
+		if ( 1d < velocity ) velocity =1d;
+
+		// Create an event object.
 		MetroNoteEvent event = new MetroNoteEvent(
 				offset,
 				outputPortNo,
 				new byte[] {
 						(byte)( ( 0b11110000 & midiEventValue ) | ( 0b00001111 & channel ) ),
 						(byte) note,
-						(byte) velocity
+						(byte) (127d * velocity)
 				}
 		);
+		
+		// Add it to the list.
 		this.list.add(event);
 	}
 
-	public void noteHit( double offset, int outputPortNo, int channel, int note, int velocity ) {
+	public void noteHit( double offset, int outputPortNo, int channel, int note, double velocity ) {
 		noteHit( offset, outputPortNo, channel, note, velocity, -1 );
 	}
-	public void noteHit( double offset, int outputPortNo, int channel, int note, int velocity, double duration ) {
+	public void noteHit( double offset, int outputPortNo, int channel, int note, double velocity, double duration ) {
 		if ( 0 < duration )
 			duration = 0.0025d;
+		
 		noteOn(  offset, outputPortNo, channel, note, velocity );
 		noteOff( offset + duration, outputPortNo, channel, note, velocity );
 	}
 
-	public void noteOn( double offset, int outputPortNo, int channel, int note, int velocity ) {
-		if ( this.humanizeFactorOffset != 0.0d ) {
-			offset += MetroLogic.rnd( this.humanizeFactorOffset );
-//			if ( offset < 0 )  offset=0;
-//			if ( 127 < offset  ) offset=127;
+	MetroNoteInfoMap noteInfoMap = new MetroNoteInfoMap();
+	public void noteOn( double offset, int outputPortNo, int channel, int note, double velocity ) {
+		double humanizeOffset =  this.humanizeVelocity_min;
+		double humanizeVelocity =  this.humanizeVelocity_min;
+		if ( humanizeOffset_size != 0.0d ) {
+			humanizeOffset =+ ( Math.random() * this.humanizeOffset_size );
 		}
-		if ( this.humanizeFactorVelocity != 0.0d ) {
-			velocity += MetroLogic.rnd( this.humanizeFactorVelocity ) ;
+		if ( this.humanizeVelocity_size != 0.0d ) {
+			humanizeVelocity =+ ( Math.random() *  this.humanizeVelocity_size );
 		}
-
-		if ( velocity < 0 )  velocity =0;
-		if ( 127 < velocity ) velocity =127;
 		
+		offset   += humanizeOffset;
+		velocity += humanizeVelocity;
+
+		noteInfoMap.put(outputPortNo, channel, note, humanizeOffset, humanizeVelocity);
+		
+
 		note( outputPortNo, 0b10010000, offset, channel, note, velocity );
 	}
-	public void noteOff( double offset, int outputPortNo, int channel, int note, int velocity ) {
-		if ( this.humanizeFactorOffset != 0.0d )
-			offset += MetroLogic.rnd( this.humanizeFactorOffset );
-		if ( this.humanizeFactorVelocity != 0.0d ) {
-			velocity += MetroLogic.rnd( this.humanizeFactorVelocity ) ;
-			if ( velocity < 0 )  velocity =0;
-			if ( 127 < velocity ) velocity =127;
-		}
 
-		note( outputPortNo, 0b10000000, offset, channel, note, velocity );
+	public void noteOff( double offset, int outputPortNo, int channel, int note, double velocity ) {
+		MetroNoteInfoMap.Value value = noteInfoMap.get(outputPortNo, channel, note );
+
+		note( outputPortNo, 0b10000000, offset + value.offset, channel, note, velocity + value.velocity );
 	}
 	public void exec( double offset, Environment environment, Procedure procedure ) {
 		MetroSchemeProcedureEvent event = 
@@ -143,9 +174,75 @@ public class MetroNoteEventBuffer implements Iterable<MetroEvent>{
 		}
 		logInfo( "    END");
 	}
-	public void humanize( double offset, double velocity ) {
-		this.humanizeFactorOffset = offset;
-		this.humanizeFactorVelocity = velocity;
+	
+	@Deprecated
+	public void noteHit( double offset, int outputPortNo, int channel, int note, int velocity ) {
+	}
+	@Deprecated
+	public void noteHit( double offset, int outputPortNo, int channel, int note, int velocity, double duration ) {
+	}
+	@Deprecated
+	public void noteOn( double offset, int outputPortNo, int channel, int note, int velocity ) {
+	}
+	@Deprecated
+	public void noteOff( double offset, int outputPortNo, int channel, int note, int velocity ) {
+	}
+}
+
+
+class MetroNoteInfoMap {
+	static final Value ZERO_VALUE = new Value(0, 0);
+	public static class Key {
+		final int port;
+		final int channel;
+		final int note;
+		public Key(int port, int channel, int note) {
+			super();
+			this.port = port;
+			this.channel = channel;
+			this.note = note;
+		}
+		@Override
+		public int hashCode() {
+			return ( 1 * channel * port * 256 + note * 65536 ) ;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if ( obj instanceof Key ) {
+				Key k = (Key)obj;
+				return 
+						( k.port == this.port ) &&
+						( k.channel == this.channel ) &&
+						( k.note == this.note );
+			} else {
+				return false;
+			}
+		}
+	}
+	public static class Value {
+		final double offset;
+		final double velocity;
+		public Value(double offset, double velocity) {
+			super();
+			this.offset = offset;
+			this.velocity = velocity;
+		}
 	}
 	
+	final HashMap<Key,Value> map = new HashMap<>();
+	public void put( int port, int channel, int note , double offset, double velocity ) {
+		map.put( new Key(port, channel, note), new Value(offset, velocity) );
+	}
+	public boolean containsKey( int port, int channel, int note ) {
+		return map.containsKey( new Key(port, channel, note) );
+	}
+	public MetroNoteInfoMap.Value get( int port, int channel, int note ) {
+		Value value = map.get( new Key(port, channel, note) );
+		return value == null  ? ZERO_VALUE : value;
+	}
+	public void clear() {
+		this.map.clear();
+	}
 }
+
+
