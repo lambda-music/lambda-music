@@ -574,7 +574,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 	@Override
 	public void updatePosition(JackClient invokingClient, JackTransportState state, int nframes, JackPosition position,
 			boolean newPosition) {
-		logInfo("*****************************************TEMPO");
+		// logInfo("*****************************************TEMPO");
 		
 	}
 

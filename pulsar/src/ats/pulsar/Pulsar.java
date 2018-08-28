@@ -153,9 +153,15 @@ public final class Pulsar extends Metro {
         Logger.getLogger(Pulsar.class.getName()).log(Level.SEVERE, msg, e);
 	}
 	static void logInfo( String msg ) {
-        Logger.getLogger(Pulsar.class.getName()).log(Level.INFO, msg);
+//        Logger.getLogger(Pulsar.class.getName()).log(Level.INFO, msg);
+		System.err.println( msg );
 	}
 	
+
+	Scheme scheme = new Scheme();
+	{
+		initScheme( scheme );
+	}
 
 	static final int BORDER = 10;
 	
@@ -483,8 +489,6 @@ public final class Pulsar extends Metro {
 		
 		try {
 			String text = new String(Files.readAllBytes( Paths.get( file.toURI() ) ), StandardCharsets.UTF_8);
-			Scheme scheme = new Scheme();
-			initScheme( scheme );
 			scheme.eval( text );
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block

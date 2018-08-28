@@ -36,6 +36,7 @@ public class MetroNoteEventBuffer implements Iterable<MetroEvent>{
 		return length;
 	}
 	public void setLength(double length) {
+//		System.out.println( "length" + length );
 		this.length = length;
 	}
 	public void setOffset(double offset) {
@@ -59,6 +60,7 @@ public class MetroNoteEventBuffer implements Iterable<MetroEvent>{
 		for ( MetroEvent e : this ) {
 			e.calcInFrames( barInFrames );
 		}
+//		System.out.println( "this.length " + this.length  );
 		this.lengthInFrames = (int) (this.length * barInFrames);
 		if ( DEBUG ) logInfo( "MetroMidiEventBuffer.calcInFrames() barInFrames="  + barInFrames + " / lengthInFrames=" + this.lengthInFrames  + "/ length=" + this.length);
 	}
@@ -99,9 +101,10 @@ public class MetroNoteEventBuffer implements Iterable<MetroEvent>{
 		}
 		if ( this.humanizeFactorVelocity != 0.0d ) {
 			velocity += MetroLogic.rnd( this.humanizeFactorVelocity ) ;
-			if ( velocity < 0 )  velocity =0;
-			if ( 127 < velocity ) velocity =127;
 		}
+
+		if ( velocity < 0 )  velocity =0;
+		if ( 127 < velocity ) velocity =127;
 		
 		note( outputPortNo, 0b10010000, offset, channel, note, velocity );
 	}
@@ -126,9 +129,9 @@ public class MetroNoteEventBuffer implements Iterable<MetroEvent>{
 		this.list.add( event );
 	}
 
-	public void length( double length ) {
-		this.length = length;
-	}
+//	public void length( double length ) {
+//		this.length = length;
+//	}
 	public void dump() {
 		logInfo( "length         : " + this.length);
 		logInfo( "lengthInFrames : " + this.lengthInFrames);
