@@ -13,9 +13,6 @@ import org.jaudiolibs.jnajack.JackClient;
 import org.jaudiolibs.jnajack.JackException;
 import org.jaudiolibs.jnajack.JackPosition;
 
-import gnu.mapping.Environment;
-import gnu.mapping.Procedure;
-
 public class MetroNoteEventBuffer implements Iterable<MetroEvent>{
     static void logInfo( String msg ) {
     	System.err.println( msg );
@@ -150,12 +147,8 @@ public class MetroNoteEventBuffer implements Iterable<MetroEvent>{
 
 		note( outputPortNo, 0b10000000, offset + value.offset, channel, note, velocity + value.velocity );
 	}
-	public void exec( double offset, Environment environment, Procedure procedure ) {
-		MetroSchemeProcedureEvent event = 
-				new MetroSchemeProcedureEvent( 
-						offset,
-						environment,
-						procedure );
+	public void exec( double offset, Runnable runnable ) {
+		MetroSchemeProcedureEvent event = new MetroSchemeProcedureEvent( offset, runnable );
 
 		this.list.add( event );
 	}
@@ -164,7 +157,7 @@ public class MetroNoteEventBuffer implements Iterable<MetroEvent>{
 //		this.length = length;
 //	}
 	public void dump() {
-		logInfo( "length         : " + this.length);
+		logInfo( "length         : " + this.length        );
 		logInfo( "lengthInFrames : " + this.lengthInFrames);
 		int i = 0;
 		for ( MetroEvent e : this ) {

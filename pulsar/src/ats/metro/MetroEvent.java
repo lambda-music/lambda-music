@@ -6,7 +6,12 @@ public class MetroEvent {
 	public static final Comparator<? super MetroEvent> comparator = new Comparator<MetroEvent>() {
 		@Override
 		public int compare(MetroEvent o1, MetroEvent o2) {
-			return (int)(o1.offset - o2.offset);
+			int i;
+			i = (int) Math.signum(o1.offset - o2.offset);
+			if (i != 0 )
+				return i;
+			
+			return 0;
 		}
 	};
 	
@@ -36,9 +41,8 @@ public class MetroEvent {
 		return sb.toString();
 	}
 	public void dumpProc( String prefix, StringBuilder sb ) {
-		MetroEvent e = this;
-		sb.append(prefix).append( "            offset: " + e.offset ).append( "\n" );
-		sb.append(prefix).append( "    offsetInFrames: " + e.offsetInFrames ).append( "\n" );
+		sb.append(prefix).append( "            offset: " + offset ).append( "\n" );
+		sb.append(prefix).append( "    offsetInFrames: " + offsetInFrames ).append( "\n" );
 	}
 
 //	public static void main(String[] args) {

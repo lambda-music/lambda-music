@@ -8,6 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ats.metro.Metro;
+import ats.metro.MetroInvokable;
 import ats.metro.MetroLogic;
 import ats.metro.MetroMidiEvent;
 import ats.metro.MetroNoteEventBuffer;
@@ -16,6 +17,7 @@ import gnu.lists.AbstractSequence;
 import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
+import kawa.standard.Scheme;
 
 public class SchemePulsarLogic extends MetroLogic.Default {
 	private static final String ID_TYPE      = "type";
@@ -45,10 +47,19 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 		return pairs;
 	}
 
-	private Environment environment;
-	private Procedure procedure;
-	public SchemePulsarLogic ( Environment environment, Procedure procedure ) {
-		this.environment = environment;
+	/*
+	 * Note (XXX_SYNC_01):
+	 * Basically this class is not Scheme dependent. However only exec() method
+	 * needs to refer scheme object to synchronize with the scheme execution in
+	 * Pulse class. In the current policy, it is preferable to avoid referring the
+	 * scheme object by wrapping invocation. But in exec() method-wise, referring
+	 * to the scheme object here is not avoidable.
+	 */
+	final Scheme scheme;
+	
+	final MetroInvokable procedure;
+	public SchemePulsarLogic ( Scheme scheme, MetroInvokable procedure ) {
+		this.scheme = scheme;
 		this.procedure = procedure;
 	}
 	
@@ -73,7 +84,7 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 		// System.out.println("Metro.logic.new MetroLogic() {...}.initBuffer()" );
 //		buf.humanize( 0.0d, 3 );
 		try {
-			scheme2buf(metro, sequence, environment, procedure, buf);
+			scheme2buf(metro, sequence, scheme, procedure, buf);
 		} catch ( RuntimeException e ) {
 			Logger.getLogger(SchemePulsarLogic.class.getName()).log(Level.SEVERE, "", e);
 		}
@@ -81,15 +92,8 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static boolean scheme2buf( Metro metro, MetroNoteEventBufferSequence sequence, Environment environment, Procedure procedure, MetroNoteEventBuffer buf) {
-		AbstractSequence<Object> pattern ;
-		try {
-			Environment.setCurrent( environment );
-			pattern = (AbstractSequence<Object>) procedure.applyN( new Object[] {} );
-		} catch (Throwable e) {
-			e.printStackTrace();
-			pattern = null;
-		}
+	public static boolean scheme2buf( Metro metro, MetroNoteEventBufferSequence sequence, Scheme scheme, MetroInvokable procedure, MetroNoteEventBuffer buf) {
+		AbstractSequence<Object> pattern = (AbstractSequence<Object>)procedure.invoke();
 
 		/*
 		class Processor {
@@ -107,6 +111,10 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 
 			for ( Iterator<Object> i = pattern.iterator(); i.hasNext(); ) {
 				Pair ep = (Pair)i.next();
+				
+				/*
+				 * omitting key name is now prohibited. (Wed, 29 Aug 2018 06:26:32 +0900)
+				 */
 				Map<String,Object> map = SchemeUtils.list2map(ep,
 						(Object type)->{
 							switch ( SchemeUtils.symbolToString(type)) {
@@ -210,8 +218,10 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 					case  "exec" : {
 						double offset        = map.containsKey( ID_OFFSET   )  ? SchemeUtils.toDouble(     map.get( ID_OFFSET    ) ) : 0.0d;
 						Procedure procedure0 = map.containsKey( ID_PROCEDURE ) ?                (Procedure)map.get( ID_PROCEDURE ) : null;
-						
-						buf.exec( offset, environment,  procedure0 );
+						// See the note ... XXX_SYNC_01
+						buf.exec( offset, 
+								new RunnableSchemeProcedure( 
+										new InvokableSchemeProcedure(scheme /* XXX_SYNC_01 */, Environment.getCurrent(), procedure0) ) );
 						break;
 					}
 					case  "huma" : {

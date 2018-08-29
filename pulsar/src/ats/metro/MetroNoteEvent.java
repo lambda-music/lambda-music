@@ -17,9 +17,9 @@ public class MetroNoteEvent extends MetroEvent {
 		return data;
 	}
 	public void dumpProc( String prefix, StringBuilder sb ) {
-		MetroNoteEvent e = this;
-		sb.append(prefix).append( "      outputPortNo: " + e.outputPortNo ).append( "\n" );
-		sb.append(prefix).append( "              data: " + Arrays.toString( e.data ) ).append( "\n" );
+		super.dumpProc(prefix, sb);
+		sb.append(prefix).append( "      outputPortNo: " + outputPortNo ).append( "\n" );
+		sb.append(prefix).append( "              data: " + Arrays.toString( data ) ).append( "\n" );
 	}
 
 

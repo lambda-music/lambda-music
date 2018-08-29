@@ -142,8 +142,8 @@ public class MetroNoteEventBufferSequence {
 			for ( Iterator<MetroNoteEventBuffer> ibuf = this.buffers.iterator(); ibuf.hasNext(); ) {
 				MetroNoteEventBuffer buf = ibuf.next();
 
-				int actualCursor = this.cursor - cursorOffset;
-				int actualNextCursor = nextCursor - cursorOffset;
+				int actualCursor     = this.cursor - cursorOffset;
+				int actualNextCursor = nextCursor  - cursorOffset;
 
 				//    		System.out.println( "AFTER::::" );
 				//    		buf.dump();
@@ -154,7 +154,7 @@ public class MetroNoteEventBufferSequence {
 					if ( e.between( actualCursor, actualNextCursor ) ) {
 						//		    			System.out.println("VALUE" + ( e.getOffsetInFrames() - this.cursor ) );
 						//        			System.out.println( e.("***" ));
-						found= true;
+						found = true;
 						
 						if ( e instanceof MetroNoteEvent ) {
 							MetroNoteEvent e0 = (MetroNoteEvent) e;
@@ -223,7 +223,8 @@ public class MetroNoteEventBufferSequence {
 					break;
 				int lengthInFrames = this.buffers.peek().getLengthInFrames();
 				
-				if (  lengthInFrames < this.cursor ) {
+				// XXX 
+				if (  lengthInFrames <= this.cursor ) {
 					this.cursor -= lengthInFrames;
 					nextCursor -= lengthInFrames;
 					this.buffers.poll();
@@ -311,6 +312,7 @@ public class MetroNoteEventBufferSequence {
 		MetroNoteEventBuffer buf = new MetroNoteEventBuffer();
 		boolean result = this.logic.processOutputNoteBuffer( metro, this, buf );
 		buf.prepare( metro, client, position );
+		buf.dump();
 
 		if ( result ) {
 			this.buffers.offer( buf );

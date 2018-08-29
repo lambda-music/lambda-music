@@ -46,6 +46,7 @@ import javax.swing.filechooser.FileFilter;
 import org.jaudiolibs.jnajack.JackException;
 
 import ats.metro.Metro;
+import ats.metro.MetroInvokable;
 import ats.metro.MetroNoteEventBufferSequence.SyncType;
 import ats.pulsar.lib.FlawLayout;
 import ats.pulsar.lib.LayoutUtils;
@@ -158,7 +159,7 @@ public final class Pulsar extends Metro {
 	}
 	
 
-	Scheme scheme = new Scheme();
+	static Scheme scheme = new Scheme();
 	{
 		initScheme( scheme );
 	}
@@ -170,14 +171,14 @@ public final class Pulsar extends Metro {
 	 * sequencer and effectively this method starts a song. Whenever a user call
 	 * {@link Pulsar#reset()}, this procedure will be invoked.
 	 */
-	Runnable mainProcedure = null;
+	MetroInvokable mainProcedure = null;
 
 	/**
 	 * Sets the main-procedure object.
 	 * 
 	 * @see Pulsar#mainProcedure 
 	 */
-	public void setMainProcedure( Runnable mainProcedure ) {
+	public void setMainProcedure( MetroInvokable mainProcedure ) {
 		this.mainProcedure = mainProcedure;
 	}
 	
@@ -186,7 +187,7 @@ public final class Pulsar extends Metro {
 	 * 
 	 * @see Pulsar#mainProcedure 
 	 */
-	public Runnable getMainProcedure() {
+	public MetroInvokable getMainProcedure() {
 		return mainProcedure;
 	}
 	
@@ -197,13 +198,13 @@ public final class Pulsar extends Metro {
 	 * the sequencer goes to next region. When users call {@link Pulsar#cue() },
 	 * this procedure is invoked. 
 	 */
-	Runnable cueProcedure = null;
+	MetroInvokable cueProcedure = null;
 	/**
 	 * Sets the cue-procedure object.
 	 * 
 	 * @see Pulsar#cueProcedure 
 	 */
-	public void setCueProcedure( Runnable cueProcedure ) {
+	public void setCueProcedure( MetroInvokable cueProcedure ) {
 		this.cueProcedure = cueProcedure;
 	}
 	/**
@@ -211,7 +212,7 @@ public final class Pulsar extends Metro {
 	 * 
 	 * @see Pulsar#cueProcedure 
 	 */
-	public Runnable getCueProcedure() {
+	public MetroInvokable getCueProcedure() {
 		return cueProcedure;
 	}
 
@@ -276,7 +277,7 @@ public final class Pulsar extends Metro {
     	logInfo( "===reset" );
     	setPlaying(false);
     	if ( mainProcedure != null )
-    		mainProcedure.run();
+    		mainProcedure.invoke();
 		clearSequences();
     }
 
@@ -286,7 +287,7 @@ public final class Pulsar extends Metro {
     public void cue() {
     	logInfo( "===cue" );
     	if ( cueProcedure != null )
-    		cueProcedure.run();
+    		cueProcedure.invoke();
     }
     
     /**
@@ -441,31 +442,6 @@ public final class Pulsar extends Metro {
 	}
 
 	/**
-	 * A {@link Runnable} derived object to execute scheme functions.  
-	 */
-	static final class SchemeProcedureRunnable implements Runnable {
-		private Environment environment;
-		private final Procedure procedure;
-		SchemeProcedureRunnable(Procedure procedure) {
-			this( Environment.getCurrent(), procedure );
-		}
-		SchemeProcedureRunnable(Environment environment, Procedure procedure) {
-			this.environment = environment;
-			this.procedure = procedure;
-		}
-		@Override
-		public void run() {
-			try {
-				Environment.setCurrent( this.environment );
-				procedure.applyN( new Object[] {} );
-			} catch (Throwable e) {
-				logError( "" , e );
-				throw new RuntimeException(e);
-			}
-		}
-	}
-
-	/**
 	 * Loads and executes the specified scheme script file.
 	 * 
 	 * If the specified path is a relative path, {@link Pulsar#loadScheme(File) }
@@ -489,7 +465,9 @@ public final class Pulsar extends Metro {
 		
 		try {
 			String text = new String(Files.readAllBytes( Paths.get( file.toURI() ) ), StandardCharsets.UTF_8);
-			scheme.eval( text );
+			synchronized ( scheme ) {
+				scheme.eval( text );
+			}
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -596,7 +574,7 @@ public final class Pulsar extends Metro {
 				logInfo("set-main");
 				if ( args.length == 1 ) {
 					Procedure procedure = (Procedure)args[0];
-					setMainProcedure( new SchemeProcedureRunnable( procedure ));
+					setMainProcedure( new InvokableSchemeProcedure( scheme, Environment.getCurrent(), procedure ));
 				} else {
 					throw new RuntimeException( "invalid argument length" );
 				}
@@ -609,7 +587,7 @@ public final class Pulsar extends Metro {
 				logInfo("set-cue");
 				if ( args.length == 1 ) {
 					Procedure procedure = (Procedure)args[0];
-					setCueProcedure( new SchemeProcedureRunnable( procedure ));
+					setCueProcedure( new InvokableSchemeProcedure( scheme , Environment.getCurrent(), procedure ));
 				} else {
 					throw new RuntimeException( "invalid argument length" );
 				}
@@ -707,7 +685,8 @@ public final class Pulsar extends Metro {
 					String syncSequenceName = 4<=args.length ? SchemeUtils.anyToString( args[3] ) : null;
 					double offset           = 5<=args.length ? SchemeUtils.toDouble( args[4] ) : 0.0d;
 					
-					SchemePulsarLogic logic = new SchemePulsarLogic( Environment.getCurrent(), procedure );
+					SchemePulsarLogic logic = new SchemePulsarLogic( scheme,
+							new InvokableSchemeProcedure( scheme, Environment.getCurrent(), procedure ) );
 					putLogic(name, logic, syncType, syncSequenceName, offset );
 					
 					return EmptyList.emptyList;

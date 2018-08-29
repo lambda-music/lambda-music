@@ -53,8 +53,8 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
     static void logError( String msg, Throwable e ) {
 		Logger.getLogger(Metro.class.getName()).log(Level.SEVERE, msg, e);
     }
-
-//	private final static boolean DEBUG = true;
+    
+	//	private final static boolean DEBUG = true;
 	static final boolean DEBUG = false;
 	
 	protected Jack jack = null;
