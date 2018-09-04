@@ -312,7 +312,7 @@ public class MetroNoteEventBufferSequence {
 		MetroNoteEventBuffer buf = new MetroNoteEventBuffer();
 		boolean result = this.logic.processOutputNoteBuffer( metro, this, buf );
 		buf.prepare( metro, client, position );
-		buf.dump();
+//		buf.dump();
 
 		if ( result ) {
 			this.buffers.offer( buf );

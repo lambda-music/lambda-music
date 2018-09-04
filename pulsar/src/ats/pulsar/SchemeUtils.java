@@ -42,18 +42,23 @@ public class SchemeUtils {
 					
 					if ( "type".equals( key ) ) {
 						if ( idx2nameGenerator == null ) {
-							throw new RuntimeException( "Error : cannot omit idx2nameGenerator." );
+							idx2name = null;
 						} else {
 							idx2name = idx2nameGenerator.apply( value );
 						}
 					}
 				} else {
+					System.out.println( e.getClass().getName() );
 					String key = idx2name.apply( index );
 					Object value = e;
 					map.put( key , value );
 					
 					if ( "type".equals( key ) ) {
-						idx2name = idx2nameGenerator.apply( value );
+						if ( idx2nameGenerator == null ) {
+							idx2name = null;
+						} else {
+							idx2name = idx2nameGenerator.apply( value );
+						}
 					}
 				}
 			}
@@ -73,6 +78,12 @@ public class SchemeUtils {
 		}
 	}
 	
+	public static Boolean toBoolean( Object schemeVal ) {
+		if ( schemeVal instanceof Boolean)
+			return (Boolean)schemeVal;
+		else
+			return Boolean.TRUE; // treat everything as #t except #f.
+	}
 	public static String toString( Object schemeVal ) {
 		return ((IString)schemeVal).toString();
 	}

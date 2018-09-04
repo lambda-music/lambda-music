@@ -272,31 +272,4 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define put-seq-button 
-  (lambda args
-    (lambda args-0
-      (apply put-seq! args ))))
-
-(define new-put-seq-button 
-  (lambda args
-    (new-button (car args) #f
-        (apply put-seq-button args ))))
-
-
 ; vim: filetype=scheme expandtab :

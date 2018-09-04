@@ -115,7 +115,7 @@ public class MetroNoteEventBuffer implements Iterable<MetroEvent>{
 		noteHit( offset, outputPortNo, channel, note, velocity, -1 );
 	}
 	public void noteHit( double offset, int outputPortNo, int channel, int note, double velocity, double duration ) {
-		if ( 0 < duration )
+		if ( duration < 0 )
 			duration = 0.0025d;
 		
 		noteOn(  offset, outputPortNo, channel, note, velocity );
@@ -137,7 +137,6 @@ public class MetroNoteEventBuffer implements Iterable<MetroEvent>{
 		velocity += humanizeVelocity;
 
 		noteInfoMap.put(outputPortNo, channel, note, humanizeOffset, humanizeVelocity);
-		
 
 		note( outputPortNo, 0b10010000, offset, channel, note, velocity );
 	}

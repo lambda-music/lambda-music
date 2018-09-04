@@ -21,6 +21,7 @@ import kawa.standard.Scheme;
 
 public class SchemePulsarLogic extends MetroLogic.Default {
 	private static final String ID_TYPE      = "type";
+	private static final String ID_ENABLED   = "enab";
 	private static final String ID_CHANNEL   = "chan";
 	private static final String ID_PORT_NO   = "port";
 	private static final String ID_PROCEDURE = "proc";
@@ -115,98 +116,43 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 				/*
 				 * omitting key name is now prohibited. (Wed, 29 Aug 2018 06:26:32 +0900)
 				 */
-				Map<String,Object> map = SchemeUtils.list2map(ep,
-						(Object type)->{
-							switch ( SchemeUtils.symbolToString(type)) {
-								case "on":
-								case "off":
-								case "hit":
-									return (Integer idx)->{
-										//	double offset, int outputPortNo, int channel, int note, double velocity 
-										switch ( idx ) {
-											case 0: return ID_TYPE;
-											case 1: return ID_PORT_NO;
-											case 2: return ID_CHANNEL;
-											case 3: return ID_OFFSET;
-											case 4: return ID_NOTE;
-											case 5: return ID_VELOCITY;
-											case 6: return ID_LENGTH;
-											default : throw new RuntimeException( "cannot omit the key object." );
-										}
-									};
-								case "bar":
-									return (Integer idx)->{
-										switch ( idx ) {
-											case 0: return ID_TYPE;
-											case 1: return ID_LENGTH;
-											default : throw new RuntimeException( "cannot omit the key object." );
-										}
-									};
-								case "exec":
-									return (Integer idx)->{
-										switch ( idx ) {
-											case 0: return ID_TYPE;
-											case 1: return ID_OFFSET;
-											case 2: return ID_PROCEDURE;
-											default : throw new RuntimeException( "cannot omit the key object." );
-										}
-									};
-								case "huma":
-									return (Integer idx)->{
-										switch ( idx ) {
-											case 0: return ID_TYPE;
-											default : throw new RuntimeException( "cannot omit the key object." );
-										}
-									};
-								case "end":
-									return (Integer idx)->{
-										switch ( idx ) {
-											case 0: return ID_TYPE;
-											default : throw new RuntimeException( "cannot omit the key object." );
-										}
-									};
-								default : {
-									throw new RuntimeException( "cannot omit the key object." );
-								}
-							}
-						});
+				Map<String,Object> map = SchemeUtils.list2map(ep, null );
 	
 				String type      = map.containsKey( ID_TYPE     ) ? SchemeUtils.symbolToString(  map.get( ID_TYPE     ) ) : "";
 	
 				switch ( type ) {
-					case  "hit" : {
+					case  "void" : {
+						break;
+					}
+
+					case  "hit" : 
+					case  "on" :
+					case  "off" :
+					{
+						boolean enabled      = map.containsKey( ID_ENABLED     ) ? SchemeUtils.toBoolean(       map.get(ID_ENABLED      ) ) : true;
+						if ( ! enabled )
+							break;
+						
 						int port         = map.containsKey( ID_PORT_NO     ) ? SchemeUtils.toInteger(       map.get(ID_PORT_NO      ) ) : 1;
 						int channel      = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(       map.get(ID_CHANNEL   ) ) : 0; 
 						double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(        map.get(ID_OFFSET    ) ) : 0.0d;  
 						int note         = map.containsKey( ID_NOTE     ) ? SchemeUtils.toInteger(       map.get(ID_NOTE      ) ) : 63;  
 						double velocity  = map.containsKey( ID_VELOCITY ) ? SchemeUtils.toDouble(       map.get(ID_VELOCITY  ) ) : 63;
 						double length    = map.containsKey( ID_LENGTH   ) ? SchemeUtils.toDouble(       map.get(ID_LENGTH    ) ) : -1d;
-
-						buf.noteHit(offset, port, channel, note, velocity, length );
+						switch ( type ) {
+							case  "hit" :
+								buf.noteHit(offset, port, channel, note, velocity, length );
+								break;
+							case  "on" :
+								buf.noteOn(offset, port, channel, note, velocity );
+								break;
+							case  "off" :
+								buf.noteOff(offset, port, channel, note, velocity );
+								break;
+						}
 						break;
 					}
-					case  "on" : {
-						int port         = map.containsKey( ID_PORT_NO     ) ? SchemeUtils.toInteger(       map.get(ID_PORT_NO      ) ) : 1;
-						int channel      = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(       map.get(ID_CHANNEL   ) ) : 0; 
-						double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(        map.get(ID_OFFSET    ) ) : 0.0d;  
-						int note         = map.containsKey( ID_NOTE     ) ? SchemeUtils.toInteger(       map.get(ID_NOTE      ) ) : 63;  
-						double velocity  = map.containsKey( ID_VELOCITY ) ? SchemeUtils.toDouble(       map.get(ID_VELOCITY  ) ) : 63;
-//						double length    = map.containsKey( "length"   ) ? SchemeUtils.toInteger(       map.get("length"    ) ) : -1d;
-
-						buf.noteOn(offset, port, channel, note, velocity );
-						break;
-					}
-					case  "off" : {																														
-						int port         = map.containsKey( ID_PORT_NO     ) ? SchemeUtils.toInteger(       map.get(ID_PORT_NO      ) ) : 1;
-						int channel      = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(       map.get(ID_CHANNEL   ) ) : 0; 
-						double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(        map.get(ID_OFFSET    ) ) : 0.0d;  
-						int note         = map.containsKey( ID_NOTE     ) ? SchemeUtils.toInteger(       map.get(ID_NOTE      ) ) : 63;  
-						double velocity  = map.containsKey( ID_VELOCITY ) ? SchemeUtils.toDouble(       map.get(ID_VELOCITY  ) ) : 63;
-//						double length    = map.containsKey( "length"   ) ? SchemeUtils.toInteger(       map.get("length"    ) ) : -1d;
-						
-						buf.noteOff(offset, port, channel, note, velocity );
-						break;
-					}
+					
 					case  "bar" : {
 						double length    = map.containsKey( ID_LENGTH   ) ? SchemeUtils.toDouble(       map.get(ID_LENGTH    ) ) : -1d;
 						if ( length < 0 ) {

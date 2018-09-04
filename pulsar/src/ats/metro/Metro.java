@@ -84,7 +84,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 	public double getBeatsPerMinute() {
 		return beatsPerMinute;
 	}
-	public void setBeatsPerMinute(double barPerMinute) throws JackException {
+	public void setBeatPerMinute(double barPerMinute) throws JackException {
 		this.beatsPerMinute = barPerMinute < 0 ? 0 : barPerMinute;
 		reprepareSequence();
 	}
@@ -177,9 +177,10 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 	
 	private MetroNoteEventBufferSequence searchSequence( String name ) {
 		if ( "last!".equals(name )) {
-			if ( sequences.size() == 0 )
+			if ( sequences.size() == 0 ) {
+				logInfo( "searchSequence() WARNING last! was specified but sequence contains no element." );
 				return null;
-			else
+			} else
 				return sequences.get( sequences.size() -1 );
 		} else {
 			name = name.intern();
@@ -189,6 +190,7 @@ public class Metro implements JackProcessCallback, JackShutdownCallback, JackTim
 					return sequence;
 				}
 			}
+			logInfo( "searchSequence() WARNING \"" + name + "\"  was not found." );
 			return null;
 		}
 	}

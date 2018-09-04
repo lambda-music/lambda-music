@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -36,9 +37,12 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.Timer;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.filechooser.FileFilter;
@@ -50,6 +54,7 @@ import ats.metro.MetroInvokable;
 import ats.metro.MetroNoteEventBufferSequence.SyncType;
 import ats.pulsar.lib.FlawLayout;
 import ats.pulsar.lib.LayoutUtils;
+import ats.pulsar.lib.MersenneTwisterFast;
 import ats.pulsar.lib.SpringLayoutUtil;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
@@ -58,6 +63,9 @@ import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.ProcedureN;
 import gnu.mapping.SimpleSymbol;
+import gnu.mapping.Symbol;
+import gnu.math.DFloNum;
+import gnu.math.IntNum;
 import kawa.standard.Scheme;
 
 /**
@@ -159,10 +167,16 @@ public final class Pulsar extends Metro {
 	}
 	
 
-	static Scheme scheme = new Scheme();
+	Scheme scheme = new Scheme();
 	{
 		initScheme( scheme );
 	}
+	MersenneTwisterFast random = new MersenneTwisterFast( new int[] { 
+			(int) System.currentTimeMillis(),
+			0x123, 0x234, 0x345, 0x456,
+	});
+	
+	
 
 	static final int BORDER = 10;
 	
@@ -411,6 +425,90 @@ public final class Pulsar extends Metro {
 		this.lastModifiedOfMainFile = NOT_DEFINED;
 	}
 	
+	interface TempoTapperTempoNotifier {
+		void notifyTempo( double beatPerMinute );
+	}
+	class TempoTapper {
+		final List<TempoTapperTempoNotifier> notifiers = new ArrayList<>();
+		void registerNotifier( TempoTapperTempoNotifier notifier ) {
+			notifiers.add( notifier );
+		}
+		
+		long prev_time = 0;
+		int BUF_SIZE = 3;
+		long TIMEOUT = 1000L*1000L*1000L*2L;
+		void reset() {
+			for ( int i=0;i<t.length; i++ )
+				t[i]=0;
+			tidx=0;
+		}
+		long t[] = new long[BUF_SIZE];
+		int tidx= 0;
+		
+		public void tap( ) {
+			long current_time = System.nanoTime();
+			if ( prev_time == 0 ) {
+				prev_time = current_time;
+				return;
+			}
+			if ( TIMEOUT < current_time - prev_time ) {
+				prev_time = current_time;
+				reset();
+				return;
+			}
+
+			long current_diff = current_time - prev_time ;
+			logInfo( "Elapsed Time : " + current_diff );
+
+			tidx ++;
+			if( tidx < t.length ) {
+			} else {
+				tidx = 0;
+			}
+
+			t[tidx] = current_diff;
+			prev_time = current_time;
+
+			boolean isFull = true;
+			long sum = 0;
+			{
+				for ( int i=0; i<t.length; i++ ) {
+					if ( 0 < t[i] ) {
+						sum += t[i];
+					} else {
+						isFull = false;
+						break;
+					}
+				}
+			}
+
+			if ( isFull ) 
+				try {
+					double avg = (double)sum / t.length;
+					double onemin = 1000L*1000L*1000L*60L;
+					double beatPerMinute =  onemin / avg  ;
+					
+					beatPerMinute = ( beatPerMinute + getBeatsPerMinute() ) / 2;
+					logInfo( String.format( "%.2f / %.2f = %.2f", onemin , avg , beatPerMinute  ) );
+					
+					setBeatPerMinute( beatPerMinute );
+					
+				} catch (JackException e1) {
+					logError("", e1);
+				}
+		}
+
+		public void setBeatPerMinute(double beatPerMinute) throws JackException {
+			Pulsar.this.setBeatPerMinute( (long) beatPerMinute );
+			for ( TempoTapperTempoNotifier n : notifiers ) {
+				n.notifyTempo( beatPerMinute );
+			}
+		}
+	}
+	final TempoTapper tempoTapper = new TempoTapper();
+	
+	
+	
 	// a watchdog Timer
 	{
 		Timer timer = new Timer(1000, new ActionListener() {
@@ -568,6 +666,22 @@ public final class Pulsar extends Metro {
 				return EmptyList.emptyList;
     		}
     	});
+
+    	defineVar( scheme, "all-input" , new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				return Pair.makeList( getInputPorts().stream().map((v)->IString.valueOf(v) )
+						.collect( Collectors.toList() ) );
+    		}
+    	});
+    	defineVar( scheme, "all-output" , new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				return Pair.makeList( getOutputPorts().stream().map((v)->IString.valueOf(v) )
+						.collect( Collectors.toList() ) );
+    		}
+    	});
+
     	defineVar( scheme, "set-main!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
@@ -627,6 +741,24 @@ public final class Pulsar extends Metro {
     			return EmptyList.emptyList;
     		}
     	});
+    	defineVar( scheme, "tap!" , new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				tempoTapper.tap(); 
+    			return EmptyList.emptyList;
+    		}
+    	});
+    	defineVar( scheme, "set-tempo!" , new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				if ( 0 < args.length ) {
+					double bpm = SchemeUtils.toDouble(args[0]);
+					tempoTapper.setBeatPerMinute( bpm );
+				}
+				 
+    			return EmptyList.emptyList;
+    		}
+    	});
     	defineVar( scheme, "set-related-files!" , new ProcedureN() {
     		@Override
     		public Object applyN(Object[] args) throws Throwable {
@@ -679,6 +811,7 @@ public final class Pulsar extends Metro {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				if ( 2 <= args.length  ) {
+					System.out.println( Arrays.asList(args) );
 					String name             = SchemeUtils.toString( args[0] );
 					Procedure procedure     = (Procedure) args[1];
 					SyncType syncType       = 3<=args.length ? str2sync( args[2] ) : SyncType.IMMEDIATE;
@@ -691,7 +824,7 @@ public final class Pulsar extends Metro {
 					
 					return EmptyList.emptyList;
 				} else {
-					throw new RuntimeException( "Invalid parameter. usage : (new-seq [name] [lambda] ) " );
+					throw new RuntimeException( "Invalid parameter. usage : (put-seq! [name] [lambda] [syncType(immediate|parallel|serial)] [sync-parent-name] [offset] ) " );
 				}
 			}
 			private SyncType str2sync(Object object) {
@@ -753,22 +886,64 @@ public final class Pulsar extends Metro {
     		}
 
     	});
+    	defineVar( scheme, "new-slider" , new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				if ( args.length == 5 ) {
+					int min = ((Number)args[0]).intValue();
+					int max = ((Number)args[1]).intValue();
+					int minorTick = ((Number)args[2]).intValue();
+					int majorTick = ((Number)args[3]).intValue();
+					Procedure procedure = (Procedure) args[4];
+					JSlider slider = new JSlider() {
+						@Override
+						public Dimension getPreferredSize() {
+							return new Dimension(
+									this.getParent().getSize().width,
+									super.getPreferredSize().height
+									);
+							
+						}
+					};
+					
+					slider.setMaximum(max);
+					slider.setMinimum(min);
+					slider.setMajorTickSpacing( majorTick );
+					slider.setMinorTickSpacing( minorTick );
+					slider.setPaintTicks(true);
+					slider.addChangeListener(new ChangeListener() {
+						@Override
+						public void stateChanged(ChangeEvent e) {
+							try {
+								procedure.applyN( new Object[] {IntNum.valueOf( slider.getValue() )  } );
+							} catch (Throwable e1) {
+								logError( "" , e1 );
+							}
+						}
+					});
+					return slider;
+				} else {
+					throw new RuntimeException( "(new-slider min max tick-min tick-maj on-change)" );
+				}
+			}
+    	});
+
     	defineVar( scheme, "new-button" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				if ( args.length == 3 ) {
-					if ( args[2] instanceof ProcedureN ) {
 						String caption = ((IString) args[0]).toString();
 						Object userHandle = args[1];
-						ProcedureN procedure = (ProcedureN) args[2];
-						Environment env= Environment.getCurrent();
+						Procedure procedure = (Procedure) args[2];
+
+						// Environment env= Environment.getCurrent();
 						{
 							JButton button = new JButton( caption );
 							button.addActionListener( new ActionListener() {
 								@Override
 								public void actionPerformed(ActionEvent e) {
 									try {
-										Environment.setCurrent(env);
+										// Environment.setCurrent(env);
 										procedure.applyN( new Object[] { userHandle } );
 									} catch (Throwable e1) {
 										logError( "" , e1 );
@@ -777,23 +952,63 @@ public final class Pulsar extends Metro {
 							});
 							return button;
 						}
-					} else {
-						throw new RuntimeException( "add-button unsupported type of args[2]." + SchemeUtils.className( args[2] ) );
-					}
 				} else {
-					throw new RuntimeException( "add-button has two parameters( caption user-handle lambda )." );
+					throw new RuntimeException( "new-button has two parameters( caption user-handle lambda )." );
+				}
+    		}
+    	});
+    	defineVar( scheme, "new" , new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				try {
+					return SchemeNewFactory.process(args);
+				} catch ( Exception e ) {
+					logError("", e);
+					return null;
 				}
     		}
     	});
     	defineVar( scheme, "gui-add!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
-				if ( args.length == 1 ) {
-					userPane.add( (JComponent)args[0] );
-				} else if ( args.length == 2 ) {
-					userPane.add( (JComponent)args[0], LayoutUtils.map2constraint( args[1] ) );
+				String mode = null;
+				for ( int i=0; i<args.length; i++ ) {
+					if ( args[i] instanceof Symbol ) {
+						String symbolName = SchemeUtils.symbolToString( args[i] );
+						switch ( symbolName ) {
+							case "newline" : 
+								guiNewline();
+								break;
+							case "list":
+								mode = "list";
+								break;
+							default :
+								throw new RuntimeException( "gui-add! unknown type \"" + symbolName + "\"" );
+						}
+					} else {
+						if ( args[i] instanceof Pair  ) {
+							Pair p = (Pair) args[i];
+							if ( "list".equals( mode ) ) {
+								for ( Object e : p ) {
+									guiAdd( (JComponent) e );
+								}
+							} else {
+								Object car = p.getCar();
+								Object cdr = p.getCdr();
+								
+								if ( cdr instanceof Pair ) {
+									guiAdd( (JComponent)car, LayoutUtils.map2constraint( cdr ) );
+								} else {
+									guiAdd( (JComponent)car, cdr );
+								}
+							}
+						} else {
+							guiAdd( (JComponent)args[i] );
+						}
+						mode = null;
+					}
 				}
-    			return args[0];
+    			return EmptyList.emptyList;
     		}
     	});
     	defineVar( scheme, "gui-newline!" , new ProcedureN() {
@@ -852,6 +1067,37 @@ public final class Pulsar extends Metro {
     			return EmptyList.emptyList;
     		}
     	});
+    	defineVar( scheme, "rnd" , new ProcedureN() {
+    		@Override
+    		public Object applyN(Object[] args) throws Throwable {
+    			switch ( args.length ) {
+    				case 0 :
+    					return DFloNum.valueOf( random.nextDouble() );
+    				case 1 : {
+    					double range = SchemeUtils.toDouble( args[0] );
+    					return DFloNum.valueOf( random.nextDouble() * range );
+    				}
+    				default :
+    				{
+    					double rangeMin = SchemeUtils.toDouble( args[0] );
+    					double rangeMax = SchemeUtils.toDouble( args[1] );
+    					double range    = rangeMax - rangeMin;
+    					
+    					return DFloNum.valueOf( random.nextDouble() * range + rangeMin );
+    				}
+    			}
+    		}
+    	});
+    	defineVar( scheme, "luck" , new ProcedureN() {
+    		@Override
+    		public Object applyN(Object[] args) throws Throwable {
+    			double probability = args.length == 0 ? 0.5 : SchemeUtils.toDouble( args[0] );
+    			if ( probability < 0 ) return false;
+    			if ( 1.0<=probability  ) return true;
+				return random.nextBoolean( probability );
+    		}
+    	});
+
     }
     
     ////////////////////////
@@ -889,15 +1135,14 @@ public final class Pulsar extends Metro {
 		userPane.repaint();
         // frame.pack();
 	}
-	public void guiAdd( JComponent c ) {
-		userPane.add( c );
-		userPane.revalidate();
-		userPane.repaint();
+	public void guiAdd( JComponent c, Object constraint ) {
+		userPane.add( c, constraint );
+	}
+	public void guiAdd( JComponent c  ) {
+		userPane.add( c  );
 	}
 	public void guiNewline() {
 		userPane.add( FlawLayout.createNewLine() );
-		userPane.revalidate();
-		userPane.repaint();
 	}
 	
 	public void updateFilename(File file) {
@@ -1045,6 +1290,7 @@ public final class Pulsar extends Metro {
 				});
 				int result = fc.showOpenDialog( frame );
 				if ( result == JFileChooser.APPROVE_OPTION ) {
+					close();
 					setMainFile( null, fc.getSelectedFile() );
 				}
 			}
@@ -1053,6 +1299,36 @@ public final class Pulsar extends Metro {
 		tf_currentFile = new JTextField();
 		mainFilePanel.add( tf_currentFile, BorderLayout.CENTER );
 		tf_currentFile.setEditable(false);
+		
+		
+		//
+		
+		JSlider sl_tempoSlider = new JSlider();
+		panel.add( sl_tempoSlider, BorderLayout.SOUTH );
+		sl_tempoSlider.setMinimum(10);
+		sl_tempoSlider.setMaximum(550);
+		sl_tempoSlider.setPaintTicks(true);
+		sl_tempoSlider.setPaintTrack( true);
+		sl_tempoSlider.setMajorTickSpacing(50);
+		sl_tempoSlider.setMinorTickSpacing(10);
+		sl_tempoSlider.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				try {
+//					logInfo( "TempoSlider : " + ((JSlider)e.getSource()).getValue() );
+					tempoTapper.setBeatPerMinute( ((JSlider)e.getSource()).getValue() );
+				} catch (JackException e1) {
+					logError("", e1);
+				}
+			}
+		});
+		
+		tempoTapper.registerNotifier(new TempoTapperTempoNotifier() {
+			@Override
+			public void notifyTempo(double beatPerMinute) {
+				sl_tempoSlider.setValue( (int)beatPerMinute );
+			}
+		});
 		
 
 		return panel;
@@ -1105,77 +1381,19 @@ public final class Pulsar extends Metro {
 	private JButton createTempoTapButton() {
     	JButton tempoTapButton = new JButton( "TEMPO" );
     	tempoTapButton.addActionListener( new ActionListener() {
-    		long prev_time = 0;
-    		int BUF_SIZE = 3;
-    		long TIMEOUT = 1000L*1000L*1000L*2L;
-    		void reset() {
-    			for ( int i=0;i<t.length; i++ )
-    				t[i]=0;
-    			tidx=0;
-    		}
-    		long t[] = new long[BUF_SIZE];
-    		int tidx= 0;
-
     		@Override
     		public void actionPerformed(ActionEvent e) {
-    			long current_time = System.nanoTime();
-    			if ( prev_time == 0 ) {
-    				prev_time = current_time;
-    				return;
-    			}
-    			if ( TIMEOUT < current_time - prev_time ) {
-    				prev_time = current_time;
-    				reset();
-    				return;
-    			}
+				tempoTapper.tap();
 
-    			long current_diff = current_time - prev_time ;
-    			logInfo( "Elapsed Time : " + current_diff );
-
-    			tidx ++;
-    			if( tidx < t.length ) {
-    			} else {
-    				tidx = 0;
-    			}
-
-    			t[tidx] = current_diff;
-    			prev_time = current_time;
-
-    			boolean isFull = true;
-    			long sum = 0;
-    			{
-    				for ( int i=0; i<t.length; i++ ) {
-    					if ( 0 < t[i] ) {
-    						sum += t[i];
-    					} else {
-    						isFull = false;
-    						break;
-    					}
-    				}
-    			}
-
-    			if ( isFull ) 
-    				try {
-    					double avg = (double)sum / t.length;
-    					double onemin = 1000L*1000L*1000L*60L;
-    					double beatPerMinute =  onemin / avg  ;
-    					
-    					beatPerMinute = ( beatPerMinute + getBeatsPerMinute() ) / 2;
-    					logInfo( String.format( "%.2f / %.2f = %.2f", onemin , avg , beatPerMinute  ) );
-    					
-    					setBeatsPerMinute( (long) beatPerMinute );
-    					
-    					tempoTapButton.setText( String.format( "Tempo=%.2f", beatPerMinute  ) );
-
-    					//							tempoLabel.setText( String.format( "%.2f", beatPerMinute  ) );
-    					//							tempoLabel.setAlignmentX(0);
-    					//							tempoLabel.setAlignmentY(0);
-    				} catch (JackException e1) {
-    					// TODO Auto-generated catch block
-    					e1.printStackTrace();
-    				}
     		}
     	});
+
+    	tempoTapper.registerNotifier( new TempoTapperTempoNotifier() {
+			@Override
+			public void notifyTempo(double beatPerMinute) {
+				tempoTapButton.setText( String.format( "Tempo=%.2f", beatPerMinute  ) );
+			}
+		} );
 
     	tempoTapButton.setPreferredSize(new Dimension(200, 100));
     	tempoTapButton.setMargin(new Insets(20, 20, 20, 20));
