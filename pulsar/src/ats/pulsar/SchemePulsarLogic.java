@@ -1,6 +1,7 @@
 package ats.pulsar;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -13,13 +14,19 @@ import ats.metro.MetroLogic;
 import ats.metro.MetroMidiEvent;
 import ats.metro.MetroNoteEventBuffer;
 import ats.metro.MetroNoteEventBufferSequence;
+import ats.metro.MetroPlayer;
 import gnu.lists.AbstractSequence;
+import gnu.lists.EmptyList;
+import gnu.lists.IString;
+import gnu.lists.ImmutablePair;
+import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
+import gnu.mapping.ProcedureN;
 import kawa.standard.Scheme;
 
-public class SchemePulsarLogic extends MetroLogic.Default {
+public class SchemePulsarLogic extends MetroLogic {
 	private static final String ID_TYPE      = "type";
 	private static final String ID_ENABLED   = "enab";
 	private static final String ID_CHANNEL   = "chan";
@@ -200,5 +207,71 @@ public class SchemePulsarLogic extends MetroLogic.Default {
 		// buf.setLength( this.bars );
 		// buf.noteShot(0, 1, 0, 73, 100 );
 		return result;
+	}
+	
+	LList asociationList = createPairs( this );
+	public LList getAsociationList() {
+		return asociationList;
+	}
+	
+	
+	public static LList createPairs( MetroPlayer player ) {
+		Pair[] pairs = {
+				new ImmutablePair() {
+					@Override
+					public Object getCar() {
+						return SchemeUtils.schemeSymbol("name");
+					}
+					@Override
+					public Object getCdr() {
+						return SchemeUtils.toSchemeString( player.getPlayerName() );
+					}
+				},
+				new ImmutablePair() {
+					@Override
+					public Object getCar() {
+						return SchemeUtils.schemeSymbol("tags");
+					}
+					@Override
+					public Object getCdr() {
+						return LList.makeList((List)
+								SchemeUtils.<String,IString>convertList(
+										player.getPlayerTags() , (v)->SchemeUtils.toSchemeString(v) ) );
+					}
+				},
+				new ImmutablePair() {
+					@Override
+					public Object getCar() {
+						return SchemeUtils.schemeSymbol("playing");
+					}
+					@Override
+					public Object getCdr() {
+						return new ProcedureN() {
+							public Object applyN(Object[] args) throws Throwable {
+								if ( 0 < args.length ) {
+									player.setPlayerEnabled((Boolean)args[0]);
+								}
+								return player.isPlayerEnabled();
+							};
+						};
+					}
+				},
+				new ImmutablePair() {
+					@Override
+					public Object getCar() {
+						return SchemeUtils.schemeSymbol( "remove" );
+					}
+					@Override
+					public Object getCdr() {
+						return new ProcedureN() {
+							public Object applyN(Object[] args) throws Throwable {
+								player.playerRemove();
+								return EmptyList.emptyList;
+							};
+						};
+					}
+				},
+		};
+		return LList.makeList( Arrays.asList( pairs ) );
 	}
 }

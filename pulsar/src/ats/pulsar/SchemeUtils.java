@@ -1,11 +1,13 @@
 package ats.pulsar;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import gnu.lists.AbstractSequence;
 import gnu.lists.IString;
@@ -65,6 +67,10 @@ public class SchemeUtils {
 		}
 		return map;
 	}
+	
+	public static Symbol schemeSymbol( String string ) {
+		return Symbol.valueOf( string );
+	}
 
 	public static String anyToString( Object schemeVal ) {
 		if ( schemeVal instanceof IString ) {
@@ -100,10 +106,19 @@ public class SchemeUtils {
 		return object == null ? "null" : object.getClass().toString(); 
 	}
 
+	@Deprecated
 	public static <T> List<T> convList(Pair p, Function<Object,T> conv ) {
 		ArrayList<T> list=  new ArrayList<>( p.size() );
 		for ( Object o : p )
 			list.add( conv.apply( o ) );
 		return list;
+	}
+	
+	public static <P,T> Collection<T> convertList(Collection<P> list, Function<P,T> f) {
+		return list.stream().map(f).collect(Collectors.toList());
+	}
+	
+	public static IString toSchemeString( String value ) {
+		return IString.valueOf( value );
 	}
 }

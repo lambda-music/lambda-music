@@ -1,7 +1,10 @@
 package ats.metro;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
@@ -11,7 +14,7 @@ import org.jaudiolibs.jnajack.JackClient;
 import org.jaudiolibs.jnajack.JackException;
 import org.jaudiolibs.jnajack.JackPosition;
 
-public class MetroNoteEventBufferSequence {
+public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
     static void logInfo( String msg ) {
     	System.err.println( msg );
 		// Logger.getLogger(MetroNoteEventBufferSequence.class.getName()).log(Level.INFO, msg );
@@ -26,8 +29,10 @@ public class MetroNoteEventBufferSequence {
 	/**
 	 * 
 	 */
-	protected final String name;
 	private final Metro metro;
+	protected final String name;
+	protected Set<String> tags;
+	protected boolean enabled = true;
 
 	@SuppressWarnings("unused")
 	private static final boolean DEBUG = false;
@@ -37,16 +42,6 @@ public class MetroNoteEventBufferSequence {
 
 	int id = (int) (Math.random()* Integer.MAX_VALUE);
 
-	private MetroLogicHandle handle = new MetroLogicHandle() {
-		@Override
-		public void spawn( String name, double offset, MetroLogic logic ) {
-			MetroNoteEventBufferSequence sequence = 
-					new MetroNoteEventBufferSequence( metro, name, logic, syncType, MetroNoteEventBufferSequence.this, offset );
-			
-			metro.registerSequence( sequence );
-		}
-	};
-
 	private SyncType syncType;
 	private MetroNoteEventBufferSequence syncSequence;
 	private double syncOffset=0.0d;
@@ -54,25 +49,51 @@ public class MetroNoteEventBufferSequence {
 	protected int cursor = 0;
 	protected MetroLogic logic;
 	
-	public MetroNoteEventBufferSequence( Metro metro, String name, MetroLogic logic, SyncType syncType, MetroNoteEventBufferSequence syncSequence, double syncOffset ) {
+	public MetroNoteEventBufferSequence( Metro metro, String name, Collection<String> tags, MetroLogic logic, SyncType syncType, MetroNoteEventBufferSequence syncSequence, double syncOffset ) {
 		this.name = name.intern();
+		if ( tags == null )
+			this.tags = new HashSet<>();
+		else
+			this.tags = (new HashSet<>( tags ));
 		this.metro = metro;
 		this.logic = logic;
 		this.syncType = syncType;
 		this.syncSequence = syncSequence;
 		this.syncOffset = syncOffset;
 		
-//		System.err.println(/ "" );
-		
-		this.logic.setLogicHandle( handle );
+	}
+	
+	@Override
+	public Object getMetroLock() {
+		return this.metro.lock;
 	}
 	
 	public MetroLogic getLogic() {
 		return this.logic;
 	}
-	public String getName() {
+	@Override
+	public String getPlayerName() {
 		return name;
 	}
+	@Override
+	public Set<String> getPlayerTags() {
+		return tags;
+	}
+	
+	@Override
+	public boolean isPlayerEnabled() {
+		return enabled;
+	}
+	@Override
+	public void setPlayerEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+	@Override
+	public void playerRemove() {
+		metro.unregisterSequence( this );
+	}
+
+	
 	
 //	@Override
 //	public boolean equals(Object obj) {

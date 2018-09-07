@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -51,6 +52,7 @@ import org.jaudiolibs.jnajack.JackException;
 
 import ats.metro.Metro;
 import ats.metro.MetroInvokable;
+import ats.metro.MetroNoteEventBufferSequence;
 import ats.metro.MetroNoteEventBufferSequence.SyncType;
 import ats.pulsar.lib.FlawLayout;
 import ats.pulsar.lib.LayoutUtils;
@@ -58,6 +60,7 @@ import ats.pulsar.lib.MersenneTwisterFast;
 import ats.pulsar.lib.SpringLayoutUtil;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
+import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
@@ -258,7 +261,7 @@ public final class Pulsar extends Metro {
 	/**
 	 * @see #relatedFiles
 	 */
-	public void setRelatedFiles( List<File> fileList ) {
+	public void setRelatedFiles( Collection<File> fileList ) {
 		this.relatedFiles.clear();
 		this.relatedFiles.addAll( fileList );
 		this.relatedFileParent = mainFile;
@@ -764,7 +767,7 @@ public final class Pulsar extends Metro {
     		public Object applyN(Object[] args) throws Throwable {
     			if ( args.length == 1  ) {
     				Pair p = (Pair)args[0];
-    				List<File> files=  SchemeUtils.<File>convList( p, (o)->{
+    				Collection<File> files=  SchemeUtils.<Object,File>convertList( p, (o)->{
     					return new File( SchemeUtils.anyToString( o ) );
     				});
     				setRelatedFiles( files );
@@ -807,12 +810,27 @@ public final class Pulsar extends Metro {
     			return EmptyList.emptyList;
     		}
     	});
-    	defineVar( scheme, "put-seq!" , new ProcedureN() {
+
+    	defineVar( scheme, "add-seq!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				if ( 2 <= args.length  ) {
 					System.out.println( Arrays.asList(args) );
-					String name             = SchemeUtils.toString( args[0] );
+					String name;
+					Collection<String> tags;
+					if ( args[0] instanceof Pair ) {
+						Pair p = ((Pair)args[0]);
+						name = SchemeUtils.toString( p.getCar() );
+						Pair.makeList( getInputPorts().stream().map((v)->IString.valueOf(v) )
+								.collect( Collectors.toList() ) );
+
+						tags = SchemeUtils.<Object,String>convertList((Collection<Object>)p.getCdr(), (v)->SchemeUtils.toString(v));
+						
+					} else {
+						name = SchemeUtils.toString( args[0] );
+						tags = null;
+					}
+					
 					Procedure procedure     = (Procedure) args[1];
 					SyncType syncType       = 3<=args.length ? str2sync( args[2] ) : SyncType.IMMEDIATE;
 					String syncSequenceName = 4<=args.length ? SchemeUtils.anyToString( args[3] ) : null;
@@ -820,8 +838,9 @@ public final class Pulsar extends Metro {
 					
 					SchemePulsarLogic logic = new SchemePulsarLogic( scheme,
 							new InvokableSchemeProcedure( scheme, Environment.getCurrent(), procedure ) );
-					putLogic(name, logic, syncType, syncSequenceName, offset );
 					
+					addLogic( name, tags, logic, syncType, syncSequenceName, offset );
+					 
 					return EmptyList.emptyList;
 				} else {
 					throw new RuntimeException( "Invalid parameter. usage : (put-seq! [name] [lambda] [syncType(immediate|parallel|serial)] [sync-parent-name] [offset] ) " );
@@ -859,6 +878,18 @@ public final class Pulsar extends Metro {
 					return EmptyList.emptyList;
 				} else {
 					throw new RuntimeException( "Invalid parameter. usage : (new-logic [name] [lambda] ) " );
+				}
+			}
+    	});
+    	defineVar( scheme, "list-seq" , new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				synchronized ( getMetroLock() ) {
+					ArrayList<LList> list = new ArrayList<>( sequences.size() );
+					for ( MetroNoteEventBufferSequence sequence :  sequences ) {
+						list.add( ((SchemePulsarLogic)sequence.getLogic()).asociationList );
+					}
+					return LList.makeList(list);
 				}
 			}
     	});
