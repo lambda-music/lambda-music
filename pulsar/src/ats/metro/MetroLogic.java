@@ -19,18 +19,22 @@ public abstract class MetroLogic implements MetroPlayer {
 		if ( player == null )
 			throw new RuntimeException( "No ParentPlayer is specified." );
 	}
+	@Override
 	public String getPlayerName() {
 		check();
 		return player.getPlayerName();
 	}
+	@Override
 	public Set<String> getPlayerTags() {
 		check();
 		return player.getPlayerTags();
 	}
+	@Override
 	public boolean isPlayerEnabled() {
 		check();
 		return player.isPlayerEnabled();
 	}
+	@Override
 	public void setPlayerEnabled(boolean enabled) {
 		check();
 		player.setPlayerEnabled(enabled);
@@ -39,6 +43,11 @@ public abstract class MetroLogic implements MetroPlayer {
 	public void playerRemove() {
 		check();
 		player.playerRemove();
+	}
+	@Override
+	public double getPosition() {
+		check();
+		return player.getPosition();
 	}
 
 	

@@ -271,6 +271,20 @@ public class SchemePulsarLogic extends MetroLogic {
 						};
 					}
 				},
+				new ImmutablePair() {
+					@Override
+					public Object getCar() {
+						return SchemeUtils.schemeSymbol( "position" );
+					}
+					@Override
+					public Object getCdr() {
+						return new ProcedureN() {
+							public Object applyN(Object[] args) throws Throwable {
+								return SchemeUtils.toSchemeNumber( player.getPosition() );
+							};
+						};
+					}
+				},
 		};
 		return LList.makeList( Arrays.asList( pairs ) );
 	}

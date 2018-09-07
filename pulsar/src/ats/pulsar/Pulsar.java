@@ -489,22 +489,22 @@ public final class Pulsar extends Metro {
 				try {
 					double avg = (double)sum / t.length;
 					double onemin = 1000L*1000L*1000L*60L;
-					double beatPerMinute =  onemin / avg  ;
+					double beatsPerMinute =  onemin / avg  ;
 					
-					beatPerMinute = ( beatPerMinute + getBeatsPerMinute() ) / 2;
-					logInfo( String.format( "%.2f / %.2f = %.2f", onemin , avg , beatPerMinute  ) );
+					beatsPerMinute = ( beatsPerMinute + getBeatsPerMinute() ) / 2;
+					logInfo( String.format( "%.2f / %.2f = %.2f", onemin , avg , beatsPerMinute  ) );
 					
-					setBeatPerMinute( beatPerMinute );
+					setBeatsPerMinute( beatsPerMinute );
 					
 				} catch (JackException e1) {
 					logError("", e1);
 				}
 		}
 
-		public void setBeatPerMinute(double beatPerMinute) throws JackException {
-			Pulsar.this.setBeatPerMinute( (long) beatPerMinute );
+		public void setBeatsPerMinute(double beatsPerMinute) throws JackException {
+			Pulsar.this.setBeatsPerMinute( (long) beatsPerMinute );
 			for ( TempoTapperTempoNotifier n : notifiers ) {
-				n.notifyTempo( beatPerMinute );
+				n.notifyTempo( beatsPerMinute );
 			}
 		}
 	}
@@ -756,7 +756,7 @@ public final class Pulsar extends Metro {
     		public Object applyN(Object[] args) throws Throwable {
 				if ( 0 < args.length ) {
 					double bpm = SchemeUtils.toDouble(args[0]);
-					tempoTapper.setBeatPerMinute( bpm );
+					tempoTapper.setBeatsPerMinute( bpm );
 				}
 				 
     			return EmptyList.emptyList;
@@ -1347,7 +1347,7 @@ public final class Pulsar extends Metro {
 			public void stateChanged(ChangeEvent e) {
 				try {
 //					logInfo( "TempoSlider : " + ((JSlider)e.getSource()).getValue() );
-					tempoTapper.setBeatPerMinute( ((JSlider)e.getSource()).getValue() );
+					tempoTapper.setBeatsPerMinute( ((JSlider)e.getSource()).getValue() );
 				} catch (JackException e1) {
 					logError("", e1);
 				}

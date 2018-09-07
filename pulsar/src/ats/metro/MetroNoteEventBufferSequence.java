@@ -47,6 +47,7 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 	private double syncOffset=0.0d;
 	private BlockingQueue<MetroNoteEventBuffer> buffers = new LinkedBlockingQueue<>();
 	protected int cursor = 0;
+	protected int lastLengthInFrame = 0;
 	protected MetroLogic logic;
 	
 	public MetroNoteEventBufferSequence( Metro metro, String name, Collection<String> tags, MetroLogic logic, SyncType syncType, MetroNoteEventBufferSequence syncSequence, double syncOffset ) {
@@ -91,6 +92,14 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 	@Override
 	public void playerRemove() {
 		metro.unregisterSequence( this );
+	}
+	@Override
+	public double getPosition() {
+		if ( lastLengthInFrame < 0 || cursor < 0) {
+			return 0;
+		} else {
+			return (double)cursor / (double)lastLengthInFrame;
+		}
 	}
 
 	
@@ -239,10 +248,11 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 			//		for ( int i=0; i< accrossCount; i++ )
 			//		this.buffers.poll();
 			
+			int lengthInFrames=-1;
 			for (;;) {
 				if ( this.buffers.isEmpty() )
 					break;
-				int lengthInFrames = this.buffers.peek().getLengthInFrames();
+				lengthInFrames = this.buffers.peek().getLengthInFrames();
 				
 				// XXX 
 				if (  lengthInFrames <= this.cursor ) {
@@ -257,6 +267,7 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 
 
 			this.cursor = nextCursor;
+			this.lastLengthInFrame = lengthInFrames; 
 			if ( Metro.DEBUG )
 				logInfo( this.cursor + "/" + (this.buffers.isEmpty() ? "empty" : this.buffers.peek().getLengthInFrames()  ));
 		}
@@ -304,10 +315,49 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 
 	}
 
-	protected  void reprepare( Metro metro, JackClient client, JackPosition position ) throws JackException {
-		for ( MetroNoteEventBuffer buffer : this.buffers ) {
-			buffer.prepare(metro, client, position);
+	protected double magnifyCursorPosition( double prevBeatsPerMinute, double beatsPerMinute ) {
+		/*
+		 *  ( 1.0d / beatsPerMinute ) / ( 1.0d / prevBeatsPerMinute ) 
+		 *     => prevBeatsPerMinute / beatsPerMinute
+		 */
+		return prevBeatsPerMinute / beatsPerMinute;
+	}
+
+	protected  void reprepare( Metro metro, JackClient client, JackPosition position, 
+			double prevBeatsPerMinute, double beatsPerMinute ) throws JackException 
+	{
+		synchronized ( this.buffers ) {
+			int prevLengthInFrame = -1;
+			int lengthInFrame = -1;
+			{
+				MetroNoteEventBuffer headBuffer = this.buffers.peek();
+				if ( headBuffer != null )
+					prevLengthInFrame = headBuffer.lengthInFrames;
+			}
+				
+			// double ratio = magnifyCursorPosition( prevBeatsPerMinute, beatsPerMinute );
+			for ( MetroNoteEventBuffer buffer : this.buffers ) {
+				buffer.prepare(metro, client, position, false);
+			}
+			
+			{
+				MetroNoteEventBuffer headBuffer = this.buffers.peek();
+				if ( headBuffer != null )
+					lengthInFrame = headBuffer.lengthInFrames;
+			}
+			
+			double ratio = (double)lengthInFrame / (double)prevLengthInFrame; 
+			if ( 0< ratio && 1.0d!= ratio ) {
+				System.out.println( "ratio: " + ratio );
+				System.out.println( "prev cursor: " + cursor );
+				this.cursor = (int) Math.round( ((double)this.cursor)            * ratio );
+				System.out.println( "after cursor: " + cursor );
+				System.out.println( "lengthInFrame    : " + lengthInFrame );
+				System.out.println( "prevLengthInFrame: " + prevLengthInFrame );
+				//			this.lastLengthInFrame = (int) Math.round( ((double)this.lastLengthInFrame) * ratio );
+			}
 		}
+
 	}
 
 	protected  void checkBuffer( Metro metro, JackClient client, JackPosition position ) throws JackException {
@@ -330,16 +380,18 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 //	}
 
 	private void offerNewBuffer( Metro metro, JackClient client, JackPosition position ) throws JackException {
-		MetroNoteEventBuffer buf = new MetroNoteEventBuffer();
-		boolean result = this.logic.processOutputNoteBuffer( metro, this, buf );
-		buf.prepare( metro, client, position );
+		synchronized ( this.buffers ) {
+			MetroNoteEventBuffer buf = new MetroNoteEventBuffer();
+			boolean result = this.logic.processOutputNoteBuffer( metro, this, buf );
+			buf.prepare( metro, client, position, true );
 //		buf.dump();
-
-		if ( result ) {
-			this.buffers.offer( buf );
-		} else {
-			metro.unregisterSequence( this );
+			
+			if ( result ) {
+				this.buffers.offer( buf );
+			} else {
+				metro.unregisterSequence( this );
+			}
+			// buf.dump();
 		}
-		// buf.dump();
 	}
 } 

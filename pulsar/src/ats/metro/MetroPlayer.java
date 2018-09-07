@@ -8,4 +8,5 @@ public interface MetroPlayer {
 	public boolean isPlayerEnabled();
 	public void setPlayerEnabled(boolean enabled);
 	public void playerRemove();
+	public double getPosition();
 }

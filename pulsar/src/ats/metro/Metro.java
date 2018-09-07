@@ -91,9 +91,10 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	public double getBeatsPerMinute() {
 		return beatsPerMinute;
 	}
-	public void setBeatPerMinute(double barPerMinute) throws JackException {
-		this.beatsPerMinute = barPerMinute < 0 ? 0 : barPerMinute;
-		reprepareSequence();
+	public void setBeatsPerMinute(double beatsPerMinute) throws JackException {
+		beatsPerMinute = beatsPerMinute < 0 ? 0 : beatsPerMinute;
+		this.beatsPerMinute = beatsPerMinute;
+		reprepareSequence( beatsPerMinute, this.beatsPerMinute );
 	}
 
 	private long beatsPerBar = 4;
@@ -102,7 +103,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	}
 	public void setBeatsPerBar(long beatsPerBar) throws JackException {
 		this.beatsPerBar = beatsPerBar;
-		reprepareSequence();
+		// reprepareSequence();
 	}
 
 	private transient boolean playing = false;
@@ -348,6 +349,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	//        	logInfo("Metro.run()");
 	//        	String s = this.debugQueue.take();
 	//        	System.err.println( s );
+	        	
 	        	for ( MetroNoteEventBufferSequence sequence : this.sequences  ) {
 	        		sequence.checkBuffer( this,  this.client, this.position );
 	        	}
@@ -385,11 +387,11 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		}
 	}
 	
-	void reprepareSequence() throws JackException {
+	void reprepareSequence(double prevBeatsPerMinute, double beatsPerMinute) throws JackException {
 		synchronized ( this.lock ) {
 			// int barInFrames = Metro.calcBarInFrames( this, this.client, this.position );
 			for ( MetroNoteEventBufferSequence sequence : this.sequences ) {
-				sequence.reprepare( this, this.client, this.position );
+				sequence.reprepare( this, this.client, this.position, prevBeatsPerMinute, beatsPerMinute );
 			}
 		}
 	}

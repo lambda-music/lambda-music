@@ -13,6 +13,7 @@ import gnu.lists.AbstractSequence;
 import gnu.lists.IString;
 import gnu.lists.Pair;
 import gnu.mapping.Symbol;
+import gnu.math.DFloNum;
 import gnu.math.Quantity;
 
 public class SchemeUtils {
@@ -120,5 +121,9 @@ public class SchemeUtils {
 	
 	public static IString toSchemeString( String value ) {
 		return IString.valueOf( value );
+	}
+
+	public static DFloNum toSchemeNumber(double value) {
+		return DFloNum.valueOf(value);
 	}
 }

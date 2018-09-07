@@ -43,7 +43,7 @@ public class MetroNoteEventBuffer implements Iterable<MetroEvent>{
 
 	private double offset;
 	private double length = 1.0d;
-	private int lengthInFrames;
+	protected int lengthInFrames;
 	private final List<MetroEvent> list = new ArrayList<MetroEvent>(10);
 	public double getLength() {
 		return length;
@@ -62,8 +62,9 @@ public class MetroNoteEventBuffer implements Iterable<MetroEvent>{
 		return lengthInFrames;
 	}
 	
-	public void prepare( Metro metro, JackClient client, JackPosition position ) throws JackException {
-		this.list.sort( MetroNoteEvent.comparator );
+	public void prepare( Metro metro, JackClient client, JackPosition position, boolean doSort ) throws JackException {
+		if ( doSort )
+			this.list.sort( MetroNoteEvent.comparator );
 		int barInFrames = Metro.calcBarInFrames( metro, client, position );
 		this.calcInFrames( barInFrames );
 	}

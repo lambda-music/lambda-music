@@ -16,16 +16,20 @@ import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JProgressBar;
 import javax.swing.JRadioButton;
 import javax.swing.JSlider;
+import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import gnu.expr.Language;
+import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
+import gnu.mapping.ProcedureN;
 import gnu.math.IntNum;
 
 public abstract class SchemeNewFactory {
@@ -62,9 +66,39 @@ public abstract class SchemeNewFactory {
 		return result;
 	}
 
+	abstract class SchemeActionListener implements ActionListener {
+		private final Procedure procedure;
+		private final Environment env;
+		private final Language lang;
+
+		private SchemeActionListener(Procedure procedure ) {
+			this.procedure = procedure;
+			this.env = Environment.getCurrent();
+			this.lang = Language.getDefaultLanguage();
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			execute(e);
+		}
+		
+		abstract void process( Procedure procedure ) throws Throwable;
+		
+		public void execute( ActionEvent e ) {
+			try {
+				Environment.setCurrent(env);
+				Language.setCurrentLanguage(lang);
+				process( this.procedure );
+			} catch (Throwable e1) {
+				logError( "" , e1 );
+			}
+		}
+	}
+
 	static abstract class ComponentFactory {
 		abstract Component create( ActionListener l, String caption );
 	}
+
 	static class JRadioButtonFactory extends ComponentFactory {
 		ButtonGroup group = new ButtonGroup();
 		@Override
@@ -91,7 +125,6 @@ public abstract class SchemeNewFactory {
 		if ( 1 < args.size()  ) {
 			Environment env = Environment.getCurrent();
 			Language lang = Language.getDefaultLanguage();
-			System.out.println( lang );
 			Procedure procedure;
 			{
 				int last = args.size() - 1;
@@ -160,7 +193,62 @@ public abstract class SchemeNewFactory {
 				}
 			}
 		});
-		
+
+		register( "timer", new SchemeNewFactory() {
+			final class ActionListenerImplementation extends SchemeActionListener {
+				Timer timer; 
+				ActionListenerImplementation(Procedure procedure ) {
+					super( procedure );
+				}
+				@Override
+				void process(Procedure procedure) throws Throwable {
+					Object result = procedure.applyN( new Object[] { } );					
+					if ( Boolean.FALSE.equals( result ) ) {
+						timer.stop();
+					}
+				}
+			}
+
+			@Override
+			Object create( List<Object> args ) {
+				if ( 2 <= args.size()  ) {
+					int interval = SchemeUtils.toInteger(args.get(0));
+					Procedure procedure = (Procedure)args.get(1);
+
+					ActionListenerImplementation listener = new ActionListenerImplementation(procedure );
+					Timer timer = new Timer( interval,  listener );
+					listener.timer = timer;
+					timer.start();
+					return new ProcedureN() {
+						public Object applyN(Object[] args) throws Throwable {
+							timer.stop();
+							return EmptyList.emptyList;
+						};
+					};
+				} else {
+					logInfo("WARNING : new 'timer was called but no argument was passed.");
+					return EmptyList.emptyList;
+				}
+
+			}
+		});
+
+		register( "progress", new SchemeNewFactory() {
+			@Override
+			Object create(List<Object> args) {
+				return new JProgressBar() {
+//					@Override
+//					public Dimension getPreferredSize() {
+//						return new Dimension(
+//								this.getParent().getSize().width,
+//								super.getPreferredSize().height
+//								);
+//						
+//					}
+				};
+			}
+		});
+
 		register( "slider", new SchemeNewFactory() {
 			@Override
 			Object create( List<Object> args ) {
