@@ -16,6 +16,7 @@ import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import javax.swing.JRadioButton;
 import javax.swing.JSlider;
@@ -163,6 +164,17 @@ public abstract class SchemeNewFactory {
 	}
 	
 	static {
+		register( "label", new SchemeNewFactory() {
+			@Override
+			Object create(List<Object> args ) {
+				if ( 0<args.size()  ) {
+					return new JLabel( SchemeUtils.toString( args.get(0) ) );
+				} else {
+					return EmptyList.emptyList;
+				}
+			}
+		});
+
 		register( "button", new SchemeNewFactory() {
 			@Override
 			Object create( List<Object> args ) {

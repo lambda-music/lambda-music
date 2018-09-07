@@ -315,14 +315,6 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 
 	}
 
-	protected double magnifyCursorPosition( double prevBeatsPerMinute, double beatsPerMinute ) {
-		/*
-		 *  ( 1.0d / beatsPerMinute ) / ( 1.0d / prevBeatsPerMinute ) 
-		 *     => prevBeatsPerMinute / beatsPerMinute
-		 */
-		return prevBeatsPerMinute / beatsPerMinute;
-	}
-
 	protected  void reprepare( Metro metro, JackClient client, JackPosition position, 
 			double prevBeatsPerMinute, double beatsPerMinute ) throws JackException 
 	{
@@ -348,13 +340,13 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 			
 			double ratio = (double)lengthInFrame / (double)prevLengthInFrame; 
 			if ( 0< ratio && 1.0d!= ratio ) {
-				System.out.println( "ratio: " + ratio );
-				System.out.println( "prev cursor: " + cursor );
+				// System.out.println( "ratio: " + ratio );
+				// System.out.println( "prev cursor: " + cursor );
 				this.cursor = (int) Math.round( ((double)this.cursor)            * ratio );
-				System.out.println( "after cursor: " + cursor );
-				System.out.println( "lengthInFrame    : " + lengthInFrame );
-				System.out.println( "prevLengthInFrame: " + prevLengthInFrame );
-				//			this.lastLengthInFrame = (int) Math.round( ((double)this.lastLengthInFrame) * ratio );
+				// System.out.println( "after cursor: " + cursor );
+				// System.out.println( "lengthInFrame    : " + lengthInFrame );
+				// System.out.println( "prevLengthInFrame: " + prevLengthInFrame );
+				// this.lastLengthInFrame = (int) Math.round( ((double)this.lastLengthInFrame) * ratio );
 			}
 		}
 

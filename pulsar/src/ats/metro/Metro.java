@@ -158,10 +158,10 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	 * (Sat, 18 Aug 2018 19:03:18 +0900)
 	 */
 	public void addLogic( String name, MetroLogic logic ) {
-		addLogic( name, null, logic, SyncType.PARALLEL, null, 0.0d );
+		putLogic( name, null, logic, SyncType.PARALLEL, null, 0.0d );
 	}
 
-	public void addLogic( String name, Collection<String> tags, MetroLogic logic, SyncType syncType, Object syncSequenceObj, double syncOffset ) {
+	public void putLogic( String name, Collection<String> tags, MetroLogic logic, SyncType syncType, Object syncSequenceObj, double syncOffset ) {
 		MetroNoteEventBufferSequence syncSequence;
 		if ( syncSequenceObj == null ) {
 			syncSequence = null;
@@ -554,7 +554,20 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		if ( DEBUG ) 
 			logInfo( "****** CREATED a new sequence is created " + sequence.id );
 		synchronized ( this.lock ) {
+			MetroNoteEventBufferSequence foundSequence = null;
+			{
+				for ( MetroNoteEventBufferSequence sequence0 : this.sequences  ) {
+					if ( sequence0.name.equals( sequence.name ) ) {
+						foundSequence = sequence0;
+						break;
+					}
+				}
+			}
+
 			this.registeredSequences.add( sequence );
+			if ( foundSequence != null) {
+				this.unregisteredSeqences.add( foundSequence );
+			}
 			this.notifyCheckBuffer();
 		}
 	}

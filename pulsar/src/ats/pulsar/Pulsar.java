@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Dictionary;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -37,6 +39,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
@@ -811,7 +814,7 @@ public final class Pulsar extends Metro {
     		}
     	});
 
-    	defineVar( scheme, "add-seq!" , new ProcedureN() {
+    	defineVar( scheme, "put-seq!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				if ( 2 <= args.length  ) {
@@ -839,7 +842,7 @@ public final class Pulsar extends Metro {
 					SchemePulsarLogic logic = new SchemePulsarLogic( scheme,
 							new InvokableSchemeProcedure( scheme, Environment.getCurrent(), procedure ) );
 					
-					addLogic( name, tags, logic, syncType, syncSequenceName, offset );
+					putLogic( name, tags, logic, syncType, syncSequenceName, offset );
 					 
 					return EmptyList.emptyList;
 				} else {
@@ -1336,12 +1339,26 @@ public final class Pulsar extends Metro {
 		
 		JSlider sl_tempoSlider = new JSlider();
 		panel.add( sl_tempoSlider, BorderLayout.SOUTH );
-		sl_tempoSlider.setMinimum(10);
-		sl_tempoSlider.setMaximum(550);
+		sl_tempoSlider.setMinimum(1);
+		sl_tempoSlider.setMaximum(1000);
 		sl_tempoSlider.setPaintTicks(true);
 		sl_tempoSlider.setPaintTrack( true);
-		sl_tempoSlider.setMajorTickSpacing(50);
-		sl_tempoSlider.setMinorTickSpacing(10);
+		sl_tempoSlider.setMajorTickSpacing(100);
+		sl_tempoSlider.setMinorTickSpacing(25);
+		Dictionary<Integer,JLabel> labelTables = new Hashtable<>();
+		labelTables.put(10, new JLabel( "10" ));
+		labelTables.put(50, new JLabel( "50" ));
+		labelTables.put(100, new JLabel( "100" ));
+		labelTables.put(150, new JLabel( "150" ));
+		labelTables.put(200, new JLabel( "200" ));
+		labelTables.put(300, new JLabel( "300" ));
+		labelTables.put(400, new JLabel( "400" ));
+		labelTables.put(500, new JLabel( "500" ));
+		labelTables.put(750, new JLabel( "750" ));
+		labelTables.put(1000, new JLabel( "1000" ));
+		
+		sl_tempoSlider.setLabelTable( labelTables );
+		sl_tempoSlider.setPaintLabels(true);
 		sl_tempoSlider.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
