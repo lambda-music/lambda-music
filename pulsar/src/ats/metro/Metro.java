@@ -48,6 +48,11 @@ import ats.metro.MetroNoteEventBufferSequence.SyncType;
 
 public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallback, JackTimebaseCallback, Runnable {
 	public final Object lock = new Object();
+	
+	/**
+	 * The every routines which access to the `sequences` field must synchronize
+	 * to the object which can be retrieved by this getMetroLock() method. 
+	 */
 	@Override
 	public final Object getMetroLock() {
 		return lock;
@@ -74,10 +79,10 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 //	private BlockingQueue<String> debugQueue = new LinkedBlockingQueue<String>();
 //    private StringBuilder sb = new StringBuilder();
     
-    protected List<MetroNoteEventBufferSequence> sequences = new ArrayList<MetroNoteEventBufferSequence>();
-    protected List<MetroNoteEventBufferSequence> registeredSequences = new ArrayList<MetroNoteEventBufferSequence>();
-    protected List<MetroNoteEventBufferSequence> unregisteredSeqences = new ArrayList<MetroNoteEventBufferSequence>();
-	private List<Runnable>  messageQueue = new ArrayList<Runnable>();
+    protected final List<MetroNoteEventBufferSequence> sequences = new ArrayList<MetroNoteEventBufferSequence>();
+    protected final List<MetroNoteEventBufferSequence> registeredSequences = new ArrayList<MetroNoteEventBufferSequence>();
+    protected final List<MetroNoteEventBufferSequence> unregisteredSeqences = new ArrayList<MetroNoteEventBufferSequence>();
+	private final List<Runnable>  messageQueue = new ArrayList<Runnable>();
 	protected MetroLogicList logicList = new MetroLogicList(sequences);
 	
     private ArrayList<MetroMidiEvent> inputMidiEventList = new ArrayList<MetroMidiEvent>();
@@ -125,7 +130,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	public static Metro startClient( String clientName, MetroLogic logic ) throws JackException {
 		try {
             Metro metro = new Metro();
-            metro.addLogic( "main", logic );
+            metro.putLogic( "main", logic );
             metro.open( clientName );
             return metro;
         } catch (JackException ex) {
@@ -157,7 +162,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	 * wrapped by MetroNoteEventBufferSequence and stored as `this.sequences`.   
 	 * (Sat, 18 Aug 2018 19:03:18 +0900)
 	 */
-	public void addLogic( String name, MetroLogic logic ) {
+	public void putLogic( String name, MetroLogic logic ) {
 		putLogic( name, null, logic, SyncType.PARALLEL, null, 0.0d );
 	}
 

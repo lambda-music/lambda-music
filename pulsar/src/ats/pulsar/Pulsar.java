@@ -1,6 +1,7 @@
 package ats.pulsar;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
@@ -166,6 +167,7 @@ public final class Pulsar extends Metro {
 
 	static void logError( String msg, Throwable e ) {
         Logger.getLogger(Pulsar.class.getName()).log(Level.SEVERE, msg, e);
+//		System.err.println( msg );
 	}
 	static void logInfo( String msg ) {
 //        Logger.getLogger(Pulsar.class.getName()).log(Level.INFO, msg);
@@ -184,7 +186,7 @@ public final class Pulsar extends Metro {
 	
 	
 
-	static final int BORDER = 10;
+	static final int BORDER_SIZE = 10;
 	
 	/**
 	 * This field specifies the procedure to reset all of the states inside the
@@ -887,7 +889,7 @@ public final class Pulsar extends Metro {
     	defineVar( scheme, "list-seq" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
-				synchronized ( getMetroLock() ) {
+				synchronized ( lock ) {
 					ArrayList<LList> list = new ArrayList<>( sequences.size() );
 					for ( MetroNoteEventBufferSequence sequence :  sequences ) {
 						list.add( ((SchemePulsarLogic)sequence.getLogic()).asociationList );
@@ -1002,42 +1004,115 @@ public final class Pulsar extends Metro {
 				}
     		}
     	});
+
+    	defineVar( scheme, "gui-remove" , new ProcedureN() {
+    		@Override
+    		public Object applyN(Object[] args) throws Throwable {
+    			if ( 1 < args.length ) {
+    				JComponent parent;
+    				if ( args[0] instanceof EmptyList ) {
+    					parent= null;
+    				} else {
+        				parent = (JComponent)args[0];
+    				}
+    				String name = SchemeUtils.toString( args[1] );
+    				Component c  = guiRemove(parent, name);
+    				return c == null ? EmptyList.emptyList : c;
+    			} else {
+					throw new RuntimeException( 
+							"Invalid argument error\n"+
+							"usage : (gui-remove [parent] [name])" );
+    			}
+    		}
+    	});
+
+    	defineVar( scheme, "gui-get" , new ProcedureN() {
+    		@Override
+    		public Object applyN(Object[] args) throws Throwable {
+    			if ( 1 < args.length ) {
+    				JComponent parent;
+    				if ( args[0] instanceof EmptyList ) {
+    					parent= null;
+    				} else {
+        				parent = (JComponent)args[0];
+    				}
+    				String name = SchemeUtils.toString( args[1] );
+    				Component c  = guiGet(parent, name);
+    				return c == null ? EmptyList.emptyList : c;
+    			} else {
+					throw new RuntimeException( 
+							"Invalid argument error\n"+
+							"usage : (gui-get [parent] [name])" );
+    			}
+    		}
+    	});
+    	
     	defineVar( scheme, "gui-add!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
+				JComponent parent;
+				if ( args[0] instanceof JComponent )
+					parent = (JComponent) args[0];
+				else if ( args[0] instanceof EmptyList ) { 
+					parent = null;
+				} else {
+					throw new RuntimeException( "An invalid parent object was specified. " );
+				}
+				
 				String mode = null;
-				for ( int i=0; i<args.length; i++ ) {
-					if ( args[i] instanceof Symbol ) {
-						String symbolName = SchemeUtils.symbolToString( args[i] );
+				for ( int i=1; i<args.length; i++ ) {
+					Object curr = args[i];
+					if ( curr instanceof Symbol ) {
+						String symbolName = SchemeUtils.symbolToString( curr );
 						switch ( symbolName ) {
 							case "newline" : 
-								guiNewline();
+								guiNewline( parent );
 								break;
 							case "list":
 								mode = "list";
 								break;
+							case "name":
+								mode = "name";
+								break;
+							case "label":
+								mode = "label";
+								break;
 							default :
 								throw new RuntimeException( "gui-add! unknown type \"" + symbolName + "\"" );
 						}
+						// mode = null;
+					} else if ( curr instanceof IString ) {
+						if ( "label".equals( mode ) ) {
+							guiAdd( parent, (JComponent) SchemeNewFactory.process( 
+									Symbol.makeUninterned("label"), 
+									SchemeUtils.anyToString( curr ) ) );
+							
+							mode = null;
+						} else if ( "name".equals( mode ) ) {
+							guiName( parent, SchemeUtils.toString( curr ) ); 
+							mode = null;
+						} else {
+							throw new RuntimeException( "An invalid state was detected " + mode );
+						}
 					} else {
-						if ( args[i] instanceof Pair  ) {
-							Pair p = (Pair) args[i];
+						if ( curr instanceof Pair  ) {
+							Pair p = (Pair) curr;
 							if ( "list".equals( mode ) ) {
 								for ( Object e : p ) {
-									guiAdd( (JComponent) e );
+									guiAdd( parent, (JComponent) e );
 								}
 							} else {
 								Object car = p.getCar();
 								Object cdr = p.getCdr();
 								
 								if ( cdr instanceof Pair ) {
-									guiAdd( (JComponent)car, LayoutUtils.map2constraint( cdr ) );
+									guiAdd( parent, (JComponent)car, LayoutUtils.map2constraint( cdr ) );
 								} else {
-									guiAdd( (JComponent)car, cdr );
+									guiAdd( parent, (JComponent)car, cdr );
 								}
 							}
 						} else {
-							guiAdd( (JComponent)args[i] );
+							guiAdd( parent, (JComponent)curr );
 						}
 						mode = null;
 					}
@@ -1049,7 +1124,11 @@ public final class Pulsar extends Metro {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				logInfo("newline-gui");
-				guiNewline();
+				if ( args.length == 0 )
+					guiNewline(null);
+				else
+					guiNewline((JComponent) args[0]);
+				
     			return EmptyList.emptyList;
     		}
     	});
@@ -1142,7 +1221,7 @@ public final class Pulsar extends Metro {
 	JPanel staticPane = new JPanel();
 
 	LayoutManager userLayout = null; 
-	JPanel userPane = new JPanel( new FlawLayout() );
+	JPanel userPane = new JNamedPanel( new FlawLayout() );
 
     transient boolean isComboBoxUpdating = false;
 	JComboBox<String> cb_relatedFiles;
@@ -1169,14 +1248,50 @@ public final class Pulsar extends Metro {
 		userPane.repaint();
         // frame.pack();
 	}
-	public void guiAdd( JComponent c, Object constraint ) {
-		userPane.add( c, constraint );
+	public Component guiRemove( JComponent parent, String name ) {
+		if ( parent == null )
+			parent = userPane;
+
+		Component comp = guiGet( parent, name );
+		if ( comp != null ) {
+			parent.remove( comp );
+		}
+		return comp;
 	}
-	public void guiAdd( JComponent c  ) {
-		userPane.add( c  );
+	public Component guiGet( JComponent parent, String name ) {
+		if ( parent == null )
+			parent = userPane;
+		
+		if ( parent instanceof JNamedPanel ) {
+			Component c = ((JNamedPanel)parent).getComponentByName( name );
+			return c == null ? null: c;
+		} else {
+			throw new RuntimeException( "The passed object is not a named container object." );
+		}
 	}
-	public void guiNewline() {
-		userPane.add( FlawLayout.createNewLine() );
+
+	public void guiAdd( JComponent parent, JComponent c, Object constraint ) {
+		if ( parent == null )
+			parent = userPane;
+		parent.add( c, constraint );
+	}
+	public void guiAdd( JComponent parent, JComponent c  ) {
+		if ( parent == null )
+			parent = userPane;
+		parent.add( c  );
+	}
+	public void guiName( JComponent parent, String name ) {
+		if ( parent == null )
+			parent = userPane;
+		
+		if ( parent instanceof JNamedPanel ) {
+			((JNamedPanel)parent).setNextComponentName( name );
+		}
+	}
+	public void guiNewline( JComponent parent ) {
+		if ( parent == null )
+			parent = userPane;
+		parent.add( FlawLayout.createNewLine() );
 	}
 	
 	public void updateFilename(File file) {
@@ -1225,14 +1340,14 @@ public final class Pulsar extends Metro {
         rootPane = new JPanel( new BorderLayout() );
 		rootPane.add( staticPane, BorderLayout.PAGE_START );
 		rootPane.add( userPane, BorderLayout.CENTER );
-		staticPane.setLayout( new BorderLayout(BORDER,BORDER) );
+		staticPane.setLayout( new BorderLayout(BORDER_SIZE,BORDER_SIZE) );
         frame.getContentPane().add ( rootPane );
 
 		// Tempo Button
         staticPane.add( createFilePanel(), BorderLayout.PAGE_START );
-		staticPane.add( createStartStopButton(), BorderLayout.LINE_START );
+		staticPane.add( createStartStopButton(), BorderLayout.LINE_END );
 		staticPane.add( createTempoTapButton(), BorderLayout.CENTER );
-		staticPane.add( createResetButton(), BorderLayout.LINE_END );
+		staticPane.add( createResetButton(), BorderLayout.LINE_START );
 		staticPane.add( createCueButton(), BorderLayout.PAGE_END );
 
 		 staticPane.setBorder( BorderFactory.createEmptyBorder(20,20,20,20) );
@@ -1244,146 +1359,188 @@ public final class Pulsar extends Metro {
 		frame.setSize( 600, 500 );
 		frame.setVisible(true);
     }
+    /*
+     * === Meaning of these variable name for panels ===
+     * ex) panel_p0_1_2
+     * These numbers denote its position.
+     *    ___________________
+     *    |                 |
+     *    |        1        |
+     *    |_________________|
+     *    |   |         |   |
+     *    | 4 |    0    | 2 |
+     *    |___|_________|___|
+     *    |                 |
+     *    |        3        |
+     *    |_________________|
+     * 
+     * The variable name "panel_p0_1_2" denotes that 
+     * it is the panel on the position No.2 inside the
+     * panel on the position No.1 inside the panel on 
+     * the position No.0 .
+     * 
+     */
 
-	private JPanel createFilePanel() {
-		JPanel panel = new JPanel();
-		panel.setLayout( new BorderLayout(BORDER,BORDER) );
-		JButton execButton = new JButton( "EXEC" ) {
-			@Override
-			public Dimension getPreferredSize() {
-				Dimension s = super.getPreferredSize();
-				s.width = 75;
-				return s;
-			}
-		};
-		this.cb_relatedFiles = new JComboBox<String>() {;
-		};
-		cb_relatedFiles.setEditable(false);
+    private JPanel createFilePanel() {
+    	JPanel panel = new JPanel();
+    	panel.setLayout( new BorderLayout( BORDER_SIZE, BORDER_SIZE ) );
 
-		execButton.addActionListener( new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				int i = cb_relatedFiles.getSelectedIndex();
-				if ( 0<=i ) {
-					File file = relatedFiles.get(i);
-					setMainFile( relatedFileParent, file );
-				}
-			}
-		});
-		
-		panel.add( execButton , BorderLayout.LINE_START );
+    	JPanel panel11 = new JPanel();
+    	panel11.setLayout( new BorderLayout( BORDER_SIZE, BORDER_SIZE ) );
 
-		cb_relatedFiles.addPopupMenuListener( new PopupMenuListener() {
-			@Override
-			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-				logInfo("popupMenuWillBecomeVisible()");
-				// readHistoryFile(comboBox);
-			}
-			
-			@Override
-			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-				logInfo( "popupMenuWillBecomeInvisible()");
-			}
-			
-			@Override
-			public void popupMenuCanceled(PopupMenuEvent e) {
-				logInfo(".popupMenuCanceled()");
-			}
-		});
-		
-		cb_relatedFiles.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(ItemEvent e) {
-				logInfo("Pulsar.createFilePanel().new ItemListener() {...}.itemStateChanged()");
-				if ( e.getStateChange() == ItemEvent.SELECTED ) {
-					// Do nothing.
-				}
-			}
-		});
-		
-		panel.add( cb_relatedFiles, BorderLayout.CENTER );
-		
-		JPanel mainFilePanel = new JPanel();
-		panel.add( mainFilePanel, BorderLayout.PAGE_START );
-		mainFilePanel.setLayout( new BorderLayout( BORDER , BORDER ) );
-		JButton openMainFileButton = new JButton( "OPEN" );
-		mainFilePanel.add( openMainFileButton, BorderLayout.LINE_START );
-		openMainFileButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				JFileChooser fc = new JFileChooser();
-				fc.setFileFilter( new FileFilter() {
-					@Override
-					public String getDescription() {
-						return "*.scm (scheme)";
-					}
-					@Override
-					public boolean accept(File f) {
-						return ! f.isFile() || f.getName().endsWith( "scm" );
-					}
-				});
-				int result = fc.showOpenDialog( frame );
-				if ( result == JFileChooser.APPROVE_OPTION ) {
-					close();
-					setMainFile( null, fc.getSelectedFile() );
-				}
-			}
-		});
+    	JPanel panel22 = new JPanel();
+    	panel22.setLayout( new BorderLayout( BORDER_SIZE, BORDER_SIZE ) );
+    	
+    	panel11.add( panel22 );
+    	panel.add( panel11 );
+    	{
+    		JPanel panel_p0 = new JPanel();
+    		panel22.add( panel_p0, BorderLayout.CENTER );
+    		panel_p0.setLayout( new BorderLayout( BORDER_SIZE, BORDER_SIZE ) );
+    		JButton execButton = new JButton( "EXEC" ) {
+    			@Override
+    			public Dimension getPreferredSize() {
+    				Dimension s = super.getPreferredSize();
+    				s.width = 75;
+    				return s;
+    			}
+    		};
+    		this.cb_relatedFiles = new JComboBox<String>() {;
+    		};
+    		cb_relatedFiles.setEditable(false);
 
-		tf_currentFile = new JTextField();
-		mainFilePanel.add( tf_currentFile, BorderLayout.CENTER );
-		tf_currentFile.setEditable(false);
-		
-		
-		//
-		
-		JSlider sl_tempoSlider = new JSlider();
-		panel.add( sl_tempoSlider, BorderLayout.SOUTH );
-		sl_tempoSlider.setMinimum(1);
-		sl_tempoSlider.setMaximum(1000);
-		sl_tempoSlider.setPaintTicks(true);
-		sl_tempoSlider.setPaintTrack( true);
-		sl_tempoSlider.setMajorTickSpacing(100);
-		sl_tempoSlider.setMinorTickSpacing(25);
-		Dictionary<Integer,JLabel> labelTables = new Hashtable<>();
-		labelTables.put(10, new JLabel( "10" ));
-		labelTables.put(50, new JLabel( "50" ));
-		labelTables.put(100, new JLabel( "100" ));
-		labelTables.put(150, new JLabel( "150" ));
-		labelTables.put(200, new JLabel( "200" ));
-		labelTables.put(300, new JLabel( "300" ));
-		labelTables.put(400, new JLabel( "400" ));
-		labelTables.put(500, new JLabel( "500" ));
-		labelTables.put(750, new JLabel( "750" ));
-		labelTables.put(1000, new JLabel( "1000" ));
-		
-		sl_tempoSlider.setLabelTable( labelTables );
-		sl_tempoSlider.setPaintLabels(true);
-		sl_tempoSlider.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent e) {
-				try {
-//					logInfo( "TempoSlider : " + ((JSlider)e.getSource()).getValue() );
-					tempoTapper.setBeatsPerMinute( ((JSlider)e.getSource()).getValue() );
-				} catch (JackException e1) {
-					logError("", e1);
-				}
-			}
-		});
-		
-		tempoTapper.registerNotifier(new TempoTapperTempoNotifier() {
-			@Override
-			public void notifyTempo(double beatPerMinute) {
-				sl_tempoSlider.setValue( (int)beatPerMinute );
-			}
-		});
-		
+    		execButton.addActionListener( new ActionListener() {
+    			@Override
+    			public void actionPerformed(ActionEvent e) {
+    				int i = cb_relatedFiles.getSelectedIndex();
+    				if ( 0<=i ) {
+    					File file = relatedFiles.get(i);
+    					setMainFile( relatedFileParent, file );
+    				}
+    			}
+    		});
 
-		return panel;
+    		panel_p0.add( execButton , BorderLayout.LINE_START );
+
+    		cb_relatedFiles.addPopupMenuListener( new PopupMenuListener() {
+    			@Override
+    			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+    				logInfo("popupMenuWillBecomeVisible()");
+    				// readHistoryFile(comboBox);
+    			}
+
+    			@Override
+    			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+    				logInfo( "popupMenuWillBecomeInvisible()");
+    			}
+
+    			@Override
+    			public void popupMenuCanceled(PopupMenuEvent e) {
+    				logInfo(".popupMenuCanceled()");
+    			}
+    		});
+
+    		cb_relatedFiles.addItemListener(new ItemListener() {
+    			@Override
+    			public void itemStateChanged(ItemEvent e) {
+    				logInfo("Pulsar.createFilePanel().new ItemListener() {...}.itemStateChanged()");
+    				if ( e.getStateChange() == ItemEvent.SELECTED ) {
+    					// Do nothing.
+    				}
+    			}
+    		});
+
+    		panel_p0.add( cb_relatedFiles, BorderLayout.CENTER );
+    		
+    		/////////////////////////////////////////////
+    		
+        	JPanel panel_p0_0 = new JPanel();
+        	{
+        		panel_p0.add( panel_p0_0, BorderLayout.PAGE_START );
+        		panel_p0_0.setLayout( new BorderLayout( BORDER_SIZE , BORDER_SIZE ) );
+        		JButton openMainFileButton = new JButton( "OPEN" );
+        		panel_p0_0.add( openMainFileButton, BorderLayout.LINE_START );
+        		openMainFileButton.addActionListener(new ActionListener() {
+        			@Override
+        			public void actionPerformed(ActionEvent e) {
+        				JFileChooser fc = new JFileChooser();
+        				fc.setFileFilter( new FileFilter() {
+        					@Override
+        					public String getDescription() {
+        						return "*.scm (scheme)";
+        					}
+        					@Override
+        					public boolean accept(File f) {
+        						return ! f.isFile() || f.getName().endsWith( "scm" );
+        					}
+        				});
+        				int result = fc.showOpenDialog( frame );
+        				if ( result == JFileChooser.APPROVE_OPTION ) {
+        					close();
+        					setMainFile( null, fc.getSelectedFile() );
+        				}
+        			}
+        		});
+
+        		tf_currentFile = new JTextField();
+        		panel_p0_0.add( tf_currentFile, BorderLayout.CENTER );
+        		tf_currentFile.setEditable(false);
+        		
+        		panel_p0.add( new JButton("RESET" ) {
+        			@Override
+        			public Dimension getPreferredSize() {
+        				return new Dimension( 300,100 );
+        			}
+        		} , BorderLayout.LINE_END );
+        		
+        		JSlider sl_tempoSlider = new JSlider();
+        		panel_p0.add( sl_tempoSlider, BorderLayout.SOUTH );
+        		sl_tempoSlider.setMinimum(1);
+        		sl_tempoSlider.setMaximum(1000);
+        		sl_tempoSlider.setPaintTicks(true);
+        		sl_tempoSlider.setPaintTrack( true);
+        		sl_tempoSlider.setMajorTickSpacing(100);
+        		sl_tempoSlider.setMinorTickSpacing(25);
+        		Dictionary<Integer,JLabel> labelTables = new Hashtable<>();
+        		labelTables.put(10, new JLabel( "10" ));
+        		labelTables.put(50, new JLabel( "50" ));
+        		labelTables.put(100, new JLabel( "100" ));
+        		labelTables.put(150, new JLabel( "150" ));
+        		labelTables.put(200, new JLabel( "200" ));
+        		labelTables.put(300, new JLabel( "300" ));
+        		labelTables.put(400, new JLabel( "400" ));
+        		labelTables.put(500, new JLabel( "500" ));
+        		labelTables.put(750, new JLabel( "750" ));
+        		labelTables.put(1000, new JLabel( "1000" ));
+        		
+        		sl_tempoSlider.setLabelTable( labelTables );
+        		sl_tempoSlider.setPaintLabels(true);
+        		sl_tempoSlider.addChangeListener(new ChangeListener() {
+        			@Override
+        			public void stateChanged(ChangeEvent e) {
+        				try {
+//    					logInfo( "TempoSlider : " + ((JSlider)e.getSource()).getValue() );
+        					tempoTapper.setBeatsPerMinute( ((JSlider)e.getSource()).getValue() );
+        				} catch (JackException e1) {
+        					logError("", e1);
+        				}
+        			}
+        		});
+        		
+        		tempoTapper.registerNotifier(new TempoTapperTempoNotifier() {
+        			@Override
+        			public void notifyTempo(double beatPerMinute) {
+        				sl_tempoSlider.setValue( (int)beatPerMinute );
+        			}
+        		});
+        	}
+    	}
+
+		return panel22;
 	}
     
 	private JButton createStartStopButton() {
-		JButton b = new JButton( "<</II" ) {
+		JButton b = new JButton( "■|▶" ) {
 			@Override
 			public Dimension getPreferredSize() {
 				Dimension s = super.getPreferredSize();
@@ -1400,7 +1557,14 @@ public final class Pulsar extends Metro {
 		return b;
 	}
 	private JButton createResetButton() {
-		JButton b = new JButton( "RESET" );
+		JButton b = new JButton( "||◀" ) {
+			@Override
+			public Dimension getPreferredSize() {
+				Dimension s = super.getPreferredSize();
+				s.width =  75;
+				return s;
+			}
+		};
 		b.addActionListener( new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
