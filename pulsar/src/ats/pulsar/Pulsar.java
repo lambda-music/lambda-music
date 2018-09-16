@@ -1381,211 +1381,231 @@ public final class Pulsar extends Metro {
      * 
      */
 
-    private JPanel createFilePanel() {
-    	JPanel panel = new JPanel();
-    	panel.setLayout( new BorderLayout( BORDER_SIZE, BORDER_SIZE ) );
-
-    	JPanel panel11 = new JPanel();
-    	panel11.setLayout( new BorderLayout( BORDER_SIZE, BORDER_SIZE ) );
-
-    	JPanel panel22 = new JPanel();
-    	panel22.setLayout( new BorderLayout( BORDER_SIZE, BORDER_SIZE ) );
-    	
-    	panel11.add( panel22 );
-    	panel.add( panel11 );
-    	{
-    		JPanel panel_p0 = new JPanel();
-    		panel22.add( panel_p0, BorderLayout.CENTER );
-    		panel_p0.setLayout( new BorderLayout( BORDER_SIZE, BORDER_SIZE ) );
-    		JButton execButton = new JButton( "EXEC" ) {
-    			@Override
-    			public Dimension getPreferredSize() {
-    				Dimension s = super.getPreferredSize();
-    				s.width = 75;
-    				return s;
-    			}
-    		};
-    		this.cb_relatedFiles = new JComboBox<String>() {;
-    		};
-    		cb_relatedFiles.setEditable(false);
-
-    		execButton.addActionListener( new ActionListener() {
-    			@Override
-    			public void actionPerformed(ActionEvent e) {
-    				int i = cb_relatedFiles.getSelectedIndex();
-    				if ( 0<=i ) {
-    					File file = relatedFiles.get(i);
-    					setMainFile( relatedFileParent, file );
-    				}
-    			}
-    		});
-
-    		panel_p0.add( execButton , BorderLayout.LINE_START );
-
-    		cb_relatedFiles.addPopupMenuListener( new PopupMenuListener() {
-    			@Override
-    			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-    				logInfo("popupMenuWillBecomeVisible()");
-    				// readHistoryFile(comboBox);
-    			}
-
-    			@Override
-    			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-    				logInfo( "popupMenuWillBecomeInvisible()");
-    			}
-
-    			@Override
-    			public void popupMenuCanceled(PopupMenuEvent e) {
-    				logInfo(".popupMenuCanceled()");
-    			}
-    		});
-
-    		cb_relatedFiles.addItemListener(new ItemListener() {
-    			@Override
-    			public void itemStateChanged(ItemEvent e) {
-    				logInfo("Pulsar.createFilePanel().new ItemListener() {...}.itemStateChanged()");
-    				if ( e.getStateChange() == ItemEvent.SELECTED ) {
-    					// Do nothing.
-    				}
-    			}
-    		});
-
-    		panel_p0.add( cb_relatedFiles, BorderLayout.CENTER );
-    		
-    		/////////////////////////////////////////////
-    		
-        	JPanel panel_p0_0 = new JPanel();
-        	{
-        		panel_p0.add( panel_p0_0, BorderLayout.PAGE_START );
-        		panel_p0_0.setLayout( new BorderLayout( BORDER_SIZE , BORDER_SIZE ) );
-        		JButton openMainFileButton = new JButton( "OPEN" );
-        		panel_p0_0.add( openMainFileButton, BorderLayout.LINE_START );
-        		openMainFileButton.addActionListener(new ActionListener() {
-        			@Override
-        			public void actionPerformed(ActionEvent e) {
-        				JFileChooser fc = new JFileChooser();
-        				fc.setFileFilter( new FileFilter() {
-        					@Override
-        					public String getDescription() {
-        						return "*.scm (scheme)";
-        					}
-        					@Override
-        					public boolean accept(File f) {
-        						return ! f.isFile() || f.getName().endsWith( "scm" );
-        					}
-        				});
-        				int result = fc.showOpenDialog( frame );
-        				if ( result == JFileChooser.APPROVE_OPTION ) {
-        					close();
-        					setMainFile( null, fc.getSelectedFile() );
-        				}
-        			}
-        		});
-
-        		tf_currentFile = new JTextField();
-        		panel_p0_0.add( tf_currentFile, BorderLayout.CENTER );
-        		tf_currentFile.setEditable(false);
-        		
-        		panel_p0.add( new JButton("RESET" ) {
-        			@Override
-        			public Dimension getPreferredSize() {
-        				return new Dimension( 300,100 );
-        			}
-        		} , BorderLayout.LINE_END );
-        		
-        		JSlider sl_tempoSlider = new JSlider();
-        		panel_p0.add( sl_tempoSlider, BorderLayout.SOUTH );
-        		sl_tempoSlider.setMinimum(1);
-        		sl_tempoSlider.setMaximum(1000);
-        		sl_tempoSlider.setPaintTicks(true);
-        		sl_tempoSlider.setPaintTrack( true);
-        		sl_tempoSlider.setMajorTickSpacing(100);
-        		sl_tempoSlider.setMinorTickSpacing(25);
-        		Dictionary<Integer,JLabel> labelTables = new Hashtable<>();
-        		labelTables.put(10, new JLabel( "10" ));
-        		labelTables.put(50, new JLabel( "50" ));
-        		labelTables.put(100, new JLabel( "100" ));
-        		labelTables.put(150, new JLabel( "150" ));
-        		labelTables.put(200, new JLabel( "200" ));
-        		labelTables.put(300, new JLabel( "300" ));
-        		labelTables.put(400, new JLabel( "400" ));
-        		labelTables.put(500, new JLabel( "500" ));
-        		labelTables.put(750, new JLabel( "750" ));
-        		labelTables.put(1000, new JLabel( "1000" ));
-        		
-        		sl_tempoSlider.setLabelTable( labelTables );
-        		sl_tempoSlider.setPaintLabels(true);
-        		sl_tempoSlider.addChangeListener(new ChangeListener() {
-        			@Override
-        			public void stateChanged(ChangeEvent e) {
-        				try {
-//    					logInfo( "TempoSlider : " + ((JSlider)e.getSource()).getValue() );
-        					tempoTapper.setBeatsPerMinute( ((JSlider)e.getSource()).getValue() );
-        				} catch (JackException e1) {
-        					logError("", e1);
-        				}
-        			}
-        		});
-        		
-        		tempoTapper.registerNotifier(new TempoTapperTempoNotifier() {
-        			@Override
-        			public void notifyTempo(double beatPerMinute) {
-        				sl_tempoSlider.setValue( (int)beatPerMinute );
-        			}
-        		});
-        	}
+    public static BorderLayout newLayout() {
+    	return new BorderLayout( BORDER_SIZE, BORDER_SIZE );
+    }
+    
+    
+    class JPusarFilePanel extends JPanel {
+		public JPusarFilePanel() {
+    		super( newLayout() );
     	}
+		JPanel panel_p0 = new JPanelExtension2();
+    	{
+    		add( panel_p0, BorderLayout.CENTER );
+    	}
+    	
+    	class JPanelExtension2 extends JPanel {
+    		public JPanelExtension2() {
+				super( new BorderLayout( BORDER_SIZE, BORDER_SIZE ) );
+			}
+			JButton execButton = new JButton( "EXEC" ) {
+				@Override
+				public Dimension getPreferredSize() {
+					Dimension s = super.getPreferredSize();
+					s.width = 75;
+					return s;
+				}
+			};
+			JComboBox<String> cb_relatedFiles = new JComboBox<String>() {
+			};
+			{
+				Pulsar.this.cb_relatedFiles = cb_relatedFiles;
 
-		return panel22;
-	}
-    
-	private JButton createStartStopButton() {
-		JButton b = new JButton( "■|▶" ) {
-			@Override
-			public Dimension getPreferredSize() {
-				Dimension s = super.getPreferredSize();
-				s.width =  75;
-				return s;
+				cb_relatedFiles.setEditable(false);
+
+				execButton.addActionListener( new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						int i = cb_relatedFiles.getSelectedIndex();
+						if ( 0<=i ) {
+							File file = relatedFiles.get(i);
+							setMainFile( relatedFileParent, file );
+						}
+					}
+				});
+
+				add( execButton , BorderLayout.LINE_START );
+
+				cb_relatedFiles.addPopupMenuListener( new PopupMenuListener() {
+					@Override
+					public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+						logInfo("popupMenuWillBecomeVisible()");
+						// readHistoryFile(comboBox);
+					}
+
+					@Override
+					public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+						logInfo( "popupMenuWillBecomeInvisible()");
+					}
+
+					@Override
+					public void popupMenuCanceled(PopupMenuEvent e) {
+						logInfo(".popupMenuCanceled()");
+					}
+				});
+
+				cb_relatedFiles.addItemListener(new ItemListener() {
+					@Override
+					public void itemStateChanged(ItemEvent e) {
+						logInfo("Pulsar.createFilePanel().new ItemListener() {...}.itemStateChanged()");
+						if ( e.getStateChange() == ItemEvent.SELECTED ) {
+							// Do nothing.
+						}
+					}
+				});
+
+				add( cb_relatedFiles, BorderLayout.CENTER );
 			}
-		};
-		b.addActionListener( new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				togglePlaying();
+		
+			JPanel panel_p0_0 = new JPanelExtension3();
+			{
+				add( panel_p0_0, BorderLayout.PAGE_START );
 			}
-		});
-		return b;
-	}
-	private JButton createResetButton() {
-		JButton b = new JButton( "||◀" ) {
-			@Override
-			public Dimension getPreferredSize() {
-				Dimension s = super.getPreferredSize();
-				s.width =  75;
-				return s;
+			class JPanelExtension3 extends JPanel {
+				JPanelExtension3(){
+					super( new BorderLayout( BORDER_SIZE , BORDER_SIZE ) );
+				}
+				JButton openMainFileButton = new JButton( "OPEN" );
+				{	
+					this.add( openMainFileButton, BorderLayout.LINE_START );
+					openMainFileButton.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							JFileChooser fc = new JFileChooser();
+							fc.setFileFilter( new FileFilter() {
+								@Override
+								public String getDescription() {
+									return "*.scm (scheme)";
+								}
+								@Override
+								public boolean accept(File f) {
+									return ! f.isFile() || f.getName().endsWith( "scm" );
+								}
+							});
+							int result = fc.showOpenDialog( frame );
+							if ( result == JFileChooser.APPROVE_OPTION ) {
+								close();
+								setMainFile( null, fc.getSelectedFile() );
+							}
+						}
+					});
+				}
+				JTextField currentFile = new JTextField();
+				{
+					tf_currentFile = currentFile;
+					this.add( currentFile, BorderLayout.CENTER );
+					currentFile.setEditable(false);
+				}
 			}
-		};
-		b.addActionListener( new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				reset();
+			
+			
+			JButton resetButton = new JButton("RESET" ) {
+				@Override
+				public Dimension getPreferredSize() {
+					return new Dimension( 300,100 );
+				}
+			};
+			{
+				add( resetButton , BorderLayout.LINE_END );
 			}
-		});
-		return b;
-	}
-    
-	private JButton createCueButton() {
-		JButton b = new JButton( "=== CUE ===" ) {
-			@Override
-			public Dimension getPreferredSize() {
-				return new Dimension( super.getPreferredSize().width, 100 );
+			
+			JSlider sl_tempoSlider = new JSlider();
+			{
+				add( sl_tempoSlider, BorderLayout.SOUTH );
+				sl_tempoSlider.setMinimum(1);
+				sl_tempoSlider.setMaximum(1000);
+				sl_tempoSlider.setPaintTicks(true);
+				sl_tempoSlider.setPaintTrack( true);
+				sl_tempoSlider.setMajorTickSpacing(100);
+				sl_tempoSlider.setMinorTickSpacing(25);
+				Dictionary<Integer,JLabel> labelTables = new Hashtable<>();
+				labelTables.put(10, new JLabel( "10" ));
+				labelTables.put(50, new JLabel( "50" ));
+				labelTables.put(100, new JLabel( "100" ));
+				labelTables.put(150, new JLabel( "150" ));
+				labelTables.put(200, new JLabel( "200" ));
+				labelTables.put(300, new JLabel( "300" ));
+				labelTables.put(400, new JLabel( "400" ));
+				labelTables.put(500, new JLabel( "500" ));
+				labelTables.put(750, new JLabel( "750" ));
+				labelTables.put(1000, new JLabel( "1000" ));
+
+				sl_tempoSlider.setLabelTable( labelTables );
+				sl_tempoSlider.setPaintLabels(true);
+				sl_tempoSlider.addChangeListener(new ChangeListener() {
+					@Override
+					public void stateChanged(ChangeEvent e) {
+						try {
+							//    					logInfo( "TempoSlider : " + ((JSlider)e.getSource()).getValue() );
+							tempoTapper.setBeatsPerMinute( ((JSlider)e.getSource()).getValue() );
+						} catch (JackException e1) {
+							logError("", e1);
+						}
+					}
+				});
+
+				tempoTapper.registerNotifier(new TempoTapperTempoNotifier() {
+					@Override
+					public void notifyTempo(double beatPerMinute) {
+						sl_tempoSlider.setValue( (int)beatPerMinute );
+					}
+				});
 			}
-		};
-		b.addActionListener( new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				cue();
-			}
+		}
+    }
+
+    private JPanel createFilePanel() {
+    	return new JPusarFilePanel();
+    }
+
+    private JButton createStartStopButton() {
+    	JButton b = new JButton( "■|▶" ) {
+    		@Override
+    		public Dimension getPreferredSize() {
+    			Dimension s = super.getPreferredSize();
+    			s.width =  75;
+    			return s;
+    		}
+    	};
+    	b.addActionListener( new ActionListener() {
+    		@Override
+    		public void actionPerformed(ActionEvent e) {
+    			togglePlaying();
+    		}
+    	});
+    	return b;
+    }
+    private JButton createResetButton() {
+    	JButton b = new JButton( "||◀" ) {
+    		@Override
+    		public Dimension getPreferredSize() {
+    			Dimension s = super.getPreferredSize();
+    			s.width =  75;
+    			return s;
+    		}
+    	};
+    	b.addActionListener( new ActionListener() {
+    		@Override
+    		public void actionPerformed(ActionEvent e) {
+    			reset();
+    		}
+    	});
+    	return b;
+    }
+
+    private JButton createCueButton() {
+    	JButton b = new JButton( "=== CUE ===" ) {
+    		@Override
+    		public Dimension getPreferredSize() {
+    			return new Dimension( super.getPreferredSize().width, 100 );
+    		}
+    	};
+    	b.addActionListener( new ActionListener() {
+    		@Override
+    		public void actionPerformed(ActionEvent e) {
+    			cue();
+    		}
 		});
 		return b;
 	}
