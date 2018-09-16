@@ -1,7 +1,9 @@
 package ats.pulsar;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -16,6 +18,7 @@ import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import javax.swing.JRadioButton;
@@ -24,6 +27,7 @@ import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import ats.pulsar.lib.FlawLayout;
 import gnu.expr.Language;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
@@ -261,6 +265,13 @@ public abstract class SchemeNewFactory {
 			}
 		});
 
+		register( "newline", new SchemeNewFactory() {
+			@Override
+			Object create( List<Object> args ) {
+				return FlawLayout.createNewLine();
+			}
+		});
+
 		register( "slider", new SchemeNewFactory() {
 			@Override
 			Object create( List<Object> args ) {
@@ -273,8 +284,10 @@ public abstract class SchemeNewFactory {
 					JSlider slider = new JSlider() {
 						@Override
 						public Dimension getPreferredSize() {
+							Container parent = this.getParent();
+							Insets i =((JComponent) parent ).getBorder().getBorderInsets( parent );
 							return new Dimension(
-									this.getParent().getSize().width,
+									parent.getSize().width - (i.left + i.right ), 
 									super.getPreferredSize().height
 									);
 							

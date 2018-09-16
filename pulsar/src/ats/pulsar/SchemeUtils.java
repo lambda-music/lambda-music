@@ -10,6 +10,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import gnu.lists.AbstractSequence;
+import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.Pair;
 import gnu.mapping.Symbol;
@@ -125,5 +126,19 @@ public class SchemeUtils {
 
 	public static DFloNum toSchemeNumber(double value) {
 		return DFloNum.valueOf(value);
+	}
+	
+	public static <T> T toNull( T object ) {
+		if ( object instanceof EmptyList ) {
+			return null;
+		} else {
+			return object;
+		}
+	}
+	public static Object toEmptyList( Object object ) {
+		if ( object == null )
+			return EmptyList.emptyList;
+		else
+			return object;
 	}
 }

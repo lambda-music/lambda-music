@@ -355,10 +355,11 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	//        	String s = this.debugQueue.take();
 	//        	System.err.println( s );
 	        	
-	        	for ( MetroNoteEventBufferSequence sequence : this.sequences  ) {
-	        		sequence.checkBuffer( this,  this.client, this.position );
-	        	}
 				synchronized ( this.lock ) {
+					for ( MetroNoteEventBufferSequence sequence : this.sequences  ) {
+						sequence.checkBuffer( this,  this.client, this.position );
+					}
+
 					for ( Runnable r : this.messageQueue ) {
 						try {
 							r.run();
