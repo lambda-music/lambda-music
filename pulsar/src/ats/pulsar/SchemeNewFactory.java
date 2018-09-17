@@ -1,9 +1,11 @@
 package ats.pulsar;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Insets;
+import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -176,6 +178,21 @@ public abstract class SchemeNewFactory {
 				} else {
 					return EmptyList.emptyList;
 				}
+			}
+		});
+		register( "panel", new SchemeNewFactory() {
+			@Override
+			Object create(List<Object> args ) {
+				LayoutManager m;
+				if ( args.size == 0 ) {
+					m = new BorderLayout( Pulsar.BORDER_SIZE, Pulsar.BORDER_SIZE );
+				} else {
+					switch ( SchemeUtils.symbolToString( args.get(0) ) ) {
+						
+					}
+					
+				}
+				return new JNamedPanel();
 			}
 		});
 

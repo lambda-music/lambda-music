@@ -192,7 +192,7 @@ public final class Pulsar extends Metro {
 	 * sequencer and effectively this method starts a song. Whenever a user call
 	 * {@link Pulsar#rewind()}, this procedure will be invoked.
 	 */
-	volatile MetroInvokable mainProcedure = null;
+	transient MetroInvokable mainProcedure = null;
 
 	/**
 	 * Sets the main-procedure object.
@@ -219,7 +219,7 @@ public final class Pulsar extends Metro {
 	 * the sequencer goes to next region. When users call {@link Pulsar#cue() },
 	 * this procedure is invoked. 
 	 */
-	volatile MetroInvokable cueProcedure = null;
+	transient MetroInvokable cueProcedure = null;
 	/**
 	 * Sets the cue-procedure object.
 	 * 
@@ -243,7 +243,7 @@ public final class Pulsar extends Metro {
 	 * This path is used to resolve a relative path by
 	 * {@link Pulsar#loadScheme(File) } method.
 	 */
-	volatile File relatedFileParent=null;
+	transient File relatedFileParent=null;
 
 	/**
 	 * The "related-files" is a concept which could implement the "playlist"
@@ -821,6 +821,13 @@ public final class Pulsar extends Metro {
     	defineVar( scheme, "reset!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
+				reset();
+    			return EmptyList.emptyList;
+    		}
+    	});
+    	defineVar( scheme, "rewind!" , new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
 				rewind();
     			return EmptyList.emptyList;
     		}
@@ -1064,74 +1071,7 @@ public final class Pulsar extends Metro {
     	defineVar( scheme, "gui-add!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
-				Container parent;
-				if ( args[0] instanceof Container )
-					parent = (Container) args[0];
-				else if ( args[0] instanceof EmptyList ) { 
-					parent = null;
-				} else {
-					throw new RuntimeException( "An invalid parent object was specified. " );
-				}
-				
-				String mode = null;
-				for ( int i=1; i<args.length; i++ ) {
-					Object curr = args[i];
-					if ( curr instanceof Symbol ) {
-						String symbolName = SchemeUtils.symbolToString( curr );
-						switch ( symbolName ) {
-							case "newline" : 
-								guiNewline( parent );
-								break;
-							case "list":
-								mode = "list";
-								break;
-							case "name":
-								mode = "name";
-								break;
-							case "label":
-								mode = "label";
-								break;
-							default :
-								throw new RuntimeException( "gui-add! unknown type \"" + symbolName + "\"" );
-						}
-						// mode = null;
-					} else if ( curr instanceof IString ) {
-						if ( "label".equals( mode ) ) {
-							guiAdd( parent, (Component) SchemeNewFactory.process( 
-									Symbol.makeUninterned("label"), 
-									SchemeUtils.anyToString( curr ) ) );
-							
-							mode = null;
-						} else if ( "name".equals( mode ) ) {
-							guiName( parent, SchemeUtils.toString( curr ) ); 
-							mode = null;
-						} else {
-							throw new RuntimeException( "An invalid state was detected " + mode );
-						}
-					} else {
-						if ( curr instanceof Pair  ) {
-							Pair p = (Pair) curr;
-							if ( "list".equals( mode ) ) {
-								for ( Object e : p ) {
-									guiAdd( parent, (Component) e );
-								}
-							} else {
-								Object car = p.getCar();
-								Object cdr = p.getCdr();
-								
-								if ( cdr instanceof Pair ) {
-									guiAdd( parent, (Component)car, LayoutUtils.map2constraint( cdr ) );
-								} else {
-									guiAdd( parent, (Component)car, cdr );
-								}
-							}
-						} else {
-							guiAdd( parent, (Component)curr );
-						}
-						mode = null;
-					}
-				}
-    			return parent;
+				return guiMultipleAdd(args);
     		}
     	});
     	defineVar( scheme, "gui-newline!" , new ProcedureN() {
@@ -1244,7 +1184,7 @@ public final class Pulsar extends Metro {
 	public void guiClear() {
 		userPane.removeAll();
 		guiFlowLayout();
-		frame.pack();
+		// frame.pack();
 	}
 	public void guiSpringLayout() {
 		userLayout = new SpringLayout();
@@ -1314,6 +1254,77 @@ public final class Pulsar extends Metro {
 			parent = userPane;
 		parent.add( c  );
 	}
+	public Object guiMultipleAdd(Object[] args) {
+		Container parent;
+		if ( args[0] instanceof Container )
+			parent = (Container) args[0];
+		else if ( args[0] instanceof EmptyList ) { 
+			parent = null;
+		} else {
+			throw new RuntimeException( "An invalid parent object was specified. " );
+		}
+		
+		String mode = null;
+		for ( int i=1; i<args.length; i++ ) {
+			Object curr = args[i];
+			if ( curr instanceof Symbol ) {
+				String symbolName = SchemeUtils.symbolToString( curr );
+				switch ( symbolName ) {
+					case "newline" : 
+						guiNewline( parent );
+						break;
+					case "list":
+						mode = "list";
+						break;
+					case "name":
+						mode = "name";
+						break;
+					case "label":
+						mode = "label";
+						break;
+					default :
+						throw new RuntimeException( "gui-add! unknown type \"" + symbolName + "\"" );
+				}
+				// mode = null;
+			} else if ( curr instanceof IString ) {
+				if ( "label".equals( mode ) ) {
+					guiAdd( parent, (Component) SchemeNewFactory.process( 
+							Symbol.makeUninterned("label"), 
+							SchemeUtils.anyToString( curr ) ) );
+					
+					mode = null;
+				} else if ( "name".equals( mode ) ) {
+					guiName( parent, SchemeUtils.toString( curr ) ); 
+					mode = null;
+				} else {
+					throw new RuntimeException( "An invalid state was detected " + mode );
+				}
+			} else {
+				if ( curr instanceof Pair  ) {
+					Pair p = (Pair) curr;
+					if ( "list".equals( mode ) ) {
+						for ( Object e : p ) {
+							guiAdd( parent, (Component) e );
+						}
+					} else {
+						Object car = p.getCar();
+						Object cdr = p.getCdr();
+						
+						if ( cdr instanceof Pair ) {
+							guiAdd( parent, (Component)car, LayoutUtils.map2constraint( cdr ) );
+						} else {
+							guiAdd( parent, (Component)car, cdr );
+						}
+					}
+				} else {
+					guiAdd( parent, (Component)curr );
+				}
+				mode = null;
+			}
+		}
+		return parent;
+	}	
+	
 	public void guiName( Container parent, String name ) {
 		if ( parent == null )
 			parent = userPane;
@@ -1384,11 +1395,12 @@ public final class Pulsar extends Metro {
 		staticPane.add( createRewindButton(), BorderLayout.LINE_START );
 		staticPane.add( createCueButton(), BorderLayout.PAGE_END );
 
-		 staticPane.setBorder( BorderFactory.createEmptyBorder(20,20,20,20) );
+		// createEmptyBorder( top left bottom right )
+		staticPane.setBorder( BorderFactory.createEmptyBorder(10,20,5,20) );
 		
-		 userPane.setBorder( BorderFactory.createEmptyBorder(20,20,20,20) );
+		userPane.setBorder(   BorderFactory.createEmptyBorder(5,20,20,20) );
 
-		 ((JComponent)rootPane).setBorder( BorderFactory.createEmptyBorder() );
+		((JComponent)rootPane).setBorder( BorderFactory.createEmptyBorder() );
 
 		// frame.setMaximizedBounds(new Rectangle(0, 0, 400, 1000));
 		frame.pack();
@@ -1425,108 +1437,135 @@ public final class Pulsar extends Metro {
     	public JPusarFilePanel() {
     		super( newLayout() );
     	}
-    	JPanel panel_exec = new JPanelExtentionExec();
+    	JPanel panel_outer = new JPanelExtentionOuter();
     	{
-    		add( panel_exec, BorderLayout.CENTER );
+    		add( panel_outer, BorderLayout.CENTER );
     	}
-    	class JPanelExtentionExec extends JPanel {
-    		public JPanelExtentionExec() {
+
+    	class JPanelExtentionOuter extends JPanel {
+    		public JPanelExtentionOuter() {
     			super( newLayout() );
     		}
-    		JButton execButton = new JButton( "EXEC" ) {
-    			@Override
-    			public Dimension getPreferredSize() {
-    				Dimension s = super.getPreferredSize();
-    				s.width = 75;
-    				return s;
+
+        	JPanel panel_exec = new JPanelExtentionExec();
+        	{
+        		add( panel_exec, BorderLayout.CENTER );
+        	}
+    		class JPanelExtentionExec extends JPanel {
+    			public JPanelExtentionExec() {
+    				super( newLayout() );
     			}
-    		};
-    		{
-    			execButton.addActionListener( new ActionListener() {
+    			JButton execButton = new JButton( "EXEC" ) {
     				@Override
-    				public void actionPerformed(ActionEvent e) {
-    					int i = cb_relatedFiles.getSelectedIndex();
-    					if ( 0<=i ) {
-    						File file = relatedFiles.get(i);
-    						setMainFile( relatedFileParent, file );
-    					}
+    				public Dimension getPreferredSize() {
+    					Dimension s = super.getPreferredSize();
+    					s.width = 75;
+    					return s;
     				}
-    			});
-    			add( execButton , BorderLayout.LINE_START );
+    			};
+    			{
+    				execButton.addActionListener( new ActionListener() {
+    					@Override
+    					public void actionPerformed(ActionEvent e) {
+    						int i = cb_relatedFiles.getSelectedIndex();
+    						if ( 0<=i ) {
+    							File file = relatedFiles.get(i);
+    							setMainFile( relatedFileParent, file );
+    						}
+    					}
+    				});
+    				add( execButton , BorderLayout.LINE_START );
+    			}
+
+    			JComboBox<String> cb_relatedFiles = new JComboBox<String>() {
+    			};
+    			{
+    				Pulsar.this.cb_relatedFiles = cb_relatedFiles;
+    				cb_relatedFiles.setEditable(false);
+    				cb_relatedFiles.addPopupMenuListener( new PopupMenuListener() {
+    					@Override
+    					public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+    						logInfo("popupMenuWillBecomeVisible()");
+    						// readHistoryFile(comboBox);
+    					}
+    					@Override
+    					public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+    						logInfo( "popupMenuWillBecomeInvisible()");
+    					}
+    					@Override
+    					public void popupMenuCanceled(PopupMenuEvent e) {
+    						logInfo(".popupMenuCanceled()");
+    					}
+    				});
+    				cb_relatedFiles.addItemListener( new ItemListener() {
+    					@Override
+    					public void itemStateChanged(ItemEvent e) {
+    						logInfo("Pulsar.createFilePanel().new ItemListener() {...}.itemStateChanged()");
+    						if ( e.getStateChange() == ItemEvent.SELECTED ) {
+    							// Do nothing.
+    						}
+    					}
+    				});
+    				add( cb_relatedFiles, BorderLayout.CENTER );
+    			}
     		}
 
-    		JComboBox<String> cb_relatedFiles = new JComboBox<String>() {
-    		};
-    		{
-    			Pulsar.this.cb_relatedFiles = cb_relatedFiles;
-    			cb_relatedFiles.setEditable(false);
-    			cb_relatedFiles.addPopupMenuListener( new PopupMenuListener() {
-    				@Override
-    				public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-    					logInfo("popupMenuWillBecomeVisible()");
-    					// readHistoryFile(comboBox);
-    				}
-    				@Override
-    				public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-    					logInfo( "popupMenuWillBecomeInvisible()");
-    				}
-    				@Override
-    				public void popupMenuCanceled(PopupMenuEvent e) {
-    					logInfo(".popupMenuCanceled()");
-    				}
-    			});
-    			cb_relatedFiles.addItemListener( new ItemListener() {
-    				@Override
-    				public void itemStateChanged(ItemEvent e) {
-    					logInfo("Pulsar.createFilePanel().new ItemListener() {...}.itemStateChanged()");
-    					if ( e.getStateChange() == ItemEvent.SELECTED ) {
-    						// Do nothing.
-    					}
-    				}
-    			});
-    			add( cb_relatedFiles, BorderLayout.CENTER );
-    		}
+    		JPanel panel_openFile = new JOpenFilePanel();
+        	{
+        		add( panel_openFile, BorderLayout.PAGE_START );
+        	}
+        	class JOpenFilePanel extends JPanel {
+        		JOpenFilePanel(){ super( newLayout() ); }
+
+        		JButton openMainFileButton = new JButton( "OPEN" );
+        		{	
+        			this.add( openMainFileButton, BorderLayout.LINE_START );
+        			openMainFileButton.addActionListener(new ActionListener() {
+        				@Override
+        				public void actionPerformed(ActionEvent e) {
+        					JFileChooser fc = new JFileChooser();
+        					fc.setFileFilter( new FileFilter() {
+        						@Override
+        						public String getDescription() {
+        							return "*.scm (scheme)";
+        						}
+        						@Override
+        						public boolean accept(File f) {
+        							return ! f.isFile() || f.getName().endsWith( "scm" );
+        						}
+        					});
+        					int result = fc.showOpenDialog( frame );
+        					if ( result == JFileChooser.APPROVE_OPTION ) {
+        						close();
+        						setMainFile( null, fc.getSelectedFile() );
+        					}
+        				}
+        			});
+        		}
+        		JTextField currentFile = new JTextField();
+        		{
+        			tf_currentFile = currentFile;
+        			this.add( currentFile, BorderLayout.CENTER );
+        			currentFile.setEditable(false);
+        		}
+        	}
     	}
-
-    	JPanel panel_openFile = new JOpenFilePanel();
+    	JButton resetButton = new JButton( "⟳" ) {
+    		@Override
+    		public Dimension getPreferredSize() {
+    			return new Dimension( 75,super.getPreferredSize().height + 20 );
+    		}
+    	};
     	{
-    		add( panel_openFile, BorderLayout.PAGE_START );
+    		add( resetButton , BorderLayout.LINE_END );
+    		resetButton.addActionListener( new ActionListener() {
+    			@Override
+    			public void actionPerformed(ActionEvent e) {
+    				reset();
+    			}
+    		});
     	}
-    	class JOpenFilePanel extends JPanel {
-    		JOpenFilePanel(){ super( newLayout() ); }
 
-    		JButton openMainFileButton = new JButton( "OPEN" );
-    		{	
-    			this.add( openMainFileButton, BorderLayout.LINE_START );
-    			openMainFileButton.addActionListener(new ActionListener() {
-    				@Override
-    				public void actionPerformed(ActionEvent e) {
-    					JFileChooser fc = new JFileChooser();
-    					fc.setFileFilter( new FileFilter() {
-    						@Override
-    						public String getDescription() {
-    							return "*.scm (scheme)";
-    						}
-    						@Override
-    						public boolean accept(File f) {
-    							return ! f.isFile() || f.getName().endsWith( "scm" );
-    						}
-    					});
-    					int result = fc.showOpenDialog( frame );
-    					if ( result == JFileChooser.APPROVE_OPTION ) {
-    						close();
-    						setMainFile( null, fc.getSelectedFile() );
-    					}
-    				}
-    			});
-    		}
-    		JTextField currentFile = new JTextField();
-    		{
-    			tf_currentFile = currentFile;
-    			this.add( currentFile, BorderLayout.CENTER );
-    			currentFile.setEditable(false);
-    		}
-    	}
     	
 
 //    	ImageIcon resetIcon;
@@ -1542,21 +1581,6 @@ public final class Pulsar extends Metro {
 //			}
 //		}
 		
-		JButton resetButton = new JButton( "⟳" ) {
-			@Override
-			public Dimension getPreferredSize() {
-				return new Dimension( 75,super.getPreferredSize().height );
-			}
-		};
-		{
-			add( resetButton , BorderLayout.LINE_END );
-			resetButton.addActionListener( new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					reset();
-				}
-			});
-		}
 		
 
 		JSlider sl_tempoSlider = new JSlider();
