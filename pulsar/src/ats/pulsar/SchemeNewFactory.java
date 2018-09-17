@@ -1,11 +1,9 @@
 package ats.pulsar;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Insets;
-import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -41,7 +39,7 @@ import gnu.math.IntNum;
 
 public abstract class SchemeNewFactory {
 	private static final Map<String, SchemeNewFactory> map = new HashMap<>();
-	abstract Object create( List<Object> args );
+	abstract Object create( Pulsar pulsar, List<Object> args );
 	static void register( String key, SchemeNewFactory factory ) {
 		if ( map.containsKey(key))
 			throw new RuntimeException( "the key was already registered (" + key + ")" );
@@ -57,7 +55,7 @@ public abstract class SchemeNewFactory {
 		System.err.println( msg );
 	}
 
-	public static Object process( Object ... args ) {
+	public static Object process( Pulsar pulsar,  Object ... args ) {
 		ArrayList<Object> arguments = new ArrayList<>( Arrays.asList( args ) );
 		Object key = arguments.remove(0);
 		if ( key == null )
@@ -68,7 +66,7 @@ public abstract class SchemeNewFactory {
 		if ( factory == null ) {
 			throw new RuntimeException("unknown object type (" + keyString + ")" );
 		}
-		Object result = factory.create( arguments );
+		Object result = factory.create( pulsar, arguments );
 
 		return result;
 	}
@@ -156,8 +154,6 @@ public abstract class SchemeNewFactory {
 				}
 			};
 			
-			
-			ButtonGroup group = new ButtonGroup();
 			List<Object> result = new ArrayList();
 			for ( Object e : args ) {
 				String caption = SchemeUtils.anyToString(e);
@@ -172,7 +168,7 @@ public abstract class SchemeNewFactory {
 	static {
 		register( "label", new SchemeNewFactory() {
 			@Override
-			Object create(List<Object> args ) {
+			Object create(Pulsar pulsar, List<Object> args ) {
 				if ( 0<args.size()  ) {
 					return new JLabel( SchemeUtils.toString( args.get(0) ) );
 				} else {
@@ -182,23 +178,21 @@ public abstract class SchemeNewFactory {
 		});
 		register( "panel", new SchemeNewFactory() {
 			@Override
-			Object create(List<Object> args ) {
-				LayoutManager m;
-				if ( args.size == 0 ) {
-					m = new BorderLayout( Pulsar.BORDER_SIZE, Pulsar.BORDER_SIZE );
-				} else {
-					switch ( SchemeUtils.symbolToString( args.get(0) ) ) {
-						
-					}
-					
+			Object create(Pulsar pulsar, List<Object> args ) {
+				JNamedPanel panel = new JNamedPanel();
+
+				if ( args.size() == 0 ) {
+					pulsar.guiLayout(panel, "default" );
+				} else if ( 1 <= args.size() ) {
+					pulsar.guiLayout(panel, SchemeUtils.symbolToString( args.get(0) ) );
 				}
-				return new JNamedPanel();
+				return panel;
 			}
 		});
 
 		register( "button", new SchemeNewFactory() {
 			@Override
-			Object create( List<Object> args ) {
+			Object create( Pulsar pulsar, List<Object> args ) {
 				if ( args.size() == 2 ) {
 					String caption = ((IString) args.get(0)).toString();
 					Procedure procedure = (Procedure) args.get(1);
@@ -243,7 +237,7 @@ public abstract class SchemeNewFactory {
 			}
 
 			@Override
-			Object create( List<Object> args ) {
+			Object create( Pulsar pulsar, List<Object> args ) {
 				if ( 2 <= args.size()  ) {
 					int interval = SchemeUtils.toInteger(args.get(0));
 					Procedure procedure = (Procedure)args.get(1);
@@ -268,7 +262,7 @@ public abstract class SchemeNewFactory {
 
 		register( "progress", new SchemeNewFactory() {
 			@Override
-			Object create(List<Object> args) {
+			Object create(Pulsar pulsar, List<Object> args) {
 				return new JProgressBar() {
 //					@Override
 //					public Dimension getPreferredSize() {
@@ -284,14 +278,14 @@ public abstract class SchemeNewFactory {
 
 		register( "newline", new SchemeNewFactory() {
 			@Override
-			Object create( List<Object> args ) {
+			Object create( Pulsar pulsar, List<Object> args ) {
 				return FlawLayout.createNewLine();
 			}
 		});
 
 		register( "slider", new SchemeNewFactory() {
 			@Override
-			Object create( List<Object> args ) {
+			Object create( Pulsar pulsar, List<Object> args ) {
 				if ( args.size() == 5 ) {
 					int min = ((Number)args.get(0)).intValue();
 					int max = ((Number)args.get(1)).intValue();
@@ -335,7 +329,7 @@ public abstract class SchemeNewFactory {
 		
 		register( "radio", new SchemeNewFactory() {
 			@Override
-			Object create( List<Object> args ) {
+			Object create( Pulsar pulsar, List<Object> args ) {
 				return createSelectiveComponents( "'radio", args, new JRadioButtonFactory() );
 			}
 
@@ -343,7 +337,7 @@ public abstract class SchemeNewFactory {
 		
 		register( "check", new SchemeNewFactory() {
 			@Override
-			Object create( List<Object> args ) {
+			Object create( Pulsar pulsar, List<Object> args ) {
 				return createSelectiveComponents( "'check", args, new JCheckBoxFactory() );
 			}
 		});

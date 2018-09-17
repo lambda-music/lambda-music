@@ -6,7 +6,6 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -307,11 +306,11 @@ public final class Pulsar extends Metro {
 	 * effectively invoke the main procedure. See {@link Pulsar#mainProcedure}
 	 */
     public void rewind() { 
-    	logInfo( "===reset" );
+    	logInfo( "===rewind" );
     	setPlaying(false);
+    	clearSequences();
     	if ( mainProcedure != null )
     		mainProcedure.invoke();
-		clearSequences();
     }
 
     /**
@@ -913,6 +912,7 @@ public final class Pulsar extends Metro {
     	defineVar( scheme, "list-seq" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
+//				logInfo("list-seq");
 				synchronized ( lock ) {
 					ArrayList<LList> list = new ArrayList<>( sequences.size() );
 					for ( MetroNoteEventBufferSequence sequence :  sequences ) {
@@ -1021,7 +1021,7 @@ public final class Pulsar extends Metro {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				try {
-					return SchemeNewFactory.process(args);
+					return SchemeNewFactory.process(Pulsar.this, args);
 				} catch ( Exception e ) {
 					logError("", e);
 					return null;
@@ -1094,11 +1094,25 @@ public final class Pulsar extends Metro {
     			return EmptyList.emptyList;
     		}
     	});
+    	defineVar( scheme, "gui-layout!" , new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				logInfo( "gui-layout" );
+				if ( args.length == 0 ) {
+					throw new RuntimeException( "gui-layout! (panel) ['gridbag | 'spring | flow ]" );
+				} else if ( args.length == 1 ) {
+					guiLayout(userPane, SchemeUtils.symbolToString( args[0] ) );
+				} else if ( 2 <= args.length ) {
+					guiLayout( (Container) args[0], SchemeUtils.symbolToString( args[1] ) );
+				} 
+    			return EmptyList.emptyList;
+    		}
+    	});
     	defineVar( scheme, "gui-gridbag-layout" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				logInfo( "gui-gridbag-layout" );
-				guiGridBagLayout();
+				guiGridBagLayout(userPane);
     			return EmptyList.emptyList;
     		}
     	});
@@ -1106,7 +1120,7 @@ public final class Pulsar extends Metro {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				logInfo( "gui-spring-layout" );
-				guiSpringLayout();
+				guiSpringLayout(userPane);
     			return EmptyList.emptyList;
     		}
     	});
@@ -1114,7 +1128,7 @@ public final class Pulsar extends Metro {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				logInfo( "gui-flow-layout" );
-				guiFlowLayout();
+				guiFlowLayout(userPane);
     			return EmptyList.emptyList;
     		}
     	});
@@ -1122,7 +1136,7 @@ public final class Pulsar extends Metro {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				logInfo("refresh-gui");
-			 	SpringLayout springLayout = ((SpringLayout)userLayout);
+			 	SpringLayout springLayout = ((SpringLayout)userPane.getLayout());
 				if ( args.length == 5 ) {
 					new SpringLayoutUtil(springLayout, userPane).putConstraint( args[0],args[1],args[2],args[3],args[4]  );
 				} else if ( args.length == 4 ) {
@@ -1174,7 +1188,6 @@ public final class Pulsar extends Metro {
     Container rootPane = null; 
 	JPanel staticPane = new JPanel();
 
-	LayoutManager userLayout = null; 
 	JPanel userPane = new JNamedPanel( new FlawLayout() );
 
     transient boolean isComboBoxUpdating = false;
@@ -1183,21 +1196,41 @@ public final class Pulsar extends Metro {
 	
 	public void guiClear() {
 		userPane.removeAll();
-		guiFlowLayout();
+		guiFlowLayout(userPane);
 		// frame.pack();
 	}
-	public void guiSpringLayout() {
-		userLayout = new SpringLayout();
-		userPane.setLayout(userLayout);
+	public void guiFlowLayout(Container userPane) {
+		userPane.setLayout( new FlawLayout( FlawLayout.LEFT, 2, 2 ) );
 	}
-	public void guiFlowLayout() {
-		userLayout = new FlawLayout( FlawLayout.LEFT, 2, 2 );
-		userPane.setLayout(userLayout);
+	public void guiBorderLayout(Container userPane) {
+		userPane.setLayout( new BorderLayout( BORDER_SIZE,BORDER_SIZE ) );
 	}
-	public void guiGridBagLayout() {
-		userLayout = new GridBagLayout();
-		userPane.setLayout(userLayout);
+	public void guiSpringLayout( Container userPane ) {
+		userPane.setLayout( new SpringLayout() );
 	}
+	public void guiGridBagLayout(Container userPane) {
+		userPane.setLayout( new GridBagLayout() );
+	}
+	public void guiLayout( Container container, String type ) {
+		switch ( type ) {
+			case "default":
+			case "flow" :
+				guiFlowLayout( container );
+				break;
+			case "border" :
+				guiBorderLayout( container );
+				break;
+			case "spring" :
+				guiSpringLayout( container );
+				break;
+			case "gridbag" :
+				guiGridBagLayout( container );
+				break;
+			default :
+				throw new RuntimeException( "Unknown LayoutManager name : " + type );
+		}
+	}
+	
 	public void guiRefresh() {
 		userPane.revalidate();
 		userPane.repaint();
@@ -1288,7 +1321,8 @@ public final class Pulsar extends Metro {
 				// mode = null;
 			} else if ( curr instanceof IString ) {
 				if ( "label".equals( mode ) ) {
-					guiAdd( parent, (Component) SchemeNewFactory.process( 
+					guiAdd( parent, (Component) SchemeNewFactory.process(
+							this,
 							Symbol.makeUninterned("label"), 
 							SchemeUtils.anyToString( curr ) ) );
 					
