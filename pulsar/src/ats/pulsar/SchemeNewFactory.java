@@ -245,6 +245,12 @@ public abstract class SchemeNewFactory {
 					ActionListenerImplementation listener = new ActionListenerImplementation(procedure );
 					Timer timer = new Timer( interval,  listener );
 					listener.timer = timer;
+					pulsar.addCleanupHook( new Runnable() {
+						@Override
+						public void run() {
+							timer.stop();
+						}
+					});
 					timer.start();
 					return new ProcedureN() {
 						public Object applyN(Object[] args) throws Throwable {

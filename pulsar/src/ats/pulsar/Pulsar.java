@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -253,7 +254,14 @@ public final class Pulsar extends Metro {
 	 * scheme script on the list anytime.
 	 */
 	final List<File> relatedFiles = new ArrayList<>();
-	
+
+	/**
+	 * @see #relatedFiles
+	 */
+	public void clearRelatedFiles() {
+		relatedFiles.clear();
+	}
+
 	/**
 	 * @see #relatedFiles
 	 */
@@ -294,8 +302,9 @@ public final class Pulsar extends Metro {
 	 */
 	public void reset() {
 		this.scheme = makeScheme();
-		this.close();
+		this.execCleanupHook();
 		this.guiClear();
+		this.close();
 		this.lastModifiedOfMainFile = NOT_DEFINED;
 	}
 	
@@ -332,6 +341,33 @@ public final class Pulsar extends Metro {
     	this.cueProcedure = null;
 		clearSequences();
     }
+    
+    
+    final Collection<Runnable> cleanupHook = new LinkedList<>();
+    
+    /**
+     * 
+     * @return
+     */
+    public void addCleanupHook( Runnable runnable ) {
+    	synchronized ( cleanupHook ) { 
+    		cleanupHook.add( runnable );
+    	}
+    }
+    public void execCleanupHook( ) {
+    	synchronized ( cleanupHook ) {
+    		for ( Iterator<Runnable> i =cleanupHook.iterator(); i.hasNext(); ) {
+    			Runnable runnable = i.next();
+    			try {
+    				runnable.run();
+    			} catch ( Throwable e ) {
+    				logError("CLEANUP HOOK: IGNORED AN EXCEPTION", e);
+    			}
+    		}
+    		cleanupHook.clear();
+    	}
+    }
+    
 
 	public File getConfigDir() {
 		final File configDir = new File( System.getProperty("user.home"), ".pulsar" );
@@ -691,14 +727,14 @@ public final class Pulsar extends Metro {
     		}
     	});
 
-    	defineVar( scheme, "all-input" , new ProcedureN() {
+    	defineVar( scheme, "get-all-input" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				return Pair.makeList( getInputPorts().stream().map((v)->IString.valueOf(v) )
 						.collect( Collectors.toList() ) );
     		}
     	});
-    	defineVar( scheme, "all-output" , new ProcedureN() {
+    	defineVar( scheme, "get-all-output" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				return Pair.makeList( getOutputPorts().stream().map((v)->IString.valueOf(v) )
@@ -843,7 +879,8 @@ public final class Pulsar extends Metro {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				if ( 2 <= args.length  ) {
-					System.out.println( Arrays.asList(args) );
+					logInfo( "put-seq! : " + Arrays.asList(args).toString() );
+					
 					String name;
 					Collection<String> tags;
 					if ( args[0] instanceof Pair ) {
@@ -1068,10 +1105,10 @@ public final class Pulsar extends Metro {
     		}
     	});
     	
-    	defineVar( scheme, "gui-add!" , new ProcedureN() {
+    	defineVar( scheme, "gui-build!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
-				return guiMultipleAdd(args);
+				return guiBuild(args);
     		}
     	});
     	defineVar( scheme, "gui-newline!" , new ProcedureN() {
@@ -1287,7 +1324,7 @@ public final class Pulsar extends Metro {
 			parent = userPane;
 		parent.add( c  );
 	}
-	public Object guiMultipleAdd(Object[] args) {
+	public Object guiBuild(Object[] args) {
 		Container parent;
 		if ( args[0] instanceof Container )
 			parent = (Container) args[0];
@@ -1316,7 +1353,7 @@ public final class Pulsar extends Metro {
 						mode = "label";
 						break;
 					default :
-						throw new RuntimeException( "gui-add! unknown type \"" + symbolName + "\"" );
+						throw new RuntimeException( "gui-build! unknown type \"" + symbolName + "\"" );
 				}
 				// mode = null;
 			} else if ( curr instanceof IString ) {
