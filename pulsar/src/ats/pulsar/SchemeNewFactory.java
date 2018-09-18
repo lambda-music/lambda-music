@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -73,31 +74,25 @@ public abstract class SchemeNewFactory {
 		return result;
 	}
 
-	abstract class SchemeActionListener implements ActionListener {
+
+	final class SchemeFunctionExecutor {
 		private final Procedure procedure;
 		private final Environment env;
 		private final Language lang;
 
-		private SchemeActionListener(Procedure procedure ) {
+		private SchemeFunctionExecutor(Procedure procedure ) {
 			this.procedure = procedure;
 			this.env = Environment.getCurrent();
 			this.lang = Language.getDefaultLanguage();
 		}
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			execute(e);
-		}
-		
-		abstract void process( Procedure procedure ) throws Throwable;
-		
-		public void execute( ActionEvent e ) {
+		public Object execute( Object ... args ) {
 			try {
 				Environment.setCurrent(env);
 				Language.setCurrentLanguage(lang);
-				process( this.procedure );
+				return this.procedure.applyN( args );
 			} catch (Throwable e1) {
 				logError( "" , e1 );
+				return e1;
 			}
 		}
 	}
@@ -245,15 +240,70 @@ public abstract class SchemeNewFactory {
 			}
 		});
 
+
 		register( "timer", new SchemeNewFactory() {
-			final class ActionListenerImplementation extends SchemeActionListener {
-				Timer timer; 
-				ActionListenerImplementation(Procedure procedure ) {
-					super( procedure );
+			@Override
+			Object create( Pulsar pulsar, List<Object> args ) {
+				System.out.println("TIMER");
+				if ( 2 == args.size() ) {
+					long interval = SchemeUtils.toLong(args.get(0));
+					Procedure procedure = (Procedure)args.get(1);
+
+					return createTimer(pulsar, interval, interval, procedure);
+				} else if ( 3 <= args.size() ) {
+					long delay = SchemeUtils.toLong(args.get(0));
+					long interval = SchemeUtils.toLong(args.get(1));
+					Procedure procedure = (Procedure)args.get(2);
+
+					return createTimer(pulsar, delay, interval, procedure);
+
+				} else {
+					
+					logInfo("WARNING : new 'timer was called but no argument was passed.");
+					return EmptyList.emptyList;
+				}
+			}
+
+			public Object createTimer(Pulsar pulsar, long delay, long interval, Procedure procedure) {
+				SchemeFunctionExecutor executor = new SchemeFunctionExecutor( procedure );
+				java.util.Timer timer = new java.util.Timer( true );
+				timer.scheduleAtFixedRate( new TimerTask() {
+					@Override
+					public void run() {
+						Object result = executor.execute();
+						if ( Boolean.FALSE.equals( result ) ) {
+							timer.cancel();
+						}
+					}
+				}, delay, interval );
+
+				pulsar.addCleanupHook( new Runnable() {
+					@Override
+					public void run() {
+						timer.cancel();
+					}
+				});
+				
+				return new ProcedureN() {
+					public Object applyN(Object[] args) throws Throwable {
+						timer.cancel();
+						return EmptyList.emptyList;
+					};
+				};
+			}
+		});
+
+
+		register( "stimer", new SchemeNewFactory() {
+			final class ActionListenerImplementation implements ActionListener {
+				Timer timer;
+				SchemeFunctionExecutor executor;
+				ActionListenerImplementation( Procedure procedure ) {
+					this.executor = new SchemeFunctionExecutor( procedure );
 				}
 				@Override
-				void process(Procedure procedure) throws Throwable {
-					Object result = procedure.applyN( new Object[] { } );					
+				public void actionPerformed(ActionEvent e) {
+					Object result = executor.execute();					
 					if ( Boolean.FALSE.equals( result ) ) {
 						timer.stop();
 					}
@@ -266,7 +316,7 @@ public abstract class SchemeNewFactory {
 					int interval = SchemeUtils.toInteger(args.get(0));
 					Procedure procedure = (Procedure)args.get(1);
 
-					ActionListenerImplementation listener = new ActionListenerImplementation(procedure );
+					ActionListenerImplementation listener = new ActionListenerImplementation( procedure );
 					Timer timer = new Timer( interval,  listener );
 					listener.timer = timer;
 					pulsar.addCleanupHook( new Runnable() {

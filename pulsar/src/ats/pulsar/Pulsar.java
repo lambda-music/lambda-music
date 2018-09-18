@@ -543,7 +543,8 @@ public final class Pulsar extends Metro {
 					double onemin = 1000L*1000L*1000L*60L;
 					double beatsPerMinute =  onemin / avg  ;
 					
-					beatsPerMinute = ( beatsPerMinute + getBeatsPerMinute() ) / 2;
+					double currentBeatsPerMinute = getBeatsPerMinute();
+					beatsPerMinute = ( beatsPerMinute + currentBeatsPerMinute * 2 ) / 3;
 					logInfo( String.format( "%.2f / %.2f = %.2f", onemin , avg , beatsPerMinute  ) );
 					
 					setBeatsPerMinute( beatsPerMinute );
@@ -984,7 +985,13 @@ public final class Pulsar extends Metro {
 				guiClear();
     			return EmptyList.emptyList;
     		}
-
+    	});
+    	defineVar( scheme, "gui-pack!" , new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				guiPack();
+    			return EmptyList.emptyList;
+    		}
     	});
     	defineVar( scheme, "new-slider" , new ProcedureN() {
 			@Override
@@ -1238,6 +1245,9 @@ public final class Pulsar extends Metro {
 		userPane.removeAll();
 		guiFlowLayout(userPane);
 		// frame.pack();
+	}
+	public void guiPack() {
+		frame.pack();
 	}
 	public void guiFlowLayout(Container userPane) {
 		userPane.setLayout( new FlawLayout( FlawLayout.LEFT, 2, 2 ) );

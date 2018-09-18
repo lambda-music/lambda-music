@@ -107,6 +107,9 @@ public class SchemeUtils {
 	public static int toInteger( Object schemeVal ) {
 		return ((Quantity) schemeVal).intValue();
 	}
+	public static long toLong( Object schemeVal ) {
+		return ((Quantity) schemeVal).longValue();
+	}
 	public static String className(Object object) {
 		return object == null ? "null" : object.getClass().toString(); 
 	}
