@@ -93,7 +93,10 @@ public class SchemeUtils {
 			return Boolean.TRUE; // treat everything as #t except #f.
 	}
 	public static String toString( Object schemeVal ) {
-		return ((IString)schemeVal).toString();
+		if ( schemeVal instanceof String )
+			return (String) schemeVal;
+		else
+			return ((IString)schemeVal).toString();
 	}
 	public static String symbolToString( Object schemeVal ) {
 		return ((Symbol)schemeVal).getName();
@@ -127,6 +130,9 @@ public class SchemeUtils {
 	public static DFloNum toSchemeNumber(double value) {
 		return DFloNum.valueOf(value);
 	}
+	public static Symbol toSchemeSymbol(String value) {
+		return Symbol.valueOf(value);
+	}
 	
 	public static <T> T toNull( T object ) {
 		if ( object instanceof EmptyList ) {
@@ -141,4 +147,9 @@ public class SchemeUtils {
 		else
 			return object;
 	}
+	
+	public static Pair acons( String key, Object value ) {
+		return new Pair( toSchemeSymbol( key ) , value );
+	}
+
 }

@@ -16,18 +16,20 @@ import java.util.logging.Logger;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
-import javax.swing.JRadioButton;
 import javax.swing.JSlider;
 import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import ats.pulsar.lib.FlawLayout;
+import ats.pulsar.lib.JNamedPanel;
+import ats.pulsar.lib.JPulsarButton;
+import ats.pulsar.lib.JPulsarCheckBox;
+import ats.pulsar.lib.JPulsarRadioButton;
+import ats.pulsar.lib.JUserObjectContainer;
 import gnu.expr.Language;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
@@ -101,26 +103,28 @@ public abstract class SchemeNewFactory {
 	}
 
 	static abstract class ComponentFactory {
-		abstract Component create( ActionListener l, String caption );
+		abstract Component create( ActionListener l, String caption, Object userObject );
 	}
 
 	static class JRadioButtonFactory extends ComponentFactory {
 		ButtonGroup group = new ButtonGroup();
 		@Override
-		Component create(ActionListener l, String caption) {
-			JRadioButton r = new JRadioButton( caption );
+		Component create(ActionListener l, String caption, Object userObject) {
+			JPulsarRadioButton r = new JPulsarRadioButton( caption );
 			r.setActionCommand( caption );
 			r.addActionListener( l );
+			r.setUserObject(userObject);
 			group.add( r );
 			return r;
 		}
 	}
 	static class JCheckBoxFactory extends ComponentFactory {
 		@Override
-		Component create(ActionListener l, String caption) {
-			JCheckBox r = new JCheckBox( caption );
+		Component create(ActionListener l, String caption, Object userObject) {
+			JPulsarCheckBox r = new JPulsarCheckBox( caption );
 			r.setActionCommand( caption );
 			r.addActionListener( l );
+			r.setUserObject(userObject);
 			return r;
 		}
 	}
@@ -144,9 +148,11 @@ public abstract class SchemeNewFactory {
 						Environment.setCurrent(env);
 						Language.setCurrentLanguage(lang);
 						// System.out.println( e.getSource() );
+						AbstractButton button = (AbstractButton)e.getSource();
 						procedure.applyN( new Object[] { 
-								((AbstractButton)e.getSource()).isSelected(),
+								button.isSelected(),
 								IString.valueOf( e.getActionCommand() ),
+								((JUserObjectContainer)button).getUserObject(),
 								e.getSource(), e  } ); 
 					} catch (Throwable e1) {
 						logError( "" , e1 );
@@ -156,8 +162,17 @@ public abstract class SchemeNewFactory {
 			
 			List<Object> result = new ArrayList();
 			for ( Object e : args ) {
-				String caption = SchemeUtils.anyToString(e);
-				result.add( f.create(listener, caption) );
+				if ( e instanceof IString ) {
+					String caption = SchemeUtils.toString(e);
+					result.add( f.create(listener, caption, caption) );
+				} else if ( e instanceof Pair ) {
+					Pair p = (Pair) e;
+					String caption = SchemeUtils.toString( p.getCar() );
+					Object userObject = p.getCdr();
+					result.add( f.create(listener, caption, userObject  ) );
+				} else {
+					
+				}
 			}
 			return Pair.makeList( result );
 		} else {
@@ -200,14 +215,23 @@ public abstract class SchemeNewFactory {
 					Environment env = Environment.getCurrent();
 					Language lang = Language.getDefaultLanguage();
 					{
-						JButton button = new JButton( caption );
+						JPulsarButton button = new JPulsarButton( caption );
 						button.addActionListener( new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
 								try {
 									Environment.setCurrent(env);
 									Language.setCurrentLanguage(lang);
-									procedure.applyN( new Object[] { e } );
+
+									AbstractButton button = (AbstractButton)e.getSource();
+									
+									procedure.applyN( new Object[] {
+											true,
+											SchemeUtils.toSchemeString( button.getText() ),
+											((JUserObjectContainer)button).getUserObject(),
+											button,
+											e
+											} );
 								} catch (Throwable e1) {
 									logError( "" , e1 );
 								}

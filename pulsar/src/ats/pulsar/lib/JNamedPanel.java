@@ -1,4 +1,4 @@
-package ats.pulsar;
+package ats.pulsar.lib;
 
 import java.awt.Component;
 import java.awt.LayoutManager;

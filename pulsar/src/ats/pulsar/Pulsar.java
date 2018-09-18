@@ -60,6 +60,7 @@ import ats.metro.MetroInvokable;
 import ats.metro.MetroNoteEventBufferSequence;
 import ats.metro.MetroNoteEventBufferSequence.SyncType;
 import ats.pulsar.lib.FlawLayout;
+import ats.pulsar.lib.JNamedPanel;
 import ats.pulsar.lib.LayoutUtils;
 import ats.pulsar.lib.MersenneTwisterFast;
 import ats.pulsar.lib.SpringLayoutUtil;
@@ -885,14 +886,15 @@ public final class Pulsar extends Metro {
 					Collection<String> tags;
 					if ( args[0] instanceof Pair ) {
 						Pair p = ((Pair)args[0]);
-						name = SchemeUtils.toString( p.getCar() );
+						name = SchemeUtils.symbolToString( p.getCar() );
+						
 						Pair.makeList( getInputPorts().stream().map((v)->IString.valueOf(v) )
 								.collect( Collectors.toList() ) );
 
-						tags = SchemeUtils.<Object,String>convertList((Collection<Object>)p.getCdr(), (v)->SchemeUtils.toString(v));
+						tags = SchemeUtils.<Object,String>convertList((Collection<Object>)p.getCdr(), (v)->SchemeUtils.symbolToString(v));
 						
 					} else {
-						name = SchemeUtils.toString( args[0] );
+						name = SchemeUtils.symbolToString( args[0] );
 						tags = null;
 					}
 					
@@ -953,7 +955,8 @@ public final class Pulsar extends Metro {
 				synchronized ( lock ) {
 					ArrayList<LList> list = new ArrayList<>( sequences.size() );
 					for ( MetroNoteEventBufferSequence sequence :  sequences ) {
-						list.add( ((SchemePulsarLogic)sequence.getLogic()).asociationList );
+						SchemePulsarLogic logic = (SchemePulsarLogic)sequence.getLogic();
+						list.add( SchemeUtils.acons( logic.getPlayerName(), logic.asociationList ));
 					}
 					return LList.makeList(list);
 				}
