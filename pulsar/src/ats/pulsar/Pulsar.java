@@ -74,7 +74,6 @@ import gnu.mapping.ProcedureN;
 import gnu.mapping.SimpleSymbol;
 import gnu.mapping.Symbol;
 import gnu.math.DFloNum;
-import gnu.math.IntNum;
 import kawa.standard.Scheme;
 
 /**
@@ -993,77 +992,7 @@ public final class Pulsar extends Metro {
     			return EmptyList.emptyList;
     		}
     	});
-    	defineVar( scheme, "new-slider" , new ProcedureN() {
-			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-				if ( args.length == 5 ) {
-					int min = ((Number)args[0]).intValue();
-					int max = ((Number)args[1]).intValue();
-					int minorTick = ((Number)args[2]).intValue();
-					int majorTick = ((Number)args[3]).intValue();
-					Procedure procedure = (Procedure) args[4];
-					JSlider slider = new JSlider() {
-						@Override
-						public Dimension getPreferredSize() {
-							return new Dimension(
-									this.getParent().getSize().width,
-									super.getPreferredSize().height
-									);
-							
-						}
-					};
-					
-					slider.setMaximum(max);
-					slider.setMinimum(min);
-					slider.setMajorTickSpacing( majorTick );
-					slider.setMinorTickSpacing( minorTick );
-					slider.setPaintTicks(true);
-					slider.addChangeListener(new ChangeListener() {
-						@Override
-						public void stateChanged(ChangeEvent e) {
-							try {
-								procedure.applyN( new Object[] {IntNum.valueOf( slider.getValue() )  } );
-							} catch (Throwable e1) {
-								logError( "" , e1 );
-							}
-						}
-					});
-					return slider;
-				} else {
-					throw new RuntimeException( "(new-slider min max tick-min tick-maj on-change)" );
-				}
-			}
-    	});
 
-    	defineVar( scheme, "new-button" , new ProcedureN() {
-			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-				if ( args.length == 3 ) {
-						String caption = ((IString) args[0]).toString();
-						Object userHandle = args[1];
-						Procedure procedure = (Procedure) args[2];
-
-						// Environment env= Environment.getCurrent();
-						{
-							JButton button = new JButton( caption );
-							button.addActionListener( new ActionListener() {
-								@Override
-								public void actionPerformed(ActionEvent e) {
-									try {
-										// Environment.setCurrent(env);
-										procedure.applyN( new Object[] { userHandle } );
-									} catch (Throwable e1) {
-										logError( "" , e1 );
-									}
-								}
-							});
-							return button;
-						}
-				} else {
-					throw new RuntimeException( "new-button has two parameters( caption user-handle lambda )." );
-				}
-    		}
-    	});
     	defineVar( scheme, "new" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {

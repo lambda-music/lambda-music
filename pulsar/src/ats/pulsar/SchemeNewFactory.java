@@ -142,7 +142,6 @@ public abstract class SchemeNewFactory {
 					try {
 						Environment.setCurrent(env);
 						Language.setCurrentLanguage(lang);
-						// System.out.println( e.getSource() );
 						AbstractButton button = (AbstractButton)e.getSource();
 						procedure.applyN( new Object[] { 
 								button.isSelected(),
@@ -244,7 +243,6 @@ public abstract class SchemeNewFactory {
 		register( "timer", new SchemeNewFactory() {
 			@Override
 			Object create( Pulsar pulsar, List<Object> args ) {
-				System.out.println("TIMER");
 				if ( 2 == args.size() ) {
 					long interval = SchemeUtils.toLong(args.get(0));
 					Procedure procedure = (Procedure)args.get(1);
