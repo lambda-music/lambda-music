@@ -16,6 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -194,6 +195,26 @@ public abstract class SchemeNewFactory {
 					pulsar.guiLayout(panel, "default" );
 				} else if ( 1 <= args.size() ) {
 					pulsar.guiLayout(panel, SchemeUtils.symbolToString( args.get(0) ) );
+				}
+				return panel;
+			}
+		});
+		register( "group", new SchemeNewFactory() {
+			@Override
+			Object create(Pulsar pulsar, List<Object> args ) {
+				JNamedPanel panel = new JNamedPanel();
+
+				if ( args.size() == 0 ) {
+					pulsar.guiLayout(panel, "default" );
+				} else if ( 1 <= args.size() ) {
+					String title = SchemeUtils.toString( args.get(0) );
+					panel.setBorder( BorderFactory.createTitledBorder( title ) );
+
+					if ( 2 <= args.size() ) {
+						pulsar.guiLayout(panel, SchemeUtils.symbolToString( args.get(1) ) );
+					} else {
+						pulsar.guiLayout(panel, "flow" );
+					}
 				}
 				return panel;
 			}

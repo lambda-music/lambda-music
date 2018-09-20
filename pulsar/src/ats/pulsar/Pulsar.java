@@ -36,6 +36,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -43,6 +44,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
@@ -61,6 +63,7 @@ import ats.metro.MetroNoteEventBufferSequence;
 import ats.metro.MetroNoteEventBufferSequence.SyncType;
 import ats.pulsar.lib.FlawLayout;
 import ats.pulsar.lib.JNamedPanel;
+import ats.pulsar.lib.JPulsarRadioButton;
 import ats.pulsar.lib.LayoutUtils;
 import ats.pulsar.lib.MersenneTwisterFast;
 import ats.pulsar.lib.SpringLayoutUtil;
@@ -441,7 +444,7 @@ public final class Pulsar extends Metro {
 				}
 		}
 	}
-	
+	private static final int PB_POSITION_MAX = 1024;
 	private static final int NOT_DEFINED = -1;
 
 	final File configFile = getConfigFile();
@@ -648,20 +651,8 @@ public final class Pulsar extends Metro {
 	 */
     private void initScheme(Scheme scheme) {
     	{
-    		InputStream in = null;
-    		try {
-    			in = this.getClass().getResource( "init.scm" ).openStream();
-    			scheme.eval( new InputStreamReader( in ) );
-    		} catch (Throwable e) {
-				new RuntimeException( e );
-			} finally {
-    			try {
-    				if ( in != null)
-    					in.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-    		}
+    		execScheme( scheme, "init.scm" );
+    		execScheme( scheme, "anoop.scm" );
     	}
     	defineVar( scheme, "open?" , new ProcedureN() {
 			@Override
@@ -815,6 +806,17 @@ public final class Pulsar extends Metro {
 				if ( 0 < args.length ) {
 					double bpm = SchemeUtils.toDouble(args[0]);
 					tempoTapper.setBeatsPerMinute( bpm );
+				}
+				 
+    			return EmptyList.emptyList;
+    		}
+    	});
+    	defineVar( scheme, "set-progress-pos!" , new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				if ( 0 < args.length ) {
+					double value = SchemeUtils.toDouble(args[0]);
+					pb_position.setValue((int) (value * PB_POSITION_MAX) );
 				}
 				 
     			return EmptyList.emptyList;
@@ -1062,11 +1064,11 @@ public final class Pulsar extends Metro {
     			return EmptyList.emptyList;
     		}
     	});
-    	defineVar( scheme, "gui-refresh" , new ProcedureN() {
+    	defineVar( scheme, "gui-repaint" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
-				logInfo("refresh-gui");
-				guiRefresh();
+//				logInfo("refresh-gui");
+				guiRepaint();
     			return EmptyList.emptyList;
     		}
     	});
@@ -1120,7 +1122,7 @@ public final class Pulsar extends Metro {
 				} else {
 					throw new RuntimeException( "put-constraint has five parameters( constraint1 component1 pad constraint2 component2  )." );
 				}
-				guiRefresh();
+				guiRepaint();
     			return EmptyList.emptyList;
     		}
     	});
@@ -1156,19 +1158,37 @@ public final class Pulsar extends Metro {
     	});
 
     }
+
+	public static void execScheme(Scheme scheme, String resourcePath) {
+		InputStream in = null;
+		try {
+			in = Pulsar.class.getResource( resourcePath ).openStream();
+			scheme.eval( new InputStreamReader( in ) );
+		} catch (Throwable e) {
+			new RuntimeException( e );
+		} finally {
+			try {
+				if ( in != null)
+					in.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
     
     ////////////////////////
 
 	//Create the "cards".
-    JFrame frame = null;
-    Container rootPane = null; 
-	JPanel staticPane = new JPanel();
-
-	JPanel userPane = new JNamedPanel( new FlawLayout() );
+    JFrame frame;
+    Container rootPane; 
+	JPanel staticPane;
+	JPanel userPane ;
 
     transient boolean isComboBoxUpdating = false;
 	JComboBox<String> cb_relatedFiles;
 	JTextField tf_currentFile;
+	JProgressBar pb_position;
+	JSlider sl_tempoSlider;
 	
 	public void guiClear() {
 		userPane.removeAll();
@@ -1210,11 +1230,32 @@ public final class Pulsar extends Metro {
 		}
 	}
 	
-	public void guiRefresh() {
+	public void guiRepaint() {
 		userPane.revalidate();
 		userPane.repaint();
         // frame.pack();
 	}
+
+	enum TempoRange {
+		WIDE  ("Wide",   0,1000), 
+		NORMAL("Normal", 0,500), 
+		SLOW  ("Slow",   0,100), 
+		MEDIUM("Medium", 100,250),
+		FAST  ("Fast",   250,500);
+		private String caption;
+		private int min;
+		private int max;
+		private TempoRange(String caption, int min, int max ) {
+			this.caption = caption;
+			this.min = min;
+			this.max = max;
+		}
+	}
+	public void guiSetTempoRange( TempoRange tempoRange ) {
+		this.sl_tempoSlider.setMaximum( tempoRange.max );
+		this.sl_tempoSlider.setMinimum( tempoRange.min );
+	}
+	
 	public Component guiResolve( Container parent, Collection<String> path, boolean errorIfNotFound ) {
 		if ( parent == null )
 			parent = userPane;
@@ -1380,46 +1421,78 @@ public final class Pulsar extends Metro {
 	 * Initialize GUI 
 	 */
 	{
-		javax.swing.SwingUtilities.invokeLater( new Runnable() {
-			public void run() {
-				createAndShowGUI();
+        //Create and set up the window.
+        this.frame = new JPulsarFrame();
+	}
+	
+	class JPulsarFrame extends JFrame {
+		public JPulsarFrame() {
+			super( "Pulsar" );
+		}
+		
+		JPanel rootPane;
+		JPanel staticPane;
+		JPanel userPane;
+		{
+			this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+			rootPane   = new JPanel( new BorderLayout() );
+			staticPane = new JPanel();
+			userPane   = new JNamedPanel( new FlawLayout() );
+			//Create and set up the content pane.
+
+			rootPane.add( staticPane, BorderLayout.PAGE_START );
+			rootPane.add( userPane, BorderLayout.CENTER );
+			staticPane.setLayout( new BorderLayout(BORDER_SIZE,BORDER_SIZE) );
+			
+			this.getContentPane().add ( rootPane );
+
+			// Tempo Button
+	        staticPane.add( new JPusarFilePanel(), BorderLayout.PAGE_START );
+			staticPane.add( createStartStopButton(), BorderLayout.LINE_END );
+			staticPane.add( createTempoTapButton(), BorderLayout.CENTER );
+			staticPane.add( createRewindButton(), BorderLayout.LINE_START );
+			staticPane.add( createCueButton(), BorderLayout.PAGE_END );
+
+			// createEmptyBorder( top left bottom right )
+//			staticPane.setBorder( BorderFactory.createEmptyBorder(10,20,5,20) );
+//			userPane.setBorder(   BorderFactory.createEmptyBorder(5,20,20,20) );
+
+//			((JComponent)rootPane).setBorder( BorderFactory.createEmptyBorder() );
+			((JComponent)rootPane).setBorder( BorderFactory.createEmptyBorder(10,10,10,10) );
+
+			// frame.setMaximizedBounds(new Rectangle(0, 0, 400, 1000));
+			this.pack();
+			this.setSize( 600, 500 );
+			this.setVisible(true);
+			
+	        Pulsar.this.rootPane = rootPane;
+	        Pulsar.this.staticPane = staticPane;
+	        Pulsar.this.userPane = userPane;
+			
+		}
+		
+		JProgressBar pb_position = new JProgressBar() {
+			@Override
+			public Dimension getPreferredSize() {
+				Dimension s = super.getPreferredSize();
+				s.height = 40;
+				return s;
 			}
-		});
+		};
+		{
+			Pulsar.this.pb_position = pb_position; 
+			add( pb_position , BorderLayout.PAGE_END );
+			pb_position.setBorder( BorderFactory.createCompoundBorder(
+					BorderFactory.createEmptyBorder(10,10,10,10),
+					pb_position.getBorder()) );
+//			pb_position.setBorder( BorderFactory.createEmptyBorder(0,0,0,0) );
+			pb_position.setMaximum( PB_POSITION_MAX );
+			pb_position.setMinimum(0);
+		}
+
 	}
 
-    private void createAndShowGUI() {
-        //Create and set up the window.
-        frame = new JFrame( "Pulsar" );
-        
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        //Create and set up the content pane.
-
-        
-        rootPane = new JPanel( new BorderLayout() );
-		rootPane.add( staticPane, BorderLayout.PAGE_START );
-		rootPane.add( userPane, BorderLayout.CENTER );
-		staticPane.setLayout( new BorderLayout(BORDER_SIZE,BORDER_SIZE) );
-        frame.getContentPane().add ( rootPane );
-
-		// Tempo Button
-        staticPane.add( new JPusarFilePanel(), BorderLayout.PAGE_START );
-		staticPane.add( createStartStopButton(), BorderLayout.LINE_END );
-		staticPane.add( createTempoTapButton(), BorderLayout.CENTER );
-		staticPane.add( createRewindButton(), BorderLayout.LINE_START );
-		staticPane.add( createCueButton(), BorderLayout.PAGE_END );
-
-		// createEmptyBorder( top left bottom right )
-		staticPane.setBorder( BorderFactory.createEmptyBorder(10,20,5,20) );
-		
-		userPane.setBorder(   BorderFactory.createEmptyBorder(5,20,20,20) );
-
-		((JComponent)rootPane).setBorder( BorderFactory.createEmptyBorder() );
-
-		// frame.setMaximizedBounds(new Rectangle(0, 0, 400, 1000));
-		frame.pack();
-		frame.setSize( 600, 500 );
-		frame.setVisible(true);
-    }
     /*
      * === Meaning of these variable name for panels ===
      * ex) panel_p0_1_2
@@ -1594,50 +1667,108 @@ public final class Pulsar extends Metro {
 //			}
 //		}
 		
-		
+    	JSliderPanel panel_slider = new JSliderPanel();
+    	{
+			add( panel_slider, BorderLayout.PAGE_END );
+    	}
+    	class JSliderPanel extends JPanel {
+    		public JSliderPanel() {
+    			super( newLayout() );
+			}
+    		
 
-		JSlider sl_tempoSlider = new JSlider();
-		{
-			add( sl_tempoSlider, BorderLayout.SOUTH );
-			sl_tempoSlider.setMinimum(1);
-			sl_tempoSlider.setMaximum(1000);
-			sl_tempoSlider.setPaintTicks(true);
-			sl_tempoSlider.setPaintTrack( true);
-			sl_tempoSlider.setMajorTickSpacing(100);
-			sl_tempoSlider.setMinorTickSpacing(25);
-			Dictionary<Integer,JLabel> labelTables = new Hashtable<>();
-			labelTables.put(10, new JLabel( "10" ));
-			labelTables.put(50, new JLabel( "50" ));
-			labelTables.put(100, new JLabel( "100" ));
-			labelTables.put(150, new JLabel( "150" ));
-			labelTables.put(200, new JLabel( "200" ));
-			labelTables.put(300, new JLabel( "300" ));
-			labelTables.put(400, new JLabel( "400" ));
-			labelTables.put(500, new JLabel( "500" ));
-			labelTables.put(750, new JLabel( "750" ));
-			labelTables.put(1000, new JLabel( "1000" ));
+    		JTempoScalePanel panel_tempoScale = new JTempoScalePanel();
+    		{
+    			add( panel_tempoScale, BorderLayout.CENTER );
+    		}
+    		class JTempoScalePanel extends JPanel {
 
-			sl_tempoSlider.setLabelTable( labelTables );
-			sl_tempoSlider.setPaintLabels(true);
-			sl_tempoSlider.addChangeListener(new ChangeListener() {
-				@Override
-				public void stateChanged(ChangeEvent e) {
-					try {
-						//    					logInfo( "TempoSlider : " + ((JSlider)e.getSource()).getValue() );
-						tempoTapper.setBeatsPerMinute( ((JSlider)e.getSource()).getValue() );
-					} catch (JackException e1) {
-						logError("", e1);
+    			private final class TempoRangeActionListener implements ActionListener {
+					private final TempoRange tempoRange;
+					private TempoRangeActionListener(TempoRange r) {
+						this.tempoRange = r;
+					}
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						guiSetTempoRange( tempoRange );
 					}
 				}
-			});
-
-			tempoTapper.registerNotifier(new TempoTapperTempoNotifier() {
-				@Override
-				public void notifyTempo(double beatPerMinute) {
-					sl_tempoSlider.setValue( (int)beatPerMinute );
+				
+    			public JTempoScalePanel() {
+    				super( new FlawLayout( FlawLayout.LEFT ) );
+    				setBorder( BorderFactory.createTitledBorder("Tempo Range"));
 				}
-			});
-		}
+    			ButtonGroup group = new ButtonGroup();
+    			{
+    				 for ( TempoRange r :  TempoRange.values() ) {
+    					 JPulsarRadioButton b = new JPulsarRadioButton( r.caption );
+    					 b.addActionListener( new TempoRangeActionListener(r));
+    					 group.add( b );
+    					 add( b );
+    				 }
+    			}
+    		}
+
+    		JSlider sl_tempoSlider = new JSlider();
+    		{
+    			Pulsar.this.sl_tempoSlider = sl_tempoSlider;
+    			add( sl_tempoSlider, BorderLayout.PAGE_END );
+    			sl_tempoSlider.setBorder( BorderFactory.createEmptyBorder() );
+    			sl_tempoSlider.setMinimum(1);
+    			sl_tempoSlider.setMaximum(1000);
+    			sl_tempoSlider.setPaintTicks(true);
+    			sl_tempoSlider.setPaintTrack( true);
+    			sl_tempoSlider.setMajorTickSpacing(100);
+    			sl_tempoSlider.setMinorTickSpacing(25);
+    			Dictionary<Integer,JLabel> labelTables = new Hashtable<>();
+    			labelTables.put(10, new JLabel( "10" ));
+    			labelTables.put(50, new JLabel( "50" ));
+    			labelTables.put(100, new JLabel( "100" ));
+    			labelTables.put(150, new JLabel( "150" ));
+    			labelTables.put(200, new JLabel( "200" ));
+    			labelTables.put(300, new JLabel( "300" ));
+    			labelTables.put(400, new JLabel( "400" ));
+    			labelTables.put(500, new JLabel( "500" ));
+    			labelTables.put(750, new JLabel( "750" ));
+    			labelTables.put(1000, new JLabel( "1000" ));
+
+    			sl_tempoSlider.setLabelTable( labelTables );
+    			sl_tempoSlider.setPaintLabels(true);
+    			sl_tempoSlider.addChangeListener(new ChangeListener() {
+    				@Override
+    				public void stateChanged(ChangeEvent e) {
+    					try {
+    						//    					logInfo( "TempoSlider : " + ((JSlider)e.getSource()).getValue() );
+    						tempoTapper.setBeatsPerMinute( ((JSlider)e.getSource()).getValue() );
+    					} catch (JackException e1) {
+    						logError("", e1);
+    					}
+    				}
+    			});
+    			
+    			sl_tempoSlider.setBorder(
+    					BorderFactory.createCompoundBorder(
+    							BorderFactory.createTitledBorder("TEMPO"),
+    							sl_tempoSlider.getBorder()
+    							)
+    					);
+    			
+    			
+
+    			tempoTapper.registerNotifier(new TempoTapperTempoNotifier() {
+    				@Override
+    				public void notifyTempo(double beatPerMinute) {
+    					sl_tempoSlider.setValue( (int)beatPerMinute );
+    				}
+    			});
+    			
+    			
+    			//
+    			guiSetTempoRange( TempoRange.NORMAL );
+    		}
+    	}
+		
+
     }
     
     private JButton createStartStopButton() {
