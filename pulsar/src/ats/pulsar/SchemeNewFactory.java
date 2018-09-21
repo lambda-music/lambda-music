@@ -12,12 +12,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimerTask;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
@@ -32,6 +34,7 @@ import ats.pulsar.lib.JPulsarButton;
 import ats.pulsar.lib.JPulsarCheckBox;
 import ats.pulsar.lib.JPulsarRadioButton;
 import ats.pulsar.lib.JUserObjectContainer;
+import ats.pulsar.lib.PulsarListItem;
 import gnu.expr.Language;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
@@ -438,6 +441,52 @@ public abstract class SchemeNewFactory {
 			@Override
 			Object create( Pulsar pulsar, List<Object> args ) {
 				return createSelectiveComponents( "'check", args, new JCheckBoxFactory() );
+			}
+		});
+		register( "combo", new SchemeNewFactory() {
+			@Override
+			Object create( Pulsar pulsar, List<Object> args ) {
+				Environment env = Environment.getCurrent();
+				Language lang = Language.getDefaultLanguage();
+				Procedure procedure = (Procedure) args.remove(0);
+				ActionListener actionListener = new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						try {
+							Environment.setCurrent(env);
+							Language.setCurrentLanguage(lang);
+							JComboBox comboBox = (JComboBox)e.getSource();
+							PulsarListItem selectedItem = (PulsarListItem)comboBox.getSelectedItem();
+							procedure.applyN( new Object[] { 
+									true,
+									IString.valueOf( selectedItem.getCaption() ),
+									selectedItem.getUserObject(),
+									e.getSource(), e  } ); 
+						} catch (Throwable e1) {
+							logError( "" , e1 );
+						}
+						
+					}
+				};
+				
+				Vector<PulsarListItem> items = new Vector<>();
+				for ( Object o : args ) {
+					if ( o instanceof Pair ) {
+						Pair p = (Pair) o;
+						String caption = SchemeUtils.toString( p.getCar());
+						Object userObject = p.getCdr();
+						items.add( new PulsarListItem(caption, userObject));
+					} else if ( o instanceof IString ) {
+						items.add( new PulsarListItem( SchemeUtils.toString(o), null));
+					} else {
+						throw new RuntimeException( "An unsupported element type" );
+					}
+				}
+				JComboBox<PulsarListItem> c = new JComboBox<>( items );
+				c.setEnabled(true);
+				c.addActionListener( actionListener );
+				
+				return c; 
 			}
 		});
 	}

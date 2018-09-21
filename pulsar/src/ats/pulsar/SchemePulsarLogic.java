@@ -124,8 +124,16 @@ public class SchemePulsarLogic extends MetroLogic {
 		// boolean result = true;
 		if ( inputList != null ) {
 			for ( Iterator<Object> i = inputList.iterator(); i.hasNext(); ) {
-				Pair record = (Pair)i.next();
-				result = parseNote(scheme, outputBuffer, result, record);
+				Object obj = i.next();
+				if ( obj instanceof Pair ) {
+					Pair record = (Pair)obj;
+					result = parseNote(scheme, outputBuffer, result, record);
+				} else if ( obj instanceof Boolean ) {
+					continue;
+				} else {
+					LOGGER.log( Level.WARNING, "Unsupported object type was found. We ignored it." + obj );
+				}
+					
 			} // end of the loop
 		}
 		// buf.setLength( this.bars );
