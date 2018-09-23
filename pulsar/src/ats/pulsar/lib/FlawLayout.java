@@ -5,13 +5,15 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Insets;
+import java.awt.LayoutManager2;
+import java.util.IdentityHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
-public class FlawLayout extends FlowLayout {
+public class FlawLayout extends FlowLayout implements LayoutManager2 {
     static void logInfo( Object msg ) {
     	// System.err.println( msg );
 		// Logger.getLogger(FlawLayout.class.getName()).log(Level.INFO, msg );
@@ -30,16 +32,55 @@ public class FlawLayout extends FlowLayout {
     public FlawLayout() {
 		super();
 	}
-
-
 	public FlawLayout(int align, int hgap, int vgap) {
 		super(align, hgap, vgap);
 	}
-
-
 	public FlawLayout(int align) {
 		super(align);
 	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    //
+    // Newly Added
+    //
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// >>> THESE CODE POSSIBLY DO NOT HAVE EFFECTS (Sat, 22 Sep 2018 15:05:05 +0900)
+	IdentityHashMap<Object, Object> imap = new IdentityHashMap<>();
+	@Override
+	public void addLayoutComponent(Component comp, Object constraints) {
+		imap.put(comp, constraints );
+	}
+	
+	@Override
+	public void removeLayoutComponent(Component comp) {
+		imap.remove(comp);
+	}
+	
+
+	@Override
+	public Dimension maximumLayoutSize(Container target) {
+		// not used
+		return null;
+	}
+	@Override
+	public float getLayoutAlignmentX(Container target) {
+		// not used
+		return 0;
+	}
+	@Override
+	public float getLayoutAlignmentY(Container target) {
+		// not used
+		return 0;
+	}
+	@Override
+	public void invalidateLayout(Container target) {
+		layoutContainer(target);
+	}
+	// <<< THESE CODE POSSIBLY DO NOT HAVE EFFECTS (Sat, 22 Sep 2018 15:05:05 +0900)
+
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -85,8 +126,19 @@ public class FlawLayout extends FlowLayout {
         	logInfo( i );
 
             if (m.isVisible()) {
-                Dimension d = m.getPreferredSize();
-                m.setSize(d.width, d.height);
+            	// >>> MODIFIED (Sat, 22 Sep 2018 04:19:34 +0900)
+//              Dimension d = m.getPreferredSize();
+//              m.setSize(d.width, d.height);
+            	Dimension d = m.getPreferredSize();
+            	if (imap.containsKey(m) && "maximize-width".equals( imap.get(m) ) ) {
+            		Dimension innerSize = PulsarSwingUtilities.getInnerSize( m.getParent() );
+            		d.width = innerSize.width;
+            	} else if (imap.containsKey(m) && "maximize-height".equals( imap.get(m) ) ) {
+            		Dimension innerSize = PulsarSwingUtilities.getInnerSize( m.getParent() );
+            		d.height = innerSize.height;
+            	}
+            	m.setSize(d.width, d.height);
+            	// <<<MODIFIED (Sat, 22 Sep 2018 04:19:34 +0900)
 
                 if (useBaseline) {
                     int baseline = m.getBaseline(d.width, d.height);

@@ -24,10 +24,12 @@
 ;                      value)))))
 
 ; create
-(define an:new-impl (lambda ()
+(define an:n-impl (lambda ()
                 (cons '() '())))
 
-(define an:new (lambda args
+(define hello-hello 'HELLO)
+
+(define an:n (lambda args
                 (let ((constructor (car args))
                       (args (cdr args))
                       )
@@ -37,81 +39,92 @@
                   ; (display 'args )
                   ; (display args)
                   ; (newline)
-                  (apply constructor (append (list (an:new-impl)) args )))))
+                  (apply constructor (append (list (an:n-impl)) args )))))
 
 (define an:r (lambda args
                  (let* ((this   (car  args))
                         (key    (cadr args))
                         (args   (cddr args))
-                        (cell   (an:assq key (cdr this)))
-                        ;(hello  (begin
-                        ;          (display 'this)
-                        ;          (display this)
-                        ;          (newline)
-                        ;          (display 'key)
-                        ;          (display key)
-                        ;          (newline)
-                        ;          (display 'args)
-                        ;          (display args)
-                        ;          (newline)
-                        ;          (display 'cell)
-                        ;          (display cell)
-                        ;          (newline)
-                        ;          (display "(car cell)")
-                        ;          (display (car cell))
-                        ;          (newline)
-                        ;          (display "(cdr cell)")
-                        ;          (display (cdr cell))
-                        ;          (newline)
-                        ;          (display "(cadr cell)")
-                        ;          (display (cadr cell))
-                        ;          (newline)
-                        ;          (display "(cddr cell)")
-                        ;          (display (cddr cell))
-                        ;          (newline)
-                        ;          ))
-                        )
-                   (if cell 
-                     (let ((type (cadr cell)))
+                        (cell   (an:assq key (cdr this))))
+
+                   ; (display 'cell-type)
+                   ; (display (assq 'type (cadr cell)))
+                   ; (newline)
+ 
+                   (if cell
+                     (let* ((modifier (cadr cell))
+                            (type     (cdr (or (assq 'type modifier)
+                                               (cons 'type 'unknown ))))
+                            (value    (cddr cell)))
                        (cond
                          ((eq? type 'field )
-                          (cddr cell))
+                          value)
                          ((eq? type 'method )
-                          (apply (cddr cell) (cons this args) )
-                          )
+                          (apply value (cons this args) ))
                          (else
-                           (error 'internal-error))))
-                     (error 'not-found)
+                           (error "an internal error occured "))))
+                     (error (string-append "referred a not defined field (" key ")" ) )
                      ))))
 (define an:i an:r)
 
-(define an:w-impl (lambda (type args)
-                      (let* ((this   (car   args))
-                             (key    (cadr  args))
-                             (value  (caddr args))
-                             (args   (cdddr args))
-                             (cell   (an:assq key (cdr this))))
-                        (if cell
-                          (begin
-                            (set-cdr! (cdr cell) value )
-                            this)
-                          (begin
-                            (set-cdr! this (alist-cons key (cons type value) (cdr this)) )
-                            this)))))
+(define an:d (lambda (modifier args)
+               (let* ((modifier   modifier)
+                      (this   (car   args))
+                      (key    (cadr  args))
+                      (value  (caddr args))
+                      (args   (cdddr args))
+                      (cell   (an:assq key (cdr this))))
+                 (if cell
+                   (error (string-append "atempted to define an already defined variable name (" 
+                                         (symbol->string key ) ")" ) )
+
+                   (begin
+                     (set! modifier (if (not (list? modifier))
+                                      (if (pair? modifier)
+                                        (list modifier )
+                                        (list (cons 'type modifier )))
+                                      modifier))
+
+                     (set! modifier (map (lambda (elem)
+                                           (if (not (pair? elem))
+                                             (cons elem '() )
+                                             elem)
+                                           ) modifier))
+
+                     (set-cdr! this (alist-cons key (cons modifier value) (cdr this)) )
+                     this)))))
 
 (define an:w (lambda args
-                (an:w-impl 'field args)))
+               (let* ((this   (car   args))
+                      (key    (cadr  args))
+                      (value  (caddr args))
+                      (args   (cdddr args))
+                      (cell   (an:assq key (cdr this))))
+                 (if cell
+                   (begin
+                     ;(display 'cell-w )
+                     ;(display (cadr cell))
+                     ;(newline)
+                     (if (assq 'read-only (cadr cell))
+                       (error "atempted to update a read-only field."))
+                     (set-cdr! (cdr cell) value )
+                     this)
+                   (begin
+                     (error (string-append "referred a not defined field (" key ")" ) ))))))
 
-(define an:d (lambda args
-                (an:w-impl 'method args)))
+(define an:df (lambda args
+                (an:d 'field args)))
+
+(define an:dm (lambda args
+                (an:d 'method args)))
 
 ; (define tst-tor (lambda (this) 
 ;                   (an:w this 'hello "Hello")
 ;                   (an:w this 'world "World")
-;                   (an:d this 'foo   (lambda (this)
+;                   (an:dm this 'foo   (lambda (this)
 ;                                        (display "FOO\n" )))))
 
-; (define tst2 (an:new tst-tor )) 
+; (define tst2 (an:n tst-tor )) 
 ; (display (an:r tst2 'hello ))(newline)
 ; (display (an:r tst2 'world ))(newline)
 ; (display (an:r tst2 'foo   ))(newline)

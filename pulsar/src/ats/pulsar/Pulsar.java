@@ -5,9 +5,12 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.BufferedReader;
@@ -16,7 +19,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -45,6 +47,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JRootPane;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
@@ -67,6 +70,8 @@ import ats.pulsar.lib.JPulsarRadioButton;
 import ats.pulsar.lib.LayoutUtils;
 import ats.pulsar.lib.MersenneTwisterFast;
 import ats.pulsar.lib.SpringLayoutUtil;
+import gnu.kawa.io.InPort;
+import gnu.kawa.io.Path;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.LList;
@@ -651,7 +656,7 @@ public final class Pulsar extends Metro {
 	 */
     private void initScheme(Scheme scheme) {
     	{
-    		execScheme( scheme, "init.scm" );
+    		execScheme( scheme, "init.scm"  );
     		execScheme( scheme, "anoop.scm" );
     	}
     	defineVar( scheme, "open?" , new ProcedureN() {
@@ -1045,7 +1050,17 @@ public final class Pulsar extends Metro {
     			}
     		}
     	});
-    	
+    
+    	defineVar( scheme, "typeof" , new ProcedureN() {
+    		public Object applyN(Object[] args) throws Throwable {
+    			if ( 0 < args.length  ) {
+    				return args[0].getClass().getName();
+    			} else {
+    				return EmptyList.emptyList;
+    			}
+    		}
+    	});
+    		
     	defineVar( scheme, "gui-build!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
@@ -1076,12 +1091,21 @@ public final class Pulsar extends Metro {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				logInfo( "gui-layout" );
+				
+				ArrayList<Object> argList = new ArrayList<>( Arrays.asList(args) );
+				
 				if ( args.length == 0 ) {
-					throw new RuntimeException( "gui-layout! (panel) ['gridbag | 'spring | flow ]" );
+					throw new RuntimeException( "gui-layout! (panel) ['gridbag | 'spring | 'flow | 'grid]" );
 				} else if ( args.length == 1 ) {
-					guiLayout(userPane, SchemeUtils.symbolToString( args[0] ) );
+					guiLayout( userPane, SchemeUtils.symbolToString( args[0] ) );
 				} else if ( 2 <= args.length ) {
-					guiLayout( (Container) args[0], SchemeUtils.symbolToString( args[1] ) );
+					Container container = (Container) argList.remove(0);
+					String type         = SchemeUtils.symbolToString( argList.remove(0) );
+					int row  = 0 < argList.size() ? SchemeUtils.toInteger( argList.remove(0)) : 1;
+					int col  = 0 < argList.size() ? SchemeUtils.toInteger( argList.remove(0)) : 0;
+					int hgap = 0 < argList.size() ? SchemeUtils.toInteger( argList.remove(0)) : 0;
+					int vgap = 0 < argList.size() ? SchemeUtils.toInteger( argList.remove(0)) : 0;
+					guiLayout( container, type, row, col, hgap, vgap );
 				} 
     			return EmptyList.emptyList;
     		}
@@ -1163,9 +1187,11 @@ public final class Pulsar extends Metro {
 		InputStream in = null;
 		try {
 			in = Pulsar.class.getResource( resourcePath ).openStream();
-			scheme.eval( new InputStreamReader( in ) );
+			System.out.println( resourcePath );
+//			scheme.eval( new InputStreamReader(in) );
+			scheme.eval( InPort.openFile( in, Path.valueOf( resourcePath ) ) );
 		} catch (Throwable e) {
-			new RuntimeException( e );
+			throw new RuntimeException( e );
 		} finally {
 			try {
 				if ( in != null)
@@ -1210,7 +1236,11 @@ public final class Pulsar extends Metro {
 	public void guiGridBagLayout(Container userPane) {
 		userPane.setLayout( new GridBagLayout() );
 	}
-	public void guiLayout( Container container, String type ) {
+	public void guiGridLayout( Container userPane, int row, int col, int hgap, int vgap  ) {
+		logInfo( "gridLayout : " + row + " / " + col + " / " + hgap + " / " + vgap );
+		userPane.setLayout( new GridLayout( row, col, hgap, vgap ) );
+	}
+	public void guiLayout( Container container, String type, Object ... args  ) {
 		switch ( type ) {
 			case "default":
 			case "flow" :
@@ -1221,6 +1251,9 @@ public final class Pulsar extends Metro {
 				break;
 			case "spring" :
 				guiSpringLayout( container );
+				break;
+			case "grid" :
+				guiGridLayout( container, (int)args[0], (int)args[1], (int)args[2], (int)args[3] );
 				break;
 			case "gridbag" :
 				guiGridBagLayout( container );
@@ -1326,6 +1359,9 @@ public final class Pulsar extends Metro {
 					case "newline" : 
 						guiNewline( parent );
 						break;
+					case "validate" : 
+						guiValidate( parent );
+						break;
 					case "list":
 						mode = "list";
 						break;
@@ -1379,6 +1415,7 @@ public final class Pulsar extends Metro {
 		return parent;
 	}	
 	
+
 	public void guiName( Container parent, String name ) {
 		if ( parent == null )
 			parent = userPane;
@@ -1392,6 +1429,10 @@ public final class Pulsar extends Metro {
 			parent = userPane;
 		parent.add( FlawLayout.createNewLine() );
 	}
+	public void guiValidate(Container parent) {
+		parent.validate();
+	}
+
 	
 	public void updateFilename(File file) {
 		if ( tf_currentFile != null ) {
@@ -1463,8 +1504,20 @@ public final class Pulsar extends Metro {
 
 			// frame.setMaximizedBounds(new Rectangle(0, 0, 400, 1000));
 			this.pack();
-			this.setSize( 600, 500 );
+			this.setSize( 700, 500 );
 			this.setVisible(true);
+			this.addComponentListener( new ComponentAdapter() {
+				@Override
+				public void componentResized(ComponentEvent e) {
+					JRootPane pane = JPulsarFrame. this.getRootPane();
+					for (Component c : pane.getComponents() ) {
+						c.revalidate();
+					}
+					pane.revalidate();
+					pane.validate();
+					
+				}
+			});
 			
 	        Pulsar.this.rootPane = rootPane;
 	        Pulsar.this.staticPane = staticPane;

@@ -93,10 +93,11 @@ public class SchemeUtils {
 			return Boolean.TRUE; // treat everything as #t except #f.
 	}
 	public static String toString( Object schemeVal ) {
-		if ( schemeVal instanceof String )
-			return (String) schemeVal;
-		else
-			return ((IString)schemeVal).toString();
+		return schemeVal.toString();
+//		if ( schemeVal instanceof String )
+//			return (String) schemeVal;
+//		else
+//			return ((IString)schemeVal).toString();
 	}
 	public static String symbolToString( Object schemeVal ) {
 		return ((Symbol)schemeVal).getName();
