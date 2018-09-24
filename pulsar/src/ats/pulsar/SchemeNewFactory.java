@@ -42,9 +42,11 @@ import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.ProcedureN;
+import gnu.mapping.Symbol;
 import gnu.math.IntNum;
 
 public abstract class SchemeNewFactory {
+	private static final Logger LOGGER = Logger.getLogger(Pulsar.class.getName());
 	private static final Map<String, SchemeNewFactory> map = new HashMap<>();
 	abstract Object create( Pulsar pulsar, List<Object> args );
 	static void register( String key, SchemeNewFactory factory ) {
@@ -55,10 +57,14 @@ public abstract class SchemeNewFactory {
 	}
 
 	static void logError( String msg, Throwable e ) {
-        Logger.getLogger(Pulsar.class.getName()).log(Level.SEVERE, msg, e);
+        LOGGER.log(Level.SEVERE, msg, e);
 	}
 	static void logInfo( String msg ) {
-//        Logger.getLogger(Pulsar.class.getName()).log(Level.INFO, msg);
+//      LOGGER.log(Level.INFO, msg);
+		System.err.println( msg );
+	}
+	static void logWarn( String msg ) {
+		LOGGER.log(Level.WARNING, msg);
 		System.err.println( msg );
 	}
 
@@ -79,15 +85,15 @@ public abstract class SchemeNewFactory {
 	}
 
 
-	final class SchemeFunctionExecutor {
-		private final Procedure procedure;
+
+	static final class SchemeFunctionExecutor {
 		private final Environment env;
 		private final Language lang;
-
+		private final Procedure procedure;
 		private SchemeFunctionExecutor(Procedure procedure ) {
-			this.procedure = procedure;
 			this.env = Environment.getCurrent();
 			this.lang = Language.getDefaultLanguage();
+			this.procedure = procedure;
 		}
 		public Object execute( Object ... args ) {
 			try {
@@ -100,13 +106,34 @@ public abstract class SchemeNewFactory {
 			}
 		}
 	}
+	
+	static final class ComponentFactoryActionListener implements ActionListener {
+		SchemeFunctionExecutor executor; 
+		ComponentFactoryActionListener(Procedure procedure) {
+			this.executor = new SchemeFunctionExecutor(procedure); 
+		}
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			AbstractButton button = (AbstractButton)e.getSource();
+			executor.execute( 
+					button.isSelected(),
+					IString.valueOf( e.getActionCommand() ),
+					((JUserObjectContainer)button).getUserObject(),
+					e.getSource(), e 
+					);
+		}
+	}
 
 	static abstract class ComponentFactory {
 		abstract Component create( ActionListener l, String caption, Object userObject );
+		abstract ActionListener createActionListener( Procedure procedure );
 	}
-
 	static class JRadioButtonFactory extends ComponentFactory {
 		ButtonGroup group = new ButtonGroup();
+		@Override
+		ActionListener createActionListener( Procedure procedure ) {
+			return new ComponentFactoryActionListener( procedure );
+		}
 		@Override
 		Component create(ActionListener l, String caption, Object userObject) {
 			JPulsarRadioButton r = new JPulsarRadioButton( caption );
@@ -119,6 +146,10 @@ public abstract class SchemeNewFactory {
 	}
 	static class JCheckBoxFactory extends ComponentFactory {
 		@Override
+		ActionListener createActionListener( Procedure procedure ) {
+			return new ComponentFactoryActionListener( procedure );
+		}
+		@Override
 		Component create(ActionListener l, String caption, Object userObject) {
 			JPulsarCheckBox r = new JPulsarCheckBox( caption );
 			r.setActionCommand( caption );
@@ -129,38 +160,32 @@ public abstract class SchemeNewFactory {
 	}
 	
 	static Object createSelectiveComponents( String type, List<Object> args, ComponentFactory f ) {
-		
 		if ( 1 < args.size()  ) {
-			Environment env = Environment.getCurrent();
-			Language lang = Language.getDefaultLanguage();
 			Procedure procedure;
 			{
 				int last = args.size() - 1;
 				procedure = (Procedure) args.get( last );
 				args.remove(last);
 			}
-			
-			ActionListener listener = new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					try {
-						Environment.setCurrent(env);
-						Language.setCurrentLanguage(lang);
-						AbstractButton button = (AbstractButton)e.getSource();
-						procedure.applyN( new Object[] { 
-								button.isSelected(),
-								IString.valueOf( e.getActionCommand() ),
-								((JUserObjectContainer)button).getUserObject(),
-								e.getSource(), e  } ); 
-					} catch (Throwable e1) {
-						logError( "" , e1 );
-					}
-				}
-			};
+			ActionListener listener = f.createActionListener( procedure );
 			
 			List<Object> result = new ArrayList();
 			for ( Object e : args ) {
-				if ( e instanceof IString ) {
+				if ( e instanceof Symbol ) {
+					String symbol = SchemeUtils.symbolToString(e);
+					switch ( symbol ) {
+						case "selected" :
+							if ( result.size() == 0 ) {
+								throw new RuntimeException( "error : no item was created" );
+							} else {
+								((AbstractButton) result.get( result.size() - 1) ).setSelected(true);
+							}
+							break;
+						default :
+							
+							break;
+					}
+				} else if ( e instanceof IString ) {
 					String caption = SchemeUtils.toString(e);
 					result.add( f.create(listener, caption, caption) );
 				} else if ( e instanceof Pair ) {
@@ -444,6 +469,7 @@ public abstract class SchemeNewFactory {
 			}
 		});
 		register( "combo", new SchemeNewFactory() {
+			
 			@Override
 			Object create( Pulsar pulsar, List<Object> args ) {
 				Environment env = Environment.getCurrent();
@@ -476,6 +502,7 @@ public abstract class SchemeNewFactory {
 						}
 					};
 					
+					PulsarListItem selectedItem = null ;
 					Vector<PulsarListItem> items = new Vector<>();
 					for ( Object o : args ) {
 						if ( o instanceof Pair ) {
@@ -485,12 +512,20 @@ public abstract class SchemeNewFactory {
 							items.add( new PulsarListItem(caption, userObject));
 						} else if ( o instanceof IString ) {
 							items.add( new PulsarListItem( SchemeUtils.toString(o), null));
+						} else if ( o instanceof Symbol ) {
+							if ( items.size() == 0  ) {
+								throw new RuntimeException("error : no item was created");
+							} else {
+								selectedItem = items.get( items.size() - 1 );
+							}
 						} else {
 							throw new RuntimeException( "An unsupported element type" );
 						}
 					}
 					JComboBox<PulsarListItem> c = new JComboBox<>( items );
 					c.setEnabled(true);
+					if ( selectedItem != null )
+						c.setSelectedItem( selectedItem );
 					c.addActionListener( actionListener );
 					
 					return c; 

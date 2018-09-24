@@ -32,6 +32,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1035,18 +1036,28 @@ public final class Pulsar extends Metro {
     	defineVar( scheme, "gui-get" , new ProcedureN() {
     		@Override
     		public Object applyN(Object[] args) throws Throwable {
-    			if ( 1 < args.length ) {
+    			if ( 1 == args.length ) {
+        			Container parent = (Container) args[0];
+        			Collection<Entry<String, Component>> list =  guiListAll(parent);
+    				SchemeUtils.<Entry<String, Component>, Pair>convertList(list, (e)->{
+    					String key = e.getKey();
+    					return Pair.make(
+    							( key == null ? false : SchemeUtils.toSchemeSymbol( key ) ) , e.getValue() );
+    				});
+					return Pair.makeList( (List)list );
+    			} else if ( 1 < args.length ) {
         			ArrayDeque<Object> argList = new ArrayDeque<>( Arrays.asList(args) );
         			Container parent = (Container) SchemeUtils.toNull( argList.pop() );
         			Collection<String> path = SchemeUtils.convertList(argList, (o)->{
     					return SchemeUtils.toString(o);
     				});
+        			
     				Component c  = guiGet( parent, path );
     				return SchemeUtils.toEmptyList( c );
     			} else {
-					throw new RuntimeException( 
-							"Invalid argument error\n"+
-							"usage : (gui-get [parent] [name])" );
+    				throw new RuntimeException( 
+    						"Invalid argument error\n"+
+    						"usage : (gui-get [parent] [name])" );
     			}
     		}
     	});
@@ -1329,6 +1340,19 @@ public final class Pulsar extends Metro {
 	public Component guiGet( Container parent, Collection<String> path ) {
 		return guiResolve( parent, path,  false );
 	}
+	public Collection<Entry<String, Component>> guiListAll( Container parent ) {
+		ArrayList<Entry<String, Component>> list = new ArrayList<>();
+		if ( parent instanceof JNamedPanel  ) {
+			for ( Iterator<Entry<String, Component>> iterator = ((JNamedPanel)parent).listAllComponent();
+					iterator.hasNext(); ) 
+			{
+				list.add( iterator.next() );
+			}
+		} else {
+			throw new RuntimeException( "this panel is not made by pulsar" );
+		}
+		return list;
+	}
 
 	public void guiAdd( Container parent, Component c, Object constraint ) {
 		if ( parent == null )
@@ -1355,26 +1379,31 @@ public final class Pulsar extends Metro {
 			Object curr = args[i];
 			if ( curr instanceof Symbol ) {
 				String symbolName = SchemeUtils.symbolToString( curr );
-				switch ( symbolName ) {
-					case "newline" : 
-						guiNewline( parent );
-						break;
-					case "validate" : 
-						guiValidate( parent );
-						break;
-					case "list":
-						mode = "list";
-						break;
-					case "name":
-						mode = "name";
-						break;
-					case "label":
-						mode = "label";
-						break;
-					default :
-						throw new RuntimeException( "gui-build! unknown type \"" + symbolName + "\"" );
+
+				if ( "name".equals( mode ) ) {
+					guiName( parent, symbolName );
+					mode = null;
+				} else {
+					switch ( symbolName ) {
+						case "newline" : 
+							guiNewline( parent );
+							break;
+						case "validate" : 
+							guiValidate( parent );
+							break;
+						case "list":
+							mode = "list";
+							break;
+						case "name":
+							mode = "name";
+							break;
+						case "label":
+							mode = "label";
+							break;
+						default :
+							throw new RuntimeException( "gui-build! unknown type \"" + symbolName + "\"" );
+					}
 				}
-				// mode = null;
 			} else if ( curr instanceof IString ) {
 				if ( "label".equals( mode ) ) {
 					guiAdd( parent, (Component) SchemeNewFactory.process(
