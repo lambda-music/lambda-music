@@ -657,7 +657,7 @@ public final class Pulsar extends Metro {
     private void initScheme(Scheme scheme) {
     	{
     		execScheme( scheme, "init.scm"  );
-    		execScheme( scheme, "anoop.scm" );
+    		execScheme( scheme, "xnoop.scm" );
     	}
     	defineVar( scheme, "open?" , new ProcedureN() {
 			@Override
