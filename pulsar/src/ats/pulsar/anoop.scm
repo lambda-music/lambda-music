@@ -1,11 +1,11 @@
 ; =========================================================
-; Anoop (Anoop is not an OOP Library)
+; XNOOP (XNOOP is not an OOP Library)
 ; This file is distributed with the copyright which is described at GPL3
 ; =========================================================
 
 (import (srfi 1))
 
-(define an:assq (lambda (key lst)
+(define xassq (lambda (key lst)
                     (let loop ((lst lst))
                       (if (null? lst)
                         #f
@@ -24,12 +24,10 @@
 ;                      value)))))
 
 ; create
-(define an:n-impl (lambda ()
+(define xn-impl (lambda ()
                 (cons '() '())))
 
-(define hello-hello 'HELLO)
-
-(define an:n (lambda args
+(define xn (lambda args
                 (let ((constructor (car args))
                       (args (cdr args))
                       )
@@ -39,41 +37,16 @@
                   ; (display 'args )
                   ; (display args)
                   ; (newline)
-                  (apply constructor (append (list (an:n-impl)) args )))))
+                  (apply constructor (append (list (xn-impl)) args )))))
 
-(define an:r (lambda args
-                 (let* ((this   (car  args))
-                        (key    (cadr args))
-                        (args   (cddr args))
-                        (cell   (an:assq key (cdr this))))
-
-                   ; (display 'cell-type)
-                   ; (display (assq 'type (cadr cell)))
-                   ; (newline)
- 
-                   (if cell
-                     (let* ((modifier (cadr cell))
-                            (type     (cdr (or (assq 'type modifier)
-                                               (cons 'type 'unknown ))))
-                            (value    (cddr cell)))
-                       (cond
-                         ((eq? type 'field )
-                          value)
-                         ((eq? type 'method )
-                          (apply value (cons this args) ))
-                         (else
-                           (error "an internal error occured "))))
-                     (error (string-append "referred a not defined field (" key ")" ) )
-                     ))))
-(define an:i an:r)
-
-(define an:d (lambda (modifier args)
+(define xd (lambda (modifier args)
                (let* ((modifier   modifier)
                       (this   (car   args))
                       (key    (cadr  args))
                       (value  (caddr args))
                       (args   (cdddr args))
-                      (cell   (an:assq key (cdr this))))
+                      (fields (cdr   this))
+                      (cell   (xassq key fields)))
                  (if cell
                    (error (string-append "atempted to define an already defined variable name (" 
                                          (symbol->string key ) ")" ) )
@@ -91,44 +64,88 @@
                                              elem)
                                            ) modifier))
 
-                     (set-cdr! this (alist-cons key (cons modifier value) (cdr this)) )
+                     (let ((type     (cdr (or (assq 'type modifier)
+                                              (cons 'type 'unknown )))))
+                       (cond
+                         ((eq? type 'field )
+                          (letrec* ((field-key (string->symbol 
+                                                 (string-append 
+                                                   "*FIELD*-" 
+                                                   (symbol->string key))))
+                                    (field-value value)
+                                    (field-accessor (lambda args
+                                                      (if (= 0 (length args))
+                                                        ; Do nothing. This will never be happen.
+                                                        #f
+                                                        ;write
+                                                        (let ((this   (car args))
+                                                              (args   (cdr args))
+                                                              (fields (cdr this))
+                                                              (cell   (or (xassq field-key fields)
+                                                                        (cons key #f))))
+                                                          (if (= 0 (length args))
+                                                            ;read
+                                                            (begin
+                                                              (cdr cell))
+                                                            ;write
+                                                            (let ((new-value (car args)))
+                                                              (set-cdr! cell new-value)
+                                                              new-value)
+                                                            )))
+                                                      ))
+                                    
+                                    )
+                                   (set! fields (alist-cons field-key field-value    fields))
+                                   (set! fields (alist-cons key       field-accessor fields))
+                                   (set-cdr! this fields)
+                                   ))
+                         ((eq? type 'method )
+                          (set-cdr! this (alist-cons key value fields)))
+                         (else
+                           (error "an internal error occured "))))
+
+                     
                      this)))))
 
-(define an:w (lambda args
-               (let* ((this   (car   args))
-                      (key    (cadr  args))
-                      (value  (caddr args))
-                      (args   (cdddr args))
-                      (cell   (an:assq key (cdr this))))
-                 (if cell
-                   (begin
-                     ;(display 'cell-w )
-                     ;(display (cadr cell))
-                     ;(newline)
-                     (if (assq 'read-only (cadr cell))
-                       (error "atempted to update a read-only field."))
-                     (set-cdr! (cdr cell) value )
-                     this)
-                   (begin
-                     (error (string-append "referred a not defined field (" key ")" ) ))))))
 
-(define an:df (lambda args
-                (an:d 'field args)))
+(define xx (lambda args
+                 (let* ((this   (car  args))
+                        (key    (cadr args))
+                        (args   (cddr args))
+                        (cell   (xassq key (cdr this))))
 
-(define an:dm (lambda args
-                (an:d 'method args)))
+                   ; (display 'cell-type)
+                   ; (display (assq 'type (cadr cell)))
+                   ; (newline)
+ 
+                   (if cell
+                     (let ((field-accessor (cdr cell)))
+                       (apply field-accessor (cons this args)))
+                     (error (string-append "referred a not defined field (" key ")" ) )
+                     ))))
+
+(define xxi xx)
+(define xxw xx)
+(define xxr xx)
+(define xdf (lambda args
+                (xd 'field args)))
+
+(define xdm (lambda args
+                (xd 'method args)))
+
+
 
 ; (define tst-tor (lambda (this) 
-;                   (an:w this 'hello "Hello")
-;                   (an:w this 'world "World")
-;                   (an:dm this 'foo   (lambda (this)
+;                   (xxw this 'hello "Hello")
+;                   (xxw this 'world "World")
+;                   (xdm this 'foo   (lambda (this)
 ;                                        (display "FOO\n" )))))
 
-; (define tst2 (an:n tst-tor )) 
-; (display (an:r tst2 'hello ))(newline)
-; (display (an:r tst2 'world ))(newline)
-; (display (an:r tst2 'foo   ))(newline)
-; (an:w tst2 'world "WORLD")
-; (display (an:r tst2 'world ))(newline)
+; (define tst2 (xn tst-tor )) 
+; (display (xx tst2 'hello ))(newline)
+; (display (xx tst2 'world ))(newline)
+; (display (xx tst2 'foo   ))(newline)
+; (xxw tst2 'world "WORLD")
+; (display (xx tst2 'world ))(newline)
 
 ; vim: sw=2 expandtab:
