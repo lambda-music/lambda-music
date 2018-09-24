@@ -68,6 +68,7 @@ import ats.metro.MetroNoteEventBufferSequence.SyncType;
 import ats.pulsar.lib.FlawLayout;
 import ats.pulsar.lib.JNamedPanel;
 import ats.pulsar.lib.JPulsarRadioButton;
+import ats.pulsar.lib.JSelectableUserObject;
 import ats.pulsar.lib.LayoutUtils;
 import ats.pulsar.lib.MersenneTwisterFast;
 import ats.pulsar.lib.SpringLayoutUtil;
@@ -970,6 +971,19 @@ public final class Pulsar extends Metro {
 				}
 			}
     	});
+    	
+    	defineVar( scheme, "typeof" , new ProcedureN() {
+    		public Object applyN(Object[] args) throws Throwable {
+    			if ( 0 < args.length  ) {
+    				return args[0].getClass().getName();
+    			} else {
+    				return EmptyList.emptyList;
+    			}
+    		}
+    	});
+
+    	//////////////////////////////////////////////////////
+    	
     	defineVar( scheme, "gui-get-pane" , new ProcedureN() {
 			// TODO ???
 			@Override
@@ -1001,7 +1015,7 @@ public final class Pulsar extends Metro {
     		}
     	});
 
-    	defineVar( scheme, "new" , new ProcedureN() {
+    	defineVar( scheme, "gui-new" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				try {
@@ -1013,22 +1027,53 @@ public final class Pulsar extends Metro {
     		}
     	});
 
-    	defineVar( scheme, "gui-remove" , new ProcedureN() {
-    		@Override
+    	defineVar( scheme, "gui-parent" , new ProcedureN() {
+			@Override
     		public Object applyN(Object[] args) throws Throwable {
-    			
-    			if ( 1 < args.length ) {
+    			if ( 1 <= args.length ) {
         			ArrayDeque<Object> argList = new ArrayDeque<>( Arrays.asList(args) );
-        			Container parent = (Container) SchemeUtils.toNull( argList.pop() );
-        			Collection<String> path = SchemeUtils.convertList(argList, (o)->{
-    					return SchemeUtils.toString(o);
-    				});
-    				Component c  = guiRemove( parent, path );
-    				return SchemeUtils.toEmptyList( c );
+        			Component component = (Component) SchemeUtils.schemeNullToJavaNull( argList.pop() );
+    				Container parent = component.getParent();
+					return parent;
     			} else {
 					throw new RuntimeException( 
 							"Invalid argument error\n"+
-							"usage : (gui-remove [parent] [name])" );
+							"usage : (gui-remove-by-name [parent] [name])" );
+    			}
+    		}
+    	});
+
+    	defineVar( scheme, "gui-remove-by-ref" , new ProcedureN() {
+    		@Override
+    		public Object applyN(Object[] args) throws Throwable {
+    			if ( 1 < args.length ) {
+        			ArrayDeque<Object> argList = new ArrayDeque<>( Arrays.asList(args) );
+        			Container parent = (Container) SchemeUtils.schemeNullToJavaNull( argList.pop() );
+        			guiRemoveByRef( parent, argList );
+        			return EmptyList.emptyList;
+    			} else {
+					throw new RuntimeException( 
+							"Invalid argument error\n"+
+							"usage : (gui-remove-by-name [parent] [name])" );
+    			}
+    		}
+    	});
+
+    	defineVar( scheme, "gui-remove-by-name" , new ProcedureN() {
+    		@Override
+    		public Object applyN(Object[] args) throws Throwable {
+    			if ( 1 < args.length ) {
+        			ArrayDeque<Object> argList = new ArrayDeque<>( Arrays.asList(args) );
+        			Container parent = (Container) SchemeUtils.schemeNullToJavaNull( argList.pop() );
+        			Collection<String> path = SchemeUtils.convertList(argList, (o)->{
+    					return SchemeUtils.toString(o);
+    				});
+    				Component c  = guiRemoveByPath( parent, path );
+    				return SchemeUtils.javaNullToSchemeNull( c );
+    			} else {
+					throw new RuntimeException( 
+							"Invalid argument error\n"+
+							"usage : (gui-remove-by-name [parent] [name])" );
     			}
     		}
     	});
@@ -1047,30 +1092,40 @@ public final class Pulsar extends Metro {
 					return Pair.makeList( (List)list );
     			} else if ( 1 < args.length ) {
         			ArrayDeque<Object> argList = new ArrayDeque<>( Arrays.asList(args) );
-        			Container parent = (Container) SchemeUtils.toNull( argList.pop() );
+        			Container parent = (Container) SchemeUtils.schemeNullToJavaNull( argList.pop() );
         			Collection<String> path = SchemeUtils.convertList(argList, (o)->{
     					return SchemeUtils.toString(o);
     				});
         			
     				Component c  = guiGet( parent, path );
-    				return SchemeUtils.toEmptyList( c );
+    				return SchemeUtils.javaNullToSchemeNull( c );
     			} else {
     				throw new RuntimeException( 
     						"Invalid argument error\n"+
-    						"usage : (gui-get [parent] [name])" );
+    						"usage : (gui-get [parent] [name ... ])" );
     			}
+    		}
+    	});
+    	
+    	
+    	defineVar( scheme, "gui-set-selected" , new ProcedureN() {
+    		public Object applyN(Object[] args) throws Throwable {
+    			if ( 3 == args.length ) {
+        			JSelectableUserObject parent = (JSelectableUserObject) args[0];
+        			Object userObject = args[1];
+        			boolean selected  = (Boolean)args[2];
+        			
+					int count = parent.setSelectedByUserObject(userObject, selected);
+					return SchemeUtils.toSchemeNumber( count ); 
+    			} else {
+    				throw new RuntimeException( 
+    						"Invalid argument error\n"+
+    						"usage : (gui-set-selected [selectable object] [selected value])" );
+    			}
+    			
     		}
     	});
     
-    	defineVar( scheme, "typeof" , new ProcedureN() {
-    		public Object applyN(Object[] args) throws Throwable {
-    			if ( 0 < args.length  ) {
-    				return args[0].getClass().getName();
-    			} else {
-    				return EmptyList.emptyList;
-    			}
-    		}
-    	});
     		
     	defineVar( scheme, "gui-build!" , new ProcedureN() {
 			@Override
@@ -1331,7 +1386,13 @@ public final class Pulsar extends Metro {
 		return curr;
 		
 	}
-	public Component guiRemove( Container parent, Collection<String> path ) {
+	private void guiRemoveByRef(Container parent, Collection<Object> argList ) {
+		for ( Object o : argList ) {
+			parent.remove( (Component)o );
+		}
+	}
+
+	public Component guiRemoveByPath( Container parent, Collection<String> path ) {
 		Component c = guiResolve( parent, path, false );
 		parent.remove( c );
 		return c;

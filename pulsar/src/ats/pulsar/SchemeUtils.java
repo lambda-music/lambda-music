@@ -15,6 +15,7 @@ import gnu.lists.IString;
 import gnu.lists.Pair;
 import gnu.mapping.Symbol;
 import gnu.math.DFloNum;
+import gnu.math.IntNum;
 import gnu.math.Quantity;
 
 public class SchemeUtils {
@@ -134,18 +135,22 @@ public class SchemeUtils {
 	public static DFloNum toSchemeNumber(double value) {
 		return DFloNum.valueOf(value);
 	}
+	public static IntNum toSchemeNumber(int value) {
+		return IntNum.valueOf(value);
+	}
+
 	public static Symbol toSchemeSymbol(String value) {
 		return Symbol.valueOf(value);
 	}
 	
-	public static <T> T toNull( T object ) {
+	public static <T> T schemeNullToJavaNull( T object ) {
 		if ( object instanceof EmptyList ) {
 			return null;
 		} else {
 			return object;
 		}
 	}
-	public static Object toEmptyList( Object object ) {
+	public static Object javaNullToSchemeNull( Object object ) {
 		if ( object == null )
 			return EmptyList.emptyList;
 		else

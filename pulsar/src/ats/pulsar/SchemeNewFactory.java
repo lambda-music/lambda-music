@@ -19,7 +19,6 @@ import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
@@ -32,6 +31,7 @@ import ats.pulsar.lib.FlawLayout;
 import ats.pulsar.lib.JNamedPanel;
 import ats.pulsar.lib.JPulsarButton;
 import ats.pulsar.lib.JPulsarCheckBox;
+import ats.pulsar.lib.JPulsarComboBox;
 import ats.pulsar.lib.JPulsarRadioButton;
 import ats.pulsar.lib.JUserObjectContainer;
 import ats.pulsar.lib.PulsarListItem;
@@ -252,7 +252,20 @@ public abstract class SchemeNewFactory {
 			@Override
 			Object create( Pulsar pulsar, List<Object> args ) {
 				if ( args.size() == 2 ) {
-					String caption = ((IString) args.get(0)).toString();
+					String caption;
+					Object userObject;
+					{
+						Object arg0 = args.get(0);
+						if ( arg0 instanceof Pair ) {
+							Pair pair = (Pair) arg0;
+							caption = SchemeUtils.toString( pair.getCar() );
+							userObject = pair.getCdr();
+						} else {
+							caption = SchemeUtils.toString( arg0 );
+							userObject = EmptyList.emptyList;
+						}
+					}
+
 					Procedure procedure = (Procedure) args.get(1);
 
 					Environment env = Environment.getCurrent();
@@ -280,6 +293,7 @@ public abstract class SchemeNewFactory {
 								}
 							}
 						});
+						button.setUserObject( userObject );
 						return button;
 					}
 				} else {
@@ -488,7 +502,7 @@ public abstract class SchemeNewFactory {
 							try {
 								Environment.setCurrent(env);
 								Language.setCurrentLanguage(lang);
-								JComboBox comboBox = (JComboBox)e.getSource();
+								JPulsarComboBox<PulsarListItem> comboBox = (JPulsarComboBox)e.getSource();
 								PulsarListItem selectedItem = (PulsarListItem)comboBox.getSelectedItem();
 								procedure.applyN( new Object[] { 
 										true,
@@ -522,7 +536,7 @@ public abstract class SchemeNewFactory {
 							throw new RuntimeException( "An unsupported element type" );
 						}
 					}
-					JComboBox<PulsarListItem> c = new JComboBox<>( items );
+					JPulsarComboBox<PulsarListItem> c = new JPulsarComboBox<>( items );
 					c.setEnabled(true);
 					if ( selectedItem != null )
 						c.setSelectedItem( selectedItem );

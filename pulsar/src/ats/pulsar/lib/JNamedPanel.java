@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 
 import javax.swing.JPanel;
 
-public class JNamedPanel extends JPanel {
+public class JNamedPanel extends JPanel implements JSelectableUserObject {
 	public JNamedPanel() {
 		super();
 	}
@@ -112,5 +112,20 @@ public class JNamedPanel extends JPanel {
 		namedMap.clear();
 		invNamedMap.clear();
 		nextComponentName = null;
+	}
+	
+	@Override
+	public int setSelectedByUserObject(Object userObject, boolean selected) {
+		int count =0;
+		for ( Component c : this.getComponents() ) {
+			if ( c instanceof JUserObjectContainer ) {
+				JUserObjectContainer uoc = (JUserObjectContainer)c;
+				if ( userObject == null || userObject.equals( uoc.getUserObject() )) {
+					uoc.setSelected( selected );
+					count += 1;
+				}
+			}
+		}
+		return count;
 	}
 }

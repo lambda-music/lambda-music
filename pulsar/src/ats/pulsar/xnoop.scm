@@ -30,6 +30,7 @@
 (define xn (lambda args
                 (let ((constructor (car args))
                       (args (cdr args))
+                      (this (xn-impl))
                       )
                   ; (display 'tor )
                   ; (display constructor)
@@ -37,7 +38,9 @@
                   ; (display 'args )
                   ; (display args)
                   ; (newline)
-                  (apply constructor (append (list (xn-impl)) args )))))
+                  (apply constructor (append (list this) args ))
+                  this
+                  )))
 
 (define xd (lambda (modifier args)
                (let* ((modifier   modifier)
