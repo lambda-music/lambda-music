@@ -4,6 +4,9 @@
 ; =========================================================
 
 (import (srfi 1))
+(import (kawa pprint))
+
+
 
 (define xassq (lambda (key lst)
                     (let loop ((lst lst))
@@ -14,141 +17,173 @@
                             curr
                             (loop (cdr lst))))))))
 
-; (define-syntax an-pop
-;   (syntax-rules ()
-;                 ((an-pop variable )
-;                  (if (null? variable )
-;                    (error 'argument-underflow-error )
-;                    (let ((value (car variable)))
-;                      (set! variable (cdr variable))
-;                      value)))))
+
+(define xdefine (lambda args
+             (let* ((this      (car    args))
+                    (modifier  (cadr   args))
+                    (key       (caddr  args))
+                    (value     (cadddr args))
+                    (args      (cddddr args))
+                    (fields    (cdr   this))
+                    (cell      (xassq key fields)))
+               (if cell
+                 (raise 
+                   (cons 'duplicate-field-error
+                         (string-append "atempted to define an already " 
+                                        "defined variable name (" 
+                                        (symbol->string key ) ")" )))
+
+                 (begin
+                   (set! modifier (if (not (list? modifier))
+                                    (if (pair? modifier)
+                                      (list modifier )
+                                      (list (cons 'type modifier )))
+                                    modifier))
+
+                   (set! modifier (map (lambda (elem)
+                                         (if (not (pair? elem))
+                                           (cons elem '() )
+                                           elem)
+                                         ) modifier))
+
+                   (let ((type     (cdr (or (assq 'type modifier)
+                                            (cons 'type 'unknown )))))
+                     (cond
+                       ((eq? type 'field )
+                        (letrec* ((field-key (string->symbol 
+                                               (string-append 
+                                                 "*FIELD*-" 
+                                                 (symbol->string key))))
+                                  (field-value value)
+                                  (field-accessor (lambda args
+                                                    (if (= 0 (length args))
+                                                      ; Do nothing. This will never be happen.
+                                                      #f
+                                                      ;write
+                                                      (let ((this   (car args))
+                                                            (args   (cdr args))
+                                                            (fields (cdr this))
+                                                            (cell   (or (xassq field-key fields)
+                                                                        (cons key #f))))
+                                                        (if (= 0 (length args))
+                                                          ;read
+                                                          (begin
+                                                            (cdr cell))
+                                                          ;write
+                                                          (let ((new-value (car args)))
+                                                            (set-cdr! cell new-value)
+                                                            new-value)
+                                                          )))
+                                                    ))
+
+                                  )
+                                 (set! fields (alist-cons field-key field-value    fields))
+                                 (set! fields (alist-cons key       field-accessor fields))
+                                 (set-cdr! this fields)
+                                 ))
+                       ((eq? type 'method )
+                        (set-cdr! this (alist-cons key value fields)))
+                       (else
+                         (raise (cons 'internal-error "an internal error occured ")))))
+
+
+                   this)))))
+
+
+(define xdummy (lambda (self . args)
+                 (apply self args)))
 
 ; create
-(define xn-impl (lambda ()
-                (cons '() '())))
+(define xnew-instance (lambda ()
+                        (letrec (( this (cons 
+                                          ; A symbol which contains its class name.
+                                          '() 
+                                          ; An alist which contains its field cells.
+                                          (list
+                                            ; 'this field is the foundation of this system.
+                                            (cons
+                                              'this   (lambda args this ))
+                                            (cons
+                                              'put    (lambda (self key value)
+                                                        (set-cdr! this (alist-cons key value (cdr this)))))
+                                            (cons
+                                              'get    (lambda (self key)
+                                                        (let ((cell (xassq key (cdr this))))
+                                                          (if cell
+                                                            (cdr cell)
+                                                            #f))))
+                                            (cons
+                                              'define (lambda (self . args)
+                                                        (apply xdefine (cons this args ))))
 
-(define xn (lambda args
-                (let ((constructor (car args))
-                      (args (cdr args))
-                      (this (xn-impl))
-                      )
-                  ; (display 'tor )
-                  ; (display constructor)
-                  ; (newline)
-                  ; (display 'args )
-                  ; (display args)
-                  ; (newline)
-                  (apply constructor (append (list this) args ))
-                  this
-                  )))
+                                            (cons 'invoke xdummy)
+                                            (cons 'read   xdummy)
+                                            (cons 'write  xdummy)
+                                            )))
+                                 (self (lambda (key . args)
+                                         (let ((cell (xassq key (cdr this))))
+                                           (if cell
+                                             (let ((method (cdr cell)))
+                                               (apply method (cons self args)))
+                                             (raise 
+                                               (cons
+                                                 'not-found-error
+                                                 (string-append "referred a not defined field (" 
+                                                                (symbol->string key) 
+                                                                ")" ))))))
 
-(define xd (lambda (modifier args)
-               (let* ((modifier   modifier)
-                      (this   (car   args))
-                      (key    (cadr  args))
-                      (value  (caddr args))
-                      (args   (cdddr args))
-                      (fields (cdr   this))
-                      (cell   (xassq key fields)))
-                 (if cell
-                   (error (string-append "atempted to define an already defined variable name (" 
-                                         (symbol->string key ) ")" ) )
-
-                   (begin
-                     (set! modifier (if (not (list? modifier))
-                                      (if (pair? modifier)
-                                        (list modifier )
-                                        (list (cons 'type modifier )))
-                                      modifier))
-
-                     (set! modifier (map (lambda (elem)
-                                           (if (not (pair? elem))
-                                             (cons elem '() )
-                                             elem)
-                                           ) modifier))
-
-                     (let ((type     (cdr (or (assq 'type modifier)
-                                              (cons 'type 'unknown )))))
-                       (cond
-                         ((eq? type 'field )
-                          (letrec* ((field-key (string->symbol 
-                                                 (string-append 
-                                                   "*FIELD*-" 
-                                                   (symbol->string key))))
-                                    (field-value value)
-                                    (field-accessor (lambda args
-                                                      (if (= 0 (length args))
-                                                        ; Do nothing. This will never be happen.
-                                                        #f
-                                                        ;write
-                                                        (let ((this   (car args))
-                                                              (args   (cdr args))
-                                                              (fields (cdr this))
-                                                              (cell   (or (xassq field-key fields)
-                                                                        (cons key #f))))
-                                                          (if (= 0 (length args))
-                                                            ;read
-                                                            (begin
-                                                              (cdr cell))
-                                                            ;write
-                                                            (let ((new-value (car args)))
-                                                              (set-cdr! cell new-value)
-                                                              new-value)
-                                                            )))
-                                                      ))
-                                    
-                                    )
-                                   (set! fields (alist-cons field-key field-value    fields))
-                                   (set! fields (alist-cons key       field-accessor fields))
-                                   (set-cdr! this fields)
-                                   ))
-                         ((eq? type 'method )
-                          (set-cdr! this (alist-cons key value fields)))
-                         (else
-                           (error "an internal error occured "))))
-
-                     
-                     this)))))
+                                       ))
+                          self)))
 
 
-(define xx (lambda args
-                 (let* ((this   (car  args))
-                        (key    (cadr args))
-                        (args   (cddr args))
-                        (cell   (xassq key (cdr this))))
-
-                   ; (display 'cell-type)
-                   ; (display (assq 'type (cadr cell)))
-                   ; (newline)
- 
-                   (if cell
-                     (let ((field-accessor (cdr cell)))
-                       (apply field-accessor (cons this args)))
-                     (error (string-append "referred a not defined field (" key ")" ) )
-                     ))))
-
-(define xxi xx)
-(define xxw xx)
-(define xxr xx)
-(define xdf (lambda args
-                (xd 'field args)))
-
-(define xdm (lambda args
-                (xd 'method args)))
+(define xnew (lambda (constructor . args)
+             (let ((self (xnew-instance)))
+               (apply constructor  (cons self args))
+               self)))
 
 
 
-; (define tst-tor (lambda (this) 
-;                   (xxw this 'hello "Hello")
-;                   (xxw this 'world "World")
-;                   (xdm this 'foo   (lambda (this)
-;                                        (display "FOO\n" )))))
+(define tostr (lambda (x indent ) 
+                (cond
+                  ((string? x)
+                   (string-append "\""                 x  "\"" )
+                   )
+                  ((number? x)
+                   (number->string x)
+                   )
+                  ((symbol? x)
+                   (string-append "'"  (symbol->string x)      )
+                   )
+                  ((null? x)
+                   "'()"
+                   )
+                  ((list? x)
+                   (string-append 
+                     "(list "
+                     (let loop ((y x)(str ""))
+                       (if (null? y)
+                         str
+                         ;(string-append str "\n'()" )
+                         (loop (cdr y) (string-append str "\n" (tostr (car y) indent )))
+                         ))
+                     ")"
+                     ))
+                  ((pair? x)
+                   (string-append "(cons "  
+                                  (tostr (car x) (+ indent 1))
+                                  " "
+                                  (tostr (cdr x) (+ indent 1))
+                                  ")"))
+                  ((procedure? x)
+                   (string-append "(lambda (...) "  
+                                  (let ((val (procedure-property x 'name) ))
+                                    (if val val "noname"))
+                                  ")"))
+                  (else
+                    (raise (cons 'unsupported-type "unknown type" )))
+                    )
+                  )
+                )
 
-; (define tst2 (xn tst-tor )) 
-; (display (xx tst2 'hello ))(newline)
-; (display (xx tst2 'world ))(newline)
-; (display (xx tst2 'foo   ))(newline)
-; (xxw tst2 'world "WORLD")
-; (display (xx tst2 'world ))(newline)
 
 ; vim: sw=2 expandtab:
