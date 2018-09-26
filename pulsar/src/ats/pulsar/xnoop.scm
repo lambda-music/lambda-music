@@ -6,16 +6,44 @@
 (import (srfi 1))
 (import (kawa pprint))
 
+(define xnoop-list? (lambda (x)
+                      (and (list? x)
+                           (eq? (car x) 'XNOOP-LIST))
+                      ))
+(define xnoop-data? (lambda(x)
+                      (and (pair? x) 
+                           (xnoop-list? (car x))
+                           (xnoop-list? (cdr x)))
+                      ))
+(define xnoop? (lambda (x)
+                 (and (procedure? x) 
+                      (eq? (x 'xnoop?) 'is-xnoop ))))
 
+(define xacons (lambda (field-key field-value    fields)
+                 ; (reverse
+                 ;   (alist-cons field-key field-value (reverse fields) ))
+                 (append
+                   fields 
+                   (list (cons field-key field-value)))))
 
 (define xassq (lambda (key lst)
-                    (let loop ((lst lst))
-                      (if (null? lst)
-                        #f
-                        (let ((curr (car lst)))
-                          (if (eq? key (car curr))
-                            curr
-                            (loop (cdr lst))))))))
+                ; (display 'xassq)
+                ; (display (tostr lst 1))
+                ; (newline)
+
+                ; (if (not (xnoop-list? lst))
+                ;   (raise (cons 'xnoop-bad-list-error "invalid xnoop list error")))
+
+                ; The reason (cdr lst)
+                ; Skip the first element because it should be the constant
+                ; identifier 'XNOOP-LIST
+                (let loop ((lst (cdr lst)))
+                  (if (null? lst)
+                    #f
+                    (let ((curr (car lst)))
+                      (if (eq? key (car curr))
+                        curr
+                        (loop (cdr lst))))))))
 
 
 (define xdefine (lambda args
@@ -77,12 +105,12 @@
                                                     ))
 
                                   )
-                                 (set! fields (alist-cons field-key field-value    fields))
-                                 (set! fields (alist-cons key       field-accessor fields))
+                                 (set! fields (xacons field-key field-value    fields))
+                                 (set! fields (xacons key       field-accessor fields))
                                  (set-cdr! this fields)
                                  ))
                        ((eq? type 'method )
-                        (set-cdr! this (alist-cons key value fields)))
+                        (set-cdr! this (xacons key value fields)))
                        (else
                          (raise (cons 'internal-error "an internal error occured ")))))
 
@@ -96,16 +124,25 @@
 ; create
 (define xnew-instance (lambda ()
                         (letrec (( this (cons 
-                                          ; A symbol which contains its class name.
-                                          '() 
+                                          ; A symbol which contains its class name. TODO this is obsolete.
+                                          (list
+                                            'XNOOP-LIST
+                                            )
                                           ; An alist which contains its field cells.
                                           (list
+                                            ; the constant identifier
+                                            'XNOOP-LIST
                                             ; 'this field is the foundation of this system.
+                                            (cons
+                                              'xnoop? (lambda (self)
+                                                        (if (xnoop-data? this)
+                                                          'is-xnoop
+                                                          #f)))
                                             (cons
                                               'this   (lambda args this ))
                                             (cons
                                               'put    (lambda (self key value)
-                                                        (set-cdr! this (alist-cons key value (cdr this)))))
+                                                        (set-cdr! this (xacons key value (cdr this)))))
                                             (cons
                                               'get    (lambda (self key)
                                                         (let ((cell (xassq key (cdr this))))

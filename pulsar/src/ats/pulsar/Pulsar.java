@@ -49,7 +49,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JRootPane;
+import javax.swing.JScrollPane;
 import javax.swing.JSlider;
+import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.Timer;
@@ -1272,7 +1274,7 @@ public final class Pulsar extends Metro {
 
 	//Create the "cards".
     JFrame frame;
-    Container rootPane; 
+    JSplitPane rootPane; 
 	JPanel staticPane;
 	JPanel userPane ;
 
@@ -1350,9 +1352,47 @@ public final class Pulsar extends Metro {
 			this.max = max;
 		}
 	}
+	
+	enum PanelOrientation {
+		HORIZONTAL( "Horizontal", JSplitPane.HORIZONTAL_SPLIT ), VERTICAL( "Vertical", JSplitPane.VERTICAL_SPLIT );
+		final String caption;
+		final int orientation;
+		private PanelOrientation( String caption, int orientation ) {
+			this.caption = caption;
+			this.orientation = orientation;
+		}
+	}
+
 	public void guiSetTempoRange( TempoRange tempoRange ) {
 		this.sl_tempoSlider.setMaximum( tempoRange.max );
 		this.sl_tempoSlider.setMinimum( tempoRange.min );
+	}
+	public void guiSetPanelOrientation( PanelOrientation panelOrientation ) {
+		Dimension staticPaneSize = this.staticPane.getSize();
+//		Dimension staticPaneSize = new Dimension( 600, 300 );
+		Dimension userPaneSize   = this.userPane.getSize();
+		// Dimension frameSize      = frame.getSize();
+		int dividerLocation = rootPane.getDividerLocation();
+		Dimension newFrameSize = new Dimension();
+		this.rootPane.setOrientation( panelOrientation.orientation );
+		switch ( panelOrientation ) {
+			case HORIZONTAL :
+				newFrameSize.width  = staticPaneSize.width + userPaneSize.width;
+				newFrameSize.height = Math.max( staticPaneSize.height, userPaneSize.height);
+				dividerLocation = staticPaneSize.width;
+				break;
+			case VERTICAL :
+				newFrameSize.width  = Math.max( staticPaneSize.width, userPaneSize.width); 
+				newFrameSize.height = staticPaneSize.height + userPaneSize.height; 
+				dividerLocation = staticPaneSize.height;
+				break;
+			default :
+				;
+		}
+		frame.setSize( newFrameSize );
+		rootPane.setDividerLocation(dividerLocation);
+		rootPane.revalidate();
+		frame.revalidate();
 	}
 	
 	public Component guiResolve( Container parent, Collection<String> path, boolean errorIfNotFound ) {
@@ -1561,20 +1601,22 @@ public final class Pulsar extends Metro {
 			super( "Pulsar" );
 		}
 		
-		JPanel rootPane;
+		JSplitPane rootPane;
 		JPanel staticPane;
 		JPanel userPane;
 		{
 			this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-			rootPane   = new JPanel( new BorderLayout() );
 			staticPane = new JPanel();
-			userPane   = new JNamedPanel( new FlawLayout() );
-			//Create and set up the content pane.
-
-			rootPane.add( staticPane, BorderLayout.PAGE_START );
-			rootPane.add( userPane, BorderLayout.CENTER );
 			staticPane.setLayout( new BorderLayout(BORDER_SIZE,BORDER_SIZE) );
+			userPane   = new JNamedPanel( new FlawLayout() );
+
+			//Create and set up the content pane.
+			rootPane  = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, 
+					staticPane,
+					new JScrollPane( userPane )
+					);
+			rootPane.setContinuousLayout( true );
 			
 			this.getContentPane().add ( rootPane );
 
@@ -1846,6 +1888,37 @@ public final class Pulsar extends Metro {
     				 for ( TempoRange r :  TempoRange.values() ) {
     					 JPulsarRadioButton b = new JPulsarRadioButton( r.caption );
     					 b.addActionListener( new TempoRangeActionListener(r));
+    					 group.add( b );
+    					 add( b );
+    				 }
+    			}
+    		}
+    		
+    		JPanelOrientationPanel panelOrientationPanel = new JPanelOrientationPanel();
+    		{
+    			add(  panelOrientationPanel, BorderLayout.LINE_END );
+    		}
+    		class JPanelOrientationPanel extends JPanel {
+    			private final class JPanelOrientationActionListener implements ActionListener {
+					private final PanelOrientation panelOrientation;
+					private JPanelOrientationActionListener(PanelOrientation panelOrientation) {
+						this.panelOrientation = panelOrientation;
+					}
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						guiSetPanelOrientation( panelOrientation );
+					}
+				}
+				
+    			public JPanelOrientationPanel() {
+    				super( new FlawLayout( FlawLayout.LEFT ) );
+    				setBorder( BorderFactory.createTitledBorder( "Orientation" ) );
+				}
+    			ButtonGroup group = new ButtonGroup();
+    			{
+    				 for ( PanelOrientation r :  PanelOrientation.values() ) {
+    					 JPulsarRadioButton b = new JPulsarRadioButton( r.caption );
+    					 b.addActionListener( new JPanelOrientationActionListener(r));
     					 group.add( b );
     					 add( b );
     				 }
