@@ -25,7 +25,6 @@ public class JNamedPanel extends JPanel implements JSelectableUserObject {
 	public JNamedPanel(LayoutManager layout) {
 		super(layout);
 	}
-	
 	protected String nextComponentName = null;
 	public void setNextComponentName( String name ) {
 		this.nextComponentName = name;
@@ -35,6 +34,7 @@ public class JNamedPanel extends JPanel implements JSelectableUserObject {
 	}
 	protected final HashMap<String,Component> namedMap = new HashMap<>();
 	protected final IdentityHashMap<Component,String> invNamedMap = new IdentityHashMap<>();
+
 	@Override
 	protected void addImpl(Component comp, Object constraints, int index) {
 		super.addImpl(comp, constraints, index);

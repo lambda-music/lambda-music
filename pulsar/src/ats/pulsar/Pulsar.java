@@ -7,12 +7,15 @@ import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -28,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Dictionary;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -38,6 +42,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -54,6 +59,7 @@ import javax.swing.JSlider;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -198,6 +204,7 @@ public final class Pulsar extends Metro {
 	
 
 	static final int BORDER_SIZE = 10;
+	static final PanelOrientation DEFAULT_PANEL_ORIENTATION = PanelOrientation.BOTTOM;
 	
 	/**
 	 * This field specifies the procedure to reset all of the states inside the
@@ -1128,7 +1135,152 @@ public final class Pulsar extends Metro {
     		}
     	});
     
+    	defineVar( scheme, "gui-divider-location!" , new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				ArrayList<Object> argList = new ArrayList<Object>( Arrays.asList( args ) );
+				if ( 1 == argList.size() ) {
+					Object object = argList.get(0);
+					if ( object instanceof JSplitPane ) {
+						JSplitPane pane = (JSplitPane) object;
+						return SchemeUtils.toSchemeNumber( pane.getDividerLocation() );
+					} else {
+						return SchemeUtils.toSchemeNumber( -1 );
+					}
+				} else if ( 2 == argList.size() ) {
+					Object object = argList.get(0);
+					if ( object instanceof JSplitPane ) {
+						JSplitPane pane = (JSplitPane) object;
+						int location = SchemeUtils.toInteger( argList.get(1) );
+						pane.setDividerLocation( location );
+						pane.revalidate();
+						return SchemeUtils.toSchemeNumber( pane.getDividerLocation() );
+					} else {
+						return SchemeUtils.toSchemeNumber( -1 );
+					}
+
+				} else {
+    				throw new RuntimeException( 
+    						"Invalid argument error\n"+
+    						"usage : (gui-divider-location! [pane])" );
+				}
+    		}
+    	});
+
+    	defineVar( scheme, "gui-frame-height!" , new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				Dimension size = frame.getSize();
+				if ( 0 == args.length ) {
+					
+				} else {
+					size.height = SchemeUtils.toInteger(args[0]);
+					frame.setSize(size);
+					frame.revalidate();
+				}
+				return SchemeUtils.toSchemeNumber( size.height );
+			}
     		
+    	});
+    	defineVar( scheme, "gui-frame-width!" , new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				Dimension size = frame.getSize();
+				if ( 0 == args.length ) {
+					
+				} else {
+					size.width = SchemeUtils.toInteger(args[0]);
+					frame.setSize(size);
+					frame.revalidate();
+				}
+				return SchemeUtils.toSchemeNumber( size.width );
+			}
+    		
+    	});
+    	defineVar( scheme, "gui-frame-left!" , new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				Point pos = frame.getLocation();
+				if ( 0 == args.length ) {
+				} else {
+					pos.x = SchemeUtils.toInteger(args[0]);
+					frame.setLocation( pos);
+					frame.revalidate();
+				}
+				return SchemeUtils.toSchemeNumber( pos.x );
+			}
+    		
+    	});
+    	defineVar( scheme, "gui-frame-top!" , new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				Point pos = frame.getLocation();
+				if ( 0 == args.length ) {
+				} else {
+					pos.y = SchemeUtils.toInteger(args[0]);
+					frame.setLocation( pos);
+					frame.revalidate();
+				}
+				return SchemeUtils.toSchemeNumber( pos.y );
+			}
+    		
+    	});
+
+    	defineVar( scheme, "gui-frame-divider-position!" , new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				ArrayList<Object> argList = new ArrayList<Object>( Arrays.asList( args ) );
+				if ( 0 == argList.size() ) {
+					if ( rootPane instanceof JSplitPane ) {
+						JSplitPane pane = (JSplitPane) rootPane;
+						return SchemeUtils.toSchemeNumber( pane.getDividerLocation() );
+					} else {
+						return SchemeUtils.toSchemeNumber( -1 );
+					}
+				} else if ( 1 == argList.size() ) {
+					if ( rootPane instanceof JSplitPane ) {
+						JSplitPane pane = (JSplitPane) rootPane;
+						int location = SchemeUtils.toInteger( argList.get(0) );
+						pane.setDividerLocation( location );
+						frame.revalidate();
+						return SchemeUtils.toSchemeNumber( pane.getDividerLocation() );
+					} else {
+						return SchemeUtils.toSchemeNumber( -1 );
+					}
+				} else {
+    				throw new RuntimeException( 
+    						"Invalid argument error\n"+
+    						"usage : (gui-panel-divider-position! [pane])" );
+				}
+    		}
+    	});
+
+    	defineVar( scheme, "gui-frame-orientation!" , new ProcedureN() {
+    		PanelOrientation sym2orientation( Object sym ) {
+    			String id = SchemeUtils.symbolToString( sym );
+    			return PanelOrientation.valueOf(id.toUpperCase() );
+    		}
+    		Symbol orientation2sym( PanelOrientation orientation ) {
+    			return SchemeUtils.toSchemeSymbol( orientation.name().toLowerCase() );
+    		}
+    		
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				ArrayList<Object> argList = new ArrayList<Object>( Arrays.asList( args ) );
+				if ( 0 == argList.size() ) {
+					return orientation2sym( currentPanelOrientation );
+				} else if ( 1 == argList.size() ) {
+					guiSetPanelOrientation( sym2orientation( argList.get(0) ) );
+					return argList.get(0);
+				} else {
+    				throw new RuntimeException( 
+    						"Invalid argument error\n"+
+    						"usage : (gui-panel-orientation! [pane])" );
+				}
+    		}
+    	});
+
+    	
     	defineVar( scheme, "gui-build!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
@@ -1274,9 +1426,12 @@ public final class Pulsar extends Metro {
 
 	//Create the "cards".
     JFrame frame;
-    JSplitPane rootPane; 
+    JComponent rootPane; 
 	JPanel staticPane;
-	JPanel userPane ;
+	JNamedPanel userPane ;
+	JPanel staticPaneOuter;
+	JScrollPane userPaneOuter;
+
 
     transient boolean isComboBoxUpdating = false;
 	JComboBox<String> cb_relatedFiles;
@@ -1354,7 +1509,11 @@ public final class Pulsar extends Metro {
 	}
 	
 	enum PanelOrientation {
-		HORIZONTAL( "Horizontal", JSplitPane.HORIZONTAL_SPLIT ), VERTICAL( "Vertical", JSplitPane.VERTICAL_SPLIT );
+		TOP   ( "Top",    JSplitPane.VERTICAL_SPLIT   ),
+		RIGHT ( "Right",  JSplitPane.HORIZONTAL_SPLIT ), 
+		BOTTOM( "Bottom", JSplitPane.VERTICAL_SPLIT   ),
+		LEFT  ( "Left",   JSplitPane.HORIZONTAL_SPLIT ), 
+		;
 		final String caption;
 		final int orientation;
 		private PanelOrientation( String caption, int orientation ) {
@@ -1367,32 +1526,108 @@ public final class Pulsar extends Metro {
 		this.sl_tempoSlider.setMaximum( tempoRange.max );
 		this.sl_tempoSlider.setMinimum( tempoRange.min );
 	}
+	
+	HashMap<PanelOrientation,AbstractButton> orientaionMap = new HashMap<>();
+	PanelOrientation currentPanelOrientation = PanelOrientation.BOTTOM;
+
+	
 	public void guiSetPanelOrientation( PanelOrientation panelOrientation ) {
+
+		if ( panelOrientation.equals(currentPanelOrientation ) )
+			return;
+		
 		Dimension staticPaneSize = this.staticPane.getSize();
 //		Dimension staticPaneSize = new Dimension( 600, 300 );
 		Dimension userPaneSize   = this.userPane.getSize();
-		// Dimension frameSize      = frame.getSize();
-		int dividerLocation = rootPane.getDividerLocation();
-		Dimension newFrameSize = new Dimension();
-		this.rootPane.setOrientation( panelOrientation.orientation );
+		 Dimension frameSize      = frame.getSize();
+		int dividerLocation;
+		Dimension newFrameSize = new Dimension( frameSize );
+		
+//		JSplitPane rootPane = (JSplitPane) this.rootPane;
+		
+		if ( rootPane instanceof JSplitPane )
+			((JSplitPane)rootPane).setOrientation( panelOrientation.orientation );
+		
+		JComponent topComponent;
+		JComponent bottomComponent;
+		String borderDirection;
+		
 		switch ( panelOrientation ) {
-			case HORIZONTAL :
-				newFrameSize.width  = staticPaneSize.width + userPaneSize.width;
-				newFrameSize.height = Math.max( staticPaneSize.height, userPaneSize.height);
-				dividerLocation = staticPaneSize.width;
-				break;
-			case VERTICAL :
+			case TOP :
 				newFrameSize.width  = Math.max( staticPaneSize.width, userPaneSize.width); 
 				newFrameSize.height = staticPaneSize.height + userPaneSize.height; 
-				dividerLocation = staticPaneSize.height;
+				dividerLocation     = userPaneSize.height;
+				topComponent        = userPane;
+				bottomComponent     = staticPane;
+				borderDirection = BorderLayout.PAGE_END;
+				break;
+			case RIGHT :
+				newFrameSize.width  = staticPaneSize.width + userPaneSize.width;
+				newFrameSize.height = Math.max( staticPaneSize.height, userPaneSize.height);
+				dividerLocation     = staticPaneSize.width;
+				topComponent        = staticPane;
+				bottomComponent     = userPane;
+				borderDirection     = BorderLayout.LINE_START;
+				break;
+			case BOTTOM :
+				newFrameSize.width  = Math.max( staticPaneSize.width, userPaneSize.width); 
+				newFrameSize.height = staticPaneSize.height + userPaneSize.height; 
+				dividerLocation     = staticPaneSize.height;
+				topComponent        = staticPane;
+				bottomComponent     = userPane;
+				borderDirection = BorderLayout.PAGE_START;
+				break;
+			case LEFT :
+				newFrameSize.width  = staticPaneSize.width + userPaneSize.width;
+				newFrameSize.height = Math.max( staticPaneSize.height, userPaneSize.height);
+				dividerLocation     = userPaneSize.width;
+				topComponent        = userPane;
+				bottomComponent     = staticPane;
+				borderDirection     = BorderLayout.LINE_END;
 				break;
 			default :
-				;
+				throw new RuntimeException( "internal error" );
 		}
+
+		if ( rootPane instanceof JSplitPane ) {
+			JSplitPane rootPane = (JSplitPane) this.rootPane;
+			rootPane.setTopComponent(null);
+			rootPane.setBottomComponent(null);
+			rootPane.setTopComponent(topComponent);
+			rootPane.setBottomComponent(bottomComponent);
+		} else if ( rootPane instanceof JPanel ) {
+			rootPane.remove( userPaneOuter );
+			rootPane.add( userPaneOuter, BorderLayout.CENTER );
+			rootPane.remove( staticPaneOuter );
+			rootPane.add( staticPaneOuter, borderDirection );
+			rootPane.revalidate();
+		}
+	
+		newFrameSize.width += 20;
+		newFrameSize.height += 20;
 		frame.setSize( newFrameSize );
-		rootPane.setDividerLocation(dividerLocation);
+		
+		if ( rootPane instanceof JSplitPane ) {
+			JSplitPane rootPane = (JSplitPane) this.rootPane;
+			rootPane.setDividerLocation(dividerLocation);
+		}
+		
 		rootPane.revalidate();
 		frame.revalidate();
+		rootPane.validate();
+		frame.validate();
+		
+		this.currentPanelOrientation = panelOrientation;
+
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				orientaionMap.get(panelOrientation ).setSelected(true);
+				if ( rootPane instanceof JSplitPane )
+				((JSplitPane) rootPane).setDividerLocation(dividerLocation);
+			}
+		});
+		
 	}
 	
 	public Component guiResolve( Container parent, Collection<String> path, boolean errorIfNotFound ) {
@@ -1601,22 +1836,67 @@ public final class Pulsar extends Metro {
 			super( "Pulsar" );
 		}
 		
-		JSplitPane rootPane;
+		JComponent rootPane;
 		JPanel staticPane;
-		JPanel userPane;
+		JNamedPanel userPane;
 		{
 			this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-			staticPane = new JPanel();
+			staticPane = new JPanel() {
+				@Override
+				public Dimension getPreferredSize() {
+					return new Dimension(500,400);
+				}
+			};
+			
 			staticPane.setLayout( new BorderLayout(BORDER_SIZE,BORDER_SIZE) );
-			userPane   = new JNamedPanel( new FlawLayout() );
+
+			JPanel staticPaneOuter = staticPane; 
+
+			userPane   = new JNamedPanel() {
+				@Override
+				public Dimension getMinimumSize() {
+					return new Dimension(0,0);
+				}
+			};
+			userPane.setLayout(new FlawLayout());
 
 			//Create and set up the content pane.
-			rootPane  = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, 
-					staticPane,
-					new JScrollPane( userPane )
-					);
-			rootPane.setContinuousLayout( true );
+			JScrollPane userPaneOuter = new JScrollPane( userPane );
+			userPaneOuter.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+			userPaneOuter.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED );
+			
+			if ( false ) {
+				rootPane  = new JSplitPane( JSplitPane.VERTICAL_SPLIT, 
+						staticPane,
+						userPaneOuter
+						);
+				((JSplitPane)rootPane).setContinuousLayout( true );
+				((JSplitPane)rootPane).setDividerSize(5);
+				((JSplitPane)rootPane).setDividerLocation(500);
+
+				// See : 
+				//   Detecting JSplitPane Divider Movement 
+				//   https://stackoverflow.com/questions/14468648/detecting-jsplitpane-divider-movement
+				rootPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, 
+						new PropertyChangeListener() {
+					@Override
+					public void propertyChange(PropertyChangeEvent pce) {
+						userPane.revalidate();
+						staticPane.revalidate();
+					}
+				});
+			} else {
+				rootPane  = new JPanel( new BorderLayout() );
+				rootPane.add( staticPaneOuter, BorderLayout.PAGE_START);
+				rootPane.add( userPaneOuter, BorderLayout.CENTER );
+				rootPane.setMaximumSize( new Dimension( 500, 400 ));
+				
+			}
+			
+			
+//			staticPane.setMaximumSize( new Dimension(0, 0 ));
+//			userPane.setMaximumSize( new Dimension(0, 0 ));
 			
 			this.getContentPane().add ( rootPane );
 
@@ -1654,6 +1934,8 @@ public final class Pulsar extends Metro {
 	        Pulsar.this.rootPane = rootPane;
 	        Pulsar.this.staticPane = staticPane;
 	        Pulsar.this.userPane = userPane;
+	        Pulsar.this.staticPaneOuter = staticPaneOuter;
+	        Pulsar.this.userPaneOuter = userPaneOuter;
 			
 		}
 		
@@ -1854,14 +2136,12 @@ public final class Pulsar extends Metro {
 		
     	JSliderPanel panel_slider = new JSliderPanel();
     	{
-			add( panel_slider, BorderLayout.PAGE_END );
+//			add( panel_slider, BorderLayout.PAGE_END );
     	}
     	class JSliderPanel extends JPanel {
     		public JSliderPanel() {
     			super( newLayout() );
 			}
-    		
-
     		JTempoScalePanel panel_tempoScale = new JTempoScalePanel();
     		{
     			add( panel_tempoScale, BorderLayout.CENTER );
@@ -1899,7 +2179,7 @@ public final class Pulsar extends Metro {
     			add(  panelOrientationPanel, BorderLayout.LINE_END );
     		}
     		class JPanelOrientationPanel extends JPanel {
-    			private final class JPanelOrientationActionListener implements ActionListener {
+				private final class JPanelOrientationActionListener implements ActionListener {
 					private final PanelOrientation panelOrientation;
 					private JPanelOrientationActionListener(PanelOrientation panelOrientation) {
 						this.panelOrientation = panelOrientation;
@@ -1921,6 +2201,10 @@ public final class Pulsar extends Metro {
     					 b.addActionListener( new JPanelOrientationActionListener(r));
     					 group.add( b );
     					 add( b );
+    					 orientaionMap.put(r, b );
+    					 if ( DEFAULT_PANEL_ORIENTATION.equals( r )) {
+    						 b.setSelected(true);
+    					 }
     				 }
     			}
     		}
