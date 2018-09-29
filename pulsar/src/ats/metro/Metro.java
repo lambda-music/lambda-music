@@ -380,6 +380,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 					}		
 					this.unregisteredSeqences.clear();
 					this.registeredSequences.clear();
+					this.messageQueue.clear(); // FIXED (Sun, 30 Sep 2018 01:41:24 +0900) 
 					
 					this.lock.wait( 1 );
 				}

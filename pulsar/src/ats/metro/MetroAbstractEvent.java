@@ -2,10 +2,10 @@ package ats.metro;
 
 import java.util.Comparator;
 
-public class MetroEvent {
-	public static final Comparator<? super MetroEvent> comparator = new Comparator<MetroEvent>() {
+public class MetroAbstractEvent {
+	public static final Comparator<? super MetroAbstractEvent> comparator = new Comparator<MetroAbstractEvent>() {
 		@Override
-		public int compare(MetroEvent o1, MetroEvent o2) {
+		public int compare(MetroAbstractEvent o1, MetroAbstractEvent o2) {
 			int i;
 			i = (int) Math.signum(o1.offset - o2.offset);
 			if (i != 0 )
@@ -18,7 +18,7 @@ public class MetroEvent {
 	final double offset;
 	int offsetInFrames;
 	
-	public MetroEvent(double offset ) {
+	public MetroAbstractEvent(double offset ) {
 		super();
 		this.offset = offset;
 	}

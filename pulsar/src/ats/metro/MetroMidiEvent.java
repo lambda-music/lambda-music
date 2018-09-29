@@ -2,7 +2,7 @@ package ats.metro;
 
 import java.util.Comparator;
 
-public class MetroMidiEvent implements Comparable<MetroMidiEvent> {
+public final class MetroMidiEvent implements Comparable<MetroMidiEvent> {
 	public static final Comparator<? super MetroMidiEvent> COMPARATOR = new Comparator<MetroMidiEvent>( ) {
 		@Override
 		public int compare(MetroMidiEvent o1, MetroMidiEvent o2) {

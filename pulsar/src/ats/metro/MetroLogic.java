@@ -40,9 +40,9 @@ public abstract class MetroLogic implements MetroPlayer {
 		player.setPlayerEnabled(enabled);
 	}
 	@Override
-	public void playerRemove() {
+	public void playerRemove(boolean graceful) {
 		check();
-		player.playerRemove();
+		player.playerRemove( graceful );
 	}
 	@Override
 	public double getPosition() {

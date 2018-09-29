@@ -2,10 +2,10 @@ package ats.metro;
 
 import java.util.Arrays;
 
-public class MetroNoteEvent extends MetroEvent {
+public class MetroAbstractMidiEvent extends MetroAbstractEvent {
 	final int outputPortNo;
 	byte[] data;
-	public MetroNoteEvent( double offset, int outputPortNo, byte[] data ) {
+	public MetroAbstractMidiEvent( double offset, int outputPortNo, byte[] data ) {
 		super( offset );
 		this.outputPortNo = outputPortNo;
 		this.data = data;

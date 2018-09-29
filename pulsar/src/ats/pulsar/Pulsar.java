@@ -669,6 +669,7 @@ public final class Pulsar extends Metro {
     	{
     		execScheme( scheme, "init.scm"  );
     		execScheme( scheme, "xnoop.scm" );
+    		execScheme( scheme, "event-parser.scm" );
     	}
     	defineVar( scheme, "open?" , new ProcedureN() {
 			@Override
@@ -1445,6 +1446,27 @@ public final class Pulsar extends Metro {
 		// frame.pack();
 	}
 	public void guiPack() {
+		//
+		// (Sat, 29 Sep 2018 23:17:02 +0900) TAG_PACK_TWICE
+		//
+		// Pack twice. This is a countermeasure for a bug of JScrollPane that it does
+		// not exclude the width/height of its scroll-bars from
+		// internal content pane width/height.
+		// 
+		// scrollPane.setHorizontalScrollBarPolicy( JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED );
+		// scrollPane.setVerticalScrollBarPolicy(J ScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED );
+		// 
+		// Even if set HORIZONTAL_SCROLLBAR_AS_NEEDED / VERTICAL_SCROLLBAR_AS_NEEDED is
+		// set, the scroll-bar always appears after pack() method is called.
+		//
+		// Because it resizes the components without considering the width/height that
+		// will occupied by the scroll-bars themselves, the scroll-bars always appear
+		// even if it is not necessary.
+		// 
+		// A simple Countermeasure is just packing twice.
+		//
+		
+		frame.pack();
 		frame.pack();
 	}
 	public void guiFlowLayout(Container userPane) {
@@ -1863,8 +1885,9 @@ public final class Pulsar extends Metro {
 
 			//Create and set up the content pane.
 			JScrollPane userPaneOuter = new JScrollPane( userPane );
-			userPaneOuter.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+			userPaneOuter.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED );
 			userPaneOuter.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED );
+			// SEE TAG_PACK_TWICE
 			
 			if ( false ) {
 				rootPane  = new JSplitPane( JSplitPane.VERTICAL_SPLIT, 

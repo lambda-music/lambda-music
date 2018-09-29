@@ -15,12 +15,14 @@ import org.jaudiolibs.jnajack.JackException;
 import org.jaudiolibs.jnajack.JackPosition;
 
 public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
-    static void logInfo( String msg ) {
+    private static final Logger LOGGER = Logger.getLogger(MetroNoteEventBufferSequence.class.getName());
+
+	static void logInfo( String msg ) {
     	System.err.println( msg );
 		// Logger.getLogger(MetroNoteEventBufferSequence.class.getName()).log(Level.INFO, msg );
     }
     static void logError( String msg, Throwable e ) {
-		Logger.getLogger(MetroNoteEventBufferSequence.class.getName()).log(Level.SEVERE, msg, e);
+		LOGGER.log(Level.SEVERE, msg, e);
     }
 
 	public enum SyncType {
@@ -49,8 +51,10 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 	protected int cursor = 0;
 	protected int lastLengthInFrame = 0;
 	protected MetroLogic logic;
+	boolean ending = false;
 	
 	public MetroNoteEventBufferSequence( Metro metro, String name, Collection<String> tags, MetroLogic logic, SyncType syncType, MetroNoteEventBufferSequence syncSequence, double syncOffset ) {
+//		LOGGER.info( "BufferSequence(" + name + ") : " + tags + " : " + syncType + " : " + syncOffset );
 		this.name = name.intern();
 		if ( tags == null )
 			this.tags = new HashSet<>();
@@ -90,8 +94,12 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 		this.enabled = enabled;
 	}
 	@Override
-	public void playerRemove() {
-		metro.unregisterSequence( this );
+	public void playerRemove( boolean graceful ) {
+		if ( graceful ) {
+			this.ending = true;
+		} else {
+			metro.unregisterSequence( this );
+		}
 	}
 	@Override
 	public double getPosition() {
@@ -178,26 +186,26 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 				//    		System.out.println( "AFTER::::" );
 				//    		buf.dump();
 				boolean found= false;
-				for ( Iterator<MetroEvent> ie = buf.iterator(); ie.hasNext();  ) {
-					MetroEvent e = ie.next();
+				for ( Iterator<MetroAbstractEvent> ie = buf.iterator(); ie.hasNext();  ) {
+					MetroAbstractEvent e = ie.next();
 					
 					if ( e.between( actualCursor, actualNextCursor ) ) {
 						//		    			System.out.println("VALUE" + ( e.getOffsetInFrames() - this.cursor ) );
 						//        			System.out.println( e.("***" ));
 						found = true;
 						
-						if ( e instanceof MetroNoteEvent ) {
-							MetroNoteEvent e0 = (MetroNoteEvent) e;
+						if ( e instanceof MetroAbstractMidiEvent ) {
+							MetroAbstractMidiEvent e0 = (MetroAbstractMidiEvent) e;
 							
 							result.add( new MetroMidiEvent( 
 									e0.getOutputPortNo(), 
 									e0.getOffsetInFrames() - actualCursor, 
 									e0.getData() 
 									) );
-						} else if ( e instanceof MetroSchemeProcedureEvent ) {
-							((MetroSchemeProcedureEvent)e).execute( metro );
+						} else if ( e instanceof MetroAbstractSchemeProcedureEvent ) {
+							((MetroAbstractSchemeProcedureEvent)e).execute( metro );
 						} else {
-							Logger.getLogger(MetroNoteEventBufferSequence.class.getName()).log( 
+							LOGGER.log( 
 									Level.SEVERE, "Unknown Class " + e.getClass().getName() );
 						}
 						
@@ -373,17 +381,33 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 
 	private void offerNewBuffer( Metro metro, JackClient client, JackPosition position ) throws JackException {
 		synchronized ( this.buffers ) {
-			MetroNoteEventBuffer buf = new MetroNoteEventBuffer();
-			boolean result = this.logic.processOutputNoteBuffer( metro, this, buf );
-			buf.prepare( metro, client, position, true );
-//		buf.dump();
-			
-			if ( result ) {
+			if ( this.ending ) {
+				System.out.println("************************ENDING");
+				MetroNoteEventBuffer buf = new MetroNoteEventBuffer();
+				buf.exec( 0, new Runnable() {
+					@Override
+					public void run() {
+						System.out.println("************************ENDING2222");
+						metro.unregisterSequence( MetroNoteEventBufferSequence.this );
+					}
+				});
+				buf.setLength(1);
+				buf.prepare( metro, client, position, true );
 				this.buffers.offer( buf );
+				
 			} else {
-				metro.unregisterSequence( this );
+				MetroNoteEventBuffer buf = new MetroNoteEventBuffer();
+				boolean result = this.logic.processOutputNoteBuffer( metro, this, buf );
+				buf.prepare( metro, client, position, true );
+//		buf.dump();
+				this.buffers.offer( buf );
+				
+				if ( result ) {
+				} else {
+					this.ending = true;
+				}
+				// buf.dump();
 			}
-			// buf.dump();
 		}
 	}
 } 

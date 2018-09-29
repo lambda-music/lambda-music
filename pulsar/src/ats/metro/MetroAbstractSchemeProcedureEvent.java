@@ -1,8 +1,8 @@
 package ats.metro;
 
-public class MetroSchemeProcedureEvent extends MetroEvent {
+public class MetroAbstractSchemeProcedureEvent extends MetroAbstractEvent {
 	private final Runnable runnable;
-	public MetroSchemeProcedureEvent(double offset, Runnable runnable ) {
+	public MetroAbstractSchemeProcedureEvent(double offset, Runnable runnable ) {
 		super(offset);
 		this.runnable = runnable;
 	}

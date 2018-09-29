@@ -7,6 +7,6 @@ public interface MetroPlayer {
 	public Set<String> getPlayerTags();
 	public boolean isPlayerEnabled();
 	public void setPlayerEnabled(boolean enabled);
-	public void playerRemove();
+	public void playerRemove(boolean graceful);
 	public double getPosition();
 }
