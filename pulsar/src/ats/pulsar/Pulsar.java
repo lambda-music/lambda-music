@@ -933,7 +933,7 @@ public final class Pulsar extends Metro {
 				}
 			}
 			private SyncType str2sync(Object object) {
-				return SyncType.valueOf( SchemeUtils.anyToString( object ).toUpperCase() );
+				return SyncType.valueOf( SchemeUtils.symbolToString( object ).toUpperCase() );
 			}
     	});
     	defineVar( scheme, "remove-seq!" , new ProcedureN() {

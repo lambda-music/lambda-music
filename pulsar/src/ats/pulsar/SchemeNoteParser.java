@@ -225,11 +225,12 @@ public class SchemeNoteParser {
 		void proc(Scheme scheme, MetroNoteEventBuffer outputBuffer, 
 				double offset, int port, int channel, int note,double velocity, double duration ) 
 		{
+			duration = 0.5;
 			if ( duration < 0 )
 				duration = 0.0025d;
 
 //			outputBuffer.noteHit( offset, port, channel, note, velocity, length );
-			outputBuffer.midiEvent(offset           , port, MetroMidi.noteOn (channel, note, velocity ) );
+			outputBuffer.midiEvent(offset             , port, MetroMidi.noteOn (channel, note, velocity ) );
 			outputBuffer.midiEvent(offset + duration  , port, MetroMidi.noteOff(channel, note, velocity ) );
 		}
 	}
@@ -430,8 +431,8 @@ public class SchemeNoteParser {
 		 */
 		putParser( new SchemeEventParser() {
 			{
-				this.id = "cc-aso";
-				this.name = "cc-all-sound-off";
+				this.id = "aso";
+				this.name = "all-sound-off";
 			}
 			@Override
 			boolean parseEvent(Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
@@ -447,8 +448,8 @@ public class SchemeNoteParser {
 
 		putParser( new SchemeEventParser() {
 			{
-				this.id = "cc-rac";
-				this.name = "cc-reset-all-controllers";
+				this.id = "rac";
+				this.name = "reset-all-controllers";
 			}
 			@Override
 			boolean parseEvent(Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
@@ -464,8 +465,8 @@ public class SchemeNoteParser {
 
 		putParser( new SchemeEventParser() {
 			{
-				this.id = "cc-lc";
-				this.name = "cc-local-controls";
+				this.id = "lc";
+				this.name = "local-controls";
 			}
 			@Override
 			boolean parseEvent(Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
@@ -482,8 +483,8 @@ public class SchemeNoteParser {
 
 		putParser( new SchemeEventParser() {
 			{
-				this.id = "cc-anf";
-				this.name = "cc-all-note-off";
+				this.id = "anf";
+				this.name = "all-note-off";
 			}
 			@Override
 			boolean parseEvent(Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
@@ -499,8 +500,8 @@ public class SchemeNoteParser {
 
 		putParser( new SchemeEventParser() {
 			{
-				this.id = "cc-omff";
-				this.name = "cc-omni-mode-off";
+				this.id = "omff";
+				this.name = "omni-mode-off";
 			}
 			@Override
 			boolean parseEvent(Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
@@ -516,8 +517,8 @@ public class SchemeNoteParser {
 
 		putParser( new SchemeEventParser() {
 			{
-				this.id = "cc-omon";
-				this.name = "cc-omni-mode-on";
+				this.id = "omon";
+				this.name = "omni-mode-on";
 			}
 			@Override
 			boolean parseEvent(Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
@@ -533,8 +534,8 @@ public class SchemeNoteParser {
 
 		putParser( new SchemeEventParser() {
 			{
-				this.id = "cc-mono";
-				this.name = "cc-mono-mode-off";
+				this.id = "mono";
+				this.name = "mono-mode-off";
 			}
 			@Override
 			boolean parseEvent(Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
@@ -550,8 +551,8 @@ public class SchemeNoteParser {
 
 		putParser( new SchemeEventParser() {
 			{
-				this.id = "cc-poly";
-				this.name = "cc-poly-mode-on";
+				this.id = "poly";
+				this.name = "poly-mode-on";
 			}
 			@Override
 			boolean parseEvent(Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
@@ -568,7 +569,7 @@ public class SchemeNoteParser {
 		putParser( new SchemeEventParser() {
 			{
 				this.id = "spp";
-				this.name = "cc-song-position-pointer";
+				this.name = "song-position-pointer";
 			}
 			@Override
 			boolean parseEvent(Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
@@ -586,7 +587,7 @@ public class SchemeNoteParser {
 		putParser( new SchemeEventParser() {
 			{
 				this.id = "ss";
-				this.name = "cc-song-select";
+				this.name = "song-select";
 			}
 			@Override
 			boolean parseEvent(Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
@@ -604,7 +605,7 @@ public class SchemeNoteParser {
 		putParser( new SchemeEventParser() {
 			{
 				this.id = "eoe";
-				this.name = "cc-end-of-exclusive";
+				this.name = "end-of-exclusive";
 			}
 			@Override
 			boolean parseEvent(Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
@@ -621,7 +622,7 @@ public class SchemeNoteParser {
 		putParser( new SchemeEventParser() {
 			{
 				this.id = "clock";
-				this.name = "cc-clock";
+				this.name = "clock";
 			}
 			@Override
 			boolean parseEvent(Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
@@ -638,7 +639,7 @@ public class SchemeNoteParser {
 		putParser( new SchemeEventParser() {
 			{
 				this.id = "start";
-				this.name = "cc-start";
+				this.name = "start";
 			}
 			@Override
 			boolean parseEvent(Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
@@ -655,7 +656,7 @@ public class SchemeNoteParser {
 		putParser( new SchemeEventParser() {
 			{
 				this.id = "cont";
-				this.name = "cc-continue";
+				this.name = "continue";
 			}
 			@Override
 			boolean parseEvent(Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
@@ -672,7 +673,7 @@ public class SchemeNoteParser {
 		putParser( new SchemeEventParser() {
 			{
 				this.id = "stop";
-				this.name = "cc-stop";
+				this.name = "stop";
 			}
 			@Override
 			boolean parseEvent(Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
@@ -689,7 +690,7 @@ public class SchemeNoteParser {
 		putParser( new SchemeEventParser() {
 			{
 				this.id = "reset";
-				this.name = "cc-reset";
+				this.name = "reset";
 			}
 			@Override
 			boolean parseEvent(Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
@@ -712,8 +713,8 @@ public class SchemeNoteParser {
 		final int CC_BANK_SELECT                            = 0  ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-bs";
-				this.name = "cc-bank-select";
+				this.id = "bs";
+				this.name = "bank-select";
 				this.shortDescription = "Bank Select";
 				this.description = "Allows user to switch bank for patch selection. Program change used with Bank Select. MIDI can access 16,384 patches per MIDI channel.";
 				this.controlNumber = CC_BANK_SELECT                            ;
@@ -735,7 +736,7 @@ public class SchemeNoteParser {
 		final int CC_MODULATION                             = 1  ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-m";
+				this.id = "mod";
 				this.name = "modulation";
 				this.shortDescription = "Modulation";
 				this.description = "Generally this CC controls a vibrato effect (pitch, loudness, brighness). What is modulated is based on the patch.";
@@ -758,7 +759,7 @@ public class SchemeNoteParser {
 		final int CC_BREATH_CTRL                            = 2  ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-bc";
+				this.id = "bc";
 				this.name = "breath-controller";
 				this.shortDescription = "Breath Controller";
 				this.description = "Often times associated with aftertouch messages. It was originally intended for use with a breath MIDI controller in which blowing harder produced higher MIDI control values. It can be used for modulation as well.";
@@ -781,7 +782,7 @@ public class SchemeNoteParser {
 		final int CC_FOOT_CTRL                              = 4  ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-fc";
+				this.id = "fc";
 				this.name = "foot-controller";
 				this.shortDescription = "Foot Controller";
 				this.description = "Often used with aftertouch messages. It can send a continuous stream of values based on how the pedal is used.";
@@ -804,7 +805,7 @@ public class SchemeNoteParser {
 		final int CC_PORTAMENTO_TIME                        = 5  ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-pt";
+				this.id = "pt";
 				this.name = "portamento-time";
 				this.shortDescription = "Portamento Time";
 				this.description = "Controls portamento rate to slide between 2 notes played subsequently.";
@@ -827,7 +828,7 @@ public class SchemeNoteParser {
 		final int CC_DATA_ENTRY_MSB                         = 6  ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-de-msb";
+				this.id = "de-msb";
 				this.name = "data-entry-msb";
 				this.shortDescription = "Data Entry Most Significant Bit(MSB)";
 				this.description = "Controls Value for NRPN or RPN parameters.";
@@ -850,7 +851,7 @@ public class SchemeNoteParser {
 		final int CC_VOLUME                                 = 7  ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-v";
+				this.id = "v";
 				this.name = "volume";
 				this.shortDescription = "Volume";
 				this.description = "Control the volume of the channel";
@@ -873,7 +874,7 @@ public class SchemeNoteParser {
 		final int CC_BALANCE                                = 8  ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-b";
+				this.id = "b";
 				this.name = "balance";
 				this.shortDescription = "Balance";
 				this.description = "Controls the left and right balance, generally for stereo patches.0 = hard left, 64 = center, 127 = hard right";
@@ -896,7 +897,7 @@ public class SchemeNoteParser {
 		final int CC_PAN                                    = 10 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-p";
+				this.id = "p";
 				this.name = "pan";
 				this.shortDescription = "Pan";
 				this.description = "Controls the left and right balance, generally for mono patches.0 = hard left, 64 = center, 127 = hard right";
@@ -919,7 +920,7 @@ public class SchemeNoteParser {
 		final int CC_EXPRESSION                             = 11 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-e";
+				this.id = "e";
 				this.name = "expression";
 				this.shortDescription = "Expression";
 				this.description = "Expression is a percentage of volume (CC7).";
@@ -942,7 +943,7 @@ public class SchemeNoteParser {
 		final int CC_EFFECT_CTRL_1                          = 12 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-ec1";
+				this.id = "ec1";
 				this.name = "effect-controller-1";
 				this.shortDescription = "Effect Controller 1";
 				this.description = "Usually used to control a parameter of an effect within the synth/workstation.";
@@ -965,7 +966,7 @@ public class SchemeNoteParser {
 		final int CC_EFFECT_CTRL_2                          = 13 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-ec2";
+				this.id = "ec2";
 				this.name = "effect-controller-2";
 				this.shortDescription = "Effect Controller 2";
 				this.description = "Usually used to control a parameter of an effect within the synth/workstation.";
@@ -988,7 +989,7 @@ public class SchemeNoteParser {
 		final int CC_SUSTAIN_PEDAL                          = 64 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-sp";
+				this.id = "sp";
 				this.name = "sustain-pedal";
 				this.shortDescription = "Damper Pedal / Sustain Pedal";
 				this.description = "On/Off switch that controls sustain. (See also Sostenuto CC 66)0 to 63 = Off, 64 to 127 = On";
@@ -1011,7 +1012,7 @@ public class SchemeNoteParser {
 		final int CC_PORTAMENTO_SWITCH                      = 65 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-ps";
+				this.id = "ps";
 				this.name = "portamento-switch";
 				this.shortDescription = "Portamento On/Off Switch";
 				this.description = "On/Off switch0 to 63 = Off, 64 to 127 = On";
@@ -1034,7 +1035,7 @@ public class SchemeNoteParser {
 		final int CC_SOSTENUTO_SWITCH                       = 66 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-sos-s";
+				this.id = "sos-s";
 				this.name = "sostenuto-switch";
 				this.shortDescription = "Sostenuto On/Off Switch";
 				this.description = "On/Off switch – Like the Sustain controller (CC 64), However it only holds notes that were “On” when the pedal was pressed. People use it to “hold” chords” and play melodies over the held chord.0 to 63 = Off, 64 to 127 = On";
@@ -1057,7 +1058,7 @@ public class SchemeNoteParser {
 		final int CC_SOFT_PEDAL_SWITCH                      = 67 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-soft-pedal";
+				this.id = "soft-pedal";
 				this.name = "soft-pedal-switch";
 				this.shortDescription = "Soft Pedal On/Off Switch";
 				this.description = "On/Off switch- Lowers the volume of notes played.0 to 63 = Off, 64 to 127 = On";
@@ -1080,7 +1081,7 @@ public class SchemeNoteParser {
 		final int CC_LEGATO_FOOTSWITCH                      = 68 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-ls";
+				this.id = "ls";
 				this.name = "legato-switch";
 				this.shortDescription = "Legato FootSwitch";
 				this.description = "On/Off switch- Turns Legato effect between 2 subsequent notes On or Off.0 to 63 = Off, 64 to 127 = On";
@@ -1103,7 +1104,7 @@ public class SchemeNoteParser {
 		final int CC_HOLD_2                                 = 69 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-h2";
+				this.id = "h2";
 				this.name = "hold-2";
 				this.shortDescription = "Hold 2";
 				this.description = "Another way to “hold notes” (see MIDI CC 64 and MIDI CC 66). However notes fade out according to their release parameter rather than when the pedal is released.";
@@ -1126,7 +1127,7 @@ public class SchemeNoteParser {
 		final int CC_SOUND_CTRL_01                          = 70 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-sc1";
+				this.id = "sc1";
 				this.name = "sound-controller-1";
 				this.shortDescription = "Sound Controller 1";
 				this.description = "Usually controls the way a sound is produced. Default = Sound Variation.";
@@ -1149,7 +1150,7 @@ public class SchemeNoteParser {
 		final int CC_SOUND_CTRL_02                          = 71 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-sc2";
+				this.id = "sc2";
 				this.name = "sound-controller-2";
 				this.shortDescription = "Sound Controller 2";
 				this.description = "Allows shaping the Voltage Controlled Filter (VCF). Default = Resonance -also(Timbre or Harmonics)";
@@ -1172,7 +1173,7 @@ public class SchemeNoteParser {
 		final int CC_SOUND_CTRL_03                          = 72 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-sc3";
+				this.id = "sc3";
 				this.name = "sound-controller-3";
 				this.shortDescription = "Sound Controller 3";
 				this.description = "Controls release time of the Voltage controlled Amplifier (VCA). Default = Release Time.";
@@ -1195,7 +1196,7 @@ public class SchemeNoteParser {
 		final int CC_SOUND_CTRL_04                          = 73 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-sc4";
+				this.id = "sc4";
 				this.name = "sound-controller-4";
 				this.shortDescription = "Sound Controller 4";
 				this.description = "Controls the “Attack’ of a sound. The attack is the amount of time it takes forthe sound to reach maximum amplitude.";
@@ -1218,7 +1219,7 @@ public class SchemeNoteParser {
 		final int CC_SOUND_CTRL_05                          = 74 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-sc5";
+				this.id = "sc5";
 				this.name = "sound-controller-5";
 				this.shortDescription = "Sound Controller 5";
 				this.description = "Controls VCFs cutoff frequency of the filter.";
@@ -1241,7 +1242,7 @@ public class SchemeNoteParser {
 		final int CC_SOUND_CTRL_06                          = 75 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-sc6";
+				this.id = "sc6";
 				this.name = "sound-controller-6";
 				this.shortDescription = "Sound Controller 6";
 				this.description = "Generic – Some manufacturers may use to further shave their sounds.";
@@ -1264,7 +1265,7 @@ public class SchemeNoteParser {
 		final int CC_SOUND_CTRL_07                          = 76 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-sc7";
+				this.id = "sc7";
 				this.name = "sound-controller-7";
 				this.shortDescription = "Sound Controller 7";
 				this.description = "Generic – Some manufacturers may use to further shave their sounds.";
@@ -1287,7 +1288,7 @@ public class SchemeNoteParser {
 		final int CC_SOUND_CTRL_08                          = 77 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-sc8";
+				this.id = "sc8";
 				this.name = "sound-controller-8";
 				this.shortDescription = "Sound Controller 8";
 				this.description = "Generic – Some manufacturers may use to further shave their sounds.";
@@ -1310,7 +1311,7 @@ public class SchemeNoteParser {
 		final int CC_SOUND_CTRL_09                          = 78 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-sc9";
+				this.id = "sc9";
 				this.name = "sound-controller-9";
 				this.shortDescription = "Sound Controller 9";
 				this.description = "Generic – Some manufacturers may use to further shave their sounds.";
@@ -1333,7 +1334,7 @@ public class SchemeNoteParser {
 		final int CC_SOUND_CTRL_10                          = 79 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-sc10";
+				this.id = "sc10";
 				this.name = "sound-controller-10";
 				this.shortDescription = "Sound Controller 10";
 				this.description = "Generic – Some manufacturers may use to further shave their sounds.";
@@ -1356,7 +1357,7 @@ public class SchemeNoteParser {
 		final int CC_GENERAL_PURPOSE_01                     = 80 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-gp01";
+				this.id = "gp01";
 				this.name = "general-purpose-cc-01";
 				this.shortDescription = "General Purpose MIDI CC Controller";
 				this.description = "GenericOn/Off switch0 to 63 = Off, 64 to 127 = On";
@@ -1379,7 +1380,7 @@ public class SchemeNoteParser {
 		final int CC_GENERAL_PURPOSE_02                     = 81 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-gp02";
+				this.id = "gp02";
 				this.name = "general-purpose-cc-02";
 				this.shortDescription = "General Purpose MIDI CC Controller";
 				this.description = "GenericOn/Off switch0 to 63 = Off, 64 to 127 = On";
@@ -1402,7 +1403,7 @@ public class SchemeNoteParser {
 		final int CC_GENERAL_PURPOSE_03                     = 82 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-gp03";
+				this.id = "gp03";
 				this.name = "general-purpose-cc-03";
 				this.shortDescription = "General PurposeMIDI CC Controller";
 				this.description = "GenericOn/Off switch0 to 63 = Off, 64 to 127 = On";
@@ -1425,7 +1426,7 @@ public class SchemeNoteParser {
 		final int CC_GENERAL_PURPOSE_04                     = 83 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-gp04";
+				this.id = "gp04";
 				this.name = "general-purpose-cc-04";
 				this.shortDescription = "General Purpose MIDI CC Controller";
 				this.description = "GenericOn/Off switch0 to 63 = Off, 64 to 127 = On";
@@ -1448,7 +1449,7 @@ public class SchemeNoteParser {
 		final int CC_PORTAMENTO_CC_CTRL                     = 84 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-po";
+				this.id = "po";
 				this.name = "portamento";
 				this.shortDescription = "Portamento CC Control";
 				this.description = "Controls the amount of Portamento.";
@@ -1471,7 +1472,7 @@ public class SchemeNoteParser {
 		final int CC_EFFECT_1_DEPTH                         = 91 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-e1";
+				this.id = "e1";
 				this.name = "effect-1";
 				this.shortDescription = "Effect 1 Depth";
 				this.description = "Usually controls reverb send amount";
@@ -1494,7 +1495,7 @@ public class SchemeNoteParser {
 		final int CC_EFFECT_2_DEPTH                         = 92 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-e2";
+				this.id = "e2";
 				this.name = "effect-2";
 				this.shortDescription = "Effect 2 Depth";
 				this.description = "Usually controls tremolo amount";
@@ -1517,7 +1518,7 @@ public class SchemeNoteParser {
 		final int CC_EFFECT_3_DEPTH                         = 93 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-e3";
+				this.id = "e3";
 				this.name = "effect-3";
 				this.shortDescription = "Effect 3 Depth";
 				this.description = "Usually controls chorus amount";
@@ -1540,7 +1541,7 @@ public class SchemeNoteParser {
 		final int CC_EFFECT_4_DEPTH                         = 94 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-e4";
+				this.id = "e4";
 				this.name = "effect-4";
 				this.shortDescription = "Effect 4 Depth";
 				this.description = "Usually controls detune amount";
@@ -1563,7 +1564,7 @@ public class SchemeNoteParser {
 		final int CC_EFFECT_5_DEPTH                         = 95 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-e5";
+				this.id = "e5";
 				this.name = "effect-5";
 				this.shortDescription = "Effect 5 Depth";
 				this.description = "Usually controls phaser amount";
@@ -1586,8 +1587,8 @@ public class SchemeNoteParser {
 		final int CC_DATA_INCREMENT                         = 96 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-inc";
-				this.name = "cc-data-increment";
+				this.id = "inc";
+				this.name = "data-increment";
 				this.shortDescription = "(+1) Data Increment";
 				this.description = "Usually used to increment data for RPN and NRPN messages.";
 				this.controlNumber = CC_DATA_INCREMENT;
@@ -1609,8 +1610,8 @@ public class SchemeNoteParser {
 		final int CC_DATA_DECREMENT                         = 97 ;
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-dec";
-				this.name = "cc-data-decrement";
+				this.id = "dec";
+				this.name = "data-decrement";
 				this.shortDescription = "(-1) Data Decrement";
 				this.description = "Usually used to decrement data for RPN and NRPN messages.";
 				this.controlNumber = CC_DATA_DECREMENT ;
@@ -1632,8 +1633,8 @@ public class SchemeNoteParser {
 		final int CC_NRPN_LSB                               = 98 ; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-nrpn-l";
-				this.name = "cc-nrpn-lsb";
+				this.id = "nrpn-l";
+				this.name = "nrpn-lsb";
 				this.shortDescription = "Non-Registered Parameter Number LSB (NRPN)";
 				this.description = "For controllers 6, 38, 96, and 97, it selects the NRPN parameter.";
 				this.controlNumber = CC_NRPN_LSB                               ;
@@ -1655,8 +1656,8 @@ public class SchemeNoteParser {
 		final int CC_NRPN_MSB                               = 99 ;
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-nrpn-m";
-				this.name = "cc-nrpn-msb";
+				this.id = "nrpn-m";
+				this.name = "nrpn-msb";
 				this.shortDescription = "Non-Registered Parameter Number MSB (NRPN)";
 				this.description = "For controllers 6, 38, 96, and 97, it selects the NRPN parameter.";
 				this.controlNumber = CC_NRPN_MSB                               ;
@@ -1678,7 +1679,7 @@ public class SchemeNoteParser {
 		final int CC_RPN_LSB                                = 100; 
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-rpn-l";
+				this.id = "rpn-l";
 				this.name = "rpn-lsb";
 				this.shortDescription = "Registered Parameter Number LSB (RPN)";
 				this.description = "For controllers 6, 38, 96, and 97, it selects the RPN parameter.";
@@ -1701,7 +1702,7 @@ public class SchemeNoteParser {
 		final int CC_RPN_MSB                                = 101;
 		putParser( new SchemeMidiControlChangeEventParser() {
 			{
-				this.id = "cc-rpn-m";
+				this.id = "rpn-m";
 				this.name = "rpn-msb";
 				this.shortDescription = "Registered Parameter Number MSB (RPN)";
 				this.description = "For controllers 6, 38, 96, and 97, it selects the RPN parameter.";

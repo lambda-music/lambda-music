@@ -15,27 +15,27 @@ public final class MetroMidi {
 
 	public static byte[] noteOn( int ch, int note, int velo ) {
 		return new byte[] {
-				(byte) ( 0b10000000 | ( 0x00001111 & ch )), 
+				(byte) ( 0b10010000 | ( 0x00001111 & ch )), 
 				(byte) ( note ), 
 				(byte) ( velo ), }; 
 	}
 	// A helper function
 	public static byte[] noteOn( int ch, int note, double velo ) {
 		return new byte[] {
-				(byte) ( 0b10000000 | ( 0x00001111 & ch )), 
+				(byte) ( 0b10010000 | ( 0x00001111 & ch )), 
 				(byte) ( note ), 
 				(byte) ( 127d * velo ), }; 
 	}
 	public static byte[] noteOff( int ch, int note, int velo ) {
 		return new byte[] {
-				(byte) ( 0b10010000 | ( 0x00001111 & ch )), 
+				(byte) ( 0b10000000 | ( 0x00001111 & ch )), 
 				(byte) ( note ), 
 				(byte) ( velo ), }; 
 	}
 	// A helper function
 	public static byte[] noteOff( int ch, int note, double velo ) {
 		return new byte[] {
-				(byte) ( 0b10010000 | ( 0x00001111 & ch )), 
+				(byte) ( 0b10000000 | ( 0x00001111 & ch )), 
 				(byte) ( note ), 
 				(byte) ( 127d * velo ), }; 
 	}
