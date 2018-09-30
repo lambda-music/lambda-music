@@ -22,7 +22,6 @@ public class MetroNoteEventBuffer implements Iterable<MetroAbstractEvent>{
 		Logger.getLogger(MetroNoteEventBuffer.class.getName()).log(Level.SEVERE, msg, e);
     }
 	
-	
 	private double humanizeOffset_min = 0;
 	private double humanizeOffset_max = 0;
 	private double humanizeOffset_size = 0;

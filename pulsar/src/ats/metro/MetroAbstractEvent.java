@@ -35,9 +35,9 @@ public class MetroAbstractEvent {
 		return from <= this.offsetInFrames && this.offsetInFrames < to;
 	}
 
-	public final String dump(String string) {
+	public final String dump(String prefix) {
 		StringBuilder sb = new StringBuilder();
-		dumpProc(string, sb);
+		dumpProc(prefix, sb);
 		return sb.toString();
 	}
 	public void dumpProc( String prefix, StringBuilder sb ) {

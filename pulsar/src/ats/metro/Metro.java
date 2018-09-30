@@ -376,6 +376,8 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 						int barInFrames = Metro.calcBarInFrames( this, client, position);
 						for ( MetroNoteEventBufferSequence sequence : this.registeredSequences ) {
 							sequence.prepare( barInFrames );
+							// ADDED (Sun, 30 Sep 2018 12:39:32 +0900)
+							sequence.checkBuffer( this,  this.client, this.position );
 						}
 					}		
 					this.unregisteredSeqences.clear();
