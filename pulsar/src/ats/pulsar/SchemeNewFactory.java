@@ -6,12 +6,15 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimerTask;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,7 +26,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import javax.swing.JSlider;
-import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -220,9 +222,9 @@ public abstract class SchemeNewFactory {
 				JNamedPanel panel = new JNamedPanel();
 
 				if ( args.size() == 0 ) {
-					pulsar.guiLayout(panel, "default" );
+					pulsar.gui.guiLayout(panel, "default" );
 				} else if ( 1 <= args.size() ) {
-					pulsar.guiLayout(panel, SchemeUtils.symbolToString( args.get(0) ) );
+					pulsar.gui.guiLayout(panel, SchemeUtils.symbolToString( args.get(0) ) );
 				}
 				return panel;
 			}
@@ -233,15 +235,15 @@ public abstract class SchemeNewFactory {
 				JNamedPanel panel = new JNamedPanel();
 
 				if ( args.size() == 0 ) {
-					pulsar.guiLayout(panel, "default" );
+					pulsar.gui.guiLayout(panel, "default" );
 				} else if ( 1 <= args.size() ) {
 					String title = SchemeUtils.toString( args.get(0) );
 					panel.setBorder( BorderFactory.createTitledBorder( title ) );
 
 					if ( 2 <= args.size() ) {
-						pulsar.guiLayout(panel, SchemeUtils.symbolToString( args.get(1) ) );
+						pulsar.gui.guiLayout(panel, SchemeUtils.symbolToString( args.get(1) ) );
 					} else {
-						pulsar.guiLayout(panel, "flow" );
+						pulsar.gui.guiLayout(panel, "flow" );
 					}
 				}
 				return panel;
@@ -302,6 +304,69 @@ public abstract class SchemeNewFactory {
 			}
 		});
 
+		register( "fast-button", new SchemeNewFactory() {
+			@Override
+			Object create( Pulsar pulsar, List<Object> args ) {
+				if ( args.size() == 2 ) {
+					String caption;
+					Object userObject;
+					{
+						Object arg0 = args.get(0);
+						if ( arg0 instanceof Pair ) {
+							Pair pair = (Pair) arg0;
+							caption = SchemeUtils.toString( pair.getCar() );
+							userObject = pair.getCdr();
+						} else {
+							caption = SchemeUtils.toString( arg0 );
+							userObject = EmptyList.emptyList;
+						}
+					}
+
+					Procedure procedure = (Procedure) args.get(1);
+
+					Environment env = Environment.getCurrent();
+					Language lang = Language.getDefaultLanguage();
+					{
+						JPulsarButton button = new JPulsarButton( caption );
+						SchemeFunctionExecutor executor = new SchemeFunctionExecutor( procedure );
+						button.addMouseListener(new MouseAdapter() {
+							@Override
+							public void mousePressed(MouseEvent e) {
+								executor.execute( 
+										true,
+										SchemeUtils.toSchemeString( button.getText() ),
+										((JUserObjectContainer)button).getUserObject(),
+										button,
+										e
+										);
+							}
+						});
+						button.addKeyListener( new KeyAdapter() {
+							public void keyPressed(java.awt.event.KeyEvent e) {
+								switch ( e.getKeyCode() ) {
+									case KeyEvent.VK_SPACE: 
+									case KeyEvent.VK_ENTER:
+										executor.execute( 
+												true,
+												SchemeUtils.toSchemeString( button.getText() ),
+												((JUserObjectContainer)button).getUserObject(),
+												button,
+												e
+												);
+										
+								}
+							}
+						});
+						button.setUserObject( userObject );
+						return button;
+					}
+				} else {
+					throw new RuntimeException( "new 'fast-button has two parameters( caption proc )." + args.size() );
+				}
+			}
+		});
+
+
 
 		register( "timer", new SchemeNewFactory() {
 			@Override
@@ -328,7 +393,7 @@ public abstract class SchemeNewFactory {
 			public Object createTimer(Pulsar pulsar, long delay, long interval, Procedure procedure) {
 				SchemeFunctionExecutor executor = new SchemeFunctionExecutor( procedure );
 				java.util.Timer timer = new java.util.Timer( true );
-				timer.scheduleAtFixedRate( new TimerTask() {
+				timer.scheduleAtFixedRate( new java.util.TimerTask() {
 					@Override
 					public void run() {
 						Object result = executor.execute();
@@ -357,7 +422,7 @@ public abstract class SchemeNewFactory {
 
 		register( "stimer", new SchemeNewFactory() {
 			final class ActionListenerImplementation implements ActionListener {
-				Timer timer;
+				javax.swing.Timer timer;
 				SchemeFunctionExecutor executor;
 				ActionListenerImplementation( Procedure procedure ) {
 					this.executor = new SchemeFunctionExecutor( procedure );
@@ -378,7 +443,7 @@ public abstract class SchemeNewFactory {
 					Procedure procedure = (Procedure)args.get(1);
 
 					ActionListenerImplementation listener = new ActionListenerImplementation( procedure );
-					Timer timer = new Timer( interval,  listener );
+					javax.swing.Timer timer = new javax.swing.Timer( interval,  listener );
 					listener.timer = timer;
 					pulsar.addCleanupHook( new Runnable() {
 						@Override

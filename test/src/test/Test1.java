@@ -8,12 +8,22 @@ import java.awt.Dimension;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JSlider;
 
 public class Test1 {
 	public static void main(String[] args) {
 		System.out.println( System.getProperty("java.class.path").replace( ':', '\n' ) );
 		JFrame frame = new JFrame();
+		JMenuBar menuBar = new JMenuBar();
+		frame.setJMenuBar(menuBar);
+		
+		JMenu m = new JMenu( "HELLO" );
+		m.add( new JMenuItem("Close") );
+		menuBar.add( m );
+		
 		Container pane = frame.getContentPane();
 		JSlider slide = new JSlider();
 		pane.add(slide, BorderLayout.PAGE_START );
@@ -33,6 +43,7 @@ public class Test1 {
 						);
 			}
 		};
+		
 		
 		pane.add( b, BorderLayout.PAGE_END );
 		frame.setSize(new Dimension(500, 500));

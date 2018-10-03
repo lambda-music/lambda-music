@@ -13,10 +13,12 @@ import gnu.lists.AbstractSequence;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.Pair;
+import gnu.mapping.SimpleSymbol;
 import gnu.mapping.Symbol;
 import gnu.math.DFloNum;
 import gnu.math.IntNum;
 import gnu.math.Quantity;
+import kawa.standard.Scheme;
 
 public class SchemeUtils {
 
@@ -159,6 +161,10 @@ public class SchemeUtils {
 	
 	public static Pair acons( String key, Object value ) {
 		return new Pair( toSchemeSymbol( key ) , value );
+	}
+
+	public static final void defineVar( Scheme scheme, String name, Object value ) {
+		scheme.getEnvironment().define( SimpleSymbol.make( "", name ), null, value );
 	}
 
 }
