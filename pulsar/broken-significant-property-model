@@ -1,0 +1,35 @@
+
+About Inefficiency of UndoableEdit's isSignificant() Property 
+==============================================================
+
+The model that categorizing by boolean isSignificant() property is broken because :
+
+1. The isSignificant() property always returns `true`. It is actually not used.
+
+2. It is not easy to tell when a group of edit events will finish.
+
+3. UndoManager's lastEdit() / firstEdit() methods return null
+   when the first/ the last edit is not significant.
+   This causes the first edit object/the last edit object cannot be
+   redone/undone.
+
+4. Most undoableEdit objects are usually wrapped by DefaultDocumentEvent objects
+   and there is no way to retrieve their edit objects inside the wrappers.
+   Therefore, it is impossible to group the edit events by checking their class type.
+
+5. An idea that doing addEdit() with a dummy edit event in which the
+   isSignificant() always returns `true` does not work because this causes
+   a user have to invoke undo/redo twice at the first/the last edit event object.
+
+
+
+An Idea to solve the Problem
+=============================
+
+Use CompoundEdit objects. If the routine detected an edit is started, place a 
+CompoundEdit to the current UndoManager and add all events into the CompoundEdit.
+This method does not require users to tell when a group ends and placing a new edit
+object is suffice to work properly because doing so effectively acknowledges the
+end of groups.
+
+

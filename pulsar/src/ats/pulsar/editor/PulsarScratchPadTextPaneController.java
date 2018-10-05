@@ -18,6 +18,7 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
 import ats.pulsar.editor.SimpleSchemeParser.ParserState;
+import ats.pulsar.editor.lib.GroupedUndoManager;
 
 public class PulsarScratchPadTextPaneController implements CaretListener, DocumentListener  {
 	public static interface PulsarScratchPadTextPaneListener {
@@ -30,6 +31,7 @@ public class PulsarScratchPadTextPaneController implements CaretListener, Docume
 
 	JTextPane textPane;
 	PulsarScratchPadTextPaneListener listener;
+	GroupedUndoManager undoManager;
 	public PulsarScratchPadTextPaneController(JTextPane textPane, PulsarScratchPadTextPaneListener listener) {
 		super();
 		this.textPane = textPane;
@@ -40,17 +42,35 @@ public class PulsarScratchPadTextPaneController implements CaretListener, Docume
 
 	// CaretListener
 	public void caretUpdate(CaretEvent e) {
-		invokeUpdateMarker();
+		System.err.println("PulsarScratchPadTextPaneController.caretUpdate()");
+//		undoManager.notifySignificant();
+
+//		if ( undoManager != null )
+//			undoManager.startGroup();
+//
+		if ( ! undoManager.isSuspended() )
+			invokeUpdateMarker();
 	}
 
 	//DocumentListener
 	public void insertUpdate(DocumentEvent e) {
-		invokeUpdateMarker();
+		System.err.println("PulsarScratchPadTextPaneController.insertUpdate()");
+//		if ( undoManager != null )
+//			undoManager.notifySignificant();
+		
+//		if ( ! undoManager.isSuspended() )
+//			invokeUpdateMarker();
 	}
 	public void removeUpdate(DocumentEvent e) {
-		invokeUpdateMarker();
+		System.err.println("PulsarScratchPadTextPaneController.removeUpdate()");
+//		if ( undoManager != null )
+//			undoManager.notifySignificant();
+
+//		if ( ! undoManager.isSuspended() )
+//			invokeUpdateMarker();
 	}
 	public void changedUpdate(DocumentEvent e) {
+		System.err.println("PulsarScratchPadTextPaneController.changedUpdate() : ignored");
 		return;
 	}
 
@@ -79,7 +99,7 @@ public class PulsarScratchPadTextPaneController implements CaretListener, Docume
 	    	Pattern pattern = Pattern.compile( getLispWordPattern() );
 	    	Matcher matcher = pattern.matcher( text );
 	    	while ( matcher.find() ) {
-	    		// System.out.println( matcher.start() + ":" + matcher.end() );
+	    		// System.err.println( matcher.start() + ":" + matcher.end() );
 	    		document.setCharacterAttributes(
 	    				matcher.start(),
 	    				matcher.end() - matcher.start(),
@@ -94,7 +114,7 @@ public class PulsarScratchPadTextPaneController implements CaretListener, Docume
 	    	Pattern pattern = Pattern.compile( ";.*$|\\#\\|[\\w\\W]*\\|\\#", Pattern.MULTILINE );
 	    	Matcher matcher = pattern.matcher( text );
 	    	while ( matcher.find() ) {
-	    		// System.out.println( matcher.start() + ":" + matcher.end() );
+	    		// System.err.println( matcher.start() + ":" + matcher.end() );
 	    		document.setCharacterAttributes(
 	    				matcher.start(),
 	    				matcher.end() - matcher.start(),
@@ -133,8 +153,8 @@ public class PulsarScratchPadTextPaneController implements CaretListener, Docume
 			}
 		}
 		String r = String.join( "|" , lispWords  );
-		// System.out.println( Arrays.asList( lispWords ) ); 
-//		System.out.println( r );
+		// System.err.println( Arrays.asList( lispWords ) ); 
+//		System.err.println( r );
 		return r; 
 	}
 

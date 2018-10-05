@@ -37,12 +37,12 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
-import javax.swing.undo.UndoManager;
 
 import ats.pulsar.Pulsar;
 import ats.pulsar.SchemeUtils;
-import ats.pulsar.editor.CompoundUndoManager.RelaxUndoableEdit;
 import ats.pulsar.editor.PulsarScratchPadTextPaneController.PulsarScratchPadTextPaneListener;
+import ats.pulsar.editor.lib.CompoundGroupedUndoManager;
+import ats.pulsar.editor.lib.GroupedUndoManager;
 import gnu.lists.IString;
 import gnu.lists.Pair;
 import gnu.lists.PrintConsumer;
@@ -50,6 +50,7 @@ import gnu.mapping.Symbol;
 import kawa.standard.Scheme;
 
 public class PulsarScratchPad extends JFrame {
+	private static final boolean DEBUG_UNDO_BUFFER = false;
 	private static final Logger LOGGER = Logger.getLogger(Pulsar.class.getName());
 	static void logError( String msg, Throwable e ) {
 		LOGGER.log(Level.SEVERE, msg, e);
@@ -75,27 +76,34 @@ public class PulsarScratchPad extends JFrame {
 		}
 		@Override
 		public void run() {
-        	undoManager.setEnabled(true);
-        	undoManager.startCompoundEdit();
-        	try {
-    			try {
-    				if ( isThereSelection ) {
-    					int selectionEnd = textPane.getSelectionEnd();
-    					textPane.getDocument().insertString( selectionEnd, result, null);
-    					textPane.setSelectionEnd( selectionEnd + result.length() );
-    					textPane.setSelectionStart(selectionEnd + 1 );
-    				} else {
-    					textPane.getDocument().insertString( textPane.getText().length(), result, null);
-    				}
+			try {
+				if ( isThereSelection ) {
+					try {
+						undoManager.startGroup();
+						undoManager.setSuspended(true);
+						int selectionEnd = textPane.getSelectionEnd();
+						textPane.getDocument().insertString( selectionEnd, result, null);
+						textPane.setSelectionEnd( selectionEnd + result.length() );
+						textPane.setSelectionStart(selectionEnd + 1 );
+					} finally {
+						undoManager.setSuspended(false);
+						undoManager.startGroup();
+					}
+				} else {
+					try {
+						undoManager.startGroup();
+						undoManager.setSuspended(true);
+						textPane.getDocument().insertString( textPane.getText().length(), result, null);
+					} finally {
+						undoManager.setSuspended(false);
+						undoManager.startGroup();
+					}
 
-    			} catch (BadLocationException e1) {
-    				e1.printStackTrace();
-    			}
-        	} finally {
-        		undoManager.endCompoundEdit();
-            	undoManager.setEnabled(false);
-        	}
+				}
 
+			} catch (BadLocationException e1) {
+				e1.printStackTrace();
+			}
 		}
 	}
 
@@ -273,40 +281,51 @@ public class PulsarScratchPad extends JFrame {
 		}
 	}
 
-	private class ChangeIndentAction extends AbstractAction {
+	private class FormatAction extends AbstractAction {
 		int difference;
-		public ChangeIndentAction(int difference) {
+		public FormatAction(int difference) {
 			super();
 			this.difference = difference;
 		}
 		@Override
 		public void actionPerformed(ActionEvent e) {
-        	undoManager.setEnabled(true);
-        	undoManager.startCompoundEdit();
-        	try {
-    			formatProc( textPane, new TextFilter() {
-    				@Override
-    				String process(String text) {
-    					return SimpleSchemeIndentChanger.changeIndentRelativeMultiline( text, difference );
-    				}
-    			});
-        	} finally {
-        		undoManager.endCompoundEdit();
-            	undoManager.setEnabled(false);
-        	}
-
 			//	JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
+			try {
+				undoManager.startGroup();
+				undoManager.setSuspended(true);
+				formatProc( textPane, new TextFilter() {
+					@Override
+					String process(String text) {
+						return SimpleSchemeIndentChanger.changeIndentRelativeMultiline( text, difference );
+					}
+				});
+			} finally {
+				undoManager.setSuspended(false);
+				undoManager.startGroup();
+				/*
+				 * (Fri, 05 Oct 2018 02:20:49 +0900)
+				 * 
+				 * Note that this calling startGroup() after setSuspended(false) is necessary.
+				 * Continuing the process without starting a new group here, causes problems.
+				 * Without starting a new group here, undoing after performing any text format
+				 * actions with selecting any part of the formatted block causes throwing an
+				 * exception, and then the synchronization between the document and undo buffer
+				 * will be broken.
+				 * 
+				 */
+
+			}
 		}
 	}
 	
-	public final AbstractAction INCREASE_INDENT_ACTION = new ChangeIndentAction( +2 ) {
+	public final AbstractAction INCREASE_INDENT_ACTION = new FormatAction( +2 ) {
 		{
 			putValue( Action2.NAME, "Increase Indentation" );
 			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_TAB , 0 ) ) ;
 			putValue( Action.MNEMONIC_KEY , (int) 'c' );
 		}
 	};
-	public final AbstractAction DECREASE_INDENT_ACTION = new ChangeIndentAction( -2 ) {
+	public final AbstractAction DECREASE_INDENT_ACTION = new FormatAction( -2 ) {
 		{
 			putValue( Action2.NAME, "Decrease Indentation" );
 			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_TAB , KeyEvent.SHIFT_MASK ) );
@@ -336,24 +355,14 @@ public class PulsarScratchPad extends JFrame {
 	private class PrettifyAction extends AbstractAction {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-        	undoManager.setEnabled(true);
-        	undoManager.startCompoundEdit();
-        	try {
+			//	JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
+			formatProc( textPane, new TextFilter() {
+				@Override
+				String process(String text) {
+					return SimpleSchemePrettifier.prettify( getLispWords( scheme ), text );
+				}
 
-        		formatProc( textPane, new TextFilter() {
-        			@Override
-        			String process(String text) {
-        				return SimpleSchemePrettifier.prettify( getLispWords( scheme ), text );
-        			}
-
-        		});
-
-        		//	JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
-
-        	} finally {
-        		undoManager.endCompoundEdit();
-            	undoManager.setEnabled(false);
-        	}
+			});
 		}
 	}
 
@@ -448,18 +457,18 @@ public class PulsarScratchPad extends JFrame {
 		                    return;
 		                }
 		                
-		                {
+		                
+		                try {
+		                	undoManager.startGroup();
+		                	undoManager.setSuspended(true);
+
 		                	String text = target.getText();
 		                	int pos = target.getCaretPosition();
 		                	String indentString = SimpleSchemePrettifier.calculateIndentSize(text, pos, getLispWords( scheme ));
-		                	undoManager.setEnabled(true);
-		                	undoManager.startCompoundEdit();
-		                	try {
-		                		target.replaceSelection( "\n" + indentString );
-		                	} finally {
-		                		undoManager.endCompoundEdit();
-			                	undoManager.setEnabled(false);
-		                	}
+		                	target.replaceSelection( "\n" + indentString );
+		                } finally {
+		                	undoManager.setSuspended(false);
+		                	undoManager.startGroup();
 		                }
 		            }
 				}
@@ -470,15 +479,18 @@ public class PulsarScratchPad extends JFrame {
 		}
 	}
 	///////////////////////////////////////////////////////////////////////////////////
-	CompoundUndoManager undoManager;
+	GroupedUndoManager undoManager;
 	{
 		// https://stackoverflow.com/questions/2547404/using-undo-and-redo-for-jtextarea
-		undoManager = new CompoundUndoManager( textPane );
+//		undoManager = new InsignificantUndoManager();
+//		undoManager = new LazyGroupedUndoManager();
+		undoManager = new CompoundGroupedUndoManager();
+//		undoManager = new OriginalCompoundUndoManager( textPane );
 	}
 
 	private abstract static class UndoRedoAction extends AbstractAction {
-		protected final UndoManager undoManager;
-		protected UndoRedoAction( String name,  UndoManager undoManager ) {
+		protected final GroupedUndoManager undoManager;
+		protected UndoRedoAction( String name,  GroupedUndoManager undoManager ) {
 			super(name);
 			this.undoManager = undoManager;
 		}
@@ -486,15 +498,19 @@ public class PulsarScratchPad extends JFrame {
 
 	Action UNDO_ACTION = new UndoAction( "Undo", undoManager );
 	public static class UndoAction extends UndoRedoAction {
-		public UndoAction(String name, UndoManager manager ) {
+		public UndoAction(String name, GroupedUndoManager manager ) {
 			super(name,manager);
 		}
 
 		public void actionPerformed(ActionEvent actionEvent) {
+			System.out.println( "do UNDO" );
 			try {
 				undoManager.undo();
 			} catch (CannotUndoException e) {
-				logInfo( "could not undo" );
+				if ( DEBUG_UNDO_BUFFER )
+					logError("could not undo", e);
+				else
+					logInfo( "could not undo" );
 				// showMessage(actionEvent.getSource());
 			}
 		}
@@ -507,14 +523,18 @@ public class PulsarScratchPad extends JFrame {
 
 	Action REDO_ACTION = new RedoAction( "Redo", undoManager );
 	public static class RedoAction extends UndoRedoAction {
-		public RedoAction(String name, UndoManager manager) {
+		public RedoAction(String name, GroupedUndoManager manager) {
 			super(name,manager);
 		}
 		public void actionPerformed(ActionEvent actionEvent) {
+			System.out.println( "do REDO" );
 			try {
 				undoManager.redo();
 			} catch (CannotRedoException e) {
-				logInfo( "could not redo" );
+				if ( DEBUG_UNDO_BUFFER )
+					logError("could not redo", e);
+				else
+					logInfo( "could not redo" );
 //				showMessage(actionEvent.getSource());
 			}
 		}
@@ -525,6 +545,59 @@ public class PulsarScratchPad extends JFrame {
 		}
 	}
 
+	Action DEBUG_ACTION = new DebugAction( "Debug" );
+	public class DebugAction extends AbstractAction {
+		public DebugAction(String string) {
+			super(string);
+		}
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			undoManager.dump();
+		}
+		{
+			putValue( Action2.NAME, "Debug" );
+			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_D , KeyEvent.CTRL_MASK ));
+			putValue( Action.MNEMONIC_KEY , (int) 'd' );
+		}
+	}
+	
+	Action PASTE_ACTION = new PasteAction();
+    public class PasteAction extends TextAction {
+
+        /** Create this object with the appropriate identifier. */
+        public PasteAction() {
+            super(DefaultEditorKit.pasteAction);
+        }
+
+        /**
+         * The operation to perform when this action is triggered.
+         *
+         * @param e the action event
+         */
+        public void actionPerformed(ActionEvent e) {
+        	System.out.println("PulsarScratchPad.PasteAction.actionPerformed()");
+            JTextComponent target = getTextComponent(e);
+            if (target != null) {
+            	try {
+            		undoManager.startGroup();
+            		undoManager.setSuspended(true);
+            		target.paste();
+            	} finally {
+            		undoManager.setSuspended(false);
+            		undoManager.startGroup();
+            	}
+            }
+        }
+		{
+			putValue( Action2.NAME, "Paste" );
+			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_V , KeyEvent.CTRL_MASK ));
+			putValue( Action.MNEMONIC_KEY , (int) 'p' );
+		}
+    }
+    {
+    	textPane.getActionMap().put( DefaultEditorKit.pasteAction , PASTE_ACTION );
+    }
+
 	
 	{
 		
@@ -532,42 +605,34 @@ public class PulsarScratchPad extends JFrame {
 			Action newKeyTypedAction = new DefaultKeyTypedAction() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-//            		System.out.println( "keytyped" );
-					undoManager.setEnabled(true);
-					undoManager.startCompoundEdit();
-					try {
-						super.actionPerformed(e);
-					} finally {
-						undoManager.endCompoundEdit();
-						undoManager.setEnabled(false);
-					}
-
+					super.actionPerformed(e);
+					
 					JTextPane target = (JTextPane) getTextComponent(e);
 		            if ((target != null) && (e != null)) {
 		                String content = e.getActionCommand();
-		                System.out.println( "typed : " + content );
+//		                System.out.println( "typed : " + content );
 		                switch ( content ) {
 		                	case "(" :
 		                	case ")" :
 		                		int pos = textPane.getCaretPosition() -1;
 //		                		System.out.println( "caret : " + pos );
-		                		SwingUtilities.invokeLater(new Runnable() {
-									@Override
-									public void run() {
-										controller.lookupMatchingParenthesis( textPane, pos  ); 
-										undoManager.addEdit( new RelaxUndoableEdit( "Typed", true ) );
-									}
-								});
+//		                		SwingUtilities.invokeLater(new Runnable() {
+//									@Override
+//									public void run() {
+//										controller.lookupMatchingParenthesis( textPane, pos  ); 
+//										undoManager.addEdit( new RelaxUndoableEdit( "Typed", true ) );
+//									}
+//								});
 		                		break;
 		                		
 		                	default :
 //		                		SwingUtilities.invokeLater(new Runnable() {
-//									@Override
-//									public void run() {
-//										System.out.println( "default" );
-//										undoManager.addEdit( new RelaxUndoableEdit( "Typed", true ) );
-//									}
-//								});
+//		                			@Override
+//		                			public void run() {
+//		                				System.out.println( "default" );
+//		                				undoManager.addEdit( new RelaxUndoableEdit( "Typed", true ) );
+//		                			}
+//		                		});
 		                		break;
 		                }
 		            }
@@ -580,7 +645,9 @@ public class PulsarScratchPad extends JFrame {
 //			for ( Object o : textPane.getActionMap().getParent().getParent(). allKeys() ) {
 //				System.out.println(o );
 //			}
-			textPane.getKeymap().setDefaultAction( newKeyTypedAction  );
+//			textPane.getKeymap().setDefaultAction( newKeyTypedAction  );
+//			textPane.getActionMap().put("UNDO", UNDO_ACTION );
+//			textPane.getActionMap().put("REDO", REDO_ACTION );
 
 //			undoManager.addEdit(anEdit)
 			textPane.getDocument().addUndoableEditListener( undoManager );
@@ -589,17 +656,21 @@ public class PulsarScratchPad extends JFrame {
 		
 		
 		
-//		System.err.println( "-------------------------" );
-//		for ( Object o : textPane.getActionMap().getParent().allKeys() ) {
-//			if ( o != null )
-//				System.out.println( o.toString() );
-//		}
-//		System.err.println( "==========================" );
-//		
-//		for ( Object o : textPane.getActionMap().allKeys() ) {
-//			if ( o != null )
-//				System.out.println( o.toString() );
-//		}
+		System.err.println( "-------------------------" );
+		for ( Object o : textPane.getActionMap().getParent().allKeys() ) {
+			if ( o != null )
+				System.out.println( o.toString() );
+		}
+		System.err.println( "==========================" );
+
+		for ( Object o : textPane.getActionMap().allKeys() ) {
+			if ( o != null )
+				System.out.println( o.toString() );
+		}
+	}
+	
+	{
+		this.controller.undoManager = undoManager;
 	}
 
 	{
@@ -625,6 +696,8 @@ public class PulsarScratchPad extends JFrame {
 
 		editMenuItem.add( new JMenuItem( UNDO_ACTION ) );
 		editMenuItem.add( new JMenuItem( REDO_ACTION ) );
+		editMenuItem.add( new JMenuItem( DEBUG_ACTION ) );
+		editMenuItem.add( new JMenuItem( PASTE_ACTION ) );
 
 		editMenuItem.add( new JMenuItem( textPane.getActionMap().get( DefaultEditorKit.deletePrevCharAction )  ));
 		editMenuItem.add( new JMenuItem( INCREASE_INDENT_ACTION ) );
@@ -632,7 +705,6 @@ public class PulsarScratchPad extends JFrame {
 		editMenuItem.add( new JMenuItem( PRETTIFY_ACTION ) );
 
 		Action2.processMenuBar( menuBar );
-
 	}
 
 	{

@@ -1,50 +1,102 @@
-package ats.pulsar.editor;
+package ats.pulsar.editor.lib;
 
-import javax.swing.JTextPane;
-import javax.swing.event.UndoableEditEvent;
+import javax.swing.SwingUtilities;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
-import javax.swing.undo.CompoundEdit;
-import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
 
-public class CompoundUndoManager extends UndoManager {
-	private JTextPane textPane;
-	public CompoundUndoManager(JTextPane textPane) {
-		this.textPane = textPane;
+public class InsignificantUndoManager extends GroupedUndoManager {
+	private static final boolean DEBUG_ADD_EDIT = true;
+	private static final boolean DEBUG_SUSPENDED = true;
+	boolean suspended = false;
+	public void setSuspended( boolean suspended ) {
+		if ( DEBUG_SUSPENDED )
+			if ( suspended ) {
+				System.err.println();
+				System.err.println("SUSPEND");
+			} else {
+				System.err.println("UNSUSPEND");
+				System.err.println();
+			}
+		this.suspended = suspended;
+	}
+	public boolean isSuspended() {
+		return suspended;
 	}
 	
-	CompoundEdit compoundEdit = null;
-	public void startCompoundEdit() {
-		if ( compoundEdit != null )
-			throw new IllegalStateException( "the compound edit was already started." );
-		this.compoundEdit = new CompoundEditImplementation();
-		this.addEdit(this.compoundEdit);
+	
+    protected UndoableEdit editToBeRedone() {
+    	UndoableEdit edit = super.editToBeRedone();
+    	System.out.println("InsignificantUndoManager.editToBeRedone() : " + edit );
+    	if ( edit != null )
+    		return edit;
+    	else
+    		return edits.lastElement();
+    }
+    protected UndoableEdit editToBeUndone() {
+    	UndoableEdit edit = super.editToBeUndone();
+    	if ( edit != null )
+    		return edit;
+    	else
+    		return edits.firstElement();
+    }
+
+	@Override
+	public void startGroup() {
+		if ( DEBUG_SUSPENDED )
+			if ( suspended  ) {
+				System.err.println("notifySignificant(suspended)");
+			} else {
+				System.err.println();
+				System.err.println("notifySignificant");
+			}
+
+		if ( ! suspended ) {
+			this.addEdit( new RelaxUndoableEdit("Significant", true ) );
+		}
 	}
 	
-	public void endCompoundEdit() {
-		if ( compoundEdit == null )
-			throw new IllegalStateException( "the compound edit is not started." );
-		this.compoundEdit.end();
-		this.compoundEdit = null;
+	@Override
+	public synchronized void redo() throws CannotRedoException {
+		try {
+			setSuspended(true);
+			super.redo();
+		} finally {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					setSuspended(false);
+				}
+			});
+		}
+	}
+	@Override
+	public synchronized void undo() throws CannotRedoException {
+		try {
+			setSuspended(true);
+			super.undo();
+		} finally {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					setSuspended(false);
+				}
+			});
+		}
 	}
 	
 	@Override
 	public synchronized boolean addEdit(UndoableEdit anEdit) {
+		if ( DEBUG_ADD_EDIT )
+			System.err.println( anEdit.getClass().getName() + ":" +  anEdit );
 		if ( anEdit instanceof RelaxUndoableEdit ) {
 		} else {
-			anEdit = new UnsignificantUndoableEdit( anEdit );
+			anEdit = new InsignificantUndoableEdit( anEdit );
 		}
-		System.out.println( anEdit );
 		return super.addEdit(anEdit);
 	}
 	
-	boolean isEnabled = false;
-	public void setEnabled( boolean isEnabled ) {
-		this.isEnabled = isEnabled;
-	}
-	
-	public static final class RelaxUndoableEdit implements UndoableEdit {
+	static final class RelaxUndoableEdit implements UndoableEdit {
 		private String presentationName;
 		private String redoPresentationName;
 		private String undoPresentationName;
@@ -71,16 +123,14 @@ public class CompoundUndoManager extends UndoManager {
 		}
 		@Override
 		public boolean canUndo() {
-			return true;
-//			return ! this.isDead;
+			return ! this.isDead;
 		}
 		@Override
 		public void redo() throws CannotRedoException {
 		}
 		@Override
 		public boolean canRedo() {
-			return true;
-//			return ! this.isDead;
+			return ! this.isDead;
 		}
 		boolean isDead = false;
 		@Override
@@ -111,11 +161,16 @@ public class CompoundUndoManager extends UndoManager {
 		public String getRedoPresentationName() {
 			return redoPresentationName;
 		}
+		@Override
+		public String toString() {
+			return "RELAX:" + getPresentationName();
+					
+		}
 	}
 	
-	static final class UnsignificantUndoableEdit implements UndoableEdit {
+	static class UndoableEditDelegator implements UndoableEdit {
 		UndoableEdit edit;
-		public UnsignificantUndoableEdit(UndoableEdit edit) {
+		public UndoableEditDelegator(UndoableEdit edit) {
 			super();
 			this.edit = edit;
 		}
@@ -141,8 +196,7 @@ public class CompoundUndoManager extends UndoManager {
 			return edit.replaceEdit(anEdit);
 		}
 		public boolean isSignificant() {
-			return false;
-//			return edit.isSignificant();
+			return edit.isSignificant();
 		}
 		public String getPresentationName() {
 			return edit.getPresentationName();
@@ -155,44 +209,14 @@ public class CompoundUndoManager extends UndoManager {
 		}
 	}
 	
-	@Override
-	public void undoableEditHappened(UndoableEditEvent e) {
-//		UndoableEdit edit = e.getEdit();
-		super.undoableEditHappened(e);
-		
-//		if ( isEnabled ) {
-//			if ( compoundEdit != null ) {
-//				compoundEdit.addEdit(e.getEdit());
-//			} else {
-//				super.undoableEditHappened(e);
-//			}
-//		}
+	static class InsignificantUndoableEdit extends UndoableEditDelegator {
+		public InsignificantUndoableEdit(UndoableEdit edit) {
+			super(edit);
+		}
+		@Override
+		public boolean isSignificant() {
+			return false;
+		}
 	}
 	
-	class CompoundEditImplementation extends CompoundEdit {
-//		public boolean isInProgress() {
-//			//  in order for the canUndo() and canRedo() methods to work
-//			//  assume that the compound edit is never in progress
-//
-//			return false;
-//		}
-//		@Override
-//		public boolean isSignificant() {
-//			return true;
-//		}
-
-//		public void undo() throws CannotUndoException {
-//			//  End the edit so future edits don't get absorbed by this edit
-//
-//			if (compoundEdit != null)
-//				compoundEdit.end();
-//
-//			super.undo();
-//
-//			//  Always start a new compound edit after an undo
-//			compoundEdit = null;
-//		}
-	}
-
-
 }
