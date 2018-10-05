@@ -43,11 +43,6 @@ public class PulsarScratchPadTextPaneController implements CaretListener, Docume
 	// CaretListener
 	public void caretUpdate(CaretEvent e) {
 		System.err.println("PulsarScratchPadTextPaneController.caretUpdate()");
-//		undoManager.notifySignificant();
-
-//		if ( undoManager != null )
-//			undoManager.startGroup();
-//
 		if ( ! undoManager.isSuspended() )
 			invokeUpdateMarker();
 	}
@@ -55,17 +50,11 @@ public class PulsarScratchPadTextPaneController implements CaretListener, Docume
 	//DocumentListener
 	public void insertUpdate(DocumentEvent e) {
 		System.err.println("PulsarScratchPadTextPaneController.insertUpdate()");
-//		if ( undoManager != null )
-//			undoManager.notifySignificant();
-		
 		if ( ! undoManager.isSuspended() )
 			invokeUpdateMarker();
 	}
 	public void removeUpdate(DocumentEvent e) {
 		System.err.println("PulsarScratchPadTextPaneController.removeUpdate()");
-//		if ( undoManager != null )
-//			undoManager.notifySignificant();
-
 		if ( ! undoManager.isSuspended() )
 			invokeUpdateMarker();
 	}
@@ -82,6 +71,11 @@ public class PulsarScratchPadTextPaneController implements CaretListener, Docume
 		});
 	}
 	
+	public void reset() {
+		resetStyles();
+	    syntaxHighlight();
+	}
+
 	public void resetStyles() {
 		StyledDocument document = textPane.getStyledDocument();
 		String text = textPane.getText();
@@ -91,8 +85,12 @@ public class PulsarScratchPadTextPaneController implements CaretListener, Docume
 			SimpleAttributeSet plane = new SimpleAttributeSet();
 			document.setCharacterAttributes(0, text.length(), plane, true);
 		}
-		
-	    {
+	}
+
+	public void syntaxHighlight() {
+		StyledDocument document = textPane.getStyledDocument();
+		String text = textPane.getText();
+		{
 	    	SimpleAttributeSet bold = new SimpleAttributeSet();
 	    	bold.addAttribute(StyleConstants.CharacterConstants.Bold, Boolean.TRUE );
 
@@ -121,9 +119,8 @@ public class PulsarScratchPadTextPaneController implements CaretListener, Docume
 	    				gray, true);
 	    	}
 	    }
-
-		
 	}
+	
 	public static void markParentheses(StyledDocument doc, int open_pos, int close_pos) {
 		SimpleAttributeSet attr = new SimpleAttributeSet();
 		StyleConstants.setBackground( attr, Color.GREEN );
@@ -166,7 +163,7 @@ public class PulsarScratchPadTextPaneController implements CaretListener, Docume
 
 	public void lookupMatchingParenthesis(JTextPane pane, int position) {
 		String text = pane.getText();
-		resetStyles();
+		reset();
 		ParserState parserState = 
 				SimpleSchemeParenthesisChecker.lookupParenthesis( text, position );
 		if ( parserState.isFound() )

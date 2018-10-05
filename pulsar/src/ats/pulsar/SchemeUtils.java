@@ -166,5 +166,8 @@ public class SchemeUtils {
 	public static final void defineVar( Scheme scheme, String name, Object value ) {
 		scheme.getEnvironment().define( SimpleSymbol.make( "", name ), null, value );
 	}
+	public static final Object readVar( Scheme scheme, String name, Object value ) {
+		return scheme.getEnvironment().get( SimpleSymbol.make( "", name ) );
+	}
 
 }

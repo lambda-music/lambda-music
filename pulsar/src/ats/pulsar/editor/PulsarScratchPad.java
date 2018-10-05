@@ -67,6 +67,7 @@ public class PulsarScratchPad extends JFrame {
 	public PulsarScratchPad( Scheme scheme ) {
 		super( "Pulsar Scheme Scratch Pad" );
 		this.scheme = scheme;
+		initScheme( scheme );
 	}
 
 	private final class InsertTextToTextPane implements Runnable {
@@ -76,6 +77,7 @@ public class PulsarScratchPad extends JFrame {
 			this.result = result;
 			this.isThereSelection = isThereSelection;
 		}
+		
 		@Override
 		public void run() {
 			try {
@@ -95,14 +97,14 @@ public class PulsarScratchPad extends JFrame {
 					try {
 						undoManager.startGroup();
 						undoManager.setSuspended(true);
+						int dot = textPane.getCaret().getDot();
 						textPane.getDocument().insertString( textPane.getText().length(), result, null);
+						textPane.getCaret().moveDot(dot);
 					} finally {
 						undoManager.setSuspended(false);
 						undoManager.startGroup();
 					}
-
 				}
-
 			} catch (BadLocationException e1) {
 				e1.printStackTrace();
 			}
@@ -304,6 +306,7 @@ public class PulsarScratchPad extends JFrame {
 			} finally {
 				undoManager.setSuspended(false);
 				undoManager.startGroup();
+
 				/*
 				 * (Fri, 05 Oct 2018 02:20:49 +0900)
 				 * 
@@ -315,7 +318,6 @@ public class PulsarScratchPad extends JFrame {
 				 * will be broken.
 				 * 
 				 */
-
 			}
 		}
 	}
@@ -377,6 +379,8 @@ public class PulsarScratchPad extends JFrame {
 	};
 	
 	public static void initScheme( Scheme scheme ) {
+		SchemeUtils.defineVar(scheme, "flag-done-init-pulsar-scratchpad", true );  
+
 		SchemeUtils.defineVar(scheme, "lisp-words",  
 				Pair.makeList( (List)SchemeUtils.<String,IString>convertList( 
 						Arrays.asList( SimpleSchemePrettifier.LISP_WORDS ),
@@ -627,35 +631,20 @@ public class PulsarScratchPad extends JFrame {
 									@Override
 									public void run() {
 										controller.lookupMatchingParenthesis( textPane, pos  ); 
-//										undoManager.addEdit( new RelaxUndoableEdit( "Typed", true ) );
-				                		
+
 										Timer t = new Timer(300 , new ActionListener() {
 											@Override
 											public void actionPerformed(ActionEvent e) {
-												controller.resetStyles(); 
+												controller.reset(); 
 											}
 										});
 										t.setRepeats(false);
 										t.start();
-//										SwingUtilities.invokeLater( new Runnable() {
-//											@Override
-//											public void run() {
-////												undoManager.addEdit( new RelaxUndoableEdit( "Typed", true ) );
-//											}
-//										});
-
 									}
 								});
 		                		break;
 		                		
 		                	default :
-//		                		SwingUtilities.invokeLater(new Runnable() {
-//		                			@Override
-//		                			public void run() {
-//		                				System.out.println( "default" );
-//		                				undoManager.addEdit( new RelaxUndoableEdit( "Typed", true ) );
-//		                			}
-//		                		});
 		                		break;
 		                }
 		            }
@@ -749,7 +738,6 @@ public class PulsarScratchPad extends JFrame {
 	}
 	public static void main(String[] args) {
 		Scheme scheme = new Scheme();
-		PulsarScratchPad.initScheme(scheme);
 		new PulsarScratchPad( scheme );
 	}
 }
