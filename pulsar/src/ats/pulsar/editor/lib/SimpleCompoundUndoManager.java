@@ -5,11 +5,11 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoableEdit;
 
-public class CompoundGroupedUndoManager extends GroupedUndoManager {
+public class SimpleCompoundUndoManager extends GroupedUndoManager {
 	private static final boolean DEBUG_ADD_EDIT = false;
 	private static final boolean DEBUG_SUSPENDED = false;
 	protected transient boolean suspended = false;
-	public CompoundGroupedUndoManager() {
+	public SimpleCompoundUndoManager() {
 		startGroup();
 	}
 	public synchronized void setSuspended(boolean suspended) {
@@ -27,10 +27,8 @@ public class CompoundGroupedUndoManager extends GroupedUndoManager {
 		return suspended;
 	}
 	
-	
-	
+	protected transient boolean validCompoundEdit = false;
 	protected transient CompoundEdit compoundEdit = null;
-	protected transient boolean requestNewCompoundEdit = true;
 	public synchronized void startGroup() {
 		if ( DEBUG_SUSPENDED )
 			if ( suspended  ) {
@@ -41,7 +39,7 @@ public class CompoundGroupedUndoManager extends GroupedUndoManager {
 			}
 
 		if ( ! suspended ) {
-			this.requestNewCompoundEdit = true;
+			this.validCompoundEdit = false;
 		}
 	}
 	
@@ -52,7 +50,7 @@ public class CompoundGroupedUndoManager extends GroupedUndoManager {
 			super.redo();
 		} finally {
 			setSuspended(false);
-			requestNewCompoundEdit = true;
+			validCompoundEdit = false;
 		}
 	}
 	@Override
@@ -63,7 +61,7 @@ public class CompoundGroupedUndoManager extends GroupedUndoManager {
 			super.undo();
 		} finally {
 			setSuspended(false);
-			requestNewCompoundEdit = true;
+			validCompoundEdit = false;
 		}
 	}
 	
@@ -72,28 +70,16 @@ public class CompoundGroupedUndoManager extends GroupedUndoManager {
 		if ( DEBUG_ADD_EDIT )
 			System.err.println( anEdit.getClass().getName() + ":" +  anEdit );
 
-		if ( this.requestNewCompoundEdit || this.compoundEdit == null ) {
-			if ( compoundEdit != null )
-				compoundEdit.end();
+		if ( ! this.validCompoundEdit ) {
+			if ( this.compoundEdit != null )
+				this.compoundEdit.end();
 			
-			this.compoundEdit =  new CompoundEdit() {
-				@Override
-				public boolean isInProgress() {
-					return false;
-				}
-//				@Override
-//				public boolean isSignificant() {
-//					return true;
-//				}
-//				{
-//					this.end();
-//				}
-			};
-			super.addEdit( compoundEdit );
-			this.requestNewCompoundEdit = false;
+			this.compoundEdit = new CompoundEdit();
+			super.addEdit( this.compoundEdit );
+			this.validCompoundEdit = true;
 		}
 		
-		return this.compoundEdit.addEdit( anEdit) ;
+		return super.addEdit( anEdit );
 	}
 
 	@Override

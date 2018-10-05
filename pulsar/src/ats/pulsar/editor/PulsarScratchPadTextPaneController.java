@@ -58,16 +58,16 @@ public class PulsarScratchPadTextPaneController implements CaretListener, Docume
 //		if ( undoManager != null )
 //			undoManager.notifySignificant();
 		
-//		if ( ! undoManager.isSuspended() )
-//			invokeUpdateMarker();
+		if ( ! undoManager.isSuspended() )
+			invokeUpdateMarker();
 	}
 	public void removeUpdate(DocumentEvent e) {
 		System.err.println("PulsarScratchPadTextPaneController.removeUpdate()");
 //		if ( undoManager != null )
 //			undoManager.notifySignificant();
 
-//		if ( ! undoManager.isSuspended() )
-//			invokeUpdateMarker();
+		if ( ! undoManager.isSuspended() )
+			invokeUpdateMarker();
 	}
 	public void changedUpdate(DocumentEvent e) {
 		System.err.println("PulsarScratchPadTextPaneController.changedUpdate() : ignored");
@@ -82,7 +82,7 @@ public class PulsarScratchPadTextPaneController implements CaretListener, Docume
 		});
 	}
 	
-	void resetStyles() {
+	public void resetStyles() {
 		StyledDocument document = textPane.getStyledDocument();
 		String text = textPane.getText();
 

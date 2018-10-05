@@ -7,6 +7,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -28,6 +29,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultCaret;
@@ -484,6 +486,7 @@ public class PulsarScratchPad extends JFrame {
 		// https://stackoverflow.com/questions/2547404/using-undo-and-redo-for-jtextarea
 //		undoManager = new InsignificantUndoManager();
 //		undoManager = new LazyGroupedUndoManager();
+//		undoManager = new SimpleCompoundUndoManager();
 		undoManager = new CompoundGroupedUndoManager();
 //		undoManager = new OriginalCompoundUndoManager( textPane );
 	}
@@ -612,17 +615,37 @@ public class PulsarScratchPad extends JFrame {
 		                String content = e.getActionCommand();
 //		                System.out.println( "typed : " + content );
 		                switch ( content ) {
+		                	case " " :
+		                		undoManager.startGroup();
+		                		break;
+		                		
 		                	case "(" :
 		                	case ")" :
 		                		int pos = textPane.getCaretPosition() -1;
-//		                		System.out.println( "caret : " + pos );
-//		                		SwingUtilities.invokeLater(new Runnable() {
-//									@Override
-//									public void run() {
-//										controller.lookupMatchingParenthesis( textPane, pos  ); 
+		                		System.out.println( "caret : " + pos );
+		                		SwingUtilities.invokeLater(new Runnable() {
+									@Override
+									public void run() {
+										controller.lookupMatchingParenthesis( textPane, pos  ); 
 //										undoManager.addEdit( new RelaxUndoableEdit( "Typed", true ) );
-//									}
-//								});
+				                		
+										Timer t = new Timer(300 , new ActionListener() {
+											@Override
+											public void actionPerformed(ActionEvent e) {
+												controller.resetStyles(); 
+											}
+										});
+										t.setRepeats(false);
+										t.start();
+//										SwingUtilities.invokeLater( new Runnable() {
+//											@Override
+//											public void run() {
+////												undoManager.addEdit( new RelaxUndoableEdit( "Typed", true ) );
+//											}
+//										});
+
+									}
+								});
 		                		break;
 		                		
 		                	default :
@@ -638,6 +661,9 @@ public class PulsarScratchPad extends JFrame {
 		            }
 				}
 			};
+			
+			textPane.getKeymap().setDefaultAction( newKeyTypedAction  );
+			
 //			purgeKeyFromActionMap( textPane.getActionMap(), DefaultEditorKit.insertBreakAction );
 //			purgeKeyFromActionMap( textPane.getActionMap(), DefaultEditorKit.defaultKeyTypedAction );
 //			purgeKeyFromActionMap( textPane.getActionMap(), DefaultEditorKit.insertContentAction );
@@ -645,7 +671,6 @@ public class PulsarScratchPad extends JFrame {
 //			for ( Object o : textPane.getActionMap().getParent().getParent(). allKeys() ) {
 //				System.out.println(o );
 //			}
-//			textPane.getKeymap().setDefaultAction( newKeyTypedAction  );
 //			textPane.getActionMap().put("UNDO", UNDO_ACTION );
 //			textPane.getActionMap().put("REDO", REDO_ACTION );
 
