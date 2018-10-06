@@ -5,6 +5,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.MenuBar;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -14,7 +15,10 @@ import java.io.PrintStream;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -45,13 +49,19 @@ import ats.pulsar.SchemeUtils;
 import ats.pulsar.editor.PulsarScratchPadTextPaneController.PulsarScratchPadTextPaneListener;
 import ats.pulsar.editor.lib.CompoundGroupedUndoManager;
 import ats.pulsar.editor.lib.GroupedUndoManager;
+import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.Pair;
 import gnu.lists.PrintConsumer;
+import gnu.mapping.Environment;
+import gnu.mapping.Procedure;
+import gnu.mapping.Procedure2;
+import gnu.mapping.Procedure3;
 import gnu.mapping.Symbol;
 import kawa.standard.Scheme;
 
 public class PulsarScratchPad extends JFrame {
+	private static final String FLAG_DONE_INIT_PULSAR_SCRATCHPAD = "flag-done-init-pulsar-scratchpad";
 	private static final boolean DEBUG_UNDO_BUFFER = false;
 	private static final Logger LOGGER = Logger.getLogger(Pulsar.class.getName());
 	static void logError( String msg, Throwable e ) {
@@ -63,12 +73,83 @@ public class PulsarScratchPad extends JFrame {
 		System.err.println( msg );
 	}
 
-	Scheme scheme;
+	private Scheme scheme;
 	public PulsarScratchPad( Scheme scheme ) {
 		super( "Pulsar Scheme Scratch Pad" );
 		this.scheme = scheme;
 		initScheme( scheme );
 	}
+	
+	public final AbstractAction NEW_SCRATCHPAD_ACTION = new AbstractAction() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			new PulsarScratchPad( scheme );
+		}
+		{
+			putValue( Action2.NAME, "Create a New Scratchpad" );
+			putValue( Action.MNEMONIC_KEY, (int)'n' );
+			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK) );
+		}
+	};
+
+
+	public final class ScratchPadThreadManager {
+		private final class ScratchPadThread extends Thread {
+			private final Runnable r;
+			private ScratchPadThread(Runnable r) {
+				this.r = r;
+			}
+
+			@Override
+			public void run() {
+				try {
+					System.out.println("run");
+					r.run();
+				} finally {
+					System.out.println("end");
+					removeScratchPadThread( this );
+				}
+			}
+			@Override
+			public void interrupt() {
+				System.out.println("interrupted");
+				super.interrupt();
+			}
+		}
+		private ArrayDeque<Thread> scratchPadThreadList = new ArrayDeque<>();
+		public void addScratchPadThread( Thread t ) {
+			synchronized ( scratchPadThreadList ) {
+				scratchPadThreadList.add( t );
+			}
+		}
+		public void startScratchPadThread( Runnable r ) {
+			Thread t = new ScratchPadThread(r);
+			addScratchPadThread(t);
+			t.start();
+		}
+		public void removeScratchPadThread( Thread t ) {
+			synchronized ( scratchPadThreadList ) {
+				scratchPadThreadList.remove( t );
+			}
+		}
+		public void interruptScratchPadThreads() {
+			System.out.println("interruptScratchPadThreads");
+			synchronized ( scratchPadThreadList ) {
+				for ( Thread t : scratchPadThreadList ) {
+					System.out.println( "interrupt start" );
+					t.interrupt();
+					System.out.println( "interrpt end" );
+				}
+			}
+		}
+	}
+	
+	final ScratchPadThreadManager threadManager = new ScratchPadThreadManager();
+	public ScratchPadThreadManager getThreadManager() {
+		return threadManager;
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////
 
 	private final class InsertTextToTextPane implements Runnable {
 		private final String result;
@@ -111,64 +192,12 @@ public class PulsarScratchPad extends JFrame {
 		}
 	}
 
-	private final class ScratchPadThread extends Thread {
-		private final Runnable r;
-		private ScratchPadThread(Runnable r) {
-			this.r = r;
-		}
-
-		@Override
-		public void run() {
-			try {
-				System.out.println("run");
-				r.run();
-			} finally {
-				System.out.println("end");
-				removeScratchPadThread( this );
-			}
-		}
-		@Override
-		public void interrupt() {
-			System.out.println("interrupted");
-			super.interrupt();
-		}
-	}
-	ArrayDeque<Thread> scratchPadThreadList = new ArrayDeque<>();
-	void addScratchPadThread( Thread t ) {
-		synchronized ( scratchPadThreadList ) {
-			scratchPadThreadList.add( t );
-		}
-	}
-	void startScratchPadThread( Runnable r ) {
-		Thread t = new ScratchPadThread(r);
-		addScratchPadThread(t);
-		t.start();
-	}
-	void removeScratchPadThread( Thread t ) {
-		synchronized ( scratchPadThreadList ) {
-			scratchPadThreadList.remove( t );
-		}
-	}
-	void interruptScratchPadThreads() {
-		System.out.println("interruptScratchPadThreads");
-		synchronized ( scratchPadThreadList ) {
-			for ( Thread t : scratchPadThreadList ) {
-				System.out.println( "interrupt start" );
-				t.interrupt();
-				System.out.println( "interrpt end" );
-			}
-		}
-	}
-	
-
-	///////////////////////////////////////////////////////////////////////////////////
-
 	public final AbstractAction EXECUTE_ACTION = new ExecuteAction();
 	private final class ExecuteAction extends AbstractAction {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			//	JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
-			startScratchPadThread( new Runnable() {
+			threadManager.startScratchPadThread( new Runnable() {
 				@Override
 				public void run() {
 					boolean isThereSelection=true;
@@ -180,7 +209,7 @@ public class PulsarScratchPad extends JFrame {
 							text = textPane.getText();
 							isThereSelection = false;
 						}
-						resultObject = scheme.eval( text );
+						resultObject = executeScheme(text);
 						textPane.getActionMap();
 
 						ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -214,7 +243,7 @@ public class PulsarScratchPad extends JFrame {
 	private final class InterruptAction extends AbstractAction {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			interruptScratchPadThreads();
+			threadManager.interruptScratchPadThreads();
 		}
 		{
 			putValue( Action2.NAME, "Interrupt" );
@@ -227,7 +256,7 @@ public class PulsarScratchPad extends JFrame {
 		abstract String process( String text );
 	}
 
-	public static void formatProc(JTextComponent textPane, TextFilter filter ) {
+	static void formatProc(JTextComponent textPane, TextFilter filter ) {
 		String text = textPane.getText();
 		boolean reverse = textPane.getCaret().getMark() < textPane.getCaret().getDot()  ;
 		int beginIndex;
@@ -336,25 +365,6 @@ public class PulsarScratchPad extends JFrame {
 			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
 	};
-
-	static List<String> FALLBACK_LISP_WORDS = Arrays.asList("let","lambda" );
-	
-	public static Collection<String> getLispWords( Scheme scheme ) {
-		Collection<String> lispWords = FALLBACK_LISP_WORDS;
-		try {
-			Object object = scheme.getEnvironment().get( Symbol.valueOf("lisp-words") );
-			if ( object instanceof Pair ) {
-				Pair p = (Pair) object;
-				lispWords = SchemeUtils.<Object,String>convertList( p, (o)->{
-					return SchemeUtils.anyToString( o );
-				});
-			}
-		} catch ( Throwable t ) {
-			logError("", t);
-		}
-		return lispWords;
-	}
-
 	
 	private class PrettifyAction extends AbstractAction {
 		@Override
@@ -377,18 +387,117 @@ public class PulsarScratchPad extends JFrame {
 			putValue( Action.MNEMONIC_KEY , (int) 'i' );
 		}
 	};
+
+
+	private static List<String> FALLBACK_LISP_WORDS = Arrays.asList("let","lambda" );
+	
+	public static Collection<String> getLispWords( Scheme scheme ) {
+		Collection<String> lispWords = FALLBACK_LISP_WORDS;
+		try {
+			Object object = scheme.getEnvironment().get( Symbol.valueOf("lisp-words") );
+			if ( object instanceof Pair ) {
+				Pair p = (Pair) object;
+				lispWords = SchemeUtils.<Object,String>convertList( p, (o)->{
+					return SchemeUtils.anyToString( o );
+				});
+			}
+		} catch ( Throwable t ) {
+			logError("", t);
+		}
+		return lispWords;
+	}
+	
+	public Object executeScheme(String text) throws Throwable {
+		return scheme.eval( text );
+	}
+
+	static final class SchemeProcedure {
+		private final Object sync;
+		private Environment environment;
+		private final Procedure procedure;
+		SchemeProcedure( Object syncObj, Procedure procedure ) {
+			this.sync = syncObj;
+			this.environment = Environment.getCurrent();
+			this.procedure = procedure;
+		}
+		public Object invoke( Object... args ) {
+			synchronized ( sync ) {
+				try {
+					Environment.setCurrent( this.environment );
+					return procedure.applyN( args );
+				} catch (Throwable e) {
+					logError( "SchemeInvokableProcedure" , e );
+					throw new RuntimeException(e);
+				}
+			}
+		}
+	}
+	
+	static class EventHandlers {
+		private static final String INIT = "init";
+		private static final String CURSOR = "cursor";
+
+		final Map<Symbol,Map<Symbol,SchemeProcedure>> map = new HashMap<>();
+		{
+			map.put( Symbol.valueOf(INIT), new HashMap<>() );
+			map.put( Symbol.valueOf(CURSOR), new HashMap<>() );
+		}
+		Map<Symbol, SchemeProcedure> getEventType(Symbol eventTypeID) {
+			Map<Symbol, SchemeProcedure> eventType = map.get( eventTypeID );
+			if ( eventType == null )
+				throw new RuntimeException( "unknown event type + ( " + eventTypeID + ")"  );
+			return eventType;
+		}
+		Map<Symbol, SchemeProcedure> getEventType(String eventTypeID) {
+			return getEventType( Symbol.valueOf(eventTypeID));
+		}
+		void register( Symbol eventTypeID, Symbol procID, SchemeProcedure proc ) {
+			Map<Symbol, SchemeProcedure> eventType = getEventType(eventTypeID);
+			eventType.put( procID, proc );
+		}
+		void unregister( Symbol eventTypeID, Symbol procID ) {
+			Map<Symbol, SchemeProcedure> eventType = getEventType(eventTypeID);
+			eventType.remove( procID );
+		}
+		
+	}
+	static final EventHandlers eventHandlers = new EventHandlers();
+
 	
 	public static void initScheme( Scheme scheme ) {
-		SchemeUtils.defineVar(scheme, "flag-done-init-pulsar-scratchpad", true );  
+		if ( ! SchemeUtils.isDefined(scheme, FLAG_DONE_INIT_PULSAR_SCRATCHPAD ) ) {
+			SchemeUtils.defineVar(scheme, FLAG_DONE_INIT_PULSAR_SCRATCHPAD, true );  
+			
+			SchemeUtils.defineVar(scheme, "lisp-words",
+					Pair.makeList( (List)SchemeUtils.<String,IString>convertList( 
+							Arrays.asList( SimpleSchemePrettifier.LISP_WORDS ),
+							(o)->{
+								return SchemeUtils.toSchemeString( o );
+							}) 
+							)
+					);
+			
+			SchemeUtils.defineVar(scheme, "register-scratchpad-initializer", new Procedure3() {
+				@Override
+				public Object apply3(Object arg1, Object arg2, Object arg3) throws Throwable {
+					eventHandlers.register((Symbol)arg1, (Symbol)arg2, new SchemeProcedure(scheme, (Procedure) arg3));
+					return EmptyList.emptyList;
+				}
+			});
+			SchemeUtils.defineVar(scheme, "unregister-scratchpad-initializer", new Procedure2() {
+				@Override
+				public Object apply2(Object arg1, Object arg2 ) throws Throwable {
+					eventHandlers.unregister((Symbol)arg1,(Symbol)arg2 );
+					return EmptyList.emptyList;
+				}
+			});
+		}
 
-		SchemeUtils.defineVar(scheme, "lisp-words",  
-				Pair.makeList( (List)SchemeUtils.<String,IString>convertList( 
-						Arrays.asList( SimpleSchemePrettifier.LISP_WORDS ),
-						(o)->{
-							return SchemeUtils.toSchemeString( o );
-						}) 
-						)
-				);
+	}
+	public static void initFrameByScheme( JFrame frame ) {
+		for( Entry<Symbol,SchemeProcedure> e :  eventHandlers.getEventType(EventHandlers.INIT).entrySet() ) {
+			e.getValue().invoke( frame );
+		}
 	}
 
 
@@ -402,12 +511,25 @@ public class PulsarScratchPad extends JFrame {
 	
 	Container scratchPadRoot;
 	JTextPane textPane;
+	PulsarScratchPadTextPaneController textPaneController;
 	JScrollPane scrollPane; 
-	PulsarScratchPadTextPaneController controller;
+	JMenuBar menuBar;
+
+	public JTextPane getTextPane() {
+		return textPane;
+	}
+	public PulsarScratchPadTextPaneController getTextPaneController() {
+		return textPaneController;
+	}
+	@Override
+	public MenuBar getMenuBar() {
+		return super.getMenuBar();
+	}
+	
 	{
 		textPane = new JTextPane();
 		scrollPane = new JScrollPane( textPane );
-		controller = PulsarScratchPadTextPaneController.create( textPane, new PulsarScratchPadTextPaneListener() {
+		textPaneController = PulsarScratchPadTextPaneController.create( textPane, new PulsarScratchPadTextPaneListener() {
 			@Override
 			public Collection<String> getLispWords() {
 				return PulsarScratchPad.getLispWords( scheme );
@@ -503,8 +625,8 @@ public class PulsarScratchPad extends JFrame {
 		}
 	}
 
-	Action UNDO_ACTION = new UndoAction( "Undo", undoManager );
-	public static class UndoAction extends UndoRedoAction {
+	public final Action UNDO_ACTION = new UndoAction( "Undo", undoManager );
+	static class UndoAction extends UndoRedoAction {
 		public UndoAction(String name, GroupedUndoManager manager ) {
 			super(name,manager);
 		}
@@ -528,8 +650,8 @@ public class PulsarScratchPad extends JFrame {
 		}
 	}
 
-	Action REDO_ACTION = new RedoAction( "Redo", undoManager );
-	public static class RedoAction extends UndoRedoAction {
+	public final Action REDO_ACTION = new RedoAction( "Redo", undoManager );
+	static class RedoAction extends UndoRedoAction {
 		public RedoAction(String name, GroupedUndoManager manager) {
 			super(name,manager);
 		}
@@ -552,8 +674,8 @@ public class PulsarScratchPad extends JFrame {
 		}
 	}
 
-	Action DEBUG_ACTION = new DebugAction( "Debug" );
-	public class DebugAction extends AbstractAction {
+	public final Action DEBUG_ACTION = new DebugAction( "Debug" );
+	class DebugAction extends AbstractAction {
 		public DebugAction(String string) {
 			super(string);
 		}
@@ -568,8 +690,8 @@ public class PulsarScratchPad extends JFrame {
 		}
 	}
 	
-	Action PASTE_ACTION = new PasteAction();
-    public class PasteAction extends TextAction {
+	public final Action PASTE_ACTION = new PasteAction();
+    class PasteAction extends TextAction {
 
         /** Create this object with the appropriate identifier. */
         public PasteAction() {
@@ -630,12 +752,12 @@ public class PulsarScratchPad extends JFrame {
 		                		SwingUtilities.invokeLater(new Runnable() {
 									@Override
 									public void run() {
-										controller.lookupMatchingParenthesis( textPane, pos  ); 
+										textPaneController.lookupMatchingParenthesis( textPane, pos  ); 
 
 										Timer t = new Timer(300 , new ActionListener() {
 											@Override
 											public void actionPerformed(ActionEvent e) {
-												controller.reset(); 
+												textPaneController.reset(); 
 											}
 										});
 										t.setRepeats(false);
@@ -684,11 +806,11 @@ public class PulsarScratchPad extends JFrame {
 	}
 	
 	{
-		this.controller.undoManager = undoManager;
+		this.textPaneController.undoManager = undoManager;
 	}
 
 	{
-		JMenuBar menuBar = new JMenuBar();
+		menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
 
 		JMenu fileMenuItem = new JMenu( "File" );
@@ -704,6 +826,9 @@ public class PulsarScratchPad extends JFrame {
 		menuBar.add( schemeMenuItem );
 
 		///
+		
+		fileMenuItem.add( new JMenuItem( NEW_SCRATCHPAD_ACTION ) );
+
 
 		schemeMenuItem.add( new JMenuItem( EXECUTE_ACTION ) );
 		schemeMenuItem.add( new JMenuItem( INTERRUPT_ACTION ) );
@@ -724,18 +849,26 @@ public class PulsarScratchPad extends JFrame {
 	{
 		setSize( new Dimension( 500, 500 ) );
 		setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
+		
+		initFrameByScheme(this);
+		
 		setVisible(true);
 	}
+	
 
 	static {
 		ActionMap actionMap = new JTextPane().getActionMap();
+		
+		// Dump
 		if ( false ) 
 			for ( Object o : actionMap.allKeys() ) {
 				System.out.println(o );
 			}
+		
 		actionMap.get( DefaultEditorKit.deletePrevCharAction ).putValue(Action2.NAME, "Backspace");
 //		actionMap.get( DefaultEditorKit.copyAction ).putValue(Action2.NAME, "Backspace");
 	}
+	
 	public static void main(String[] args) {
 		Scheme scheme = new Scheme();
 		new PulsarScratchPad( scheme );

@@ -6,6 +6,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * October 3, 2018 at 9:52:28 PM
+ * @author ats
+ */
 public class SimpleSchemePrettifier {
 	static enum TokenType { BEGIN, END, ID }
 	static class Token {

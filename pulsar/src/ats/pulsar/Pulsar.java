@@ -7,10 +7,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,8 +30,6 @@ import ats.metro.MetroInvokable;
 import ats.metro.MetroNoteEventBufferSequence;
 import ats.metro.MetroNoteEventBufferSequence.SyncType;
 import ats.pulsar.lib.MersenneTwisterFast;
-import gnu.kawa.io.InPort;
-import gnu.kawa.io.Path;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.LList;
@@ -577,31 +571,9 @@ public final class Pulsar extends Metro {
 	 * @throws FileNotFoundException
 	 */
 	public void loadScheme( File file ) throws FileNotFoundException {
-		if ( ! file.isFile() ) {
-			throw new FileNotFoundException( file.getPath() );
-		}
-		
-		if ( ! file.isAbsolute() ) {
-			if ( parentFile == null )
-				throw new FileNotFoundException( "cannot resolve relative path because no parent file is known." );
-			
-			file = new File( parentFile.getParentFile(), file.getPath() );
-		}
-		
-		try {
-			String text = new String(Files.readAllBytes( Paths.get( file.toURI() ) ), StandardCharsets.UTF_8);
-			synchronized ( scheme ) {
-				scheme.eval( text );
-			}
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (Throwable e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+		SchemeUtils.execSchemeFromFile( scheme, parentFile, file);
 	}
-	
+
 	private Scheme makeScheme() {
 		Scheme scheme = new Scheme();
 		initScheme( scheme );
@@ -616,8 +588,8 @@ public final class Pulsar extends Metro {
 	 */
     private void initScheme(Scheme scheme) {
     	{
-    		execScheme( scheme, "init.scm"  );
-    		execScheme( scheme, "xnoop.scm" );
+    		SchemeUtils.execScheme( Pulsar.class, scheme, "init.scm"  );
+    		SchemeUtils.execScheme( Pulsar.class, scheme, "xnoop.scm" );
 //    		execScheme( scheme, "event-parser.scm" );
     	}
     	SchemeUtils.defineVar( scheme, "open?" , new ProcedureN() {
@@ -974,25 +946,5 @@ public final class Pulsar extends Metro {
 
     	gui.initScheme(scheme);
     }
-
-	public static void execScheme(Scheme scheme, String resourcePath) {
-		InputStream in = null;
-		try {
-			in = Pulsar.class.getResource( resourcePath ).openStream();
-			System.out.println( resourcePath );
-//			scheme.eval( new InputStreamReader(in) );
-			scheme.eval( InPort.openFile( in, Path.valueOf( resourcePath ) ) );
-		} catch (Throwable e) {
-			throw new RuntimeException( e );
-		} finally {
-			try {
-				if ( in != null)
-					in.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
 }
 	

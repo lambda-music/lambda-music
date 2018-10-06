@@ -1,5 +1,9 @@
 package ats.pulsar;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -7,8 +11,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import gnu.kawa.io.InPort;
+import gnu.kawa.io.Path;
 import gnu.lists.AbstractSequence;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
@@ -21,6 +29,14 @@ import gnu.math.Quantity;
 import kawa.standard.Scheme;
 
 public class SchemeUtils {
+	static final Logger LOGGER = Logger.getLogger(SchemeUtils.class.getName());
+	static void logError( String msg, Throwable e ) {
+		LOGGER.log(Level.SEVERE, msg, e);
+	}
+	static void logInfo( String msg ) {
+//        Logger.getLogger(Pulsar.class.getName()).log(Level.INFO, msg);
+		System.err.println( msg );
+	}
 
 	public static Map<String,Object> list2map( AbstractSequence<Object> list, 
 			Function<Object,Function<Integer,String>> idx2nameGenerator ) 
@@ -166,8 +182,68 @@ public class SchemeUtils {
 	public static final void defineVar( Scheme scheme, String name, Object value ) {
 		scheme.getEnvironment().define( SimpleSymbol.make( "", name ), null, value );
 	}
-	public static final Object readVar( Scheme scheme, String name, Object value ) {
+	public static final boolean isDefined( Scheme scheme, String name  ) {
+		return scheme.getEnvironment().isBound( SimpleSymbol.make( "", name ) );
+	}
+	public static final Object getVar( Scheme scheme, String name  ) {
 		return scheme.getEnvironment().get( SimpleSymbol.make( "", name ) );
 	}
+	
+	
+	public static void execSchemeFromFile( Scheme scheme, File parentFile, File file) throws FileNotFoundException {
+		if ( ! file.isFile() ) {
+			throw new FileNotFoundException( file.getPath() );
+		}
+		
+		if ( ! file.isAbsolute() ) {
+			if ( parentFile == null )
+				throw new FileNotFoundException( "cannot resolve relative path because no parent file is known." );
+			
+			file = new File( parentFile.getParentFile(), file.getPath() );
+		}
+		
+		InputStream in=null;
+		try {
+//			String text = new String(Files.readAllBytes( Paths.get( file.toURI() ) ), StandardCharsets.UTF_8);
+//			synchronized ( scheme ) {
+//				scheme.eval( text );
+//			}
+			Path path = Path.valueOf(file);
+			in = path.openInputStream();
+			synchronized ( scheme ) {
+				scheme.eval( InPort.openFile( in , path ) );
+			}
+		} catch (IOException e) {
+			logError("", e);
+		} catch (Throwable e) {
+			logError("", e);
+		} finally {
+			try {
+				if ( in != null )
+					in.close();
+			} catch (IOException e) {
+				logError("", e);
+			}
+		}
+	}
+	public static void execScheme( Class parentClass, Scheme scheme, String resourcePath) {
+			InputStream in = null;
+			try {
+				in = parentClass.getResource( resourcePath ).openStream();
+				logInfo( "execScheme:" + resourcePath );
+	//			scheme.eval( new InputStreamReader(in) );
+				scheme.eval( InPort.openFile( in, Path.valueOf( resourcePath ) ) );
+			} catch (Throwable e) {
+				throw new RuntimeException( e );
+			} finally {
+				try {
+					if ( in != null)
+						in.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
 
 }

@@ -8,6 +8,9 @@ import ats.pulsar.editor.SimpleSchemeParser.ModeType;
 import ats.pulsar.editor.SimpleSchemeParser.ParseDirection;
 import ats.pulsar.editor.SimpleSchemeParser.ParserState;
 
+/**
+ *  October 3, 2018 at 9:52:22 PM
+ */
 public class SimpleSchemeParenthesisChecker {
 	static final boolean DEBUG = false; 
 	public static void lookupParenthesisProc( ParserState parserState ) {
