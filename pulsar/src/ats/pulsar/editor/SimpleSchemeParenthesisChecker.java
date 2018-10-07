@@ -65,6 +65,10 @@ public class SimpleSchemeParenthesisChecker {
 		if (  string.length() <= index )
 			return new SimpleSchemeParser.ParserState( string, index, ParseDirection.FORWARD );
 		
+		// added (Sun, 07 Oct 2018 17:00:57 +0900)
+		if ( index < 0 )
+			return new SimpleSchemeParser.ParserState( string, index, ParseDirection.FORWARD );
+
 		switch ( string.charAt(index) ) {
 			case '(' :
 				// LOGGER.info("(");

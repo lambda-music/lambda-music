@@ -29,12 +29,17 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.DefaultEditorKit;
@@ -46,9 +51,9 @@ import javax.swing.undo.CannotUndoException;
 
 import ats.pulsar.Pulsar;
 import ats.pulsar.SchemeUtils;
-import ats.pulsar.editor.PulsarScratchPadTextPaneController.PulsarScratchPadTextPaneListener;
 import ats.pulsar.editor.lib.CompoundGroupedUndoManager;
 import ats.pulsar.editor.lib.GroupedUndoManager;
+import gnu.expr.Language;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.Pair;
@@ -73,11 +78,20 @@ public class PulsarScratchPad extends JFrame {
 		System.err.println( msg );
 	}
 
+	private final String frameName = newFrameName();
+	public String getFrameName() {
+		return this.frameName;
+	}
+	
 	private Scheme scheme;
+	private static Environment environment = null;
 	public PulsarScratchPad( Scheme scheme ) {
 		super( "Pulsar Scheme Scratch Pad" );
 		this.scheme = scheme;
+		if ( environment == null )
+			environment = scheme.getEnvironment();
 		initScheme( scheme );
+		initFrame();
 	}
 	
 	public final AbstractAction NEW_SCRATCHPAD_ACTION = new AbstractAction() {
@@ -92,6 +106,7 @@ public class PulsarScratchPad extends JFrame {
 		}
 	};
 
+	
 
 	public final class ScratchPadThreadManager {
 		private final class ScratchPadThread extends Thread {
@@ -191,7 +206,74 @@ public class PulsarScratchPad extends JFrame {
 			}
 		}
 	}
+	
+	public class PulsarScratchPadListener implements CaretListener, DocumentListener  {
+		public PulsarScratchPadListener() {
+			super();
+			textPane.getDocument().addDocumentListener( this );
+			textPane.addCaretListener( this );
+		}
+		// CaretListener
+		public void caretUpdate(CaretEvent e) {
+//			System.err.println("PulsarScratchPadTextPaneController.caretUpdate()");
+			if ( ! undoManager.isSuspended() ) {
+				updateHighlightLater();
+				eventHandlers.invokeEventHandler( PulsarScratchPad.this, scheme, EventHandlers.CARET,  PulsarScratchPad.this);
+				eventHandlers.invokeEventHandler( PulsarScratchPad.this, scheme, EventHandlers.CHANGE,  PulsarScratchPad.this);
+			}
+		}
+		//DocumentListener
+		public void insertUpdate(DocumentEvent e) {
+			fileModified = true;
+//			System.err.println("PulsarScratchPadTextPaneController.insertUpdate()");
+			if ( ! undoManager.isSuspended() ) {
+				updateHighlightLater();
+				eventHandlers.invokeEventHandler( PulsarScratchPad.this, scheme, EventHandlers.INSERT,  PulsarScratchPad.this);
+				eventHandlers.invokeEventHandler( PulsarScratchPad.this, scheme, EventHandlers.CHANGE,  PulsarScratchPad.this);
+			}
+		}
+		public void removeUpdate(DocumentEvent e) {
+			fileModified = true;
+//			System.err.println("PulsarScratchPadTextPaneController.removeUpdate()");
+			if ( ! undoManager.isSuspended() ) {
+				updateHighlightLater();
+				eventHandlers.invokeEventHandler( PulsarScratchPad.this, scheme, EventHandlers.REMOVE,  PulsarScratchPad.this);
+				eventHandlers.invokeEventHandler( PulsarScratchPad.this, scheme, EventHandlers.CHANGE,  PulsarScratchPad.this);
+			}
+		}
+		public void changedUpdate(DocumentEvent e) {
+			fileModified = true;
+//			System.err.println("PulsarScratchPadTextPaneController.changedUpdate() : ignored");
+			if ( ! undoManager.isSuspended() ) {
+				eventHandlers.invokeEventHandler( PulsarScratchPad.this, scheme, EventHandlers.ATTRIBUTE,  PulsarScratchPad.this);
+				eventHandlers.invokeEventHandler( PulsarScratchPad.this, scheme, EventHandlers.CHANGE,  PulsarScratchPad.this);
+			}
+			return;
+		}
+	}
+	public void updateHighlightLater() {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				updateHighlight();
+				highlightMatchningParentheses();
+			}
 
+		});
+	}
+	private String getLispWordPatternString() {
+		return PulsarScratchPadHighlighter.lispWordToPatternString( getLispWords( scheme ) ); 
+	}
+	public void updateHighlight() {
+		PulsarScratchPadHighlighter.resetStyles( textPane );
+		PulsarScratchPadHighlighter.highlightSyntax( textPane, getLispWordPatternString() );
+	}
+	public void highlightMatchningParentheses() {
+		PulsarScratchPadHighlighter.highlightMatchingParenthesis( textPane, textPane.getCaretPosition() );
+	}
+
+	
+	
+	
 	public final AbstractAction EXECUTE_ACTION = new ExecuteAction();
 	private final class ExecuteAction extends AbstractAction {
 		@Override
@@ -388,6 +470,36 @@ public class PulsarScratchPad extends JFrame {
 		}
 	};
 
+	Object executeScheme(String text) throws Throwable {
+		synchronized ( scheme ) {
+			try {
+				Environment.setCurrent(environment);
+				SchemeUtils.putVar(scheme, "scheme", scheme );
+				SchemeUtils.putVar(scheme, "frame", this );
+				return scheme.eval( text );
+//				return scheme.eval( 
+//						"(let (( frame "+ frameName +"))\n" +						
+//								text +
+//								"\n)"
+//						);
+			} finally {
+				SchemeUtils.putVar(scheme, "scheme", false );
+				SchemeUtils.putVar(scheme, "frame", false );
+			}
+		}
+	
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	// Defining an interface the for scheme interpreter. 
+	//
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	/*
+	 *  
+	 * 
+	 */
 
 	private static List<String> FALLBACK_LISP_WORDS = Arrays.asList("let","lambda" );
 	
@@ -406,41 +518,51 @@ public class PulsarScratchPad extends JFrame {
 		}
 		return lispWords;
 	}
-	
-	public Object executeScheme(String text) throws Throwable {
-		return scheme.eval( text );
-	}
 
 	static final class SchemeProcedure {
-		private final Object sync;
-		private Environment environment;
+		private final Environment environment;
+		private final Language language;
 		private final Procedure procedure;
-		SchemeProcedure( Object syncObj, Procedure procedure ) {
-			this.sync = syncObj;
-			this.environment = Environment.getCurrent();
+		SchemeProcedure( Procedure procedure , Environment environmen ) {
+			this.environment = environmen;
+			this.language = Language.getDefaultLanguage();
 			this.procedure = procedure;
 		}
 		public Object invoke( Object... args ) {
-			synchronized ( sync ) {
-				try {
-					Environment.setCurrent( this.environment );
-					return procedure.applyN( args );
-				} catch (Throwable e) {
-					logError( "SchemeInvokableProcedure" , e );
-					throw new RuntimeException(e);
-				}
+			try {
+//				Environment.setCurrent( this.environment );
+				Environment.setCurrent(environment);
+				Language.setCurrentLanguage(this.language);
+				return procedure.applyN( args );
+			} catch (Throwable e) {
+				logError( "SchemeInvokableProcedure:error" , e );
+				return e;
+				//					throw new RuntimeException(e);
 			}
 		}
 	}
-	
-	static class EventHandlers {
-		private static final String INIT = "init";
-		private static final String CURSOR = "cursor";
+	public String getTitleString() {
+		return "HELLO";
+		
+	}
+	public static class EventHandlers {
+		private static final String INIT      = "init";
+		private static final String CARET     = "caret";
+		private static final String INSERT    = "insert";
+		private static final String REMOVE    = "remove";
+		private static final String ATTRIBUTE = "attribute";
+		private static final String CHANGE    = "change";
+		private static final String TYPED     = "typed";
 
 		final Map<Symbol,Map<Symbol,SchemeProcedure>> map = new HashMap<>();
 		{
-			map.put( Symbol.valueOf(INIT), new HashMap<>() );
-			map.put( Symbol.valueOf(CURSOR), new HashMap<>() );
+			map.put( Symbol.valueOf(INIT),      new HashMap<>() );
+			map.put( Symbol.valueOf(CARET),     new HashMap<>() );
+			map.put( Symbol.valueOf(INSERT),    new HashMap<>() );
+			map.put( Symbol.valueOf(REMOVE),    new HashMap<>() );
+			map.put( Symbol.valueOf(ATTRIBUTE), new HashMap<>() );
+			map.put( Symbol.valueOf(CHANGE),    new HashMap<>() );
+			map.put( Symbol.valueOf(TYPED),     new HashMap<>() );
 		}
 		Map<Symbol, SchemeProcedure> getEventType(Symbol eventTypeID) {
 			Map<Symbol, SchemeProcedure> eventType = map.get( eventTypeID );
@@ -451,23 +573,70 @@ public class PulsarScratchPad extends JFrame {
 		Map<Symbol, SchemeProcedure> getEventType(String eventTypeID) {
 			return getEventType( Symbol.valueOf(eventTypeID));
 		}
-		void register( Symbol eventTypeID, Symbol procID, SchemeProcedure proc ) {
+		
+		public void register( Symbol eventTypeID, Symbol procID, Procedure proc ) {
+			register( eventTypeID, procID, new SchemeProcedure( proc, Environment.getCurrent() ) );
+		}
+		public void register( Symbol eventTypeID, Symbol procID, SchemeProcedure proc ) {
 			Map<Symbol, SchemeProcedure> eventType = getEventType(eventTypeID);
 			eventType.put( procID, proc );
 		}
-		void unregister( Symbol eventTypeID, Symbol procID ) {
+		public void unregister( Symbol eventTypeID, Symbol procID ) {
 			Map<Symbol, SchemeProcedure> eventType = getEventType(eventTypeID);
 			eventType.remove( procID );
 		}
+		public void invokeEventHandler( PulsarScratchPad frame, Scheme scheme, String eventTypeID, Object ...args ) {
+			synchronized ( scheme ) {
+				try {
+//					Environment.setCurrent( Environment.getGlobal()  );
+//					System.out.println( "invokeEventHandler" + frame.frameName );
+					
+					SchemeUtils.putVar( scheme, "scheme", scheme );
+					SchemeUtils.putVar( scheme, "frame",  frame );
+
+					for( Entry<Symbol,SchemeProcedure> e :  getEventType(eventTypeID).entrySet() ) {
+						try {
+//							e.getValue().procedure.setProperty(Symbol.valueOf("scheme") , scheme );
+//							e.getValue().procedure.setProperty(Symbol.valueOf("frame") , frame );
+//							
+//							SchemeUtils.putVar( e.getValue().environment, "scheme", scheme );
+//							SchemeUtils.putVar( e.getValue().environment, "frame", frame );
+							
+							e.getValue().invoke( args );
+						} catch ( Throwable t ) {
+							logError("invoking event handlers : ", t);
+						}
+					}
+
+				} finally {
+					SchemeUtils.putVar( scheme, "scheme", false );
+					SchemeUtils.putVar( scheme, "frame", false );
+				}
+			}
+		}
+		
+//		void invokeEventHandlers( String )
 		
 	}
-	static final EventHandlers eventHandlers = new EventHandlers();
+	public static final EventHandlers eventHandlers = new EventHandlers();
 
+	static transient int frameCounter = 0;
+	static String getFrameName( int frameCounter ) {
+		return "frame" + frameCounter;
+	}
+	synchronized static String newFrameName() {
+		return "frame" + ( frameCounter ++ );
+	}
 	
 	public static void initScheme( Scheme scheme ) {
+		Environment.setCurrent(environment);
 		if ( ! SchemeUtils.isDefined(scheme, FLAG_DONE_INIT_PULSAR_SCRATCHPAD ) ) {
+			logInfo("initScheme");
 			SchemeUtils.defineVar(scheme, FLAG_DONE_INIT_PULSAR_SCRATCHPAD, true );  
-			
+
+			SchemeUtils.defineVar(scheme, "frame", false );
+			SchemeUtils.defineVar(scheme, "scheme", false );
+
 			SchemeUtils.defineVar(scheme, "lisp-words",
 					Pair.makeList( (List)SchemeUtils.<String,IString>convertList( 
 							Arrays.asList( SimpleSchemePrettifier.LISP_WORDS ),
@@ -477,14 +646,14 @@ public class PulsarScratchPad extends JFrame {
 							)
 					);
 			
-			SchemeUtils.defineVar(scheme, "register-scratchpad-initializer", new Procedure3() {
+			SchemeUtils.defineVar(scheme, "register-event-handler", new Procedure3() {
 				@Override
 				public Object apply3(Object arg1, Object arg2, Object arg3) throws Throwable {
-					eventHandlers.register((Symbol)arg1, (Symbol)arg2, new SchemeProcedure(scheme, (Procedure) arg3));
+					eventHandlers.register( (Symbol)arg1, (Symbol)arg2, (Procedure) arg3 );
 					return EmptyList.emptyList;
 				}
 			});
-			SchemeUtils.defineVar(scheme, "unregister-scratchpad-initializer", new Procedure2() {
+			SchemeUtils.defineVar(scheme, "unregister-event-handler", new Procedure2() {
 				@Override
 				public Object apply2(Object arg1, Object arg2 ) throws Throwable {
 					eventHandlers.unregister((Symbol)arg1,(Symbol)arg2 );
@@ -492,16 +661,19 @@ public class PulsarScratchPad extends JFrame {
 				}
 			});
 		}
-
 	}
-	public static void initFrameByScheme( JFrame frame ) {
-		for( Entry<Symbol,SchemeProcedure> e :  eventHandlers.getEventType(EventHandlers.INIT).entrySet() ) {
-			e.getValue().invoke( frame );
-		}
+	
+	private void initFrame() {
+		SchemeUtils.defineVar(scheme, frameName, this );
+		eventHandlers.invokeEventHandler( this, scheme, EventHandlers.INIT,  this);
 	}
 
 
-	///////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//
+	// Defining GUI
+	//
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	static void purgeKeyFromActionMap( ActionMap actionMap, Object key ) {
 		actionMap.remove(key);
@@ -511,15 +683,12 @@ public class PulsarScratchPad extends JFrame {
 	
 	Container scratchPadRoot;
 	JTextPane textPane;
-	PulsarScratchPadTextPaneController textPaneController;
+	PulsarScratchPadListener textPaneController;
 	JScrollPane scrollPane; 
 	JMenuBar menuBar;
 
 	public JTextPane getTextPane() {
 		return textPane;
-	}
-	public PulsarScratchPadTextPaneController getTextPaneController() {
-		return textPaneController;
 	}
 	@Override
 	public MenuBar getMenuBar() {
@@ -529,15 +698,22 @@ public class PulsarScratchPad extends JFrame {
 	{
 		textPane = new JTextPane();
 		scrollPane = new JScrollPane( textPane );
-		textPaneController = PulsarScratchPadTextPaneController.create( textPane, new PulsarScratchPadTextPaneListener() {
-			@Override
-			public Collection<String> getLispWords() {
-				return PulsarScratchPad.getLispWords( scheme );
-			}
-		});
+		textPaneController = new PulsarScratchPadListener();
 		scratchPadRoot = getContentPane();
 		scratchPadRoot.add( scrollPane );
         textPane.setFont(new Font("monospaced", Font.PLAIN, 12));
+        
+        /*
+		 * (Sun, 07 Oct 2018 23:50:37 +0900) CREATING_KEYMAP
+		 * 
+		 * THIS IS VERY IMPORTANT. I SPEND THREE SLEEPLESS NIGHTS TO FIND THIS OPERATION
+		 * IS NECESSARY. This keymap object is SHARED as default! Those key handlers on
+		 * a keymap object will be definitely overridden unless you explicitly create a
+		 * new keymap object.
+		 * 
+		 * See CREATING_KEYMAP
+		 */
+        textPane.setKeymap( JTextComponent.addKeymap( getFrameName(), textPane.getKeymap() ) );
         
 		DefaultCaret dc = new DefaultCaret() {
 		    @Override
@@ -727,88 +903,141 @@ public class PulsarScratchPad extends JFrame {
     	textPane.getActionMap().put( DefaultEditorKit.pasteAction , PASTE_ACTION );
     }
 
-	
-	{
-		
-		{
-			Action newKeyTypedAction = new DefaultKeyTypedAction() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					super.actionPerformed(e);
-					
-					JTextPane target = (JTextPane) getTextComponent(e);
-		            if ((target != null) && (e != null)) {
-		                String content = e.getActionCommand();
-//		                System.out.println( "typed : " + content );
-		                switch ( content ) {
-		                	case " " :
-		                		undoManager.startGroup();
-		                		break;
-		                		
-		                	case "(" :
-		                	case ")" :
-		                		int pos = textPane.getCaretPosition() -1;
-		                		System.out.println( "caret : " + pos );
-		                		SwingUtilities.invokeLater(new Runnable() {
-									@Override
-									public void run() {
-										textPaneController.lookupMatchingParenthesis( textPane, pos  ); 
+    public Action KEYMAP_DEFAULT = new DefaultKeyTypedAction() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			super.actionPerformed(e);
+			
+			JTextPane target = (JTextPane) getTextComponent(e);
+            if ((target != null) && (e != null)) {
+                String content = e.getActionCommand();
+//                System.out.println( "typed : " + content );
+                switch ( content ) {
+                	case " " :
+                		undoManager.startGroup();
+                		break;
+                		
+                	case "(" :
+                	case ")" :
+                		int pos = textPane.getCaretPosition() -1;
+                		System.out.println( "caret : " + pos );
+                		SwingUtilities.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								updateHighlight();
+								PulsarScratchPadHighlighter.highlightMatchingParenthesis( textPane, pos  ); 
 
-										Timer t = new Timer(300 , new ActionListener() {
-											@Override
-											public void actionPerformed(ActionEvent e) {
-												textPaneController.reset(); 
-											}
-										});
-										t.setRepeats(false);
-										t.start();
+								Timer t = new Timer(300 , new ActionListener() {
+									@Override
+									public void actionPerformed(ActionEvent e) {
+										updateHighlight(); 
 									}
 								});
-		                		break;
-		                		
-		                	default :
-		                		break;
-		                }
-		            }
-				}
-			};
-			
-			textPane.getKeymap().setDefaultAction( newKeyTypedAction  );
-			
-//			purgeKeyFromActionMap( textPane.getActionMap(), DefaultEditorKit.insertBreakAction );
-//			purgeKeyFromActionMap( textPane.getActionMap(), DefaultEditorKit.defaultKeyTypedAction );
-//			purgeKeyFromActionMap( textPane.getActionMap(), DefaultEditorKit.insertContentAction );
-//			textPane.getActionMap().put(DefaultEditorKit.defaultKeyTypedAction, newKeyTypedAction );
-//			for ( Object o : textPane.getActionMap().getParent().getParent(). allKeys() ) {
-//				System.out.println(o );
-//			}
-//			textPane.getActionMap().put("UNDO", UNDO_ACTION );
-//			textPane.getActionMap().put("REDO", REDO_ACTION );
-
-//			undoManager.addEdit(anEdit)
-			textPane.getDocument().addUndoableEditListener( undoManager );
-
+								t.setRepeats(false);
+								t.start();
+							}
+						});
+                		break;
+                		
+                	default :
+                		break;
+                }
+                
+				eventHandlers.invokeEventHandler( PulsarScratchPad.this, scheme, EventHandlers.TYPED, SchemeUtils.toSchemeString( content )  );
+            }
 		}
-		
-		
-		
-		System.err.println( "-------------------------" );
-		for ( Object o : textPane.getActionMap().getParent().allKeys() ) {
-			if ( o != null )
-				System.out.println( o.toString() );
-		}
-		System.err.println( "==========================" );
+	};
 
-		for ( Object o : textPane.getActionMap().allKeys() ) {
-			if ( o != null )
-				System.out.println( o.toString() );
+	{
+		
+		
+        /*
+		 * (Sun, 07 Oct 2018 23:50:37 +0900) CREATING_KEYMAP
+		 * 
+		 * THIS IS VERY IMPORTANT: I SPEND THREE SLEEPLESS NIGHTS TO FIND THAT THIS
+		 * CAUSES THE PROBLEM!
+		 * 
+		 * See the tag CREATING_KEYMAP .
+		 */
+		textPane.getKeymap().setDefaultAction( KEYMAP_DEFAULT );
+		
+//		purgeKeyFromActionMap( textPane.getActionMap(), DefaultEditorKit.insertBreakAction );
+//		purgeKeyFromActionMap( textPane.getActionMap(), DefaultEditorKit.defaultKeyTypedAction );
+//		purgeKeyFromActionMap( textPane.getActionMap(), DefaultEditorKit.insertContentAction );
+//		textPane.getActionMap().put(DefaultEditorKit.defaultKeyTypedAction, newKeyTypedAction );
+//		for ( Object o : textPane.getActionMap().getParent().getParent(). allKeys() ) {
+//			System.out.println(o );
+//		}
+//		textPane.getActionMap().put("UNDO", UNDO_ACTION );
+//		textPane.getActionMap().put("REDO", REDO_ACTION );
+
+//		undoManager.addEdit(anEdit)
+		textPane.getDocument().addUndoableEditListener( undoManager );
+	}
+	
+	boolean fileModified = false;
+	String filePath;
+	public void openFile( String filePath ) {
+		JOptionPane.showMessageDialog(this, "YEAH!");
+	}
+	
+	public void confirmSave() {
+		if ( fileModified ) {
+			int i = JOptionPane.showConfirmDialog( this, "Do you save the changes to a file before loading?", "Load a file", JOptionPane.YES_NO_CANCEL_OPTION  );
+			if ( i != JOptionPane.YES_OPTION ) {
+				return;
+			}
+		}
+	}
+
+	Action OPEN_NEW = new AbstractAction() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			openFile( "" );
+		}
+		{
+			putValue( Action2.NAME, "Open" );
+			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_O , KeyEvent.CTRL_MASK ));
+			putValue( Action.MNEMONIC_KEY , (int) 'o' );
+		}
+	};
+
+	Action OPEN_FILE = new AbstractAction() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			openFile( "" );
+		}
+		{
+			putValue( Action2.NAME, "Open" );
+			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_O , KeyEvent.CTRL_MASK ));
+			putValue( Action.MNEMONIC_KEY , (int) 'o' );
+		}
+	};
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	{
+		if ( false ) {
+			System.err.println( "-------------------------" );
+			for ( Object o : textPane.getActionMap().getParent().allKeys() ) {
+				if ( o != null )
+					System.out.println( o.toString() );
+			}
+			System.err.println( "==========================" );
+			
+			for ( Object o : textPane.getActionMap().allKeys() ) {
+				if ( o != null )
+					System.out.println( o.toString() );
+			}
 		}
 	}
 	
-	{
-		this.textPaneController.undoManager = undoManager;
-	}
-
 	{
 		menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
@@ -828,7 +1057,7 @@ public class PulsarScratchPad extends JFrame {
 		///
 		
 		fileMenuItem.add( new JMenuItem( NEW_SCRATCHPAD_ACTION ) );
-
+		fileMenuItem.add( new JMenuItem( OPEN_FILE ) );
 
 		schemeMenuItem.add( new JMenuItem( EXECUTE_ACTION ) );
 		schemeMenuItem.add( new JMenuItem( INTERRUPT_ACTION ) );
@@ -849,8 +1078,6 @@ public class PulsarScratchPad extends JFrame {
 	{
 		setSize( new Dimension( 500, 500 ) );
 		setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
-		
-		initFrameByScheme(this);
 		
 		setVisible(true);
 	}
