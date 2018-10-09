@@ -11,7 +11,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,6 +30,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -40,6 +46,7 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.DefaultEditorKit;
@@ -51,6 +58,7 @@ import javax.swing.undo.CannotUndoException;
 
 import ats.pulsar.Pulsar;
 import ats.pulsar.SchemeUtils;
+import ats.pulsar.editor.SimpleSchemeParser.ParserState;
 import ats.pulsar.editor.lib.CompoundGroupedUndoManager;
 import ats.pulsar.editor.lib.GroupedUndoManager;
 import gnu.expr.Language;
@@ -242,7 +250,7 @@ public class PulsarScratchPad extends JFrame {
 			}
 		}
 		public void changedUpdate(DocumentEvent e) {
-			fileModified = true;
+//			fileModified = true;
 //			System.err.println("PulsarScratchPadTextPaneController.changedUpdate() : ignored");
 			if ( ! undoManager.isSuspended() ) {
 				eventHandlers.invokeEventHandler( PulsarScratchPad.this, scheme, EventHandlers.ATTRIBUTE,  PulsarScratchPad.this);
@@ -260,12 +268,13 @@ public class PulsarScratchPad extends JFrame {
 
 		});
 	}
-	private String getLispWordPatternString() {
+	String getLispWordPatternString() {
 		return PulsarScratchPadHighlighter.lispWordToPatternString( getLispWords( scheme ) ); 
 	}
 	public void updateHighlight() {
 		PulsarScratchPadHighlighter.resetStyles( textPane );
-		PulsarScratchPadHighlighter.highlightSyntax( textPane, getLispWordPatternString() );
+//		PulsarScratchPadHighlighter.highlightSyntax( textPane, getLispWordPatternString() );
+		PulsarScratchPadHighlighter.highlightSyntax( textPane, getLispWords( scheme ) );
 	}
 	public void highlightMatchningParentheses() {
 		PulsarScratchPadHighlighter.highlightMatchingParenthesis( textPane, textPane.getCaretPosition() );
@@ -455,11 +464,15 @@ public class PulsarScratchPad extends JFrame {
 			formatProc( textPane, new TextFilter() {
 				@Override
 				String process(String text) {
-					return SimpleSchemePrettifier.prettify( getLispWords( scheme ), text );
+					return prettify( getLispWords( scheme ), text );
 				}
 
 			});
 		}
+	}
+	
+	public static final String prettify( Collection<String> lispWords, String text  ) {
+		return SimpleSchemePrettifier.prettify( lispWords, text );
 	}
 
 	public final AbstractAction PRETTIFY_ACTION = new PrettifyAction() {
@@ -645,6 +658,14 @@ public class PulsarScratchPad extends JFrame {
 							}) 
 							)
 					);
+			SchemeUtils.defineVar(scheme, "default-lisp-words",
+					Pair.makeList( (List)SchemeUtils.<String,IString>convertList( 
+							Arrays.asList( SimpleSchemePrettifier.LISP_WORDS ),
+							(o)->{
+								return SchemeUtils.toSchemeString( o );
+							}) 
+							)
+					);
 			
 			SchemeUtils.defineVar(scheme, "register-event-handler", new Procedure3() {
 				@Override
@@ -696,7 +717,14 @@ public class PulsarScratchPad extends JFrame {
 	}
 	
 	{
-		textPane = new JTextPane();
+		textPane = new JTextPane() {
+			// Special thanks go to tips4java
+			// https://tips4java.wordpress.com/2009/01/25/no-wrap-text-pane/
+			public boolean getScrollableTracksViewportWidth() {
+				return getUI().getPreferredSize(this).width 
+						<= getParent().getSize().width;
+			}
+		};
 		scrollPane = new JScrollPane( textPane );
 		textPaneController = new PulsarScratchPadListener();
 		scratchPadRoot = getContentPane();
@@ -768,7 +796,7 @@ public class PulsarScratchPad extends JFrame {
 
 		                	String text = target.getText();
 		                	int pos = target.getCaretPosition();
-		                	String indentString = SimpleSchemePrettifier.calculateIndentSize(text, pos, getLispWords( scheme ));
+		                	String indentString = calculateIndentSize(text, pos, getLispWords( scheme ));
 		                	target.replaceSelection( "\n" + indentString );
 		                } finally {
 		                	undoManager.setSuspended(false);
@@ -782,6 +810,11 @@ public class PulsarScratchPad extends JFrame {
 			textPane.getActionMap().put(DefaultEditorKit.insertBreakAction, newInsertBreakAction );
 		}
 	}
+	
+	public static final String calculateIndentSize( String text, int pos, Collection<String> lispWords ) {
+		return SimpleSchemePrettifier.calculateIndentSize( text, pos, lispWords );
+	}
+
 	///////////////////////////////////////////////////////////////////////////////////
 	GroupedUndoManager undoManager;
 	{
@@ -943,10 +976,21 @@ public class PulsarScratchPad extends JFrame {
                 		break;
                 }
                 
-				eventHandlers.invokeEventHandler( PulsarScratchPad.this, scheme, EventHandlers.TYPED, SchemeUtils.toSchemeString( content )  );
+				eventHandlers.invokeEventHandler( PulsarScratchPad.this, scheme, EventHandlers.TYPED, target, SchemeUtils.toSchemeString( content ) );
             }
 		}
 	};
+	
+	public static final int lookupCorrespondingParenthesis( String text, int position ) {
+		ParserState parserState = 
+				SimpleSchemeParenthesisChecker.lookupParenthesis( text, position );
+		if ( parserState.isFound() ) {
+			return parserState.getIterator().getIndex();
+		} else {
+			return -1;
+		}
+	
+	}
 
 	{
 		
@@ -976,36 +1020,138 @@ public class PulsarScratchPad extends JFrame {
 	}
 	
 	boolean fileModified = false;
-	String filePath;
-	public void openFile( String filePath ) {
-		JOptionPane.showMessageDialog(this, "YEAH!");
+	File filePath = null;
+	static final FileFilter SCHEME_FILE_FILTER = new FileFilter() {
+		@Override
+		public String getDescription() {
+			return "Scheme File (*.scm)";
+		}
+		
+		@Override
+		public boolean accept(File f) {
+			return f.getName().endsWith(".scm");
+		}
+	};
+	public void openNewProc() {
+		fileModified = false;
+		filePath = null;
+		undoManager.discardAllEdits();
+		textPane.setText("");
+//		JOptionPane.showMessageDialog( this, "OPEN NEW" );
+	}
+	public void openNew() throws IOException {
+		if ( ! confirmSave() ) {
+			return;
+		}
+		openNewProc();
+	}
+	private void openFileProc(File filePath) throws IOException {
+		String s = new String( Files.readAllBytes( filePath.toPath() ),  Charset.defaultCharset() );
+		
+//		this.undoManager.discardAllEdits();
+		this.textPane.setText( s );
+		this.filePath = filePath;
+		this.fileModified = false;
+		
+		/*
+		 * Discard edits after set text or CTRL-Z to clear all text 
+		 * which is not supposed to be. (Tue, 09 Oct 2018 03:04:23 +0900)
+		 */
+		this.undoManager.discardAllEdits();
+//		JOptionPane.showMessageDialog(this, "OPEN FILE PROC" + file );
+	}
+	public void openFile( File filePath ) throws IOException {
+		if ( ! confirmSave() ) {
+			return;
+		}
+		openFileProc( filePath );
 	}
 	
-	public void confirmSave() {
+	public void openFile() throws IOException {
+		if ( ! confirmSave() ) {
+			return;
+		}
+		JFileChooser fc = new JFileChooser();
+		fc.addChoosableFileFilter( SCHEME_FILE_FILTER );
+		fc.setMultiSelectionEnabled(false);
+		int i = fc.showOpenDialog(this);
+		if ( i == JFileChooser.APPROVE_OPTION ) {
+			openFileProc( fc.getSelectedFile() );
+		}
+	}
+	public boolean confirmSave() throws IOException {
 		if ( fileModified ) {
 			int i = JOptionPane.showConfirmDialog( this, "Do you save the changes to a file before loading?", "Load a file", JOptionPane.YES_NO_CANCEL_OPTION  );
-			if ( i != JOptionPane.YES_OPTION ) {
-				return;
+			if ( i == JOptionPane.YES_OPTION ) {
+				if ( filePath == null ) {
+					return saveFileAs();
+				} else {
+					saveFile();
+					return true;
+				}
+			} else if ( i == JOptionPane.NO_OPTION ) {
+				return true; 
+			} else {
+				return false;
 			}
+		} else {
+			return true;
 		}
 	}
 
-	Action OPEN_NEW = new AbstractAction() {
+	private void saveFileProc(File filePath) throws IOException {
+		Files.write(filePath.toPath(), textPane.getText().getBytes( Charset.defaultCharset() ), StandardOpenOption.CREATE , StandardOpenOption.TRUNCATE_EXISTING );
+		this.fileModified = false;
+		this.filePath = filePath;
+//		JOptionPane.showMessageDialog(this, "SAVE FILE!" + file );
+	}
+
+	public void saveFile() throws IOException {
+		if ( filePath != null )
+			saveFileProc( filePath );
+		else
+			saveFileAs();
+	}
+
+	public boolean saveFileAs() throws IOException {
+		JFileChooser fc = new JFileChooser();
+		fc.addChoosableFileFilter( SCHEME_FILE_FILTER );
+		fc.setMultiSelectionEnabled(false);
+		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		int i = fc.showSaveDialog(this);
+		if ( i == JFileChooser.APPROVE_OPTION ) {
+			saveFileProc( fc.getSelectedFile());
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+
+	Action OPEN_FILE_NEW = new AbstractAction() {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			openFile( "" );
+			try {
+				openNew();
+			} catch (IOException e1) {
+				logError("", e1);
+			}
 		}
 		{
-			putValue( Action2.NAME, "Open" );
-			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_O , KeyEvent.CTRL_MASK ));
-			putValue( Action.MNEMONIC_KEY , (int) 'o' );
-		}
+			putValue( Action2.NAME, "Open New" );
+			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_N , KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK ));
+			putValue( Action.MNEMONIC_KEY , (int) 'n' );
+		}        
 	};
 
 	Action OPEN_FILE = new AbstractAction() {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			openFile( "" );
+			try {
+				openFile();
+			} catch (IOException e1) {
+				logError("", e1);
+			}
 		}
 		{
 			putValue( Action2.NAME, "Open" );
@@ -1013,14 +1159,36 @@ public class PulsarScratchPad extends JFrame {
 			putValue( Action.MNEMONIC_KEY , (int) 'o' );
 		}
 	};
-	
-	
-	
-	
-	
-	
-	
-	
+	Action SAVE_FILE = new AbstractAction() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			try {
+				saveFile();
+			} catch (IOException e1) {
+				logError("", e1);
+			}
+		}
+		{
+			putValue( Action2.NAME, "Save" );
+			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S , KeyEvent.CTRL_MASK ));
+			putValue( Action.MNEMONIC_KEY , (int) 'o' );
+		}
+	};
+	Action SAVE_FILE_AS = new AbstractAction() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			try {
+				saveFileAs();
+			} catch (IOException e1) {
+				logError("", e1);
+			}
+		}
+		{
+			putValue( Action2.NAME, "Save as" );
+			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S , KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK ));
+			putValue( Action.MNEMONIC_KEY , (int) 'o' );
+		}
+	};
 	
 	{
 		if ( false ) {
@@ -1057,7 +1225,10 @@ public class PulsarScratchPad extends JFrame {
 		///
 		
 		fileMenuItem.add( new JMenuItem( NEW_SCRATCHPAD_ACTION ) );
+		fileMenuItem.add( new JMenuItem( OPEN_FILE_NEW ) );
 		fileMenuItem.add( new JMenuItem( OPEN_FILE ) );
+		fileMenuItem.add( new JMenuItem( SAVE_FILE ) );
+		fileMenuItem.add( new JMenuItem( SAVE_FILE_AS ) );
 
 		schemeMenuItem.add( new JMenuItem( EXECUTE_ACTION ) );
 		schemeMenuItem.add( new JMenuItem( INTERRUPT_ACTION ) );
@@ -1096,8 +1267,11 @@ public class PulsarScratchPad extends JFrame {
 //		actionMap.get( DefaultEditorKit.copyAction ).putValue(Action2.NAME, "Backspace");
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		Scheme scheme = new Scheme();
-		new PulsarScratchPad( scheme );
+		PulsarScratchPad scratchPad = new PulsarScratchPad( scheme );
+		if ( 0 < args.length  ) {
+			scratchPad.openFile( new File( args[0] ) );
+		}
 	}
 }

@@ -109,7 +109,7 @@ public class CompoundGroupedUndoManager extends GroupedUndoManager {
 	public synchronized void undo() throws CannotRedoException {
 		try {
 			setSuspended(true);
-			System.err.println( "editToBeUndone() :"+ editToBeUndone() );
+			// System.err.println( "editToBeUndone() :"+ editToBeUndone() );
 			super.undo();
 		} finally {
 			setSuspended(false);

@@ -129,7 +129,10 @@ public class SimpleSchemePrettifier {
 				if ( 1<stack.size() ) {
 					int index = calculateIndentLength(lispWords, stack);
 					
-					if ( 0 <=index  ) {
+					if ( 0 <=index && ( /* IGNORE BLANK LINES ADDED (Tue, 09 Oct 2018 00:58:59 +0900) */ 
+									    0 < tokenizedLines[i].size() 
+									  ))
+					{
 						int diff = index - tokenizedLines[i].get(0).index;
 						for ( int j=i; j<tokenizedLines.length; j++ ) {
 							tokenizedLines[j].shift(diff);

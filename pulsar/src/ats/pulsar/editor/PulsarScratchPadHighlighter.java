@@ -32,6 +32,7 @@ public class PulsarScratchPadHighlighter {
 			} else {
 				lispWords[i] = "\\b" + Pattern.quote( lispWords[i] ) + "";
 			}
+//			lispWords[i] = "(\\s)(" + Pattern.quote( lispWords[i] ) + ")(\\s)";
 		}
 		String r = String.join( "|" , lispWords  );
 		// System.err.println( Arrays.asList( lispWords ) ); 
@@ -63,8 +64,8 @@ public class PulsarScratchPadHighlighter {
 	    	while ( matcher.find() ) {
 	    		// System.err.println( matcher.start() + ":" + matcher.end() );
 	    		document.setCharacterAttributes(
-	    				matcher.start(),
-	    				matcher.end() - matcher.start(),
+	    				matcher.start(1),
+	    				matcher.end(1) - matcher.start(1),
 	    				bold, true);
 	    	}
 	    }
@@ -73,7 +74,45 @@ public class PulsarScratchPadHighlighter {
 	    	SimpleAttributeSet gray = new SimpleAttributeSet();
 	    	gray.addAttribute(StyleConstants.ColorConstants.Foreground, Color.gray );
 
-	    	Pattern pattern = Pattern.compile( ";.*$|\\#\\|[\\w\\W]*\\|\\#", Pattern.MULTILINE );
+	    	Pattern pattern = Pattern.compile( ";.*$|\\#\\|[\\w\\W]*?\\|\\#", Pattern.MULTILINE );
+	    	Matcher matcher = pattern.matcher( text );
+	    	while ( matcher.find() ) {
+	    		// System.err.println( matcher.start() + ":" + matcher.end() );
+	    		document.setCharacterAttributes(
+	    				matcher.start(),
+	    				matcher.end() - matcher.start(),
+	    				gray, true);
+	    	}
+	    }
+	}
+	
+	public static void highlightSyntax( JTextPane textPane, Collection<String> keywordList ) {
+		StyledDocument document = textPane.getStyledDocument();
+		String text = textPane.getText();
+		{
+	    	SimpleAttributeSet bold = new SimpleAttributeSet();
+	    	bold.addAttribute(StyleConstants.CharacterConstants.Bold, Boolean.TRUE );
+
+	    	for ( String keyword : keywordList ) {
+	    		String patternString = "(^|\\s|[\\(])(" + Pattern.quote( keyword ) + ")($|\\b|[\\)])";
+	    		
+	    		Pattern pattern = Pattern.compile( patternString );
+	    		Matcher matcher = pattern.matcher( text );
+	    		while ( matcher.find() ) {
+	    			// System.err.println( matcher.start() + ":" + matcher.end() );
+	    			document.setCharacterAttributes(
+	    					matcher.start(2),
+	    					matcher.end(2) - matcher.start(2),
+	    					bold, true);
+	    		}
+	    	}
+	    }
+
+	    {
+	    	SimpleAttributeSet gray = new SimpleAttributeSet();
+	    	gray.addAttribute(StyleConstants.ColorConstants.Foreground, Color.gray );
+
+	    	Pattern pattern = Pattern.compile( ";.*$|\\#\\|[\\w\\W]*?\\|\\#", Pattern.MULTILINE );
 	    	Matcher matcher = pattern.matcher( text );
 	    	while ( matcher.find() ) {
 	    		// System.err.println( matcher.start() + ":" + matcher.end() );
