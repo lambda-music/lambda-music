@@ -8,8 +8,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.JTextPane;
-import javax.swing.event.CaretListener;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
@@ -94,12 +92,12 @@ public class PulsarScratchPadHighlighter {
 	    	bold.addAttribute(StyleConstants.CharacterConstants.Bold, Boolean.TRUE );
 
 	    	for ( String keyword : keywordList ) {
-	    		String patternString = "(^|\\s|[\\(])(" + Pattern.quote( keyword ) + ")($|\\b|[\\)])";
+	    		String patternString = "(^|\\s|[\\(])(" + Pattern.quote( keyword ) + ")($|\\s|[\\)])";
 	    		
 	    		Pattern pattern = Pattern.compile( patternString );
 	    		Matcher matcher = pattern.matcher( text );
 	    		while ( matcher.find() ) {
-	    			// System.err.println( matcher.start() + ":" + matcher.end() );
+	    			 System.err.println(  matcher.start() + ":" + matcher.end() );
 	    			document.setCharacterAttributes(
 	    					matcher.start(2),
 	    					matcher.end(2) - matcher.start(2),

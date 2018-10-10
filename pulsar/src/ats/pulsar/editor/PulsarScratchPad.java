@@ -10,6 +10,8 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -62,6 +64,7 @@ import ats.pulsar.editor.SimpleSchemeParser.ParserState;
 import ats.pulsar.editor.lib.CompoundGroupedUndoManager;
 import ats.pulsar.editor.lib.GroupedUndoManager;
 import gnu.expr.Language;
+import gnu.kawa.io.InPort;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.Pair;
@@ -92,6 +95,7 @@ public class PulsarScratchPad extends JFrame {
 	}
 	
 	private Scheme scheme;
+	// Is this really necessary? (Wed, 10 Oct 2018 05:33:11 +0900)
 	private static Environment environment = null;
 	public PulsarScratchPad( Scheme scheme ) {
 		super( "Pulsar Scheme Scratch Pad" );
@@ -640,9 +644,14 @@ public class PulsarScratchPad extends JFrame {
 	synchronized static String newFrameName() {
 		return "frame" + ( frameCounter ++ );
 	}
-	
+
+	public static File getInitFile() {
+		return new File( System.getProperty("user.home"), ".pulsar/scheme-editor-extension.scm" );
+	}
+
 	public static void initScheme( Scheme scheme ) {
-		Environment.setCurrent(environment);
+		Environment.setCurrent(environment); 
+		
 		if ( ! SchemeUtils.isDefined(scheme, FLAG_DONE_INIT_PULSAR_SCRATCHPAD ) ) {
 			logInfo("initScheme");
 			SchemeUtils.defineVar(scheme, FLAG_DONE_INIT_PULSAR_SCRATCHPAD, true );  
@@ -681,6 +690,12 @@ public class PulsarScratchPad extends JFrame {
 					return EmptyList.emptyList;
 				}
 			});
+			
+			try {
+				scheme.eval( InPort.openFile( getInitFile() ) );
+			} catch (Throwable e) {
+				logError( "Ignored an error : ", e);
+			}
 		}
 	}
 	
@@ -721,8 +736,10 @@ public class PulsarScratchPad extends JFrame {
 			// Special thanks go to tips4java
 			// https://tips4java.wordpress.com/2009/01/25/no-wrap-text-pane/
 			public boolean getScrollableTracksViewportWidth() {
+//				return getUI().getPreferredSize(this).width 
+//						<= getParent().getSize().width;
 				return getUI().getPreferredSize(this).width 
-						<= getParent().getSize().width;
+						< getParent().getSize().width;
 			}
 		};
 		scrollPane = new JScrollPane( textPane );
@@ -772,6 +789,8 @@ public class PulsarScratchPad extends JFrame {
 		};
 		dc.setBlinkRate(500);
 		textPane.setCaret( dc );
+
+
 
 		// This action intercepts our customization so delete it.
 		purgeKeyFromActionMap( textPane.getActionMap(), DefaultEditorKit.insertTabAction );
@@ -1040,7 +1059,7 @@ public class PulsarScratchPad extends JFrame {
 //		JOptionPane.showMessageDialog( this, "OPEN NEW" );
 	}
 	public void openNew() throws IOException {
-		if ( ! confirmSave() ) {
+		if ( ! confirmSave( ConfirmType.OPEN_FILE ) ) {
 			return;
 		}
 		openNewProc();
@@ -1061,14 +1080,14 @@ public class PulsarScratchPad extends JFrame {
 //		JOptionPane.showMessageDialog(this, "OPEN FILE PROC" + file );
 	}
 	public void openFile( File filePath ) throws IOException {
-		if ( ! confirmSave() ) {
+		if ( ! confirmSave( ConfirmType.OPEN_FILE ) ) {
 			return;
 		}
 		openFileProc( filePath );
 	}
 	
 	public void openFile() throws IOException {
-		if ( ! confirmSave() ) {
+		if ( ! confirmSave( ConfirmType.OPEN_FILE ) ) {
 			return;
 		}
 		JFileChooser fc = new JFileChooser();
@@ -1079,9 +1098,25 @@ public class PulsarScratchPad extends JFrame {
 			openFileProc( fc.getSelectedFile() );
 		}
 	}
-	public boolean confirmSave() throws IOException {
+	static class ConfirmType { 
+		static final ConfirmType OPEN_FILE = new ConfirmType( 
+				"Do you save the changes before openning?", 
+				"Open a file" );
+		static final ConfirmType CLOSE_WINDOW = new ConfirmType( 
+				"Do you save the changes before closing?", 
+				"Closing the current document" );
+		final String caption;
+		final String title;
+		public ConfirmType(String caption, String title) {
+			this.caption = caption;
+			this.title = title;
+		}
+	}
+	public boolean confirmSave( ConfirmType confirmType ) throws IOException {
 		if ( fileModified ) {
-			int i = JOptionPane.showConfirmDialog( this, "Do you save the changes to a file before loading?", "Load a file", JOptionPane.YES_NO_CANCEL_OPTION  );
+			int i = JOptionPane.showConfirmDialog( this, 
+					confirmType.caption,
+					confirmType.title , JOptionPane.YES_NO_CANCEL_OPTION  );
 			if ( i == JOptionPane.YES_OPTION ) {
 				if ( filePath == null ) {
 					return saveFileAs();
@@ -1248,7 +1283,26 @@ public class PulsarScratchPad extends JFrame {
 
 	{
 		setSize( new Dimension( 500, 500 ) );
-		setDefaultCloseOperation( JFrame.DISPOSE_ON_CLOSE );
+		setDefaultCloseOperation( JFrame.DO_NOTHING_ON_CLOSE );
+		
+		this.addWindowListener( new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent we) {
+				boolean result;
+				try {
+					result = confirmSave( ConfirmType.OPEN_FILE );
+				} catch (IOException e) {
+					logError( "" , e );
+					result = false;
+				}
+				if ( result ) {
+					PulsarScratchPad.this.setVisible(false);
+					PulsarScratchPad.this.dispose();
+				} else {
+					// Stay open
+				}
+			}
+		});
 		
 		setVisible(true);
 	}
