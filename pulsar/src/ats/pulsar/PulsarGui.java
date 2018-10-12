@@ -921,7 +921,12 @@ class PulsarGui {
 			menuItem1.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					new PulsarScratchPad( pulsar.scheme );
+					new PulsarScratchPad() {
+						@Override
+						public Scheme getScheme() {
+							return pulsar.scheme;
+						}
+					};
 				}
 			});
 			m.add( menuItem1 );

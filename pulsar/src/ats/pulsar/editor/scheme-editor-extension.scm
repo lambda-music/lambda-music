@@ -50,7 +50,7 @@
               (newline)
               )))
 
-    (jlist:setListData (apply object[]  get-variables frame ) )  )
+    (jlist:setListData (apply object[]  (get-variables frame ) )  )
     ; (jlist:setPreferredSize (java.awt.Dimension 200 300 ) )
     ; (popup:add (javax.swing.JMenuItem "hello" ))
     ;(popup:add (javax.swing.JMenuItem "hoo" ))
@@ -88,6 +88,17 @@
 ; (init-completion)
 
 
+(define-class class-show-completion (javax.swing.AbstractAction) 
+              ((actionPerformed e)
+               (display 'hello)
+               (newline)
+               )
+              (init: (begin
+                       (display 'hello-init)
+                       ))
+              )
+
+(class-show-completion)
 
 ; (ats.pulsar.editor.PulsarScratchPad:lookupCorrespondingParenthesis "(hello)" 5 )
 
@@ -162,7 +173,7 @@
                                        (newline)
                                        )))
 
-                             (jlist:setListData (apply object[]  get-variables frame )))
+                             (jlist:setListData (apply object[]  get-variables frame ))
                              ; (jlist:setPreferredSize (java.awt.Dimension 200 300 ) )
                              ; (popup:add (javax.swing.JMenuItem "hello" ))
                              ;(popup:add (javax.swing.JMenuItem "hoo" ))
@@ -176,7 +187,6 @@
                          )))))
 
 (register-event-handler 'init 'init-0 init-proc )
-
 
 
 ; Example of defining a simple class

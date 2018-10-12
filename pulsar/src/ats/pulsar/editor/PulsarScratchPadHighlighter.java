@@ -97,7 +97,7 @@ public class PulsarScratchPadHighlighter {
 	    		Pattern pattern = Pattern.compile( patternString );
 	    		Matcher matcher = pattern.matcher( text );
 	    		while ( matcher.find() ) {
-	    			 System.err.println(  matcher.start() + ":" + matcher.end() );
+//	    			 System.err.println(  matcher.start() + ":" + matcher.end() );
 	    			document.setCharacterAttributes(
 	    					matcher.start(2),
 	    					matcher.end(2) - matcher.start(2),

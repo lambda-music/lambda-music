@@ -76,7 +76,7 @@ import gnu.mapping.Procedure3;
 import gnu.mapping.Symbol;
 import kawa.standard.Scheme;
 
-public class PulsarScratchPad extends JFrame {
+public abstract class PulsarScratchPad extends JFrame {
 	private static final String FLAG_DONE_INIT_PULSAR_SCRATCHPAD = "flag-done-init-pulsar-scratchpad";
 	private static final boolean DEBUG_UNDO_BUFFER = false;
 	private static final Logger LOGGER = Logger.getLogger(Pulsar.class.getName());
@@ -94,22 +94,28 @@ public class PulsarScratchPad extends JFrame {
 		return this.frameName;
 	}
 	
-	private Scheme scheme;
+	public abstract Scheme getScheme();
+	
 	// Is this really necessary? (Wed, 10 Oct 2018 05:33:11 +0900)
 	private static Environment environment = null;
-	public PulsarScratchPad( Scheme scheme ) {
+	public PulsarScratchPad() {
 		super( "Pulsar Scheme Scratch Pad" );
-		this.scheme = scheme;
 		if ( environment == null )
-			environment = scheme.getEnvironment();
-		initScheme( scheme );
+			environment = getScheme().getEnvironment();
+		initScheme( getScheme() );
 		initFrame();
 	}
 	
 	public final AbstractAction NEW_SCRATCHPAD_ACTION = new AbstractAction() {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			new PulsarScratchPad( scheme );
+			PulsarScratchPad self = PulsarScratchPad.this;
+			new PulsarScratchPad() {
+				@Override
+				public Scheme getScheme() {
+					return self.getScheme();
+				}
+			};
 		}
 		{
 			putValue( Action2.NAME, "Create a New Scratchpad" );
@@ -119,7 +125,6 @@ public class PulsarScratchPad extends JFrame {
 	};
 
 	
-
 	public final class ScratchPadThreadManager {
 		private final class ScratchPadThread extends Thread {
 			private final Runnable r;
@@ -230,8 +235,8 @@ public class PulsarScratchPad extends JFrame {
 //			System.err.println("PulsarScratchPadTextPaneController.caretUpdate()");
 			if ( ! undoManager.isSuspended() ) {
 				updateHighlightLater();
-				eventHandlers.invokeEventHandler( PulsarScratchPad.this, scheme, EventHandlers.CARET,  PulsarScratchPad.this);
-				eventHandlers.invokeEventHandler( PulsarScratchPad.this, scheme, EventHandlers.CHANGE,  PulsarScratchPad.this);
+				eventHandlers.invokeEventHandler( PulsarScratchPad.this, getScheme(), EventHandlers.CARET,  PulsarScratchPad.this);
+				eventHandlers.invokeEventHandler( PulsarScratchPad.this, getScheme(), EventHandlers.CHANGE,  PulsarScratchPad.this);
 			}
 		}
 		//DocumentListener
@@ -240,8 +245,8 @@ public class PulsarScratchPad extends JFrame {
 //			System.err.println("PulsarScratchPadTextPaneController.insertUpdate()");
 			if ( ! undoManager.isSuspended() ) {
 				updateHighlightLater();
-				eventHandlers.invokeEventHandler( PulsarScratchPad.this, scheme, EventHandlers.INSERT,  PulsarScratchPad.this);
-				eventHandlers.invokeEventHandler( PulsarScratchPad.this, scheme, EventHandlers.CHANGE,  PulsarScratchPad.this);
+				eventHandlers.invokeEventHandler( PulsarScratchPad.this, getScheme(), EventHandlers.INSERT,  PulsarScratchPad.this);
+				eventHandlers.invokeEventHandler( PulsarScratchPad.this, getScheme(), EventHandlers.CHANGE,  PulsarScratchPad.this);
 			}
 		}
 		public void removeUpdate(DocumentEvent e) {
@@ -249,16 +254,16 @@ public class PulsarScratchPad extends JFrame {
 //			System.err.println("PulsarScratchPadTextPaneController.removeUpdate()");
 			if ( ! undoManager.isSuspended() ) {
 				updateHighlightLater();
-				eventHandlers.invokeEventHandler( PulsarScratchPad.this, scheme, EventHandlers.REMOVE,  PulsarScratchPad.this);
-				eventHandlers.invokeEventHandler( PulsarScratchPad.this, scheme, EventHandlers.CHANGE,  PulsarScratchPad.this);
+				eventHandlers.invokeEventHandler( PulsarScratchPad.this, getScheme(), EventHandlers.REMOVE,  PulsarScratchPad.this);
+				eventHandlers.invokeEventHandler( PulsarScratchPad.this, getScheme(), EventHandlers.CHANGE,  PulsarScratchPad.this);
 			}
 		}
 		public void changedUpdate(DocumentEvent e) {
 //			fileModified = true;
 //			System.err.println("PulsarScratchPadTextPaneController.changedUpdate() : ignored");
 			if ( ! undoManager.isSuspended() ) {
-				eventHandlers.invokeEventHandler( PulsarScratchPad.this, scheme, EventHandlers.ATTRIBUTE,  PulsarScratchPad.this);
-				eventHandlers.invokeEventHandler( PulsarScratchPad.this, scheme, EventHandlers.CHANGE,  PulsarScratchPad.this);
+				eventHandlers.invokeEventHandler( PulsarScratchPad.this, getScheme(), EventHandlers.ATTRIBUTE,  PulsarScratchPad.this);
+				eventHandlers.invokeEventHandler( PulsarScratchPad.this, getScheme(), EventHandlers.CHANGE,  PulsarScratchPad.this);
 			}
 			return;
 		}
@@ -273,12 +278,12 @@ public class PulsarScratchPad extends JFrame {
 		});
 	}
 	String getLispWordPatternString() {
-		return PulsarScratchPadHighlighter.lispWordToPatternString( getLispWords( scheme ) ); 
+		return PulsarScratchPadHighlighter.lispWordToPatternString( getLispWords( getScheme() ) ); 
 	}
 	public void updateHighlight() {
 		PulsarScratchPadHighlighter.resetStyles( textPane );
 //		PulsarScratchPadHighlighter.highlightSyntax( textPane, getLispWordPatternString() );
-		PulsarScratchPadHighlighter.highlightSyntax( textPane, getLispWords( scheme ) );
+		PulsarScratchPadHighlighter.highlightSyntax( textPane, getLispWords( getScheme() ) );
 	}
 	public void highlightMatchningParentheses() {
 		PulsarScratchPadHighlighter.highlightMatchingParenthesis( textPane, textPane.getCaretPosition() );
@@ -468,7 +473,7 @@ public class PulsarScratchPad extends JFrame {
 			formatProc( textPane, new TextFilter() {
 				@Override
 				String process(String text) {
-					return prettify( getLispWords( scheme ), text );
+					return prettify( getLispWords( getScheme() ), text );
 				}
 
 			});
@@ -488,20 +493,20 @@ public class PulsarScratchPad extends JFrame {
 	};
 
 	Object executeScheme(String text) throws Throwable {
-		synchronized ( scheme ) {
+		synchronized ( getScheme() ) {
 			try {
 				Environment.setCurrent(environment);
-				SchemeUtils.putVar(scheme, "scheme", scheme );
-				SchemeUtils.putVar(scheme, "frame", this );
-				return scheme.eval( text );
+				SchemeUtils.putVar(getScheme(), "scheme", getScheme() );
+				SchemeUtils.putVar(getScheme(), "frame", this );
+				return getScheme().eval( text );
 //				return scheme.eval( 
 //						"(let (( frame "+ frameName +"))\n" +						
 //								text +
 //								"\n)"
 //						);
 			} finally {
-				SchemeUtils.putVar(scheme, "scheme", false );
-				SchemeUtils.putVar(scheme, "frame", false );
+				SchemeUtils.putVar(getScheme(), "scheme", false );
+				SchemeUtils.putVar(getScheme(), "frame", false );
 			}
 		}
 	
@@ -700,8 +705,8 @@ public class PulsarScratchPad extends JFrame {
 	}
 	
 	private void initFrame() {
-		SchemeUtils.defineVar(scheme, frameName, this );
-		eventHandlers.invokeEventHandler( this, scheme, EventHandlers.INIT,  this);
+		SchemeUtils.defineVar(getScheme(), frameName, this );
+		eventHandlers.invokeEventHandler( this, getScheme(), EventHandlers.INIT,  this);
 	}
 
 
@@ -815,7 +820,7 @@ public class PulsarScratchPad extends JFrame {
 
 		                	String text = target.getText();
 		                	int pos = target.getCaretPosition();
-		                	String indentString = calculateIndentSize(text, pos, getLispWords( scheme ));
+		                	String indentString = calculateIndentSize(text, pos, getLispWords( getScheme() ));
 		                	target.replaceSelection( "\n" + indentString );
 		                } finally {
 		                	undoManager.setSuspended(false);
@@ -995,7 +1000,7 @@ public class PulsarScratchPad extends JFrame {
                 		break;
                 }
                 
-				eventHandlers.invokeEventHandler( PulsarScratchPad.this, scheme, EventHandlers.TYPED, target, SchemeUtils.toSchemeString( content ) );
+				eventHandlers.invokeEventHandler( PulsarScratchPad.this, getScheme(), EventHandlers.TYPED, target, SchemeUtils.toSchemeString( content ) );
             }
 		}
 	};
@@ -1321,9 +1326,25 @@ public class PulsarScratchPad extends JFrame {
 //		actionMap.get( DefaultEditorKit.copyAction ).putValue(Action2.NAME, "Backspace");
 	}
 	
+	private static final class StaticPulsarScratchPad extends PulsarScratchPad {
+		private final Scheme scheme;
+		private StaticPulsarScratchPad(Scheme scheme) {
+			this.scheme = scheme;
+		}
+		@Override
+		public Scheme getScheme() {
+			return scheme;
+		}
+		public static PulsarScratchPad createInstance( Scheme scheme ) {
+			return new StaticPulsarScratchPad(scheme);
+		}
+	}
+	public static PulsarScratchPad createStaticInstance( Scheme scheme ) {
+		return StaticPulsarScratchPad.createInstance(scheme);
+	}
+	
 	public static void main(String[] args) throws IOException {
-		Scheme scheme = new Scheme();
-		PulsarScratchPad scratchPad = new PulsarScratchPad( scheme );
+		PulsarScratchPad scratchPad = createStaticInstance(new Scheme());
 		if ( 0 < args.length  ) {
 			scratchPad.openFile( new File( args[0] ) );
 		}
