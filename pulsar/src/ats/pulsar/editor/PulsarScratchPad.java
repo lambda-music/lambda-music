@@ -98,6 +98,7 @@ public abstract class PulsarScratchPad extends JFrame {
 	
 	// Is this really necessary? (Wed, 10 Oct 2018 05:33:11 +0900)
 	private static Environment environment = null;
+	private static final boolean enabledEnvironment = false;
 	public PulsarScratchPad() {
 		super( "Pulsar Scheme Scratch Pad" );
 		if ( environment == null )
@@ -495,7 +496,8 @@ public abstract class PulsarScratchPad extends JFrame {
 	Object executeScheme(String text) throws Throwable {
 		synchronized ( getScheme() ) {
 			try {
-				Environment.setCurrent(environment);
+				if ( enabledEnvironment )
+					Environment.setCurrent(environment);
 				SchemeUtils.putVar(getScheme(), "scheme", getScheme() );
 				SchemeUtils.putVar(getScheme(), "frame", this );
 				return getScheme().eval( text );
@@ -655,7 +657,8 @@ public abstract class PulsarScratchPad extends JFrame {
 	}
 
 	public static void initScheme( Scheme scheme ) {
-		Environment.setCurrent(environment); 
+		if ( enabledEnvironment )
+			Environment.setCurrent(environment); 
 		
 		if ( ! SchemeUtils.isDefined(scheme, FLAG_DONE_INIT_PULSAR_SCRATCHPAD ) ) {
 			logInfo("initScheme");
