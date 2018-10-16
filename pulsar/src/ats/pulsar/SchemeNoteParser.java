@@ -70,9 +70,9 @@ public class SchemeNoteParser {
 				break;
 			}
 	
-			case  "hit" : 
-			case  "on" :
-			case  "off" :
+			case  "note" : 
+			case  "non" :
+			case  "noff" :
 			{
 				boolean enabled      = map.containsKey( ID_ENABLED     ) ? SchemeUtils.toBoolean(       map.get(ID_ENABLED      ) ) : true;
 				if ( ! enabled )
@@ -86,13 +86,13 @@ public class SchemeNoteParser {
 				double length    = map.containsKey( ID_LENGTH   ) ? SchemeUtils.toDouble(       map.get(ID_LENGTH    ) ) : -1d;
 				
 				switch ( type ) {
-					case  "hit" :
+					case  "note" :
 						outputBuffer.noteHit(offset, port, channel, note, velocity, length );
 						break;
-					case  "on" :
+					case  "non" :
 						outputBuffer.noteOn(offset, port, channel, note, velocity );
 						break;
-					case  "off" :
+					case  "noff" :
 						outputBuffer.noteOff(offset, port, channel, note, velocity );
 						break;
 					default :
@@ -102,12 +102,13 @@ public class SchemeNoteParser {
 				break;
 			}
 	
-			case  "bar" : {
-				double length    = map.containsKey( ID_LENGTH   ) ? SchemeUtils.toDouble(       map.get(ID_LENGTH    ) ) : -1d;
-				if ( length < 0 ) {
-					length = 1.0d;
+			case  "len" : {
+//				double length    = map.containsKey( ID_LENGTH   ) ? SchemeUtils.toDouble(       map.get(ID_LENGTH    ) ) : -1d;
+				double value     = map.containsKey( ID_VALUE    ) ? SchemeUtils.toDouble(       map.get(ID_VALUE     ) ) : -1d;
+				if ( value < 0 ) {
+					value = 1.0d;
 				}
-				outputBuffer.setLength( length );
+				outputBuffer.setLength( value );
 				break;
 			}
 			case  "exec" : {
@@ -218,7 +219,7 @@ public class SchemeNoteParser {
 	
 	static final class NoteHitEventParser extends NoteEventParser {
 		{
-			this.id = "hit";
+			this.id = "note";
 			this.name = "note hit";
 		}
 		@Override
@@ -236,7 +237,7 @@ public class SchemeNoteParser {
 	}
 	static final class NoteOnEventParser extends NoteEventParser {
 		{
-			this.id = "on";
+			this.id = "non";
 			this.name = "note on";
 		}
 		@Override
@@ -249,7 +250,7 @@ public class SchemeNoteParser {
 	}
 	static final class NoteOffEventParser extends NoteEventParser {
 		{
-			this.id = "off";
+			this.id = "noff";
 			this.name = "note off";
 		}
 		@Override
@@ -263,8 +264,8 @@ public class SchemeNoteParser {
 
 	static final class BarEventParser extends SchemeEventParser {
 		{
-			this.id = "bar";
-			this.name = "bar";
+			this.id = "len";
+			this.name = "bar length";
 		}
 		@Override
 		boolean parseEvent(Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
@@ -312,7 +313,7 @@ public class SchemeNoteParser {
 	static final class EndEventParser extends SchemeEventParser {
 		{
 			this.id = "end";
-			this.name = "end";
+			this.name = "end the sequence";
 		}
 		@Override
 		boolean parseEvent(Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
