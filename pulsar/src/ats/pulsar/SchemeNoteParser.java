@@ -20,6 +20,7 @@ import kawa.standard.Scheme;
  * @author ats
  *
  */
+@SuppressWarnings("unused")
 public class SchemeNoteParser {
 	static final Logger LOGGER = Logger.getLogger(SchemeNoteParser.class.getName());
 	static final String ID_TYPE      = "type";
@@ -269,10 +270,11 @@ public class SchemeNoteParser {
 		}
 		@Override
 		boolean parseEvent(Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
-			double length    = map.containsKey( ID_LENGTH ) ? SchemeUtils.toDouble( map.get(ID_LENGTH ) ) : 1.0d;
-			if ( length < 0 )
-				length = 0.0d;
-			outputBuffer.setLength( length );
+			double value    = map.containsKey( ID_VALUE ) ? SchemeUtils.toDouble( map.get( ID_VALUE ) ) : 1.0d;
+			if ( value < 0 )
+				value = 0.0d;
+
+			outputBuffer.setLength( value );
 			return result;
 		}
 	}

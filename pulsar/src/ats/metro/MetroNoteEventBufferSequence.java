@@ -416,7 +416,7 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 				boolean result = this.logic.processOutputNoteBuffer( metro, this, buf );
 				buf.prepare( metro, client, position, true );
 
-				// buf.dump();
+				buf.dump();
 				
 				this.buffers.offer( buf );
 				
