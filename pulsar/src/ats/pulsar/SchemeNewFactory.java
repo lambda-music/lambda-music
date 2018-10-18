@@ -324,8 +324,8 @@ public abstract class SchemeNewFactory {
 
 					Procedure procedure = (Procedure) args.get(1);
 
-					Environment env = Environment.getCurrent();
-					Language lang = Language.getDefaultLanguage();
+//					Environment env = Environment.getCurrent();
+//					Language lang = Language.getDefaultLanguage();
 					{
 						JPulsarButton button = new JPulsarButton( caption );
 						SchemeFunctionExecutor executor = new SchemeFunctionExecutor( procedure );

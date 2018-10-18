@@ -61,8 +61,8 @@ import javax.swing.filechooser.FileFilter;
 
 import org.jaudiolibs.jnajack.JackException;
 
+import ats.kawapad.PulsarScratchPad;
 import ats.pulsar.Pulsar.TempoTapperTempoNotifier;
-import ats.pulsar.editor.PulsarScratchPad;
 import ats.pulsar.lib.FlawLayout;
 import ats.pulsar.lib.JNamedPanel;
 import ats.pulsar.lib.JPulsarRadioButton;

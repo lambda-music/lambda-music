@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/pulsar-lib"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/jre"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/lib"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/metro"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/kawapad"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
