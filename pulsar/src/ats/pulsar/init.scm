@@ -371,9 +371,9 @@
  | a 'tmp-parser-note is a temporary virtual note which is used only in this
  | parser process. The 'tmp-parser-note 's are processed afterwards, then merged
  | into notes which are next to the 'tmp-parser-notes and removed.
-
+ |
  | See the code below.
-|#
+ |#
 
 (define (parse-notes notes)
   ; There are two main loop here.
@@ -1031,6 +1031,7 @@
                                   (mov! trans notes )))
                               notes))))
 
+#|
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define centering-notes-example 
   (lambda()
@@ -1053,6 +1054,32 @@
                          (rid1 '(A Z) (luck 1.00 ) (+ 3/4 1/8 ) (+ 0.75 (rnd -0.0  0.0 )))
 
                          (len 1.0 ))))))
+
+ (display-notes #f (centering-notes-example))
+
+(display-notes #f
+                 (cpy
+                   (cut mov! 10 <>)
+                   (list
+                     (hhp1 'A   #f  1/4 0.7 )
+                     (hhp1 'A   #f  3/4 0.7 )
+
+                     (rid1 '(A  ) (luck 1.00 ) (+ 0/4 0   ) (+ 0.5  (rnd -0.0  0.0 )))
+                     (rid1 '(A  ) (luck 0.50 ) (+ 0/4 1/8 ) (+ 0.75 (rnd -0.0  0.0 )))
+
+                     (rid1 '(A  ) (luck 1.00 ) (+ 1/4 0   ) (+ 0.5  (rnd -0.0  0.0 )))
+                     (rid1 '(A  ) (luck 1.00 ) (+ 1/4 1/8 ) (+ 0.75 (rnd -0.0  0.0 )))
+
+                     (rid1 '(A  ) (luck 1.00 ) (+ 2/4 0   ) (+ 0.5  (rnd -0.0  0.0 )))
+                     (rid1 '(A  ) (luck 0.50 ) (+ 2/4 1/8 ) (+ 0.75 (rnd -0.0  0.0 )))
+
+                     (rid1 '(A  ) (luck 1.00 ) (+ 3/4 0   ) (+ 0.5  (rnd -0.0  0.0 )))
+                     (rid1 '(A Z) (luck 1.00 ) (+ 3/4 1/8 ) (+ 0.75 (rnd -0.0  0.0 )))
+
+                     (len 1.0 ))))
+(newline)
+
+|#
 
 (define send-counter 0)
 
