@@ -588,6 +588,7 @@ public final class Pulsar extends Metro {
 	 */
     private void initScheme(Scheme scheme) {
     	{
+    		SchemeUtils.execScheme( Pulsar.class, scheme, "init0.scm"  );
     		SchemeUtils.execScheme( Pulsar.class, scheme, "init.scm"  );
     		SchemeUtils.execScheme( Pulsar.class, scheme, "xnoop.scm" );
 //    		execScheme( scheme, "event-parser.scm" );

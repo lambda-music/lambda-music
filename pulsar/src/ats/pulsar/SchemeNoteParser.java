@@ -227,7 +227,7 @@ public class SchemeNoteParser {
 		void proc(Scheme scheme, MetroNoteEventBuffer outputBuffer, 
 				double offset, int port, int channel, int note,double velocity, double duration ) 
 		{
-			duration = 0.5;
+//			duration = 0.5;
 			if ( duration < 0 )
 				duration = 0.0025d;
 

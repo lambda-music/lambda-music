@@ -51,6 +51,14 @@ public class MetroNoteEventBuffer implements Iterable<MetroAbstractEvent>{
 //		System.out.println( "length" + length );
 		this.length = length;
 	}
+	public double getActualLength() {
+		double max = -1;
+		for ( MetroAbstractEvent e : this )
+			if ( max < e.offset ) 
+				max = e.offset;
+		
+		return max;
+	}
 	public void setOffset(double offset) {
 		this.offset = offset;
 	}
@@ -81,6 +89,10 @@ public class MetroNoteEventBuffer implements Iterable<MetroAbstractEvent>{
 	@Override
 	public Iterator<MetroAbstractEvent> iterator() {
 		return this.list.iterator();
+	}
+	
+	public int size() {
+		return this.list.size();
 	}
 
 	public final void event( MetroAbstractEvent event ) {

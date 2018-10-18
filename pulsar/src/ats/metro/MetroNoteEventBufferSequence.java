@@ -54,6 +54,7 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 	protected transient int lastLengthInFrame = 0;
 	protected final MetroLogic logic;
 	transient boolean ending = false;
+	transient double endingLength = 0;
 	
 	public MetroNoteEventBufferSequence( Metro metro, String name, Collection<String> tags, MetroLogic logic, SyncType syncType, MetroNoteEventBufferSequence syncSequence, double syncOffset ) {
 //		LOGGER.info( "BufferSequence(" + name + ") : " + tags + " : " + syncType + " : " + syncOffset );
@@ -270,10 +271,24 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 			
 			int lengthInFrames=-1;
 			for (;;) {
-				if ( this.buffers.isEmpty() )
-					break;
-				lengthInFrames = this.buffers.peek().getLengthInFrames();
 				
+				// version 1
+				// if ( this.buffers.isEmpty() )
+				//	break;
+				// lengthInFrames = this.buffers.peek().getLengthInFrames();
+
+				// version 2 >>>
+				if ( this.buffers.size() < 2 )
+					break;
+
+				{
+					// get the second element
+					Iterator<MetroNoteEventBuffer> it = this.buffers.iterator();
+					it.next();
+					lengthInFrames = it.next().getLengthInFrames();
+				}
+				// <<<
+
 				// XXX 
 				if (  lengthInFrames <  currentCursor ) {
 					currentCursor -= lengthInFrames;
@@ -401,13 +416,14 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 		synchronized ( this.buffers ) {
 			if ( this.ending ) {
 				MetroNoteEventBuffer buf = new MetroNoteEventBuffer();
-				buf.exec( 0, new Runnable() {
+				buf.exec( this.endingLength , new Runnable() {
 					@Override
 					public void run() {
+						System.err.println( "UNREGISTER THIS" );
 						metro.unregisterSequence( MetroNoteEventBufferSequence.this );
 					}
 				});
-				buf.setLength(1);
+				buf.setLength(this.endingLength);
 				buf.prepare( metro, client, position, true );
 				this.buffers.offer( buf );
 				
@@ -416,13 +432,15 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 				boolean result = this.logic.processOutputNoteBuffer( metro, this, buf );
 				buf.prepare( metro, client, position, true );
 
-				buf.dump();
+				if ( buf.size() >0)
+					buf.dump();
 				
 				this.buffers.offer( buf );
 				
 				if ( result ) {
 				} else {
 					this.ending = true;
+					this.endingLength = buf.getActualLength();
 				}
 				// buf.dump();
 			}
