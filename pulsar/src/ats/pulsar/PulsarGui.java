@@ -18,6 +18,7 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,7 +32,9 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -63,11 +66,13 @@ import org.jaudiolibs.jnajack.JackException;
 
 import ats.kawapad.PulsarScratchPad;
 import ats.pulsar.Pulsar.TempoTapperTempoNotifier;
+import ats.pulsar.lib.Action2;
 import ats.pulsar.lib.FlawLayout;
 import ats.pulsar.lib.JNamedPanel;
 import ats.pulsar.lib.JPulsarRadioButton;
 import ats.pulsar.lib.JSelectableUserObject;
 import ats.pulsar.lib.LayoutUtils;
+import ats.pulsar.lib.SchemeUtils;
 import ats.pulsar.lib.SpringLayoutUtil;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
@@ -903,6 +908,47 @@ class PulsarGui {
 	public void newlineGui() {
 		// userPane.add( Box.createVerticalStrut(500 ) );
 	}
+	
+	public final Action NEW_SCRATCHPAD = new AbstractAction() {
+		@SuppressWarnings("unused")
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			PulsarScratchPad scratchPad = new PulsarScratchPad() {
+				@Override
+				public Scheme getScheme() {
+					return pulsar.scheme;
+				}
+			};
+		}
+		{
+			putValue( Action2.NAME, "New Scratchpad" );
+			putValue( Action.MNEMONIC_KEY, (int)'n' );
+			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_F4, ActionEvent.SHIFT_MASK) );
+		}
+	};
+
+	public final Action OPEN_SCRATCHPAD = new AbstractAction() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			PulsarScratchPad scratchPad = new PulsarScratchPad() {
+				@Override
+				public Scheme getScheme() {
+					return pulsar.scheme;
+				}
+			};
+			try {
+				scratchPad.openFile( pulsar.getMainFile() );
+			} catch (IOException e1) {
+				logError("", e1);
+			}
+		}
+		{
+			putValue( Action2.NAME, "Open the Current File by Scratchpad" );
+			putValue( Action.MNEMONIC_KEY, (int)'e' );
+			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK) );
+		}
+
+	};
 
 	class JPulsarFrame extends JFrame {
 		public JPulsarFrame() {
@@ -915,22 +961,13 @@ class PulsarGui {
 			
 			JMenu m = new JMenu( "File" );
 			m.setMnemonic( 'f' );
-			JMenuItem menuItem1 = new JMenuItem( "Scratch Pad" );
-			menuItem1.setAccelerator( KeyStroke.getKeyStroke(KeyEvent.VK_F4, ActionEvent.SHIFT_MASK ) );
 			
-			menuItem1.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					new PulsarScratchPad() {
-						@Override
-						public Scheme getScheme() {
-							return pulsar.scheme;
-						}
-					};
-				}
-			});
-			m.add( menuItem1 );
+			m.add( new JMenuItem( NEW_SCRATCHPAD ) );
+			m.add( new JMenuItem( OPEN_SCRATCHPAD ) );
+			
 			menuBar.add( m );
+			
+			Action2.processMenuBar(menuBar);
 		}
 		
 		
