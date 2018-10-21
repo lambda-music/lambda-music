@@ -16,6 +16,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
@@ -61,13 +62,14 @@ import javax.swing.undo.CannotUndoException;
 import ats.kawapad.SimpleSchemeParser.ParserState;
 import ats.kawapad.lib.CompoundGroupedUndoManager;
 import ats.kawapad.lib.GroupedUndoManager;
-import ats.pulsar.SchemeUtils;
+import ats.pulsar.lib.Action2;
+import ats.pulsar.lib.SchemeUtils;
 import gnu.expr.Language;
 import gnu.kawa.io.InPort;
+import gnu.kawa.io.OutPort;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.Pair;
-import gnu.lists.PrintConsumer;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Procedure2;
@@ -312,11 +314,11 @@ public abstract class PulsarScratchPad extends JFrame {
 						resultObject = executeScheme(text);
 						textPane.getActionMap();
 
-						ByteArrayOutputStream out = new ByteArrayOutputStream();
-						PrintConsumer pconsumer = new PrintConsumer( out, false );
-						SchemeUtils.toString( kawa.lib.kawa.pprint.pprint.apply2( resultObject, pconsumer ) );
-						pconsumer.flush();
-						result = new String( out.toByteArray() );
+						StringWriter out = new StringWriter();
+						OutPort outPort = new OutPort( out, true, true );
+						SchemeUtils.toString( kawa.lib.kawa.pprint.pprint.apply2( resultObject, outPort ) );
+						outPort.flush();
+						result = out.toString();
 
 					} catch (Throwable e1) {
 						ByteArrayOutputStream out = new ByteArrayOutputStream();

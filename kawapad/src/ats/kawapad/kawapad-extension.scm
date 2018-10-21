@@ -122,7 +122,7 @@
                (newline)
                (let* ((text-pane ((this):getTextComponent e ))
                       (pos
-                       (ats.pulsar.editor.PulsarScratchPad:lookupCorrespondingParenthesis 
+                       (ats.kawapad.PulsarScratchPad:lookupCorrespondingParenthesis 
                         text-pane:text 
                         text-pane:caret:dot )
                        ))
@@ -137,7 +137,7 @@
               (x 1)
               (init: (begin
                       ((this):putValue javax.swing.Action:NAME        (->java.lang.String "Jump to the Corresponding Parenthesis" ))
-                      ((this):putValue ats.pulsar.editor.Action2:NAME (->java.lang.String "Jump to the Corresponding Parenthesis" ))
+                      ((this):putValue ats.pulsar.lib.Action2:NAME (->java.lang.String "Jump to the Corresponding Parenthesis" ))
                       ((this):putValue javax.swing.Action:MNEMONIC_KEY  (->java.lang.Integer (char->integer #\p ) ))
                       )))
 
