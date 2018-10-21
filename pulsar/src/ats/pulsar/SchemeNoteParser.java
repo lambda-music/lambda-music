@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import ats.metro.MetroMidi;
 import ats.metro.MetroNoteEventBuffer;
+import ats.pulsar.lib.SchemeUtils;
 import gnu.lists.AbstractSequence;
 import gnu.lists.Pair;
 import gnu.mapping.Environment;
@@ -230,6 +231,8 @@ public class SchemeNoteParser {
 //			duration = 0.5;
 			if ( duration < 0 )
 				duration = 0.0025d;
+
+			System.out.println( channel );
 
 //			outputBuffer.noteHit( offset, port, channel, note, velocity, length );
 			outputBuffer.midiEvent(offset             , port, MetroMidi.noteOn (channel, note, velocity ) );

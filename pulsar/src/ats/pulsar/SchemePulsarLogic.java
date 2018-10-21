@@ -13,6 +13,7 @@ import ats.metro.MetroMidiEvent;
 import ats.metro.MetroNoteEventBuffer;
 import ats.metro.MetroNoteEventBufferSequence;
 import ats.metro.MetroPlayer;
+import ats.pulsar.lib.SchemeUtils;
 import gnu.lists.AbstractSequence;
 import gnu.lists.EmptyList;
 import gnu.lists.ImmutablePair;

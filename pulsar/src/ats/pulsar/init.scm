@@ -16,6 +16,21 @@
 ; display-args
 (define display-args  (lambda args (map display args )))
 
+
+
+; pretty stringification
+(define (pstring e #!key ( margin 90 ) )
+  (let* ((old-margin *print-right-margin* )
+         (w  (java.io.StringWriter))
+         (o (gnu.kawa.io.OutPort w #t #t)))
+    (set! *print-right-margin* margin )
+    (pprint e  o)
+    (newline o)
+    (set! *print-right-margin* old-margin )
+    (o:flush)
+    (w:toString)))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Defining a fundamental function No.1 Delegator
 (define-syntax new-delegator
@@ -73,7 +88,7 @@
 (define (note? e)
   (symbol? (caar e)))
 
-(define (n . args )
+(define (n-implementation append-proc . args)
   (let-values (((params notes) 
                 (let loop ((idx 0)
                            (args args)
@@ -93,8 +108,8 @@
                            ))
                         ((pair? e)
                          (if (note? e)
-                           (loop (+ idx 1 ) (cdr args) params (append notes (list e)))
-                           (loop (+ idx 1 ) (cdr args) params (append notes       e))))
+                           (loop (+ idx 1 ) (cdr args) params (append-proc notes (list e)))
+                           (loop (+ idx 1 ) (cdr args) params (append-proc notes       e))))
                         (else 
                           (cond
                             ((= idx 0)
@@ -119,6 +134,13 @@
                                (reverse params) 
                                note ))))
                        notes )))))
+
+(define (n . args)
+  (apply n-implementation (cons append args )))
+
+(define (s . args)
+  (apply n-implementation (cons append-notes args )))
+
 
 
 (define (nmap proc . args)
@@ -369,217 +391,286 @@
     ))
 #|
  | a 'tmp-parser-note is a temporary virtual note which is used only in this
- | parser process. The 'tmp-parser-note 's are processed afterwards, then merged
- | into notes which are next to the 'tmp-parser-notes and removed.
+ | parser. The 'tmp-parser-note 's are processed afterwards, then merged
+ | into notes which are next to the 'tmp-parser-note and removed.
  |
  | See the code below.
  |#
 
+
+(define debug-parse-notes #t)
+
 (define (parse-notes notes)
-  ; There are two main loop here.
-
-  ; === The first loop ===
-  (let loop ((notes notes)
-             (transpose  0)
-             (octave     4))
-    (if (null? notes)
-      '()
-      (cond
-        ; octave specifier
-        ((eq? (car notes) 'o )
-         (if (number? (cadr notes) )
-           (cons
-             (list
-               (cons 'type 'tmp-octave )
-               (cons 'value (cadr notes)))
-             (loop (cddr notes) transpose (cadr notes)))
-           (raise "an invalid octave specifier")))
-
-        ; transpose specifier (not implemented yet)
-        ((eq? (car notes) 'k )
-         (if (number? (cadr notes) )
-           (cons
-             (list
-               (cons 'type 'tmp-transpose )
-               (cons 'value (cadr notes)))
-             (loop (cddr notes) (cadr notes) octave ))
-           (raise "an invalid transpose specifier")))
-
-        ; quote ( ' )  treat it as a direction specifier.
-        ((eq? (car notes) 'quote )
-         (cons
-           (list
-             (cons 'type 'tmp-parser-note )
-             (cons 'tmp-direction 1 ))
-
-           (loop (cdr notes) transpose octave )))
-
-        ; unquote ( , )  treat it as a direction specifier.
-        ((eq? (car notes) 'unquote )
-         (cons
-           (list
-             (cons 'type 'tmp-parser-note )
-             (cons 'tmp-direction -1 ))
-
-           (loop (cdr notes) transpose octave )))
-        ((number? (car notes) )
-         (cons
-           (list
-             (cons 'type 'tmp-parser-note )
-             (cons 'tmp-len (car notes) ))
-
-           (loop (cdr notes) transpose octave ))
-         )
-
-        ; ; rest
-        ; ((eq? 'r (car notes) )
-        ;  (cons
-        ;    (list
-        ;      (cons 'type 'tmp-rest ))
-
-        ;    (loop (cdr notes) transpose octave ))
-        ;  )
-        ; ; sustain
-        ; ((eq? 's (car notes) )
-        ;  (cons
-        ;    (list
-        ;      (cons 'type 'tmp-sus-r ))
-
-        ;    (loop (cdr notes) transpose octave ))
-        ;  )
-        (else 
-          (let ((result-note 
-                 ; creating a note
-                 (cond
-                   ; rest
-                   ((eq? 'r (car notes))
-                    (list
-                      (cons 'type 'tmp-rest )))
-
-                   ; sustain (rational)
-                   ((or (eq? 's  (car notes))
-                        (eq? 'sr (car notes)))
-                    (list
-                      (cons 'type 'tmp-sus-r )))
-
-                   ; sustain (constant)
-                   ((eq? 'sc (car notes))
-                    (list
-                      (cons 'type 'tmp-sus-c )))
-                   ; tie
-                   ((eq? '- (car notes))
-                    (list
-                      (cons 'type 'tmp-tie )
-                      (cons 'tie #t)
+  #|
+   | Define common methods which will be placed on a result-note .
+   |     - op operand ... this is usually a result-note object. 
+   |     - vl value   ... this is usually a 'tmp-parser-note  object
+  |#
+  (let ((proc-merge (lambda(op  vl)
+                      (append op
+                              ; delete the type node in the msg note.
+                              (alist-delete 'type vl eq?))
                       ))
+        (proc-add   (lambda(op  vl)
+                      ; Delete the type node in the msg note.
+                      (let ((vl (alist-delete 'type vl eq?))
+                            (pair (or (assq 'tmp-len op)
+                                      (cons 'tmp-len 0)))
+                            )
+                        (display pair)
+                        (newline)
 
-                   ; chord on
-                   ((eq? '< (car notes))
-                    (list
-                      (cons 'type 'tmp-chord-on )))
+                        ; Sum values of 'tmp-len then set it to the cell.
+                        (set-cdr! pair 
+                                   (fold (lambda(e val)
+                                           (if (eq? 'tmp-len (car e))
+                                             (+ val (cdr e))
+                                             val)
+                                           ) 
+                                         (cdr pair) 
+                                         vl))
 
-                   ; chord off
-                   ((eq? '> (car notes))
-                    (list
-                      (cons 'type 'tmp-chord-off )))
+                        ; Replace 'tmp-len pair with the pair and return it.
+                        (append
+                          (alist-delete 'tmp-len op eq?)
+                          (list pair))
+                        )))
+        )
+    ; There are two main loop here.
 
-                   ; note
-                   (else
-                     (let ((note-pair 
-                             (or
-                               (assq (car notes) note-names)
-                               (raise (string-append "an invalid note name "
-                                                     (format "~a" (car notes)))))))
+    ; === The first loop ===
+    (let loop ((notes notes)
+               (transpose  0)
+               (octave     4))
+      (if (null? notes)
+        '()
+        (cond
+          ; octave specifier
+          ((eq? (car notes) 'o )
+           (if (number? (cadr notes) )
+             (cons
+               (list
+                 (cons 'type 'tmp-octave )
+                 (cons 'value (cadr notes)))
+               (loop (cddr notes) transpose (cadr notes)))
+             (raise "an invalid octave specifier")))
+
+          ; transpose specifier (not implemented yet)
+          ((eq? (car notes) 'k )
+           (if (number? (cadr notes) )
+             (cons
+               (list
+                 (cons 'type 'tmp-transpose )
+                 (cons 'value (cadr notes)))
+               (loop (cddr notes) (cadr notes) octave ))
+             (raise "an invalid transpose specifier")))
+
+          ; quote ( ' )  treat it as a direction specifier.
+          ((eq? (car notes) 'quote )
+           (cons
+             (list
+               (cons 'type 'tmp-parser-note )
+               (cons 'tmp-direction 1 ))
+
+             (loop (cdr notes) transpose octave )))
+
+          ; unquote ( , )  treat it as a direction specifier.
+          ((eq? (car notes) 'unquote )
+           (cons
+             (list
+               (cons 'type 'tmp-parser-note )
+               (cons 'tmp-direction -1 ))
+
+             (loop (cdr notes) transpose octave )))
+          ((number? (car notes) )
+           (cons
+             (list
+               (cons 'type 'tmp-parser-note )
+               (cons 'tmp-len (car notes) ))
+
+             (loop (cdr notes) transpose octave ))
+           )
+
+          ; ; rest
+          ; ((eq? 'r (car notes) )
+          ;  (cons
+          ;    (list
+          ;      (cons 'type 'tmp-rest ))
+
+          ;    (loop (cdr notes) transpose octave ))
+          ;  )
+          ; ; sustain
+          ; ((eq? 's (car notes) )
+          ;  (cons
+          ;    (list
+          ;      (cons 'type 'tmp-sus-r ))
+
+          ;    (loop (cdr notes) transpose octave ))
+          ;  )
+          (else 
+            (let ((result-note 
+                    ; creating a note
+                    (cond
+                      ; rest
+                      ((eq? 'r (car notes))
                        (list
-                         (cons 'type 'note )
-                         (cons 'tmp-interval  
-                               (cdr (assq 'interval (cdr note-pair))))
-                         ; (cons 'tmp-transpose transpose)
-                         ; (cons 'tmp-octave    octave)
-                         )
-                       )))))
+                         (cons 'type 'tmp-rest )
+                         (cons 'proc proc-add )
+                         ))
 
-            ; Note that this is a double recursive call
-            ; which processes the result of a future call.
-            (let ((result 
-                    (loop (cdr notes) transpose octave )))
+                      ; sustain (rational)
+                      ((or (eq? 's  (car notes))
+                           (eq? 'sr (car notes)))
+                       (list
+                         (cons 'type 'tmp-sus-r )
+                         (cons 'proc proc-add )
+                         ))
 
-              ; (display 'begin-loop-result)
-              ; (newline)
+                      ; sustain (constant)
+                      ((eq? 'sc (car notes))
+                       (list
+                         (cons 'type 'tmp-sus-c )
+                         (cons 'proc proc-add )
+                         ))
+                      ; tie
+                      ((eq? '- (car notes))
+                       (list
+                         (cons 'type 'tmp-tie )
+                         (cons 'tie #t)
+                         (cons 'proc proc-add )
+                         ))
 
-              ; === The second loop ===
-              (let loop-result ((result result)
-                                (result-note result-note ))
+                      ; chord on
+                      ((eq? '< (car notes))
+                       (list
+                         (cons 'type 'tmp-chord-on )
+                         (cons 'proc proc-add )
+                         ))
 
-                (if (null? result)
-                  ; end of the loop-result
-                  (begin
-                    (display 'loop-end1)
-                    (display result)
-                    (newline)
+                      ; chord off
+                      ((eq? '> (car notes))
+                       (list
+                         (cons 'type 'tmp-chord-off )
+                         (cons 'proc proc-add )
+                         ))
 
-                    (cons result-note result))
+                      ; note
+                      (else
+                        (let ((note-pair 
+                                (or
+                                  (assq (car notes) note-names)
+                                  (raise (string-append "an invalid note name "
+                                                        (format "~a" (car notes)))))))
+                          (list
+                            (cons 'type 'note )
+                            (cons 'proc proc-add)
+                            (cons 'tmp-interval  
+                                  (cdr (assq 'interval (cdr note-pair))))
+                            ; (cons 'tmp-transpose transpose)
+                            ; (cons 'tmp-octave    octave)
+                            )
+                          )))))
 
-                  ; check if the result contains a special note
-                  ; which is called 'msg' note, 
-                  (let ((note-type (cdr (or
-                                          (assq 'type (car result))
-                                          (cons 'type #f)))))
-                    (display (format "note-type  : ~a " note-type ))
-                    (newline)
+              ; Note that this is a double recursive call
+              ; which processes the result of a future call.
+              (let ((result 
+                      (loop (cdr notes) transpose octave )))
 
-                    (if (eq? note-type 'tmp-parser-note)
-                      ; while the result contains a msg note,
-                      ; merge it to the result note.
-                      (begin
-                        (display 'loop)
-                        (display result)
-                        (newline)
+                (if debug-parse-notes (begin
+                                        (display 'begin-loop-result)
+                                        (newline)))
 
-                        ; go to the next element.
-                        (let ((tmp (loop-result 
-                                     (cdr result)
-                                     (append result-note 
-                                             ; delete the type node in the msg note.
-                                             (alist-delete 'type (car result) eq?)))))
-                          (display 'loop-result)
-                          (display tmp)
-                          (newline)
-                          tmp))
+                ; === The second loop ===
+                (let loop-result ((result result)
+                                  (result-note result-note ))
 
-                      ; otherwise return the result
-                      (begin
-                        (display 'loop-end2)
-                        (display result)
-                        (newline)
-                        (cons result-note result))
+                  (if (null? result)
+                    ; end of the loop-result
+                    (begin
+                      (if debug-parse-notes
+                        (begin
+                          (display 'loop-end1)
+                          (display result)
+                          (newline)))
 
-                      ))))
-              ))
+                      (cons result-note result))
 
-          ;; experimentally convert it to a number
-          ;(let ((n (string->number (symbol->string (car notes))) ))
-          ;  (if n 
-          ;    ; if the value is a number
-          ;    (cons
-          ;      (list
-          ;        (cons 'type 'tmp-len )
-          ;        (cons 'value n ))
+                    ; check if the result contains a special note
+                    ; which is called 'msg' note, 
+                    (let ((note-type (cdr (or
+                                            (assq 'type (car result))
+                                            (cons 'type #f)))))
+                      (if debug-parse-notes (begin
+                                              (display (format "note-type  : ~a " note-type ))
+                                              (newline)))
 
-          ;      (loop (cdr notes) transpose octave ))
+                      (if (eq? note-type 'tmp-parser-note)
+                        ; while the result contains a msg note,
+                        ; merge it to the result note.
+                        (begin
+                          (if debug-parse-notes (begin
+                                                  (display 'loop)
+                                                  (display result)
+                                                  (newline)
+                                                  (display 'loop-result-note)
+                                                  (display result-note)
+                                                  (newline)))
 
-          ;    ; if the value is a string other than a number.
+                          ; Go to the next element.
+                          (let ((tmp (loop-result 
+                                       (cdr result)
+                                       ; (append result-note 
+                                       ;         ; delete the type node in the msg note.
+                                       ;         (alist-delete 'type (car result) eq?))
+                                       (apply
+                                         (cdr (or (assq 'proc result-note)
+                                                  (lambda args (raise "internal error : no proc was found" ))))
+                                         (list
+                                           result-note
+                                           (car result)))
+                                       )))
+                            (if debug-parse-notes (begin
+                                                    (display 'loop-result)
+                                                    (display tmp)
+                                                    (newline)))
+                            tmp))
+
+                        ; otherwise exit from the loop and return the result
+                        (begin
+                          (if debug-parse-notes (begin
+                                                  (display 'loop-end2)
+                                                  (display result)
+                                                  (newline)))
+                          ; Do not go to the next element.
+                          (cons result-note result))
+
+                        ))))
+                ))
+
+            ;; experimentally convert it to a number
+            ;(let ((n (string->number (symbol->string (car notes))) ))
+            ;  (if n 
+            ;    ; if the value is a number
+            ;    (cons
+            ;      (list
+            ;        (cons 'type 'tmp-len )
+            ;        (cons 'value n ))
+
+            ;      (loop (cdr notes) transpose octave ))
+
+            ;    ; if the value is a string other than a number.
 
 
 
-          ;    ))
+            ;    ))
 
-          )))))
+            ))))))
 
 
 (import (kawa regex))
 (require 'regex )
 
+(define debug-translate-notes #f)
 (define (translate-notes in-notes) 
   (let ((result in-notes ))
 
@@ -639,17 +730,27 @@
                         )
 
                    (let loop ((notes result))
+                     (if debug-translate-notes (begin
+                                                 (display 'state-loop)
+                                                 (newline)))
                      (if (null? notes)
-                       '()
+                       ; end of the loop
+                       (cons
+                         (list (cons 'type  'len )
+                               (cons 'value state-position ))
+                         '())
+
+                       ; the loop proc
                        (let ((type 
                                (cdr (or (assq 'type (car notes))
                                         (cons 'type #f))) ))
                          (cond
                            ; octave
                            ((eq? type 'tmp-octave )
-                            (display 'tmp-octave  )
-                            (display (car notes))
-                            (newline)
+                            (if debug-translate-notes (begin
+                                                        (display 'tmp-octave  )
+                                                        (display (car notes))
+                                                        (newline)))
 
                             (set! state-octave
                               (cdr (assq 'value (car notes))))
@@ -675,9 +776,10 @@
 
                            ; sustain (rational)
                            ((eq? type 'tmp-sus-r )
-                            (display 'tmp-sus-r)
-                            (display (car notes))
-                            (newline)
+                            (if debug-translate-notes (begin
+                                                        (display 'tmp-sus-r)
+                                                        (display (car notes))
+                                                        (newline)))
                             (set! state-sustain
                               (cdr (or
                                      (assq 'tmp-len (car notes))
@@ -690,8 +792,9 @@
 
                            ; sustain (constant)
                            ((eq? type 'tmp-sus-c )
-                            (display 'tmp-sus-c)
-                            (display (car notes))
+                            (if debug-translate-notes (begin
+                                                        (display 'tmp-sus-c)
+                                                        (display (car notes))))
                             (newline)
                             (set! state-sustain
                               (cdr (or
@@ -717,9 +820,10 @@
                               (eq? type 'tmp-chord-off )
                               )
 
-                            (display 'tmp-tie)
-                            (display (car notes))
-                            (newline)
+                            (if debug-translate-notes (begin
+                                                        (display 'tmp-tie)
+                                                        (display (car notes))
+                                                        (newline)))
 
                             (if (eq? type 'tmp-chord-off )
                               (set! state-chord-mode #f))
@@ -730,8 +834,9 @@
                                            (assq 'tmp-len (car notes))
                                            (cons 'tmp-len state-len)))))
 
-                              (display (format "tie len: ~a\n" len))
-                              (newline)
+                              (if debug-translate-notes (begin
+                                                          (display (format "tie len: ~a\n" len))
+                                                          (newline)))
 
                               ; Set the current length to the state object.
                               (set! state-len len)
@@ -740,7 +845,7 @@
                               (if (not state-chord-mode)
                                 (set! state-position (+ state-position  len)))
 
-                              
+
                               (if (eq? type 'tmp-chord-off )
                                 (let chord-loop ()
                                   (if (not (state-chord-mode-empty))
@@ -748,10 +853,11 @@
                                            (len-cell        (or 
                                                               (assq 'len  e)
                                                               (cons 'len 0))))
-                                      (display 'tmp-chord-off)
-                                      (display len)
-                                      (display e)
-                                      (newline)
+                                      (if debug-translate-notes (begin
+                                                                  (display 'tmp-chord-off)
+                                                                  (display len)
+                                                                  (display e)
+                                                                  (newline)))
                                       (set-cdr! len-cell (state-sustain-mode len))
 
                                       (chord-loop)))))
@@ -792,8 +898,9 @@
                                             (cons 'tmp-direction #f))))
                                    (direction input-direction))
 
-                              ;(display (format "tmp-direction ~a" direction ))
-                              ;(newline)
+                              (if debug-translate-notes (begin
+                                                          (display (format "tmp-direction ~a" direction ))
+                                                          (newline)))
 
                               ; Let's make two value-corrections in order to
                               ; process notes right; see the comments below:
@@ -852,17 +959,18 @@
                               (if (not state-chord-mode)
                                 (set! state-position (+ position len)))
 
-                              (display (format "loop : \
-                                               direction ~a \
-                                               state-direction ~a \
-                                               octave ~a \
-                                               "
-                                               direction
-                                               state-direction
-                                               octave
-                                               ))
+                              (if debug-translate-notes (begin
+                                                          (display (format "loop : \
+                                                                           direction ~a \
+                                                                           state-direction ~a \
+                                                                           octave ~a \
+                                                                           "
+                                                                           direction
+                                                                           state-direction
+                                                                           octave
+                                                                           ))
 
-                              (newline)
+                                                          (newline) ))
 
                               ; return a link between the current note and the following object
                               (cons
@@ -907,6 +1015,56 @@
 
 (define (melody notes)
   (translate-notes (parse-notes (cor notes))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; appending note lists
+;
+(define (get-len notes)
+  (let ((len-note
+         (find (lambda (note)
+                      (eq? 'len (cdr (or (assq 'type note)
+                                         (cons 'type #f)) )))
+                    (reverse notes) )))    
+    (if len-note
+      (cdr (or (assq 'value len-note)
+               (cons 'value #f)))
+      #f)))
+
+(define (append-notes . args )
+  (let-values (((notes len)
+                (let loop ((bars args)
+                           (pos 0 ))
+                  (if (null? bars ) 
+                    (values '() pos)
+                    (let ((len (get-len (car bars))))
+                      (if len
+                        (let-values (((notes len)
+                                      (loop (cdr bars) (+ pos len ))))
+                                    (values (append
+                                             (mov! pos (car bars))
+                                              notes)
+                                            len))
+                        (raise "no length note was found" )))))))
+              (append
+               (filter (lambda(note)
+                         (not (eq? 'len (cdr (or (assq 'type note )
+                                            (cons 'type #f))))))
+                       notes)
+                (list
+                 (list
+                  (cons 'type 'len)
+                  (cons 'value len)))
+                )))
+
+#| 
+ | (append-notes 
+ |  (melody '( do re mi fa end ))
+ |  (melody '( do re mi fa end ))
+ |  (melody '( do re mi fa end ))
+ |  )
+ |#
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define-syntax new-seq-putter

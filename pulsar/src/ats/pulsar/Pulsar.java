@@ -30,6 +30,7 @@ import ats.metro.MetroInvokable;
 import ats.metro.MetroNoteEventBufferSequence;
 import ats.metro.MetroNoteEventBufferSequence.SyncType;
 import ats.pulsar.lib.MersenneTwisterFast;
+import ats.pulsar.lib.SchemeUtils;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.LList;
@@ -442,6 +443,9 @@ public final class Pulsar extends Metro {
 		this.mainFile   = mainFile;
 		this.parentFile = parentFile;
 		this.lastModifiedOfMainFile = NOT_DEFINED;
+	}
+	public File getMainFile() {
+		return mainFile;
 	}
 	
 	interface TempoTapperTempoNotifier {

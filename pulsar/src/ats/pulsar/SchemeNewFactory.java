@@ -37,6 +37,7 @@ import ats.pulsar.lib.JPulsarComboBox;
 import ats.pulsar.lib.JPulsarRadioButton;
 import ats.pulsar.lib.JUserObjectContainer;
 import ats.pulsar.lib.PulsarListItem;
+import ats.pulsar.lib.SchemeUtils;
 import gnu.expr.Language;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
