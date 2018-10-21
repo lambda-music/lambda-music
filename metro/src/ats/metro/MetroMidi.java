@@ -15,65 +15,80 @@ public final class MetroMidi {
 
 	public static byte[] noteOn( int ch, int note, int velo ) {
 		return new byte[] {
-				(byte) ( 0b10010000 | ( 0x00001111 & ch )), 
+				(byte) ( 0b10010000 | ( 0b00001111 & ch )), 
 				(byte) ( note ), 
 				(byte) ( velo ), }; 
 	}
+	public static String toString( byte[] b ) {
+		StringBuilder sb = new StringBuilder();
+		for ( int i=0; i<b.length; i++ ) {
+			sb.append("'" );
+			sb.append( Integer.toString( Byte.toUnsignedInt( b[i] ), 16 ) );
+			sb.append(" ");
+			
+		}
+		return sb.toString();
+	}
+	public static void main(String[] args) {
+		System.out.println( toString( noteOn( 5,64, 1 ) )  ) ;
+		System.out.println( 0b1111 & 4 );
+	}
+	
 	// A helper function
 	public static byte[] noteOn( int ch, int note, double velo ) {
 		return new byte[] {
-				(byte) ( 0b10010000 | ( 0x00001111 & ch )), 
+				(byte) ( 0b10010000 | ( 0b00001111 & ch )), 
 				(byte) ( note ), 
 				(byte) ( 127d * velo ), }; 
 	}
 	public static byte[] noteOff( int ch, int note, int velo ) {
 		return new byte[] {
-				(byte) ( 0b10000000 | ( 0x00001111 & ch )), 
+				(byte) ( 0b10000000 | ( 0b00001111 & ch )), 
 				(byte) ( note ), 
 				(byte) ( velo ), }; 
 	}
 	// A helper function
 	public static byte[] noteOff( int ch, int note, double velo ) {
 		return new byte[] {
-				(byte) ( 0b10000000 | ( 0x00001111 & ch )), 
+				(byte) ( 0b10000000 | ( 0b00001111 & ch )), 
 				(byte) ( note ), 
 				(byte) ( 127d * velo ), }; 
 	}
 	
 	public static byte[] keyPressure( int ch, int note, int pressure ) {
 		return new byte[] {
-				(byte) ( 0b10100000 | ( 0x00001111 & ch )), 
+				(byte) ( 0b10100000 | ( 0b00001111 & ch )), 
 				(byte) ( note ), 
 				(byte) ( pressure ), }; 
 	}
 	public static byte[] keyPressure( int ch, int note, double pressure ) {
 		return new byte[] {
-				(byte) ( 0b10100000 | ( 0x00001111 & ch )), 
+				(byte) ( 0b10100000 | ( 0b00001111 & ch )), 
 				(byte) ( note ), 
 				(byte) ( 255d * pressure ), }; 
 	}
 	
 	public static byte[] control( int ch, int controlNumber, int controlValue ) {
 		return new byte[] {
-				(byte) ( 0b10110000 | ( 0x00001111 & ch )), 
+				(byte) ( 0b10110000 | ( 0b00001111 & ch )), 
 				(byte) ( controlNumber ), 
 				(byte) ( controlValue ), }; 
 	}
 	public static byte[] program( int ch, int programNumber ) {
 		return new byte[] {
-				(byte) ( 0b11000000 | ( 0x00001111 & ch )), 
+				(byte) ( 0b11000000 | ( 0b00001111 & ch )), 
 				(byte) ( programNumber ), 
 				};
 	}
 	public static byte[] channelPressure( int ch, int pressureValue ) {
 		return new byte[] {
-				(byte) ( 0b11010000 | ( 0x00001111 & ch )), 
+				(byte) ( 0b11010000 | ( 0b00001111 & ch )), 
 				(byte) ( pressureValue ), 
 				};
 	}
 	public static byte[] channelPressure( int ch, double pressureValue ) {
 		return new byte[] {
-				(byte) ( 0b11010000 | ( 0x00001111 & ch )), 
+				(byte) ( 0b11010000 | ( 0b00001111 & ch )), 
 				(byte) ( 255d * pressureValue ), 
 				};
 	}
@@ -81,7 +96,7 @@ public final class MetroMidi {
 //		System.out.println( "pitchBendValue:" + pitchBendValue );
 //		pitchBendValue += 0x2000;
 		return new byte[] {
-				(byte) ( 0b11100000 | ( 0x00001111 & ch )), 
+				(byte) ( 0b11100000 | ( 0b00001111 & ch )), 
 				(byte) ( 0b01111111 & pitchBendValue ), 
 				(byte) ( 0b01111111 & ( pitchBendValue >>> 7 ) ), 
 				}; 
