@@ -414,26 +414,26 @@
         (proc-add   (lambda(op  vl)
                       ; Delete the type node in the msg note.
                       (let ((vl (alist-delete 'type vl eq?))
-                            (pair (or (assq 'tmp-len op)
-                                      (cons 'tmp-len 0)))
+                            (p (or (assq 'tmp-len op)
+                                   (cons 'tmp-len 0)))
                             )
-                        (display pair)
+                        (display p)
                         (newline)
 
                         ; Sum values of 'tmp-len then set it to the cell.
-                        (set-cdr! pair 
-                                   (fold (lambda(e val)
-                                           (if (eq? 'tmp-len (car e))
-                                             (+ val (cdr e))
-                                             val)
-                                           ) 
-                                         (cdr pair) 
-                                         vl))
+                        (set-cdr! p 
+                                  (fold (lambda(e val)
+                                          (if (eq? 'tmp-len (car e))
+                                            (+ val (cdr e))
+                                            val)
+                                          ) 
+                                        (cdr p) 
+                                        vl))
 
                         ; Replace 'tmp-len pair with the pair and return it.
                         (append
                           (alist-delete 'tmp-len op eq?)
-                          (list pair))
+                          (list p))
                         )))
         )
     ; There are two main loop here.
@@ -515,7 +515,7 @@
                       ((eq? 'r (car notes))
                        (list
                          (cons 'type 'tmp-rest )
-                         (cons 'proc proc-add )
+                         ; (cons 'proc proc-add )
                          ))
 
                       ; sustain (rational)
@@ -523,35 +523,35 @@
                            (eq? 'sr (car notes)))
                        (list
                          (cons 'type 'tmp-sus-r )
-                         (cons 'proc proc-add )
+                         ; (cons 'proc proc-add )
                          ))
 
                       ; sustain (constant)
                       ((eq? 'sc (car notes))
                        (list
                          (cons 'type 'tmp-sus-c )
-                         (cons 'proc proc-add )
+                         ; (cons 'proc proc-add )
                          ))
                       ; tie
                       ((eq? '- (car notes))
                        (list
                          (cons 'type 'tmp-tie )
                          (cons 'tie #t)
-                         (cons 'proc proc-add )
+                         ; (cons 'proc proc-add )
                          ))
 
                       ; chord on
                       ((eq? '< (car notes))
                        (list
                          (cons 'type 'tmp-chord-on )
-                         (cons 'proc proc-add )
+                         ; (cons 'proc proc-add )
                          ))
 
                       ; chord off
                       ((eq? '> (car notes))
                        (list
                          (cons 'type 'tmp-chord-off )
-                         (cons 'proc proc-add )
+                         ; (cons 'proc proc-add )
                          ))
 
                       ; note
@@ -563,7 +563,7 @@
                                                         (format "~a" (car notes)))))))
                           (list
                             (cons 'type 'note )
-                            (cons 'proc proc-add)
+                            ; (cons 'proc proc-add)
                             (cons 'tmp-interval  
                                   (cdr (assq 'interval (cdr note-pair))))
                             ; (cons 'tmp-transpose transpose)
@@ -619,15 +619,15 @@
                           ; Go to the next element.
                           (let ((tmp (loop-result 
                                        (cdr result)
-                                       ; (append result-note 
-                                       ;         ; delete the type node in the msg note.
-                                       ;         (alist-delete 'type (car result) eq?))
-                                       (apply
-                                         (cdr (or (assq 'proc result-note)
-                                                  (lambda args (raise "internal error : no proc was found" ))))
-                                         (list
-                                           result-note
-                                           (car result)))
+                                       (append result-note 
+                                               ; delete the type node in the msg note.
+                                               (alist-delete 'type (car result) eq?))
+                                       ; (apply
+                                       ;   (cdr (or (assq 'proc result-note)
+                                       ;            (lambda args (raise "internal error : no proc was found" ))))
+                                       ;   (list
+                                       ;     result-note
+                                       ;     (car result)))
                                        )))
                             (if debug-parse-notes (begin
                                                     (display 'loop-result)
@@ -675,33 +675,78 @@
   (let ((result in-notes ))
 
     ; sum all tmp-direction values on the cons cells.
-    (set! result (let loop ((notes result))
-                   (if (null? notes)
-                     '()
-                     ; if the element is a note, 
-                     (if (eq? 'note (cdr (or (assq 'type (car notes) )
-                                             (cons 'type #f))))
-                       (begin
-                         (cons
-                           (let ((summed-direction #f))
-                             (append (filter-map (lambda (e)
-                                                   (if (eq? (car e) 'tmp-direction)
-                                                     (begin
-                                                       (set! summed-direction 
-                                                         (if summed-direction
-                                                           (+ summed-direction (cdr e ))
-                                                           (cdr e )
-                                                           ))
-                                                       #f)
-                                                     (begin
-                                                       e))) (car notes))
-                                     (list
-                                       (cons 'tmp-direction summed-direction))))
-                           (loop (cdr notes))))
-                       (begin
-                         (cons
-                           (car notes)
-                           (loop (cdr notes))))))))
+    (if #f
+      (set! result (let loop ((notes result))
+                     (if (null? notes)
+                       '()
+                       ; if the element is a note, 
+                       (if (eq? 'note (cdr (or (assq 'type (car notes) )
+                                               (cons 'type #f))))
+                         (begin
+                           (cons
+                             (let ((summed-direction #f))
+                               (append (filter-map (lambda (e)
+                                                     (if (eq? (car e) 'tmp-direction)
+                                                       (begin
+                                                         (set! summed-direction 
+                                                           (if summed-direction
+                                                             (+ summed-direction (cdr e ))
+                                                             (cdr e )
+                                                             ))
+                                                         #f)
+                                                       (begin
+                                                         e))) (car notes))
+                                       (list
+                                         (cons 'tmp-direction summed-direction))))
+                             (loop (cdr notes))))
+                         (begin
+                           (cons
+                             (car notes)
+                             (loop (cdr notes)))))))))
+
+    (display 'result0)
+    (display result)
+    (newline)
+    (let ((sub-proc (lambda (key-name in-notes)
+                      (let loop ((notes in-notes))
+                        (if (null? notes)
+                          '()
+                          (cons
+                            (let ((note (car notes)))
+                              (display 'notes00)
+                              (display note)
+                              (newline)
+                              (if (eq? 'note (cdr (or (assq 'type note )
+                                                      (cons 'type #f))))
+                                ; Recreate a note
+                                (let ((sum 
+                                        (fold (lambda (e sum)
+                                                (if (eq? (car e) key-name )
+                                                  (+ (cdr e ) (if sum sum 0))
+                                                  sum))
+                                              #f 
+                                              note))
+                                      (modified-note
+                                        (filter (lambda (e)  
+                                                  (not (eq? (car e) key-name )))
+                                                note)))
+                                  ; if no key-name was found, this will be #f; 
+                                  ; otherwise `sum` will be a number.
+                                  (if sum 
+                                    (append 
+                                      modified-note
+                                      (list (cons key-name sum )))
+
+                                    modified-note))
+                                ; do nothing and return the note 
+                                note ))
+                            (loop (cdr notes))))))))
+      (set! result (sub-proc 'tmp-len       result))
+      ; (set! result (sub-proc 'tmp-direction result))
+      )
+    (display 'result1)
+    (display result)
+    (newline)
 
     ; calculate note values
     (set! result (let* ((state-octave              4)
@@ -997,6 +1042,11 @@
                               ))
 
                            ))))))
+
+    (display 'result2)
+    (display result)
+    (newline)
+
     ; delete tmp elements
     (set! result (let loop ((notes result))
                    (if (null? notes)
