@@ -48,11 +48,11 @@ public class MetroNoteEventBuffer implements Iterable<MetroAbstractEvent>{
 		return length;
 	}
 	public void setLength(double length) {
-//		System.out.println( "length" + length );
+		System.out.println( "setLength():" + length );
 		this.length = length;
 	}
 	public double getActualLength() {
-		double max = -1;
+		double max = 0;
 		for ( MetroAbstractEvent e : this )
 			if ( max < e.offset ) 
 				max = e.offset;
@@ -82,7 +82,7 @@ public class MetroNoteEventBuffer implements Iterable<MetroAbstractEvent>{
 			e.calcInFrames( barInFrames );
 		}
 //		System.out.println( "this.length " + this.length  );
-		this.lengthInFrames = (int) (this.length * barInFrames);
+		this.lengthInFrames = (int) (this.length * (double)barInFrames);
 		if ( DEBUG ) logInfo( "MetroMidiEventBuffer.calcInFrames() barInFrames="  + barInFrames + " / lengthInFrames=" + this.lengthInFrames  + "/ length=" + this.length);
 	}
 	

@@ -95,6 +95,7 @@ public class SchemePulsarLogic extends MetroLogic {
 		try {
 			result = scheme2buf(metro, sequence, scheme, procedure, buf);
 		} catch ( RuntimeException e ) {
+			System.err.println(e );
 			LOGGER.log(Level.SEVERE, "", e);
 		}
 		return result;

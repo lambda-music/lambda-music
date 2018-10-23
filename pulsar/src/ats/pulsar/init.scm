@@ -89,11 +89,20 @@
   (symbol? (caar e)))
 
 (define (n-implementation append-proc . args)
+  (display 'append-proc)
+  (display append-proc)
+  (newline)
+  (display 'args)
+  (display args)
+  (newline)
   (let-values (((params notes) 
                 (let loop ((idx 0)
                            (args args)
                            (params '())
                            (notes '()))
+                  (display 'append-proc-args)
+                  (display args)
+                  (newline)
                   (if (null? args)
                     (values params notes)
                     (let ((e (car args)))
@@ -135,11 +144,17 @@
                                note ))))
                        notes )))))
 
+; note
 (define (n . args)
   (apply n-implementation (cons append args )))
 
+; parallel
+(define (p . args)
+  (apply n-implementation (cons append args )))
+
+; serial
 (define (s . args)
-  (apply n-implementation (cons append-notes args )))
+  (apply append-notes args))
 
 
 
@@ -782,7 +797,8 @@
                        ; end of the loop
                        (cons
                          (list (cons 'type  'len )
-                               (cons 'value state-position ))
+                               ; CAUTION : 'val not 'value (Tue, 23 Oct 2018 14:25:27 +0900)
+                               (cons 'val state-position ))
                          '())
 
                        ; the loop proc
@@ -1082,6 +1098,8 @@
       #f)))
 
 (define (append-notes . args )
+  (display args)
+  (newline)
   (let-values (((notes len)
                 (let loop ((bars args)
                            (pos 0 ))
@@ -1095,7 +1113,7 @@
                                              (mov! pos (car bars))
                                               notes)
                                             len))
-                        (raise "no length note was found" )))))))
+                        (raise "no note which type is 'len was found" )))))))
               (append
                (filter (lambda(note)
                          (not (eq? 'len (cdr (or (assq 'type note )
@@ -1104,7 +1122,8 @@
                 (list
                  (list
                   (cons 'type 'len)
-                  (cons 'value len)))
+                  ; CAUTION : 'val not 'value (Tue, 23 Oct 2018 14:25:27 +0900)
+                  (cons 'val len)))
                 )))
 
 #| 
@@ -1154,6 +1173,7 @@
 (define len (lambda (value) 
   (list
     (cons 'type 'len) 
+    ; CAUTION : 'val not 'value (Tue, 23 Oct 2018 14:25:27 +0900)
     (cons 'val  value ))))
 
 
@@ -1290,9 +1310,42 @@
 |#
 
 (define send-counter 0)
+(define (get-send-counter)
+  (set! send-counter (+ 1 send-counter))
+  (string->symbol
+    (string-append 
+      "seq-" 
+      (number->string send-counter))))
+
+(define (send! p #!key (name #f) (start #f) (end #f) )
+  (if (not name)
+    (set! name (get-send-counter)))
+  ;p ... current pos
+  ;c ... counter
+  (let ((cp p)
+        (c 0))
+    (put-seq! name (lambda ()
+                     (if (or (not (pair? cp))
+                             (null? cp)
+                             (and end (<= end c)))
+
+                       ; end the loop
+                       (list 
+                         (n type: 'end )
+                         (n type: 'len val: 5 ))
+
+                       ; value ...  ;current value
+                       (let ((value (car cp)))
+                         (set! cp (cdr cp))
+                         (set! c (+ 1 c ))
+                         value)
+                       ))
+              'immediate)))
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define send! (lambda (x)
+(define send2! (lambda (x)
                 (set! send-counter (+ 1 send-counter))
                 (let ((id 
                         (string->symbol

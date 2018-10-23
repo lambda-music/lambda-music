@@ -305,8 +305,9 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 //			}
 			
 			this.cursor = nextCursor;
-			this.lastLengthInFrame = lengthInFrames; 
-			if ( Metro.DEBUG )
+			this.lastLengthInFrame = lengthInFrames;
+			
+			if ( Metro.DEBUG && false)
 				logInfo( currentCursor + "/" + (this.buffers.isEmpty() ? "empty" : this.buffers.peek().getLengthInFrames()  ));
 		}
 	}
@@ -441,6 +442,8 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 				} else {
 					this.ending = true;
 					this.endingLength = buf.getActualLength();
+					if ( this.endingLength < 1 )
+						this.endingLength = 1;
 				}
 				// buf.dump();
 			}

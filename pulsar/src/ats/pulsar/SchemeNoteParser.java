@@ -273,9 +273,11 @@ public class SchemeNoteParser {
 		}
 		@Override
 		boolean parseEvent(Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
-			double value    = map.containsKey( ID_VALUE ) ? SchemeUtils.toDouble( map.get( ID_VALUE ) ) : 1.0d;
-			if ( value < 0 )
+			double value    = map.containsKey( ID_VALUE ) ? SchemeUtils.toDouble( map.get( ID_VALUE ) ) : -1.0d;
+			if ( value < 0 ) {
+				LOGGER.log( Level.WARNING, "a len note was found but 'val was missing. This probably a bug." );
 				value = 0.0d;
+			}
 
 			outputBuffer.setLength( value );
 			return result;
