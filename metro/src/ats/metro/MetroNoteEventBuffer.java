@@ -48,7 +48,7 @@ public class MetroNoteEventBuffer implements Iterable<MetroAbstractEvent>{
 		return length;
 	}
 	public void setLength(double length) {
-		System.out.println( "setLength():" + length );
+		logInfo( "setLength():" + length );
 		this.length = length;
 	}
 	public double getActualLength() {

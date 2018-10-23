@@ -85,7 +85,7 @@ public abstract class PulsarScratchPad extends JFrame {
 		LOGGER.log(Level.SEVERE, msg, e);
 		//		System.err.println( msg );
 	}
-	static void logInfo( String msg ) {
+	static void logInfo( Object msg ) {
 		//        Logger.getLogger(Pulsar.class.getName()).log(Level.INFO, msg);
 		System.err.println( msg );
 	}
@@ -137,16 +137,16 @@ public abstract class PulsarScratchPad extends JFrame {
 			@Override
 			public void run() {
 				try {
-					System.out.println("run");
+					LOGGER.log( Level.INFO, "run");
 					r.run();
 				} finally {
-					System.out.println("end");
+					logInfo("end");
 					removeScratchPadThread( this );
 				}
 			}
 			@Override
 			public void interrupt() {
-				System.out.println("interrupted");
+				logInfo("interrupted");
 				super.interrupt();
 			}
 		}
@@ -167,12 +167,12 @@ public abstract class PulsarScratchPad extends JFrame {
 			}
 		}
 		public void interruptScratchPadThreads() {
-			System.out.println("interruptScratchPadThreads");
+			logInfo("interruptScratchPadThreads");
 			synchronized ( scratchPadThreadList ) {
 				for ( Thread t : scratchPadThreadList ) {
-					System.out.println( "interrupt start" );
+					logInfo( "interrupt start" );
 					t.interrupt();
-					System.out.println( "interrpt end" );
+					logInfo( "interrpt end" );
 				}
 			}
 		}
@@ -614,7 +614,7 @@ public abstract class PulsarScratchPad extends JFrame {
 			synchronized ( scheme ) {
 				try {
 //					Environment.setCurrent( Environment.getGlobal()  );
-//					System.out.println( "invokeEventHandler" + frame.frameName );
+//					logInfo( "invokeEventHandler" + frame.frameName );
 					
 					SchemeUtils.putVar( scheme, "scheme", scheme );
 					SchemeUtils.putVar( scheme, "frame",  frame );
@@ -809,7 +809,7 @@ public abstract class PulsarScratchPad extends JFrame {
 			Action newInsertBreakAction = new TextAction( DefaultEditorKit.insertBreakAction ) {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-//					System.out.println("YEAH!");
+//					logInfo("YEAH!");
 		            JTextComponent target = getTextComponent(e);
 		            if (target != null) {
 		                if ((! target.isEditable()) || (! target.isEnabled())) {
@@ -869,7 +869,7 @@ public abstract class PulsarScratchPad extends JFrame {
 		}
 
 		public void actionPerformed(ActionEvent actionEvent) {
-			System.out.println( "do UNDO" );
+			logInfo( "do UNDO" );
 			try {
 				undoManager.undo();
 			} catch (CannotUndoException e) {
@@ -893,7 +893,7 @@ public abstract class PulsarScratchPad extends JFrame {
 			super(name,manager);
 		}
 		public void actionPerformed(ActionEvent actionEvent) {
-			System.out.println( "do REDO" );
+			logInfo( "do REDO" );
 			try {
 				undoManager.redo();
 			} catch (CannotRedoException e) {
@@ -941,7 +941,7 @@ public abstract class PulsarScratchPad extends JFrame {
          * @param e the action event
          */
         public void actionPerformed(ActionEvent e) {
-        	System.out.println("PulsarScratchPad.PasteAction.actionPerformed()");
+        	logInfo("PulsarScratchPad.PasteAction.actionPerformed()");
             JTextComponent target = getTextComponent(e);
             if (target != null) {
             	try {
@@ -972,7 +972,7 @@ public abstract class PulsarScratchPad extends JFrame {
 			JTextPane target = (JTextPane) getTextComponent(e);
             if ((target != null) && (e != null)) {
                 String content = e.getActionCommand();
-//                System.out.println( "typed : " + content );
+//                logInfo( "typed : " + content );
                 switch ( content ) {
                 	case " " :
                 		undoManager.startGroup();
@@ -981,7 +981,7 @@ public abstract class PulsarScratchPad extends JFrame {
                 	case "(" :
                 	case ")" :
                 		int pos = textPane.getCaretPosition() -1;
-                		System.out.println( "caret : " + pos );
+                		logInfo( "caret : " + pos );
                 		SwingUtilities.invokeLater(new Runnable() {
 							@Override
 							public void run() {
@@ -1038,7 +1038,7 @@ public abstract class PulsarScratchPad extends JFrame {
 //		purgeKeyFromActionMap( textPane.getActionMap(), DefaultEditorKit.insertContentAction );
 //		textPane.getActionMap().put(DefaultEditorKit.defaultKeyTypedAction, newKeyTypedAction );
 //		for ( Object o : textPane.getActionMap().getParent().getParent(). allKeys() ) {
-//			System.out.println(o );
+//			logInfo(o );
 //		}
 //		textPane.getActionMap().put("UNDO", UNDO_ACTION );
 //		textPane.getActionMap().put("REDO", REDO_ACTION );
@@ -1239,13 +1239,13 @@ public abstract class PulsarScratchPad extends JFrame {
 			System.err.println( "-------------------------" );
 			for ( Object o : textPane.getActionMap().getParent().allKeys() ) {
 				if ( o != null )
-					System.out.println( o.toString() );
+					logInfo( o.toString() );
 			}
 			System.err.println( "==========================" );
 			
 			for ( Object o : textPane.getActionMap().allKeys() ) {
 				if ( o != null )
-					System.out.println( o.toString() );
+					logInfo( o.toString() );
 			}
 		}
 	}
@@ -1323,7 +1323,7 @@ public abstract class PulsarScratchPad extends JFrame {
 		// Dump
 		if ( false ) 
 			for ( Object o : actionMap.allKeys() ) {
-				System.out.println(o );
+				logInfo(o );
 			}
 		
 		actionMap.get( DefaultEditorKit.deletePrevCharAction ).putValue(Action2.NAME, "Backspace");
