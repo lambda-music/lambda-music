@@ -232,7 +232,7 @@ public class SchemeNoteParser {
 			if ( duration < 0 )
 				duration = 0.0025d;
 
-			System.out.println( channel );
+//			System.out.println( channel );
 
 //			outputBuffer.noteHit( offset, port, channel, note, velocity, length );
 			outputBuffer.midiEvent(offset             , port, MetroMidi.noteOn (channel, note, velocity ) );

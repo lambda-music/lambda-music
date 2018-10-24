@@ -88,21 +88,25 @@
 (define (note? e)
   (symbol? (caar e)))
 
+(define debug-n-implementation #f)
 (define (n-implementation append-proc . args)
-  (display 'append-proc)
-  (display append-proc)
-  (newline)
-  (display 'args)
-  (display args)
-  (newline)
+  (if debug-n-implementation (begin
+                               (display 'append-proc)
+                               (display append-proc)
+                               (newline)
+                               (display 'args)
+                               (display args)
+                               (newline)))
   (let-values (((params notes) 
                 (let loop ((idx 0)
                            (args args)
                            (params '())
                            (notes '()))
-                  (display 'append-proc-args)
-                  (display args)
-                  (newline)
+                  (if debug-n-implementation (begin
+                                               (display 'append-proc-args)
+                                               (display args)
+                                               (newline)
+                                               ))
                   (if (null? args)
                     (values params notes)
                     (let ((e (car args)))
@@ -413,7 +417,7 @@
  |#
 
 
-(define debug-parse-notes #t)
+(define debug-parse-notes #f)
 
 (define (parse-notes notes)
   #|
@@ -432,8 +436,10 @@
                             (p (or (assq 'tmp-len op)
                                    (cons 'tmp-len 0)))
                             )
-                        (display p)
-                        (newline)
+                        (if debug-parse-notes (begin
+                                                (display p)
+                                                (newline)
+                                                ))
 
                         ; Sum values of 'tmp-len then set it to the cell.
                         (set-cdr! p 
@@ -719,18 +725,23 @@
                              (car notes)
                              (loop (cdr notes)))))))))
 
-    (display 'result0)
-    (display result)
-    (newline)
+    (if debug-translate-notes (begin
+                                (display 'result0)
+                                (display result)
+                                (newline)
+                                ))
+
     (let ((sub-proc (lambda (key-name in-notes)
                       (let loop ((notes in-notes))
                         (if (null? notes)
                           '()
                           (cons
                             (let ((note (car notes)))
-                              (display 'notes00)
-                              (display note)
-                              (newline)
+                              (if debug-translate-notes (begin
+                                                          (display 'notes00)
+                                                          (display note)
+                                                          (newline)
+                                                          ))
                               (if (eq? 'note (cdr (or (assq 'type note )
                                                       (cons 'type #f))))
                                 ; Recreate a note
@@ -759,9 +770,12 @@
       (set! result (sub-proc 'tmp-len       result))
       ; (set! result (sub-proc 'tmp-direction result))
       )
-    (display 'result1)
-    (display result)
-    (newline)
+
+    (if debug-translate-notes (begin
+                                (display 'result1)
+                                (display result)
+                                (newline)
+                                ))
 
     ; calculate note values
     (set! result (let* ((state-octave              4)
@@ -1059,9 +1073,11 @@
 
                            ))))))
 
-    (display 'result2)
-    (display result)
-    (newline)
+    (if debug-translate-notes (begin
+                                (display 'result2)
+                                (display result)
+                                (newline)
+                                ))
 
     ; delete tmp elements
     (set! result (let loop ((notes result))
@@ -1097,9 +1113,13 @@
                (cons 'value #f)))
       #f)))
 
+(define debug-append-notes #f)
+
 (define (append-notes . args )
-  (display args)
-  (newline)
+  (if debug-append-notes (begin
+                           (display args)
+                           (newline)
+                           ))
   (let-values (((notes len)
                 (let loop ((bars args)
                            (pos 0 ))
