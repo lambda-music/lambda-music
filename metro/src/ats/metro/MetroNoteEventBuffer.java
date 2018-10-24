@@ -42,7 +42,9 @@ public class MetroNoteEventBuffer implements Iterable<MetroAbstractEvent>{
 
 	private double offset;
 	private double length = 1.0d;
-	protected int lengthInFrames;
+	private boolean prepared = false;
+	private int barInFrames=-1;
+	private int lengthInFrames=-1;
 	private final List<MetroAbstractEvent> list = new ArrayList<MetroAbstractEvent>(10);
 	public double getLength() {
 		return length;
@@ -65,7 +67,14 @@ public class MetroNoteEventBuffer implements Iterable<MetroAbstractEvent>{
 	public double getOffset() {
 		return offset;
 	}
+	public int getBarInFrames() {
+		if ( ! prepared )
+			throw new RuntimeException("not prepared");
+		return barInFrames;
+	}
 	public int getLengthInFrames() {
+		if ( ! prepared )
+			throw new RuntimeException("not prepared");
 		return lengthInFrames;
 	}
 	
@@ -82,7 +91,9 @@ public class MetroNoteEventBuffer implements Iterable<MetroAbstractEvent>{
 			e.calcInFrames( barInFrames );
 		}
 //		System.out.println( "this.length " + this.length  );
+		this.barInFrames = barInFrames;
 		this.lengthInFrames = (int) (this.length * (double)barInFrames);
+		this.prepared = true;
 //		if ( DEBUG ) logInfo( "MetroMidiEventBuffer.calcInFrames() barInFrames="  + barInFrames + " / lengthInFrames=" + this.lengthInFrames  + "/ length=" + this.length);
 		             logInfo( "MetroMidiEventBuffer.calcInFrames() barInFrames="  + barInFrames + " / lengthInFrames=" + this.lengthInFrames  + "/ length=" + this.length);
 	}

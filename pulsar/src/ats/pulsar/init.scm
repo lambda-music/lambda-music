@@ -756,7 +756,7 @@
                                         (filter (lambda (e)  
                                                   (not (eq? (car e) key-name )))
                                                 note)))
-                                  ; if no key-name was found, this will be #f; 
+                                  ; if no key-name was found, `sum` will be #f; 
                                   ; otherwise `sum` will be a number.
                                   (if sum 
                                     (append 
@@ -1013,6 +1013,22 @@
                                  ; correction B ... do octave correction
                                  (if (< direction 0 )
                                    (set! direction (+ direction 1)))))
+                              
+                              (display (format 
+                                         "\
+                                         interval: ~a
+                                         state-interval: ~a
+                                         input-direction: ~a
+                                         state-direction: ~a
+                                         direction: ~a
+                                         "
+                                         interval
+                                         state-interval
+                                         input-direction
+                                         state-direction
+                                         direction
+                                         ))
+                              (newline)
 
                               ; calculate note value
                               (set! octave
@@ -1022,8 +1038,13 @@
 
                               ; store the current values
                               (set! state-octave   octave)
-                              (if (not interval ) ; just see what's happening (Wed, 17 Oct 2018 15:07:14 +0900)
+
+                              ; (if (not interval ) ; just see what's happening (Wed, 17 Oct 2018 15:07:14 +0900)
+                              ;   (set! state-interval interval))
+
+                              (if interval 
                                 (set! state-interval interval))
+
                               (if input-direction 
                                 (set! state-direction input-direction))
 

@@ -30,6 +30,8 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 	public enum SyncType {
 		IMMEDIATE, PARALLEL, SERIAL,  
 	}
+	
+	
 	/**
 	 * 
 	 */
@@ -43,6 +45,7 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 
 	// static final int BUFFER_SIZE = 2;
 	private static final int BUFFER_SIZE = 2;
+	private static final double MARGIN_LENGTH = 2;   
 
 	int id = (int) (Math.random()* Integer.MAX_VALUE);
 
@@ -51,7 +54,7 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 	private transient double syncOffset=0.0d;
 	private BlockingQueue<MetroNoteEventBuffer> buffers = new LinkedBlockingQueue<>();
 	protected transient int cursor = 0;
-	protected transient int lastLengthInFrame = 0;
+	protected transient int lastLengthInFrames = 0;
 	protected final MetroLogic logic;
 	transient boolean ending = false;
 	transient double endingLength = 0;
@@ -106,10 +109,10 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 	}
 	@Override
 	public double getPosition() {
-		if ( lastLengthInFrame < 0 || cursor < 0) {
+		if ( lastLengthInFrames < 0 || cursor < 0) {
 			return 0;
 		} else {
-			return (double)cursor / (double)lastLengthInFrame;
+			return (double)cursor / (double)lastLengthInFrames;
 		}
 	}
 
@@ -168,7 +171,8 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 	 */
 
 
-	protected void progressCursor( int nframes, List<MetroMidiEvent> result ) throws JackException {
+	static int BUFFER_REMOVAL_STRATEGY = 3;
+	protected void progressCursor2( int nframes, List<MetroMidiEvent> result ) throws JackException {
 		synchronized ( this.buffers ) {
 			this.metro.clearAllPorts();
 
@@ -269,34 +273,94 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 			//		for ( int i=0; i< accrossCount; i++ )
 			//		this.buffers.poll();
 			
-			int lengthInFrames=-1;
-			for (;;) {
+			switch ( BUFFER_REMOVAL_STRATEGY ) {
+				case 1 : {
+					int lengthInFrames=-1;
+					for (;;) {
+						if ( this.buffers.isEmpty() )
+							break;
 				
-				// version 1
-				// if ( this.buffers.isEmpty() )
-				//	break;
-				// lengthInFrames = this.buffers.peek().getLengthInFrames();
+						lengthInFrames = this.buffers.peek().getLengthInFrames();
 
-				// version 2 >>>
-				if ( this.buffers.size() < 2 )
+						// XXX 
+						if (  lengthInFrames <  currentCursor ) {
+							currentCursor -= lengthInFrames;
+							nextCursor -= lengthInFrames;
+							this.buffers.poll();
+							metro.notifyCheckBuffer();
+						} else {
+							break;
+						}
+					}
+					this.cursor = nextCursor;
+					this.lastLengthInFrames = lengthInFrames;
 					break;
-
-				{
-					// get the second element
-					Iterator<MetroNoteEventBuffer> it = this.buffers.iterator();
-					it.next();
-					lengthInFrames = it.next().getLengthInFrames();
 				}
-				// <<<
+				case 2 : {
+					int lengthInFrames=-1;
+					for (;;) {
 
-				// XXX 
-				if (  lengthInFrames <  currentCursor ) {
-					currentCursor -= lengthInFrames;
-					nextCursor -= lengthInFrames;
-					this.buffers.poll();
-					metro.notifyCheckBuffer();
-				} else {
+						// version 1
+						// if ( this.buffers.isEmpty() )
+						//	break;
+						// lengthInFrames = this.buffers.peek().getLengthInFrames();
+
+						// version 2 >>>
+						if ( this.buffers.size() < 2 )
+							break;
+
+						{
+							// get the second element
+							Iterator<MetroNoteEventBuffer> it = this.buffers.iterator();
+							it.next();
+							lengthInFrames = it.next().getLengthInFrames();
+						}
+						// <<<
+
+						// XXX 
+						if (  lengthInFrames <  currentCursor ) {
+							currentCursor -= lengthInFrames;
+							nextCursor -= lengthInFrames;
+							this.buffers.poll();
+							metro.notifyCheckBuffer();
+						} else {
+							break;
+						}
+					}
+					this.cursor = nextCursor;
+					this.lastLengthInFrames = lengthInFrames;
 					break;
+				}
+				case 3 : {
+					int lengthInFrames=-1;
+					for (;;) {
+						if ( this.buffers.size() < 2 )
+							break;
+
+						{
+							// get the second element
+							Iterator<MetroNoteEventBuffer> it = this.buffers.iterator();
+							it.next();
+							lengthInFrames = it.next().getLengthInFrames();
+						}
+						// <<<
+
+						// XXX 
+						if (  lengthInFrames <  currentCursor ) {
+							currentCursor -= lengthInFrames;
+							nextCursor -= lengthInFrames;
+							this.buffers.poll();
+							metro.notifyCheckBuffer();
+						} else {
+							break;
+						}
+					}				
+					this.cursor = nextCursor;
+					this.lastLengthInFrames = lengthInFrames;
+					break;
+				}
+				default : {
+					throw new Error("internal error");
 				}
 			}
 
@@ -304,8 +368,114 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 //				logInfo( "cursor(after): " + this.cursor );
 //			}
 			
-			this.cursor = nextCursor;
-			this.lastLengthInFrame = lengthInFrames;
+			if ( Metro.DEBUG && false)
+				logInfo( currentCursor + "/" + (this.buffers.isEmpty() ? "empty" : this.buffers.peek().getLengthInFrames()  ));
+		}
+	}
+
+	/* 
+	 * (Sat, 23 Dec 2017 23:16:25 +0900)
+	 * 1. 
+	 * This "if" statement should not be like :
+	 *     buf.getLengthInFrames() <= nextCursor
+	 * This should be :
+	 *     buf.getLengthInFrames() <   nextCursor
+	 *  
+	 * Because there might be a note on the last position.
+	 * This may often be a note off event.
+	 * 
+	 * 2.
+	 *    this.cursor= this.cursor - buf.getLengthInFrames();
+	 *    
+	 * In this statement `this.cursor` could be lower than zero.
+	 * This value is used when when we call JackMidi.eventWrite() afterwards 
+	 * as offset value of the current frame.  
+	 * 
+	 */
+	protected void progressCursor( int nframes, List<MetroMidiEvent> result ) throws JackException {
+		synchronized ( this.buffers ) {
+			this.metro.clearAllPorts();
+
+			int currentCursor = this.cursor;
+			int nextCursor = currentCursor + nframes;
+			
+			// This keeps negative offset value for the current cursor position. 
+			int cursorOffset = 0;
+
+			for ( Iterator<MetroNoteEventBuffer> ibuf = this.buffers.iterator(); ibuf.hasNext(); ) {
+				MetroNoteEventBuffer buf = ibuf.next();
+
+				int actualCursor     = currentCursor - cursorOffset;
+				int actualNextCursor = nextCursor    - cursorOffset;
+				
+				boolean found= false;
+				for ( Iterator<MetroAbstractEvent> ie = buf.iterator(); ie.hasNext();  ) {
+					MetroAbstractEvent e = ie.next();
+					
+					if ( e.between( actualCursor, actualNextCursor ) ) {
+						found = true;
+						if ( e instanceof MetroAbstractMidiEvent ) {
+							MetroAbstractMidiEvent e0 = (MetroAbstractMidiEvent) e;
+							
+							result.add( new MetroMidiEvent( 
+									e0.getOutputPortNo(), 
+									e0.getOffsetInFrames() - actualCursor, 
+									e0.getData() 
+									) );
+						} else if ( e instanceof MetroAbstractSchemeProcedureEvent ) {
+							((MetroAbstractSchemeProcedureEvent)e).execute( metro );
+						} else {
+							LOGGER.log( Level.SEVERE, "Unknown Class " + e.getClass().getName() );
+						}
+					} else {
+						if ( found )
+							break;
+					}
+				}
+
+				cursorOffset = cursorOffset + buf.getLengthInFrames();
+			}
+			
+			{
+				int accumulatedLength = 0;
+				int pollCount = 0;
+				int lastLengthInFrames = -1;
+				for (Iterator<MetroNoteEventBuffer> it = this.buffers.iterator();it.hasNext(); ) {
+					MetroNoteEventBuffer b=it.next();
+					accumulatedLength += b.getLengthInFrames();
+					
+					if (  accumulatedLength < ( currentCursor - (int)(b.getBarInFrames() * MARGIN_LENGTH ) ) ) {
+						pollCount ++;
+					}
+					if ( currentCursor < accumulatedLength ) {
+						lastLengthInFrames = b.getLengthInFrames();
+						break;
+					}
+				}
+				
+				int polledCount = 0;
+				for (Iterator<MetroNoteEventBuffer> it = this.buffers.iterator();;it.hasNext() ) {
+					MetroNoteEventBuffer b = it.next();
+					if ( polledCount < pollCount  ) {
+						polledCount ++;
+						int currentLengthInFrames = b.getLengthInFrames();
+						currentCursor -= currentLengthInFrames;
+						nextCursor -= currentLengthInFrames;
+						it.remove();
+//						this.buffers.poll();
+						logInfo( String.format( "currentLengthInFrames:%d currentCursor:%d ", currentLengthInFrames , currentCursor ) );
+
+					} else {
+						break;
+					}
+				}
+				
+				if ( 0< pollCount )
+					metro.notifyCheckBuffer();
+
+				this.cursor = nextCursor;
+				this.lastLengthInFrames = lastLengthInFrames;
+			}
 			
 			if ( Metro.DEBUG && false)
 				logInfo( currentCursor + "/" + (this.buffers.isEmpty() ? "empty" : this.buffers.peek().getLengthInFrames()  ));
@@ -364,7 +534,7 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 			{
 				MetroNoteEventBuffer headBuffer = this.buffers.peek();
 				if ( headBuffer != null )
-					prevLengthInFrame = headBuffer.lengthInFrames;
+					prevLengthInFrame = headBuffer.getLengthInFrames();
 			}
 				
 			// double ratio = magnifyCursorPosition( prevBeatsPerMinute, beatsPerMinute );
@@ -375,7 +545,7 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 			{
 				MetroNoteEventBuffer headBuffer = this.buffers.peek();
 				if ( headBuffer != null )
-					lengthInFrame = headBuffer.lengthInFrames;
+					lengthInFrame = headBuffer.getLengthInFrames();
 			}
 			
 			double ratio = (double)lengthInFrame / (double)prevLengthInFrame; 
@@ -392,9 +562,21 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 
 	}
 
+	private double getAccumulatedLength() {
+		double accumulatedLength = 0;
+		for ( MetroNoteEventBuffer b : this.buffers ) {
+			accumulatedLength += b.getLength();
+		}
+//		logInfo( "accumulatedLength" + accumulatedLength );
+
+		return accumulatedLength;
+	}
 	protected  void checkBuffer( Metro metro, JackClient client, JackPosition position ) throws JackException {
 		synchronized ( this.buffers ) { // << ADDED synchronided (Sun, 30 Sep 2018 11:45:13 +0900)
-			if ( this.buffers.size() < BUFFER_SIZE ) {
+//			if ( this.buffers.size() < BUFFER_SIZE ) {
+//				this.offerNewBuffer( metro, client, position );
+//			}
+			while ( getAccumulatedLength() < MARGIN_LENGTH * MARGIN_LENGTH ) {
 				this.offerNewBuffer( metro, client, position );
 			}
 		}
