@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +61,11 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
     static void logInfo( String msg ) {
     	System.err.println( msg );
 		// Logger.getLogger(Metro.class.getName()).log(Level.INFO, msg );
+    }
+    static void logWarn( String msg ) {
+    	System.err.println( msg );
+    	new Error().printStackTrace();
+//		 Logger.getLogger(Metro.class.getName()).log(Level.WARNING, msg );
     }
     static void logError( String msg, Throwable e ) {
 		Logger.getLogger(Metro.class.getName()).log(Level.SEVERE, msg, e);
@@ -165,40 +171,63 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	public void putLogic( String name, MetroLogic logic ) {
 		putLogic( name, null, logic, SyncType.PARALLEL, null, 0.0d );
 	}
-
-	public void putLogic( String name, Collection<String> tags, MetroLogic logic, SyncType syncType, Object syncSequenceObj, double syncOffset ) {
-		MetroNoteEventBufferSequence syncSequence;
-		if ( syncSequenceObj == null ) {
-			syncSequence = null;
-		} else if ( syncSequenceObj instanceof MetroNoteEventBufferSequence ) {
-			syncSequence = (MetroNoteEventBufferSequence) syncSequenceObj;
-		} else if ( syncSequenceObj instanceof String ) {
-			syncSequence = searchSequence( (String) syncSequenceObj );
-//			logInfo( "syncSequenceObj" + syncSequenceObj );
-//			logInfo( "syncSequence" + syncSequence );
+	public void putLogic( String name, Collection<String> tags, MetroLogic logic, SyncType syncType, Object syncSequenceObject, double syncOffset ) {
+		putSequence( createSequence( name, tags, logic, syncType, syncSequenceObject, syncOffset ) );
+	}
+	public void putLogic( String name, Collection<String> tags, MetroLogic logic, SyncType syncType, MetroNoteEventBufferSequence syncSequence, double syncOffset ) {
+		putSequence( createSequence( name, tags, logic, syncType, syncSequence, syncOffset ) );
+	}
+	public MetroNoteEventBufferSequence getSequence( Object nameObject ) {
+		if ( nameObject == null ) {
+			return null;
+		} else if ( nameObject instanceof MetroNoteEventBufferSequence ) {
+			return (MetroNoteEventBufferSequence) nameObject;
+		} else if ( nameObject instanceof String ) {
+			return searchSequence( (String) nameObject );
 		} else {
 			throw new RuntimeException( "Unsupported object on syncSequence" );
 		}
-		
-		MetroNoteEventBufferSequence sequence = createSequence(name, tags, logic, syncType, syncOffset, syncSequence);
-		logic.setPlayer( sequence );
+	}
+	public MetroNoteEventBufferSequence getSequence( String name ) {
+		return searchSequence( name );
+	}
+	public void putSequence( MetroNoteEventBufferSequence sequence ) {
 		registerSequence( sequence );
 	}
-	public MetroNoteEventBufferSequence createSequence( 
+	public void removeSequence( MetroNoteEventBufferSequence sequence ) {
+		unregisterSequence( sequence );
+	}
+	public void removeSequence( String name ) {
+		removeSequence( getSequence( name ) );
+	}
+	public void removeSequence( Object nameObject ) {
+		removeSequence( getSequence( nameObject ) );
+	}
+	public void removeSequenceAll( Collection<MetroNoteEventBufferSequence> sequences ) {
+		unregisterSequenceAll( sequences );
+	}
+
+	public MetroNoteEventBufferSequence createSequence(  
 			String name, Collection<String> tags, MetroLogic logic,
-			SyncType syncType, double syncOffset, MetroNoteEventBufferSequence syncSequence) 
+			SyncType syncType, MetroNoteEventBufferSequence syncSequence, double syncOffset) 
 	{
 		return new MetroNoteEventBufferSequence( this, name, tags, logic, syncType, syncSequence, syncOffset );
 	}
-
-	
+	public MetroNoteEventBufferSequence createSequence(  
+			String name, Collection<String> tags, MetroLogic logic,
+			SyncType syncType, Object syncSequenceObject, double syncOffset) 
+	{
+		MetroNoteEventBufferSequence syncSequence = getSequence( syncSequenceObject ); 
+		return new MetroNoteEventBufferSequence( this, name, tags, logic, syncType, syncSequence, syncOffset );
+	}
 	
 	private MetroNoteEventBufferSequence searchSequence( String name ) {
-		if ( "last!".equals(name )) {
+		if ( "last!".equals( name )) {
 			if ( sequences.size() == 0 ) {
-				logInfo( "searchSequence() WARNING last! was specified but sequence contains no element." );
+				logInfo( "searchSequence() last! null (last! was specified but the current sequence contains no element)" );
 				return null;
 			} else
+				logInfo( "searchSequence() last!" );
 				return sequences.get( sequences.size() -1 );
 		} else {
 			name = name.intern();
@@ -208,21 +237,41 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 					return sequence;
 				}
 			}
-			logInfo( "searchSequence() WARNING \"" + name + "\"  was not found." );
+			logInfo( "searchSequence() null" );
+//			logWarn( "searchSequence() WARNING \"" + name + "\"  was not found." );
 			return null;
 		}
 	}
+	Collection<MetroNoteEventBufferSequence> searchSequenceByTag( String tag ) {
+		ArrayList<MetroNoteEventBufferSequence> list = new ArrayList<>(); 
+		for ( Iterator<MetroNoteEventBufferSequence> i = sequences.iterator(); i.hasNext();  ) {
+			 MetroNoteEventBufferSequence sequence = i.next();
+			 if ( sequence.getPlayerTags().contains( tag ) ) {
+				 list.add( sequence );
+			 }
+		}
+		return list;
+	}
+	
+	public Collection<MetroNoteEventBufferSequence> getSequenceByTag( String tag ) {
+		return searchSequenceByTag(tag);
+	}
+	public Collection<MetroNoteEventBufferSequence> getSequenceByTags( Collection<String> tags ) {
+		HashSet<MetroNoteEventBufferSequence> set = new HashSet<>();
+		for ( String tag : tags ) {
+			set.addAll( searchSequenceByTag( tag ) );
+		}
+		return set;
+	}
 
-	public void removeLogic( String name ) {
-		Iterator<MetroNoteEventBufferSequence> iterator = lookupSequence(name);
+
+	public void removeLogicDirect( String name ) {
+		Iterator<MetroNoteEventBufferSequence> iterator = lookupSequenceDirect(name);
 		if ( iterator != null  ) {
 			iterator.remove();
 		}
 	}
-	public boolean hasLogic( String name ) {
-		return lookupSequence(name) != null;
-	}
-	private Iterator<MetroNoteEventBufferSequence> lookupSequence( String name ) {
+	private Iterator<MetroNoteEventBufferSequence> lookupSequenceDirect( String name ) {
 		name = name.intern();
 		for ( Iterator<MetroNoteEventBufferSequence> i=sequences.iterator(); i.hasNext(); ) {
 			MetroNoteEventBufferSequence sequence = i.next();
@@ -232,20 +281,13 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		}
 		return null;
 	}
-	public void removeAllLogic() {
-		this.sequences.clear();
-	}
-	
+
+
 	public void enableSequenceByTag( String tag, boolean enabled ) {
-		for ( Iterator<MetroNoteEventBufferSequence> i = sequences.iterator(); i.hasNext();  ) {
-			 MetroNoteEventBufferSequence sequence = i.next();
-			 if ( sequence.getPlayerTags().contains( tag ) ) {
-				 sequence.setPlayerEnabled( enabled );
-			 }
+		for ( MetroNoteEventBufferSequence sequence : searchSequenceByTag( tag ) ) {
+			sequence.setPlayerEnabled( enabled );
 		}
 	}
-	
-	
 
 	protected volatile boolean running = false;
     public void open( String clientName ) throws JackException {
@@ -507,9 +549,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
                 }
 //                logInfo( "ev:" + eventCount + " this.outputMidiEventList  : " + this.outputMidiEventList.size() );
         	}
-        		
 
-            
             synchronized ( this.lock ) {
                 if ( 0 < this.inputMidiEventList.size() )
 	            	for ( MetroNoteEventBufferSequence sequence : this.sequences ) {
@@ -541,7 +581,6 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 //    					e.getData(), 
 //    					e.getData().length 
 //    					);
-            	
             }
             
             return true;
@@ -585,6 +624,12 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 			logInfo( "****** DESTROYED a sequence is destroyed " + sequence.id );
 		synchronized ( this.lock ) {
 			this.unregisteredSeqences.add( sequence );
+			this.notifyCheckBuffer();
+		}
+	}
+	protected void unregisterSequenceAll( Collection<MetroNoteEventBufferSequence> sequences ) {
+		synchronized ( this.lock ) {
+			this.unregisteredSeqences.addAll( sequences );
 			this.notifyCheckBuffer();
 		}
 	}

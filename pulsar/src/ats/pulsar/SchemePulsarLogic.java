@@ -7,7 +7,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ats.metro.Metro;
-import ats.metro.MetroInvokable;
 import ats.metro.MetroLogic;
 import ats.metro.MetroMidiEvent;
 import ats.metro.MetroNoteEventBuffer;
@@ -65,8 +64,8 @@ public class SchemePulsarLogic extends MetroLogic {
 	 */
 	final Scheme scheme;
 	
-	final MetroInvokable procedure;
-	public SchemePulsarLogic ( Scheme scheme, MetroInvokable procedure ) {
+	final Invocable procedure;
+	public SchemePulsarLogic ( Scheme scheme, Invocable procedure ) {
 		this.scheme = scheme;
 		this.procedure = procedure;
 	}
@@ -101,7 +100,7 @@ public class SchemePulsarLogic extends MetroLogic {
 		return result;
 	}
 
-	public static boolean scheme2buf( Metro metro, MetroNoteEventBufferSequence sequence, Scheme scheme, MetroInvokable procedure, MetroNoteEventBuffer buf) {
+	public static boolean scheme2buf( Metro metro, MetroNoteEventBufferSequence sequence, Scheme scheme, Invocable procedure, MetroNoteEventBuffer buf) {
 		AbstractSequence<Object> pattern = (AbstractSequence<Object>)procedure.invoke();
 
 		/*
@@ -115,7 +114,7 @@ public class SchemePulsarLogic extends MetroLogic {
 		State state = new State();
 		*/
 	
-		return SchemeNoteParser.parse(scheme, pattern, buf, true );
+		return SchemeNoteParser.parse(metro, scheme, pattern, buf, true );
 	}
 
 	LList asociationList = createPairs( this );

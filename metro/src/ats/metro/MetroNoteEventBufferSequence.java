@@ -36,15 +36,16 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 	 * 
 	 */
 	private final Metro metro;
+	/**
+	 * Note that the String object which is stored in name field must be interned.  
+	 */
 	protected final String name;
 	protected Set<String> tags;
 	protected boolean enabled = true;
 
-	@SuppressWarnings("unused")
 	private static final boolean DEBUG = false;
 
-	// static final int BUFFER_SIZE = 2;
-	private static final int BUFFER_SIZE = 2;
+//	private static final int BUFFER_SIZE = 2;
 	private static final double MARGIN_LENGTH = 2;   
 
 	int id = (int) (Math.random()* Integer.MAX_VALUE);
@@ -55,6 +56,8 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 	private BlockingQueue<MetroNoteEventBuffer> buffers = new LinkedBlockingQueue<>();
 	protected transient int cursor = 0;
 	protected transient int lastLengthInFrames = 0;
+	protected transient int lastAccumulatedLength = 0;
+	
 	protected final MetroLogic logic;
 	transient boolean ending = false;
 	transient double endingLength = 0;
@@ -72,6 +75,7 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 		this.syncSequence = syncSequence;
 		this.syncOffset = syncOffset;
 		
+		logic.setPlayer( this );
 	}
 	
 	@Override
@@ -112,7 +116,7 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 		if ( lastLengthInFrames < 0 || cursor < 0) {
 			return 0;
 		} else {
-			return (double)cursor / (double)lastLengthInFrames;
+			return (double)( cursor - lastAccumulatedLength + lastLengthInFrames )  / (double)lastLengthInFrames;
 		}
 	}
 
@@ -414,6 +418,7 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 					
 					if ( e.between( actualCursor, actualNextCursor ) ) {
 						found = true;
+						// XXX
 						if ( e instanceof MetroAbstractMidiEvent ) {
 							MetroAbstractMidiEvent e0 = (MetroAbstractMidiEvent) e;
 							
@@ -439,7 +444,7 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 			{
 				int accumulatedLength = 0;
 				int pollCount = 0;
-				int lastLengthInFrames = -1;
+				int lengthInFrame = -1;
 				for (Iterator<MetroNoteEventBuffer> it = this.buffers.iterator();it.hasNext(); ) {
 					MetroNoteEventBuffer b=it.next();
 					accumulatedLength += b.getLengthInFrames();
@@ -448,13 +453,13 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 						pollCount ++;
 					}
 					if ( currentCursor < accumulatedLength ) {
-						lastLengthInFrames = b.getLengthInFrames();
+						lengthInFrame = b.getLengthInFrames();
 						break;
 					}
 				}
 				
 				int polledCount = 0;
-				for (Iterator<MetroNoteEventBuffer> it = this.buffers.iterator();;it.hasNext() ) {
+				for (Iterator<MetroNoteEventBuffer> it = this.buffers.iterator();it.hasNext(); ) {
 					MetroNoteEventBuffer b = it.next();
 					if ( polledCount < pollCount  ) {
 						polledCount ++;
@@ -463,7 +468,8 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 						nextCursor -= currentLengthInFrames;
 						it.remove();
 //						this.buffers.poll();
-						logInfo( String.format( "currentLengthInFrames:%d currentCursor:%d ", currentLengthInFrames , currentCursor ) );
+						if (DEBUG)
+							logInfo( String.format( "currentLengthInFrames:%d currentCursor:%d ", currentLengthInFrames , currentCursor ) );
 
 					} else {
 						break;
@@ -474,7 +480,8 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 					metro.notifyCheckBuffer();
 
 				this.cursor = nextCursor;
-				this.lastLengthInFrames = lastLengthInFrames;
+				this.lastLengthInFrames = lengthInFrame;
+				this.lastAccumulatedLength = accumulatedLength;
 			}
 			
 			if ( Metro.DEBUG && false)
@@ -630,5 +637,17 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 				// buf.dump();
 			}
 		}
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if ( obj instanceof MetroNoteEventBufferSequence ) {
+			return ((MetroNoteEventBufferSequence)obj).name == this.name;
+		} else {
+			return false;
+		}
+	}
+	@Override
+	public int hashCode() {
+		return this.name.hashCode() * 2;
 	}
 } 

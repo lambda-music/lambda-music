@@ -1,17 +1,16 @@
 package ats.pulsar;
 
-import ats.metro.MetroInvokable;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 
-final class InvokableSchemeProcedure implements MetroInvokable {
+class InvocableSchemeProcedure implements Invocable {
 	private final Object syncObj;
 	private Environment environment;
 	private final Procedure procedure;
 //	InvokableSchemeProcedure( Object syncObj, Procedure procedure ) {
 //		this( syncObj, Environment.getCurrent(), procedure );
 //	}
-	InvokableSchemeProcedure( Object syncObj, Environment environment, Procedure procedure ) {
+	InvocableSchemeProcedure( Object syncObj, Environment environment, Procedure procedure ) {
 		this.syncObj = syncObj;
 		this.environment = environment;
 		this.procedure = procedure;

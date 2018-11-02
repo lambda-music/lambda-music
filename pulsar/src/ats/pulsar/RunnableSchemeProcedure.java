@@ -1,9 +1,9 @@
 package ats.pulsar;
 
 final class RunnableSchemeProcedure implements Runnable {
-	final InvokableSchemeProcedure procedure;
+	final InvocableSchemeProcedure procedure;
 	final Object[] args;
-	RunnableSchemeProcedure( InvokableSchemeProcedure procedure , Object ... args ) {
+	RunnableSchemeProcedure( InvocableSchemeProcedure procedure , Object ... args ) {
 		this.procedure = procedure;
 		this.args = args;
 	}

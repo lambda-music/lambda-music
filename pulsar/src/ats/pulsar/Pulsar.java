@@ -26,7 +26,6 @@ import javax.swing.Timer;
 import org.jaudiolibs.jnajack.JackException;
 
 import ats.metro.Metro;
-import ats.metro.MetroInvokable;
 import ats.metro.MetroNoteEventBufferSequence;
 import ats.metro.MetroNoteEventBufferSequence.SyncType;
 import ats.pulsar.lib.MersenneTwisterFast;
@@ -158,14 +157,14 @@ public final class Pulsar extends Metro {
 	 * sequencer and effectively this method starts a song. Whenever a user call
 	 * {@link Pulsar#rewind()}, this procedure will be invoked.
 	 */
-	transient MetroInvokable mainProcedure = null;
+	transient Invocable mainProcedure = null;
 
 	/**
 	 * Sets the main-procedure object.
 	 * 
 	 * @see Pulsar#mainProcedure 
 	 */
-	public void setMainProcedure( MetroInvokable mainProcedure ) {
+	public void setMainProcedure( Invocable mainProcedure ) {
 		this.mainProcedure = mainProcedure;
 	}
 	
@@ -174,7 +173,7 @@ public final class Pulsar extends Metro {
 	 * 
 	 * @see Pulsar#mainProcedure 
 	 */
-	public MetroInvokable getMainProcedure() {
+	public Invocable getMainProcedure() {
 		return mainProcedure;
 	}
 	
@@ -185,13 +184,13 @@ public final class Pulsar extends Metro {
 	 * the sequencer goes to next region. When users call {@link Pulsar#cue() },
 	 * this procedure is invoked. 
 	 */
-	transient MetroInvokable cueProcedure = null;
+	transient Invocable cueProcedure = null;
 	/**
 	 * Sets the cue-procedure object.
 	 * 
 	 * @see Pulsar#cueProcedure 
 	 */
-	public void setCueProcedure( MetroInvokable cueProcedure ) {
+	public void setCueProcedure( Invocable cueProcedure ) {
 		this.cueProcedure = cueProcedure;
 	}
 	/**
@@ -199,7 +198,7 @@ public final class Pulsar extends Metro {
 	 * 
 	 * @see Pulsar#cueProcedure 
 	 */
-	public MetroInvokable getCueProcedure() {
+	public Invocable getCueProcedure() {
 		return cueProcedure;
 	}
 
@@ -665,14 +664,14 @@ public final class Pulsar extends Metro {
     	SchemeUtils.defineVar( scheme, "get-all-input" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
-				return Pair.makeList( getInputPorts().stream().map((v)->IString.valueOf(v) )
+				return Pair.makeList( getInputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
 						.collect( Collectors.toList() ) );
     		}
     	});
     	SchemeUtils.defineVar( scheme, "get-all-output" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
-				return Pair.makeList( getOutputPorts().stream().map((v)->IString.valueOf(v) )
+				return Pair.makeList( getOutputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
 						.collect( Collectors.toList() ) );
     		}
     	});
@@ -683,7 +682,7 @@ public final class Pulsar extends Metro {
 				logInfo("set-main");
 				if ( args.length == 1 ) {
 					Procedure procedure = (Procedure)args[0];
-					setMainProcedure( new InvokableSchemeProcedure( scheme, Environment.getCurrent(), procedure ));
+					setMainProcedure( new InvocableSchemeProcedure( scheme, Environment.getCurrent(), procedure ));
 				} else {
 					throw new RuntimeException( "invalid argument length" );
 				}
@@ -696,7 +695,7 @@ public final class Pulsar extends Metro {
 				logInfo("set-cue");
 				if ( args.length == 1 ) {
 					Procedure procedure = (Procedure)args[0];
-					setCueProcedure( new InvokableSchemeProcedure( scheme , Environment.getCurrent(), procedure ));
+					setCueProcedure( new InvocableSchemeProcedure( scheme , Environment.getCurrent(), procedure ));
 				} else {
 					throw new RuntimeException( "invalid argument length" );
 				}
@@ -770,9 +769,7 @@ public final class Pulsar extends Metro {
     		public Object applyN(Object[] args) throws Throwable {
     			if ( args.length == 1  ) {
     				Pair p = (Pair)args[0];
-    				Collection<File> files=  SchemeUtils.<Object,File>convertList( p, (o)->{
-    					return new File( SchemeUtils.anyToString( o ) );
-    				});
+    				Collection<File> files= SchemeUtils.<Object,File>convertList( p, (v)->new File( SchemeUtils.anyToString(v) ) );
     				setRelatedFiles( files );
     			} else {
     				throw new RuntimeException( "invalid argument length" );
@@ -833,10 +830,10 @@ public final class Pulsar extends Metro {
 						Pair p = ((Pair)args[0]);
 						name = SchemeUtils.symbolToString( p.getCar() );
 						
-						Pair.makeList( getInputPorts().stream().map((v)->IString.valueOf(v) )
-								.collect( Collectors.toList() ) );
+//						Pair.makeList( getInputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
+//								.collect( Collectors.toList() ) );
 
-						tags = SchemeUtils.<Object,String>convertList((Collection<Object>)p.getCdr(), (v)->SchemeUtils.symbolToString(v));
+						tags = SchemeUtils.symbolListToStringList(p);
 						
 					} else {
 						name = SchemeUtils.symbolToString( args[0] );
@@ -845,11 +842,11 @@ public final class Pulsar extends Metro {
 					
 					Procedure procedure     = (Procedure) args[1];
 					SyncType syncType       = 3<=args.length ? str2sync( args[2] ) : SyncType.IMMEDIATE;
-					String syncSequenceName = 4<=args.length ? SchemeUtils.anyToString( args[3] ) : null;
+					String syncSequenceName = 4<=args.length ? SchemeUtils.anyToString( SchemeUtils.schemeNullCheck( args[3] ) ) : null;
 					double offset           = 5<=args.length ? SchemeUtils.toDouble( args[4] ) : 0.0d;
 					
 					SchemePulsarLogic logic = new SchemePulsarLogic( scheme,
-							new InvokableSchemeProcedure( scheme, Environment.getCurrent(), procedure ) );
+							new InvocableSchemeProcedure( scheme, Environment.getCurrent(), procedure ) );
 					
 					putLogic( name, tags, logic, syncType, syncSequenceName, offset );
 					 
@@ -862,12 +859,13 @@ public final class Pulsar extends Metro {
 				return SyncType.valueOf( SchemeUtils.symbolToString( object ).toUpperCase() );
 			}
     	});
+    	
     	SchemeUtils.defineVar( scheme, "remove-seq!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				if ( args.length == 1 ) {
 					String name = SchemeUtils.toString( args[0] );
-					removeLogic(name);
+					removeSequence(name);
 					return EmptyList.emptyList;
 				} else {
 					throw new RuntimeException( "Invalid parameter. usage : (new-logic [name] [lambda] ) " );
@@ -886,8 +884,8 @@ public final class Pulsar extends Metro {
     		public Object applyN(Object[] args) throws Throwable {
 				if ( args.length == 1 ) {
 					String name = SchemeUtils.toString( args[0] );
-					hasLogic(name);
-					return EmptyList.emptyList;
+					
+					return getSequence(name) != null;
 				} else {
 					throw new RuntimeException( "Invalid parameter. usage : (new-logic [name] [lambda] ) " );
 				}

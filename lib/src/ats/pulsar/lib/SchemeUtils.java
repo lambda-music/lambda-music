@@ -39,6 +39,7 @@ public class SchemeUtils {
 		System.err.println( msg );
 	}
 
+
 	public static Map<String,Object> list2map( AbstractSequence<Object> list, 
 			Function<Object,Function<Integer,String>> idx2nameGenerator ) 
 	{
@@ -95,7 +96,11 @@ public class SchemeUtils {
 	}
 
 	public static String anyToString( Object schemeVal ) {
-		if ( schemeVal instanceof IString ) {
+		if ( schemeVal == null ) {
+			return null;
+		} else if ( schemeVal instanceof Boolean ) {
+			return ((Boolean) schemeVal ).toString();
+		} else if ( schemeVal instanceof IString ) {
 			return ((IString)schemeVal).toString();
 		} else if ( schemeVal instanceof Symbol ) {
 			return ((Symbol)schemeVal).getName();
@@ -147,6 +152,10 @@ public class SchemeUtils {
 		return list.stream().map(f).collect(Collectors.toList());
 	}
 	
+	public static Collection<String> symbolListToStringList(Pair p) {
+		return SchemeUtils.<Object,String>convertList((Collection<Object>)p.getCdr(), (v)->SchemeUtils.symbolToString(v));
+	}
+	
 	public static IString toSchemeString( String value ) {
 		return IString.valueOf( value );
 	}
@@ -162,18 +171,37 @@ public class SchemeUtils {
 		return Symbol.valueOf(value);
 	}
 	
+	@Deprecated
 	public static <T> T schemeNullToJavaNull( T object ) {
 		if ( object instanceof EmptyList ) {
 			return null;
 		} else {
 			return object;
 		}
-	}
+	}	
+	@Deprecated
 	public static Object javaNullToSchemeNull( Object object ) {
 		if ( object == null )
 			return EmptyList.emptyList;
 		else
 			return object;
+	}
+	
+	public static Object schemeNullCheck( Object object ) {
+		if ( (object instanceof Boolean ) && 
+             ( ((Boolean)object).booleanValue() == false ) ) 
+		{
+			return null;
+		} else {
+			return object;
+		}
+	}
+	public static Object javaNullCheck( Object object ) {
+		if ( object == null ) {
+			return false;
+		} else {
+			return object;
+		}
 	}
 	
 	public static Pair acons( String key, Object value ) {

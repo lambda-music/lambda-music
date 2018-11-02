@@ -1350,17 +1350,21 @@
 
 |#
 
-(define send-counter 0)
-(define (get-send-counter)
-  (set! send-counter (+ 1 send-counter))
+(define default-id-counter 0)
+(define (make-default-id)
+  (set! default-id-counter (+ 1 default-id-counter))
   (string->symbol
     (string-append 
       "seq-" 
-      (number->string send-counter))))
+      (number->string default-id-counter))))
 
-(define (send! p #!key (name #f) (start #f) (end #f) )
+(define (send! p #!key (name #f) (start #f) (end #f) (once #f) )
   (if (not name)
-    (set! name (get-send-counter)))
+    (set! name (make-default-id)))
+
+  (if once 
+    (set! p (list p)))
+
   ;p ... current pos
   ;c ... counter
   (let ((cp p)
@@ -1384,15 +1388,41 @@
               'immediate)))
 
 
+(define (make-standard-sequence p) (let ((start-pos p)
+                                         (current-pos p))
+                                     (lambda args
+                                       (if (= 0 (length args))
+                                         ; if no argument is specified, return the next bar.
+                                         (if (null? current-pos) 
+                                           (n
+                                             (n type: 'len val: 1 )
+                                             (n type: 'end ))
+
+                                           (let ((result (car current-pos)))
+                                             (set! current-pos (cdr current-pos))
+                                             result))
+
+                                         ; otherwise regard the first element of arguments as a command.
+                                         ; and execute it.
+                                         (let ((cmd (car args)))
+                                           (cond
+                                             ((eq? 'head cmd )
+                                              (set! current-pos  start-pos))
+                                             ((eq? 'jump cmd )
+                                              (let ((i (cadr args)))
+                                                (set! current-pos  (drop  start-pos i))))
+                                             (else
+                                               (raise (format "unknown command ~a" cmd )))))))))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define send2! (lambda (x)
-                (set! send-counter (+ 1 send-counter))
+                (set! default-id-counter (+ 1 default-id-counter))
                 (let ((id 
                         (string->symbol
                           (string-append 
                             "seq-" 
-                            (number->string send-counter )))))
+                            (number->string default-id-counter )))))
                   (put-seq! id
                             (lambda() 
                               (append x

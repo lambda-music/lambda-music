@@ -12,6 +12,8 @@ public abstract class MetroLogic implements MetroPlayer {
 		return player;
 	}
 	public void setPlayer(MetroPlayer player) {
+		if ( this.player != null )
+			throw new RuntimeException( "the player property is already set" );
 		this.player = player;
 	}
 	////////

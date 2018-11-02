@@ -94,8 +94,9 @@ public class MetroNoteEventBuffer implements Iterable<MetroAbstractEvent>{
 		this.barInFrames = barInFrames;
 		this.lengthInFrames = (int) (this.length * (double)barInFrames);
 		this.prepared = true;
-//		if ( DEBUG ) logInfo( "MetroMidiEventBuffer.calcInFrames() barInFrames="  + barInFrames + " / lengthInFrames=" + this.lengthInFrames  + "/ length=" + this.length);
-		             logInfo( "MetroMidiEventBuffer.calcInFrames() barInFrames="  + barInFrames + " / lengthInFrames=" + this.lengthInFrames  + "/ length=" + this.length);
+		
+		if ( DEBUG ) 
+			logInfo( "MetroMidiEventBuffer.calcInFrames() barInFrames="  + barInFrames + " / lengthInFrames=" + this.lengthInFrames  + "/ length=" + this.length);
 	}
 	
 	@Override
