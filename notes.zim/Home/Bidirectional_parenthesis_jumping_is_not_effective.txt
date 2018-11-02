@@ -1,0 +1,14 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2018-10-29T10:47:11+09:00
+
+====== Bidirectional parenthesis jumping is not effective ======
+Created Mon day 29 October 2018
+
+@todo
+
+Now parenthesis movement is done in both way; that is, if a user push down control-g when the cursor is on the opening side of  parentheses "(" , it goes to the otherside of the parentheses.  It may be more effective if the parentheses jumping is done in unidirectional.
+
+When the cursor is on the "(", pressing Alt-Shift-Left causes going to ")", and vice versa. 
+
+[ ] bidirectional jumping should be unidirectional.
