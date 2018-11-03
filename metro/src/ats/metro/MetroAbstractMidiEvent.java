@@ -1,6 +1,7 @@
 package ats.metro;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class MetroAbstractMidiEvent extends MetroAbstractEvent {
 	final int outputPortNo;
@@ -16,6 +17,18 @@ public class MetroAbstractMidiEvent extends MetroAbstractEvent {
 	public byte[] getData() {
 		return data;
 	}
+	@Override
+	public void process(Metro metro, int from, int to, int nframes, List<MetroMidiEvent> result) {
+		MetroAbstractMidiEvent e0 = this;
+		int offsetInPeriod = e0.offsetInFrames - from;
+		this.setOffsetInPeriod( offsetInPeriod );
+		result.add( new MetroMidiEvent( 
+				e0.getOutputPortNo(), 
+				offsetInPeriod, 
+				e0.getData() 
+				));
+	}
+	
 	public void dumpProc( String prefix, StringBuilder sb ) {
 		super.dumpProc(prefix, sb);
 		sb.append(prefix).append( "      outputPortNo: " + outputPortNo ).append( "\n" );

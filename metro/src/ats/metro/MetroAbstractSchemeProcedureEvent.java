@@ -1,5 +1,7 @@
 package ats.metro;
 
+import java.util.List;
+
 public class MetroAbstractSchemeProcedureEvent extends MetroAbstractEvent {
 	private final Runnable runnable;
 	public MetroAbstractSchemeProcedureEvent(double offset, Runnable runnable ) {
@@ -8,5 +10,9 @@ public class MetroAbstractSchemeProcedureEvent extends MetroAbstractEvent {
 	}
 	public void execute( Metro metro ) {
 		metro.postMessage( runnable );
+	}
+	@Override
+	public void process(Metro metro, int from, int to, int nframes, List<MetroMidiEvent> result) {
+		execute( metro );		
 	}
 }

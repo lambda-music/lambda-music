@@ -95,8 +95,6 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
     private ArrayList<MetroMidiEvent> outputMidiEventList = new ArrayList<MetroMidiEvent>();
 	private JackPosition position = new JackPosition();
 
-	protected MetroLogic logic;
-	
 	// zero means that to get the current bpm from Jack Transport.
 	private double beatsPerMinute = 60;
 	public double getBeatsPerMinute() {
@@ -553,7 +551,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
             synchronized ( this.lock ) {
                 if ( 0 < this.inputMidiEventList.size() )
 	            	for ( MetroNoteEventBufferSequence sequence : this.sequences ) {
-	            		sequence.logic.processInputMidiBuffer( this, this.inputMidiEventList, this.outputMidiEventList );
+	            		sequence.logic.processDirect( this, this.inputMidiEventList, this.outputMidiEventList );
 	            	}
                 
                 if ( true )

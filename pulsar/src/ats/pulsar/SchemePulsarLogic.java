@@ -82,7 +82,7 @@ public class SchemePulsarLogic extends MetroLogic {
 	}
 
 	@Override
-	public void processInputMidiBuffer(Metro metro, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
+	public void processDirect(Metro metro, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
 		// out.addAll( in ); TODO ******************************
 		System.err.println( "in.size()" + in.size());
 		System.err.println( "out.size()" + out.size());
@@ -90,7 +90,7 @@ public class SchemePulsarLogic extends MetroLogic {
 
 
 	@Override
-	public boolean processOutputNoteBuffer( Metro metro, MetroNoteEventBufferSequence sequence, MetroNoteEventBuffer buf ) {
+	public boolean processBuffered( Metro metro, MetroNoteEventBufferSequence sequence, MetroNoteEventBuffer buf ) {
 		// System.out.println("Metro.logic.new MetroLogic() {...}.initBuffer()" );
 //		buf.humanize( 0.0d, 3 );
 		boolean result = false;

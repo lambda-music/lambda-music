@@ -222,7 +222,7 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 							
 							result.add( new MetroMidiEvent( 
 									e0.getOutputPortNo(), 
-									e0.getOffsetInFrames() - actualCursor, 
+									e0.offsetInFrames - actualCursor, 
 									e0.getData() 
 									) );
 						} else if ( e instanceof MetroAbstractSchemeProcedureEvent ) {
@@ -419,20 +419,7 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 					
 					if ( e.between( actualCursor, actualNextCursor ) ) {
 						found = true;
-						// XXX
-						if ( e instanceof MetroAbstractMidiEvent ) {
-							MetroAbstractMidiEvent e0 = (MetroAbstractMidiEvent) e;
-							
-							result.add( new MetroMidiEvent( 
-									e0.getOutputPortNo(), 
-									e0.getOffsetInFrames() - actualCursor, 
-									e0.getData() 
-									) );
-						} else if ( e instanceof MetroAbstractSchemeProcedureEvent ) {
-							((MetroAbstractSchemeProcedureEvent)e).execute( metro );
-						} else {
-							LOGGER.log( Level.SEVERE, "Unknown Class " + e.getClass().getName() );
-						}
+						e.process( metro, actualCursor, actualNextCursor, nframes, result);
 					} else {
 						if ( found )
 							break;
@@ -620,7 +607,7 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 				
 			} else {
 				MetroNoteEventBuffer buf = new MetroNoteEventBuffer();
-				boolean result = this.logic.processOutputNoteBuffer( metro, this, buf );
+				boolean result = this.logic.processBuffered( metro, this, buf );
 				buf.prepare( metro, client, position, true );
 
 				if ( DEBUG && ( buf.size() >0 ) )

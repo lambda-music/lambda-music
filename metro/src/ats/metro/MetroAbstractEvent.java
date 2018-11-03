@@ -1,8 +1,9 @@
 package ats.metro;
 
 import java.util.Comparator;
+import java.util.List;
 
-public class MetroAbstractEvent {
+public abstract class MetroAbstractEvent {
 //	public static final Comparator<? super MetroAbstractEvent> comparator = new Comparator<MetroAbstractEvent>() {
 //		@Override
 //		public int compare(MetroAbstractEvent o1, MetroAbstractEvent o2) {
@@ -46,6 +47,7 @@ public class MetroAbstractEvent {
 	
 	final double offset;
 	int offsetInFrames;
+	int offsetInPeriod;
 	
 	public MetroAbstractEvent(double offset ) {
 		super();
@@ -63,7 +65,16 @@ public class MetroAbstractEvent {
 	public final boolean between(int from, int to ) {
 		return from <= this.offsetInFrames && this.offsetInFrames < to;
 	}
-
+	
+	public final int getOffsetInPeriod() {
+		return offsetInPeriod;
+	}
+	public final void setOffsetInPeriod(int offsetInPeriod) {
+		this.offsetInPeriod = offsetInPeriod;
+	}
+	
+	public abstract void process( Metro metro, int from, int to, int nframes, List<MetroMidiEvent> result );
+	
 	public final String dump(String prefix) {
 		StringBuilder sb = new StringBuilder();
 		dumpProc(prefix, sb);
