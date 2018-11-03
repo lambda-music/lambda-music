@@ -1,48 +1,42 @@
 package ats.metro;
 
-import java.util.Comparator;
-
-public final class MetroMidiEvent implements Comparable<MetroMidiEvent> {
-	public static final Comparator<? super MetroMidiEvent> COMPARATOR = new Comparator<MetroMidiEvent>( ) {
-		@Override
-		public int compare(MetroMidiEvent o1, MetroMidiEvent o2) {
-			return o1.compareTo( o2 );
-		}
-	};
-
+public final class MetroMidiEvent implements AbstractMidiEvent {
 	private int outputPortNo;
-	private int offset;
-	private byte[] data;
-	public MetroMidiEvent(int outputPortNo, int offset, byte[] data ) {
+	private int midiOffset;
+	private byte[] midiData;
+	public MetroMidiEvent( int outputPortNo, int offset, byte[] data ) {
 		this.outputPortNo = outputPortNo;
-		this.offset = offset;
-		this.data = data;
+		this.midiOffset = offset;
+		this.midiData = data;
 	}
+	@Override
 	public int getOutputPortNo() {
 		return outputPortNo;
 	}
-	public void setOutputPortNo(int outputPortNo) {
+	public void setOutputPortNo( int outputPortNo ) {
 		this.outputPortNo = outputPortNo;
 	}
-	public int getOffset() {
-		return offset;
+	@Override
+	public int getMidiOffset() {
+		return midiOffset;
 	}
-	public void setOffset(int offset) {
-		this.offset = offset;
-	}
-	public byte[] getData() {
-		return data;
-	}
-	public void setData(byte[] data) {
-		this.data = data;
+	public void setMidiOffset(int midiOffset) {
+		this.midiOffset = midiOffset;
 	}
 	@Override
-	public int compareTo(MetroMidiEvent o) {
-		return this.offset - o.offset;
+	public byte[] getMidiData() {
+		return midiData;
 	}
+	public void setMidiData(byte[] midiData) {
+		this.midiData = midiData;
+	}
+//	@Override
+//	public int compareTo(MetroMidiEvent o) {
+//		return this.midiOffset - o.midiOffset;
+//	}
 	
 	@Override
 	public String toString() {
-		return "offset : " + Integer.toString( this.offset ) ;
+		return "offset : " + Integer.toString( this.midiOffset ) ;
 	}
 }

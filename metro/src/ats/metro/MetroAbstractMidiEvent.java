@@ -3,36 +3,41 @@ package ats.metro;
 import java.util.Arrays;
 import java.util.List;
 
-public class MetroAbstractMidiEvent extends MetroAbstractEvent {
+public class MetroAbstractMidiEvent extends MetroAbstractEvent implements AbstractMidiEvent {
 	final int outputPortNo;
-	byte[] data;
+	byte[] midiData;
 	public MetroAbstractMidiEvent( double offset, int outputPortNo, byte[] data ) {
 		super( offset );
 		this.outputPortNo = outputPortNo;
-		this.data = data;
+		this.midiData = data;
 	}
+//	@Override
+//	public final int getMidiOffset() {
+//		return super.getMidiOffset();
+//	}
+	@Override
 	public final int getOutputPortNo() {
 		return outputPortNo;
 	}
-	public byte[] getData() {
-		return data;
+	@Override
+	public byte[] getMidiData() {
+		return midiData;
 	}
 	@Override
-	public void process(Metro metro, int from, int to, int nframes, List<MetroMidiEvent> result) {
-		MetroAbstractMidiEvent e0 = this;
-		int offsetInPeriod = e0.offsetInFrames - from;
-		this.setOffsetInPeriod( offsetInPeriod );
-		result.add( new MetroMidiEvent( 
-				e0.getOutputPortNo(), 
-				offsetInPeriod, 
-				e0.getData() 
-				));
+	public void process(Metro metro, int from, int to, int nframes, List<AbstractMidiEvent> eventList) {
+		this.setMidiOffset( this.barOffsetInFrames - from );
+//		eventList.add( new MetroMidiEvent(  
+//				this.getOutputPortNo(), 
+//				this.getMidiOffset(), 
+//				this.getMidiData() 
+//				));
+		eventList.add( this );
 	}
 	
 	public void dumpProc( String prefix, StringBuilder sb ) {
 		super.dumpProc(prefix, sb);
 		sb.append(prefix).append( "      outputPortNo: " + outputPortNo ).append( "\n" );
-		sb.append(prefix).append( "              data: " + Arrays.toString( data ) ).append( "\n" );
+		sb.append(prefix).append( "              data: " + Arrays.toString( midiData ) ).append( "\n" );
 	}
 
 

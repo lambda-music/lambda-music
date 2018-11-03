@@ -20,15 +20,15 @@ public abstract class MetroAbstractEvent {
 		@Override
 		public int compare(MetroAbstractEvent o1, MetroAbstractEvent o2) {
 			int i;
-			i = (int) Math.signum(o1.offset - o2.offset);
+			i = (int) Math.signum(o1.barOffset - o2.barOffset);
 			if (i != 0 )
 				return i;
 			
 			if ( o1 instanceof MetroAbstractMidiEvent &&  o2 instanceof MetroAbstractMidiEvent ) {
 				MetroAbstractMidiEvent mo1 = (MetroAbstractMidiEvent) o1;
 				MetroAbstractMidiEvent mo2 = (MetroAbstractMidiEvent) o2;
-				byte b1 = (byte) ( mo1.data[0] & 0b111100000 );
-				byte b2 = (byte) ( mo2.data[0] & 0b111100000 );
+				byte b1 = (byte) ( mo1.midiData[0] & 0b111100000 );
+				byte b2 = (byte) ( mo2.midiData[0] & 0b111100000 );
 				
 				if ( b1 == b2 )
 					return 0;
@@ -45,35 +45,35 @@ public abstract class MetroAbstractEvent {
 	};
 
 	
-	final double offset;
-	int offsetInFrames;
-	int offsetInPeriod;
+	final double barOffset;
+	int barOffsetInFrames;
+	int midiOffset;
 	
 	public MetroAbstractEvent(double offset ) {
 		super();
-		this.offset = offset;
+		this.barOffset = offset;
 	}
-	public final double getOffset() {
-		return offset;
+	public final double getBarOffset() {
+		return barOffset;
 	}
-	public final int getOffsetInFrames() {
-		return offsetInFrames;
+	public final int getBarOffsetInFrames() {
+		return barOffsetInFrames;
 	}
-	public final void calcInFrames( int barInFrames ){
-		this.offsetInFrames = (int)(this.offset * barInFrames );
+	public final void calcInFrames( int barLengthInFrames ){
+		this.barOffsetInFrames = (int)(this.barOffset * barLengthInFrames );
 	}
-	public final boolean between(int from, int to ) {
-		return from <= this.offsetInFrames && this.offsetInFrames < to;
-	}
-	
-	public final int getOffsetInPeriod() {
-		return offsetInPeriod;
-	}
-	public final void setOffsetInPeriod(int offsetInPeriod) {
-		this.offsetInPeriod = offsetInPeriod;
+	public final boolean between( int from, int to ) {
+		return from <= this.barOffsetInFrames && this.barOffsetInFrames < to;
 	}
 	
-	public abstract void process( Metro metro, int from, int to, int nframes, List<MetroMidiEvent> result );
+	public final int getMidiOffset() {
+		return midiOffset;
+	}
+	public final void setMidiOffset(int midiOffset) {
+		this.midiOffset = midiOffset;
+	}
+	
+	public abstract void process( Metro metro, int from, int to, int nframes, List<AbstractMidiEvent> eventList );
 	
 	public final String dump(String prefix) {
 		StringBuilder sb = new StringBuilder();
@@ -81,8 +81,8 @@ public abstract class MetroAbstractEvent {
 		return sb.toString();
 	}
 	public void dumpProc( String prefix, StringBuilder sb ) {
-		sb.append(prefix).append( "            offset: " + offset ).append( "\n" );
-		sb.append(prefix).append( "    offsetInFrames: " + offsetInFrames ).append( "\n" );
+		sb.append(prefix).append( "            offset: " + barOffset ).append( "\n" );
+		sb.append(prefix).append( "    offsetInFrames: " + barOffsetInFrames ).append( "\n" );
 	}
 
 //	public static void main(String[] args) {

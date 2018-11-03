@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 public abstract class MetroLogic implements MetroPlayer {
-	public abstract void    processDirect(    Metro metro, List<MetroMidiEvent> in, List<MetroMidiEvent> out );
+	public abstract void    processDirect(    Metro metro, List<AbstractMidiEvent> in, List<AbstractMidiEvent> out );
 	public abstract boolean processBuffered(  Metro metro, MetroNoteEventBufferSequence sequence, MetroNoteEventBuffer buf );
 	
 	MetroPlayer player=null;

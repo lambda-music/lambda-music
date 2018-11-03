@@ -12,7 +12,7 @@ public class MetroAbstractSchemeProcedureEvent extends MetroAbstractEvent {
 		metro.postMessage( runnable );
 	}
 	@Override
-	public void process(Metro metro, int from, int to, int nframes, List<MetroMidiEvent> result) {
+	public void process(Metro metro, int from, int to, int nframes, List<AbstractMidiEvent> eventList) {
 		execute( metro );		
 	}
 }

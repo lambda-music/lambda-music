@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import ats.metro.AbstractMidiEvent;
 import ats.metro.Metro;
 import ats.metro.MetroLogic;
-import ats.metro.MetroMidiEvent;
 import ats.metro.MetroNoteEventBuffer;
 import ats.metro.MetroNoteEventBufferSequence;
 import ats.metro.MetroPlayer;
@@ -82,7 +82,7 @@ public class SchemePulsarLogic extends MetroLogic {
 	}
 
 	@Override
-	public void processDirect(Metro metro, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
+	public void processDirect(Metro metro, List<AbstractMidiEvent> in, List<AbstractMidiEvent> out) {
 		// out.addAll( in ); TODO ******************************
 		System.err.println( "in.size()" + in.size());
 		System.err.println( "out.size()" + out.size());

@@ -91,8 +91,8 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	private final List<Runnable>  messageQueue = new ArrayList<Runnable>();
 	protected MetroLogicList logicList = new MetroLogicList(sequences);
 	
-    private ArrayList<MetroMidiEvent> inputMidiEventList = new ArrayList<MetroMidiEvent>();
-    private ArrayList<MetroMidiEvent> outputMidiEventList = new ArrayList<MetroMidiEvent>();
+    private ArrayList<AbstractMidiEvent> inputMidiEventList = new ArrayList<AbstractMidiEvent>();
+    private ArrayList<AbstractMidiEvent> outputMidiEventList = new ArrayList<AbstractMidiEvent>();
 	private JackPosition position = new JackPosition();
 
 	// zero means that to get the current bpm from Jack Transport.
@@ -559,17 +559,17 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	            		sequence.progressCursor( nframes, this.outputMidiEventList );
 	            	}
                 
-            	this.outputMidiEventList.sort( MetroMidiEvent.COMPARATOR );
+            	this.outputMidiEventList.sort( AbstractMidiEvent.COMPARATOR );
             	
             	if ( ! this.outputMidiEventList.isEmpty() )
             		if ( DEBUG ) logInfo( this.outputMidiEventList.toString() );
 
-            	for ( MetroMidiEvent e : this.outputMidiEventList ) {
+            	for ( AbstractMidiEvent e : this.outputMidiEventList ) {
             		JackMidi.eventWrite( 
             				Metro.this.outputPortList.get( e.getOutputPortNo() ), 
-            				e.getOffset(), 
-            				e.getData(), 
-            				e.getData().length 
+            				e.getMidiOffset(), 
+            				e.getMidiData(), 
+            				e.getMidiData().length 
             				);
             	}
             	
