@@ -15,17 +15,18 @@ import org.jaudiolibs.jnajack.JackException;
 import org.jaudiolibs.jnajack.JackPosition;
 
 public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
-    private static final Logger LOGGER = Logger.getLogger(MetroNoteEventBufferSequence.class.getName());
-
-//	int flag=0;
-
-	static void logInfo( String msg ) {
-    	System.err.println( msg );
-		// Logger.getLogger(MetroNoteEventBufferSequence.class.getName()).log(Level.INFO, msg );
-    }
-    static void logError( String msg, Throwable e ) {
+	static final Logger LOGGER = Logger.getLogger(MetroNoteEventBufferSequence.class.getName());
+	static void logError(String msg, Throwable e) {
 		LOGGER.log(Level.SEVERE, msg, e);
-    }
+	}
+	static void logInfo(String msg) {
+		// LOGGER.log(Level.INFO, msg);
+		System.err.println(msg);
+	}
+	static void logWarn(String msg) {
+		LOGGER.log(Level.WARNING, msg);
+	}
+
 
 	public enum SyncType {
 		IMMEDIATE, PARALLEL, SERIAL,  

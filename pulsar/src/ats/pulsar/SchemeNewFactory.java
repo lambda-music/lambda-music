@@ -49,16 +49,7 @@ import gnu.mapping.Symbol;
 import gnu.math.IntNum;
 
 public abstract class SchemeNewFactory {
-	private static final Logger LOGGER = Logger.getLogger(Pulsar.class.getName());
-	private static final Map<String, SchemeNewFactory> map = new HashMap<>();
-	abstract Object create( Pulsar pulsar, List<Object> args );
-	static void register( String key, SchemeNewFactory factory ) {
-		if ( map.containsKey(key))
-			throw new RuntimeException( "the key was already registered (" + key + ")" );
-
-		map.put(key, factory );
-	}
-
+	static final Logger LOGGER = Logger.getLogger(SchemeNewFactory.class.getName());
 	static void logError( String msg, Throwable e ) {
         LOGGER.log(Level.SEVERE, msg, e);
 	}
@@ -68,8 +59,17 @@ public abstract class SchemeNewFactory {
 	}
 	static void logWarn( String msg ) {
 		LOGGER.log(Level.WARNING, msg);
-		System.err.println( msg );
 	}
+		
+	private static final Map<String, SchemeNewFactory> map = new HashMap<>();
+	abstract Object create( Pulsar pulsar, List<Object> args );
+	static void register( String key, SchemeNewFactory factory ) {
+		if ( map.containsKey(key))
+			throw new RuntimeException( "the key was already registered (" + key + ")" );
+
+		map.put(key, factory );
+	}
+
 
 	public static Object process( Pulsar pulsar,  Object ... args ) {
 		ArrayList<Object> arguments = new ArrayList<>( Arrays.asList( args ) );

@@ -82,14 +82,26 @@ import gnu.mapping.Symbol;
 import kawa.standard.Scheme;
 
 class PulsarGui {
-	static void logError( String msg, Throwable e ) {
-        Logger.getLogger(Pulsar.class.getName()).log(Level.SEVERE, msg, e);
+//	static void logError( String msg, Throwable e ) {
+//        Logger.getLogger(Pulsar.class.getName()).log(Level.SEVERE, msg, e);
+////		System.err.println( msg );
+//	}
+//	static void logInfo( String msg ) {
+////        Logger.getLogger(Pulsar.class.getName()).log(Level.INFO, msg);
 //		System.err.println( msg );
+//	}
+	static final Logger LOGGER = Logger.getLogger(PulsarGui.class.getName());
+	static void logError(String msg, Throwable e) {
+		LOGGER.log(Level.SEVERE, msg, e);
 	}
-	static void logInfo( String msg ) {
-//        Logger.getLogger(Pulsar.class.getName()).log(Level.INFO, msg);
-		System.err.println( msg );
+	static void logInfo(String msg) {
+		// LOGGER.log(Level.INFO, msg);
+		System.err.println(msg);
 	}
+	static void logWarn(String msg) {
+		LOGGER.log(Level.WARNING, msg);
+	}
+
 	static final int BORDER_SIZE = 10;
 	static final PanelOrientation DEFAULT_PANEL_ORIENTATION = PanelOrientation.BOTTOM;
 	

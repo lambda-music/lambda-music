@@ -24,6 +24,17 @@ import kawa.standard.Scheme;
 
 public class SchemePulsarLogic extends MetroLogic {
 	static final Logger LOGGER = Logger.getLogger(SchemePulsarLogic.class.getName());
+	static void logError(String msg, Throwable e) {
+		LOGGER.log(Level.SEVERE, msg, e);
+	}
+	static void logInfo(String msg) {
+		// LOGGER.log(Level.INFO, msg);
+		System.err.println(msg);
+	}
+	static void logWarn(String msg) {
+		LOGGER.log(Level.WARNING, msg);
+	}
+
 //
 //	static final String ID_TYPE      = "type";
 //	static final String ID_ENABLED   = "enab";
@@ -68,14 +79,6 @@ public class SchemePulsarLogic extends MetroLogic {
 	public SchemePulsarLogic ( Scheme scheme, Invocable procedure ) {
 		this.scheme = scheme;
 		this.procedure = procedure;
-	}
-	
-	static void logError( String msg, Throwable e ) {
-        LOGGER.log(Level.SEVERE, msg, e);
-	}
-	static void logInfo( String msg ) {
-//        Logger.getLogger(SchemePulsarLogic.class.getName()).log(Level.INFO, msg);
-		System.err.println( msg );
 	}
 
 	@Override

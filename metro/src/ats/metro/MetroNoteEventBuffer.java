@@ -14,13 +14,18 @@ import org.jaudiolibs.jnajack.JackException;
 import org.jaudiolibs.jnajack.JackPosition;
 
 public class MetroNoteEventBuffer implements Iterable<MetroAbstractEvent>{
-    static void logInfo( String msg ) {
-    	System.err.println( msg );
-		// Logger.getLogger(MetroNoteEventBuffer.class.getName()).log(Level.INFO, msg );
-    }
-    static void logError( String msg, Throwable e ) {
-		Logger.getLogger(MetroNoteEventBuffer.class.getName()).log(Level.SEVERE, msg, e);
-    }
+    static final Logger LOGGER = Logger.getLogger(MetroNoteEventBuffer.class.getName());
+	static void logError(String msg, Throwable e) {
+		LOGGER.log(Level.SEVERE, msg, e);
+	}
+	static void logInfo(String msg) {
+		// LOGGER.log(Level.INFO, msg);
+		System.err.println(msg);
+	}
+	static void logWarn(String msg) {
+		LOGGER.log(Level.WARNING, msg);
+	}
+
 	
 	private double humanizeOffset_min = 0;
 	private double humanizeOffset_max = 0;

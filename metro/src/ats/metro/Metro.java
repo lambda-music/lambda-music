@@ -58,18 +58,18 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	public final Object getMetroLock() {
 		return lock;
 	}
-    static void logInfo( String msg ) {
-    	System.err.println( msg );
-		// Logger.getLogger(Metro.class.getName()).log(Level.INFO, msg );
-    }
-    static void logWarn( String msg ) {
-    	System.err.println( msg );
-    	new Error().printStackTrace();
-//		 Logger.getLogger(Metro.class.getName()).log(Level.WARNING, msg );
-    }
-    static void logError( String msg, Throwable e ) {
-		Logger.getLogger(Metro.class.getName()).log(Level.SEVERE, msg, e);
-    }
+	
+	static final Logger LOGGER = Logger.getLogger(Metro.class.getName());
+	static void logError(String msg, Throwable e) {
+		LOGGER.log(Level.SEVERE, msg, e);
+	}
+	static void logInfo(String msg) {
+		// LOGGER.log(Level.INFO, msg);
+		System.err.println(msg);
+	}
+	static void logWarn(String msg) {
+		LOGGER.log(Level.WARNING, msg);
+	}
     
 	//	private final static boolean DEBUG = true;
 	static final boolean DEBUG = false;
