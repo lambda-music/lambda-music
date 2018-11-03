@@ -198,7 +198,7 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 	 * as offset value of the current frame.  
 	 * 
 	 */
-	protected void progressCursor( int nframes, List<AbstractMidiEvent> result ) throws JackException {
+	protected void progressCursor( int nframes, List<MetroAbstractMidiEvent> result ) throws JackException {
 		synchronized ( this.buffers ) {
 			this.metro.clearAllPorts();
 
@@ -215,8 +215,8 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 				int actualNextCursor = nextCursor    - cursorOffset;
 				
 				boolean found= false;
-				for ( Iterator<MetroAbstractEvent> ie = buf.iterator(); ie.hasNext();  ) {
-					MetroAbstractEvent e = ie.next();
+				for ( Iterator<MetroEvent> ie = buf.iterator(); ie.hasNext();  ) {
+					MetroEvent e = ie.next();
 					
 					if ( e.between( actualCursor, actualNextCursor ) ) {
 						found = true;

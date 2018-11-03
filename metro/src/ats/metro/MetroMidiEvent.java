@@ -1,42 +1,37 @@
 package ats.metro;
 
-public final class MetroMidiEvent implements AbstractMidiEvent {
-	private int outputPortNo;
-	private int midiOffset;
-	private byte[] midiData;
-	public MetroMidiEvent( int outputPortNo, int offset, byte[] data ) {
+import java.util.Arrays;
+import java.util.List;
+
+public class MetroMidiEvent extends MetroEvent implements MetroAbstractMidiEvent {
+	final int outputPortNo;
+	byte[] midiData;
+	public MetroMidiEvent( double offset, int outputPortNo, byte[] data ) {
+		super( offset );
 		this.outputPortNo = outputPortNo;
-		this.midiOffset = offset;
 		this.midiData = data;
 	}
+//	@Override
+//	public final int getMidiOffset() {
+//		return super.getMidiOffset();
+//	}
 	@Override
-	public int getOutputPortNo() {
+	public final int getOutputPortNo() {
 		return outputPortNo;
-	}
-	public void setOutputPortNo( int outputPortNo ) {
-		this.outputPortNo = outputPortNo;
-	}
-	@Override
-	public int getMidiOffset() {
-		return midiOffset;
-	}
-	public void setMidiOffset(int midiOffset) {
-		this.midiOffset = midiOffset;
 	}
 	@Override
 	public byte[] getMidiData() {
 		return midiData;
 	}
-	public void setMidiData(byte[] midiData) {
-		this.midiData = midiData;
-	}
-//	@Override
-//	public int compareTo(MetroMidiEvent o) {
-//		return this.midiOffset - o.midiOffset;
-//	}
-	
 	@Override
-	public String toString() {
-		return "offset : " + Integer.toString( this.midiOffset ) ;
+	public void process(Metro metro, int from, int to, int nframes, List<MetroAbstractMidiEvent> eventList) {
+		this.setMidiOffset( this.barOffsetInFrames - from );
+		eventList.add( this );
+	}
+	
+	public void dumpProc( String prefix, StringBuilder sb ) {
+		super.dumpProc(prefix, sb);
+		sb.append(prefix).append( "      outputPortNo: " + outputPortNo ).append( "\n" );
+		sb.append(prefix).append( "              data: " + Arrays.toString( midiData ) ).append( "\n" );
 	}
 }

@@ -91,8 +91,8 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	private final List<Runnable>  messageQueue = new ArrayList<Runnable>();
 	protected MetroLogicList logicList = new MetroLogicList(sequences);
 	
-    private ArrayList<AbstractMidiEvent> inputMidiEventList = new ArrayList<AbstractMidiEvent>();
-    private ArrayList<AbstractMidiEvent> outputMidiEventList = new ArrayList<AbstractMidiEvent>();
+    private ArrayList<MetroAbstractMidiEvent> inputMidiEventList = new ArrayList<MetroAbstractMidiEvent>();
+    private ArrayList<MetroAbstractMidiEvent> outputMidiEventList = new ArrayList<MetroAbstractMidiEvent>();
 	private JackPosition position = new JackPosition();
 
 	// zero means that to get the current bpm from Jack Transport.
@@ -531,7 +531,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
                 	int size = this.midiEvent.size();
                 	byte[] data = new byte[size];
                 	this.midiEvent.read( data );
-                	this.inputMidiEventList.add( new MetroMidiEvent( inputPortNo, this.midiEvent.time(), data ) );
+                	this.inputMidiEventList.add( new MetroStaticMidiEvent( inputPortNo, this.midiEvent.time(), data ) );
 
 //                    this.sb.setLength(0);
 //                    this.sb.append(this.midiEvent.time());
@@ -559,12 +559,12 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	            		sequence.progressCursor( nframes, this.outputMidiEventList );
 	            	}
                 
-            	this.outputMidiEventList.sort( AbstractMidiEvent.COMPARATOR );
+            	this.outputMidiEventList.sort( MetroAbstractMidiEvent.COMPARATOR );
             	
             	if ( ! this.outputMidiEventList.isEmpty() )
             		if ( DEBUG ) logInfo( this.outputMidiEventList.toString() );
 
-            	for ( AbstractMidiEvent e : this.outputMidiEventList ) {
+            	for ( MetroAbstractMidiEvent e : this.outputMidiEventList ) {
             		JackMidi.eventWrite( 
             				Metro.this.outputPortList.get( e.getOutputPortNo() ), 
             				e.getMidiOffset(), 

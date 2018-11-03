@@ -13,7 +13,7 @@ import org.jaudiolibs.jnajack.JackClient;
 import org.jaudiolibs.jnajack.JackException;
 import org.jaudiolibs.jnajack.JackPosition;
 
-public class MetroNoteEventBuffer implements Iterable<MetroAbstractEvent>{
+public class MetroNoteEventBuffer implements Iterable<MetroEvent>{
     static final Logger LOGGER = Logger.getLogger(MetroNoteEventBuffer.class.getName());
 	static void logError(String msg, Throwable e) {
 		LOGGER.log(Level.SEVERE, msg, e);
@@ -55,7 +55,7 @@ public class MetroNoteEventBuffer implements Iterable<MetroAbstractEvent>{
 	private boolean prepared = false;
 	private int barLengthInFrames=-1;
 	private int lengthInFrames = -1;
-	private final List<MetroAbstractEvent> list = new ArrayList<MetroAbstractEvent>(10);
+	private final List<MetroEvent> list = new ArrayList<MetroEvent>(10);
 	public double getLength() {
 		return length;
 	}
@@ -65,7 +65,7 @@ public class MetroNoteEventBuffer implements Iterable<MetroAbstractEvent>{
 	}
 	public double getActualLength() {
 		double max = 0;
-		for ( MetroAbstractEvent e : this )
+		for ( MetroEvent e : this )
 			if ( max < e.barOffset ) 
 				max = e.barOffset;
 		
@@ -98,14 +98,14 @@ public class MetroNoteEventBuffer implements Iterable<MetroAbstractEvent>{
 	
 	public void prepare( Metro metro, JackClient client, JackPosition position, boolean doSort ) throws JackException {
 		if ( doSort )
-			this.list.sort( MetroAbstractMidiEvent.comparator );
+			this.list.sort( MetroMidiEvent.comparator );
 		int barInFrames = Metro.calcBarInFrames( metro, client, position );
 		this.calcInFrames( barInFrames );
 	}
 	
 	private void calcInFrames( int barLengthInFrames ) {
 //		System.out.println("MetroMidiEventBuffer.calcInFrames() barInFrames="  + barInFrames );
-		for ( MetroAbstractEvent e : this ) {
+		for ( MetroEvent e : this ) {
 			e.calcInFrames( barLengthInFrames );
 		}
 //		System.out.println( "this.length " + this.length  );
@@ -118,7 +118,7 @@ public class MetroNoteEventBuffer implements Iterable<MetroAbstractEvent>{
 	}
 	
 	@Override
-	public Iterator<MetroAbstractEvent> iterator() {
+	public Iterator<MetroEvent> iterator() {
 		return this.list.iterator();
 	}
 	
@@ -126,14 +126,14 @@ public class MetroNoteEventBuffer implements Iterable<MetroAbstractEvent>{
 		return this.list.size();
 	}
 
-	public final void event( MetroAbstractEvent event ) {
+	public final void event( MetroEvent event ) {
 		// Add it to the list.
 		this.list.add(event);
 	}
 	
 	public final void midiEvent( double offset, int outputPortNo, byte[] data ) {
 		// Create an event object.
-		MetroAbstractMidiEvent event = new MetroAbstractMidiEvent( offset, outputPortNo, data );
+		MetroMidiEvent event = new MetroMidiEvent( offset, outputPortNo, data );
 		
 		// Add it to the list.
 		this.list.add(event);
@@ -153,7 +153,7 @@ public class MetroNoteEventBuffer implements Iterable<MetroAbstractEvent>{
 		if ( 1d < velocity ) velocity =1d;
 
 		// Create an event object.
-		MetroAbstractMidiEvent event = new MetroAbstractMidiEvent(
+		MetroMidiEvent event = new MetroMidiEvent(
 				offset,
 				outputPortNo,
 				new byte[] {
@@ -203,7 +203,7 @@ public class MetroNoteEventBuffer implements Iterable<MetroAbstractEvent>{
 		note( outputPortNo, 0b10000000, offset + value.offset, channel, note, velocity + value.velocity );
 	}
 	public void exec( double offset, Runnable runnable ) {
-		MetroAbstractSchemeProcedureEvent event = new MetroAbstractSchemeProcedureEvent( offset, runnable );
+		MetroMessageEvent event = new MetroMessageEvent( offset, runnable );
 
 		this.list.add( event );
 	}
@@ -215,7 +215,7 @@ public class MetroNoteEventBuffer implements Iterable<MetroAbstractEvent>{
 		logInfo( "length         : " + this.length        );
 		logInfo( "lengthInFrames : " + this.lengthInFrames);
 		int i = 0;
-		for ( MetroAbstractEvent e : this ) {
+		for ( MetroEvent e : this ) {
 			logInfo( "    No" + i);
 			logInfo( e.dump( "    " ));
 			i++;
