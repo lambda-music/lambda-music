@@ -14,8 +14,8 @@ import kawa.standard.Scheme;
  *
  */
 @SuppressWarnings("unused")
-public class MetroMidi {
-	static final Logger LOGGER = Logger.getLogger( MetroMidi.class.getName() );
+public class MetroMidiParser {
+	static final Logger LOGGER = Logger.getLogger( MetroMidiParser.class.getName() );
 
 	static final String ID_TYPE      = "type";
 	static final String ID_ENABLED   = "enab";

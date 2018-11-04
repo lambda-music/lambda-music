@@ -3,6 +3,10 @@ package ats.metro;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * MetroEvent is the base class to manage events that are sent/received between Metro framework and its client.
+ * @author ats
+ */
 public abstract class MetroEvent implements MetroAbstractEvent {
 //	public static final Comparator<? super MetroAbstractEvent> comparator = new Comparator<MetroAbstractEvent>() {
 //		@Override

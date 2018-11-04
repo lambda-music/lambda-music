@@ -28,8 +28,8 @@ import kawa.standard.Scheme;
  *
  */
 @SuppressWarnings("unused")
-public class SchemeNoteParser {
-	static final Logger LOGGER = Logger.getLogger(SchemeNoteParser.class.getName());
+public class SchemeNoteParser1 {
+	static final Logger LOGGER = Logger.getLogger(SchemeNoteParser1.class.getName());
 	static final String ID_TYPE      = "type";
 	static final String ID_ENABLED   = "enab";
 	static final String ID_CHANNEL   = "chan";
@@ -308,7 +308,7 @@ public class SchemeNoteParser {
 			AbstractSequence<Object> value = map.containsKey( ID_VALUE ) ? (AbstractSequence<Object> )map.get( ID_VALUE ) : null;
 			if ( value != null ) {
 				// *** a recursive calling ***
-				result = SchemeNoteParser.parse(metro, scheme , value, outputBuffer, result );
+				result = SchemeNoteParser1.parse(metro, scheme , value, outputBuffer, result );
 			} else {
 				LOGGER.log(Level.WARNING, "Found an empty list. This might be a possible cause of problems" );
 			}
