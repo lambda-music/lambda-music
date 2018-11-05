@@ -1,38 +1,111 @@
 package ats.metro;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 
-import ats.metro.MetroMidi.MetroMidiNote;
-import ats.pulsar.lib.SchemeUtils;
-import kawa.standard.Scheme;
-
 /**
- * http://nickfever.com/music/midi-cc-list
- * 
+ * This class defines constant objects to generate a byte array which could
+ * represent various MIDI messages.
+ *<p>
+ * Each of the constant objects has a method which name is "notifyMidiEvent".
+ * This method generates a byte array which contains MIDI message. 
+ *<p>
+ * Since the parameters of a notifyMidiEvent method differ and depend on its
+ * MIDI messages, there is no abstract common method for the notifyMidiEvent
+ * method.  This class merely defines a convension that the constant objects
+ * defined here must contain a method which name is "notifyMidiEvent".
+ *<p>
+  
+ * See <a
+ * href="http://nickfever.com/music/midi-cc-list">http://nickfever.com/music/midi-cc-list</a>
+ * for further information about MIDI messages.
+ *<p>
+ *  When I wrote this class, I was looking for the official specification of
+ *  MIDI control change messages. But I could not find it. It seems that
+ *  MIDI control change messages are implicitly defined between those commercial products and 
+ *  there is no officially declared specification for it.
+ *<p> 
+ *  Therefore, I
+ *  referred <a href="http://nickfever.com/music/midi-cc-list">http://nickfever.com/music/midi-cc-list</a>.
+ *<p>
+ *  This is a very good explanation about MIDI control change messages. But as
+ *  this article is not official, this might contain mistakes.
+ *<p>
+ *  The following table is a quotation from the site.
+ *<p>
+ *
+ *  <table border="1" cellpadding="2">
+ *  <tr><td>0</td>                                              <td>"Bank Select"</td>                                      <td>"Allows user to switch bank for patch selection. Program change used with Bank Select. MIDI can access 16,384 patches per MIDI channel."</td></tr>
+ *  <tr><td>1</td>                                              <td>"Modulation"</td>                                       <td>"Generally this CC controls a vibrato effect (pitch, loudness, brighness). What is modulated is based on the patch."</td></tr>
+ *  <tr><td>2</td>                                              <td>"Breath Controller"</td>                                <td>"Often times associated with aftertouch messages. It was originally intended for use with a breath MIDI controller in which blowing harder produced higher MIDI control values. It can be used for modulation as well."</td></tr>
+ *  <tr><td>4</td>                                              <td>"Foot Controller"</td>                                  <td>"Often used with aftertouch messages. It can send a continuous stream of values based on how the pedal is used."</td></tr>
+ *  <tr><td>5</td>                                              <td>"PortamentoTime"</td>                                   <td>"Controls portamento rate to slide between 2 notes played subsequently."</td></tr>
+ *  <tr><td>6</td>                                              <td>"Data Entry Most Significant Bit(MSB)"</td>             <td>"Controls Value for NRPN or RPN parameters."</td></tr>
+ *  <tr><td>7</td>                                              <td>"Volume"</td>                                           <td>"Control the volume of the channel"</td></tr>
+ *  <tr><td>8</td>                                              <td>"Balance"</td>                                          <td>"Controls the left and right balance, generally for stereo patches.0 = hard left, 64 = center, 127 = hard right"</td></tr>
+ *  <tr><td>10</td>                                             <td>"Pan"</td>                                              <td>"Controls the left and right balance, generally for mono patches.0 = hard left, 64 = center, 127 = hard right"</td></tr>
+ *  <tr><td>11</td>                                             <td>"Expression"</td>                                       <td>"Expression is a percentage of volume (CC7)."</td></tr>
+ *  <tr><td>12</td>                                             <td>"Effect Controller 1"</td>                              <td>"Usually used to control a parameter of an effect within the synth/workstation."</td></tr>
+ *  <tr><td>13</td>                                             <td>"Effect Controller 2"</td>                              <td>"Usually used to control a parameter of an effect within the synth/workstation."</td></tr>
+ *  <tr><td>64</td>                                             <td>"Damper Pedal /Sustain Pedal"</td>                      <td>"On/Off switch that controls sustain. (See also Sostenuto CC 66)0 to 63 = Off, 64 to 127 = On"</td></tr>
+ *  <tr><td>65</td>                                             <td>"Portamento On/Off Switch"</td>                         <td>"On/Off switch0 to 63 = Off, 64 to 127 = On"</td></tr>
+ *  <tr><td>66</td>                                             <td>"Sostenuto On/Off Switch"</td>                          <td>"On/Off switch – Like the Sustain controller (CC 64), However it only holds notes that were “On” when the pedal was pressed. People use it to “hold” chords” and play melodies over the held chord.0 to 63 = Off, 64 to 127 = On"</td></tr>
+ *  <tr><td>67</td>                                             <td>"Soft Pedal On/Off Switch"</td>                         <td>"On/Off switch- Lowers the volume of notes played.0 to 63 = Off, 64 to 127 = On"</td></tr>
+ *  <tr><td>68</td>                                             <td>"Legato FootSwitch"</td>                                <td>"On/Off switch- Turns Legato effect between 2 subsequent notes On or Off.0 to 63 = Off, 64 to 127 = On"</td></tr>
+ *  <tr><td>69</td>                                             <td>"Hold 2"</td>                                           <td>"Another way to “hold notes” (see MIDI CC 64 and MIDI CC 66). However notes fade out according to their release parameter rather than when the pedal is released."</td></tr>
+ *  <tr><td>70</td>                                             <td>"Sound Controller 1"</td>                               <td>"Usually controls the way a sound is produced. Default = Sound Variation."</td></tr>
+ *  <tr><td>71</td>                                             <td>"Sound Controller 2"</td>                               <td>"Allows shaping the Voltage Controlled Filter (VCF). Default = Resonance -also(Timbre or Harmonics)"</td></tr>
+ *  <tr><td>72</td>                                             <td>"Sound Controller 3"</td>                               <td>"Controls release time of the Voltage controlled Amplifier (VCA). Default = Release Time."</td></tr>
+ *  <tr><td>73</td>                                             <td>"Sound Controller 4"</td>                               <td>"Controls the “Attack’ of a sound. The attack is the amount of time it takes forthe sound to reach maximum amplitude."</td></tr>
+ *  <tr><td>74</td>                                             <td>"Sound Controller 5"</td>                               <td>"Controls VCFs cutoff frequency of the filter."</td></tr>
+ *  <tr><td>75</td>                                             <td>"Sound Controller 6"</td>                               <td>"Generic – Some manufacturers may use to further shave their sounds."</td></tr>
+ *  <tr><td>76</td>                                             <td>"Sound Controller 7"</td>                               <td>"Generic – Some manufacturers may use to further shave their sounds."</td></tr>
+ *  <tr><td>77</td>                                             <td>"Sound Controller 8"</td>                               <td>"Generic – Some manufacturers may use to further shave their sounds."</td></tr>
+ *  <tr><td>78</td>                                             <td>"Sound Controller 9"</td>                               <td>"Generic – Some manufacturers may use to further shave their sounds."</td></tr>
+ *  <tr><td>79</td>                                             <td>"Sound Controller 10"</td>                              <td>"Generic – Some manufacturers may use to further shave their sounds."</td></tr>
+ *  <tr><td>80</td>                                             <td>"General PurposeMIDI CC Controller"</td>                <td>"GenericOn/Off switch0 to 63 = Off, 64 to 127 = On"</td></tr>
+ *  <tr><td>81</td>                                             <td>"General Purpose MIDI CC Controller"</td>               <td>"GenericOn/Off switch0 to 63 = Off, 64 to 127 = On"</td></tr>
+ *  <tr><td>82</td>                                             <td>"General PurposeMIDI CC Controller"</td>                <td>"GenericOn/Off switch0 to 63 = Off, 64 to 127 = On"</td></tr>
+ *  <tr><td>83</td>                                             <td>"General Purpose MIDI CC Controller"</td>               <td>"GenericOn/Off switch0 to 63 = Off, 64 to 127 = On"</td></tr>
+ *  <tr><td>84</td>                                             <td>"Portamento CC Control"</td>                            <td>"Controls the amount of Portamento."</td></tr>
+ *  <tr><td>91</td>                                             <td>"Effect 1 Depth"</td>                                   <td>"Usually controls reverb send amount"</td></tr>
+ *  <tr><td>92</td>                                             <td>"Effect 2 Depth"</td>                                   <td>"Usually controls tremolo amount"</td></tr>
+ *  <tr><td>93</td>                                             <td>"Effect 3 Depth"</td>                                   <td>"Usually controls chorus amount"</td></tr>
+ *  <tr><td>94</td>                                             <td>"Effect 4 Depth"</td>                                   <td>"Usually controls detune amount"</td></tr>
+ *  <tr><td>95</td>                                             <td>"Effect 5 Depth"</td>                                   <td>"Usually controls phaser amount"</td></tr>
+ *  <tr><td>96</td>                                             <td>"(+1) Data Increment"</td>                              <td>"Usually used to increment data for RPN and NRPN messages."</td></tr>
+ *  <tr><td>97</td>                                             <td>"(-1) Data Decrement"</td>                              <td>"Usually used to decrement data for RPN and NRPN messages."</td></tr>
+ *  <tr><td>98</td>                                             <td>"Non-Registered Parameter Number LSB (NRPN)"</td>       <td>"For controllers 6, 38, 96, and 97, it selects the NRPN parameter."</td></tr>
+ *  <tr><td>99</td>                                             <td>"Non-Registered Parameter Number MSB (NRPN)"</td>       <td>"For controllers 6, 38, 96, and 97, it selects the NRPN parameter."</td></tr>
+ *  <tr><td>100</td>                                            <td>"Registered Parameter Number LSB (RPN)"</td>            <td>"For controllers 6, 38, 96, and 97, it selects the RPN parameter."</td></tr>
+ *  <tr><td>101</td>                                            <td>"Registered Parameter Number MSB (RPN)"</td>            <td>"For controllers 6, 38, 96, and 97, it selects the RPN parameter."</td></tr>
+ *  <tr><td>3</td>                                              <td>Undefined</td>                                          <td> </td></tr>
+ *  <tr><td>9</td>                                              <td>Undefined</td>                                          <td> </td></tr>
+ *  <tr><td>14</td>                                             <td>Undefined</td>                                          <td> </td></tr>
+ *  <tr><td>15</td>                                             <td>Undefined</td>                                          <td> </td></tr>
+ *  <tr><td>16 – 19</td>                                        <td>General Purpose</td>                                    <td> </td></tr>
+ *  <tr><td>20 – 31</td>                                        <td>Undefined</td>                                          <td> </td></tr>
+ *  <tr><td>32 – 63</td>                                        <td>Controller 0-31 Least Significant Bit (LSB)</td>        <td> </td></tr>
+ *  <tr><td>85 – 90</td>                                        <td>Undefined</td>                                          <td> </td></tr>
+ *  <tr><td>102 – 119</td>                                      <td>Undefined</td>                                          <td> </td></tr>
+ *  <tr><td colspan="3">120 to 127 are “Channel Mode Messages.”</td></tr>
+ *  <tr><td>120</td>                                            <td>All Sound Off</td>                                      <td>Mutes all sounding notes. It does so regardless of release time or sustain. (See MIDI CC 123)</td></tr>
+ *  <tr><td>121</td>                                            <td>Reset All Controllers</td>                              <td>It will reset all controllers to their default.</td></tr>
+ *  <tr><td>122</td>                                            <td>Local On/Off Switch</td>                                <td>Turns internal connection of a MIDI keyboard/workstation, etc. On or Off. If you use a computer, you will most likely want local control off to avoid notes being played twice. Once locally and twice whent the note is sent back from the computer to your keyboard.</td></tr>
+ *  <tr><td>123</td>                                            <td>All Notes Off</td>                                      <td>Mutes all sounding notes. Release time will still be maintained, and notes held by sustain will not turn off until sustain pedal is depressed.</td></tr>
+ *  <tr><td>124</td>                                            <td>Omni Mode Off</td>                                      <td>Sets to “Omni Off” mode.</td></tr>
+ *  <tr><td>125</td>                                            <td>Omni Mode On</td>                                       <td>Sets to “Omni On” mode.</td></tr>
+ *  <tr><td>126</td>                                            <td>Mono Mode</td>                                          <td>Sets device mode to Monophonic.</td></tr>
+ *  <tr><td>127</td>                                            <td>Poly Mode</td>                                          <td>Sets device mode to Polyphonic.</td></tr>
+ *  </table>
+ *
  * @author ats
  *
  */
-@SuppressWarnings("unused")
+
 public class MetroMidi {
 	static final Logger LOGGER = Logger.getLogger( MetroMidi.class.getName() );
 
-	static final String ID_TYPE      = "type";
-	static final String ID_ENABLED   = "enab";
-	static final String ID_CHANNEL   = "chan";
-	static final String ID_PORT_NO   = "port";
-	static final String ID_PROCEDURE = "proc";
-	static final String ID_ID        = "id";
-	static final String ID_LENGTH    = "len";
-	static final String ID_VELOCITY  = "velo";
-	static final String ID_NOTE      = "note";
-	static final String ID_OFFSET    = "pos";
-	static final String ID_KEY       = "key";
-	static final String ID_MIN       = "min";
-	static final String ID_MAX       = "max";
-	static final String ID_VALUE     = "val";
-	
 	static HashMap<String,MetroMidiMsg> infoMap = new HashMap<String,MetroMidiMsg>();
 	static void putInfo( MetroMidiMsg info ) {
 		String id = info.shortName;
@@ -44,7 +117,6 @@ public class MetroMidi {
 	public static MetroMidiMsg getInfo( String id ) {
 		return infoMap.get(id);
 	}
-
 
 	public static abstract class MetroMidiMsg {
 		protected String shortName;
@@ -63,9 +135,7 @@ public class MetroMidi {
 		public String getLongDescription() {
 			return longDescription;
 		}
-		abstract boolean parseEvent( Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String,Object> map, boolean result );
 	}
-
 	public static abstract class MetroMidiNoArg extends MetroMidiMsg {
 		public abstract byte[] createMidiMessage( int ch );
 		public final void notifyMidiEvent( MetroNoteEventBuffer buf, double offset, int port, int ch ) {
@@ -78,7 +148,6 @@ public class MetroMidi {
 			buf.midiEvent(offset , port, createMidiMessage( ch, value ) );
 		}
 	}
-
 	public static abstract class MetroMidiInt1 extends MetroMidiMsg {
 		public abstract byte[] createMidiMessage( int ch, int value );
 		public final void notifyMidiEvent( MetroNoteEventBuffer buf, double offset, int port, int ch, int value  ) {
@@ -107,21 +176,18 @@ public class MetroMidi {
 			buf.midiEvent(offset , port, createMidiMessage( ch, value ) );
 		}
 	}
-
 	public static abstract class MetroMidiNoChannelNoArg extends MetroMidiMsg {
 		public abstract byte[] createMidiMessage();
 		public final void notifyMidiEvent( MetroNoteEventBuffer buf, double offset, int port ) {
 			buf.midiEvent(offset , port, createMidiMessage() );
 		}
 	}
-
 	public static abstract class MetroMidiNoChannelInt1 extends MetroMidiMsg {
 		public abstract byte[] createMidiMessage( int value );
 		public final void notifyMidiEvent( MetroNoteEventBuffer buf, double offset, int port, int value ) {
 			buf.midiEvent(offset , port, createMidiMessage( value ) );
 		}
 	}
-
 	public static abstract class MetroMidiInt1Double1 extends MetroMidiMsg {
 		public abstract byte[] createMidiMessage( int ch, int value0, double value1 );
 		public void notifyMidiEvent( MetroNoteEventBuffer buf, double offset, int port, int ch, int note0, double value1 ) {
@@ -138,23 +204,6 @@ public class MetroMidi {
 	//////////////////////////////////////////////////////////////////////////////////////////
 	
 	public static abstract class MetroMidiNote extends MetroMidiInt1Double1 {
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			boolean enabled      = map.containsKey( ID_ENABLED     ) ? SchemeUtils.toBoolean(       map.get(ID_ENABLED      ) ) : true;
-			if ( ! enabled )
-				return result;
-
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int channel      = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int note         = map.containsKey( ID_NOTE     ) ? SchemeUtils.toInteger(      map.get(ID_NOTE      ) ) : 63;  
-			double velocity  = map.containsKey( ID_VELOCITY ) ? SchemeUtils.toDouble(       map.get(ID_VELOCITY  ) ) : 63;
-//			double length    = map.containsKey( ID_LENGTH   ) ? SchemeUtils.toDouble(       map.get(ID_LENGTH    ) ) : -1d;
-			
-			notifyMidiEvent( buf, offset, port, channel, note, velocity );
-			
-			return result;
-		}
 	}
 
 	//////////////////////////////
@@ -187,22 +236,10 @@ public class MetroMidi {
 	public static final MetroMidiKeyPressure MIDI_KEY_PRESSURE = new MetroMidiKeyPressure();
 	public static final class MetroMidiKeyPressure extends MetroMidiInt1Double1 {
 		{
-			String id = "kp";
-			String name = "key-pressure";
+			this.shortName = "kp";
+			this.longName  = "key-pressure";
 		}
 
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int note         = map.containsKey( ID_NOTE     ) ? SchemeUtils.toInteger(      map.get(ID_NOTE      ) ) : 63;  
-			double value     = map.containsKey( ID_VALUE )    ? SchemeUtils.toDouble(       map.get(ID_VALUE     ) ) : 0d;
-
-			notifyMidiEvent( buf, offset , port, ch, note, value );
-
-			return result;
-		}
 		@Override
 		public byte[] createMidiMessage( int ch, int note, double value ) {
 			return MetroMidiDef.keyPressure( ch, note, value );
@@ -214,19 +251,6 @@ public class MetroMidi {
 			this.shortName = "cc";
 			// this.name = "control";
 			this.longName = "control-change";
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int key          = map.containsKey( ID_KEY      ) ? SchemeUtils.toInteger(      map.get( ID_KEY      ) ) : 0;
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, key, value );
-
-			return result;
 		}
 		public byte[] createMidiMessage( int ch, int controlNumber, int controlValue ) {
 			return MetroMidiDef.control(ch, controlNumber, controlValue );
@@ -241,18 +265,6 @@ public class MetroMidi {
 			this.shortName = "pc";
 			this.longName = "program";
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset , port, ch, value );
-
-			return result;
-		}
 		@Override
 		public byte[] createMidiMessage( int ch, int value ) {
 			return MetroMidiDef.program( ch, value );
@@ -264,18 +276,6 @@ public class MetroMidi {
 			this.shortName = "cp";
 			this.longName = "channel-pressure";
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			double value     = map.containsKey( ID_VALUE )    ? SchemeUtils.toDouble(       map.get(ID_VALUE     ) ) : 0d;
-
-			notifyMidiEvent( buf, offset , port, ch, value );
-
-			return result;
-		}
 		@Override
 		public byte[] createMidiMessage( int ch, double value ) {
 			return MetroMidiDef.channelPressure( ch, value );
@@ -286,18 +286,6 @@ public class MetroMidi {
 		{
 			this.shortName = "pb";
 			this.longName = "pitch-bend";
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			double value     = map.containsKey( ID_VALUE )    ? SchemeUtils.toDouble(       map.get(ID_VALUE     ) ) : 0d;
-
-			notifyMidiEvent( buf, offset , port, ch, value );
-
-			return result;
 		}
 		@Override
 		public byte[] createMidiMessage(int ch, double value) {
@@ -313,18 +301,6 @@ public class MetroMidi {
 			this.shortName = "aso";
 			this.longName = "all-sound-off";
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-
-			notifyMidiEvent( buf, offset , port, ch );
-
-			return result;
-		}
-
 		@Override
 		public byte[] createMidiMessage(int ch) {
 			return MetroMidiDef.cc_allSoundOff( ch );
@@ -335,17 +311,6 @@ public class MetroMidi {
 		{
 			this.shortName = "rac";
 			this.longName = "reset-all-controllers";
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-
-			notifyMidiEvent( buf, offset , port, ch );
-
-			return result;
 		}
 		@Override
 		public byte[] createMidiMessage(int ch) {
@@ -358,18 +323,6 @@ public class MetroMidi {
 			this.shortName = "lc";
 			this.longName = "local-controls";
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0;
-			boolean on       = map.containsKey( ID_VALUE    ) ? SchemeUtils.toBoolean(      map.get(ID_VALUE     ) ) : false; 
-
-			notifyMidiEvent( buf, offset , port, ch, on );
-
-			return result;
-		}
 		@Override
 		public byte[] createMidiMessage(int ch,boolean value ) {
 			return MetroMidiDef.cc_localControls( ch, value ) ;
@@ -381,17 +334,6 @@ public class MetroMidi {
 			this.shortName = "anf";
 			this.longName = "all-note-off";
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-
-			notifyMidiEvent( buf, offset , port, ch );
-
-			return result;
-		}
 		@Override
 		public byte[] createMidiMessage(int ch) {
 			return MetroMidiDef.cc_allNoteOff( ch );
@@ -402,17 +344,6 @@ public class MetroMidi {
 		{
 			this.shortName = "omff";
 			this.longName = "omni-mode-off";
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-
-			notifyMidiEvent( buf, offset , port, ch );
-
-			return result;
 		}
 		@Override
 		public byte[] createMidiMessage(int ch) {
@@ -426,17 +357,6 @@ public class MetroMidi {
 			this.shortName = "omon";
 			this.longName = "omni-mode-on";
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-
-			notifyMidiEvent( buf, offset , port, ch );
-
-			return result;
-		}
 		@Override
 		public byte[] createMidiMessage(int ch) {
 			return MetroMidiDef.cc_omniModeOn( ch );
@@ -449,17 +369,6 @@ public class MetroMidi {
 			this.shortName = "mono";
 			this.longName = "mono-mode-off";
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-
-			notifyMidiEvent( buf, offset , port, ch );
-
-			return result;
-		}
 		@Override
 		public byte[] createMidiMessage(int ch) {
 			return MetroMidiDef.cc_monoModeOff( ch );
@@ -471,18 +380,6 @@ public class MetroMidi {
 			this.shortName = "poly";
 			this.longName = "poly-mode-on";
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-
-			notifyMidiEvent( buf, offset , port, ch );
-
-			return result;
-		}
-		
 		@Override
 		public byte[] createMidiMessage(int ch) {
 			return MetroMidiDef.cc_polyModeOn( ch );
@@ -496,19 +393,6 @@ public class MetroMidi {
 			this.shortName = "spp";
 			this.longName = "song-position-pointer";
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-//			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset , port, value );
-
-			return result;
-		}
-
 		@Override
 		public byte[] createMidiMessage( int value ) {
 			return MetroMidiDef.songPositionPointer( value );
@@ -521,18 +405,6 @@ public class MetroMidi {
 			this.shortName = "ss";
 			this.longName = "song-select";
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-//			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset , port, value );
-
-			return result;
-		}
 		@Override
 		public byte[] createMidiMessage(int value) {
 			return MetroMidiDef.songSelect( value );
@@ -544,18 +416,6 @@ public class MetroMidi {
 			this.shortName = "eoe";
 			this.longName = "end-of-exclusive";
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-
-			notifyMidiEvent( buf, offset , port );
-
-			return result;
-		}
-
 		@Override
 		public byte[] createMidiMessage() {
 			return MetroMidiDef.endOfExclusive();
@@ -566,17 +426,6 @@ public class MetroMidi {
 		{
 			this.shortName = "clock";
 			this.longName = "clock";
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-
-			notifyMidiEvent( buf, offset , port );
-
-			return result;
 		}
 		@Override
 		public byte[] createMidiMessage() {
@@ -590,17 +439,6 @@ public class MetroMidi {
 			this.shortName = "start";
 			this.longName = "start";
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-
-			notifyMidiEvent( buf, offset , port );
-
-			return result;
-		}
 		@Override
 		public byte[] createMidiMessage() {
 			return MetroMidiDef.start();
@@ -611,17 +449,6 @@ public class MetroMidi {
 		{
 			this.shortName = "cont";
 			this.longName = "continue";
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-
-			notifyMidiEvent( buf, offset , port );
-
-			return result;
 		}
 		@Override
 		public byte[] createMidiMessage() {
@@ -634,17 +461,6 @@ public class MetroMidi {
 			this.shortName = "stop";
 			this.longName = "stop";
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-
-			notifyMidiEvent( buf, offset , port );
-
-			return result;
-		}
 		@Override
 		public byte[] createMidiMessage() {
 			return MetroMidiDef.stop();
@@ -656,18 +472,6 @@ public class MetroMidi {
 			this.shortName = "reset";
 			this.longName = "reset";
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-
-			notifyMidiEvent( buf, offset , port );
-
-			return result;
-		}
-		
 		@Override
 		public byte[] createMidiMessage() {
 			// TODO Auto-generated method stub
@@ -684,18 +488,6 @@ public class MetroMidi {
 			this.longDescription = "Allows user to switch bank for patch selection. Program change used with Bank Select. MIDI can access 16,384 patches per MIDI channel.";
 			this.controlNumber = CC_BANK_SELECT                            ;
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
-		}
 	}
 	public static final int CC_MODULATION                             = 1  ;
 	public static final MetroMidiControlModulation MIDI_MODULATION  = new MetroMidiControlModulation();
@@ -706,18 +498,6 @@ public class MetroMidi {
 			this.shortDescription = "Modulation";
 			this.longDescription = "Generally this CC controls a vibrato effect (pitch, loudness, brighness). What is modulated is based on the patch.";
 			this.controlNumber = CC_MODULATION                             ;
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
 		}
 	}
 	public static final int CC_BREATH_CTRL                            = 2  ;
@@ -730,18 +510,6 @@ public class MetroMidi {
 			this.longDescription = "Often times associated with aftertouch messages. It was originally intended for use with a breath MIDI controller in which blowing harder produced higher MIDI control values. It can be used for modulation as well.";
 			this.controlNumber = CC_BREATH_CTRL                            ;
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
-		}
 	}
 	public static final int CC_FOOT_CTRL                              = 4  ;
 	public static final MetroMidiControlFootController MIDI_FOOT_CTRL  = new MetroMidiControlFootController();
@@ -752,18 +520,6 @@ public class MetroMidi {
 			this.shortDescription = "Foot Controller";
 			this.longDescription = "Often used with aftertouch messages. It can send a continuous stream of values based on how the pedal is used.";
 			this.controlNumber = CC_FOOT_CTRL                              ;
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
 		}
 	}
 	public static final int CC_PORTAMENTO_TIME                        = 5  ;
@@ -776,18 +532,6 @@ public class MetroMidi {
 			this.longDescription = "Controls portamento rate to slide between 2 notes played subsequently.";
 			this.controlNumber = CC_PORTAMENTO_TIME                        ;
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
-		}
 	}
 	public static final int CC_DATA_ENTRY_MSB                         = 6  ;
 	public static final MetroMidiControlDataEntryMsb MIDI_DATA_ENTRY_MSB  = new MetroMidiControlDataEntryMsb();
@@ -798,18 +542,6 @@ public class MetroMidi {
 			this.shortDescription = "Data Entry Most Significant Bit(MSB)";
 			this.longDescription = "Controls Value for NRPN or RPN parameters.";
 			this.controlNumber = CC_DATA_ENTRY_MSB                         ;
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
 		}
 	}
 	public static final int CC_VOLUME                                 = 7  ;
@@ -822,18 +554,6 @@ public class MetroMidi {
 			this.longDescription = "Control the volume of the channel";
 			this.controlNumber = CC_VOLUME                                 ;
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
-		}
 	}
 	public static final int CC_BALANCE                                = 8  ;
 	public static final MetroMidiControlBalance MIDI_BALANCE  = new MetroMidiControlBalance();
@@ -844,18 +564,6 @@ public class MetroMidi {
 			this.shortDescription = "Balance";
 			this.longDescription = "Controls the left and right balance, generally for stereo patches.0 = hard left, 64 = center, 127 = hard right";
 			this.controlNumber = CC_BALANCE                                ;
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
 		}
 	}
 	public static final int CC_PAN                                    = 10 ;
@@ -868,18 +576,6 @@ public class MetroMidi {
 			this.longDescription = "Controls the left and right balance, generally for mono patches.0 = hard left, 64 = center, 127 = hard right";
 			this.controlNumber = CC_PAN                                    ;
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
-		}
 	}
 	public static final int CC_EXPRESSION                             = 11 ;
 	public static final MetroMidiControlExpression MIDI_EXPRESSION  = new MetroMidiControlExpression();
@@ -890,18 +586,6 @@ public class MetroMidi {
 			this.shortDescription = "Expression";
 			this.longDescription = "Expression is a percentage of volume (CC7).";
 			this.controlNumber = CC_EXPRESSION                             ;
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
 		}
 	}
 	public static final int CC_EFFECT_CTRL_1                          = 12 ;
@@ -914,18 +598,6 @@ public class MetroMidi {
 			this.longDescription = "Usually used to control a parameter of an effect within the synth/workstation.";
 			this.controlNumber = CC_EFFECT_CTRL_1                          ;
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
-		}
 	}
 	public static final int CC_EFFECT_CTRL_2                          = 13 ;
 	public static final MetroMidiControlEffectController2 MIDI_EFFECT_CTRL_2  = new MetroMidiControlEffectController2();
@@ -936,18 +608,6 @@ public class MetroMidi {
 			this.shortDescription = "Effect Controller 2";
 			this.longDescription = "Usually used to control a parameter of an effect within the synth/workstation.";
 			this.controlNumber = CC_EFFECT_CTRL_2                          ;
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
 		}
 	}
 	public static final int CC_SUSTAIN_PEDAL                          = 64 ;
@@ -960,18 +620,6 @@ public class MetroMidi {
 			this.longDescription = "On/Off switch that controls sustain. (See also Sostenuto CC 66)0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_SUSTAIN_PEDAL                          ;
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
-		}
 	}
 	public static final int CC_PORTAMENTO_SWITCH                      = 65 ;
 	public static final MetroMidiControlPortamentoSwitch MIDI_PORTAMENTO_SWITCH  = new MetroMidiControlPortamentoSwitch();
@@ -982,18 +630,6 @@ public class MetroMidi {
 			this.shortDescription = "Portamento On/Off Switch";
 			this.longDescription = "On/Off switch0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_PORTAMENTO_SWITCH                      ;
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
 		}
 	}
 	public static final int CC_SOSTENUTO_SWITCH                       = 66 ;
@@ -1006,18 +642,6 @@ public class MetroMidi {
 			this.longDescription = "On/Off switch – Like the Sustain controller (CC 64), However it only holds notes that were “On” when the pedal was pressed. People use it to “hold” chords” and play melodies over the held chord.0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_SOSTENUTO_SWITCH                       ;
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
-		}
 	}
 	public static final int CC_SOFT_PEDAL_SWITCH                      = 67 ;
 	public static final MetroMidiControlPedalSwitch MIDI_SOFT_PEDAL_SWITCH  = new MetroMidiControlPedalSwitch();
@@ -1028,18 +652,6 @@ public class MetroMidi {
 			this.shortDescription = "Soft Pedal On/Off Switch";
 			this.longDescription = "On/Off switch- Lowers the volume of notes played.0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_SOFT_PEDAL_SWITCH                      ;
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
 		}
 	}
 	public static final int CC_LEGATO_FOOTSWITCH                      = 68 ;
@@ -1052,18 +664,6 @@ public class MetroMidi {
 			this.longDescription = "On/Off switch- Turns Legato effect between 2 subsequent notes On or Off.0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_LEGATO_FOOTSWITCH                      ;
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
-		}
 	}
 	public static final int CC_HOLD_2                                 = 69 ;
 	public static final MetroMidiControlHold2 MIDI_HOLD_2  = new MetroMidiControlHold2();
@@ -1074,18 +674,6 @@ public class MetroMidi {
 			this.shortDescription = "Hold 2";
 			this.longDescription = "Another way to “hold notes” (see MIDI CC 64 and MIDI CC 66). However notes fade out according to their release parameter rather than when the pedal is released.";
 			this.controlNumber = CC_HOLD_2                                 ;
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
 		}
 	}
 	public static final int CC_SOUND_CTRL_01                          = 70 ;
@@ -1098,18 +686,6 @@ public class MetroMidi {
 			this.longDescription = "Usually controls the way a sound is produced. Default = Sound Variation.";
 			this.controlNumber = CC_SOUND_CTRL_01                          ;
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
-		}
 	}
 	public static final int CC_SOUND_CTRL_02                          = 71 ;
 	public static final MetroMidiControlSoundController2 MIDI_SOUND_CTRL_02  = new MetroMidiControlSoundController2();
@@ -1120,18 +696,6 @@ public class MetroMidi {
 			this.shortDescription = "Sound Controller 2";
 			this.longDescription = "Allows shaping the Voltage Controlled Filter (VCF). Default = Resonance -also(Timbre or Harmonics)";
 			this.controlNumber = CC_SOUND_CTRL_02                          ;
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
 		}
 	}
 	public static final int CC_SOUND_CTRL_03                          = 72 ;
@@ -1144,18 +708,6 @@ public class MetroMidi {
 			this.longDescription = "Controls release time of the Voltage controlled Amplifier (VCA). Default = Release Time.";
 			this.controlNumber = CC_SOUND_CTRL_03                          ;
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
-		}
 	}
 	public static final int CC_SOUND_CTRL_04                          = 73 ;
 	public static final MetroMidiControlSoundController4 MIDI_SOUND_CTRL_04  = new MetroMidiControlSoundController4();
@@ -1166,18 +718,6 @@ public class MetroMidi {
 			this.shortDescription = "Sound Controller 4";
 			this.longDescription = "Controls the “Attack’ of a sound. The attack is the amount of time it takes forthe sound to reach maximum amplitude.";
 			this.controlNumber = CC_SOUND_CTRL_04                          ;
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
 		}
 	}
 	public static final int CC_SOUND_CTRL_05                          = 74 ;
@@ -1190,18 +730,6 @@ public class MetroMidi {
 			this.longDescription = "Controls VCFs cutoff frequency of the filter.";
 			this.controlNumber = CC_SOUND_CTRL_05                          ;
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
-		}
 	}
 	public static final int CC_SOUND_CTRL_06                          = 75 ;
 	public static final MetroMidiControlSoundController6 MIDI_SOUND_CTRL_06  = new MetroMidiControlSoundController6();
@@ -1212,18 +740,6 @@ public class MetroMidi {
 			this.shortDescription = "Sound Controller 6";
 			this.longDescription = "Generic – Some manufacturers may use to further shave their sounds.";
 			this.controlNumber = CC_SOUND_CTRL_06                          ;
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
 		}
 	}
 	public static final int CC_SOUND_CTRL_07                          = 76 ;
@@ -1236,18 +752,6 @@ public class MetroMidi {
 			this.longDescription = "Generic – Some manufacturers may use to further shave their sounds.";
 			this.controlNumber = CC_SOUND_CTRL_07                          ;
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
-		}
 	}
 	public static final int CC_SOUND_CTRL_08                          = 77 ;
 	public static final MetroMidiControlSoundController8 MIDI_SOUND_CTRL_08  = new MetroMidiControlSoundController8();
@@ -1258,18 +762,6 @@ public class MetroMidi {
 			this.shortDescription = "Sound Controller 8";
 			this.longDescription = "Generic – Some manufacturers may use to further shave their sounds.";
 			this.controlNumber = CC_SOUND_CTRL_08                          ;
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
 		}
 	}
 	public static final int CC_SOUND_CTRL_09                          = 78 ;
@@ -1282,18 +774,6 @@ public class MetroMidi {
 			this.longDescription = "Generic – Some manufacturers may use to further shave their sounds.";
 			this.controlNumber = CC_SOUND_CTRL_09                          ;
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
-		}
 	}
 	public static final int CC_SOUND_CTRL_10                          = 79 ;
 	public static final MetroMidiControlSoundController10 MIDI_SOUND_CTRL_10  = new MetroMidiControlSoundController10();
@@ -1304,18 +784,6 @@ public class MetroMidi {
 			this.shortDescription = "Sound Controller 10";
 			this.longDescription = "Generic – Some manufacturers may use to further shave their sounds.";
 			this.controlNumber = CC_SOUND_CTRL_10                          ;
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
 		}
 	}
 	public static final int CC_GENERAL_PURPOSE_01                     = 80 ;
@@ -1328,18 +796,6 @@ public class MetroMidi {
 			this.longDescription = "GenericOn/Off switch0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_GENERAL_PURPOSE_01                     ;
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
-		}
 	}
 	public static final int CC_GENERAL_PURPOSE_02                     = 81 ;
 	public static final MetroMidiControlGeneralPurpose02 MIDI_GENERAL_PURPOSE_02  = new MetroMidiControlGeneralPurpose02();
@@ -1350,18 +806,6 @@ public class MetroMidi {
 			this.shortDescription = "General Purpose MIDI CC Controller";
 			this.longDescription = "GenericOn/Off switch0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_GENERAL_PURPOSE_02                     ;
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
 		}
 	}
 	public static final int CC_GENERAL_PURPOSE_03                     = 82 ;
@@ -1374,18 +818,6 @@ public class MetroMidi {
 			this.longDescription = "GenericOn/Off switch0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_GENERAL_PURPOSE_03                     ;
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
-		}
 	}
 	public static final int CC_GENERAL_PURPOSE_04                     = 83 ;
 	public static final MetroMidiControlGeneralPurpose04 MIDI_GENERAL_PURPOSE_04  = new MetroMidiControlGeneralPurpose04();
@@ -1396,18 +828,6 @@ public class MetroMidi {
 			this.shortDescription = "General Purpose MIDI CC Controller";
 			this.longDescription = "GenericOn/Off switch0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_GENERAL_PURPOSE_04                     ;
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
 		}
 	}
 	public static final int CC_PORTAMENTO_CC_CTRL                     = 84 ;
@@ -1420,18 +840,6 @@ public class MetroMidi {
 			this.longDescription = "Controls the amount of Portamento.";
 			this.controlNumber = CC_PORTAMENTO_CC_CTRL                     ;
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
-		}
 	}
 	public static final int CC_EFFECT_1_DEPTH                         = 91 ;
 	public static final MetroMidiControlEffect1 MIDI_EFFECT_1_DEPTH  = new MetroMidiControlEffect1();
@@ -1442,18 +850,6 @@ public class MetroMidi {
 			this.shortDescription = "Effect 1 Depth";
 			this.longDescription = "Usually controls reverb send amount";
 			this.controlNumber = CC_EFFECT_1_DEPTH                         ;
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
 		}
 	}
 	public static final int CC_EFFECT_2_DEPTH                         = 92 ;
@@ -1466,18 +862,6 @@ public class MetroMidi {
 			this.longDescription = "Usually controls tremolo amount";
 			this.controlNumber = CC_EFFECT_2_DEPTH                         ;
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
-		}
 	}
 	public static final int CC_EFFECT_3_DEPTH                         = 93 ;
 	public static final MetroMidiControlEffect3 MIDI_EFFECT_3_DEPTH  = new MetroMidiControlEffect3();
@@ -1488,18 +872,6 @@ public class MetroMidi {
 			this.shortDescription = "Effect 3 Depth";
 			this.longDescription = "Usually controls chorus amount";
 			this.controlNumber = CC_EFFECT_3_DEPTH                         ;
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
 		}
 	}
 	public static final int CC_EFFECT_4_DEPTH                         = 94 ;
@@ -1512,18 +884,6 @@ public class MetroMidi {
 			this.longDescription = "Usually controls detune amount";
 			this.controlNumber = CC_EFFECT_4_DEPTH                         ;
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
-		}
 	}
 	public static final int CC_EFFECT_5_DEPTH                         = 95 ;
 	public static final MetroMidiControlEffect5 MIDI_EFFECT_5_DEPTH  = new MetroMidiControlEffect5();
@@ -1534,18 +894,6 @@ public class MetroMidi {
 			this.shortDescription = "Effect 5 Depth";
 			this.longDescription = "Usually controls phaser amount";
 			this.controlNumber = CC_EFFECT_5_DEPTH                         ;
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
 		}
 	}
 	public static final int CC_DATA_INCREMENT                         = 96 ;
@@ -1558,18 +906,6 @@ public class MetroMidi {
 			this.longDescription = "Usually used to increment data for RPN and NRPN messages.";
 			this.controlNumber = CC_DATA_INCREMENT;
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
-		}
 	}
 	public static final int CC_DATA_DECREMENT                         = 97 ;
 	public static final MetroMidiControlDataDecrement MIDI_DATA_DECREMENT  = new MetroMidiControlDataDecrement();
@@ -1580,18 +916,6 @@ public class MetroMidi {
 			this.shortDescription = "(-1) Data Decrement";
 			this.longDescription = "Usually used to decrement data for RPN and NRPN messages.";
 			this.controlNumber = CC_DATA_DECREMENT ;
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
 		}
 	}
 	public static final int CC_NRPN_LSB                               = 98 ;
@@ -1604,18 +928,6 @@ public class MetroMidi {
 			this.longDescription = "For controllers 6, 38, 96, and 97, it selects the NRPN parameter.";
 			this.controlNumber = CC_NRPN_LSB                               ;
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
-		}
 	}
 	public static final int CC_NRPN_MSB                               = 99 ;
 	public static final MetroMidiControlNrpnMsb MIDI_NRPN_MSB  = new MetroMidiControlNrpnMsb();
@@ -1626,18 +938,6 @@ public class MetroMidi {
 			this.shortDescription = "Non-Registered Parameter Number MSB (NRPN)";
 			this.longDescription = "For controllers 6, 38, 96, and 97, it selects the NRPN parameter.";
 			this.controlNumber = CC_NRPN_MSB                               ;
-		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
 		}
 	}
 	public static final int CC_RPN_LSB                                = 100;
@@ -1650,18 +950,6 @@ public class MetroMidi {
 			this.longDescription = "For controllers 6, 38, 96, and 97, it selects the RPN parameter.";
 			this.controlNumber = CC_RPN_LSB                                ;
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
-		}
 	}
 	public static final int CC_RPN_MSB                                = 101;
 	public static final MetroMidiControlRpnMsb MIDI_RPN_MSB  = new MetroMidiControlRpnMsb();
@@ -1673,22 +961,7 @@ public class MetroMidi {
 			this.longDescription = "For controllers 6, 38, 96, and 97, it selects the RPN parameter.";
 			this.controlNumber = CC_RPN_MSB                                ;
 		}
-
-		@Override
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String, Object> map, boolean result) {
-			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
-			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
-
-			notifyMidiEvent( buf, offset, port, ch, value );
-
-			return result;
-		}
 	}
-
-	
- 	
 	
 	static {
 		putInfo( new MetroMidiNoteOn());
@@ -1857,73 +1130,5 @@ public class MetroMidi {
 		//         
 		putInfo( new MetroMidiControlRpnMsb());
 		
-
-		
-		// http://nickfever.com/music/midi-cc-list
-
-		// 0	"Bank Select"	"Allows user to switch bank for patch selection. Program change used with Bank Select. MIDI can access 16,384 patches per MIDI channel."
-		// 1	"Modulation"	"Generally this CC controls a vibrato effect (pitch, loudness, brighness). What is modulated is based on the patch."
-		// 2	"Breath Controller"	"Often times associated with aftertouch messages. It was originally intended for use with a breath MIDI controller in which blowing harder produced higher MIDI control values. It can be used for modulation as well."
-		// 4	"Foot Controller"	"Often used with aftertouch messages. It can send a continuous stream of values based on how the pedal is used."
-		// 5	"PortamentoTime"	"Controls portamento rate to slide between 2 notes played subsequently."
-		// 6	"Data Entry Most Significant Bit(MSB)"	"Controls Value for NRPN or RPN parameters."
-		// 7	"Volume"	"Control the volume of the channel"
-		// 8	"Balance"	"Controls the left and right balance, generally for stereo patches.0 = hard left, 64 = center, 127 = hard right"
-		// 10	"Pan"	"Controls the left and right balance, generally for mono patches.0 = hard left, 64 = center, 127 = hard right"
-		// 11	"Expression"	"Expression is a percentage of volume (CC7)."
-		// 12	"Effect Controller 1"	"Usually used to control a parameter of an effect within the synth/workstation."
-		// 13	"Effect Controller 2"	"Usually used to control a parameter of an effect within the synth/workstation."
-		// 64	"Damper Pedal /Sustain Pedal"	"On/Off switch that controls sustain. (See also Sostenuto CC 66)0 to 63 = Off, 64 to 127 = On"
-		// 65	"Portamento On/Off Switch"	"On/Off switch0 to 63 = Off, 64 to 127 = On"
-		// 66	"Sostenuto On/Off Switch"	"On/Off switch – Like the Sustain controller (CC 64), However it only holds notes that were “On” when the pedal was pressed. People use it to “hold” chords” and play melodies over the held chord.0 to 63 = Off, 64 to 127 = On"
-		// 67	"Soft Pedal On/Off Switch"	"On/Off switch- Lowers the volume of notes played.0 to 63 = Off, 64 to 127 = On"
-		// 68	"Legato FootSwitch"	"On/Off switch- Turns Legato effect between 2 subsequent notes On or Off.0 to 63 = Off, 64 to 127 = On"
-		// 69	"Hold 2"	"Another way to “hold notes” (see MIDI CC 64 and MIDI CC 66). However notes fade out according to their release parameter rather than when the pedal is released."
-		// 70	"Sound Controller 1"	"Usually controls the way a sound is produced. Default = Sound Variation."
-		// 71	"Sound Controller 2"	"Allows shaping the Voltage Controlled Filter (VCF). Default = Resonance -also(Timbre or Harmonics)"
-		// 72	"Sound Controller 3"	"Controls release time of the Voltage controlled Amplifier (VCA). Default = Release Time."
-		// 73	"Sound Controller 4"	"Controls the “Attack’ of a sound. The attack is the amount of time it takes forthe sound to reach maximum amplitude."
-		// 74	"Sound Controller 5"	"Controls VCFs cutoff frequency of the filter."
-		// 75	"Sound Controller 6"	"Generic – Some manufacturers may use to further shave their sounds."
-		// 76	"Sound Controller 7"	"Generic – Some manufacturers may use to further shave their sounds."
-		// 77	"Sound Controller 8"	"Generic – Some manufacturers may use to further shave their sounds."
-		// 78	"Sound Controller 9"	"Generic – Some manufacturers may use to further shave their sounds."
-		// 79	"Sound Controller 10"	"Generic – Some manufacturers may use to further shave their sounds."
-		// 80	"General PurposeMIDI CC Controller"	"GenericOn/Off switch0 to 63 = Off, 64 to 127 = On"
-		// 81	"General Purpose MIDI CC Controller"	"GenericOn/Off switch0 to 63 = Off, 64 to 127 = On"
-		// 82	"General PurposeMIDI CC Controller"	"GenericOn/Off switch0 to 63 = Off, 64 to 127 = On"
-		// 83	"General Purpose MIDI CC Controller"	"GenericOn/Off switch0 to 63 = Off, 64 to 127 = On"
-		// 84	"Portamento CC Control"	"Controls the amount of Portamento."
-		// 91	"Effect 1 Depth"	"Usually controls reverb send amount"
-		// 92	"Effect 2 Depth"	"Usually controls tremolo amount"
-		// 93	"Effect 3 Depth"	"Usually controls chorus amount"
-		// 94	"Effect 4 Depth"	"Usually controls detune amount"
-		// 95	"Effect 5 Depth"	"Usually controls phaser amount"
-		// 96	"(+1) Data Increment"	"Usually used to increment data for RPN and NRPN messages."
-		// 97	"(-1) Data Decrement"	"Usually used to decrement data for RPN and NRPN messages."
-		// 98	"Non-Registered Parameter Number LSB (NRPN)"	"For controllers 6, 38, 96, and 97, it selects the NRPN parameter."
-		// 99	"Non-Registered Parameter Number MSB (NRPN)"	"For controllers 6, 38, 96, and 97, it selects the NRPN parameter."
-		// 100	"Registered Parameter Number LSB (RPN)"	"For controllers 6, 38, 96, and 97, it selects the RPN parameter."
-		// 101	"Registered Parameter Number MSB (RPN)"	"For controllers 6, 38, 96, and 97, it selects the RPN parameter."
-
-		// 3	Undefined	 
-		// 9	Undefined	 
-		// 14	Undefined	 
-		// 15	Undefined	 
-		// 16 – 19	General Purpose	 
-		// 20 – 31	Undefined	 
-		// 32 – 63	Controller 0-31 Least Significant Bit (LSB)	 
-		// 85 – 90	Undefined	 
-		// 102 – 119	Undefined	 
-		// 
-		// 120 to 127 are “Channel Mode Messages.”		
-		// 120	All Sound Off	Mutes all sounding notes. It does so regardless of release time or sustain. (See MIDI CC 123)
-		// 121	Reset All Controllers	It will reset all controllers to their default.
-		// 122	Local On/Off Switch	Turns internal connection of a MIDI keyboard/workstation, etc. On or Off. If you use a computer, you will most likely want local control off to avoid notes being played twice. Once locally and twice whent the note is sent back from the computer to your keyboard.
-		// 123	All Notes Off	Mutes all sounding notes. Release time will still be maintained, and notes held by sustain will not turn off until sustain pedal is depressed.
-		// 124	Omni Mode Off	Sets to “Omni Off” mode.
-		// 125	Omni Mode On	Sets to “Omni On” mode.
-		// 126	Mono Mode	Sets device mode to Monophonic.
-		// 127	Poly Mode	Sets device mode to Polyphonic.
 	}
 }

@@ -9,7 +9,6 @@ import java.util.logging.Logger;
 
 import ats.metro.Metro;
 import ats.metro.MetroNoteEventBuffer;
-import ats.pulsar.MidiNoteListParsers.MidiNoteListParserElement;
 import ats.pulsar.lib.SchemeUtils;
 import gnu.lists.AbstractSequence;
 import gnu.lists.Pair;
@@ -33,6 +32,10 @@ public class NoteListParser {
 	private HashMap<String,NoteListParserElement> parserMap = new HashMap<String,NoteListParserElement>();
 	public void putParser( NoteListParserElement info ) {
 		String name = info.getShortName();
+		logInfo( parserMap.size() + " : putParser( " + name + " )" );
+		if ( name == null || name.equals( "" ) ) {
+			throw new RuntimeException( "internal error : " + info.getClass().getName() + " has no name. "  );
+		}
 		if ( parserMap.containsKey(name) )
 			throw new RuntimeException( "internal error : id (" + name + ") is already registered." );
 		
@@ -68,15 +71,15 @@ public class NoteListParser {
 		return result;
 	}
 
-	private boolean parseNote( Metro metro, Scheme scheme, MetroNoteEventBuffer outputBuffer, boolean result, Pair record ) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+//	private boolean parseNote( Metro metro, Scheme scheme, MetroNoteEventBuffer outputBuffer, boolean result, Pair record ) {
+//		// TODO Auto-generated method stub
+//		return false;
+//	}
 
 	public boolean parseNote( Metro metro, Scheme scheme, MetroNoteEventBuffer outputBuffer, boolean result, AbstractSequence list ) {
 		Map<String,Object> map = SchemeUtils.list2map(list, null );
 		String type      = map.containsKey( ID_TYPE ) ? SchemeUtils.symbolToString(  map.get( ID_TYPE ) ) : "";
-		MidiNoteListParserElement parser = getParser( type );
+		NoteListParserElement parser = getParser( type );
 		if ( parser == null ) {
 			logWarn( "unknown type (" +  type + ")" );
 			return result;

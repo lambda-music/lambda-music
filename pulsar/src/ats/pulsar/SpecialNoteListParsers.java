@@ -12,12 +12,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ats.metro.Metro;
-import ats.metro.MetroMidiDef;
+import ats.metro.MetroMidi;
 import ats.metro.MetroNoteEventBuffer;
 import ats.metro.MetroNoteEventBufferSequence.SyncType;
-import ats.pulsar.MidiNoteListParsers.MidiNoteListParserElement;
 import ats.pulsar.lib.SchemeUtils;
-import gnu.lists.AbstractSequence;
 import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
@@ -38,20 +36,6 @@ public class SpecialNoteListParsers {
 	public static Collection<NoteListParserElement> getElements() {
 		return Collections.unmodifiableList( elements );
 	}
-
-
-//	static final String ID_CHANNEL   = "chan";
-//	static final String ID_PORT_NO   = "port";
-//	static final String ID_PROCEDURE = "proc";
-//	static final String ID_ID        = "id";
-//	static final String ID_LENGTH    = "len";
-//	static final String ID_VELOCITY  = "velo";
-//	static final String ID_NOTE      = "note";
-//	static final String ID_OFFSET    = "pos";
-//	static final String ID_KEY       = "key";
-//	static final String ID_MIN       = "min";
-//	static final String ID_MAX       = "max";
-//	static final String ID_VALUE     = "val";
 
 	static void logError(String msg, Throwable e) {
 		LOGGER.log(Level.SEVERE, msg, e);
@@ -108,6 +92,10 @@ public class SpecialNoteListParsers {
 	public static final NoteEventParser PARSER_NOTE = new NoteEventParser();
 	static { register( PARSER_NOTE ); }
 	public static class NoteEventParser extends SpecialNoteListParserElement {
+		{
+			this.shortName = "note";
+			this.longName  = "note";
+		}
 		@Override
 		public
 		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
@@ -122,22 +110,22 @@ public class SpecialNoteListParsers {
 			double velocity  = map.containsKey( ID_VELOCITY ) ? SchemeUtils.toDouble(       map.get(ID_VELOCITY  ) ) : 63;
 			double length    = map.containsKey( ID_LENGTH   ) ? SchemeUtils.toDouble(       map.get(ID_LENGTH    ) ) : -1d;
 			
-//			duration = 0.5;
 			if ( length < 0 )
 				length = 0.0025d;
 
-			MidiNoteListParsers.PARSER_NOTE_ON.parseEvent(metro, scheme, buf, map, result)
-			outputBuffer.midiEvent(offset             , port, MetroMidiDef.noteOn (channel, note, velocity ) );
-			outputBuffer.midiEvent(offset + length  , port, MetroMidiDef.noteOff(channel, note, velocity ) );
+			MetroMidi.MIDI_NOTE_ON. notifyMidiEvent( outputBuffer, offset           , port, channel, note, velocity );
+			MetroMidi.MIDI_NOTE_OFF.notifyMidiEvent( outputBuffer, offset + length  , port, channel, note, velocity );
 
 			return result;
 		}
 	}
 
+	public static final BarEventParser PARSER_BAR = new BarEventParser();
+	static { register( PARSER_BAR ); } 
 	static final class BarEventParser extends SpecialNoteListParserElement {
 		{
 			this.shortName = "len";
-			this.longName = "bar length";
+			this.longName  = "bar length";
 		}
 		@Override
 		public
@@ -152,6 +140,10 @@ public class SpecialNoteListParsers {
 			return result;
 		}
 	}
+	
+	
+	public static final ExecEventParser PARSER_EXEC = new ExecEventParser();
+	static { register( PARSER_EXEC ); } 
 	static final class ExecEventParser extends SpecialNoteListParserElement {
 		{
 			this.shortName = "exec";
@@ -171,6 +163,8 @@ public class SpecialNoteListParsers {
 	}
 //	private static final Procedure SCHEME_NOP = new ProcedureN() {
 //	};
+	public static final PutEventParser PARSER_PUT = new PutEventParser();
+	static { register( PARSER_PUT ); }
 	static final class PutEventParser extends SpecialNoteListParserElement {
 		{
 			this.shortName = "add";
@@ -220,6 +214,8 @@ public class SpecialNoteListParsers {
 			return id;
 		}
 	}
+	public static final RemoveEventParser PARSER_REMOVE = new RemoveEventParser();
+	static { register( PARSER_REMOVE ); }
 	static final class RemoveEventParser extends SpecialNoteListParserElement {
 		{
 			this.shortName = "kill";
@@ -258,24 +254,8 @@ public class SpecialNoteListParsers {
 		}
 	}
 	
-	static final class ListEventParser extends SpecialNoteListParserElement {
-		{
-			this.shortName = "list";
-			this.longName = "list";
-		}
-		@Override
-		public
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
-			AbstractSequence<Object> value = map.containsKey( ID_VALUE ) ? (AbstractSequence<Object> )map.get( ID_VALUE ) : null;
-			if ( value != null ) {
-				// *** a recursive calling ***
-				result = SchemeNoteParser0.parse(metro, scheme , value, outputBuffer, result );
-			} else {
-				LOGGER.log(Level.WARNING, "Found an empty list. This might be a possible cause of problems" );
-			}
-			return result;
-		}
-	}
+	public static final EndEventParser PARSER_END = new EndEventParser();
+	static { register( PARSER_END ); }
 	static final class EndEventParser extends SpecialNoteListParserElement {
 		{
 			this.shortName = "end";
