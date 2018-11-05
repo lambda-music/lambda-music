@@ -56,7 +56,7 @@ public class SchemeNoteParser0 {
 				} else if ( obj instanceof Boolean ) {
 					continue;
 				} else {
-					SchemePulsarLogic.LOGGER.log( Level.WARNING, "Unsupported object type was found. We ignored it." + obj );
+					SchemeSequence.LOGGER.log( Level.WARNING, "Unsupported object type was found. We ignored it." + obj );
 				}
 					
 			} // end of the loop
@@ -253,10 +253,10 @@ public class SchemeNoteParser0 {
 				outputBuffer.exec( offset, new Runnable() {
 					@Override
 					public void run() {
-						SchemePulsarLogic logic = new SchemePulsarLogic( scheme,
+						SchemeSequence sequence = new SchemeSequence( scheme,
 								new InvocableSchemeProcedure( scheme, Environment.getCurrent(), procedure ) );
 
-						pulsar.putLogic( id2, tags, logic, syncType, syncSequenceId, syncOffset  );
+						pulsar.putSequence( id2, tags, sequence, syncType, syncSequenceId, syncOffset  );
 					}
 				} );
 			}

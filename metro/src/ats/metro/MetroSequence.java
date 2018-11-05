@@ -4,11 +4,11 @@ import java.util.List;
 import java.util.Set;
  
 /**
- * {@link MetroLogic} is a base class of all tracks which are played by the Metro track.
+ * {@link MetroSequence} is a base class of all tracks which are played by the Metro track.
  * 
  * @author ats
  */
-public abstract class MetroLogic implements MetroTrackInfo {
+public abstract class MetroSequence implements MetroTrackInfo {
 	public abstract void    processDirect(    Metro metro, List<MetroAbstractMidiEvent> in, List<MetroAbstractMidiEvent> out );
 	public abstract boolean processBuffered(  Metro metro, MetroTrack track, MetroEventBuffer buf );
 	

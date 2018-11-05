@@ -61,7 +61,7 @@ public class NoteListParser {
 				} else if ( obj instanceof Boolean ) {
 					continue;
 				} else {
-					SchemePulsarLogic.LOGGER.log( Level.WARNING, "Unsupported object type was found. We ignored it." + obj );
+					SchemeSequence.LOGGER.log( Level.WARNING, "Unsupported object type was found. We ignored it." + obj );
 				}
 					
 			} // end of the loop

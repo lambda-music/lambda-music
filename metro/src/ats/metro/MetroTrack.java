@@ -59,11 +59,11 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 	protected transient int lastLengthInFrames = 0;
 	protected transient int lastAccumulatedLength = 0;
 	
-	protected final MetroLogic logic;
+	protected final MetroSequence sequence;
 	transient boolean ending = false;
 	transient double endingLength = 0;
 	
-	public MetroTrack( Metro metro, String name, Collection<String> tags, MetroLogic logic, SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
+	public MetroTrack( Metro metro, String name, Collection<String> tags, MetroSequence sequence, SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
 //		LOGGER.info( "Track(" + name + ") : " + tags + " : " + syncType + " : " + syncOffset );
 		this.name = name.intern();
 		if ( tags == null )
@@ -71,12 +71,12 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 		else
 			this.tags = (new HashSet<>( tags ));
 		this.metro = metro;
-		this.logic = logic;
+		this.sequence = sequence;
 		this.syncType = syncType;
 		this.syncTrack = syncTrack;
 		this.syncOffset = syncOffset;
 		
-		logic.setTrackInfo( this );
+		sequence.setTrackInfo( this );
 	}
 	
 	@Override
@@ -84,8 +84,8 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 		return this.metro.lock;
 	}
 	
-	public MetroLogic getLogic() {
-		return this.logic;
+	public MetroSequence getSequence() {
+		return this.sequence;
 	}
 	@Override
 	public String getTrackName() {
@@ -408,7 +408,7 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 				
 			} else {
 				MetroEventBuffer buf = new MetroEventBuffer();
-				boolean result = this.logic.processBuffered( metro, this, buf );
+				boolean result = this.sequence.processBuffered( metro, this, buf );
 				buf.prepare( metro, client, position, true );
 
 				if ( DEBUG && ( buf.size() >0 ) )

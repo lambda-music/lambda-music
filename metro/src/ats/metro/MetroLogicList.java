@@ -11,7 +11,7 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-class MetroLogicList implements List<MetroLogic> {
+class MetroLogicList implements List<MetroSequence> {
 	private static final String MSG_NOT_IMPLEMENTED_0 = "Not implemented. Use metro.putLogic() method";
 	private static final String MSG_NOT_IMPLEMENTED = "not implemented.";
 	final List<MetroTrack> object;
@@ -20,9 +20,9 @@ class MetroLogicList implements List<MetroLogic> {
 		this.object = object;
 	}
 
-	public void forEach(Consumer<? super MetroLogic> action) {
+	public void forEach(Consumer<? super MetroSequence> action) {
 		object.forEach((e)->{
-			action.accept( e.logic );
+			action.accept( e.sequence );
 		});
 	}
 
@@ -36,19 +36,19 @@ class MetroLogicList implements List<MetroLogic> {
 
 	public boolean contains(Object o) {
 		for ( MetroTrack track : object  ) {
-			if ( o.equals( track.logic ) ) {
+			if ( o.equals( track.sequence ) ) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public Iterator<MetroLogic> iterator() {
+	public Iterator<MetroSequence> iterator() {
 		Iterator<MetroTrack> i = object.iterator();
-		return new Iterator<MetroLogic>() {
+		return new Iterator<MetroSequence>() {
 			@Override
-			public MetroLogic next() {
-				return i.next().logic;
+			public MetroSequence next() {
+				return i.next().sequence;
 			}
 			
 			@Override
@@ -61,20 +61,20 @@ class MetroLogicList implements List<MetroLogic> {
 	public Object[] toArray() {
 		Object[] result = new Object[ object.size() ];
 		for ( int i=0; i<object.size(); i++  ) {
-			result[i] = object.get(i).logic;
+			result[i] = object.get(i).sequence;
 		}
 		return result;
 	}
 
 	public <T> T[] toArray(T[] a) {
 		for ( int i=0; i<object.size(); i++  ) {
-			a[i] = (T)object.get(i).logic;
+			a[i] = (T)object.get(i).sequence;
 		}
 		return a;
 
 	}
 
-	public boolean add(MetroLogic e) {
+	public boolean add(MetroSequence e) {
 		throw new RuntimeException( MSG_NOT_IMPLEMENTED_0);
 	}
 
@@ -91,11 +91,11 @@ class MetroLogicList implements List<MetroLogic> {
 		return true;
 	}
 
-	public boolean addAll(Collection<? extends MetroLogic> c) {
+	public boolean addAll(Collection<? extends MetroSequence> c) {
 		throw new RuntimeException( MSG_NOT_IMPLEMENTED_0);
 	}
 
-	public boolean addAll(int index, Collection<? extends MetroLogic> c) {
+	public boolean addAll(int index, Collection<? extends MetroSequence> c) {
 		throw new RuntimeException( MSG_NOT_IMPLEMENTED_0);
 	}
 
@@ -107,19 +107,19 @@ class MetroLogicList implements List<MetroLogic> {
 		throw new RuntimeException( MSG_NOT_IMPLEMENTED_0);
 	}
 
-	public void replaceAll(UnaryOperator<MetroLogic> operator) {
+	public void replaceAll(UnaryOperator<MetroSequence> operator) {
 		throw new RuntimeException( MSG_NOT_IMPLEMENTED_0);
 	}
 
-	public boolean removeIf(Predicate<? super MetroLogic> filter) {
-		return object.removeIf( (e)->filter.test(e.logic) );
+	public boolean removeIf(Predicate<? super MetroSequence> filter) {
+		return object.removeIf( (e)->filter.test(e.sequence) );
 	}
 
-	public void sort(Comparator<? super MetroLogic> c) {
+	public void sort(Comparator<? super MetroSequence> c) {
 		object.sort( new Comparator<MetroTrack>() {
 			@Override
 			public int compare(MetroTrack o1, MetroTrack o2) {
-				return c.compare( o1.logic , o2.logic );
+				return c.compare( o1.sequence , o2.sequence );
 			}
 		});
 	}
@@ -136,62 +136,62 @@ class MetroLogicList implements List<MetroLogic> {
 		return object.hashCode();
 	}
 
-	public MetroLogic get(int index) {
-		return object.get(index).logic;
+	public MetroSequence get(int index) {
+		return object.get(index).sequence;
 	}
 
-	public MetroLogic set(int index, MetroLogic element) {
+	public MetroSequence set(int index, MetroSequence element) {
 		throw new RuntimeException( MSG_NOT_IMPLEMENTED_0);
 	}
 
-	public void add(int index, MetroLogic element) {
+	public void add(int index, MetroSequence element) {
 		throw new RuntimeException( MSG_NOT_IMPLEMENTED_0);
 	}
 
-	public Stream<MetroLogic> stream() {
+	public Stream<MetroSequence> stream() {
 		throw new RuntimeException( MSG_NOT_IMPLEMENTED );
 	}
 
-	public MetroLogic remove(int index) {
-		return object.remove(index).logic;
+	public MetroSequence remove(int index) {
+		return object.remove(index).sequence;
 	}
 
-	public Stream<MetroLogic> parallelStream() {
+	public Stream<MetroSequence> parallelStream() {
 		throw new RuntimeException( MSG_NOT_IMPLEMENTED );
 	}
 
 	public int indexOf(Object o) {
-		return object.indexOf( ((MetroLogic)o).trackInfo );
+		return object.indexOf( ((MetroSequence)o).trackInfo );
 	}
 
 	public int lastIndexOf(Object o) {
-		return object.lastIndexOf( ((MetroLogic)o).trackInfo );
+		return object.lastIndexOf( ((MetroSequence)o).trackInfo );
 	}
 
-	public ListIterator<MetroLogic> listIterator() {
+	public ListIterator<MetroSequence> listIterator() {
 		return new MetroLogicListIterator( object.listIterator() );
 	}
 
-	public ListIterator<MetroLogic> listIterator(int index) {
+	public ListIterator<MetroSequence> listIterator(int index) {
 		return new MetroLogicListIterator( object.listIterator( index ) );
 	}
 
-	public List<MetroLogic> subList(int fromIndex, int toIndex) {
+	public List<MetroSequence> subList(int fromIndex, int toIndex) {
 		throw new RuntimeException( MSG_NOT_IMPLEMENTED );
 	}
 
-	public Spliterator<MetroLogic> spliterator() {
+	public Spliterator<MetroSequence> spliterator() {
 		throw new RuntimeException( MSG_NOT_IMPLEMENTED );
 	}
 
 	
-	private final class MetroLogicListIterator implements ListIterator<MetroLogic> {
+	private final class MetroLogicListIterator implements ListIterator<MetroSequence> {
 		private final ListIterator<MetroTrack> listIterator;
 		private MetroLogicListIterator(ListIterator<MetroTrack> listIterator) {
 			this.listIterator = listIterator;
 		}
 		@Override
-		public void set(MetroLogic e) {
+		public void set(MetroSequence e) {
 			throw new RuntimeException( MSG_NOT_IMPLEMENTED );
 		}
 
@@ -206,8 +206,8 @@ class MetroLogicList implements List<MetroLogic> {
 		}
 
 		@Override
-		public MetroLogic previous() {
-			return listIterator.previous().logic;
+		public MetroSequence previous() {
+			return listIterator.previous().sequence;
 		}
 
 		@Override
@@ -216,8 +216,8 @@ class MetroLogicList implements List<MetroLogic> {
 		}
 
 		@Override
-		public MetroLogic next() {
-			return listIterator.next().logic;
+		public MetroSequence next() {
+			return listIterator.next().sequence;
 		}
 
 		@Override
@@ -231,7 +231,7 @@ class MetroLogicList implements List<MetroLogic> {
 		}
 
 		@Override
-		public void add(MetroLogic e) {
+		public void add(MetroSequence e) {
 			throw new RuntimeException( MSG_NOT_IMPLEMENTED );
 		}
 	}

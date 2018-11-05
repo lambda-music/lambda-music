@@ -856,10 +856,10 @@ public final class Pulsar extends Metro {
 					String syncTrackName    = 4<=args.length ? SchemeUtils.anyToString( SchemeUtils.schemeNullCheck( args[3] ) ) : null;
 					double offset           = 5<=args.length ? SchemeUtils.toDouble( args[4] ) : 0.0d;
 					
-					SchemePulsarLogic logic = new SchemePulsarLogic( scheme,
+					SchemeSequence sequence = new SchemeSequence( scheme,
 							new InvocableSchemeProcedure( scheme, Environment.getCurrent(), procedure ) );
 					
-					putLogic( name, tags, logic, syncType, syncTrackName, offset );
+					putSequence( name, tags, sequence, syncType, syncTrackName, offset );
 					 
 					return EmptyList.emptyList;
 				} else {
@@ -879,7 +879,7 @@ public final class Pulsar extends Metro {
 					removeTrack(name);
 					return EmptyList.emptyList;
 				} else {
-					throw new RuntimeException( "Invalid parameter. usage : (new-logic [name] [lambda] ) " );
+					throw new RuntimeException( "Invalid parameter. usage : (new-sequence [name] [lambda] ) " );
 				}
 			}
     	});
@@ -898,7 +898,7 @@ public final class Pulsar extends Metro {
 					
 					return getTrack(name) != null;
 				} else {
-					throw new RuntimeException( "Invalid parameter. usage : (new-logic [name] [lambda] ) " );
+					throw new RuntimeException( "Invalid parameter. usage : (new-sequence [name] [lambda] ) " );
 				}
 			}
     	});
@@ -909,8 +909,8 @@ public final class Pulsar extends Metro {
 				synchronized ( lock ) {
 					ArrayList<LList> list = new ArrayList<>( tracks.size() );
 					for ( MetroTrack track :  tracks ) {
-						SchemePulsarLogic logic = (SchemePulsarLogic)track.getLogic();
-						list.add( SchemeUtils.acons( logic.getTrackName(), logic.asociationList ));
+						SchemeSequence sequence = (SchemeSequence)track.getSequence();
+						list.add( SchemeUtils.acons( sequence.getTrackName(), sequence.asociationList ));
 					}
 					return LList.makeList(list);
 				}

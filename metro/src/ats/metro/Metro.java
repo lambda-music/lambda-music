@@ -114,10 +114,10 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		return logicList;
 	}
 	
-	public static Metro startClient( String clientName, MetroLogic logic ) throws JackException {
+	public static Metro startClient( String clientName, MetroSequence sequence ) throws JackException {
 		try {
             Metro metro = new Metro();
-            metro.putLogic( "main", logic );
+            metro.putSequence( "main", sequence );
             metro.open( clientName );
             return metro;
         } catch (JackException ex) {
@@ -145,18 +145,18 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	}
 	
 	/*
-	 * Note that  There is no `this.logics`. Instead of that all of Logic objects are 
+	 * Note that  There is no `this.logics`. Instead of that all of MetroSequence objects are 
 	 * wrapped by Track and stored as `this.tracks`.   
 	 * (Sat, 18 Aug 2018 19:03:18 +0900)
 	 */
-	public void putLogic( String name, MetroLogic logic ) {
-		putLogic( name, null, logic, SyncType.PARALLEL, null, 0.0d );
+	public void putSequence( String name, MetroSequence sequence ) {
+		putSequence( name, null, sequence, SyncType.PARALLEL, null, 0.0d );
 	}
-	public void putLogic( String name, Collection<String> tags, MetroLogic logic, SyncType syncType, Object syncTrackObject, double syncOffset ) {
-		putTrack( createTrack( name, tags, logic, syncType, syncTrackObject, syncOffset ) );
+	public void putSequence( String name, Collection<String> tags, MetroSequence sequence, SyncType syncType, Object syncTrackObject, double syncOffset ) {
+		putTrack( createTrack( name, tags, sequence, syncType, syncTrackObject, syncOffset ) );
 	}
-	public void putLogic( String name, Collection<String> tags, MetroLogic logic, SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
-		putTrack( createTrack( name, tags, logic, syncType, syncTrack, syncOffset ) );
+	public void putSequence( String name, Collection<String> tags, MetroSequence sequence, SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
+		putTrack( createTrack( name, tags, sequence, syncType, syncTrack, syncOffset ) );
 	}
 	public MetroTrack getTrack( Object nameObject ) {
 		if ( nameObject == null ) {
@@ -189,17 +189,17 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	}
 
 	public MetroTrack createTrack(  
-			String name, Collection<String> tags, MetroLogic logic,
+			String name, Collection<String> tags, MetroSequence sequence,
 			SyncType syncType, MetroTrack syncTrack, double syncOffset) 
 	{
-		return new MetroTrack( this, name, tags, logic, syncType, syncTrack, syncOffset );
+		return new MetroTrack( this, name, tags, sequence, syncType, syncTrack, syncOffset );
 	}
 	public MetroTrack createTrack(  
-			String name, Collection<String> tags, MetroLogic logic,
+			String name, Collection<String> tags, MetroSequence sequence,
 			SyncType syncType, Object syncTrackObject, double syncOffset) 
 	{
 		MetroTrack syncTrack = getTrack( syncTrackObject ); 
-		return new MetroTrack( this, name, tags, logic, syncType, syncTrack, syncOffset );
+		return new MetroTrack( this, name, tags, sequence, syncType, syncTrack, syncOffset );
 	}
 	
 	private MetroTrack searchTrack( String name ) {
@@ -296,7 +296,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
         }
 
         // Create a thread.
-//    	this.logic.setParent( this );
+//    	this.sequence.setParent( this );
         this.activate();
         this.thread = new Thread( this );
         this.thread.start();
@@ -534,7 +534,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
             synchronized ( this.lock ) {
                 if ( 0 < this.inputMidiEventList.size() )
 	            	for ( MetroTrack track : this.tracks ) {
-	            		track.logic.processDirect( this, this.inputMidiEventList, this.outputMidiEventList );
+	            		track.sequence.processDirect( this, this.inputMidiEventList, this.outputMidiEventList );
 	            	}
                 
                 if ( true )
