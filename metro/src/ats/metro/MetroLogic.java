@@ -2,7 +2,12 @@ package ats.metro;
 
 import java.util.List;
 import java.util.Set;
-
+ 
+/**
+ * {@link MetroLogic} is a base class of all sequences which are played by the Metro sequencer.
+ * 
+ * @author ats
+ */
 public abstract class MetroLogic implements MetroPlayer {
 	public abstract void    processDirect(    Metro metro, List<MetroAbstractMidiEvent> in, List<MetroAbstractMidiEvent> out );
 	public abstract boolean processBuffered(  Metro metro, MetroNoteEventBufferSequence sequence, MetroNoteEventBuffer buf );
