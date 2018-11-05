@@ -34,22 +34,6 @@ public class SchemePulsarLogic extends MetroLogic {
 	static void logWarn(String msg) {
 		LOGGER.log(Level.WARNING, msg);
 	}
-
-//
-//	static final String ID_TYPE      = "type";
-//	static final String ID_ENABLED   = "enab";
-//	static final String ID_CHANNEL   = "chan";
-//	static final String ID_PORT_NO   = "port";
-//	static final String ID_PROCEDURE = "proc";
-//	static final String ID_LENGTH    = "len";
-//	static final String ID_VELOCITY  = "velo";
-//	static final String ID_NOTE      = "note";
-//	static final String ID_OFFSET    = "pos";
-//	static final String ID_KEY       = "key";
-//	static final String ID_MIN       = "min";
-//	static final String ID_MAX       = "max";
-//	static final String ID_VALUE     = "val";
-//	private static final Object ID_HUMANIZE  = "huma";
 	
 	/*
 	 * (list

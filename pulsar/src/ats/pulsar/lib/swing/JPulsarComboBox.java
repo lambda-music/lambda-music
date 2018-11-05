@@ -1,4 +1,4 @@
-package ats.pulsar.lib;
+package ats.pulsar.lib.swing;
 
 import java.util.Vector;
 

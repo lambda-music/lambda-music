@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ats.pulsar.lib;
+package ats.pulsar.lib.swing;
 
 import java.awt.Color;
 import java.awt.Event;

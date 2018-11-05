@@ -1,4 +1,4 @@
-package ats.pulsar.lib;
+package ats.pulsar.lib.swing;
 
 import javax.swing.Action;
 import javax.swing.Icon;
