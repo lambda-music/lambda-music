@@ -14,8 +14,8 @@ import org.jaudiolibs.jnajack.JackClient;
 import org.jaudiolibs.jnajack.JackException;
 import org.jaudiolibs.jnajack.JackPosition;
 
-public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
-	static final Logger LOGGER = Logger.getLogger(MetroNoteEventBufferSequence.class.getName());
+public class MetroTrack implements MetroPlayer, MetroLock {
+	static final Logger LOGGER = Logger.getLogger(MetroTrack.class.getName());
 	static void logError(String msg, Throwable e) {
 		LOGGER.log(Level.SEVERE, msg, e);
 	}
@@ -52,9 +52,9 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 	int id = (int) (Math.random()* Integer.MAX_VALUE);
 
 	private transient SyncType syncType;
-	private transient MetroNoteEventBufferSequence syncSequence;
+	private transient MetroTrack syncTrack;
 	private transient double syncOffset=0.0d;
-	private BlockingQueue<MetroNoteEventBuffer> buffers = new LinkedBlockingQueue<>();
+	private BlockingQueue<MetroEventBuffer> buffers = new LinkedBlockingQueue<>();
 	protected transient int cursor = 0;
 	protected transient int lastLengthInFrames = 0;
 	protected transient int lastAccumulatedLength = 0;
@@ -63,8 +63,8 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 	transient boolean ending = false;
 	transient double endingLength = 0;
 	
-	public MetroNoteEventBufferSequence( Metro metro, String name, Collection<String> tags, MetroLogic logic, SyncType syncType, MetroNoteEventBufferSequence syncSequence, double syncOffset ) {
-//		LOGGER.info( "BufferSequence(" + name + ") : " + tags + " : " + syncType + " : " + syncOffset );
+	public MetroTrack( Metro metro, String name, Collection<String> tags, MetroLogic logic, SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
+//		LOGGER.info( "Track(" + name + ") : " + tags + " : " + syncType + " : " + syncOffset );
 		this.name = name.intern();
 		if ( tags == null )
 			this.tags = new HashSet<>();
@@ -73,7 +73,7 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 		this.metro = metro;
 		this.logic = logic;
 		this.syncType = syncType;
-		this.syncSequence = syncSequence;
+		this.syncTrack = syncTrack;
 		this.syncOffset = syncOffset;
 		
 		logic.setPlayer( this );
@@ -109,7 +109,7 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 		if ( graceful ) {
 			this.ending = true;
 		} else {
-			metro.unregisterSequence( this );
+			metro.unregisterTrack( this );
 		}
 	}
 	@Override
@@ -126,7 +126,7 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 //	@Override
 //	public boolean equals(Object obj) {
 //		try {
-//			return this.name == ((MetroNoteEventBufferSequence)obj).name;
+//			return this.name == ((Track)obj).name;
 //		} catch ( ClassCastException e ) {
 //            Logger.getLogger( Metro.class.getName()).log(Level.WARNING, null, e );
 //			return false;
@@ -208,8 +208,8 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 			// This keeps negative offset value for the current cursor position. 
 			int cursorOffset = 0;
 
-			for ( Iterator<MetroNoteEventBuffer> ibuf = this.buffers.iterator(); ibuf.hasNext(); ) {
-				MetroNoteEventBuffer buf = ibuf.next();
+			for ( Iterator<MetroEventBuffer> ibuf = this.buffers.iterator(); ibuf.hasNext(); ) {
+				MetroEventBuffer buf = ibuf.next();
 
 				int actualCursor     = currentCursor - cursorOffset;
 				int actualNextCursor = nextCursor    - cursorOffset;
@@ -234,8 +234,8 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 				int accumulatedLength = 0;
 				int pollCount = 0;
 				int lengthInFrame = -1;
-				for (Iterator<MetroNoteEventBuffer> it = this.buffers.iterator();it.hasNext(); ) {
-					MetroNoteEventBuffer b=it.next();
+				for (Iterator<MetroEventBuffer> it = this.buffers.iterator();it.hasNext(); ) {
+					MetroEventBuffer b=it.next();
 					accumulatedLength += b.getLengthInFrames();
 					
 					if (  accumulatedLength < ( currentCursor - (int)(b.getBarLengthInFrames() * MARGIN_LENGTH ) ) ) {
@@ -248,8 +248,8 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 				}
 				
 				int polledCount = 0;
-				for (Iterator<MetroNoteEventBuffer> it = this.buffers.iterator();it.hasNext(); ) {
-					MetroNoteEventBuffer b = it.next();
+				for (Iterator<MetroEventBuffer> it = this.buffers.iterator();it.hasNext(); ) {
+					MetroEventBuffer b = it.next();
 					if ( polledCount < pollCount  ) {
 						polledCount ++;
 						int currentLengthInFrames = b.getLengthInFrames();
@@ -286,31 +286,31 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 			{
 				this.cursor = offset;
 				logInfo( "prepare(immediate):" + this.cursor );
-				if ( this.syncSequence != null ) {
-					Logger.getLogger( Metro.class.getName()).log(Level.WARNING, "syncSequence was passed but ignored by the process because syncType was `immediate`." );
+				if ( this.syncTrack != null ) {
+					Logger.getLogger( Metro.class.getName()).log(Level.WARNING, "syncTrack was passed but ignored by the process because syncType was `immediate`." );
 				}
 			}
 			break;
 			case PARALLEL :
 			{
-				if ( this.syncSequence == null ) {
+				if ( this.syncTrack == null ) {
 					this.cursor = offset;
-					Logger.getLogger( Metro.class.getName()).log(Level.WARNING, "`parallel` was specified but syncSequence was not passed." );
+					Logger.getLogger( Metro.class.getName()).log(Level.WARNING, "`parallel` was specified but syncTrack was not passed." );
 				} else {
-					this.cursor = this.syncSequence.cursor + offset ;
+					this.cursor = this.syncTrack.cursor + offset ;
 				}
 
 			}
 			break;
 			case SERIAL :
-				if ( this.syncSequence == null ) {
+				if ( this.syncTrack == null ) {
 					this.cursor = offset;
-		            Logger.getLogger( Metro.class.getName()).log(Level.WARNING, "`serial` was specified but syncSequence was not passed." );
+		            Logger.getLogger( Metro.class.getName()).log(Level.WARNING, "`serial` was specified but syncTrack was not passed." );
 				} else {
-					synchronized ( this.syncSequence.buffers ) {
+					synchronized ( this.syncTrack.buffers ) {
 						this.cursor =
-								this.syncSequence.cursor - 
-								this.syncSequence.buffers.peek().getLengthInFrames() + 
+								this.syncTrack.cursor - 
+								this.syncTrack.buffers.peek().getLengthInFrames() + 
 								offset;
 					}
 				}
@@ -328,18 +328,18 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 			int prevLengthInFrame = -1;
 			int lengthInFrame = -1;
 			{
-				MetroNoteEventBuffer headBuffer = this.buffers.peek();
+				MetroEventBuffer headBuffer = this.buffers.peek();
 				if ( headBuffer != null )
 					prevLengthInFrame = headBuffer.getLengthInFrames();
 			}
 				
 			// double ratio = magnifyCursorPosition( prevBeatsPerMinute, beatsPerMinute );
-			for ( MetroNoteEventBuffer buffer : this.buffers ) {
+			for ( MetroEventBuffer buffer : this.buffers ) {
 				buffer.prepare(metro, client, position, false);
 			}
 			
 			{
-				MetroNoteEventBuffer headBuffer = this.buffers.peek();
+				MetroEventBuffer headBuffer = this.buffers.peek();
 				if ( headBuffer != null )
 					lengthInFrame = headBuffer.getLengthInFrames();
 			}
@@ -360,7 +360,7 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 
 	private double getAccumulatedLength() {
 		double accumulatedLength = 0;
-		for ( MetroNoteEventBuffer b : this.buffers ) {
+		for ( MetroEventBuffer b : this.buffers ) {
 			accumulatedLength += b.getLength();
 		}
 //		logInfo( "accumulatedLength" + accumulatedLength );
@@ -394,12 +394,12 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 	private void offerNewBuffer( Metro metro, JackClient client, JackPosition position ) throws JackException {
 		synchronized ( this.buffers ) {
 			if ( this.ending ) {
-				MetroNoteEventBuffer buf = new MetroNoteEventBuffer();
+				MetroEventBuffer buf = new MetroEventBuffer();
 				buf.exec( this.endingLength , new Runnable() {
 					@Override
 					public void run() {
 						System.err.println( "UNREGISTER THIS" );
-						metro.unregisterSequence( MetroNoteEventBufferSequence.this );
+						metro.unregisterTrack( MetroTrack.this );
 					}
 				});
 				buf.setLength( this.endingLength );
@@ -407,7 +407,7 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 				this.buffers.offer( buf );
 				
 			} else {
-				MetroNoteEventBuffer buf = new MetroNoteEventBuffer();
+				MetroEventBuffer buf = new MetroEventBuffer();
 				boolean result = this.logic.processBuffered( metro, this, buf );
 				buf.prepare( metro, client, position, true );
 
@@ -429,8 +429,8 @@ public class MetroNoteEventBufferSequence implements MetroPlayer, MetroLock {
 	}
 	@Override
 	public boolean equals(Object obj) {
-		if ( obj instanceof MetroNoteEventBufferSequence ) {
-			return ((MetroNoteEventBufferSequence)obj).name == this.name;
+		if ( obj instanceof MetroTrack ) {
+			return ((MetroTrack)obj).name == this.name;
 		} else {
 			return false;
 		}

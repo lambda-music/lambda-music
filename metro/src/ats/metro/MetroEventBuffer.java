@@ -13,8 +13,8 @@ import org.jaudiolibs.jnajack.JackClient;
 import org.jaudiolibs.jnajack.JackException;
 import org.jaudiolibs.jnajack.JackPosition;
 
-public class MetroNoteEventBuffer implements Iterable<MetroEvent>{
-    static final Logger LOGGER = Logger.getLogger(MetroNoteEventBuffer.class.getName());
+public class MetroEventBuffer implements Iterable<MetroEvent>{
+    static final Logger LOGGER = Logger.getLogger(MetroEventBuffer.class.getName());
 	static void logError(String msg, Throwable e) {
 		LOGGER.log(Level.SEVERE, msg, e);
 	}
@@ -143,7 +143,7 @@ public class MetroNoteEventBuffer implements Iterable<MetroEvent>{
 		/*
 		 * DON'T CHECK MIN/MAX HERE
 		 * The offset may go beyond the minimum/maximum; now 
-		 * {@link MetroNoteEventBuffer} can process the MIDI 
+		 * {@link MetroEventBuffer} can process the MIDI 
 		 * signals which are beyond the region of the buffer.   
 		 */
 		// if ( offset < 0 )  offset=0;

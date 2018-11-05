@@ -138,31 +138,31 @@ public class MetroMidi {
 	}
 	public static abstract class MetroMidiNoArg extends MetroMidiMsg {
 		public abstract byte[] createMidiMessage( int ch );
-		public final void notifyMidiEvent( MetroNoteEventBuffer buf, double offset, int port, int ch ) {
+		public final void notifyMidiEvent( MetroEventBuffer buf, double offset, int port, int ch ) {
 			buf.midiEvent(offset , port, createMidiMessage( ch ) );
 		}
 	}
 	public static abstract class MetroMidiBoolean1 extends MetroMidiMsg {
 		public abstract byte[] createMidiMessage( int ch, boolean value );
-		public final void notifyMidiEvent( MetroNoteEventBuffer buf, double offset, int port, int ch, boolean value ) {
+		public final void notifyMidiEvent( MetroEventBuffer buf, double offset, int port, int ch, boolean value ) {
 			buf.midiEvent(offset , port, createMidiMessage( ch, value ) );
 		}
 	}
 	public static abstract class MetroMidiInt1 extends MetroMidiMsg {
 		public abstract byte[] createMidiMessage( int ch, int value );
-		public final void notifyMidiEvent( MetroNoteEventBuffer buf, double offset, int port, int ch, int value  ) {
+		public final void notifyMidiEvent( MetroEventBuffer buf, double offset, int port, int ch, int value  ) {
 			buf.midiEvent(offset , port, createMidiMessage( ch, value ) );
 		}
 	}
 	public static abstract class MetroMidiInt2 extends MetroMidiMsg {
 		public abstract byte[] createMidiMessage( int ch, int value0, int value1 );
-		public final void notifyMidiEvent( MetroNoteEventBuffer buf, double offset, int port, int ch, int value0, int value1  ) {
+		public final void notifyMidiEvent( MetroEventBuffer buf, double offset, int port, int ch, int value0, int value1  ) {
 			buf.midiEvent(offset , port, createMidiMessage( ch, value0, value1 ) );
 		}
 	}
 	public static abstract class MetroMidiDouble1 extends MetroMidiMsg {
 		public abstract byte[] createMidiMessage( int ch, double value );
-		public final void notifyMidiEvent( MetroNoteEventBuffer buf, double offset, int port, int ch, double value  ) {
+		public final void notifyMidiEvent( MetroEventBuffer buf, double offset, int port, int ch, double value  ) {
 			buf.midiEvent(offset , port, createMidiMessage( ch, value ) );
 		}
 	}
@@ -172,31 +172,31 @@ public class MetroMidi {
 		public final byte[] createMidiMessage( int ch, int value ) {
 			return MetroMidiDef.control( ch, controlNumber, value );
 		}
-		public final void notifyMidiEvent( MetroNoteEventBuffer buf, double offset, int port, int ch, int value  ) {
+		public final void notifyMidiEvent( MetroEventBuffer buf, double offset, int port, int ch, int value  ) {
 			buf.midiEvent(offset , port, createMidiMessage( ch, value ) );
 		}
 	}
 	public static abstract class MetroMidiNoChannelNoArg extends MetroMidiMsg {
 		public abstract byte[] createMidiMessage();
-		public final void notifyMidiEvent( MetroNoteEventBuffer buf, double offset, int port ) {
+		public final void notifyMidiEvent( MetroEventBuffer buf, double offset, int port ) {
 			buf.midiEvent(offset , port, createMidiMessage() );
 		}
 	}
 	public static abstract class MetroMidiNoChannelInt1 extends MetroMidiMsg {
 		public abstract byte[] createMidiMessage( int value );
-		public final void notifyMidiEvent( MetroNoteEventBuffer buf, double offset, int port, int value ) {
+		public final void notifyMidiEvent( MetroEventBuffer buf, double offset, int port, int value ) {
 			buf.midiEvent(offset , port, createMidiMessage( value ) );
 		}
 	}
 	public static abstract class MetroMidiInt1Double1 extends MetroMidiMsg {
 		public abstract byte[] createMidiMessage( int ch, int value0, double value1 );
-		public void notifyMidiEvent( MetroNoteEventBuffer buf, double offset, int port, int ch, int note0, double value1 ) {
+		public void notifyMidiEvent( MetroEventBuffer buf, double offset, int port, int ch, int note0, double value1 ) {
 			buf.midiEvent( offset, port, createMidiMessage( ch, note0, value1 ) );
 		}
 	}
 	public static abstract class MetroMidiInt1Double2 extends MetroMidiMsg {
 		public abstract byte[] createMidiMessage( int ch, int value0, double value1, double value2 );
-		public void notifyMidiEvent( MetroNoteEventBuffer buf, double offset, int port, int ch, int note0, double value1, double value2 ) {
+		public void notifyMidiEvent( MetroEventBuffer buf, double offset, int port, int ch, int note0, double value1, double value2 ) {
 			buf.midiEvent( offset, port, createMidiMessage( ch, note0, value1, value2 ) );
 		}
 	}
@@ -255,7 +255,7 @@ public class MetroMidi {
 		public byte[] createMidiMessage( int ch, int controlNumber, int controlValue ) {
 			return MetroMidiDef.control(ch, controlNumber, controlValue );
 		}
-		public void notifyMidiEvent( MetroNoteEventBuffer buf, double offset, int port, int ch, int controlNumber, int controlValue ) {
+		public void notifyMidiEvent( MetroEventBuffer buf, double offset, int port, int ch, int controlNumber, int controlValue ) {
 			buf.midiEvent(offset, port, createMidiMessage( ch, controlNumber, controlValue ) );
 		}
 	}

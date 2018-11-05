@@ -26,8 +26,8 @@ import javax.swing.Timer;
 import org.jaudiolibs.jnajack.JackException;
 
 import ats.metro.Metro;
-import ats.metro.MetroNoteEventBufferSequence;
-import ats.metro.MetroNoteEventBufferSequence.SyncType;
+import ats.metro.MetroTrack;
+import ats.metro.MetroTrack.SyncType;
 import ats.pulsar.lib.SchemeUtils;
 import ats.pulsar.lib.swing.MersenneTwisterFast;
 import gnu.lists.EmptyList;
@@ -293,7 +293,7 @@ public final class Pulsar extends Metro {
     public void rewind() { 
     	logInfo( "===rewind" );
     	setPlaying(false);
-    	clearSequences();
+    	clearTracks();
     	if ( mainProcedure != null )
     		mainProcedure.invoke();
     }
@@ -315,7 +315,7 @@ public final class Pulsar extends Metro {
     	this.setPlaying(false);
     	this.mainProcedure = null;
     	this.cueProcedure = null;
-		clearSequences();
+		clearTracks();
     }
     
     
@@ -853,13 +853,13 @@ public final class Pulsar extends Metro {
 					
 					Procedure procedure     = (Procedure) args[1];
 					SyncType syncType       = 3<=args.length ? str2sync( args[2] ) : SyncType.IMMEDIATE;
-					String syncSequenceName = 4<=args.length ? SchemeUtils.anyToString( SchemeUtils.schemeNullCheck( args[3] ) ) : null;
+					String syncTrackName    = 4<=args.length ? SchemeUtils.anyToString( SchemeUtils.schemeNullCheck( args[3] ) ) : null;
 					double offset           = 5<=args.length ? SchemeUtils.toDouble( args[4] ) : 0.0d;
 					
 					SchemePulsarLogic logic = new SchemePulsarLogic( scheme,
 							new InvocableSchemeProcedure( scheme, Environment.getCurrent(), procedure ) );
 					
-					putLogic( name, tags, logic, syncType, syncSequenceName, offset );
+					putLogic( name, tags, logic, syncType, syncTrackName, offset );
 					 
 					return EmptyList.emptyList;
 				} else {
@@ -876,7 +876,7 @@ public final class Pulsar extends Metro {
     		public Object applyN(Object[] args) throws Throwable {
 				if ( args.length == 1 ) {
 					String name = SchemeUtils.toString( args[0] );
-					removeSequence(name);
+					removeTrack(name);
 					return EmptyList.emptyList;
 				} else {
 					throw new RuntimeException( "Invalid parameter. usage : (new-logic [name] [lambda] ) " );
@@ -886,7 +886,7 @@ public final class Pulsar extends Metro {
     	SchemeUtils.defineVar( scheme, "clear-seq!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
-				clearSequences();
+				clearTracks();
 				return EmptyList.emptyList;
 			}
     	});
@@ -896,7 +896,7 @@ public final class Pulsar extends Metro {
 				if ( args.length == 1 ) {
 					String name = SchemeUtils.toString( args[0] );
 					
-					return getSequence(name) != null;
+					return getTrack(name) != null;
 				} else {
 					throw new RuntimeException( "Invalid parameter. usage : (new-logic [name] [lambda] ) " );
 				}
@@ -907,9 +907,9 @@ public final class Pulsar extends Metro {
     		public Object applyN(Object[] args) throws Throwable {
 //				logInfo("list-seq");
 				synchronized ( lock ) {
-					ArrayList<LList> list = new ArrayList<>( sequences.size() );
-					for ( MetroNoteEventBufferSequence sequence :  sequences ) {
-						SchemePulsarLogic logic = (SchemePulsarLogic)sequence.getLogic();
+					ArrayList<LList> list = new ArrayList<>( tracks.size() );
+					for ( MetroTrack track :  tracks ) {
+						SchemePulsarLogic logic = (SchemePulsarLogic)track.getLogic();
 						list.add( SchemeUtils.acons( logic.getPlayerName(), logic.asociationList ));
 					}
 					return LList.makeList(list);

@@ -4,13 +4,13 @@ import java.util.List;
 import java.util.Set;
  
 /**
- * {@link MetroLogic} is a base class of all sequences which are played by the Metro sequencer.
+ * {@link MetroLogic} is a base class of all tracks which are played by the Metro track.
  * 
  * @author ats
  */
 public abstract class MetroLogic implements MetroPlayer {
 	public abstract void    processDirect(    Metro metro, List<MetroAbstractMidiEvent> in, List<MetroAbstractMidiEvent> out );
-	public abstract boolean processBuffered(  Metro metro, MetroNoteEventBufferSequence sequence, MetroNoteEventBuffer buf );
+	public abstract boolean processBuffered(  Metro metro, MetroTrack track, MetroEventBuffer buf );
 	
 	MetroPlayer player=null;
 	public MetroPlayer getPlayer() {

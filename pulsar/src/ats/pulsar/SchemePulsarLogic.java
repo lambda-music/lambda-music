@@ -9,8 +9,8 @@ import java.util.logging.Logger;
 import ats.metro.MetroAbstractMidiEvent;
 import ats.metro.Metro;
 import ats.metro.MetroLogic;
-import ats.metro.MetroNoteEventBuffer;
-import ats.metro.MetroNoteEventBufferSequence;
+import ats.metro.MetroEventBuffer;
+import ats.metro.MetroTrack;
 import ats.metro.MetroPlayer;
 import ats.pulsar.lib.SchemeUtils;
 import gnu.lists.AbstractSequence;
@@ -74,12 +74,12 @@ public class SchemePulsarLogic extends MetroLogic {
 
 
 	@Override
-	public boolean processBuffered( Metro metro, MetroNoteEventBufferSequence sequence, MetroNoteEventBuffer buf ) {
+	public boolean processBuffered( Metro metro, MetroTrack track, MetroEventBuffer buf ) {
 		// System.out.println("Metro.logic.new MetroLogic() {...}.initBuffer()" );
 //		buf.humanize( 0.0d, 3 );
 		boolean result = false;
 		try {
-			result = scheme2buf(metro, sequence, scheme, procedure, buf);
+			result = scheme2buf(metro, track, scheme, procedure, buf);
 		} catch ( RuntimeException e ) {
 			System.err.println(e );
 			LOGGER.log(Level.SEVERE, "", e);
@@ -87,7 +87,7 @@ public class SchemePulsarLogic extends MetroLogic {
 		return result;
 	}
 
-	public static boolean scheme2buf( Metro metro, MetroNoteEventBufferSequence sequence, Scheme scheme, Invocable procedure, MetroNoteEventBuffer buf) {
+	public static boolean scheme2buf( Metro metro, MetroTrack track, Scheme scheme, Invocable procedure, MetroEventBuffer buf) {
 		AbstractSequence<Object> pattern = (AbstractSequence<Object>)procedure.invoke();
 
 		/*

@@ -13,8 +13,8 @@ import java.util.logging.Logger;
 
 import ats.metro.Metro;
 import ats.metro.MetroMidi;
-import ats.metro.MetroNoteEventBuffer;
-import ats.metro.MetroNoteEventBufferSequence.SyncType;
+import ats.metro.MetroEventBuffer;
+import ats.metro.MetroTrack.SyncType;
 import ats.pulsar.lib.SchemeUtils;
 import gnu.lists.Pair;
 import gnu.mapping.Environment;
@@ -84,7 +84,7 @@ public class SpecialNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, Scheme scheme, MetroEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
 			return result;
 		}
 	}
@@ -98,7 +98,7 @@ public class SpecialNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, Scheme scheme, MetroEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
 			boolean enabled      = map.containsKey( MidiNoteListParsers.ID_ENABLED     ) ? SchemeUtils.toBoolean( map.get( MidiNoteListParsers.ID_ENABLED ) ) : true;
 			if ( ! enabled )
 				return result;
@@ -129,7 +129,7 @@ public class SpecialNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, Scheme scheme, MetroEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
 			double value    = map.containsKey( ID_VALUE ) ? SchemeUtils.toDouble( map.get( ID_VALUE ) ) : -1.0d;
 			if ( value < 0 ) {
 				LOGGER.log( Level.WARNING, "a len note was found but 'val was missing. This probably a bug." );
@@ -151,7 +151,7 @@ public class SpecialNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, Scheme scheme, MetroEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
 			double offset        = map.containsKey( ID_OFFSET   )  ? SchemeUtils.toDouble(     map.get( ID_OFFSET    ) ) : 0.0d;
 			Procedure procedure0 = map.containsKey( ID_PROCEDURE ) ?                (Procedure)map.get( ID_PROCEDURE )   : null;
 			// See the note ... XXX_SYNC_01
@@ -168,11 +168,11 @@ public class SpecialNoteListParsers {
 	static final class PutEventParser extends SpecialNoteListParserElement {
 		{
 			this.shortName = "add";
-			this.longName = "add a new sequence";
+			this.longName = "add a new track";
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, Scheme scheme, MetroEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
 			List<String> el = Collections.emptyList();
 
 			double offset            = getValue( map, ID_OFFSET, 0.0d, (v)-> SchemeUtils.toDouble( v )   );
@@ -219,11 +219,11 @@ public class SpecialNoteListParsers {
 	static final class RemoveEventParser extends SpecialNoteListParserElement {
 		{
 			this.shortName = "kill";
-			this.longName = "Remove the specified sequence";
+			this.longName = "Remove the specified track";
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, Scheme scheme, MetroEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
 			List<String> el = Collections.emptyList();
 
 			double offset            = getValue( map, ID_OFFSET, 0.0d, (v)-> SchemeUtils.toDouble( v )   );
@@ -237,7 +237,7 @@ public class SpecialNoteListParsers {
 				outputBuffer.exec( offset, new Runnable() {
 					@Override
 					public void run() {
-						pulsar.removeSequence( id );
+						pulsar.removeTrack( id );
 					}
 				} );
 			}
@@ -246,7 +246,7 @@ public class SpecialNoteListParsers {
 				outputBuffer.exec( offset, new Runnable() {
 					@Override
 					public void run() {
-						pulsar.removeSequenceAll( pulsar.getSequenceByTags(tags) );
+						pulsar.removeTrackAll( pulsar.getTrackByTags(tags) );
 					}
 				} );
 			}
@@ -259,11 +259,11 @@ public class SpecialNoteListParsers {
 	static final class EndEventParser extends SpecialNoteListParserElement {
 		{
 			this.shortName = "end";
-			this.longName = "end the sequence";
+			this.longName = "end the track";
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, Scheme scheme, MetroNoteEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, Scheme scheme, MetroEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
 			return false;
 		}
 	}

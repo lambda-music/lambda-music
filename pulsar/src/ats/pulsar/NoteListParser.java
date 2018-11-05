@@ -8,7 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ats.metro.Metro;
-import ats.metro.MetroNoteEventBuffer;
+import ats.metro.MetroEventBuffer;
 import ats.pulsar.lib.SchemeUtils;
 import gnu.lists.AbstractSequence;
 import gnu.lists.Pair;
@@ -50,7 +50,7 @@ public class NoteListParser {
 		return parserMap.get(id);
 	}
 	
-	public boolean parse( Metro metro, Scheme scheme, AbstractSequence<Object> inputList, MetroNoteEventBuffer outputBuffer, boolean result ) {
+	public boolean parse( Metro metro, Scheme scheme, AbstractSequence<Object> inputList, MetroEventBuffer outputBuffer, boolean result ) {
 		// boolean result = true;
 		if ( inputList != null ) {
 			for ( Iterator<Object> i = inputList.iterator(); i.hasNext(); ) {
@@ -71,12 +71,12 @@ public class NoteListParser {
 		return result;
 	}
 
-//	private boolean parseNote( Metro metro, Scheme scheme, MetroNoteEventBuffer outputBuffer, boolean result, Pair record ) {
+//	private boolean parseNote( Metro metro, Scheme scheme, MetroEventBuffer outputBuffer, boolean result, Pair record ) {
 //		// TODO Auto-generated method stub
 //		return false;
 //	}
 
-	public boolean parseNote( Metro metro, Scheme scheme, MetroNoteEventBuffer outputBuffer, boolean result, AbstractSequence list ) {
+	public boolean parseNote( Metro metro, Scheme scheme, MetroEventBuffer outputBuffer, boolean result, AbstractSequence list ) {
 		Map<String,Object> map = SchemeUtils.list2map(list, null );
 		String type      = map.containsKey( ID_TYPE ) ? SchemeUtils.symbolToString(  map.get( ID_TYPE ) ) : "";
 		NoteListParserElement parser = getParser( type );

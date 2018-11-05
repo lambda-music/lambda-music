@@ -14,8 +14,8 @@ import java.util.stream.Stream;
 class MetroLogicList implements List<MetroLogic> {
 	private static final String MSG_NOT_IMPLEMENTED_0 = "Not implemented. Use metro.putLogic() method";
 	private static final String MSG_NOT_IMPLEMENTED = "not implemented.";
-	final List<MetroNoteEventBufferSequence> object;
-	public MetroLogicList(List<MetroNoteEventBufferSequence> object) {
+	final List<MetroTrack> object;
+	public MetroLogicList(List<MetroTrack> object) {
 		super();
 		this.object = object;
 	}
@@ -35,8 +35,8 @@ class MetroLogicList implements List<MetroLogic> {
 	}
 
 	public boolean contains(Object o) {
-		for ( MetroNoteEventBufferSequence sequence : object  ) {
-			if ( o.equals( sequence.logic ) ) {
+		for ( MetroTrack track : object  ) {
+			if ( o.equals( track.logic ) ) {
 				return true;
 			}
 		}
@@ -44,7 +44,7 @@ class MetroLogicList implements List<MetroLogic> {
 	}
 
 	public Iterator<MetroLogic> iterator() {
-		Iterator<MetroNoteEventBufferSequence> i = object.iterator();
+		Iterator<MetroTrack> i = object.iterator();
 		return new Iterator<MetroLogic>() {
 			@Override
 			public MetroLogic next() {
@@ -116,9 +116,9 @@ class MetroLogicList implements List<MetroLogic> {
 	}
 
 	public void sort(Comparator<? super MetroLogic> c) {
-		object.sort( new Comparator<MetroNoteEventBufferSequence>() {
+		object.sort( new Comparator<MetroTrack>() {
 			@Override
-			public int compare(MetroNoteEventBufferSequence o1, MetroNoteEventBufferSequence o2) {
+			public int compare(MetroTrack o1, MetroTrack o2) {
 				return c.compare( o1.logic , o2.logic );
 			}
 		});
@@ -186,8 +186,8 @@ class MetroLogicList implements List<MetroLogic> {
 
 	
 	private final class MetroLogicListIterator implements ListIterator<MetroLogic> {
-		private final ListIterator<MetroNoteEventBufferSequence> listIterator;
-		private MetroLogicListIterator(ListIterator<MetroNoteEventBufferSequence> listIterator) {
+		private final ListIterator<MetroTrack> listIterator;
+		private MetroLogicListIterator(ListIterator<MetroTrack> listIterator) {
 			this.listIterator = listIterator;
 		}
 		@Override

@@ -27,14 +27,14 @@ import org.jaudiolibs.jnajack.JackStatus;
 import org.jaudiolibs.jnajack.JackTimebaseCallback;
 import org.jaudiolibs.jnajack.JackTransportState;
 
-import ats.metro.MetroNoteEventBufferSequence.SyncType;
+import ats.metro.MetroTrack.SyncType;
 
 
 public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallback, JackTimebaseCallback, Runnable {
 	public final Object lock = new Object();
 	
 	/**
-	 * The every routines which access to the `sequences` field must synchronize
+	 * The every routines which access to the `tracks` field must synchronize
 	 * to the object which can be retrieved by this getMetroLock() method. 
 	 */
 	@Override
@@ -68,11 +68,11 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 //	private BlockingQueue<String> debugQueue = new LinkedBlockingQueue<String>();
 //    private StringBuilder sb = new StringBuilder();
     
-    protected final List<MetroNoteEventBufferSequence> sequences = new ArrayList<MetroNoteEventBufferSequence>();
-    protected final List<MetroNoteEventBufferSequence> registeredSequences = new ArrayList<MetroNoteEventBufferSequence>();
-    protected final List<MetroNoteEventBufferSequence> unregisteredSeqences = new ArrayList<MetroNoteEventBufferSequence>();
+    protected final List<MetroTrack> tracks = new ArrayList<MetroTrack>();
+    protected final List<MetroTrack> registeredTracks = new ArrayList<MetroTrack>();
+    protected final List<MetroTrack> unregisteredTracks = new ArrayList<MetroTrack>();
 	private final List<Runnable>  messageQueue = new ArrayList<Runnable>();
-	protected MetroLogicList logicList = new MetroLogicList(sequences);
+	protected MetroLogicList logicList = new MetroLogicList(tracks);
 	
     private ArrayList<MetroAbstractMidiEvent> inputMidiEventList = new ArrayList<MetroAbstractMidiEvent>();
     private ArrayList<MetroAbstractMidiEvent> outputMidiEventList = new ArrayList<MetroAbstractMidiEvent>();
@@ -86,7 +86,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	public void setBeatsPerMinute(double beatsPerMinute) throws JackException {
 		beatsPerMinute = beatsPerMinute < 0 ? 0 : beatsPerMinute;
 		this.beatsPerMinute = beatsPerMinute;
-		reprepareSequence( beatsPerMinute, this.beatsPerMinute );
+		reprepareTrack( beatsPerMinute, this.beatsPerMinute );
 	}
 
 	private long beatsPerBar = 4;
@@ -95,7 +95,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	}
 	public void setBeatsPerBar(long beatsPerBar) throws JackException {
 		this.beatsPerBar = beatsPerBar;
-		// reprepareSequence();
+		// reprepareTrack();
 	}
 
 	private transient boolean playing = false;
@@ -146,117 +146,117 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	
 	/*
 	 * Note that  There is no `this.logics`. Instead of that all of Logic objects are 
-	 * wrapped by MetroNoteEventBufferSequence and stored as `this.sequences`.   
+	 * wrapped by Track and stored as `this.tracks`.   
 	 * (Sat, 18 Aug 2018 19:03:18 +0900)
 	 */
 	public void putLogic( String name, MetroLogic logic ) {
 		putLogic( name, null, logic, SyncType.PARALLEL, null, 0.0d );
 	}
-	public void putLogic( String name, Collection<String> tags, MetroLogic logic, SyncType syncType, Object syncSequenceObject, double syncOffset ) {
-		putSequence( createSequence( name, tags, logic, syncType, syncSequenceObject, syncOffset ) );
+	public void putLogic( String name, Collection<String> tags, MetroLogic logic, SyncType syncType, Object syncTrackObject, double syncOffset ) {
+		putTrack( createTrack( name, tags, logic, syncType, syncTrackObject, syncOffset ) );
 	}
-	public void putLogic( String name, Collection<String> tags, MetroLogic logic, SyncType syncType, MetroNoteEventBufferSequence syncSequence, double syncOffset ) {
-		putSequence( createSequence( name, tags, logic, syncType, syncSequence, syncOffset ) );
+	public void putLogic( String name, Collection<String> tags, MetroLogic logic, SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
+		putTrack( createTrack( name, tags, logic, syncType, syncTrack, syncOffset ) );
 	}
-	public MetroNoteEventBufferSequence getSequence( Object nameObject ) {
+	public MetroTrack getTrack( Object nameObject ) {
 		if ( nameObject == null ) {
 			return null;
-		} else if ( nameObject instanceof MetroNoteEventBufferSequence ) {
-			return (MetroNoteEventBufferSequence) nameObject;
+		} else if ( nameObject instanceof MetroTrack ) {
+			return (MetroTrack) nameObject;
 		} else if ( nameObject instanceof String ) {
-			return searchSequence( (String) nameObject );
+			return searchTrack( (String) nameObject );
 		} else {
-			throw new RuntimeException( "Unsupported object on syncSequence" );
+			throw new RuntimeException( "Unsupported object on syncTrack" );
 		}
 	}
-	public MetroNoteEventBufferSequence getSequence( String name ) {
-		return searchSequence( name );
+	public MetroTrack getTrack( String name ) {
+		return searchTrack( name );
 	}
-	public void putSequence( MetroNoteEventBufferSequence sequence ) {
-		registerSequence( sequence );
+	public void putTrack( MetroTrack track ) {
+		registerTrack( track );
 	}
-	public void removeSequence( MetroNoteEventBufferSequence sequence ) {
-		unregisterSequence( sequence );
+	public void removeTrack( MetroTrack track ) {
+		unregisterTrack( track );
 	}
-	public void removeSequence( String name ) {
-		removeSequence( getSequence( name ) );
+	public void removeTrack( String name ) {
+		removeTrack( getTrack( name ) );
 	}
-	public void removeSequence( Object nameObject ) {
-		removeSequence( getSequence( nameObject ) );
+	public void removeTrack( Object nameObject ) {
+		removeTrack( getTrack( nameObject ) );
 	}
-	public void removeSequenceAll( Collection<MetroNoteEventBufferSequence> sequences ) {
-		unregisterSequenceAll( sequences );
+	public void removeTrackAll( Collection<MetroTrack> tracks ) {
+		unregisterTrackAll( tracks );
 	}
 
-	public MetroNoteEventBufferSequence createSequence(  
+	public MetroTrack createTrack(  
 			String name, Collection<String> tags, MetroLogic logic,
-			SyncType syncType, MetroNoteEventBufferSequence syncSequence, double syncOffset) 
+			SyncType syncType, MetroTrack syncTrack, double syncOffset) 
 	{
-		return new MetroNoteEventBufferSequence( this, name, tags, logic, syncType, syncSequence, syncOffset );
+		return new MetroTrack( this, name, tags, logic, syncType, syncTrack, syncOffset );
 	}
-	public MetroNoteEventBufferSequence createSequence(  
+	public MetroTrack createTrack(  
 			String name, Collection<String> tags, MetroLogic logic,
-			SyncType syncType, Object syncSequenceObject, double syncOffset) 
+			SyncType syncType, Object syncTrackObject, double syncOffset) 
 	{
-		MetroNoteEventBufferSequence syncSequence = getSequence( syncSequenceObject ); 
-		return new MetroNoteEventBufferSequence( this, name, tags, logic, syncType, syncSequence, syncOffset );
+		MetroTrack syncTrack = getTrack( syncTrackObject ); 
+		return new MetroTrack( this, name, tags, logic, syncType, syncTrack, syncOffset );
 	}
 	
-	private MetroNoteEventBufferSequence searchSequence( String name ) {
+	private MetroTrack searchTrack( String name ) {
 		if ( "last!".equals( name )) {
-			if ( sequences.size() == 0 ) {
-				logInfo( "searchSequence() last! null (last! was specified but the current sequence contains no element)" );
+			if ( tracks.size() == 0 ) {
+				logInfo( "searchTrack() last! null (last! was specified but the current track contains no element)" );
 				return null;
 			} else
-				logInfo( "searchSequence() last!" );
-				return sequences.get( sequences.size() -1 );
+				logInfo( "searchTrack() last!" );
+				return tracks.get( tracks.size() -1 );
 		} else {
 			name = name.intern();
-			for ( Iterator<MetroNoteEventBufferSequence> i=sequences.iterator(); i.hasNext(); ) {
-				MetroNoteEventBufferSequence sequence = i.next();
-				if ( sequence.name == name ) {
-					return sequence;
+			for ( Iterator<MetroTrack> i=tracks.iterator(); i.hasNext(); ) {
+				MetroTrack track = i.next();
+				if ( track.name == name ) {
+					return track;
 				}
 			}
-			logInfo( "searchSequence() null" );
-//			logWarn( "searchSequence() WARNING \"" + name + "\"  was not found." );
+			logInfo( "searchTrack() null" );
+//			logWarn( "searchTrack() WARNING \"" + name + "\"  was not found." );
 			return null;
 		}
 	}
-	Collection<MetroNoteEventBufferSequence> searchSequenceByTag( String tag ) {
-		ArrayList<MetroNoteEventBufferSequence> list = new ArrayList<>(); 
-		for ( Iterator<MetroNoteEventBufferSequence> i = sequences.iterator(); i.hasNext();  ) {
-			 MetroNoteEventBufferSequence sequence = i.next();
-			 if ( sequence.getPlayerTags().contains( tag ) ) {
-				 list.add( sequence );
+	Collection<MetroTrack> searchTrackByTag( String tag ) {
+		ArrayList<MetroTrack> list = new ArrayList<>(); 
+		for ( Iterator<MetroTrack> i = tracks.iterator(); i.hasNext();  ) {
+			 MetroTrack track = i.next();
+			 if ( track.getPlayerTags().contains( tag ) ) {
+				 list.add( track );
 			 }
 		}
 		return list;
 	}
 	
-	public Collection<MetroNoteEventBufferSequence> getSequenceByTag( String tag ) {
-		return searchSequenceByTag(tag);
+	public Collection<MetroTrack> getTrackByTag( String tag ) {
+		return searchTrackByTag(tag);
 	}
-	public Collection<MetroNoteEventBufferSequence> getSequenceByTags( Collection<String> tags ) {
-		HashSet<MetroNoteEventBufferSequence> set = new HashSet<>();
+	public Collection<MetroTrack> getTrackByTags( Collection<String> tags ) {
+		HashSet<MetroTrack> set = new HashSet<>();
 		for ( String tag : tags ) {
-			set.addAll( searchSequenceByTag( tag ) );
+			set.addAll( searchTrackByTag( tag ) );
 		}
 		return set;
 	}
 
 
 	public void removeLogicDirect( String name ) {
-		Iterator<MetroNoteEventBufferSequence> iterator = lookupSequenceDirect(name);
+		Iterator<MetroTrack> iterator = lookupTrackDirect(name);
 		if ( iterator != null  ) {
 			iterator.remove();
 		}
 	}
-	private Iterator<MetroNoteEventBufferSequence> lookupSequenceDirect( String name ) {
+	private Iterator<MetroTrack> lookupTrackDirect( String name ) {
 		name = name.intern();
-		for ( Iterator<MetroNoteEventBufferSequence> i=sequences.iterator(); i.hasNext(); ) {
-			MetroNoteEventBufferSequence sequence = i.next();
-			if ( sequence.name == name ) {
+		for ( Iterator<MetroTrack> i=tracks.iterator(); i.hasNext(); ) {
+			MetroTrack track = i.next();
+			if ( track.name == name ) {
 				return i;
 			}
 		}
@@ -264,9 +264,9 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	}
 
 
-	public void enableSequenceByTag( String tag, boolean enabled ) {
-		for ( MetroNoteEventBufferSequence sequence : searchSequenceByTag( tag ) ) {
-			sequence.setPlayerEnabled( enabled );
+	public void enableTrackByTag( String tag, boolean enabled ) {
+		for ( MetroTrack track : searchTrackByTag( tag ) ) {
+			track.setPlayerEnabled( enabled );
 		}
 	}
 
@@ -311,7 +311,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
     	
     	try {
     		try {
-    			clearSequences();
+    			clearTracks();
     		} catch ( Exception e ) {
 				logError("", e);
     		}
@@ -348,14 +348,14 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	 */
     
     // ???
-    public void refreshSequences() {
+    public void refreshTracks() {
 		synchronized ( this.lock ) {
-			for ( MetroNoteEventBufferSequence s : this.sequences ) {
+			for ( MetroTrack s : this.tracks ) {
 				s.clearBuffer();
 			}
-        	for ( MetroNoteEventBufferSequence sequence : this.sequences  ) {
+        	for ( MetroTrack track : this.tracks  ) {
         		try {
-					sequence.checkBuffer( this,  this.client, this.position );
+					track.checkBuffer( this,  this.client, this.position );
 				} catch (JackException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -363,9 +363,9 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
         	}
 		}
     }
-    public void clearSequences() {
+    public void clearTracks() {
 		synchronized ( this.lock ) {
-			this.sequences.clear();
+			this.tracks.clear();
 			this.notifyCheckBuffer();
 		}
     }
@@ -379,8 +379,8 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	//        	System.err.println( s );
 	        	
 				synchronized ( this.lock ) {
-					for ( MetroNoteEventBufferSequence sequence : this.sequences  ) {
-						sequence.checkBuffer( this,  this.client, this.position );
+					for ( MetroTrack track : this.tracks  ) {
+						track.checkBuffer( this,  this.client, this.position );
 					}
 
 					for ( Runnable r : this.messageQueue ) {
@@ -392,24 +392,24 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 					}
 					
 					
-					this.sequences.removeAll(this.unregisteredSeqences );
-					this.sequences.addAll( this.registeredSequences );
+					this.tracks.removeAll(this.unregisteredTracks );
+					this.tracks.addAll( this.registeredTracks );
 					
-					if ( ! this.registeredSequences.isEmpty() ) {
+					if ( ! this.registeredTracks.isEmpty() ) {
 						int barInFrames = Metro.calcBarInFrames( this, client, position);
-						for ( MetroNoteEventBufferSequence sequence : this.registeredSequences ) {
-							sequence.prepare( barInFrames );
+						for ( MetroTrack track : this.registeredTracks ) {
+							track.prepare( barInFrames );
 							// ADDED (Sun, 30 Sep 2018 12:39:32 +0900)
-							sequence.checkBuffer( this,  this.client, this.position );
+							track.checkBuffer( this,  this.client, this.position );
 						}
 					}		
-					this.unregisteredSeqences.clear();
-					this.registeredSequences.clear();
+					this.unregisteredTracks.clear();
+					this.registeredTracks.clear();
 					this.messageQueue.clear(); // FIXED (Sun, 30 Sep 2018 01:41:24 +0900) 
 					
 					this.lock.wait( 1 );
 				}
-//				logInfo( this.sequences.size() );
+//				logInfo( this.tracks.size() );
 //	        	Thread.sleep(0);
 	        }
 		} catch ( InterruptedException e ) {
@@ -419,11 +419,11 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		}
 	}
 	
-	void reprepareSequence(double prevBeatsPerMinute, double beatsPerMinute) throws JackException {
+	void reprepareTrack(double prevBeatsPerMinute, double beatsPerMinute) throws JackException {
 		synchronized ( this.lock ) {
 			// int barInFrames = Metro.calcBarInFrames( this, this.client, this.position );
-			for ( MetroNoteEventBufferSequence sequence : this.sequences ) {
-				sequence.reprepare( this, this.client, this.position, prevBeatsPerMinute, beatsPerMinute );
+			for ( MetroTrack track : this.tracks ) {
+				track.reprepare( this, this.client, this.position, prevBeatsPerMinute, beatsPerMinute );
 			}
 		}
 	}
@@ -533,13 +533,13 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 
             synchronized ( this.lock ) {
                 if ( 0 < this.inputMidiEventList.size() )
-	            	for ( MetroNoteEventBufferSequence sequence : this.sequences ) {
-	            		sequence.logic.processDirect( this, this.inputMidiEventList, this.outputMidiEventList );
+	            	for ( MetroTrack track : this.tracks ) {
+	            		track.logic.processDirect( this, this.inputMidiEventList, this.outputMidiEventList );
 	            	}
                 
                 if ( true )
-	            	for ( MetroNoteEventBufferSequence sequence : this.sequences ) {
-	            		sequence.progressCursor( nframes, this.outputMidiEventList );
+	            	for ( MetroTrack track : this.tracks ) {
+	            		track.progressCursor( nframes, this.outputMidiEventList );
 	            	}
                 
             	this.outputMidiEventList.sort( MetroAbstractMidiEvent.COMPARATOR );
@@ -574,43 +574,43 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
     /*
      * NOTE : DON'T FORGET THIS
      * 
-     * Two methods registerSequence() and unregisterSequence() are registering 
-     * the given sequence object via two cues : registeredSequences / unregisteredSequences.
+     * Two methods registerTrack() and unregisterTrack() are registering 
+     * the given track object via two queues : registeredTracks / unregisteredTracks.
      * These lists are referred by Metro.run() method which is executed by another thread. 
      * 
      */
-    protected void registerSequence( MetroNoteEventBufferSequence sequence ) {
+    protected void registerTrack( MetroTrack track ) {
 		if ( DEBUG ) 
-			logInfo( "****** CREATED a new sequence is created " + sequence.id );
+			logInfo( "****** CREATED a new track is created " + track.id );
 		synchronized ( this.lock ) {
-			MetroNoteEventBufferSequence foundSequence = null;
+			MetroTrack foundTrack = null;
 			{
-				for ( MetroNoteEventBufferSequence sequence0 : this.sequences  ) {
-					if ( sequence0.name.equals( sequence.name ) ) {
-						foundSequence = sequence0;
+				for ( MetroTrack track0 : this.tracks  ) {
+					if ( track0.name.equals( track.name ) ) {
+						foundTrack = track0;
 						break;
 					}
 				}
 			}
 
-			this.registeredSequences.add( sequence );
-			if ( foundSequence != null) {
-				this.unregisteredSeqences.add( foundSequence );
+			this.registeredTracks.add( track );
+			if ( foundTrack != null) {
+				this.unregisteredTracks.add( foundTrack );
 			}
 			this.notifyCheckBuffer();
 		}
 	}
-	protected void unregisterSequence( MetroNoteEventBufferSequence sequence ) {
+	protected void unregisterTrack( MetroTrack track ) {
 		if ( DEBUG ) 
-			logInfo( "****** DESTROYED a sequence is destroyed " + sequence.id );
+			logInfo( "****** DESTROYED a track is destroyed " + track.id );
 		synchronized ( this.lock ) {
-			this.unregisteredSeqences.add( sequence );
+			this.unregisteredTracks.add( track );
 			this.notifyCheckBuffer();
 		}
 	}
-	protected void unregisterSequenceAll( Collection<MetroNoteEventBufferSequence> sequences ) {
+	protected void unregisterTrackAll( Collection<MetroTrack> tracks ) {
 		synchronized ( this.lock ) {
-			this.unregisteredSeqences.addAll( sequences );
+			this.unregisteredTracks.addAll( tracks );
 			this.notifyCheckBuffer();
 		}
 	}
@@ -629,15 +629,15 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		}
 	}
 
-//	public void registerSequenceImmediately(MetroNoteEventBufferSequence sequence, MetroNoteEventBufferSequence syncSequence, 
+//	public void registerTrackImmediately(Track track, Track syncTrack, 
 //			double offset) 
 //	{
 //		if ( DEBUG ) 
-//			logInfo( "****** CREATED a new sequence is created " + sequence.id );
+//			logInfo( "****** CREATED a new track is created " + track.id );
 //		
 //		synchronized ( this.lock ) {
-//			this.sequences.add( sequence );
-//			sequence.prepare(barInFrames);
+//			this.tracks.add( track );
+//			track.prepare(barInFrames);
 //		}
 //	}
 
