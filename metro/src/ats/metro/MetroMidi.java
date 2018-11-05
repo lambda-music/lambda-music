@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import ats.metro.MetroMidi.MetroMidiNote;
 import ats.pulsar.lib.SchemeUtils;
 import kawa.standard.Scheme;
 
@@ -34,7 +35,7 @@ public class MetroMidi {
 	
 	static HashMap<String,MetroMidiMsg> infoMap = new HashMap<String,MetroMidiMsg>();
 	static void putInfo( MetroMidiMsg info ) {
-		String id = info.id;
+		String id = info.shortName;
 		if ( infoMap.containsKey(id))
 			throw new RuntimeException( "internal error : id (" + id + ") is already registered." );
 		
@@ -46,10 +47,22 @@ public class MetroMidi {
 
 
 	public static abstract class MetroMidiMsg {
-		String id;
-		String name;
-		String shortDescription;
-		String description;
+		protected String shortName;
+		protected String longName;
+		protected String shortDescription;
+		protected String longDescription;
+		public String getShortName() {
+			return shortName;
+		}
+		public String getLongName() {
+			return longName;
+		}
+		public String getShortDescription() {
+			return shortDescription;
+		}
+		public String getLongDescription() {
+			return longDescription;
+		}
 		abstract boolean parseEvent( Metro metro, Scheme scheme, MetroNoteEventBuffer buf, Map<String,Object> map, boolean result );
 	}
 
@@ -115,6 +128,12 @@ public class MetroMidi {
 			buf.midiEvent( offset, port, createMidiMessage( ch, note0, value1 ) );
 		}
 	}
+	public static abstract class MetroMidiInt1Double2 extends MetroMidiMsg {
+		public abstract byte[] createMidiMessage( int ch, int value0, double value1, double value2 );
+		public void notifyMidiEvent( MetroNoteEventBuffer buf, double offset, int port, int ch, int note0, double value1, double value2 ) {
+			buf.midiEvent( offset, port, createMidiMessage( ch, note0, value1, value2 ) );
+		}
+	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////
 	
@@ -130,16 +149,11 @@ public class MetroMidi {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int note         = map.containsKey( ID_NOTE     ) ? SchemeUtils.toInteger(      map.get(ID_NOTE      ) ) : 63;  
 			double velocity  = map.containsKey( ID_VELOCITY ) ? SchemeUtils.toDouble(       map.get(ID_VELOCITY  ) ) : 63;
-			double length    = map.containsKey( ID_LENGTH   ) ? SchemeUtils.toDouble(       map.get(ID_LENGTH    ) ) : -1d;
+//			double length    = map.containsKey( ID_LENGTH   ) ? SchemeUtils.toDouble(       map.get(ID_LENGTH    ) ) : -1d;
 			
 			notifyMidiEvent( buf, offset, port, channel, note, velocity );
 			
 			return result;
-		}
-
-		public abstract byte[] createMidiMessage( int ch, int note, double velocity );
-		public void notifyMidiEvent( MetroNoteEventBuffer buf, double offset, int port, int ch, int note, double velocity  ) {
-			buf.midiEvent(offset, port, createMidiMessage( ch, note, velocity ) );
 		}
 	}
 
@@ -147,10 +161,9 @@ public class MetroMidi {
 
 	public static final MetroMidiNoteOn MIDI_NOTE_ON = new MetroMidiNoteOn();
 	public static final class MetroMidiNoteOn extends MetroMidiNote {
-		// TODO
 		{
-			this.id = "non";
-			this.name = "note on";
+			this.shortName = "non";
+			this.longName = "note on";
 		}
 		@Override
 		public byte[] createMidiMessage( int ch, int note, double velocity ) {
@@ -161,14 +174,16 @@ public class MetroMidi {
 	public static final class MetroMidiNoteOff extends MetroMidiNote {
 		// TODO
 		{
-			this.id = "noff";
-			this.name = "note off";
+			this.shortName = "noff";
+			this.longName = "note off";
 		}
 		@Override
 		public byte[] createMidiMessage( int ch, int note, double velocity ) {
 			return MetroMidiDef.noteOff(ch, note, velocity );
 		}
 	}
+	
+	
 	public static final MetroMidiKeyPressure MIDI_KEY_PRESSURE = new MetroMidiKeyPressure();
 	public static final class MetroMidiKeyPressure extends MetroMidiInt1Double1 {
 		{
@@ -196,9 +211,9 @@ public class MetroMidi {
 	public static final MetroMidiControlChange MIDI_CONTROL_CHANGE = new MetroMidiControlChange();
 	public static final class MetroMidiControlChange extends MetroMidiMsg {
 		{
-			this.id = "cc";
+			this.shortName = "cc";
 			// this.name = "control";
-			this.name = "control-change";
+			this.longName = "control-change";
 		}
 
 		@Override
@@ -223,8 +238,8 @@ public class MetroMidi {
 	public static final MetroMidiProgram  MIDI_PROGRAM = new MetroMidiProgram(); 
 	public static final class MetroMidiProgram extends MetroMidiInt1 {
 		{
-			this.id = "pc";
-			this.name = "program";
+			this.shortName = "pc";
+			this.longName = "program";
 		}
 
 		@Override
@@ -246,8 +261,8 @@ public class MetroMidi {
 	public static final MetroMidiChannelPressure  MIDI_CHANNEL_PRESSURE = new MetroMidiChannelPressure(); 
 	public static final class MetroMidiChannelPressure extends MetroMidiDouble1 {
 		{
-			this.id = "cp";
-			this.name = "channel-pressure";
+			this.shortName = "cp";
+			this.longName = "channel-pressure";
 		}
 
 		@Override
@@ -269,8 +284,8 @@ public class MetroMidi {
 	public static final MetroMidiPitchBend  MIDI_PITCH_BEND = new MetroMidiPitchBend(); 
 	public static final class MetroMidiPitchBend extends MetroMidiDouble1 {
 		{
-			this.id = "pb";
-			this.name = "pitch-bend";
+			this.shortName = "pb";
+			this.longName = "pitch-bend";
 		}
 
 		@Override
@@ -295,8 +310,8 @@ public class MetroMidi {
 	public static final MetroMidiAllSoundOff  MIDI_ALL_SOUND_OFF = new MetroMidiAllSoundOff(); 
 	public static final class MetroMidiAllSoundOff extends MetroMidiNoArg {
 		{
-			this.id = "aso";
-			this.name = "all-sound-off";
+			this.shortName = "aso";
+			this.longName = "all-sound-off";
 		}
 
 		@Override
@@ -318,8 +333,8 @@ public class MetroMidi {
 	public static final MetroMidiResetAllController  MIDI_RESET_ALL_CONTROLLERS = new MetroMidiResetAllController(); 
 	public static final class MetroMidiResetAllController extends MetroMidiNoArg {
 		{
-			this.id = "rac";
-			this.name = "reset-all-controllers";
+			this.shortName = "rac";
+			this.longName = "reset-all-controllers";
 		}
 
 		@Override
@@ -340,8 +355,8 @@ public class MetroMidi {
 	public static final MetroMidiLocalControls  MIDI_LOCAL_CONTROLS = new MetroMidiLocalControls(); 
 	public static final class MetroMidiLocalControls extends MetroMidiBoolean1 {
 		{
-			this.id = "lc";
-			this.name = "local-controls";
+			this.shortName = "lc";
+			this.longName = "local-controls";
 		}
 
 		@Override
@@ -363,8 +378,8 @@ public class MetroMidi {
 	public static final MetroMidiAllNoteOff  MIDI_ALL_NOTE_OFF = new MetroMidiAllNoteOff(); 
 	public static final class MetroMidiAllNoteOff extends MetroMidiNoArg {
 		{
-			this.id = "anf";
-			this.name = "all-note-off";
+			this.shortName = "anf";
+			this.longName = "all-note-off";
 		}
 
 		@Override
@@ -385,8 +400,8 @@ public class MetroMidi {
 	public static final MetroMidiOmniModeOff  MIDI_OMNI_MODE_OFF = new MetroMidiOmniModeOff(); 
 	public static final class MetroMidiOmniModeOff extends MetroMidiNoArg {
 		{
-			this.id = "omff";
-			this.name = "omni-mode-off";
+			this.shortName = "omff";
+			this.longName = "omni-mode-off";
 		}
 
 		@Override
@@ -408,8 +423,8 @@ public class MetroMidi {
 	public static final MetroMidiOmniModeOn  MIDI_OMNI_MODE_ON = new MetroMidiOmniModeOn(); 
 	public static final class MetroMidiOmniModeOn extends MetroMidiNoArg {
 		{
-			this.id = "omon";
-			this.name = "omni-mode-on";
+			this.shortName = "omon";
+			this.longName = "omni-mode-on";
 		}
 
 		@Override
@@ -431,8 +446,8 @@ public class MetroMidi {
 	public static final MetroMidiMonoModeOff  MIDI_MONO_MODE_OFF = new MetroMidiMonoModeOff(); 
 	public static final class MetroMidiMonoModeOff extends MetroMidiNoArg {
 		{
-			this.id = "mono";
-			this.name = "mono-mode-off";
+			this.shortName = "mono";
+			this.longName = "mono-mode-off";
 		}
 
 		@Override
@@ -453,8 +468,8 @@ public class MetroMidi {
 	public static final MetroMidiPolyModeOn  MIDI_POLY_MODE_ON = new MetroMidiPolyModeOn(); 
 	public static final class MetroMidiPolyModeOn extends MetroMidiNoArg {
 		{
-			this.id = "poly";
-			this.name = "poly-mode-on";
+			this.shortName = "poly";
+			this.longName = "poly-mode-on";
 		}
 
 		@Override
@@ -478,8 +493,8 @@ public class MetroMidi {
 	public static final MetroMidiSongPositionPointer  MIDI_SONG_POSITION_POINTER = new MetroMidiSongPositionPointer(); 
 	public static final class MetroMidiSongPositionPointer extends MetroMidiNoChannelInt1 {
 		{
-			this.id = "spp";
-			this.name = "song-position-pointer";
+			this.shortName = "spp";
+			this.longName = "song-position-pointer";
 		}
 
 		@Override
@@ -503,8 +518,8 @@ public class MetroMidi {
 	public static final MetroMidiSongSelect  MIDI_SONG_SELECT = new MetroMidiSongSelect(); 
 	public static final class MetroMidiSongSelect extends MetroMidiNoChannelInt1 {
 		{
-			this.id = "ss";
-			this.name = "song-select";
+			this.shortName = "ss";
+			this.longName = "song-select";
 		}
 
 		@Override
@@ -526,8 +541,8 @@ public class MetroMidi {
 	public static final MetroMidiEndOfExclusive  MIDI_END_OF_EXCLUSIVE = new MetroMidiEndOfExclusive(); 
 	public static final class MetroMidiEndOfExclusive extends MetroMidiNoChannelNoArg {
 		{
-			this.id = "eoe";
-			this.name = "end-of-exclusive";
+			this.shortName = "eoe";
+			this.longName = "end-of-exclusive";
 		}
 
 		@Override
@@ -549,8 +564,8 @@ public class MetroMidi {
 	public static final MetroMidiClock  MIDI_CLOCK = new MetroMidiClock(); 
 	public static final class MetroMidiClock extends MetroMidiNoChannelNoArg {
 		{
-			this.id = "clock";
-			this.name = "clock";
+			this.shortName = "clock";
+			this.longName = "clock";
 		}
 
 		@Override
@@ -572,8 +587,8 @@ public class MetroMidi {
 	public static final MetroMidiStart  MIDI_START = new MetroMidiStart(); 
 	public static final class MetroMidiStart extends MetroMidiNoChannelNoArg {
 		{
-			this.id = "start";
-			this.name = "start";
+			this.shortName = "start";
+			this.longName = "start";
 		}
 
 		@Override
@@ -594,8 +609,8 @@ public class MetroMidi {
 	public static final MetroMidiContinue  MIDI_CONTINUE = new MetroMidiContinue(); 
 	public static final class MetroMidiContinue extends MetroMidiNoChannelNoArg {
 		{
-			this.id = "cont";
-			this.name = "continue";
+			this.shortName = "cont";
+			this.longName = "continue";
 		}
 
 		@Override
@@ -616,8 +631,8 @@ public class MetroMidi {
 	public static final MetroMidiStop  MIDI_STOP = new MetroMidiStop(); 
 	public static final class MetroMidiStop extends MetroMidiNoChannelNoArg {
 		{
-			this.id = "stop";
-			this.name = "stop";
+			this.shortName = "stop";
+			this.longName = "stop";
 		}
 
 		@Override
@@ -638,8 +653,8 @@ public class MetroMidi {
 	public static final MetroMidiReset  MIDI_RESET = new MetroMidiReset(); 
 	public static final class MetroMidiReset extends MetroMidiNoChannelNoArg {
 		{
-			this.id = "reset";
-			this.name = "reset";
+			this.shortName = "reset";
+			this.longName = "reset";
 		}
 
 		@Override
@@ -663,10 +678,10 @@ public class MetroMidi {
 	public static final MetroMidiControlBankSelect MIDI_BANK_SELECT  = new MetroMidiControlBankSelect();
 	public static final class MetroMidiControlBankSelect extends MetroMidiControlChangeBase {
 		{
-			this.id = "bs";
-			this.name = "bank-select";
+			this.shortName = "bs";
+			this.longName = "bank-select";
 			this.shortDescription = "Bank Select";
-			this.description = "Allows user to switch bank for patch selection. Program change used with Bank Select. MIDI can access 16,384 patches per MIDI channel.";
+			this.longDescription = "Allows user to switch bank for patch selection. Program change used with Bank Select. MIDI can access 16,384 patches per MIDI channel.";
 			this.controlNumber = CC_BANK_SELECT                            ;
 		}
 
@@ -686,10 +701,10 @@ public class MetroMidi {
 	public static final MetroMidiControlModulation MIDI_MODULATION  = new MetroMidiControlModulation();
 	public static final class MetroMidiControlModulation extends MetroMidiControlChangeBase {
 		{
-			this.id = "mod";
-			this.name = "modulation";
+			this.shortName = "mod";
+			this.longName = "modulation";
 			this.shortDescription = "Modulation";
-			this.description = "Generally this CC controls a vibrato effect (pitch, loudness, brighness). What is modulated is based on the patch.";
+			this.longDescription = "Generally this CC controls a vibrato effect (pitch, loudness, brighness). What is modulated is based on the patch.";
 			this.controlNumber = CC_MODULATION                             ;
 		}
 
@@ -709,10 +724,10 @@ public class MetroMidi {
 	public static final MetroMidiControlBreathController MIDI_BREATH_CTRL  = new MetroMidiControlBreathController();
 	public static final class MetroMidiControlBreathController extends MetroMidiControlChangeBase {
 		{
-			this.id = "bc";
-			this.name = "breath-controller";
+			this.shortName = "bc";
+			this.longName = "breath-controller";
 			this.shortDescription = "Breath Controller";
-			this.description = "Often times associated with aftertouch messages. It was originally intended for use with a breath MIDI controller in which blowing harder produced higher MIDI control values. It can be used for modulation as well.";
+			this.longDescription = "Often times associated with aftertouch messages. It was originally intended for use with a breath MIDI controller in which blowing harder produced higher MIDI control values. It can be used for modulation as well.";
 			this.controlNumber = CC_BREATH_CTRL                            ;
 		}
 
@@ -732,10 +747,10 @@ public class MetroMidi {
 	public static final MetroMidiControlFootController MIDI_FOOT_CTRL  = new MetroMidiControlFootController();
 	public static final class MetroMidiControlFootController extends MetroMidiControlChangeBase {
 		{
-			this.id = "fc";
-			this.name = "foot-controller";
+			this.shortName = "fc";
+			this.longName = "foot-controller";
 			this.shortDescription = "Foot Controller";
-			this.description = "Often used with aftertouch messages. It can send a continuous stream of values based on how the pedal is used.";
+			this.longDescription = "Often used with aftertouch messages. It can send a continuous stream of values based on how the pedal is used.";
 			this.controlNumber = CC_FOOT_CTRL                              ;
 		}
 
@@ -755,10 +770,10 @@ public class MetroMidi {
 	public static final MetroMidiControlPortamentoTime MIDI_PORTAMENTO_TIME  = new MetroMidiControlPortamentoTime();
 	public static final class MetroMidiControlPortamentoTime extends MetroMidiControlChangeBase {
 		{
-			this.id = "pt";
-			this.name = "portamento-time";
+			this.shortName = "pt";
+			this.longName = "portamento-time";
 			this.shortDescription = "Portamento Time";
-			this.description = "Controls portamento rate to slide between 2 notes played subsequently.";
+			this.longDescription = "Controls portamento rate to slide between 2 notes played subsequently.";
 			this.controlNumber = CC_PORTAMENTO_TIME                        ;
 		}
 
@@ -778,10 +793,10 @@ public class MetroMidi {
 	public static final MetroMidiControlDataEntryMsb MIDI_DATA_ENTRY_MSB  = new MetroMidiControlDataEntryMsb();
 	public static final class MetroMidiControlDataEntryMsb extends MetroMidiControlChangeBase {
 		{
-			this.id = "de-msb";
-			this.name = "data-entry-msb";
+			this.shortName = "de-msb";
+			this.longName = "data-entry-msb";
 			this.shortDescription = "Data Entry Most Significant Bit(MSB)";
-			this.description = "Controls Value for NRPN or RPN parameters.";
+			this.longDescription = "Controls Value for NRPN or RPN parameters.";
 			this.controlNumber = CC_DATA_ENTRY_MSB                         ;
 		}
 
@@ -801,10 +816,10 @@ public class MetroMidi {
 	public static final MetroMidiControlVolume MIDI_VOLUME  = new MetroMidiControlVolume();
 	public static final class MetroMidiControlVolume extends MetroMidiControlChangeBase {
 		{
-			this.id = "v";
-			this.name = "volume";
+			this.shortName = "v";
+			this.longName = "volume";
 			this.shortDescription = "Volume";
-			this.description = "Control the volume of the channel";
+			this.longDescription = "Control the volume of the channel";
 			this.controlNumber = CC_VOLUME                                 ;
 		}
 
@@ -824,10 +839,10 @@ public class MetroMidi {
 	public static final MetroMidiControlBalance MIDI_BALANCE  = new MetroMidiControlBalance();
 	public static final class MetroMidiControlBalance extends MetroMidiControlChangeBase {
 		{
-			this.id = "b";
-			this.name = "balance";
+			this.shortName = "b";
+			this.longName = "balance";
 			this.shortDescription = "Balance";
-			this.description = "Controls the left and right balance, generally for stereo patches.0 = hard left, 64 = center, 127 = hard right";
+			this.longDescription = "Controls the left and right balance, generally for stereo patches.0 = hard left, 64 = center, 127 = hard right";
 			this.controlNumber = CC_BALANCE                                ;
 		}
 
@@ -847,10 +862,10 @@ public class MetroMidi {
 	public static final MetroMidiControlPan MIDI_PAN  = new MetroMidiControlPan();
 	public static final class MetroMidiControlPan extends MetroMidiControlChangeBase {
 		{
-			this.id = "p";
-			this.name = "pan";
+			this.shortName = "p";
+			this.longName = "pan";
 			this.shortDescription = "Pan";
-			this.description = "Controls the left and right balance, generally for mono patches.0 = hard left, 64 = center, 127 = hard right";
+			this.longDescription = "Controls the left and right balance, generally for mono patches.0 = hard left, 64 = center, 127 = hard right";
 			this.controlNumber = CC_PAN                                    ;
 		}
 
@@ -870,10 +885,10 @@ public class MetroMidi {
 	public static final MetroMidiControlExpression MIDI_EXPRESSION  = new MetroMidiControlExpression();
 	public static final class MetroMidiControlExpression extends MetroMidiControlChangeBase {
 		{
-			this.id = "e";
-			this.name = "expression";
+			this.shortName = "e";
+			this.longName = "expression";
 			this.shortDescription = "Expression";
-			this.description = "Expression is a percentage of volume (CC7).";
+			this.longDescription = "Expression is a percentage of volume (CC7).";
 			this.controlNumber = CC_EXPRESSION                             ;
 		}
 
@@ -893,10 +908,10 @@ public class MetroMidi {
 	public static final MetroMidiControlEffectController1 MIDI_EFFECT_CTRL_1  = new MetroMidiControlEffectController1();
 	public static final class MetroMidiControlEffectController1 extends MetroMidiControlChangeBase {
 		{
-			this.id = "ec1";
-			this.name = "effect-controller-1";
+			this.shortName = "ec1";
+			this.longName = "effect-controller-1";
 			this.shortDescription = "Effect Controller 1";
-			this.description = "Usually used to control a parameter of an effect within the synth/workstation.";
+			this.longDescription = "Usually used to control a parameter of an effect within the synth/workstation.";
 			this.controlNumber = CC_EFFECT_CTRL_1                          ;
 		}
 
@@ -916,10 +931,10 @@ public class MetroMidi {
 	public static final MetroMidiControlEffectController2 MIDI_EFFECT_CTRL_2  = new MetroMidiControlEffectController2();
 	public static final class MetroMidiControlEffectController2 extends MetroMidiControlChangeBase {
 		{
-			this.id = "ec2";
-			this.name = "effect-controller-2";
+			this.shortName = "ec2";
+			this.longName = "effect-controller-2";
 			this.shortDescription = "Effect Controller 2";
-			this.description = "Usually used to control a parameter of an effect within the synth/workstation.";
+			this.longDescription = "Usually used to control a parameter of an effect within the synth/workstation.";
 			this.controlNumber = CC_EFFECT_CTRL_2                          ;
 		}
 
@@ -939,10 +954,10 @@ public class MetroMidi {
 	public static final MetroMidiControlSustainPedal MIDI_SUSTAIN_PEDAL  = new MetroMidiControlSustainPedal();
 	public static final class MetroMidiControlSustainPedal extends MetroMidiControlChangeBase {
 		{
-			this.id = "sp";
-			this.name = "sustain-pedal";
+			this.shortName = "sp";
+			this.longName = "sustain-pedal";
 			this.shortDescription = "Damper Pedal / Sustain Pedal";
-			this.description = "On/Off switch that controls sustain. (See also Sostenuto CC 66)0 to 63 = Off, 64 to 127 = On";
+			this.longDescription = "On/Off switch that controls sustain. (See also Sostenuto CC 66)0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_SUSTAIN_PEDAL                          ;
 		}
 
@@ -962,10 +977,10 @@ public class MetroMidi {
 	public static final MetroMidiControlPortamentoSwitch MIDI_PORTAMENTO_SWITCH  = new MetroMidiControlPortamentoSwitch();
 	public static final class MetroMidiControlPortamentoSwitch extends MetroMidiControlChangeBase {
 		{
-			this.id = "ps";
-			this.name = "portamento-switch";
+			this.shortName = "ps";
+			this.longName = "portamento-switch";
 			this.shortDescription = "Portamento On/Off Switch";
-			this.description = "On/Off switch0 to 63 = Off, 64 to 127 = On";
+			this.longDescription = "On/Off switch0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_PORTAMENTO_SWITCH                      ;
 		}
 
@@ -985,10 +1000,10 @@ public class MetroMidi {
 	public static final MetroMidiControlSostenutoSwitch MIDI_SOSTENUTO_SWITCH  = new MetroMidiControlSostenutoSwitch();
 	public static final class MetroMidiControlSostenutoSwitch extends MetroMidiControlChangeBase {
 		{
-			this.id = "sos-s";
-			this.name = "sostenuto-switch";
+			this.shortName = "sos-s";
+			this.longName = "sostenuto-switch";
 			this.shortDescription = "Sostenuto On/Off Switch";
-			this.description = "On/Off switch – Like the Sustain controller (CC 64), However it only holds notes that were “On” when the pedal was pressed. People use it to “hold” chords” and play melodies over the held chord.0 to 63 = Off, 64 to 127 = On";
+			this.longDescription = "On/Off switch – Like the Sustain controller (CC 64), However it only holds notes that were “On” when the pedal was pressed. People use it to “hold” chords” and play melodies over the held chord.0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_SOSTENUTO_SWITCH                       ;
 		}
 
@@ -1008,10 +1023,10 @@ public class MetroMidi {
 	public static final MetroMidiControlPedalSwitch MIDI_SOFT_PEDAL_SWITCH  = new MetroMidiControlPedalSwitch();
 	public static final class MetroMidiControlPedalSwitch extends MetroMidiControlChangeBase {
 		{
-			this.id = "soft-pedal";
-			this.name = "soft-pedal-switch";
+			this.shortName = "soft-pedal";
+			this.longName = "soft-pedal-switch";
 			this.shortDescription = "Soft Pedal On/Off Switch";
-			this.description = "On/Off switch- Lowers the volume of notes played.0 to 63 = Off, 64 to 127 = On";
+			this.longDescription = "On/Off switch- Lowers the volume of notes played.0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_SOFT_PEDAL_SWITCH                      ;
 		}
 
@@ -1031,10 +1046,10 @@ public class MetroMidi {
 	public static final MetroMidiControlLegatoSwitch MIDI_LEGATO_FOOTSWITCH  = new MetroMidiControlLegatoSwitch();
 	public static final class MetroMidiControlLegatoSwitch extends MetroMidiControlChangeBase {
 		{
-			this.id = "ls";
-			this.name = "legato-switch";
+			this.shortName = "ls";
+			this.longName = "legato-switch";
 			this.shortDescription = "Legato FootSwitch";
-			this.description = "On/Off switch- Turns Legato effect between 2 subsequent notes On or Off.0 to 63 = Off, 64 to 127 = On";
+			this.longDescription = "On/Off switch- Turns Legato effect between 2 subsequent notes On or Off.0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_LEGATO_FOOTSWITCH                      ;
 		}
 
@@ -1054,10 +1069,10 @@ public class MetroMidi {
 	public static final MetroMidiControlHold2 MIDI_HOLD_2  = new MetroMidiControlHold2();
 	public static final class MetroMidiControlHold2 extends MetroMidiControlChangeBase {
 		{
-			this.id = "h2";
-			this.name = "hold-2";
+			this.shortName = "h2";
+			this.longName = "hold-2";
 			this.shortDescription = "Hold 2";
-			this.description = "Another way to “hold notes” (see MIDI CC 64 and MIDI CC 66). However notes fade out according to their release parameter rather than when the pedal is released.";
+			this.longDescription = "Another way to “hold notes” (see MIDI CC 64 and MIDI CC 66). However notes fade out according to their release parameter rather than when the pedal is released.";
 			this.controlNumber = CC_HOLD_2                                 ;
 		}
 
@@ -1077,10 +1092,10 @@ public class MetroMidi {
 	public static final MetroMidiControlSoundController1 MIDI_SOUND_CTRL_01  = new MetroMidiControlSoundController1();
 	public static final class MetroMidiControlSoundController1 extends MetroMidiControlChangeBase {
 		{
-			this.id = "sc1";
-			this.name = "sound-controller-1";
+			this.shortName = "sc1";
+			this.longName = "sound-controller-1";
 			this.shortDescription = "Sound Controller 1";
-			this.description = "Usually controls the way a sound is produced. Default = Sound Variation.";
+			this.longDescription = "Usually controls the way a sound is produced. Default = Sound Variation.";
 			this.controlNumber = CC_SOUND_CTRL_01                          ;
 		}
 
@@ -1100,10 +1115,10 @@ public class MetroMidi {
 	public static final MetroMidiControlSoundController2 MIDI_SOUND_CTRL_02  = new MetroMidiControlSoundController2();
 	public static final class MetroMidiControlSoundController2 extends MetroMidiControlChangeBase {
 		{
-			this.id = "sc2";
-			this.name = "sound-controller-2";
+			this.shortName = "sc2";
+			this.longName = "sound-controller-2";
 			this.shortDescription = "Sound Controller 2";
-			this.description = "Allows shaping the Voltage Controlled Filter (VCF). Default = Resonance -also(Timbre or Harmonics)";
+			this.longDescription = "Allows shaping the Voltage Controlled Filter (VCF). Default = Resonance -also(Timbre or Harmonics)";
 			this.controlNumber = CC_SOUND_CTRL_02                          ;
 		}
 
@@ -1123,10 +1138,10 @@ public class MetroMidi {
 	public static final MetroMidiControlSoundController3 MIDI_SOUND_CTRL_03  = new MetroMidiControlSoundController3();
 	public static final class MetroMidiControlSoundController3 extends MetroMidiControlChangeBase {
 		{
-			this.id = "sc3";
-			this.name = "sound-controller-3";
+			this.shortName = "sc3";
+			this.longName = "sound-controller-3";
 			this.shortDescription = "Sound Controller 3";
-			this.description = "Controls release time of the Voltage controlled Amplifier (VCA). Default = Release Time.";
+			this.longDescription = "Controls release time of the Voltage controlled Amplifier (VCA). Default = Release Time.";
 			this.controlNumber = CC_SOUND_CTRL_03                          ;
 		}
 
@@ -1146,10 +1161,10 @@ public class MetroMidi {
 	public static final MetroMidiControlSoundController4 MIDI_SOUND_CTRL_04  = new MetroMidiControlSoundController4();
 	public static final class MetroMidiControlSoundController4 extends MetroMidiControlChangeBase {
 		{
-			this.id = "sc4";
-			this.name = "sound-controller-4";
+			this.shortName = "sc4";
+			this.longName = "sound-controller-4";
 			this.shortDescription = "Sound Controller 4";
-			this.description = "Controls the “Attack’ of a sound. The attack is the amount of time it takes forthe sound to reach maximum amplitude.";
+			this.longDescription = "Controls the “Attack’ of a sound. The attack is the amount of time it takes forthe sound to reach maximum amplitude.";
 			this.controlNumber = CC_SOUND_CTRL_04                          ;
 		}
 
@@ -1169,10 +1184,10 @@ public class MetroMidi {
 	public static final MetroMidiControlSoundController5 MIDI_SOUND_CTRL_05  = new MetroMidiControlSoundController5();
 	public static final class MetroMidiControlSoundController5 extends MetroMidiControlChangeBase {
 		{
-			this.id = "sc5";
-			this.name = "sound-controller-5";
+			this.shortName = "sc5";
+			this.longName = "sound-controller-5";
 			this.shortDescription = "Sound Controller 5";
-			this.description = "Controls VCFs cutoff frequency of the filter.";
+			this.longDescription = "Controls VCFs cutoff frequency of the filter.";
 			this.controlNumber = CC_SOUND_CTRL_05                          ;
 		}
 
@@ -1192,10 +1207,10 @@ public class MetroMidi {
 	public static final MetroMidiControlSoundController6 MIDI_SOUND_CTRL_06  = new MetroMidiControlSoundController6();
 	public static final class MetroMidiControlSoundController6 extends MetroMidiControlChangeBase {
 		{
-			this.id = "sc6";
-			this.name = "sound-controller-6";
+			this.shortName = "sc6";
+			this.longName = "sound-controller-6";
 			this.shortDescription = "Sound Controller 6";
-			this.description = "Generic – Some manufacturers may use to further shave their sounds.";
+			this.longDescription = "Generic – Some manufacturers may use to further shave their sounds.";
 			this.controlNumber = CC_SOUND_CTRL_06                          ;
 		}
 
@@ -1215,10 +1230,10 @@ public class MetroMidi {
 	public static final MetroMidiControlSoundController7 MIDI_SOUND_CTRL_07  = new MetroMidiControlSoundController7();
 	public static final class MetroMidiControlSoundController7 extends MetroMidiControlChangeBase {
 		{
-			this.id = "sc7";
-			this.name = "sound-controller-7";
+			this.shortName = "sc7";
+			this.longName = "sound-controller-7";
 			this.shortDescription = "Sound Controller 7";
-			this.description = "Generic – Some manufacturers may use to further shave their sounds.";
+			this.longDescription = "Generic – Some manufacturers may use to further shave their sounds.";
 			this.controlNumber = CC_SOUND_CTRL_07                          ;
 		}
 
@@ -1238,10 +1253,10 @@ public class MetroMidi {
 	public static final MetroMidiControlSoundController8 MIDI_SOUND_CTRL_08  = new MetroMidiControlSoundController8();
 	public static final class MetroMidiControlSoundController8 extends MetroMidiControlChangeBase {
 		{
-			this.id = "sc8";
-			this.name = "sound-controller-8";
+			this.shortName = "sc8";
+			this.longName = "sound-controller-8";
 			this.shortDescription = "Sound Controller 8";
-			this.description = "Generic – Some manufacturers may use to further shave their sounds.";
+			this.longDescription = "Generic – Some manufacturers may use to further shave their sounds.";
 			this.controlNumber = CC_SOUND_CTRL_08                          ;
 		}
 
@@ -1261,10 +1276,10 @@ public class MetroMidi {
 	public static final MetroMidiControlSoundController9 MIDI_SOUND_CTRL_09  = new MetroMidiControlSoundController9();
 	public static final class MetroMidiControlSoundController9 extends MetroMidiControlChangeBase {
 		{
-			this.id = "sc9";
-			this.name = "sound-controller-9";
+			this.shortName = "sc9";
+			this.longName = "sound-controller-9";
 			this.shortDescription = "Sound Controller 9";
-			this.description = "Generic – Some manufacturers may use to further shave their sounds.";
+			this.longDescription = "Generic – Some manufacturers may use to further shave their sounds.";
 			this.controlNumber = CC_SOUND_CTRL_09                          ;
 		}
 
@@ -1284,10 +1299,10 @@ public class MetroMidi {
 	public static final MetroMidiControlSoundController10 MIDI_SOUND_CTRL_10  = new MetroMidiControlSoundController10();
 	public static final class MetroMidiControlSoundController10 extends MetroMidiControlChangeBase {
 		{
-			this.id = "sc10";
-			this.name = "sound-controller-10";
+			this.shortName = "sc10";
+			this.longName = "sound-controller-10";
 			this.shortDescription = "Sound Controller 10";
-			this.description = "Generic – Some manufacturers may use to further shave their sounds.";
+			this.longDescription = "Generic – Some manufacturers may use to further shave their sounds.";
 			this.controlNumber = CC_SOUND_CTRL_10                          ;
 		}
 
@@ -1307,10 +1322,10 @@ public class MetroMidi {
 	public static final MetroMidiControlGeneralPurpose01 MIDI_GENERAL_PURPOSE_01  = new MetroMidiControlGeneralPurpose01();
 	public static final class MetroMidiControlGeneralPurpose01 extends MetroMidiControlChangeBase {
 		{
-			this.id = "gp01";
-			this.name = "general-purpose-cc-01";
+			this.shortName = "gp01";
+			this.longName = "general-purpose-cc-01";
 			this.shortDescription = "General Purpose MIDI CC Controller";
-			this.description = "GenericOn/Off switch0 to 63 = Off, 64 to 127 = On";
+			this.longDescription = "GenericOn/Off switch0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_GENERAL_PURPOSE_01                     ;
 		}
 
@@ -1330,10 +1345,10 @@ public class MetroMidi {
 	public static final MetroMidiControlGeneralPurpose02 MIDI_GENERAL_PURPOSE_02  = new MetroMidiControlGeneralPurpose02();
 	public static final class MetroMidiControlGeneralPurpose02 extends MetroMidiControlChangeBase {
 		{
-			this.id = "gp02";
-			this.name = "general-purpose-cc-02";
+			this.shortName = "gp02";
+			this.longName = "general-purpose-cc-02";
 			this.shortDescription = "General Purpose MIDI CC Controller";
-			this.description = "GenericOn/Off switch0 to 63 = Off, 64 to 127 = On";
+			this.longDescription = "GenericOn/Off switch0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_GENERAL_PURPOSE_02                     ;
 		}
 
@@ -1353,10 +1368,10 @@ public class MetroMidi {
 	public static final MetroMidiControlGeneralPurpose03 MIDI_GENERAL_PURPOSE_03  = new MetroMidiControlGeneralPurpose03();
 	public static final class MetroMidiControlGeneralPurpose03 extends MetroMidiControlChangeBase {
 		{
-			this.id = "gp03";
-			this.name = "general-purpose-cc-03";
+			this.shortName = "gp03";
+			this.longName = "general-purpose-cc-03";
 			this.shortDescription = "General PurposeMIDI CC Controller";
-			this.description = "GenericOn/Off switch0 to 63 = Off, 64 to 127 = On";
+			this.longDescription = "GenericOn/Off switch0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_GENERAL_PURPOSE_03                     ;
 		}
 
@@ -1376,10 +1391,10 @@ public class MetroMidi {
 	public static final MetroMidiControlGeneralPurpose04 MIDI_GENERAL_PURPOSE_04  = new MetroMidiControlGeneralPurpose04();
 	public static final class MetroMidiControlGeneralPurpose04 extends MetroMidiControlChangeBase {
 		{
-			this.id = "gp04";
-			this.name = "general-purpose-cc-04";
+			this.shortName = "gp04";
+			this.longName = "general-purpose-cc-04";
 			this.shortDescription = "General Purpose MIDI CC Controller";
-			this.description = "GenericOn/Off switch0 to 63 = Off, 64 to 127 = On";
+			this.longDescription = "GenericOn/Off switch0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_GENERAL_PURPOSE_04                     ;
 		}
 
@@ -1399,10 +1414,10 @@ public class MetroMidi {
 	public static final MetroMidiControlPortamento MIDI_PORTAMENTO_CC_CTRL  = new MetroMidiControlPortamento();
 	public static final class MetroMidiControlPortamento extends MetroMidiControlChangeBase {
 		{
-			this.id = "po";
-			this.name = "portamento";
+			this.shortName = "po";
+			this.longName = "portamento";
 			this.shortDescription = "Portamento CC Control";
-			this.description = "Controls the amount of Portamento.";
+			this.longDescription = "Controls the amount of Portamento.";
 			this.controlNumber = CC_PORTAMENTO_CC_CTRL                     ;
 		}
 
@@ -1422,10 +1437,10 @@ public class MetroMidi {
 	public static final MetroMidiControlEffect1 MIDI_EFFECT_1_DEPTH  = new MetroMidiControlEffect1();
 	public static final class MetroMidiControlEffect1 extends MetroMidiControlChangeBase {
 		{
-			this.id = "e1";
-			this.name = "effect-1";
+			this.shortName = "e1";
+			this.longName = "effect-1";
 			this.shortDescription = "Effect 1 Depth";
-			this.description = "Usually controls reverb send amount";
+			this.longDescription = "Usually controls reverb send amount";
 			this.controlNumber = CC_EFFECT_1_DEPTH                         ;
 		}
 
@@ -1445,10 +1460,10 @@ public class MetroMidi {
 	public static final MetroMidiControlEffect2 MIDI_EFFECT_2_DEPTH  = new MetroMidiControlEffect2();
 	public static final class MetroMidiControlEffect2 extends MetroMidiControlChangeBase {
 		{
-			this.id = "e2";
-			this.name = "effect-2";
+			this.shortName = "e2";
+			this.longName = "effect-2";
 			this.shortDescription = "Effect 2 Depth";
-			this.description = "Usually controls tremolo amount";
+			this.longDescription = "Usually controls tremolo amount";
 			this.controlNumber = CC_EFFECT_2_DEPTH                         ;
 		}
 
@@ -1468,10 +1483,10 @@ public class MetroMidi {
 	public static final MetroMidiControlEffect3 MIDI_EFFECT_3_DEPTH  = new MetroMidiControlEffect3();
 	public static final class MetroMidiControlEffect3 extends MetroMidiControlChangeBase {
 		{
-			this.id = "e3";
-			this.name = "effect-3";
+			this.shortName = "e3";
+			this.longName = "effect-3";
 			this.shortDescription = "Effect 3 Depth";
-			this.description = "Usually controls chorus amount";
+			this.longDescription = "Usually controls chorus amount";
 			this.controlNumber = CC_EFFECT_3_DEPTH                         ;
 		}
 
@@ -1491,10 +1506,10 @@ public class MetroMidi {
 	public static final MetroMidiControlEffect4 MIDI_EFFECT_4_DEPTH  = new MetroMidiControlEffect4();
 	public static final class MetroMidiControlEffect4 extends MetroMidiControlChangeBase {
 		{
-			this.id = "e4";
-			this.name = "effect-4";
+			this.shortName = "e4";
+			this.longName = "effect-4";
 			this.shortDescription = "Effect 4 Depth";
-			this.description = "Usually controls detune amount";
+			this.longDescription = "Usually controls detune amount";
 			this.controlNumber = CC_EFFECT_4_DEPTH                         ;
 		}
 
@@ -1514,10 +1529,10 @@ public class MetroMidi {
 	public static final MetroMidiControlEffect5 MIDI_EFFECT_5_DEPTH  = new MetroMidiControlEffect5();
 	public static final class MetroMidiControlEffect5 extends MetroMidiControlChangeBase {
 		{
-			this.id = "e5";
-			this.name = "effect-5";
+			this.shortName = "e5";
+			this.longName = "effect-5";
 			this.shortDescription = "Effect 5 Depth";
-			this.description = "Usually controls phaser amount";
+			this.longDescription = "Usually controls phaser amount";
 			this.controlNumber = CC_EFFECT_5_DEPTH                         ;
 		}
 
@@ -1537,10 +1552,10 @@ public class MetroMidi {
 	public static final MetroMidiControlDataIncrement MIDI_DATA_INCREMENT  = new MetroMidiControlDataIncrement();
 	public static final class MetroMidiControlDataIncrement extends MetroMidiControlChangeBase {
 		{
-			this.id = "inc";
-			this.name = "data-increment";
+			this.shortName = "inc";
+			this.longName = "data-increment";
 			this.shortDescription = "(+1) Data Increment";
-			this.description = "Usually used to increment data for RPN and NRPN messages.";
+			this.longDescription = "Usually used to increment data for RPN and NRPN messages.";
 			this.controlNumber = CC_DATA_INCREMENT;
 		}
 
@@ -1560,10 +1575,10 @@ public class MetroMidi {
 	public static final MetroMidiControlDataDecrement MIDI_DATA_DECREMENT  = new MetroMidiControlDataDecrement();
 	public static final class MetroMidiControlDataDecrement extends MetroMidiControlChangeBase {
 		{
-			this.id = "dec";
-			this.name = "data-decrement";
+			this.shortName = "dec";
+			this.longName = "data-decrement";
 			this.shortDescription = "(-1) Data Decrement";
-			this.description = "Usually used to decrement data for RPN and NRPN messages.";
+			this.longDescription = "Usually used to decrement data for RPN and NRPN messages.";
 			this.controlNumber = CC_DATA_DECREMENT ;
 		}
 
@@ -1583,10 +1598,10 @@ public class MetroMidi {
 	public static final MetroMidiControlNrpnLsb MIDI_NRPN_LSB  = new MetroMidiControlNrpnLsb();
 	public static final class MetroMidiControlNrpnLsb extends MetroMidiControlChangeBase {
 		{
-			this.id = "nrpn-l";
-			this.name = "nrpn-lsb";
+			this.shortName = "nrpn-l";
+			this.longName = "nrpn-lsb";
 			this.shortDescription = "Non-Registered Parameter Number LSB (NRPN)";
-			this.description = "For controllers 6, 38, 96, and 97, it selects the NRPN parameter.";
+			this.longDescription = "For controllers 6, 38, 96, and 97, it selects the NRPN parameter.";
 			this.controlNumber = CC_NRPN_LSB                               ;
 		}
 
@@ -1606,10 +1621,10 @@ public class MetroMidi {
 	public static final MetroMidiControlNrpnMsb MIDI_NRPN_MSB  = new MetroMidiControlNrpnMsb();
 	public static final class MetroMidiControlNrpnMsb extends MetroMidiControlChangeBase {
 		{
-			this.id = "nrpn-m";
-			this.name = "nrpn-msb";
+			this.shortName = "nrpn-m";
+			this.longName = "nrpn-msb";
 			this.shortDescription = "Non-Registered Parameter Number MSB (NRPN)";
-			this.description = "For controllers 6, 38, 96, and 97, it selects the NRPN parameter.";
+			this.longDescription = "For controllers 6, 38, 96, and 97, it selects the NRPN parameter.";
 			this.controlNumber = CC_NRPN_MSB                               ;
 		}
 
@@ -1629,10 +1644,10 @@ public class MetroMidi {
 	public static final MetroMidiControlRpnLsb MIDI_RPN_LSB  = new MetroMidiControlRpnLsb();
 	public static final class MetroMidiControlRpnLsb extends MetroMidiControlChangeBase {
 		{
-			this.id = "rpn-l";
-			this.name = "rpn-lsb";
+			this.shortName = "rpn-l";
+			this.longName = "rpn-lsb";
 			this.shortDescription = "Registered Parameter Number LSB (RPN)";
-			this.description = "For controllers 6, 38, 96, and 97, it selects the RPN parameter.";
+			this.longDescription = "For controllers 6, 38, 96, and 97, it selects the RPN parameter.";
 			this.controlNumber = CC_RPN_LSB                                ;
 		}
 
@@ -1652,10 +1667,10 @@ public class MetroMidi {
 	public static final MetroMidiControlRpnMsb MIDI_RPN_MSB  = new MetroMidiControlRpnMsb();
 	public static final class MetroMidiControlRpnMsb extends MetroMidiControlChangeBase {
 		{
-			this.id = "rpn-m";
-			this.name = "rpn-msb";
+			this.shortName = "rpn-m";
+			this.longName = "rpn-msb";
 			this.shortDescription = "Registered Parameter Number MSB (RPN)";
-			this.description = "For controllers 6, 38, 96, and 97, it selects the RPN parameter.";
+			this.longDescription = "For controllers 6, 38, 96, and 97, it selects the RPN parameter.";
 			this.controlNumber = CC_RPN_MSB                                ;
 		}
 

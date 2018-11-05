@@ -117,7 +117,7 @@ public class SchemePulsarLogic extends MetroLogic {
 		State state = new State();
 		*/
 	
-		return SchemeNoteParser.parse(metro, scheme, pattern, buf, true );
+		return SchemeNoteParser0.parse(metro, scheme, pattern, buf, true );
 	}
 
 	LList asociationList = createPairs( this );
