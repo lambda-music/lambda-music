@@ -1,9 +1,19 @@
 package ats.pulsar;
 
 /**
- * A interface that defined objects to execute (currently only ) scheme functions.  
+ * This class defines an interface that executes an arbitrary procedure.
+ * Currently there is only one class which implements this interface. See
+ * {@link InvocableSchemeProcedure}
+ * 
+ * @author ats
  */
 public abstract interface Invocable {
-	static final Object[] NULL_ARG = {};
-	abstract Object invoke( Object ... args );
+	/**
+	 * This method invokes the procedure which is denoted by the subclasses
+	 * implement this interface.
+	 * 
+	 * @param args
+	 * @return
+	 */
+	abstract Object invoke(Object... args);
 }
