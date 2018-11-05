@@ -8,53 +8,53 @@ import java.util.Set;
  * 
  * @author ats
  */
-public abstract class MetroLogic implements MetroPlayer {
+public abstract class MetroLogic implements MetroTrackInfo {
 	public abstract void    processDirect(    Metro metro, List<MetroAbstractMidiEvent> in, List<MetroAbstractMidiEvent> out );
 	public abstract boolean processBuffered(  Metro metro, MetroTrack track, MetroEventBuffer buf );
 	
-	MetroPlayer player=null;
-	public MetroPlayer getPlayer() {
-		return player;
+	MetroTrackInfo trackInfo=null;
+	public MetroTrackInfo getTrackInfo() {
+		return trackInfo;
 	}
-	public void setPlayer(MetroPlayer player) {
-		if ( this.player != null )
+	public void setTrackInfo(MetroTrackInfo trackInfo) {
+		if ( this.trackInfo != null )
 			throw new RuntimeException( "the player property is already set" );
-		this.player = player;
+		this.trackInfo = trackInfo;
 	}
 	////////
 	public final void check() {
-		if ( player == null )
+		if ( trackInfo == null )
 			throw new RuntimeException( "No ParentPlayer is specified." );
 	}
 	@Override
-	public String getPlayerName() {
+	public String getTrackName() {
 		check();
-		return player.getPlayerName();
+		return trackInfo.getTrackName();
 	}
 	@Override
-	public Set<String> getPlayerTags() {
+	public Set<String> getTrackTags() {
 		check();
-		return player.getPlayerTags();
+		return trackInfo.getTrackTags();
 	}
 	@Override
-	public boolean isPlayerEnabled() {
+	public boolean isTrackEnabled() {
 		check();
-		return player.isPlayerEnabled();
+		return trackInfo.isTrackEnabled();
 	}
 	@Override
-	public void setPlayerEnabled(boolean enabled) {
+	public void setTrackEnabled(boolean enabled) {
 		check();
-		player.setPlayerEnabled(enabled);
+		trackInfo.setTrackEnabled(enabled);
 	}
 	@Override
-	public void playerRemove(boolean graceful) {
+	public void removeTrack(boolean graceful) {
 		check();
-		player.playerRemove( graceful );
+		trackInfo.removeTrack( graceful );
 	}
 	@Override
-	public double getPosition() {
+	public double getTrackPosition() {
 		check();
-		return player.getPosition();
+		return trackInfo.getTrackPosition();
 	}
 
 	

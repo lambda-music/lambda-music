@@ -161,11 +161,11 @@ class MetroLogicList implements List<MetroLogic> {
 	}
 
 	public int indexOf(Object o) {
-		return object.indexOf( ((MetroLogic)o).player );
+		return object.indexOf( ((MetroLogic)o).trackInfo );
 	}
 
 	public int lastIndexOf(Object o) {
-		return object.lastIndexOf( ((MetroLogic)o).player );
+		return object.lastIndexOf( ((MetroLogic)o).trackInfo );
 	}
 
 	public ListIterator<MetroLogic> listIterator() {

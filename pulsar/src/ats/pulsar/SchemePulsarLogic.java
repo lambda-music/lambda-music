@@ -11,7 +11,7 @@ import ats.metro.Metro;
 import ats.metro.MetroLogic;
 import ats.metro.MetroEventBuffer;
 import ats.metro.MetroTrack;
-import ats.metro.MetroPlayer;
+import ats.metro.MetroTrackInfo;
 import ats.pulsar.lib.SchemeUtils;
 import gnu.lists.AbstractSequence;
 import gnu.lists.EmptyList;
@@ -112,7 +112,7 @@ public class SchemePulsarLogic extends MetroLogic {
 	}
 
 
-	public static LList createPairs( MetroPlayer player ) {
+	public static LList createPairs( MetroTrackInfo player ) {
 		Pair[] pairs = {
 				new ImmutablePair() {
 					@Override
@@ -121,7 +121,7 @@ public class SchemePulsarLogic extends MetroLogic {
 					}
 					@Override
 					public Object getCdr() {
-						return SchemeUtils.toSchemeSymbol( player.getPlayerName() );
+						return SchemeUtils.toSchemeSymbol( player.getTrackName() );
 					}
 				},
 				new ImmutablePair() {
@@ -133,7 +133,7 @@ public class SchemePulsarLogic extends MetroLogic {
 					public Object getCdr() {
 						return LList.makeList((List)
 								SchemeUtils.<String,Symbol>convertList(
-										player.getPlayerTags() , (v)->SchemeUtils.toSchemeSymbol(v) ) );
+										player.getTrackTags() , (v)->SchemeUtils.toSchemeSymbol(v) ) );
 					}
 				},
 				new ImmutablePair() {
@@ -146,9 +146,9 @@ public class SchemePulsarLogic extends MetroLogic {
 						return new ProcedureN() {
 							public Object applyN(Object[] args) throws Throwable {
 								if ( 0 < args.length ) {
-									player.setPlayerEnabled((Boolean)args[0]);
+									player.setTrackEnabled((Boolean)args[0]);
 								}
-								return player.isPlayerEnabled();
+								return player.isTrackEnabled();
 							};
 						};
 					}
@@ -162,7 +162,7 @@ public class SchemePulsarLogic extends MetroLogic {
 					public Object getCdr() {
 						return new ProcedureN() {
 							public Object applyN(Object[] args) throws Throwable {
-								player.playerRemove( SchemeUtils.toBoolean( args[0]) );
+								player.removeTrack( SchemeUtils.toBoolean( args[0]) );
 								return EmptyList.emptyList;
 							};
 						};
@@ -177,7 +177,7 @@ public class SchemePulsarLogic extends MetroLogic {
 					public Object getCdr() {
 						return new ProcedureN() {
 							public Object applyN(Object[] args) throws Throwable {
-								return SchemeUtils.toSchemeNumber( player.getPosition() );
+								return SchemeUtils.toSchemeNumber( player.getTrackPosition() );
 							};
 						};
 					}

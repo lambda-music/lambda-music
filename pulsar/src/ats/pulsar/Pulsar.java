@@ -910,7 +910,7 @@ public final class Pulsar extends Metro {
 					ArrayList<LList> list = new ArrayList<>( tracks.size() );
 					for ( MetroTrack track :  tracks ) {
 						SchemePulsarLogic logic = (SchemePulsarLogic)track.getLogic();
-						list.add( SchemeUtils.acons( logic.getPlayerName(), logic.asociationList ));
+						list.add( SchemeUtils.acons( logic.getTrackName(), logic.asociationList ));
 					}
 					return LList.makeList(list);
 				}

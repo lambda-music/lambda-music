@@ -14,7 +14,7 @@ import org.jaudiolibs.jnajack.JackClient;
 import org.jaudiolibs.jnajack.JackException;
 import org.jaudiolibs.jnajack.JackPosition;
 
-public class MetroTrack implements MetroPlayer, MetroLock {
+public class MetroTrack implements MetroTrackInfo, MetroLock {
 	static final Logger LOGGER = Logger.getLogger(MetroTrack.class.getName());
 	static void logError(String msg, Throwable e) {
 		LOGGER.log(Level.SEVERE, msg, e);
@@ -76,7 +76,7 @@ public class MetroTrack implements MetroPlayer, MetroLock {
 		this.syncTrack = syncTrack;
 		this.syncOffset = syncOffset;
 		
-		logic.setPlayer( this );
+		logic.setTrackInfo( this );
 	}
 	
 	@Override
@@ -88,24 +88,24 @@ public class MetroTrack implements MetroPlayer, MetroLock {
 		return this.logic;
 	}
 	@Override
-	public String getPlayerName() {
+	public String getTrackName() {
 		return name;
 	}
 	@Override
-	public Set<String> getPlayerTags() {
+	public Set<String> getTrackTags() {
 		return tags;
 	}
 	
 	@Override
-	public boolean isPlayerEnabled() {
+	public boolean isTrackEnabled() {
 		return enabled;
 	}
 	@Override
-	public void setPlayerEnabled(boolean enabled) {
+	public void setTrackEnabled(boolean enabled) {
 		this.enabled = enabled;
 	}
 	@Override
-	public void playerRemove( boolean graceful ) {
+	public void removeTrack( boolean graceful ) {
 		if ( graceful ) {
 			this.ending = true;
 		} else {
@@ -113,7 +113,7 @@ public class MetroTrack implements MetroPlayer, MetroLock {
 		}
 	}
 	@Override
-	public double getPosition() {
+	public double getTrackPosition() {
 		if ( lastLengthInFrames < 0 || cursor < 0) {
 			return 0;
 		} else {

@@ -227,7 +227,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		ArrayList<MetroTrack> list = new ArrayList<>(); 
 		for ( Iterator<MetroTrack> i = tracks.iterator(); i.hasNext();  ) {
 			 MetroTrack track = i.next();
-			 if ( track.getPlayerTags().contains( tag ) ) {
+			 if ( track.getTrackTags().contains( tag ) ) {
 				 list.add( track );
 			 }
 		}
@@ -266,7 +266,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 
 	public void enableTrackByTag( String tag, boolean enabled ) {
 		for ( MetroTrack track : searchTrackByTag( tag ) ) {
-			track.setPlayerEnabled( enabled );
+			track.setTrackEnabled( enabled );
 		}
 	}
 
