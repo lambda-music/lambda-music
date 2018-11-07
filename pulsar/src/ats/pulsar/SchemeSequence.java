@@ -51,11 +51,9 @@ public class SchemeSequence extends MetroSequence {
 
 	/*
 	 * Note (XXX_SYNC_01):
-	 * Basically this class is not Scheme dependent. However only exec() method
-	 * needs to refer scheme object to synchronize with the scheme execution in
-	 * Pulse class. In the current policy, it is preferable to avoid referring the
-	 * scheme object by wrapping invocation. But in exec() method-wise, referring
-	 * to the scheme object here is not avoidable.
+	 * It is not necessary to refer to the Kawa scheme instance to invoke the procedure.
+	 * It is necessary because 
+	 * 
 	 */
 	final Scheme scheme;
 	
@@ -79,7 +77,7 @@ public class SchemeSequence extends MetroSequence {
 //		buf.humanize( 0.0d, 3 );
 		boolean result = false;
 		try {
-			result = scheme2buf(metro, track, scheme, procedure, buf);
+			result = scheme2buf(metro, track, procedure, buf);
 		} catch ( RuntimeException e ) {
 			System.err.println(e );
 			LOGGER.log(Level.SEVERE, "", e);
@@ -87,23 +85,15 @@ public class SchemeSequence extends MetroSequence {
 		return result;
 	}
 
-	public static boolean scheme2buf( Metro metro, MetroTrack track, Scheme scheme, Invocable procedure, MetroEventBuffer buf) {
+	public static boolean scheme2buf( Metro metro, MetroTrack track, Invocable procedure, MetroEventBuffer buf) {
+		// Call the procedure to get a note list of the next measure.
 		AbstractSequence<Object> pattern = (AbstractSequence<Object>)procedure.invoke();
-
-		/*
-		class Processor {
-		}
-		class NoteProcessor extends Processor {
-		}
-		class State {
-			Processor processor = null;
-		}
-		State state = new State();
-		*/
-	
+		
+		// Parse the retrieved list to execute.
+		
 //		return SchemeNoteParser0.parse(metro, scheme, pattern, buf, true );
 //		return SchemeNoteParser1.parse(metro, scheme, pattern, buf, true );
-		return PulsarNoteParser.parse(metro, scheme, pattern, buf, true );
+		return PulsarNoteParser.parse(metro, track, pattern, buf, true );
 	}
 
 	LList asociationList = createPairs( this );

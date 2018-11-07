@@ -157,6 +157,10 @@ public final class Pulsar extends Metro {
 	Scheme scheme;
 	PulsarGui gui;
 
+	Scheme getScheme() {
+		return scheme;
+	}
+	
 	MersenneTwisterFast random = new MersenneTwisterFast( new int[] { 
 			(int) System.currentTimeMillis(),
 			0x123, 0x234, 0x345, 0x456,

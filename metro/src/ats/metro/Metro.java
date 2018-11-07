@@ -29,7 +29,10 @@ import org.jaudiolibs.jnajack.JackTransportState;
 
 import ats.metro.MetroTrack.SyncType;
 
-
+/**
+ * 
+ * @author Ats Oka
+ */
 public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallback, JackTimebaseCallback, Runnable {
 	public final Object lock = new Object();
 	

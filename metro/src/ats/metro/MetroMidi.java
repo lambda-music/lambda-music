@@ -6,37 +6,39 @@ import java.util.logging.Logger;
 /**
  * This class defines constant objects to generate a byte array which could
  * represent various MIDI messages.
- *<p>
+ * <p>
  * Each of the constant objects has a method which name is "notifyMidiEvent".
- * This method generates a byte array which contains MIDI message. 
- *<p>
- * Since the parameters of a notifyMidiEvent method differ and depend on its
- * MIDI messages, there is no abstract common method for the notifyMidiEvent
- * method.  This class merely defines a convension that the constant objects
- * defined here must contain a method which name is "notifyMidiEvent".
- *<p>
-  
- * See <a
- * href="http://nickfever.com/music/midi-cc-list">http://nickfever.com/music/midi-cc-list</a>
+ * This method generates a byte array which contains MIDI message.
+ * <p>
+ * Since the parameters of a notifyMidiEvent method differ by the target MIDI
+ * messages of the method, we cannot define an abstract common method for the
+ * notifyMidiEvent method. Therefore, we merely defines a convention  that the
+ * constant objects defined here must contain a method which name is
+ * "notifyMidiEvent".
+ * <p>
+ * 
+ * See <a href=
+ * "http://nickfever.com/music/midi-cc-list">http://nickfever.com/music/midi-cc-list</a>
  * for further information about MIDI messages.
- *<p>
- *  When I wrote this class, I was looking for the official specification of
- *  MIDI control change messages. But I could not find it. It seems that
- *  MIDI control change messages are implicitly defined between those commercial products and 
- *  there is no officially declared specification for it.
- *<p> 
- *  Therefore, I
- *  referred <a href="http://nickfever.com/music/midi-cc-list">http://nickfever.com/music/midi-cc-list</a>.
- *<p>
- *  This is a very good explanation about MIDI control change messages. But as
- *  this article is not official, this might contain mistakes.
- *<p>
- *  The following table is a quotation from the site.
- *<p>
+ * <p>
+ * When I wrote this class, I was looking for the official specification of MIDI
+ * control change messages. But I could not find it. It seems that MIDI control
+ * change messages are implicitly defined between those commercial products and
+ * there is no officially declared specification for it.
+ * <p>
+ * Therefore, I referred <a href=
+ * "http://nickfever.com/music/midi-cc-list">http://nickfever.com/music/midi-cc-list</a>.
+ * <p>
+ * This is a very good explanation about MIDI control change messages. But as
+ * this article is not official, this might contain mistakes.
+ * <p>
+ * The following table is a quotation from the site.
+ * <p>
  *
- *  <table border="1" cellpadding="2">
+ * @formatter:off
+ * <table border="1" cellpadding="2">
  *  <tr><td>0</td>                                              <td>"Bank Select"</td>                                      <td>"Allows user to switch bank for patch selection. Program change used with Bank Select. MIDI can access 16,384 patches per MIDI channel."</td></tr>
- *  <tr><td>1</td>                                              <td>"Modulation"</td>                                       <td>"Generally this CC controls a vibrato effect (pitch, loudness, brighness). What is modulated is based on the patch."</td></tr>
+ *  <tr><td>1</td>                                              <td>"Modulation"</td>                                       <td>"Generally this CC controls a vibrato effect (pitch, loudness, brightness ). What is modulated is based on the patch."</td></tr>
  *  <tr><td>2</td>                                              <td>"Breath Controller"</td>                                <td>"Often times associated with aftertouch messages. It was originally intended for use with a breath MIDI controller in which blowing harder produced higher MIDI control values. It can be used for modulation as well."</td></tr>
  *  <tr><td>4</td>                                              <td>"Foot Controller"</td>                                  <td>"Often used with aftertouch messages. It can send a continuous stream of values based on how the pedal is used."</td></tr>
  *  <tr><td>5</td>                                              <td>"PortamentoTime"</td>                                   <td>"Controls portamento rate to slide between 2 notes played subsequently."</td></tr>
@@ -98,7 +100,8 @@ import java.util.logging.Logger;
  *  <tr><td>126</td>                                            <td>Mono Mode</td>                                          <td>Sets device mode to Monophonic.</td></tr>
  *  <tr><td>127</td>                                            <td>Poly Mode</td>                                          <td>Sets device mode to Polyphonic.</td></tr>
  *  </table>
- *
+ * @formatter:on
+ * 
  * @author ats
  *
  */

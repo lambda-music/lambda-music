@@ -29,18 +29,29 @@ class InvocableSchemeProcedure implements Invocable {
 	
 	/**
 	 * This field specifies an environment object which contains a scope of scheme
-	 * language. It seemed to me that Kawa's environment objects are stored per a
-	 * thread. I am still not sure when it is created. But when multiple threads
-	 * access to a single Kawa scheme object, sometime the environment object on the
-	 * scheme object is gone and causes strange errors.
+	 * language to be executed with.
 	 * 
-	 * A working around which I found is keeping the environment object which is
-	 * used when the procedure (closure) was passed, and then setting it every time
+	 * I think the necessity of this field is needed to be explained.
+	 * 
+	 * Usually these environment objects are not supposed to be set manually. The
+	 * reason why it to be set manually is that sometimes the environment object is
+	 * missing. I am still not sure what exactly condition causes it to be gone, but
+	 * it occurs sometimes.
+	 * 
+	 * It seemed to me that Kawa's environment objects are stored per a thread. I am
+	 * still not sure when they are created. But when multiple threads access to a
+	 * single Kawa scheme object, sometime the environment object on the scheme
+	 * object is gone and this phenomenon causes strange errors.
+	 * 
+	 * A working around which I found is setting the desired environment object
 	 * before calling the procedure.
+	 * 
+	 * This field keeps the environment object which is in charge when the procedure
+	 * (closure) was passed in order to set it it every time before calling the
+	 * procedure.
 	 * 
 	 * I am quite sure this is not proper way to solve the problem, but it worked
 	 * for me.
-	 * 
 	 */
 	private Environment environment;
 	
