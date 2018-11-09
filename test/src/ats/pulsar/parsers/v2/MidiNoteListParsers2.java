@@ -1,4 +1,4 @@
-package ats.pulsar.parsers;
+package ats.pulsar.parsers.v2;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import ats.metro.Metro;
-import ats.metro.MetroEventBuffer;
+import ats.metro.MetroBufferedMidiReceiver;
 import ats.metro.MetroMidi;
 import ats.metro.MetroMidi.MetroMidiAllNoteOff;
 import ats.metro.MetroMidi.MetroMidiAllSoundOff;
@@ -64,7 +64,6 @@ import ats.metro.MetroMidi.MetroMidiInt1Double1;
 import ats.metro.MetroMidi.MetroMidiKeyPressure;
 import ats.metro.MetroMidi.MetroMidiLocalControls;
 import ats.metro.MetroMidi.MetroMidiMonoModeOn;
-import ats.metro.MetroMidi.MetroMidiMsg;
 import ats.metro.MetroMidi.MetroMidiNoteOff;
 import ats.metro.MetroMidi.MetroMidiNoteOn;
 import ats.metro.MetroMidi.MetroMidiOmniModeOff;
@@ -91,8 +90,8 @@ import ats.pulsar.lib.SchemeUtils;
  *
  */
 @SuppressWarnings("unused")
-public class MidiNoteListParsers {
-	static final Logger LOGGER = Logger.getLogger( MidiNoteListParsers.class.getName() );
+public class MidiNoteListParsers2 {
+	static final Logger LOGGER = Logger.getLogger( MidiNoteListParsers2.class.getName() );
 
 	/**
 	 * 
@@ -128,9 +127,9 @@ public class MidiNoteListParsers {
 		elements.add( info );
 	}
 	
-	static abstract class MidiNoteListParserElement<MIDI extends MetroMidiMsg> extends NoteListParserElement {
+	static abstract class MidiNoteListParserElement<MIDI extends MetroMidi> extends NoteListParserElement {
 		protected MIDI midi;
-		public abstract boolean parseEvent( Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String,Object> map, boolean result );
+		public abstract boolean parseEvent( Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String,Object> map, boolean result );
 		@Override
 		public String getShortName() {
 			return this.midi.getShortName();
@@ -146,7 +145,7 @@ public class MidiNoteListParsers {
 	public static abstract class MetroNoteParserNote<MIDI extends MetroMidiInt1Double1> extends MidiNoteListParserElement<MIDI> {
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			boolean enabled      = map.containsKey( ID_ENABLED     ) ? SchemeUtils.toBoolean(       map.get(ID_ENABLED      ) ) : true;
 			if ( ! enabled )
 				return result;
@@ -156,8 +155,9 @@ public class MidiNoteListParsers {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int note         = map.containsKey( ID_NOTE     ) ? SchemeUtils.toInteger(      map.get(ID_NOTE      ) ) : 63;  
 			double velocity  = map.containsKey( ID_VELOCITY ) ? SchemeUtils.toDouble(       map.get(ID_VELOCITY  ) ) : 63;
+//			double length    = map.containsKey( ID_LENGTH   ) ? SchemeUtils.toDouble(       map.get(ID_LENGTH    ) ) : -1d;
 			
-			this.midi.notifyMidiEvent( buf, offset, port, channel, note, velocity );
+			this.midi.notifyMidiEvent( receiver, offset, port, channel, note, velocity );
 			
 			return result;
 		}
@@ -188,14 +188,14 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int note         = map.containsKey( ID_NOTE     ) ? SchemeUtils.toInteger(      map.get(ID_NOTE      ) ) : 63;  
 			double value     = map.containsKey( ID_VALUE )    ? SchemeUtils.toDouble(       map.get(ID_VALUE     ) ) : 0d;
 
-			buf.keyPressure( offset , port, ch, note, value );
+			this.midi.notifyMidiEvent( receiver, offset , port, ch, note, value );
 
 			return result;
 		}
@@ -209,14 +209,14 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int key          = map.containsKey( ID_KEY      ) ? SchemeUtils.toInteger(      map.get( ID_KEY      ) ) : 0;
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.controlChange( offset, port, ch, key, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, key, value );
 
 			return result;
 		}
@@ -230,13 +230,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.programChange( offset , port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset , port, ch, value );
 
 			return result;
 		}
@@ -250,13 +250,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			double value     = map.containsKey( ID_VALUE )    ? SchemeUtils.toDouble(       map.get(ID_VALUE     ) ) : 0d;
 
-			buf.channelPressure( offset , port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset , port, ch, value );
 
 			return result;
 		}
@@ -270,13 +270,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			double value     = map.containsKey( ID_VALUE )    ? SchemeUtils.toDouble(       map.get(ID_VALUE     ) ) : 0d;
 
-			buf.pitchBend( offset , port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset , port, ch, value );
 
 			return result;
 		}
@@ -293,12 +293,12 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-			buf.cc_allSoundOff( offset , port, ch );
+			this.midi.notifyMidiEvent( receiver, offset , port, ch );
 
 			return result;
 		}
@@ -312,12 +312,12 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-			buf.cc_resetAllControllers( offset , port, ch );
+			this.midi.notifyMidiEvent( receiver, offset , port, ch );
 
 			return result;
 		}
@@ -331,13 +331,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0;
 			boolean on       = map.containsKey( ID_VALUE    ) ? SchemeUtils.toBoolean(      map.get(ID_VALUE     ) ) : false; 
 
-			buf.cc_localControls( offset , port, ch, on );
+			this.midi.notifyMidiEvent( receiver, offset , port, ch, on );
 
 			return result;
 		}
@@ -351,12 +351,12 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-			buf.cc_allNoteOff( offset , port, ch );
+			this.midi.notifyMidiEvent( receiver, offset , port, ch );
 
 			return result;
 		}
@@ -370,12 +370,12 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-			buf.cc_omniModeOff( offset , port, ch );
+			this.midi.notifyMidiEvent( receiver, offset , port, ch );
 
 			return result;
 		}
@@ -389,12 +389,12 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-			buf.cc_omniModeOn( offset , port, ch );
+			this.midi.notifyMidiEvent( receiver, offset , port, ch );
 
 			return result;
 		}
@@ -402,19 +402,19 @@ public class MidiNoteListParsers {
 	static { register( PARSER_OMNI_MODE_ON ); }
 
 	// TODO : Isn't this mono-mode-on? This seems incorrect.  
-	public static final MetroNoteParserMonoModeOn  PARSER_MONO_MODE_OFF = new MetroNoteParserMonoModeOn(); 
-	public static final class MetroNoteParserMonoModeOn extends MidiNoteListParserElement<MetroMidiMonoModeOn> {
+	public static final MetroNoteParserMonoModeOff  PARSER_MONO_MODE_OFF = new MetroNoteParserMonoModeOff(); 
+	public static final class MetroNoteParserMonoModeOff extends MidiNoteListParserElement<MetroMidiMonoModeOn> {
 		{
 			this.midi = MetroMidi.MIDI_MONO_MODE_ON;
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-			buf.cc_monoModeOn( offset , port, ch );
+			this.midi.notifyMidiEvent( receiver, offset , port, ch );
 
 			return result;
 		}
@@ -428,12 +428,12 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-			buf.cc_polyModeOn( offset , port, ch );
+			this.midi.notifyMidiEvent( receiver, offset , port, ch );
 
 			return result;
 		}
@@ -449,13 +449,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 //			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.songPositionPointer( offset , port, value );
+			this.midi.notifyMidiEvent( receiver, offset , port, value );
 
 			return result;
 		}
@@ -470,13 +470,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 //			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.songSelect( offset , port, value );
+			this.midi.notifyMidiEvent( receiver, offset , port, value );
 
 			return result;
 		}
@@ -490,12 +490,12 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-			buf.endOfExclusive( offset , port );
+			this.midi.notifyMidiEvent( receiver, offset , port );
 
 			return result;
 		}
@@ -509,12 +509,12 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-			buf.clock( offset , port );
+			this.midi.notifyMidiEvent( receiver, offset , port );
 
 			return result;
 		}
@@ -529,12 +529,12 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-			buf.start( offset , port );
+			this.midi.notifyMidiEvent( receiver, offset , port );
 
 			return result;
 		}
@@ -548,12 +548,12 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-			buf.cont( offset , port );
+			this.midi.notifyMidiEvent( receiver, offset , port );
 
 			return result;
 		}
@@ -567,12 +567,12 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-			buf.stop( offset , port );
+			this.midi.notifyMidiEvent( receiver, offset , port );
 
 			return result;
 		}
@@ -586,12 +586,12 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-			buf.reset( offset , port );
+			this.midi.notifyMidiEvent( receiver, offset , port );
 
 			return result;
 		}
@@ -605,13 +605,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_bankSelect( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -625,13 +625,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_modulation( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -645,13 +645,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_breathController( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -665,13 +665,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_footController( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -685,13 +685,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_portamentoTime( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -705,13 +705,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_dataEntryMsb( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -725,13 +725,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_volume( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -745,13 +745,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_balance( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -765,13 +765,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_pan( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -785,13 +785,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_expression( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -805,13 +805,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_effectController1( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -825,13 +825,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_effectController2( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -845,13 +845,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_sustainPedal( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -865,13 +865,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_portamentoSwitch( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -885,13 +885,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_sostenutoSwitch( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -905,13 +905,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_pedalSwitch( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -925,13 +925,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_legatoSwitch( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -945,13 +945,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_hold2( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -965,13 +965,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_soundController1( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -985,13 +985,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_soundController2( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -1005,13 +1005,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_soundController3( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -1025,13 +1025,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_soundController4( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -1045,13 +1045,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_soundController5( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -1065,13 +1065,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_soundController6( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -1085,13 +1085,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_soundController7( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -1105,13 +1105,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_soundController8( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -1125,13 +1125,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_soundController9( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -1145,13 +1145,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_soundController10( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -1165,13 +1165,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_generalPurpose01( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -1185,13 +1185,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_generalPurpose02( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -1205,13 +1205,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_generalPurpose03( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -1225,13 +1225,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_generalPurpose04( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -1245,13 +1245,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_portamento( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -1265,13 +1265,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_effect1( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -1285,13 +1285,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_effect2( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -1305,13 +1305,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_effect3( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -1325,13 +1325,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_effect4( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -1345,13 +1345,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_effect5( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -1365,13 +1365,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_dataIncrement( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -1385,13 +1385,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_dataDecrement( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -1405,13 +1405,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_nrpnLsb( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -1425,13 +1425,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_nrpnMsb( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -1445,13 +1445,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_rpnLsb( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}
@@ -1466,13 +1466,13 @@ public class MidiNoteListParsers {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 			int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-			buf.cc_rpnMsb( offset, port, ch, value );
+			this.midi.notifyMidiEvent( receiver, offset, port, ch, value );
 
 			return result;
 		}

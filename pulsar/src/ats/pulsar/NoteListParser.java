@@ -8,6 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ats.metro.Metro;
+import ats.metro.MetroBufferedMidiReceiver;
 import ats.metro.MetroEventBuffer;
 import ats.metro.MetroTrack;
 import ats.pulsar.lib.SchemeUtils;
@@ -101,7 +102,7 @@ public class NoteListParser {
 	 * @param track
 	 *            The instance of the current {@link MetroTrack} which generated the
 	 *            note.
-	 * @param buf
+	 * @param receiver
 	 *            The instance of the current {@link MetroEventBuffer} to output
 	 *            into as a result of the processing.
 	 * @param result
@@ -113,16 +114,16 @@ public class NoteListParser {
 	 *         continue or not, returning the value of <code>result</code> parameter
 	 *         is sufficient.
 	 * @see ats.pulsar.NoteListParserElement#parseEvent(Metro, MetroTrack,
-	 *      MetroEventBuffer, Map, boolean)
+	 *      MetroBufferedMidiReceiver, Map, boolean)
 	 */
-	public boolean parse( Metro metro, MetroTrack track, AbstractSequence<Object> inputList, MetroEventBuffer buf, boolean result ) {
+	public boolean parse( Metro metro, MetroTrack track, AbstractSequence<Object> inputList, MetroBufferedMidiReceiver receiver, boolean result ) {
 		// boolean result = true;
 		if ( inputList != null ) {
 			for ( Iterator<Object> i = inputList.iterator(); i.hasNext(); ) {
  				Object obj = i.next();
 				if ( obj instanceof Pair ) {
 					Pair record = (Pair)obj;
-					result = parseNote( metro, track, buf, result, record );
+					result = parseNote( metro, track, receiver, result, record );
 				} else if ( obj instanceof Boolean ) {
 					continue;
 				} else {
@@ -134,7 +135,7 @@ public class NoteListParser {
 		return result;
 	}
 
-	private boolean parseNote( Metro metro, MetroTrack track, MetroEventBuffer outputBuffer, boolean result, AbstractSequence list ) {
+	private boolean parseNote( Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, boolean result, AbstractSequence list ) {
 		Map<String,Object> map = SchemeUtils.list2map(list, null );
 		String type      = map.containsKey( ID_TYPE ) ? SchemeUtils.symbolToString(  map.get( ID_TYPE ) ) : "";
 		NoteListParserElement parser = get( type );
@@ -142,7 +143,7 @@ public class NoteListParser {
 			logWarn( "unknown type (" +  type + ")" );
 			return result;
 		} else {
-			return parser.parseEvent( metro, track, outputBuffer, map, result );
+			return parser.parseEvent( metro, track, receiver, map, result );
 		}
 	}
 }

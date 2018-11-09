@@ -3,6 +3,7 @@ package ats.pulsar;
 import java.util.Map;
 
 import ats.metro.Metro;
+import ats.metro.MetroBufferedMidiReceiver;
 import ats.metro.MetroEventBuffer;
 import ats.metro.MetroTrack;
 
@@ -47,7 +48,7 @@ public abstract class NoteListParserElement {
 	 * {@link NoteListParser#parseNote(Metro, MetroTrack, MetroEventBuffer, boolean, gnu.lists.AbstractSequence) }
 	 * </li>
 	 * <li>
-	 * {@link NoteListParser#parse(Metro, MetroTrack, gnu.lists.AbstractSequence, MetroEventBuffer, boolean) }
+	 * {@link NoteListParser#parse(Metro, MetroTrack, gnu.lists.AbstractSequence, MetroBufferedMidiReceiver, boolean) }
 	 * </li>
 	 * </ul>
 	 * 
@@ -56,7 +57,7 @@ public abstract class NoteListParserElement {
 	 * @param track
 	 *            The instance of the current {@link MetroTrack} which generated the
 	 *            note.
-	 * @param buf
+	 * @param receiver
 	 *            The instance of the current {@link MetroEventBuffer} to output
 	 *            into as a result of the processing.
 	 * @param map
@@ -71,5 +72,5 @@ public abstract class NoteListParserElement {
 	 *         continue or not, returning the value of <code>result</code> parameter
 	 *         is sufficient.
 	 */
-	public abstract boolean parseEvent( Metro metro, MetroTrack track, MetroEventBuffer buf, Map<String,Object> map, boolean result );
+	public abstract boolean parseEvent( Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String,Object> map, boolean result );
 }

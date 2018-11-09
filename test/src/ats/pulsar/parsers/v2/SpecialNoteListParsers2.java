@@ -12,7 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ats.metro.Metro;
-import ats.metro.MetroEventBuffer;
+import ats.metro.MetroBufferedMidiReceiver;
 import ats.metro.MetroMidi;
 import ats.metro.MetroTrack;
 import ats.metro.MetroTrack.SyncType;
@@ -90,7 +90,7 @@ public class SpecialNoteListParsers2 {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver outputBuffer, Map<String, Object> map, boolean result) {
 			return result;
 		}
 	}
@@ -104,7 +104,7 @@ public class SpecialNoteListParsers2 {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver outputBuffer, Map<String, Object> map, boolean result) {
 			boolean enabled      = map.containsKey( MidiNoteListParsers2.ID_ENABLED     ) ? SchemeUtils.toBoolean( map.get( MidiNoteListParsers2.ID_ENABLED ) ) : true;
 			if ( ! enabled )
 				return result;
@@ -135,7 +135,7 @@ public class SpecialNoteListParsers2 {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver outputBuffer, Map<String, Object> map, boolean result) {
 			double value    = map.containsKey( ID_VALUE ) ? SchemeUtils.toDouble( map.get( ID_VALUE ) ) : -1.0d;
 			if ( value < 0 ) {
 				LOGGER.log( Level.WARNING, "a len note was found but 'val was missing. This probably a bug." );
@@ -157,7 +157,7 @@ public class SpecialNoteListParsers2 {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver outputBuffer, Map<String, Object> map, boolean result) {
 			Scheme scheme2 = ((Pulsar)metro).getScheme();
 
 			double offset        = map.containsKey( ID_OFFSET   )  ? SchemeUtils.toDouble(     map.get( ID_OFFSET    ) ) : 0.0d;
@@ -180,7 +180,7 @@ public class SpecialNoteListParsers2 {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver outputBuffer, Map<String, Object> map, boolean result) {
 			Scheme scheme2 = ((Pulsar)metro).getScheme();
 			
 			List<String> el = Collections.emptyList();
@@ -233,7 +233,7 @@ public class SpecialNoteListParsers2 {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver outputBuffer, Map<String, Object> map, boolean result) {
 			List<String> el = Collections.emptyList();
 
 			double offset            = getValue( map, ID_OFFSET, 0.0d, (v)-> SchemeUtils.toDouble( v )   );
@@ -273,7 +273,7 @@ public class SpecialNoteListParsers2 {
 		}
 		@Override
 		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver outputBuffer, Map<String, Object> map, boolean result) {
 			return false;
 		}
 	}

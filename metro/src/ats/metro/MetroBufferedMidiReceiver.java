@@ -1,6 +1,6 @@
 package ats.metro;
 
-public interface MetroMidiBufferReceiver {
+public interface MetroBufferedMidiReceiver {
 	// basic 
 	public void noteOn( double offset, int port, int channel, int note, double velocity );
 	public void noteOn( double offset, int port, int channel, int note, int velocity );

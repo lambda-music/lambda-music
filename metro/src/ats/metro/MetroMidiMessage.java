@@ -1,464 +1,402 @@
 package ats.metro;
 
+import java.util.logging.Logger;
+
+/** @formatter:off */
 /**
- * https://www.midi.org/specifications-old/item/table-1-summary-of-midi-message
- * @author ats
+ * This class defines constant objects to generate a byte array which could
+ * represent various MIDI messages.
+ * <p>
+ * Each of the constant objects has a method which name is "notifyMidiEvent".
+ * This method generates a byte array which contains MIDI message.
+ * <p>
+ * Since the parameters of a notifyMidiEvent method differ by the target MIDI
+ * messages of the method, we cannot define an abstract common method for the
+ * notifyMidiEvent method. Therefore, we merely defines a convention  that the
+ * constant objects defined here must contain a method which name is
+ * "notifyMidiEvent".
+ * <p>
+ * 
+ * See <a href=
+ * "http://nickfever.com/music/midi-cc-list">http://nickfever.com/music/midi-cc-list</a>
+ * for further information about MIDI messages.
+ * <p>
+ * When I wrote this class, I was looking for the official specification of MIDI
+ * control change messages. But I could not find it. It seems that MIDI control
+ * change messages are implicitly defined between those commercial products and
+ * there is no officially declared specification for it.
+ * <p>
+ * Therefore, I referred <a href=
+ * "http://nickfever.com/music/midi-cc-list">http://nickfever.com/music/midi-cc-list</a>.
+ * <p>
+ * This is a very good explanation about MIDI control change messages. But as
+ * this article is not official, this might contain mistakes.
+ * <p>
+ * The following table is a quotation from the site.
+ * <p>
+ *
+ * 
+ * <table border="1" cellpadding="2">
+ *  <tr><td>0</td>                                              <td>"Bank Select"</td>                                      <td>"Allows user to switch bank for patch selection. Program change used with Bank Select. MIDI can access 16,384 patches per MIDI channel."</td></tr>
+ *  <tr><td>1</td>                                              <td>"Modulation"</td>                                       <td>"Generally this CC controls a vibrato effect (pitch, loudness, brightness ). What is modulated is based on the patch."</td></tr>
+ *  <tr><td>2</td>                                              <td>"Breath Controller"</td>                                <td>"Often times associated with aftertouch messages. It was originally intended for use with a breath MIDI controller in which blowing harder produced higher MIDI control values. It can be used for modulation as well."</td></tr>
+ *  <tr><td>4</td>                                              <td>"Foot Controller"</td>                                  <td>"Often used with aftertouch messages. It can send a continuous stream of values based on how the pedal is used."</td></tr>
+ *  <tr><td>5</td>                                              <td>"PortamentoTime"</td>                                   <td>"Controls portamento rate to slide between 2 notes played subsequently."</td></tr>
+ *  <tr><td>6</td>                                              <td>"Data Entry Most Significant Bit(MSB)"</td>             <td>"Controls Value for NRPN or RPN parameters."</td></tr>
+ *  <tr><td>7</td>                                              <td>"Volume"</td>                                           <td>"Control the volume of the channel"</td></tr>
+ *  <tr><td>8</td>                                              <td>"Balance"</td>                                          <td>"Controls the left and right balance, generally for stereo patches.0 = hard left, 64 = center, 127 = hard right"</td></tr>
+ *  <tr><td>10</td>                                             <td>"Pan"</td>                                              <td>"Controls the left and right balance, generally for mono patches.0 = hard left, 64 = center, 127 = hard right"</td></tr>
+ *  <tr><td>11</td>                                             <td>"Expression"</td>                                       <td>"Expression is a percentage of volume (CC7)."</td></tr>
+ *  <tr><td>12</td>                                             <td>"Effect Controller 1"</td>                              <td>"Usually used to control a parameter of an effect within the synth/workstation."</td></tr>
+ *  <tr><td>13</td>                                             <td>"Effect Controller 2"</td>                              <td>"Usually used to control a parameter of an effect within the synth/workstation."</td></tr>
+ *  <tr><td>64</td>                                             <td>"Damper Pedal /Sustain Pedal"</td>                      <td>"On/Off switch that controls sustain. (See also Sostenuto CC 66)0 to 63 = Off, 64 to 127 = On"</td></tr>
+ *  <tr><td>65</td>                                             <td>"Portamento On/Off Switch"</td>                         <td>"On/Off switch0 to 63 = Off, 64 to 127 = On"</td></tr>
+ *  <tr><td>66</td>                                             <td>"Sostenuto On/Off Switch"</td>                          <td>"On/Off switch – Like the Sustain controller (CC 64), However it only holds notes that were “On” when the pedal was pressed. People use it to “hold” chords” and play melodies over the held chord.0 to 63 = Off, 64 to 127 = On"</td></tr>
+ *  <tr><td>67</td>                                             <td>"Soft Pedal On/Off Switch"</td>                         <td>"On/Off switch- Lowers the volume of notes played.0 to 63 = Off, 64 to 127 = On"</td></tr>
+ *  <tr><td>68</td>                                             <td>"Legato FootSwitch"</td>                                <td>"On/Off switch- Turns Legato effect between 2 subsequent notes On or Off.0 to 63 = Off, 64 to 127 = On"</td></tr>
+ *  <tr><td>69</td>                                             <td>"Hold 2"</td>                                           <td>"Another way to “hold notes” (see MIDI CC 64 and MIDI CC 66). However notes fade out according to their release parameter rather than when the pedal is released."</td></tr>
+ *  <tr><td>70</td>                                             <td>"Sound Controller 1"</td>                               <td>"Usually controls the way a sound is produced. Default = Sound Variation."</td></tr>
+ *  <tr><td>71</td>                                             <td>"Sound Controller 2"</td>                               <td>"Allows shaping the Voltage Controlled Filter (VCF). Default = Resonance -also(Timbre or Harmonics)"</td></tr>
+ *  <tr><td>72</td>                                             <td>"Sound Controller 3"</td>                               <td>"Controls release time of the Voltage controlled Amplifier (VCA). Default = Release Time."</td></tr>
+ *  <tr><td>73</td>                                             <td>"Sound Controller 4"</td>                               <td>"Controls the “Attack’ of a sound. The attack is the amount of time it takes forthe sound to reach maximum amplitude."</td></tr>
+ *  <tr><td>74</td>                                             <td>"Sound Controller 5"</td>                               <td>"Controls VCFs cutoff frequency of the filter."</td></tr>
+ *  <tr><td>75</td>                                             <td>"Sound Controller 6"</td>                               <td>"Generic – Some manufacturers may use to further shave their sounds."</td></tr>
+ *  <tr><td>76</td>                                             <td>"Sound Controller 7"</td>                               <td>"Generic – Some manufacturers may use to further shave their sounds."</td></tr>
+ *  <tr><td>77</td>                                             <td>"Sound Controller 8"</td>                               <td>"Generic – Some manufacturers may use to further shave their sounds."</td></tr>
+ *  <tr><td>78</td>                                             <td>"Sound Controller 9"</td>                               <td>"Generic – Some manufacturers may use to further shave their sounds."</td></tr>
+ *  <tr><td>79</td>                                             <td>"Sound Controller 10"</td>                              <td>"Generic – Some manufacturers may use to further shave their sounds."</td></tr>
+ *  <tr><td>80</td>                                             <td>"General PurposeMIDI CC Controller"</td>                <td>"GenericOn/Off switch0 to 63 = Off, 64 to 127 = On"</td></tr>
+ *  <tr><td>81</td>                                             <td>"General Purpose MIDI CC Controller"</td>               <td>"GenericOn/Off switch0 to 63 = Off, 64 to 127 = On"</td></tr>
+ *  <tr><td>82</td>                                             <td>"General PurposeMIDI CC Controller"</td>                <td>"GenericOn/Off switch0 to 63 = Off, 64 to 127 = On"</td></tr>
+ *  <tr><td>83</td>                                             <td>"General Purpose MIDI CC Controller"</td>               <td>"GenericOn/Off switch0 to 63 = Off, 64 to 127 = On"</td></tr>
+ *  <tr><td>84</td>                                             <td>"Portamento CC Control"</td>                            <td>"Controls the amount of Portamento."</td></tr>
+ *  <tr><td>91</td>                                             <td>"Effect 1 Depth"</td>                                   <td>"Usually controls reverb send amount"</td></tr>
+ *  <tr><td>92</td>                                             <td>"Effect 2 Depth"</td>                                   <td>"Usually controls tremolo amount"</td></tr>
+ *  <tr><td>93</td>                                             <td>"Effect 3 Depth"</td>                                   <td>"Usually controls chorus amount"</td></tr>
+ *  <tr><td>94</td>                                             <td>"Effect 4 Depth"</td>                                   <td>"Usually controls detune amount"</td></tr>
+ *  <tr><td>95</td>                                             <td>"Effect 5 Depth"</td>                                   <td>"Usually controls phaser amount"</td></tr>
+ *  <tr><td>96</td>                                             <td>"(+1) Data Increment"</td>                              <td>"Usually used to increment data for RPN and NRPN messages."</td></tr>
+ *  <tr><td>97</td>                                             <td>"(-1) Data Decrement"</td>                              <td>"Usually used to decrement data for RPN and NRPN messages."</td></tr>
+ *  <tr><td>98</td>                                             <td>"Non-Registered Parameter Number LSB (NRPN)"</td>       <td>"For controllers 6, 38, 96, and 97, it selects the NRPN parameter."</td></tr>
+ *  <tr><td>99</td>                                             <td>"Non-Registered Parameter Number MSB (NRPN)"</td>       <td>"For controllers 6, 38, 96, and 97, it selects the NRPN parameter."</td></tr>
+ *  <tr><td>100</td>                                            <td>"Registered Parameter Number LSB (RPN)"</td>            <td>"For controllers 6, 38, 96, and 97, it selects the RPN parameter."</td></tr>
+ *  <tr><td>101</td>                                            <td>"Registered Parameter Number MSB (RPN)"</td>            <td>"For controllers 6, 38, 96, and 97, it selects the RPN parameter."</td></tr>
+ *  <tr><td>3</td>                                              <td>Undefined</td>                                          <td> </td></tr>
+ *  <tr><td>9</td>                                              <td>Undefined</td>                                          <td> </td></tr>
+ *  <tr><td>14</td>                                             <td>Undefined</td>                                          <td> </td></tr>
+ *  <tr><td>15</td>                                             <td>Undefined</td>                                          <td> </td></tr>
+ *  <tr><td>16 – 19</td>                                        <td>General Purpose</td>                                    <td> </td></tr>
+ *  <tr><td>20 – 31</td>                                        <td>Undefined</td>                                          <td> </td></tr>
+ *  <tr><td>32 – 63</td>                                        <td>Controller 0-31 Least Significant Bit (LSB)</td>        <td> </td></tr>
+ *  <tr><td>85 – 90</td>                                        <td>Undefined</td>                                          <td> </td></tr>
+ *  <tr><td>102 – 119</td>                                      <td>Undefined</td>                                          <td> </td></tr>
+ *  <tr><td colspan="3">120 to 127 are “Channel Mode Messages.”</td></tr>
+ *  <tr><td>120</td>                                            <td>All Sound Off</td>                                      <td>Mutes all sounding notes. It does so regardless of release time or sustain. (See MIDI CC 123)</td></tr>
+ *  <tr><td>121</td>                                            <td>Reset All Controllers</td>                              <td>It will reset all controllers to their default.</td></tr>
+ *  <tr><td>122</td>                                            <td>Local On/Off Switch</td>                                <td>Turns internal connection of a MIDI keyboard/workstation, etc. On or Off. If you use a computer, you will most likely want local control off to avoid notes being played twice. Once locally and twice whent the note is sent back from the computer to your keyboard.</td></tr>
+ *  <tr><td>123</td>                                            <td>All Notes Off</td>                                      <td>Mutes all sounding notes. Release time will still be maintained, and notes held by sustain will not turn off until sustain pedal is depressed.</td></tr>
+ *  <tr><td>124</td>                                            <td>Omni Mode Off</td>                                      <td>Sets to “Omni Off” mode.</td></tr>
+ *  <tr><td>125</td>                                            <td>Omni Mode On</td>                                       <td>Sets to “Omni On” mode.</td></tr>
+ *  <tr><td>126</td>                                            <td>Mono Mode</td>                                          <td>Sets device mode to Monophonic.</td></tr>
+ *  <tr><td>127</td>                                            <td>Poly Mode</td>                                          <td>Sets device mode to Polyphonic.</td></tr>
+ *  </table>
+ *   
+ * @author Ats Oka
+ *
  */
-final class MetroMidiMessage {
-	//	NOTEOFF,
-	//	NOTEON,
-	//	KEYPRESSURE, // AKA AFTERTOUCH
-	//	CONTROL,
-	//	PROGRAM,
-	//	CHANNELPRESSURE,
-	//	PITCHBEND,
 
-	public static byte[] noteOn( int ch, int note, int velo ) {
-		return new byte[] {
-				(byte) ( 0b10010000 | ( 0b00001111 & ch )), 
-				(byte) ( note ), 
-				(byte) ( velo ), }; 
+public class MetroMidiMessage implements MetroMidiReceiver<byte[]> {
+	public static MetroMidiMessage getInstance() {
+		return INSTANCE;
 	}
-	public static String toString( byte[] b ) {
-		StringBuilder sb = new StringBuilder();
-		for ( int i=0; i<b.length; i++ ) {
-			sb.append("'" );
-			sb.append( Integer.toString( Byte.toUnsignedInt( b[i] ), 16 ) );
-			sb.append(" ");
-			
-		}
-		return sb.toString();
-	}
-//	public static void main(String[] args) {
-//		System.out.println( toString( noteOn( 5,64, 1 ) )  ) ;
-//		System.out.println( 0b1111 & 4 );
-//	}
-	
-	// A helper function
-	public static byte[] noteOn( int ch, int note, double velo ) {
-		return new byte[] {
-				(byte) ( 0b10010000 | ( 0b00001111 & ch )), 
-				(byte) ( note ), 
-				(byte) ( 127d * velo ), }; 
-	}
-	public static byte[] noteOff( int ch, int note, int velo ) {
-		return new byte[] {
-				(byte) ( 0b10000000 | ( 0b00001111 & ch )), 
-				(byte) ( note ), 
-				(byte) ( velo ), }; 
-	}
-	// A helper function
-	public static byte[] noteOff( int ch, int note, double velo ) {
-		return new byte[] {
-				(byte) ( 0b10000000 | ( 0b00001111 & ch )), 
-				(byte) ( note ), 
-				(byte) ( 127d * velo ), }; 
+	private static final MetroMidiMessage INSTANCE = new MetroMidiMessage();
+	private MetroMidiMessage() {
 	}
 	
-	public static byte[] keyPressure( int ch, int note, int pressure ) {
-		return new byte[] {
-				(byte) ( 0b10100000 | ( 0b00001111 & ch )), 
-				(byte) ( note ), 
-				(byte) ( pressure ), }; 
-	}
-	public static byte[] keyPressure( int ch, int note, double pressure ) {
-		return new byte[] {
-				(byte) ( 0b10100000 | ( 0b00001111 & ch )), 
-				(byte) ( note ), 
-				(byte) ( 255d * pressure ), }; 
-	}
+	/** @formatter:on */
+	static final Logger LOGGER = Logger.getLogger( MetroMidiMessage.class.getName() );
 	
-	public static byte[] controlChange( int ch, int controlNumber, int controlValue ) {
-		return new byte[] {
-				(byte) ( 0b10110000 | ( 0b00001111 & ch )), 
-				(byte) ( controlNumber ), 
-				(byte) ( controlValue ), }; 
+	public byte[] noteOn( int channel, int note, double velocity ) {
+		return MetroMidiMessageGen.noteOn (channel, note, velocity );
 	}
-	public static byte[] programChange( int ch, int programNumber ) {
-		return new byte[] {
-				(byte) ( 0b11000000 | ( 0b00001111 & ch )), 
-				(byte) ( programNumber ), 
-				};
+	public byte[] noteOn( int channel, int note, int velocity ) {
+		return MetroMidiMessageGen.noteOn (channel, note, velocity );
 	}
-	public static byte[] channelPressure( int ch, int pressureValue ) {
-		return new byte[] {
-				(byte) ( 0b11010000 | ( 0b00001111 & ch )), 
-				(byte) ( pressureValue ), 
-				};
+	public byte[] noteOff ( int channel, int note, double velocity ) {
+		return MetroMidiMessageGen.noteOff(channel, note, velocity );
 	}
-	public static byte[] channelPressure( int ch, double pressureValue ) {
-		return new byte[] {
-				(byte) ( 0b11010000 | ( 0b00001111 & ch )), 
-				(byte) ( 255d * pressureValue ), 
-				};
+	public byte[] noteOff ( int channel, int note, int velocity ) {
+		return MetroMidiMessageGen.noteOff(channel, note, velocity );
 	}
-	public static byte[] pitchBend( int ch, int pitchBendValue ) {
-//		System.out.println( "pitchBendValue:" + pitchBendValue );
-//		pitchBendValue += 0x2000;
-		return new byte[] {
-				(byte) ( 0b11100000 | ( 0b00001111 & ch )), 
-				(byte) ( 0b01111111 & pitchBendValue ), 
-				(byte) ( 0b01111111 & ( pitchBendValue >>> 7 ) ), 
-				}; 
+	public byte[] keyPressure( int channel, int note, double value ) {
+		return MetroMidiMessageGen.keyPressure( channel, note, value );
 	}
-	
-	/**
-	 * Specifying pitch bend value by a double-float numeric value. The resolution
-	 * relies on only fourteen bits; thus any value change less than 0.0001 
-	 * ( 1.0d/8192 ≒ 0.0001 ) will not have any effect on output values.
+	public byte[] keyPressure( int channel, int note, int value ) {
+		return MetroMidiMessageGen.keyPressure( channel, note, value );
+	}
+	public byte[] controlChange( int channel, int controlNumber, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, controlNumber, controlValue );
+	}
+	public byte[] programChange( int channel, int value ) {
+		return MetroMidiMessageGen.programChange( channel, value );
+	}
+	public byte[] channelPressure( int channel, double value ) {
+		return MetroMidiMessageGen.channelPressure( channel, value );
+	}
+	public byte[] channelPressure( int channel, int value ) {
+		return MetroMidiMessageGen.channelPressure( channel, value );
+	}
+	public byte[] pitchBend(int channel, double value) {
+		return MetroMidiMessageGen.pitchBend( channel, value );
+	}
+	public byte[] pitchBend(int channel, int value) {
+		return MetroMidiMessageGen.pitchBend( channel, value );
+	}
+
+	/*
+	 * Channel Mode Control Change 
 	 */
-	public static byte[] pitchBend( int ch, double pitchBendValue ) {
-		return pitchBend( ch, 0x2000  + (int)((double)0x2000 * pitchBendValue) ); 
+	public static final int CC_ALL_SOUND_OFF         = 120;
+	public static final int CC_RESET_ALL_CONTROLLERS = 121;
+	public static final int CC_LOCAL_CONTROLS        = 122;
+	public static final int CC_ALL_NOTE_OFF          = 123;
+	public static final int CC_OMNI_MODE_OFF         = 124;
+	public static final int CC_OMNI_MODE_ON          = 125;
+	public static final int CC_MONO_MODE_ON          = 126;
+	public static final int CC_POLY_MODE_ON          = 127;
+
+	public byte[] cc_allSoundOff(int channel) {
+		return MetroMidiMessageGen.cc_allSoundOff( channel );
+	}
+	public byte[] cc_resetAllControllers(int channel) {
+		return MetroMidiMessageGen.cc_resetAllControllers( channel );
+	}
+	public byte[] cc_localControls(int channel,boolean value ) {
+		return MetroMidiMessageGen.cc_localControls( channel, value ) ;
+	}
+	public byte[] cc_allNoteOff(int channel) {
+		return MetroMidiMessageGen.cc_allNoteOff( channel );
+	}
+	public byte[] cc_omniModeOff(int channel) {
+		return MetroMidiMessageGen.cc_omniModeOff( channel );
+	}
+	public byte[] cc_omniModeOn(int channel) {
+		return MetroMidiMessageGen.cc_omniModeOn( channel );
+	}
+	// TODO : Isn't this mono-mode-on? This seems incorrect.  
+	public byte[] cc_monoModeOn(int channel) {
+		return MetroMidiMessageGen.cc_monoModeOn( channel );
+	}
+	public byte[] cc_polyModeOn(int channel) {
+		return MetroMidiMessageGen.cc_polyModeOn( channel );
 	}
 	
-	public static byte[] cc_allSoundOff( int ch ) {
-		return controlChange(ch, 120, 0 ); 
+	// TODO : the channel value is not necessary. Remove it from SchemeNoteParser , too. 
+	public byte[] songPositionPointer( int value ) {
+		return MetroMidiMessageGen.songPositionPointer( value );
 	}
-	public static byte[] cc_resetAllControllers( int ch ) {
-		return controlChange(ch, 121, 0 ); 
+	// TODO : the channel value is not necessary. Remove it from SchemeNoteParser , too. 
+	public byte[] songSelect(int value) {
+		return MetroMidiMessageGen.songSelect( value );
 	}
-	public static byte[] cc_localControls( int ch, boolean on ) {
-		return controlChange(ch, 122, on ? 127 : 0 ); 
+	public byte[] endOfExclusive () {
+		return MetroMidiMessageGen.endOfExclusive();
 	}
-	public static byte[] cc_allNoteOff( int ch ) {
-		return controlChange(ch, 123, 0 ); 
+	public byte[] clock ( ) {
+		return MetroMidiMessageGen.clock();
 	}
-	public static byte[] cc_omniModeOff( int ch ) {
-		return controlChange(ch, 124, 0 ); 
+	public byte[] start ( ) {
+		return MetroMidiMessageGen.start();
 	}
-	public static byte[] cc_omniModeOn( int ch ) {
-		return controlChange(ch, 125, 0 ); 
+	public byte[] cont( ) {
+		return MetroMidiMessageGen.cont();
 	}
-	public static byte[] cc_monoModeOn( int ch ) {
-		return controlChange(ch, 126, 0 ); 
+	public byte[] stop ( ) {
+		return MetroMidiMessageGen.stop();
 	}
-	public static byte[] cc_polyModeOn( int ch ) {
-		return controlChange(ch, 127, 0 ); 
-	}
-	
-	//// SYSTEM
-
-	public static byte[] songPositionPointer( int pos ) {
-		return new byte[] {
-				(byte) ( 0b11110010 ), 
-				(byte) ( 0b01111111 & ( pos       ) ), 
-				(byte) ( 0b01111111 & ( pos >>> 7 ) ), 
-				}; 
-	}
-	public static byte[] songSelect( int songNumber ) {
-		return new byte[] {
-				(byte) ( 0b11110011 ), 
-				(byte) ( 0b01111111 & ( songNumber       ) ) 
-				}; 
+	public byte[] reset ( ) {
+		return MetroMidiMessageGen.reset();
 	}
 	
-	public static byte[] endOfExclusive() {
-		return new byte[] {
-				(byte) ( 0b11110111 ), 
-		}; 
-	}
-	public static byte[] clock() {
-		return new byte[] {
-				(byte) ( 0b11111000 ), 
-		}; 
-	}
-	public static byte[] start() {
-		return new byte[] {
-				(byte) ( 0b11111010 ), 
-		}; 
-	}
-	public static byte[] cont() {
-		return new byte[] {
-				(byte) ( 0b11111011 ), 
-		}; 
-	}
-	public static byte[] stop() {
-		return new byte[] {
-				(byte) ( 0b11111100 ), 
-		}; 
-	}
-	public static byte[] reset() {
-		return new byte[] {
-				(byte) ( 0b11111111 ), 
-		}; 
-	}
 	
-	public static <T> T receive( MetroMidiReceiver<T> receiver, byte[] message ) {
-		if ( message == null || message.length == 0 ) {
-			return receiver.error( "no data" );
-		}
-		
-		int command  = ( 0b11110000 & message[0] );
-		int channel  = ( 0b11110000 & message[0] );
-		switch ( command ) {
-			case 0b10010000 : 
-				return receiver.noteOn(  channel, message[1], message[2] );
-			
-			case 0b10000000 : 
-				return receiver.noteOff( channel, message[1], message[2] );
-			
-			case 0b10100000 : 
-				return receiver.keyPressure( channel, message[1], message[2] );
-
-			case 0b11000000 : 
-				return receiver.programChange( channel, message[1] );
-			case 0b11010000 : 
-				return receiver.channelPressure( channel, message[1] );
-			case 0b11100000 : 
-				return receiver.pitchBend( channel,
-						( 0b01111111 & message[1] ) | 
-						( (0b01111111 & message[2] ) << 7 ) );
-
-			case 0b11110000 : 
-				/* 
-				 * The followings are special channel mode messages which
-				 * supposed to be processed by all channels.  the channel value
-				 * is used as command identifier.
-				 */
-				switch ( channel ) {
-					case 0b00000010 :
-						return receiver.songPositionPointer(
-								( 0b01111111 & message[1] ) | 
-								( (0b01111111 & message[2] ) << 7 ) );
-					case 0b00000011 :
-						return receiver.songSelect( 0b01111111 & message[1] );
-					case 0b00000111 :
-						return receiver.endOfExclusive() ;
-					case 0b00001000 :
-						return receiver.clock() ;
-					case 0b00001010 :
-						return receiver.start() ;
-					case 0b00001011 :
-						return receiver.cont() ;
-					case 0b00001100 :
-						return receiver.stop() ;
-					case 0b00001111 :
-						return receiver.reset() ;
-					default :
-						return receiver.error( "unknown control change for all channels" );
-				}
-
-			case 0b10110000 : {
-				T value = receiver.controlChange( channel, message[1], message[2] ) ;
-				if ( value != null )
-					return value;
-			
-				switch ( message[1] ) {
-					/*
-					 * Channel Mode Messages
-					 */
-					case MetroMidi.CC_ALL_SOUND_OFF : // case 120 :
-						return receiver.cc_allSoundOff( channel ); 
-					case MetroMidi.CC_RESET_ALL_CONTROLLERS : // case 121
-						return receiver.cc_resetAllControllers( channel ); 
-					case MetroMidi.CC_LOCAL_CONTROLS : // case 122 :
-						return receiver.cc_localControls( channel, message[2] != 0 ); 
-					case MetroMidi.CC_ALL_NOTE_OFF : // case 123 :
-						return receiver.cc_allNoteOff( channel ); 
-					case MetroMidi.CC_OMNI_MODE_OFF : // case 124 :
-						return receiver.cc_omniModeOff( channel ); 
-					case MetroMidi.CC_OMNI_MODE_ON : // case 125 :
-						return receiver.cc_omniModeOn( channel ); 
-					case MetroMidi.CC_MONO_MODE_ON : // case 126 :
-						return receiver.cc_monoModeOn( channel ); 
-					case MetroMidi.CC_POLY_MODE_ON : // case 127 :
-						return receiver.cc_polyModeOn( channel );
-						
-					/*
-					 * Normal Messages
-					 */
-					case MetroMidi.CC_BANK_SELECT :
-						return receiver.cc_bankSelect( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_MODULATION :
-						return receiver.cc_modulation( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_BREATH_CTRL :
-						return receiver.cc_breathController( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_FOOT_CTRL :
-						return receiver.cc_footController( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_PORTAMENTO_TIME :
-						return receiver.cc_portamentoTime( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_DATA_ENTRY_MSB :
-						return receiver.cc_dataEntryMsb( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_VOLUME :
-						return receiver.cc_volume( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_BALANCE :
-						return receiver.cc_balance( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_PAN :
-						return receiver.cc_pan( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_EXPRESSION :
-						return receiver.cc_expression( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_EFFECT_CTRL_1 :
-						return receiver.cc_effectController1( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_EFFECT_CTRL_2 :
-						return receiver.cc_effectController2( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_SUSTAIN_PEDAL :
-						return receiver.cc_sustainPedal( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_PORTAMENTO_SWITCH :
-						return receiver.cc_portamentoSwitch( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_SOSTENUTO_SWITCH :
-						return receiver.cc_sostenutoSwitch( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_SOFT_PEDAL_SWITCH :
-						return receiver.cc_pedalSwitch( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_LEGATO_FOOTSWITCH :
-						return receiver.cc_legatoSwitch( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_HOLD_2 :
-						return receiver.cc_hold2( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_SOUND_CTRL_01 :
-						return receiver.cc_soundController1( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_SOUND_CTRL_02 :
-						return receiver.cc_soundController2( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_SOUND_CTRL_03 :
-						return receiver.cc_soundController3( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_SOUND_CTRL_04 :
-						return receiver.cc_soundController4( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_SOUND_CTRL_05 :
-						return receiver.cc_soundController5( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_SOUND_CTRL_06 :
-						return receiver.cc_soundController6( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_SOUND_CTRL_07 :
-						return receiver.cc_soundController7( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_SOUND_CTRL_08 :
-						return receiver.cc_soundController8( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_SOUND_CTRL_09 :
-						return receiver.cc_soundController9( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_SOUND_CTRL_10 :
-						return receiver.cc_soundController10( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_GENERAL_PURPOSE_01 :
-						return receiver.cc_generalPurpose01( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_GENERAL_PURPOSE_02 :
-						return receiver.cc_generalPurpose02( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_GENERAL_PURPOSE_03 :
-						return receiver.cc_generalPurpose03( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_GENERAL_PURPOSE_04 :
-						return receiver.cc_generalPurpose04( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_PORTAMENTO_CC_CTRL :
-						return receiver.cc_portamento( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_EFFECT_1_DEPTH :
-						return receiver.cc_effect1( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_EFFECT_2_DEPTH :
-						return receiver.cc_effect2( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_EFFECT_3_DEPTH :
-						return receiver.cc_effect3( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_EFFECT_4_DEPTH :
-						return receiver.cc_effect4( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_EFFECT_5_DEPTH :
-						return receiver.cc_effect5( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_DATA_INCREMENT :
-						return receiver.cc_dataIncrement( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_DATA_DECREMENT :
-						return receiver.cc_dataDecrement( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_NRPN_LSB :
-						return receiver.cc_nrpnLsb( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_NRPN_MSB :
-						return receiver.cc_nrpnMsb( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_RPN_LSB :
-						return receiver.cc_rpnLsb( channel, 0xff & message[2] ) ;
-
-					case MetroMidi.CC_RPN_MSB :
-						return receiver.cc_rpnMsb( channel, 0xff & message[2] ) ;
-
-					default :
-						return receiver.error( "unknown control change" );
-				}
-			}
-		}
-		
-		return receiver.error( "Unknown Type" );
+	public static final int CC_BANK_SELECT                            = 0  ;
+	public byte[] cc_bankSelect( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_BANK_SELECT, controlValue );
 	}
-
-	public static String toStri(byte[] bytes) {
-	    StringBuilder sb = new StringBuilder();
-	    sb.append("[ ");
-	    for (byte b : bytes) {
-	        sb.append(String.format("0x%02X ", b));
-	    }
-	    sb.append("]");
-	    return sb.toString();
+	public static final int CC_MODULATION                             = 1  ;
+	public byte[] cc_modulation( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_MODULATION, controlValue );
 	}
-	
-	public static void main(String[] args) {
-//		byte b = (byte) 0b11111100;
-//		int i = 0b11110000 & b;
-//		System.out.println(    i   );
-//		System.out.println(    0b11110000  );
-		receive( 
-				new MetroMidiReceiver.Default<Integer>() {
-					@Override
-					protected Integer defaultValue() {
-						return null;
-					}
-					@Override
-					public Integer pitchBend(int ch, int pitchBendValue) {
-						System.out.println( Integer.toString( pitchBendValue, 16 ) );
-						return  super.pitchBend(ch, pitchBendValue);
-					}
-				}, pitchBend(1, 0x1ff0 ) );
-		
-		System.out.println(  toStri( pitchBend(1, 0x1ff0 ) ) );
+	public static final int CC_BREATH_CTRL                            = 2  ;
+	public byte[] cc_breathController( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_BREATH_CTRL, controlValue );
 	}
-	
-
-	static class Test {
-		public static void main(String[] args) {
-			System.out.println( String.format( "%4.4f", 1d/8192  ));
-//		test(  pitchBend( 1, 0x2000 ) );
-//		test(  pitchBend( 1, 0x2001 ) );
-//		test(  pitchBend( 1, 0x2003 ) );
-//		test(  pitchBend( 1, 0x1fff ) );
-//		test(  pitchBend( 1, 0x1ffe ) );
-			test(  pitchBend( 1,    0d ) );
-			test(  pitchBend( 1,  1d/8192 ) );
-			test(  pitchBend( 1, -1d/8192   ) );
-			
-		}
-		
-		private static void test(byte[] pitchBend) {
-			System.out.println("");
-			for ( int i=0; i<pitchBend.length; i++ ) {
-				System.out.println( String.format( "%8.8s", Integer.toBinaryString( pitchBend[i] & 0xff ) ));
-			}
-		}
+	public static final int CC_FOOT_CTRL                              = 4  ;
+	public byte[] cc_footController( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_FOOT_CTRL, controlValue );
+	}
+	public static final int CC_PORTAMENTO_TIME                        = 5  ;
+	public byte[] cc_portamentoTime( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_PORTAMENTO_TIME, controlValue );
+	}
+	public static final int CC_DATA_ENTRY_MSB                         = 6  ;
+	public byte[] cc_dataEntryMsb( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_DATA_ENTRY_MSB, controlValue );
+	}
+	public static final int CC_VOLUME                                 = 7  ;
+	public byte[] cc_volume( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_VOLUME, controlValue );
+	}
+	public static final int CC_BALANCE                                = 8  ;
+	public byte[] cc_balance( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_BALANCE, controlValue );
+	}
+	public static final int CC_PAN                                    = 10 ;
+	public byte[] cc_pan( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_PAN, controlValue );
+	}
+	public static final int CC_EXPRESSION                             = 11 ;
+	public byte[] cc_expression( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_EXPRESSION, controlValue );
+	}
+	public static final int CC_EFFECT_CTRL_1                          = 12 ;
+	public byte[] cc_effectController1( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_EFFECT_CTRL_1, controlValue );
+	}
+	public static final int CC_EFFECT_CTRL_2                          = 13 ;
+	public byte[] cc_effectController2( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_EFFECT_CTRL_2, controlValue );
+	}
+	public static final int CC_SUSTAIN_PEDAL                          = 64 ;
+	public byte[] cc_sustainPedal( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_SUSTAIN_PEDAL, controlValue );
+	}
+	public static final int CC_PORTAMENTO_SWITCH                      = 65 ;
+	public byte[] cc_portamentoSwitch( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_PORTAMENTO_SWITCH, controlValue );
+	}
+	public static final int CC_SOSTENUTO_SWITCH                       = 66 ;
+	public byte[] cc_sostenutoSwitch( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_SOSTENUTO_SWITCH, controlValue );
+	}
+	public static final int CC_SOFT_PEDAL_SWITCH                      = 67 ;
+	public byte[] cc_pedalSwitch( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_SOFT_PEDAL_SWITCH, controlValue );
+	}
+	public static final int CC_LEGATO_FOOTSWITCH                      = 68 ;
+	public byte[] cc_legatoSwitch( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_LEGATO_FOOTSWITCH, controlValue );
+	}
+	public static final int CC_HOLD_2                                 = 69 ;
+	public byte[] cc_hold2( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_HOLD_2, controlValue );
+	}
+	public static final int CC_SOUND_CTRL_01                          = 70 ;
+	public byte[] cc_soundController1( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_01, controlValue );
+	}
+	public static final int CC_SOUND_CTRL_02                          = 71 ;
+	public byte[] cc_soundController2( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_02, controlValue );
+	}
+	public static final int CC_SOUND_CTRL_03                          = 72 ;
+	public byte[] cc_soundController3( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_03, controlValue );
+	}
+	public static final int CC_SOUND_CTRL_04                          = 73 ;
+	public byte[] cc_soundController4( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_04, controlValue );
+	}
+	public static final int CC_SOUND_CTRL_05                          = 74 ;
+	public byte[] cc_soundController5( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_05, controlValue );
+	}
+	public static final int CC_SOUND_CTRL_06                          = 75 ;
+	public byte[] cc_soundController6( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_06, controlValue );
+	}
+	public static final int CC_SOUND_CTRL_07                          = 76 ;
+	public byte[] cc_soundController7( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_07, controlValue );
+	}
+	public static final int CC_SOUND_CTRL_08                          = 77 ;
+	public byte[] cc_soundController8( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_08, controlValue );
+	}
+	public static final int CC_SOUND_CTRL_09                          = 78 ;
+	public byte[] cc_soundController9( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_09, controlValue );
+	}
+	public static final int CC_SOUND_CTRL_10                          = 79 ;
+	public byte[] cc_soundController10( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_10, controlValue );
+	}
+	public static final int CC_GENERAL_PURPOSE_01                     = 80 ;
+	public byte[] cc_generalPurpose01( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_GENERAL_PURPOSE_01, controlValue );
+	}
+	public static final int CC_GENERAL_PURPOSE_02                     = 81 ;
+	public byte[] cc_generalPurpose02( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_GENERAL_PURPOSE_02, controlValue );
+	}
+	public static final int CC_GENERAL_PURPOSE_03                     = 82 ;
+	public byte[] cc_generalPurpose03( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_GENERAL_PURPOSE_03, controlValue );
+	}
+	public static final int CC_GENERAL_PURPOSE_04                     = 83 ;
+	public byte[] cc_generalPurpose04( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_GENERAL_PURPOSE_04, controlValue );
+	}
+	public static final int CC_PORTAMENTO_CC_CTRL                     = 84 ;
+	public byte[] cc_portamento( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_PORTAMENTO_CC_CTRL, controlValue );
+	}
+	public static final int CC_EFFECT_1_DEPTH                         = 91 ;
+	public byte[] cc_effect1( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_EFFECT_1_DEPTH, controlValue );
+	}
+	public static final int CC_EFFECT_2_DEPTH                         = 92 ;
+	public byte[] cc_effect2( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_EFFECT_2_DEPTH, controlValue );
+	}
+	public static final int CC_EFFECT_3_DEPTH                         = 93 ;
+	public byte[] cc_effect3( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_EFFECT_3_DEPTH, controlValue );
+	}
+	public static final int CC_EFFECT_4_DEPTH                         = 94 ;
+	public byte[] cc_effect4( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_EFFECT_4_DEPTH, controlValue );
+	}
+	public static final int CC_EFFECT_5_DEPTH                         = 95 ;
+	public byte[] cc_effect5( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_EFFECT_5_DEPTH, controlValue );
+	}
+	public static final int CC_DATA_INCREMENT                         = 96 ;
+	public byte[] cc_dataIncrement( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_DATA_INCREMENT, controlValue );
+	}
+	public static final int CC_DATA_DECREMENT                         = 97 ;
+	public byte[] cc_dataDecrement( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_DATA_DECREMENT, controlValue );
+	}
+	public static final int CC_NRPN_LSB                               = 98 ;
+	public byte[] cc_nrpnLsb( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_NRPN_LSB, controlValue );
+	}
+	public static final int CC_NRPN_MSB                               = 99 ;
+	public byte[] cc_nrpnMsb( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_NRPN_MSB, controlValue );
+	}
+	public static final int CC_RPN_LSB                                = 100;
+	public byte[] cc_rpnLsb( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_RPN_LSB, controlValue );
+	}
+	public static final int CC_RPN_MSB                                = 101;
+	public byte[] cc_rpnMsb( int channel, int controlValue ) {
+		return MetroMidiMessageGen.controlChange( channel, CC_RPN_MSB, controlValue );
+	}
+	@Override
+	public byte[] error(String string) {
+		return null;
 	}
 }
