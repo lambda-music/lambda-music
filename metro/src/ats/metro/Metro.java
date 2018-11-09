@@ -360,8 +360,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
         		try {
 					track.checkBuffer( this,  this.client, this.position );
 				} catch (JackException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					logError("", e);
 				}
         	}
 		}

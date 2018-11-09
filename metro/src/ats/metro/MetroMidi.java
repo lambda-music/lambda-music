@@ -453,7 +453,6 @@ public abstract class MetroMidi {
 			return receiver.cc_omniModeOn ( ch );
 		}
 	}
-	// TODO : Isn't this mono-mode-on? This seems incorrect.  
 	public static final MetroMidiMonoModeOn  MIDI_MONO_MODE_ON = new MetroMidiMonoModeOn(); 
 	public static final class MetroMidiMonoModeOn extends MetroMidi {
 		{
@@ -501,7 +500,6 @@ public abstract class MetroMidi {
 		}
 	}
 	
-	// TODO : the channel value is not necessary. Remove it from SchemeNoteParser , too. 
 	public static final MetroMidiSongPositionPointer  MIDI_SONG_POSITION_POINTER = new MetroMidiSongPositionPointer(); 
 	public static final class MetroMidiSongPositionPointer extends MetroMidi {
 		{
@@ -525,7 +523,6 @@ public abstract class MetroMidi {
 			return receiver.songPositionPointer ( value );
 		}
 	}
-	// TODO : the channel value is not necessary. Remove it from SchemeNoteParser , too. 
 	public static final MetroMidiSongSelect  MIDI_SONG_SELECT = new MetroMidiSongSelect(); 
 	public static final class MetroMidiSongSelect extends MetroMidi {
 		{

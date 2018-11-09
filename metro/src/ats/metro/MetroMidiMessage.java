@@ -183,7 +183,6 @@ public class MetroMidiMessage implements MetroMidiReceiver<byte[]> {
 	public byte[] cc_omniModeOn(int channel) {
 		return MetroMidiMessageGen.cc_omniModeOn( channel );
 	}
-	// TODO : Isn't this mono-mode-on? This seems incorrect.  
 	public byte[] cc_monoModeOn(int channel) {
 		return MetroMidiMessageGen.cc_monoModeOn( channel );
 	}
@@ -191,11 +190,9 @@ public class MetroMidiMessage implements MetroMidiReceiver<byte[]> {
 		return MetroMidiMessageGen.cc_polyModeOn( channel );
 	}
 	
-	// TODO : the channel value is not necessary. Remove it from SchemeNoteParser , too. 
 	public byte[] songPositionPointer( int value ) {
 		return MetroMidiMessageGen.songPositionPointer( value );
 	}
-	// TODO : the channel value is not necessary. Remove it from SchemeNoteParser , too. 
 	public byte[] songSelect(int value) {
 		return MetroMidiMessageGen.songSelect( value );
 	}
