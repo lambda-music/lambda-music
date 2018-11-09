@@ -1,6 +1,6 @@
-package ats.pulsar;
+package ats.pulsar.parsers.v2;
 
-import static ats.pulsar.MidiNoteListParsers.*;
+import static ats.pulsar.parsers.v2.MidiNoteListParsers2.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,10 +12,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ats.metro.Metro;
+import ats.metro.MetroEventBuffer;
 import ats.metro.MetroMidi;
 import ats.metro.MetroTrack;
-import ats.metro.MetroEventBuffer;
 import ats.metro.MetroTrack.SyncType;
+import ats.pulsar.InvocableSchemeProcedure;
+import ats.pulsar.NoteListParserElement;
+import ats.pulsar.Pulsar;
+import ats.pulsar.RunnableSchemeProcedure;
+import ats.pulsar.SchemeSequence;
 import ats.pulsar.lib.SchemeUtils;
 import gnu.lists.Pair;
 import gnu.mapping.Environment;
@@ -27,8 +32,8 @@ import kawa.standard.Scheme;
  *  
  * @author ats
  */
-public class SpecialNoteListParsers {
-	static final Logger LOGGER = Logger.getLogger(SpecialNoteListParsers.class.getName());
+public class SpecialNoteListParsers2 {
+	static final Logger LOGGER = Logger.getLogger(SpecialNoteListParsers2.class.getName());
 
 	/**
 	 * Returns a collection object which contains parser elements defined in this class. 
@@ -80,7 +85,7 @@ public class SpecialNoteListParsers {
 	static { register( PARSER_VOID ); }
 	public static final class VoidEventParser extends SpecialNoteListParserElement {
 		{
-			this.shortName = "void";
+			this.shortName = "nop";
 			this.longName = "void";
 		}
 		@Override
@@ -95,12 +100,12 @@ public class SpecialNoteListParsers {
 	public static class NoteEventParser extends SpecialNoteListParserElement {
 		{
 			this.shortName = "note";
-			this.longName  = "note";
+			this.longName  = "note-on-off";
 		}
 		@Override
 		public
 		boolean parseEvent(Metro metro, MetroTrack track, MetroEventBuffer outputBuffer, Map<String, Object> map, boolean result) {
-			boolean enabled      = map.containsKey( MidiNoteListParsers.ID_ENABLED     ) ? SchemeUtils.toBoolean( map.get( MidiNoteListParsers.ID_ENABLED ) ) : true;
+			boolean enabled      = map.containsKey( MidiNoteListParsers2.ID_ENABLED     ) ? SchemeUtils.toBoolean( map.get( MidiNoteListParsers2.ID_ENABLED ) ) : true;
 			if ( ! enabled )
 				return result;
 

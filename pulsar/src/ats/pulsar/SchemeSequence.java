@@ -13,6 +13,7 @@ import ats.metro.MetroSequence;
 import ats.metro.MetroTrack;
 import ats.metro.MetroTrackInfo;
 import ats.pulsar.lib.SchemeUtils;
+import ats.pulsar.parsers.PulsarNoteParser;
 import gnu.lists.AbstractSequence;
 import gnu.lists.EmptyList;
 import gnu.lists.ImmutablePair;
@@ -84,7 +85,7 @@ public class SchemeSequence extends MetroSequence {
 		}
 		return result;
 	}
-
+	private static final NoteListParser PARSER = PulsarNoteParser.getInstance();
 	public static boolean scheme2buf( Metro metro, MetroTrack track, Invocable procedure, MetroEventBuffer buf) {
 		// Call the procedure to get a note list of the next measure.
 		AbstractSequence<Object> pattern = (AbstractSequence<Object>)procedure.invoke();
@@ -93,7 +94,8 @@ public class SchemeSequence extends MetroSequence {
 		
 //		return SchemeNoteParser0.parse(metro, scheme, pattern, buf, true );
 //		return SchemeNoteParser1.parse(metro, scheme, pattern, buf, true );
-		return PulsarNoteParser.parse(metro, track, pattern, buf, true );
+//		return PulsarNoteParser2.parse(metro, track, pattern, buf, true );
+		return PARSER.parse( metro, track, pattern, buf, true );
 	}
 
 	LList asociationList = createPairs( this );

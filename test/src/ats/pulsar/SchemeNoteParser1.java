@@ -11,7 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ats.metro.Metro;
-import ats.metro.MetroMidiDef;
+import ats.metro.MetroMidiMessage;
 import ats.metro.MetroEventBuffer;
 import ats.metro.MetroTrack.SyncType;
 import ats.pulsar.lib.SchemeUtils;
@@ -147,8 +147,8 @@ public class SchemeNoteParser1 {
 //			System.out.println( channel );
 
 //			outputBuffer.noteHit( offset, port, channel, note, velocity, length );
-			outputBuffer.midiEvent(offset             , port, MetroMidiDef.noteOn (channel, note, velocity ) );
-			outputBuffer.midiEvent(offset + duration  , port, MetroMidiDef.noteOff(channel, note, velocity ) );
+			outputBuffer.midiEvent(offset             , port, MetroMidiMessage.noteOn (channel, note, velocity ) );
+			outputBuffer.midiEvent(offset + duration  , port, MetroMidiMessage.noteOff(channel, note, velocity ) );
 		}
 	}
 	static final class NoteOnEventParser extends NoteEventParser {
@@ -161,7 +161,7 @@ public class SchemeNoteParser1 {
 				double offset, int port, int channel, int note,double velocity, double duration ) 
 		{
 //			outputBuffer.noteOn( offset, port, channel, note, velocity );
-			outputBuffer.midiEvent(offset, port, MetroMidiDef.noteOn (channel, note, velocity ) );
+			outputBuffer.midiEvent(offset, port, MetroMidiMessage.noteOn (channel, note, velocity ) );
 		}
 	}
 	static final class NoteOffEventParser extends NoteEventParser {
@@ -174,7 +174,7 @@ public class SchemeNoteParser1 {
 				double offset, int port, int channel, int note,double velocity, double duration ) 
 		{
 //			outputBuffer.noteOff( offset, port, channel, note, velocity );
-			outputBuffer.midiEvent(offset, port, MetroMidiDef.noteOff(channel, note, velocity ) );
+			outputBuffer.midiEvent(offset, port, MetroMidiMessage.noteOff(channel, note, velocity ) );
 		}
 	}
 
@@ -355,7 +355,7 @@ public class SchemeNoteParser1 {
 				int note         = map.containsKey( ID_NOTE     ) ? SchemeUtils.toInteger(      map.get(ID_NOTE      ) ) : 63;  
 				double value     = map.containsKey( ID_VALUE )    ? SchemeUtils.toDouble(       map.get(ID_VALUE     ) ) : 0d;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.keyPressure( ch, note, value ) ) ;
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.keyPressure( ch, note, value ) ) ;
 
 				return result;
 			}
@@ -374,7 +374,7 @@ public class SchemeNoteParser1 {
 				int key          = map.containsKey( ID_KEY      ) ? SchemeUtils.toInteger(      map.get( ID_KEY      ) ) : 0;
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, key, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, key, value ));
 
 				return result;
 			}
@@ -392,7 +392,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.program( ch, value ) );
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.programChange( ch, value ) );
 
 				return result;
 			}
@@ -410,7 +410,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				double value     = map.containsKey( ID_VALUE )    ? SchemeUtils.toDouble(       map.get(ID_VALUE     ) ) : 0d;
 
-				outputBuffer.midiEvent( offset , port, MetroMidiDef.channelPressure( ch, value ) );
+				outputBuffer.midiEvent( offset , port, MetroMidiMessage.channelPressure( ch, value ) );
 
 				return result;
 			}
@@ -428,7 +428,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				double value     = map.containsKey( ID_VALUE )    ? SchemeUtils.toDouble(       map.get(ID_VALUE     ) ) : 0d;
 
-				outputBuffer.midiEvent( offset , port, MetroMidiDef.pitchBend( ch, value ) );
+				outputBuffer.midiEvent( offset , port, MetroMidiMessage.pitchBend( ch, value ) );
 
 				return result;
 			}
@@ -448,7 +448,7 @@ public class SchemeNoteParser1 {
 				int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-				outputBuffer.midiEvent( offset , port, MetroMidiDef.cc_allSoundOff( ch ) );
+				outputBuffer.midiEvent( offset , port, MetroMidiMessage.cc_allSoundOff( ch ) );
 
 				return result;
 			}
@@ -465,7 +465,7 @@ public class SchemeNoteParser1 {
 				int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-				outputBuffer.midiEvent( offset , port, MetroMidiDef.cc_resetAllControllers( ch ));
+				outputBuffer.midiEvent( offset , port, MetroMidiMessage.cc_resetAllControllers( ch ));
 
 				return result;
 			}
@@ -483,7 +483,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0;
 				boolean on       = map.containsKey( ID_VALUE    ) ? SchemeUtils.toBoolean(      map.get(ID_VALUE     ) ) : false; 
 
-				outputBuffer.midiEvent( offset , port, MetroMidiDef.cc_localControls( ch, on ));
+				outputBuffer.midiEvent( offset , port, MetroMidiMessage.cc_localControls( ch, on ));
 
 				return result;
 			}
@@ -500,7 +500,7 @@ public class SchemeNoteParser1 {
 				int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-				outputBuffer.midiEvent( offset , port, MetroMidiDef.cc_allNoteOff( ch ) );
+				outputBuffer.midiEvent( offset , port, MetroMidiMessage.cc_allNoteOff( ch ) );
 
 				return result;
 			}
@@ -517,7 +517,7 @@ public class SchemeNoteParser1 {
 				int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-				outputBuffer.midiEvent( offset , port, MetroMidiDef.cc_omniModeOff( ch ) );
+				outputBuffer.midiEvent( offset , port, MetroMidiMessage.cc_omniModeOff( ch ) );
 
 				return result;
 			}
@@ -534,7 +534,7 @@ public class SchemeNoteParser1 {
 				int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-				outputBuffer.midiEvent( offset , port, MetroMidiDef.cc_omniModeOn( ch ) );
+				outputBuffer.midiEvent( offset , port, MetroMidiMessage.cc_omniModeOn( ch ) );
 
 				return result;
 			}
@@ -551,7 +551,7 @@ public class SchemeNoteParser1 {
 				int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-				outputBuffer.midiEvent( offset , port, MetroMidiDef.cc_monoModeOff( ch ) );
+				outputBuffer.midiEvent( offset , port, MetroMidiMessage.cc_monoModeOn( ch ) );
 
 				return result;
 			}
@@ -568,7 +568,7 @@ public class SchemeNoteParser1 {
 				int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-				outputBuffer.midiEvent( offset , port, MetroMidiDef.cc_polyModeOn( ch ) );
+				outputBuffer.midiEvent( offset , port, MetroMidiMessage.cc_polyModeOn( ch ) );
 
 				return result;
 			}
@@ -586,7 +586,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent( offset , port, MetroMidiDef.songPositionPointer( value ) );
+				outputBuffer.midiEvent( offset , port, MetroMidiMessage.songPositionPointer( value ) );
 
 				return result;
 			}
@@ -604,7 +604,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent( offset , port, MetroMidiDef.songSelect( value ) );
+				outputBuffer.midiEvent( offset , port, MetroMidiMessage.songSelect( value ) );
 
 				return result;
 			}
@@ -621,7 +621,7 @@ public class SchemeNoteParser1 {
 				int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-				outputBuffer.midiEvent( offset , port, MetroMidiDef.endOfExclusive() );
+				outputBuffer.midiEvent( offset , port, MetroMidiMessage.endOfExclusive() );
 
 				return result;
 			}
@@ -638,7 +638,7 @@ public class SchemeNoteParser1 {
 				int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-				outputBuffer.midiEvent( offset , port, MetroMidiDef.clock() );
+				outputBuffer.midiEvent( offset , port, MetroMidiMessage.clock() );
 
 				return result;
 			}
@@ -655,7 +655,7 @@ public class SchemeNoteParser1 {
 				int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-				outputBuffer.midiEvent( offset , port, MetroMidiDef.start() );
+				outputBuffer.midiEvent( offset , port, MetroMidiMessage.start() );
 
 				return result;
 			}
@@ -672,7 +672,7 @@ public class SchemeNoteParser1 {
 				int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-				outputBuffer.midiEvent( offset , port, MetroMidiDef.cont() );
+				outputBuffer.midiEvent( offset , port, MetroMidiMessage.cont() );
 
 				return result;
 			}
@@ -689,7 +689,7 @@ public class SchemeNoteParser1 {
 				int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-				outputBuffer.midiEvent( offset , port, MetroMidiDef.stop() );
+				outputBuffer.midiEvent( offset , port, MetroMidiMessage.stop() );
 
 				return result;
 			}
@@ -706,7 +706,7 @@ public class SchemeNoteParser1 {
 				int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 
-				outputBuffer.midiEvent( offset , port, MetroMidiDef.reset());
+				outputBuffer.midiEvent( offset , port, MetroMidiMessage.reset());
 
 				return result;
 			}
@@ -734,7 +734,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -757,7 +757,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -780,7 +780,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -803,7 +803,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -826,7 +826,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -849,7 +849,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -872,7 +872,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -895,7 +895,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -918,7 +918,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -941,7 +941,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -964,7 +964,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -987,7 +987,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1010,7 +1010,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1033,7 +1033,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1056,7 +1056,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1079,7 +1079,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1102,7 +1102,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1125,7 +1125,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1148,7 +1148,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1171,7 +1171,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1194,7 +1194,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1217,7 +1217,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1240,7 +1240,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1263,7 +1263,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1286,7 +1286,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1309,7 +1309,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1332,7 +1332,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1355,7 +1355,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1378,7 +1378,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1401,7 +1401,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1424,7 +1424,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1447,7 +1447,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1470,7 +1470,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1493,7 +1493,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1516,7 +1516,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1539,7 +1539,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1562,7 +1562,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1585,7 +1585,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1608,7 +1608,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1631,7 +1631,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1654,7 +1654,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1677,7 +1677,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1700,7 +1700,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}
@@ -1723,7 +1723,7 @@ public class SchemeNoteParser1 {
 				int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 				int value        = map.containsKey( ID_VALUE    ) ? SchemeUtils.toInteger(      map.get( ID_VALUE    ) ) : 0;
 
-				outputBuffer.midiEvent(offset , port, MetroMidiDef.control( ch, controlNumber, value ));
+				outputBuffer.midiEvent(offset , port, MetroMidiMessage.controlChange( ch, controlNumber, value ));
 
 				return result;
 			}

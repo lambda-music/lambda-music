@@ -157,7 +157,7 @@ public final class Pulsar extends Metro {
 	Scheme scheme;
 	PulsarGui gui;
 
-	Scheme getScheme() {
+	public Scheme getScheme() {
 		return scheme;
 	}
 	

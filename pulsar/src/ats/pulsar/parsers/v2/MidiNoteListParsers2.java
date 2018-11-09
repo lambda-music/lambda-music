@@ -1,4 +1,4 @@
-package ats.pulsar;
+package ats.pulsar.parsers.v2;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import ats.metro.Metro;
+import ats.metro.MetroEventBuffer;
 import ats.metro.MetroMidi;
 import ats.metro.MetroMidi.MetroMidiAllNoteOff;
 import ats.metro.MetroMidi.MetroMidiAllSoundOff;
@@ -62,7 +63,7 @@ import ats.metro.MetroMidi.MetroMidiEndOfExclusive;
 import ats.metro.MetroMidi.MetroMidiInt1Double1;
 import ats.metro.MetroMidi.MetroMidiKeyPressure;
 import ats.metro.MetroMidi.MetroMidiLocalControls;
-import ats.metro.MetroMidi.MetroMidiMonoModeOff;
+import ats.metro.MetroMidi.MetroMidiMonoModeOn;
 import ats.metro.MetroMidi.MetroMidiMsg;
 import ats.metro.MetroMidi.MetroMidiNoteOff;
 import ats.metro.MetroMidi.MetroMidiNoteOn;
@@ -70,15 +71,15 @@ import ats.metro.MetroMidi.MetroMidiOmniModeOff;
 import ats.metro.MetroMidi.MetroMidiOmniModeOn;
 import ats.metro.MetroMidi.MetroMidiPitchBend;
 import ats.metro.MetroMidi.MetroMidiPolyModeOn;
-import ats.metro.MetroMidi.MetroMidiProgram;
+import ats.metro.MetroMidi.MetroMidiProgramChange;
 import ats.metro.MetroMidi.MetroMidiReset;
-import ats.metro.MetroMidi.MetroMidiResetAllController;
+import ats.metro.MetroMidi.MetroMidiResetAllControllers;
 import ats.metro.MetroMidi.MetroMidiSongPositionPointer;
 import ats.metro.MetroMidi.MetroMidiSongSelect;
 import ats.metro.MetroMidi.MetroMidiStart;
 import ats.metro.MetroMidi.MetroMidiStop;
 import ats.metro.MetroTrack;
-import ats.metro.MetroEventBuffer;
+import ats.pulsar.NoteListParserElement;
 import ats.pulsar.lib.SchemeUtils;
 
 /**
@@ -90,8 +91,8 @@ import ats.pulsar.lib.SchemeUtils;
  *
  */
 @SuppressWarnings("unused")
-public class MidiNoteListParsers {
-	static final Logger LOGGER = Logger.getLogger( MidiNoteListParsers.class.getName() );
+public class MidiNoteListParsers2 {
+	static final Logger LOGGER = Logger.getLogger( MidiNoteListParsers2.class.getName() );
 
 	/**
 	 * 
@@ -223,10 +224,10 @@ public class MidiNoteListParsers {
 	}
 	static { register( PARSER_CONTROL_CHANGE ); }
 
-	public static final MetroNoteParserProgram  PARSER_PROGRAM = new MetroNoteParserProgram(); 
-	public static final class MetroNoteParserProgram extends MidiNoteListParserElement<MetroMidiProgram>		{
+	public static final MetroNoteParserProgramChange  PARSER_PROGRAM_CHANGE = new MetroNoteParserProgramChange(); 
+	public static final class MetroNoteParserProgramChange extends MidiNoteListParserElement<MetroMidiProgramChange>		{
 		{
-			this.midi = MetroMidi.MIDI_PROGRAM;
+			this.midi = MetroMidi.MIDI_PROGRAM_CHANGE;
 		}
 		@Override
 		public
@@ -241,7 +242,7 @@ public class MidiNoteListParsers {
 			return result;
 		}
 	}
-	static { register( PARSER_PROGRAM ); }
+	static { register( PARSER_PROGRAM_CHANGE ); }
 
 	public static final MetroNoteParserChannelPressure  PARSER_CHANNEL_PRESSURE = new MetroNoteParserChannelPressure(); 
 	public static final class MetroNoteParserChannelPressure extends MidiNoteListParserElement<MetroMidiChannelPressure>		{
@@ -306,7 +307,7 @@ public class MidiNoteListParsers {
 	static { register( PARSER_ALL_SOUND_OFF ); }
 
 	public static final MetroNoteParserResetAllController  PARSER_RESET_ALL_CONTROLLERS = new MetroNoteParserResetAllController(); 
-	public static final class MetroNoteParserResetAllController extends MidiNoteListParserElement<MetroMidiResetAllController>		{
+	public static final class MetroNoteParserResetAllController extends MidiNoteListParserElement<MetroMidiResetAllControllers>		{
 		{
 			this.midi = MetroMidi.MIDI_RESET_ALL_CONTROLLERS;
 		}
@@ -403,9 +404,9 @@ public class MidiNoteListParsers {
 
 	// TODO : Isn't this mono-mode-on? This seems incorrect.  
 	public static final MetroNoteParserMonoModeOff  PARSER_MONO_MODE_OFF = new MetroNoteParserMonoModeOff(); 
-	public static final class MetroNoteParserMonoModeOff extends MidiNoteListParserElement<MetroMidiMonoModeOff> {
+	public static final class MetroNoteParserMonoModeOff extends MidiNoteListParserElement<MetroMidiMonoModeOn> {
 		{
-			this.midi = MetroMidi.MIDI_MONO_MODE_OFF;
+			this.midi = MetroMidi.MIDI_MONO_MODE_ON;
 		}
 		@Override
 		public

@@ -6,5 +6,7 @@
  * provides a mechanism to buffer the client MIDI data and send it to JACK
  * frame-by-frame.
  * 
+ * Metro also provides a mechanism to compose/decompose 
+ * 
  */
 package ats.metro;

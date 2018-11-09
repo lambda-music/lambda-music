@@ -3,6 +3,7 @@ package ats.metro;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
+/** @formatter:off */
 /**
  * This class defines constant objects to generate a byte array which could
  * represent various MIDI messages.
@@ -35,7 +36,7 @@ import java.util.logging.Logger;
  * The following table is a quotation from the site.
  * <p>
  *
- * @formatter:off
+ * 
  * <table border="1" cellpadding="2">
  *  <tr><td>0</td>                                              <td>"Bank Select"</td>                                      <td>"Allows user to switch bank for patch selection. Program change used with Bank Select. MIDI can access 16,384 patches per MIDI channel."</td></tr>
  *  <tr><td>1</td>                                              <td>"Modulation"</td>                                       <td>"Generally this CC controls a vibrato effect (pitch, loudness, brightness ). What is modulated is based on the patch."</td></tr>
@@ -100,13 +101,14 @@ import java.util.logging.Logger;
  *  <tr><td>126</td>                                            <td>Mono Mode</td>                                          <td>Sets device mode to Monophonic.</td></tr>
  *  <tr><td>127</td>                                            <td>Poly Mode</td>                                          <td>Sets device mode to Polyphonic.</td></tr>
  *  </table>
- * @formatter:on
- * 
- * @author ats
+ *   
+ * @author Ats Oka
  *
  */
 
 public class MetroMidi {
+	/** @formatter:on */
+
 	static final Logger LOGGER = Logger.getLogger( MetroMidi.class.getName() );
 
 	static HashMap<String,MetroMidiMsg> infoMap = new HashMap<String,MetroMidiMsg>();
@@ -128,7 +130,7 @@ public class MetroMidi {
 		protected String longDescription;
 		public String getShortName() {
 			return shortName;
-		}
+		}		
 		public String getLongName() {
 			return longName;
 		}
@@ -173,7 +175,7 @@ public class MetroMidi {
 	public static abstract class MetroMidiControlChangeBase extends MetroMidiMsg {
 		int controlNumber;
 		public final byte[] createMidiMessage( int ch, int value ) {
-			return MetroMidiDef.control( ch, controlNumber, value );
+			return MetroMidiMessage.controlChange( ch, controlNumber, value );
 		}
 		public final void notifyMidiEvent( MetroEventBuffer buf, double offset, int port, int ch, int value  ) {
 			buf.midiEvent(offset , port, createMidiMessage( ch, value ) );
@@ -193,6 +195,7 @@ public class MetroMidi {
 	}
 	public static abstract class MetroMidiInt1Double1 extends MetroMidiMsg {
 		public abstract byte[] createMidiMessage( int ch, int value0, double value1 );
+//		public abstract <T> T execute(MetroMidiReceiver<T> receiver, int ch, int note0, double value1);
 		public void notifyMidiEvent( MetroEventBuffer buf, double offset, int port, int ch, int note0, double value1 ) {
 			buf.midiEvent( offset, port, createMidiMessage( ch, note0, value1 ) );
 		}
@@ -219,19 +222,24 @@ public class MetroMidi {
 		}
 		@Override
 		public byte[] createMidiMessage( int ch, int note, double velocity ) {
-			return MetroMidiDef.noteOn (ch, note, velocity );
+			return MetroMidiMessage.noteOn (ch, note, velocity );
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int ch, int note, double velocity ) {
+			return receiver.noteOn( ch, note, velocity ); 
 		}
 	}
 	public static final MetroMidiNoteOff MIDI_NOTE_OFF = new MetroMidiNoteOff();
 	public static final class MetroMidiNoteOff extends MetroMidiNote {
-		// TODO
 		{
 			this.shortName = "noff";
 			this.longName = "note off";
 		}
 		@Override
 		public byte[] createMidiMessage( int ch, int note, double velocity ) {
-			return MetroMidiDef.noteOff(ch, note, velocity );
+			return MetroMidiMessage.noteOff(ch, note, velocity );
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int ch, int note, double velocity ) {
+			return receiver.noteOff (ch, note, velocity );
 		}
 	}
 	
@@ -245,7 +253,11 @@ public class MetroMidi {
 
 		@Override
 		public byte[] createMidiMessage( int ch, int note, double value ) {
-			return MetroMidiDef.keyPressure( ch, note, value );
+			return MetroMidiMessage.keyPressure( ch, note, value );
+		}
+
+		public <T> T execute( MetroMidiReceiver<T> receiver, int ch, int note, double value ) {
+			return receiver.keyPressure ( ch, note, value );
 		}
 	}
 	public static final MetroMidiControlChange MIDI_CONTROL_CHANGE = new MetroMidiControlChange();
@@ -256,21 +268,27 @@ public class MetroMidi {
 			this.longName = "control-change";
 		}
 		public byte[] createMidiMessage( int ch, int controlNumber, int controlValue ) {
-			return MetroMidiDef.control(ch, controlNumber, controlValue );
+			return MetroMidiMessage.controlChange(ch, controlNumber, controlValue );
 		}
 		public void notifyMidiEvent( MetroEventBuffer buf, double offset, int port, int ch, int controlNumber, int controlValue ) {
 			buf.midiEvent(offset, port, createMidiMessage( ch, controlNumber, controlValue ) );
 		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int ch, int controlNumber, int controlValue ) {
+			return receiver.controlChange( ch, controlNumber, controlValue );
+		}
 	}
-	public static final MetroMidiProgram  MIDI_PROGRAM = new MetroMidiProgram(); 
-	public static final class MetroMidiProgram extends MetroMidiInt1 {
+	public static final MetroMidiProgramChange  MIDI_PROGRAM_CHANGE = new MetroMidiProgramChange(); 
+	public static final class MetroMidiProgramChange extends MetroMidiInt1 {
 		{
 			this.shortName = "pc";
 			this.longName = "program";
 		}
 		@Override
 		public byte[] createMidiMessage( int ch, int value ) {
-			return MetroMidiDef.program( ch, value );
+			return MetroMidiMessage.programChange( ch, value );
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int ch, int value ) {
+			return receiver.programChange ( ch, value );
 		}
 	}
 	public static final MetroMidiChannelPressure  MIDI_CHANNEL_PRESSURE = new MetroMidiChannelPressure(); 
@@ -281,7 +299,10 @@ public class MetroMidi {
 		}
 		@Override
 		public byte[] createMidiMessage( int ch, double value ) {
-			return MetroMidiDef.channelPressure( ch, value );
+			return MetroMidiMessage.channelPressure( ch, value );
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver , int ch, double value ) {
+			return receiver.channelPressure ( ch, value );
 		}
 	}
 	public static final MetroMidiPitchBend  MIDI_PITCH_BEND = new MetroMidiPitchBend(); 
@@ -292,12 +313,25 @@ public class MetroMidi {
 		}
 		@Override
 		public byte[] createMidiMessage(int ch, double value) {
-			return MetroMidiDef.pitchBend( ch, value );
+			return MetroMidiMessage.pitchBend( ch, value );
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver ,int ch, double value) {
+			return receiver.pitchBend ( ch, value );
 		}
 	}
+
 	/*
 	 * Channel Mode Control Change 
 	 */
+	public static final int CC_ALL_SOUND_OFF         = 120;
+	public static final int CC_RESET_ALL_CONTROLLERS = 121;
+	public static final int CC_LOCAL_CONTROLS        = 122;
+	public static final int CC_ALL_NOTE_OFF          = 123;
+	public static final int CC_OMNI_MODE_OFF         = 124;
+	public static final int CC_OMNI_MODE_ON          = 125;
+	public static final int CC_MONO_MODE_ON          = 126;
+	public static final int CC_POLY_MODE_ON          = 127;
+
 	public static final MetroMidiAllSoundOff  MIDI_ALL_SOUND_OFF = new MetroMidiAllSoundOff(); 
 	public static final class MetroMidiAllSoundOff extends MetroMidiNoArg {
 		{
@@ -306,18 +340,24 @@ public class MetroMidi {
 		}
 		@Override
 		public byte[] createMidiMessage(int ch) {
-			return MetroMidiDef.cc_allSoundOff( ch );
+			return MetroMidiMessage.cc_allSoundOff( ch );
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver ,int ch) {
+			return receiver.cc_allSoundOff ( ch );
 		}
 	}
-	public static final MetroMidiResetAllController  MIDI_RESET_ALL_CONTROLLERS = new MetroMidiResetAllController(); 
-	public static final class MetroMidiResetAllController extends MetroMidiNoArg {
+	public static final MetroMidiResetAllControllers  MIDI_RESET_ALL_CONTROLLERS = new MetroMidiResetAllControllers(); 
+	public static final class MetroMidiResetAllControllers extends MetroMidiNoArg {
 		{
 			this.shortName = "rac";
 			this.longName = "reset-all-controllers";
 		}
 		@Override
 		public byte[] createMidiMessage(int ch) {
-			return MetroMidiDef.cc_resetAllControllers( ch );
+			return MetroMidiMessage.cc_resetAllControllers( ch );
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver ,int ch) {
+			return receiver.cc_resetAllControllers ( ch );
 		}
 	}
 	public static final MetroMidiLocalControls  MIDI_LOCAL_CONTROLS = new MetroMidiLocalControls(); 
@@ -328,7 +368,10 @@ public class MetroMidi {
 		}
 		@Override
 		public byte[] createMidiMessage(int ch,boolean value ) {
-			return MetroMidiDef.cc_localControls( ch, value ) ;
+			return MetroMidiMessage.cc_localControls( ch, value ) ;
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver ,int ch,boolean value ) {
+			return receiver.cc_localControls ( ch, value );
 		}
 	}
 	public static final MetroMidiAllNoteOff  MIDI_ALL_NOTE_OFF = new MetroMidiAllNoteOff(); 
@@ -339,7 +382,10 @@ public class MetroMidi {
 		}
 		@Override
 		public byte[] createMidiMessage(int ch) {
-			return MetroMidiDef.cc_allNoteOff( ch );
+			return MetroMidiMessage.cc_allNoteOff( ch );
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver ,int ch) {
+			return receiver.cc_allNoteOff ( ch );
 		}
 	}
 	public static final MetroMidiOmniModeOff  MIDI_OMNI_MODE_OFF = new MetroMidiOmniModeOff(); 
@@ -350,7 +396,10 @@ public class MetroMidi {
 		}
 		@Override
 		public byte[] createMidiMessage(int ch) {
-			return MetroMidiDef.cc_omniModeOff( ch );
+			return MetroMidiMessage.cc_omniModeOff( ch );
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver ,int ch) {
+			return receiver.cc_omniModeOff ( ch );
 		}
 		
 	}
@@ -362,19 +411,25 @@ public class MetroMidi {
 		}
 		@Override
 		public byte[] createMidiMessage(int ch) {
-			return MetroMidiDef.cc_omniModeOn( ch );
+			return MetroMidiMessage.cc_omniModeOn( ch );
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver ,int ch) {
+			return receiver.cc_omniModeOn ( ch );
 		}
 	}
 	// TODO : Isn't this mono-mode-on? This seems incorrect.  
-	public static final MetroMidiMonoModeOff  MIDI_MONO_MODE_OFF = new MetroMidiMonoModeOff(); 
-	public static final class MetroMidiMonoModeOff extends MetroMidiNoArg {
+	public static final MetroMidiMonoModeOn  MIDI_MONO_MODE_ON = new MetroMidiMonoModeOn(); 
+	public static final class MetroMidiMonoModeOn extends MetroMidiNoArg {
 		{
 			this.shortName = "mono";
-			this.longName = "mono-mode-off";
+			this.longName = "mono-mode-on";
 		}
 		@Override
 		public byte[] createMidiMessage(int ch) {
-			return MetroMidiDef.cc_monoModeOff( ch );
+			return MetroMidiMessage.cc_monoModeOn( ch );
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver ,int ch) {
+			return receiver.cc_monoModeOn ( ch );
 		}
 	}
 	public static final MetroMidiPolyModeOn  MIDI_POLY_MODE_ON = new MetroMidiPolyModeOn(); 
@@ -385,7 +440,10 @@ public class MetroMidi {
 		}
 		@Override
 		public byte[] createMidiMessage(int ch) {
-			return MetroMidiDef.cc_polyModeOn( ch );
+			return MetroMidiMessage.cc_polyModeOn( ch );
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver ,int ch) {
+			return receiver.cc_polyModeOn ( ch );
 		}
 	}
 	
@@ -394,11 +452,14 @@ public class MetroMidi {
 	public static final class MetroMidiSongPositionPointer extends MetroMidiNoChannelInt1 {
 		{
 			this.shortName = "spp";
-			this.longName = "song-position-pointer";
+			this.longName = "sys-song-position-pointer";
 		}
 		@Override
 		public byte[] createMidiMessage( int value ) {
-			return MetroMidiDef.songPositionPointer( value );
+			return MetroMidiMessage.songPositionPointer( value );
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver , int value ) {
+			return receiver.songPositionPointer ( value );
 		}
 	}
 	// TODO : the channel value is not necessary. Remove it from SchemeNoteParser , too. 
@@ -406,33 +467,42 @@ public class MetroMidi {
 	public static final class MetroMidiSongSelect extends MetroMidiNoChannelInt1 {
 		{
 			this.shortName = "ss";
-			this.longName = "song-select";
+			this.longName = "sys-song-select";
 		}
 		@Override
 		public byte[] createMidiMessage(int value) {
-			return MetroMidiDef.songSelect( value );
+			return MetroMidiMessage.songSelect( value );
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver ,int value) {
+			return receiver.songSelect ( value );
 		}
 	}
 	public static final MetroMidiEndOfExclusive  MIDI_END_OF_EXCLUSIVE = new MetroMidiEndOfExclusive(); 
 	public static final class MetroMidiEndOfExclusive extends MetroMidiNoChannelNoArg {
 		{
 			this.shortName = "eoe";
-			this.longName = "end-of-exclusive";
+			this.longName = "sys-end-of-exclusive";
 		}
 		@Override
 		public byte[] createMidiMessage() {
-			return MetroMidiDef.endOfExclusive();
+			return MetroMidiMessage.endOfExclusive();
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver ) {
+			return receiver.endOfExclusive ();
 		}
 	}
 	public static final MetroMidiClock  MIDI_CLOCK = new MetroMidiClock(); 
 	public static final class MetroMidiClock extends MetroMidiNoChannelNoArg {
 		{
 			this.shortName = "clock";
-			this.longName = "clock";
+			this.longName = "sys-clock";
 		}
 		@Override
 		public byte[] createMidiMessage() {
-			return MetroMidiDef.clock();
+			return MetroMidiMessage.clock();
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver ) {
+			return receiver.clock ();
 		}
 	}
 	
@@ -440,47 +510,60 @@ public class MetroMidi {
 	public static final class MetroMidiStart extends MetroMidiNoChannelNoArg {
 		{
 			this.shortName = "start";
-			this.longName = "start";
+			this.longName = "sys-start";
 		}
 		@Override
 		public byte[] createMidiMessage() {
-			return MetroMidiDef.start();
+			return MetroMidiMessage.start();
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver ) {
+			return receiver.start ();
 		}
 	}
 	public static final MetroMidiContinue  MIDI_CONTINUE = new MetroMidiContinue(); 
 	public static final class MetroMidiContinue extends MetroMidiNoChannelNoArg {
 		{
 			this.shortName = "cont";
-			this.longName = "continue";
+			this.longName = "sys-continue";
 		}
 		@Override
 		public byte[] createMidiMessage() {
-			return MetroMidiDef.cont();
+			return MetroMidiMessage.cont();
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver ) {
+			return receiver.cont();
 		}
 	}
 	public static final MetroMidiStop  MIDI_STOP = new MetroMidiStop(); 
 	public static final class MetroMidiStop extends MetroMidiNoChannelNoArg {
 		{
 			this.shortName = "stop";
-			this.longName = "stop";
+			this.longName = "sys-stop";
 		}
 		@Override
 		public byte[] createMidiMessage() {
-			return MetroMidiDef.stop();
+			return MetroMidiMessage.stop();
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver ) {
+			return receiver.stop ();
 		}
 	}
 	public static final MetroMidiReset  MIDI_RESET = new MetroMidiReset(); 
 	public static final class MetroMidiReset extends MetroMidiNoChannelNoArg {
 		{
 			this.shortName = "reset";
-			this.longName = "reset";
+			this.longName = "sys-reset";
 		}
 		@Override
 		public byte[] createMidiMessage() {
-			// TODO Auto-generated method stub
-			return MetroMidiDef.reset();
+			return MetroMidiMessage.reset();
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver ) {
+			return receiver.reset ();
 		}
 	}
+	
+	
 	public static final int CC_BANK_SELECT                            = 0  ;
 	public static final MetroMidiControlBankSelect MIDI_BANK_SELECT  = new MetroMidiControlBankSelect();
 	public static final class MetroMidiControlBankSelect extends MetroMidiControlChangeBase {
@@ -490,6 +573,9 @@ public class MetroMidi {
 			this.shortDescription = "Bank Select";
 			this.longDescription = "Allows user to switch bank for patch selection. Program change used with Bank Select. MIDI can access 16,384 patches per MIDI channel.";
 			this.controlNumber = CC_BANK_SELECT                            ;
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_bankSelect ( channel, value );
 		}
 	}
 	public static final int CC_MODULATION                             = 1  ;
@@ -502,6 +588,9 @@ public class MetroMidi {
 			this.longDescription = "Generally this CC controls a vibrato effect (pitch, loudness, brighness). What is modulated is based on the patch.";
 			this.controlNumber = CC_MODULATION                             ;
 		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_modulation ( channel, value );
+		}
 	}
 	public static final int CC_BREATH_CTRL                            = 2  ;
 	public static final MetroMidiControlBreathController MIDI_BREATH_CTRL  = new MetroMidiControlBreathController();
@@ -512,6 +601,9 @@ public class MetroMidi {
 			this.shortDescription = "Breath Controller";
 			this.longDescription = "Often times associated with aftertouch messages. It was originally intended for use with a breath MIDI controller in which blowing harder produced higher MIDI control values. It can be used for modulation as well.";
 			this.controlNumber = CC_BREATH_CTRL                            ;
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_breathController ( channel, value );
 		}
 	}
 	public static final int CC_FOOT_CTRL                              = 4  ;
@@ -524,6 +616,9 @@ public class MetroMidi {
 			this.longDescription = "Often used with aftertouch messages. It can send a continuous stream of values based on how the pedal is used.";
 			this.controlNumber = CC_FOOT_CTRL                              ;
 		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_footController ( channel, value );
+		}
 	}
 	public static final int CC_PORTAMENTO_TIME                        = 5  ;
 	public static final MetroMidiControlPortamentoTime MIDI_PORTAMENTO_TIME  = new MetroMidiControlPortamentoTime();
@@ -534,6 +629,9 @@ public class MetroMidi {
 			this.shortDescription = "Portamento Time";
 			this.longDescription = "Controls portamento rate to slide between 2 notes played subsequently.";
 			this.controlNumber = CC_PORTAMENTO_TIME                        ;
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_portamentoTime ( channel, value );
 		}
 	}
 	public static final int CC_DATA_ENTRY_MSB                         = 6  ;
@@ -546,6 +644,9 @@ public class MetroMidi {
 			this.longDescription = "Controls Value for NRPN or RPN parameters.";
 			this.controlNumber = CC_DATA_ENTRY_MSB                         ;
 		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_dataEntryMsb ( channel, value );
+		}
 	}
 	public static final int CC_VOLUME                                 = 7  ;
 	public static final MetroMidiControlVolume MIDI_VOLUME  = new MetroMidiControlVolume();
@@ -556,6 +657,9 @@ public class MetroMidi {
 			this.shortDescription = "Volume";
 			this.longDescription = "Control the volume of the channel";
 			this.controlNumber = CC_VOLUME                                 ;
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_volume ( channel, value );
 		}
 	}
 	public static final int CC_BALANCE                                = 8  ;
@@ -568,6 +672,9 @@ public class MetroMidi {
 			this.longDescription = "Controls the left and right balance, generally for stereo patches.0 = hard left, 64 = center, 127 = hard right";
 			this.controlNumber = CC_BALANCE                                ;
 		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_balance ( channel, value );
+		}
 	}
 	public static final int CC_PAN                                    = 10 ;
 	public static final MetroMidiControlPan MIDI_PAN  = new MetroMidiControlPan();
@@ -578,6 +685,9 @@ public class MetroMidi {
 			this.shortDescription = "Pan";
 			this.longDescription = "Controls the left and right balance, generally for mono patches.0 = hard left, 64 = center, 127 = hard right";
 			this.controlNumber = CC_PAN                                    ;
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_pan ( channel, value );
 		}
 	}
 	public static final int CC_EXPRESSION                             = 11 ;
@@ -590,6 +700,9 @@ public class MetroMidi {
 			this.longDescription = "Expression is a percentage of volume (CC7).";
 			this.controlNumber = CC_EXPRESSION                             ;
 		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_expression ( channel, value );
+		}
 	}
 	public static final int CC_EFFECT_CTRL_1                          = 12 ;
 	public static final MetroMidiControlEffectController1 MIDI_EFFECT_CTRL_1  = new MetroMidiControlEffectController1();
@@ -600,6 +713,9 @@ public class MetroMidi {
 			this.shortDescription = "Effect Controller 1";
 			this.longDescription = "Usually used to control a parameter of an effect within the synth/workstation.";
 			this.controlNumber = CC_EFFECT_CTRL_1                          ;
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_effectController1 ( channel, value );
 		}
 	}
 	public static final int CC_EFFECT_CTRL_2                          = 13 ;
@@ -612,6 +728,9 @@ public class MetroMidi {
 			this.longDescription = "Usually used to control a parameter of an effect within the synth/workstation.";
 			this.controlNumber = CC_EFFECT_CTRL_2                          ;
 		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_effectController2 ( channel, value );
+		}
 	}
 	public static final int CC_SUSTAIN_PEDAL                          = 64 ;
 	public static final MetroMidiControlSustainPedal MIDI_SUSTAIN_PEDAL  = new MetroMidiControlSustainPedal();
@@ -622,6 +741,9 @@ public class MetroMidi {
 			this.shortDescription = "Damper Pedal / Sustain Pedal";
 			this.longDescription = "On/Off switch that controls sustain. (See also Sostenuto CC 66)0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_SUSTAIN_PEDAL                          ;
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_sustainPedal ( channel, value );
 		}
 	}
 	public static final int CC_PORTAMENTO_SWITCH                      = 65 ;
@@ -634,6 +756,9 @@ public class MetroMidi {
 			this.longDescription = "On/Off switch0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_PORTAMENTO_SWITCH                      ;
 		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_portamentoSwitch ( channel, value );
+		}
 	}
 	public static final int CC_SOSTENUTO_SWITCH                       = 66 ;
 	public static final MetroMidiControlSostenutoSwitch MIDI_SOSTENUTO_SWITCH  = new MetroMidiControlSostenutoSwitch();
@@ -644,6 +769,9 @@ public class MetroMidi {
 			this.shortDescription = "Sostenuto On/Off Switch";
 			this.longDescription = "On/Off switch – Like the Sustain controller (CC 64), However it only holds notes that were “On” when the pedal was pressed. People use it to “hold” chords” and play melodies over the held chord.0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_SOSTENUTO_SWITCH                       ;
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_sostenutoSwitch ( channel, value );
 		}
 	}
 	public static final int CC_SOFT_PEDAL_SWITCH                      = 67 ;
@@ -656,6 +784,9 @@ public class MetroMidi {
 			this.longDescription = "On/Off switch- Lowers the volume of notes played.0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_SOFT_PEDAL_SWITCH                      ;
 		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_pedalSwitch ( channel, value );
+		}
 	}
 	public static final int CC_LEGATO_FOOTSWITCH                      = 68 ;
 	public static final MetroMidiControlLegatoSwitch MIDI_LEGATO_FOOTSWITCH  = new MetroMidiControlLegatoSwitch();
@@ -666,6 +797,9 @@ public class MetroMidi {
 			this.shortDescription = "Legato FootSwitch";
 			this.longDescription = "On/Off switch- Turns Legato effect between 2 subsequent notes On or Off.0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_LEGATO_FOOTSWITCH                      ;
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_legatoSwitch ( channel, value );
 		}
 	}
 	public static final int CC_HOLD_2                                 = 69 ;
@@ -678,6 +812,9 @@ public class MetroMidi {
 			this.longDescription = "Another way to “hold notes” (see MIDI CC 64 and MIDI CC 66). However notes fade out according to their release parameter rather than when the pedal is released.";
 			this.controlNumber = CC_HOLD_2                                 ;
 		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_hold2 ( channel, value );
+		}
 	}
 	public static final int CC_SOUND_CTRL_01                          = 70 ;
 	public static final MetroMidiControlSoundController1 MIDI_SOUND_CTRL_01  = new MetroMidiControlSoundController1();
@@ -688,6 +825,9 @@ public class MetroMidi {
 			this.shortDescription = "Sound Controller 1";
 			this.longDescription = "Usually controls the way a sound is produced. Default = Sound Variation.";
 			this.controlNumber = CC_SOUND_CTRL_01                          ;
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_soundController1 ( channel, value );
 		}
 	}
 	public static final int CC_SOUND_CTRL_02                          = 71 ;
@@ -700,6 +840,9 @@ public class MetroMidi {
 			this.longDescription = "Allows shaping the Voltage Controlled Filter (VCF). Default = Resonance -also(Timbre or Harmonics)";
 			this.controlNumber = CC_SOUND_CTRL_02                          ;
 		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_soundController2 ( channel, value );
+		}
 	}
 	public static final int CC_SOUND_CTRL_03                          = 72 ;
 	public static final MetroMidiControlSoundController3 MIDI_SOUND_CTRL_03  = new MetroMidiControlSoundController3();
@@ -710,6 +853,9 @@ public class MetroMidi {
 			this.shortDescription = "Sound Controller 3";
 			this.longDescription = "Controls release time of the Voltage controlled Amplifier (VCA). Default = Release Time.";
 			this.controlNumber = CC_SOUND_CTRL_03                          ;
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_soundController3 ( channel, value );
 		}
 	}
 	public static final int CC_SOUND_CTRL_04                          = 73 ;
@@ -722,6 +868,9 @@ public class MetroMidi {
 			this.longDescription = "Controls the “Attack’ of a sound. The attack is the amount of time it takes forthe sound to reach maximum amplitude.";
 			this.controlNumber = CC_SOUND_CTRL_04                          ;
 		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_soundController4 ( channel, value );
+		}
 	}
 	public static final int CC_SOUND_CTRL_05                          = 74 ;
 	public static final MetroMidiControlSoundController5 MIDI_SOUND_CTRL_05  = new MetroMidiControlSoundController5();
@@ -732,6 +881,9 @@ public class MetroMidi {
 			this.shortDescription = "Sound Controller 5";
 			this.longDescription = "Controls VCFs cutoff frequency of the filter.";
 			this.controlNumber = CC_SOUND_CTRL_05                          ;
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_soundController5 ( channel, value );
 		}
 	}
 	public static final int CC_SOUND_CTRL_06                          = 75 ;
@@ -744,6 +896,9 @@ public class MetroMidi {
 			this.longDescription = "Generic – Some manufacturers may use to further shave their sounds.";
 			this.controlNumber = CC_SOUND_CTRL_06                          ;
 		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_soundController6 ( channel, value );
+		}
 	}
 	public static final int CC_SOUND_CTRL_07                          = 76 ;
 	public static final MetroMidiControlSoundController7 MIDI_SOUND_CTRL_07  = new MetroMidiControlSoundController7();
@@ -754,6 +909,9 @@ public class MetroMidi {
 			this.shortDescription = "Sound Controller 7";
 			this.longDescription = "Generic – Some manufacturers may use to further shave their sounds.";
 			this.controlNumber = CC_SOUND_CTRL_07                          ;
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_soundController7 ( channel, value );
 		}
 	}
 	public static final int CC_SOUND_CTRL_08                          = 77 ;
@@ -766,6 +924,9 @@ public class MetroMidi {
 			this.longDescription = "Generic – Some manufacturers may use to further shave their sounds.";
 			this.controlNumber = CC_SOUND_CTRL_08                          ;
 		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_soundController8 ( channel, value );
+		}
 	}
 	public static final int CC_SOUND_CTRL_09                          = 78 ;
 	public static final MetroMidiControlSoundController9 MIDI_SOUND_CTRL_09  = new MetroMidiControlSoundController9();
@@ -776,6 +937,9 @@ public class MetroMidi {
 			this.shortDescription = "Sound Controller 9";
 			this.longDescription = "Generic – Some manufacturers may use to further shave their sounds.";
 			this.controlNumber = CC_SOUND_CTRL_09                          ;
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_soundController9 ( channel, value );
 		}
 	}
 	public static final int CC_SOUND_CTRL_10                          = 79 ;
@@ -788,6 +952,9 @@ public class MetroMidi {
 			this.longDescription = "Generic – Some manufacturers may use to further shave their sounds.";
 			this.controlNumber = CC_SOUND_CTRL_10                          ;
 		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_soundController10 ( channel, value );
+		}
 	}
 	public static final int CC_GENERAL_PURPOSE_01                     = 80 ;
 	public static final MetroMidiControlGeneralPurpose01 MIDI_GENERAL_PURPOSE_01  = new MetroMidiControlGeneralPurpose01();
@@ -798,6 +965,9 @@ public class MetroMidi {
 			this.shortDescription = "General Purpose MIDI CC Controller";
 			this.longDescription = "GenericOn/Off switch0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_GENERAL_PURPOSE_01                     ;
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_generalPurpose01 ( channel, value );
 		}
 	}
 	public static final int CC_GENERAL_PURPOSE_02                     = 81 ;
@@ -810,6 +980,9 @@ public class MetroMidi {
 			this.longDescription = "GenericOn/Off switch0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_GENERAL_PURPOSE_02                     ;
 		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_generalPurpose02 ( channel, value );
+		}
 	}
 	public static final int CC_GENERAL_PURPOSE_03                     = 82 ;
 	public static final MetroMidiControlGeneralPurpose03 MIDI_GENERAL_PURPOSE_03  = new MetroMidiControlGeneralPurpose03();
@@ -820,6 +993,9 @@ public class MetroMidi {
 			this.shortDescription = "General PurposeMIDI CC Controller";
 			this.longDescription = "GenericOn/Off switch0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_GENERAL_PURPOSE_03                     ;
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_generalPurpose03 ( channel, value );
 		}
 	}
 	public static final int CC_GENERAL_PURPOSE_04                     = 83 ;
@@ -832,6 +1008,9 @@ public class MetroMidi {
 			this.longDescription = "GenericOn/Off switch0 to 63 = Off, 64 to 127 = On";
 			this.controlNumber = CC_GENERAL_PURPOSE_04                     ;
 		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_generalPurpose04 ( channel, value );
+		}
 	}
 	public static final int CC_PORTAMENTO_CC_CTRL                     = 84 ;
 	public static final MetroMidiControlPortamento MIDI_PORTAMENTO_CC_CTRL  = new MetroMidiControlPortamento();
@@ -842,6 +1021,9 @@ public class MetroMidi {
 			this.shortDescription = "Portamento CC Control";
 			this.longDescription = "Controls the amount of Portamento.";
 			this.controlNumber = CC_PORTAMENTO_CC_CTRL                     ;
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_portamento ( channel, value );
 		}
 	}
 	public static final int CC_EFFECT_1_DEPTH                         = 91 ;
@@ -854,6 +1036,9 @@ public class MetroMidi {
 			this.longDescription = "Usually controls reverb send amount";
 			this.controlNumber = CC_EFFECT_1_DEPTH                         ;
 		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_effect1 ( channel, value );
+		}
 	}
 	public static final int CC_EFFECT_2_DEPTH                         = 92 ;
 	public static final MetroMidiControlEffect2 MIDI_EFFECT_2_DEPTH  = new MetroMidiControlEffect2();
@@ -864,6 +1049,9 @@ public class MetroMidi {
 			this.shortDescription = "Effect 2 Depth";
 			this.longDescription = "Usually controls tremolo amount";
 			this.controlNumber = CC_EFFECT_2_DEPTH                         ;
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_effect2 ( channel, value );
 		}
 	}
 	public static final int CC_EFFECT_3_DEPTH                         = 93 ;
@@ -876,6 +1064,9 @@ public class MetroMidi {
 			this.longDescription = "Usually controls chorus amount";
 			this.controlNumber = CC_EFFECT_3_DEPTH                         ;
 		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_effect3 ( channel, value );
+		}
 	}
 	public static final int CC_EFFECT_4_DEPTH                         = 94 ;
 	public static final MetroMidiControlEffect4 MIDI_EFFECT_4_DEPTH  = new MetroMidiControlEffect4();
@@ -886,6 +1077,9 @@ public class MetroMidi {
 			this.shortDescription = "Effect 4 Depth";
 			this.longDescription = "Usually controls detune amount";
 			this.controlNumber = CC_EFFECT_4_DEPTH                         ;
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_effect4 ( channel, value );
 		}
 	}
 	public static final int CC_EFFECT_5_DEPTH                         = 95 ;
@@ -898,6 +1092,9 @@ public class MetroMidi {
 			this.longDescription = "Usually controls phaser amount";
 			this.controlNumber = CC_EFFECT_5_DEPTH                         ;
 		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_effect5 ( channel, value );
+		}
 	}
 	public static final int CC_DATA_INCREMENT                         = 96 ;
 	public static final MetroMidiControlDataIncrement MIDI_DATA_INCREMENT  = new MetroMidiControlDataIncrement();
@@ -908,6 +1105,9 @@ public class MetroMidi {
 			this.shortDescription = "(+1) Data Increment";
 			this.longDescription = "Usually used to increment data for RPN and NRPN messages.";
 			this.controlNumber = CC_DATA_INCREMENT;
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_dataIncrement ( channel, value );
 		}
 	}
 	public static final int CC_DATA_DECREMENT                         = 97 ;
@@ -920,6 +1120,9 @@ public class MetroMidi {
 			this.longDescription = "Usually used to decrement data for RPN and NRPN messages.";
 			this.controlNumber = CC_DATA_DECREMENT ;
 		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_dataDecrement ( channel, value );
+		}
 	}
 	public static final int CC_NRPN_LSB                               = 98 ;
 	public static final MetroMidiControlNrpnLsb MIDI_NRPN_LSB  = new MetroMidiControlNrpnLsb();
@@ -930,6 +1133,9 @@ public class MetroMidi {
 			this.shortDescription = "Non-Registered Parameter Number LSB (NRPN)";
 			this.longDescription = "For controllers 6, 38, 96, and 97, it selects the NRPN parameter.";
 			this.controlNumber = CC_NRPN_LSB                               ;
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_nrpnLsb ( channel, value );
 		}
 	}
 	public static final int CC_NRPN_MSB                               = 99 ;
@@ -942,6 +1148,9 @@ public class MetroMidi {
 			this.longDescription = "For controllers 6, 38, 96, and 97, it selects the NRPN parameter.";
 			this.controlNumber = CC_NRPN_MSB                               ;
 		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_nrpnMsb ( channel, value );
+		}
 	}
 	public static final int CC_RPN_LSB                                = 100;
 	public static final MetroMidiControlRpnLsb MIDI_RPN_LSB  = new MetroMidiControlRpnLsb();
@@ -952,6 +1161,9 @@ public class MetroMidi {
 			this.shortDescription = "Registered Parameter Number LSB (RPN)";
 			this.longDescription = "For controllers 6, 38, 96, and 97, it selects the RPN parameter.";
 			this.controlNumber = CC_RPN_LSB                                ;
+		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_rpnLsb ( channel, value );
 		}
 	}
 	public static final int CC_RPN_MSB                                = 101;
@@ -964,6 +1176,9 @@ public class MetroMidi {
 			this.longDescription = "For controllers 6, 38, 96, and 97, it selects the RPN parameter.";
 			this.controlNumber = CC_RPN_MSB                                ;
 		}
+		public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
+			return receiver.cc_rpnMsb ( channel, value );
+		}
 	}
 	
 	static {
@@ -975,17 +1190,17 @@ public class MetroMidi {
 		putInfo( new MetroMidiKeyPressure());
 
 		putInfo( new MetroMidiControlChange());
-		putInfo( new MetroMidiProgram());
+		putInfo( new MetroMidiProgramChange());
 		putInfo( new MetroMidiChannelPressure());
 		putInfo( new MetroMidiPitchBend());
 
 		putInfo( new MetroMidiAllSoundOff());
-		putInfo( new MetroMidiResetAllController());
+		putInfo( new MetroMidiResetAllControllers());
 		putInfo( new MetroMidiLocalControls());
 		putInfo( new MetroMidiAllNoteOff());
 		putInfo( new MetroMidiOmniModeOff());
 		putInfo( new MetroMidiOmniModeOn());
-		putInfo( new MetroMidiMonoModeOff());
+		putInfo( new MetroMidiMonoModeOn());
 		putInfo( new MetroMidiPolyModeOn());
 		putInfo( new MetroMidiSongPositionPointer());
 		putInfo( new MetroMidiSongSelect());

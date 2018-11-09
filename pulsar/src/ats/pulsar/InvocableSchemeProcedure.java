@@ -20,7 +20,7 @@ import gnu.mapping.Procedure;
  * 
  * @author ats
  */
-class InvocableSchemeProcedure implements Invocable {
+public class InvocableSchemeProcedure implements Invocable {
 	/**
 	 * This field specifies an object to be synchronized with.
 	 * This is necessary since Kawa is not very good at multithreading. 
@@ -60,7 +60,7 @@ class InvocableSchemeProcedure implements Invocable {
 	 */
 	private final Procedure procedure;
 
-	InvocableSchemeProcedure(Object syncObj, Environment environment, Procedure procedure) {
+	public InvocableSchemeProcedure(Object syncObj, Environment environment, Procedure procedure) {
 		this.syncObj = syncObj;
 		this.environment = environment;
 		this.procedure = procedure;

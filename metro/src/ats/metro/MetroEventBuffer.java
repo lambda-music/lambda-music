@@ -1,6 +1,6 @@
 package ats.metro;
 
-import static ats.metro.Metro.DEBUG;
+import static ats.metro.Metro.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,8 +13,13 @@ import org.jaudiolibs.jnajack.JackClient;
 import org.jaudiolibs.jnajack.JackException;
 import org.jaudiolibs.jnajack.JackPosition;
 
-public class MetroEventBuffer implements Iterable<MetroEvent>{
-    static final Logger LOGGER = Logger.getLogger(MetroEventBuffer.class.getName());
+/**
+ * This class represents all events which should be processed in a bar. 
+ * 
+ * @author Ats Oka
+ */
+public class MetroEventBuffer implements Iterable<MetroEvent>, MetroMidiBufferReceiver {
+	static final Logger LOGGER = Logger.getLogger(MetroEventBuffer.class.getName());
 	static void logError(String msg, Throwable e) {
 		LOGGER.log(Level.SEVERE, msg, e);
 	}
@@ -26,6 +31,7 @@ public class MetroEventBuffer implements Iterable<MetroEvent>{
 		LOGGER.log(Level.WARNING, msg);
 	}
 
+    private static final MetroMidiRec INSTANCE = MetroMidiRec.getInstance();
 	
 	private double humanizeOffset_min = 0;
 	private double humanizeOffset_max = 0;
@@ -179,7 +185,7 @@ public class MetroEventBuffer implements Iterable<MetroEvent>{
 	}
 
 	MetroNoteInfoMap noteInfoMap = new MetroNoteInfoMap();
-	public void noteOn( double offset, int outputPortNo, int channel, int note, double velocity ) {
+	public void noteOnBak( double offset, int outputPortNo, int channel, int note, double velocity ) {
 		double humanizeOffset =  this.humanizeVelocity_min;
 		double humanizeVelocity =  this.humanizeVelocity_min;
 		if ( humanizeOffset_size != 0.0d ) {
@@ -197,11 +203,13 @@ public class MetroEventBuffer implements Iterable<MetroEvent>{
 		note( outputPortNo, 0b10010000, offset, channel, note, velocity );
 	}
 
-	public void noteOff( double offset, int outputPortNo, int channel, int note, double velocity ) {
+	public void noteOffBak( double offset, int outputPortNo, int channel, int note, double velocity ) {
 		MetroNoteInfoMap.Value value = noteInfoMap.get(outputPortNo, channel, note );
 
 		note( outputPortNo, 0b10000000, offset + value.offset, channel, note, velocity + value.velocity );
 	}
+	
+	
 	public void exec( double offset, Runnable runnable ) {
 		MetroMessageEvent event = new MetroMessageEvent( offset, runnable );
 
@@ -223,17 +231,227 @@ public class MetroEventBuffer implements Iterable<MetroEvent>{
 		logInfo( "    END");
 	}
 	
-	@Deprecated
-	public void noteHit( double offset, int outputPortNo, int channel, int note, int velocity ) {
+	//
+
+	// basic 
+	public void noteOn( double offset, int port, int channel, int note, double velocity) {
+		this.midiEvent( offset, port, INSTANCE.noteOn(channel, note, velocity));
 	}
-	@Deprecated
-	public void noteHit( double offset, int outputPortNo, int channel, int note, int velocity, double duration ) {
+	public void noteOn( double offset, int port, int channel, int note, int velocity) {
+		this.midiEvent( offset, port, INSTANCE.noteOn(channel, note, velocity));
 	}
-	@Deprecated
-	public void noteOn( double offset, int outputPortNo, int channel, int note, int velocity ) {
+	public void noteOff( double offset, int port, int channel, int note, double velocity) {
+		this.midiEvent( offset, port, INSTANCE.noteOff(channel, note, velocity));
 	}
-	@Deprecated
-	public void noteOff( double offset, int outputPortNo, int channel, int note, int velocity ) {
+	public void noteOff( double offset, int port, int channel, int note, int velocity) {
+		this.midiEvent( offset, port, INSTANCE.noteOff(channel, note, velocity));
+	}
+	public void keyPressure( double offset, int port, int channel, int note, double value) {
+		this.midiEvent( offset, port, INSTANCE.keyPressure(channel, note, value));
+	}
+	public void keyPressure( double offset, int port, int channel, int note, int value) {
+		this.midiEvent( offset, port, INSTANCE.keyPressure(channel, note, value));
+	}
+	public void controlChange( double offset, int port, int channel, int controlNumber, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.controlChange(channel, controlNumber, controlValue));
+	}
+	public void programChange( double offset, int port, int channel, int value) {
+		this.midiEvent( offset, port, INSTANCE.programChange(channel, value));
+	}
+	public void channelPressure( double offset, int port, int channel, double value) {
+		this.midiEvent( offset, port, INSTANCE.channelPressure(channel, value));
+	}
+	public void channelPressure( double offset, int port, int channel, int value) {
+		this.midiEvent( offset, port, INSTANCE.channelPressure(channel, value));
+	}
+	public void pitchBend( double offset, int port, int channel, double value) {
+		this.midiEvent( offset, port, INSTANCE.pitchBend(channel, value));
+	}
+	public void pitchBend( double offset, int port, int channel, int value) {
+		this.midiEvent( offset, port, INSTANCE.pitchBend(channel, value));
+	}
+	public void cc_allSoundOff( double offset, int port, int channel) {
+		this.midiEvent( offset, port, INSTANCE.cc_allSoundOff(channel));
+	}
+	public void cc_resetAllControllers( double offset, int port, int channel) {
+		this.midiEvent( offset, port, INSTANCE.cc_resetAllControllers(channel));
+	}
+	public void cc_localControls( double offset, int port, int channel, boolean value) {
+		this.midiEvent( offset, port, INSTANCE.cc_localControls(channel, value));
+	}
+	public void cc_allNoteOff( double offset, int port, int channel) {
+		this.midiEvent( offset, port, INSTANCE.cc_allNoteOff(channel));
+	}
+	public void cc_omniModeOff( double offset, int port, int channel) {
+		this.midiEvent( offset, port, INSTANCE.cc_omniModeOff(channel));
+	}
+	public void cc_omniModeOn( double offset, int port, int channel) {
+		this.midiEvent( offset, port, INSTANCE.cc_omniModeOn(channel));
+	}
+	public void cc_monoModeOn( double offset, int port, int channel) {
+		this.midiEvent( offset, port, INSTANCE.cc_monoModeOn(channel));
+	}
+	public void cc_polyModeOn( double offset, int port, int channel) {
+		this.midiEvent( offset, port, INSTANCE.cc_polyModeOn(channel));
+	}
+	public void songPositionPointer( double offset, int port, int value) {
+		this.midiEvent( offset, port, INSTANCE.songPositionPointer(value));
+	}
+	public void songSelect( double offset, int port, int value) {
+		this.midiEvent( offset, port, INSTANCE.songSelect(value));
+	}
+	public void endOfExclusive(  double offset, int port ) {
+		this.midiEvent( offset, port, INSTANCE.endOfExclusive());
+	}
+	public void clock(  double offset, int port ) {
+		this.midiEvent( offset, port, INSTANCE.clock());
+	}
+	public void start(  double offset, int port ){
+		this.midiEvent( offset, port, INSTANCE.start());
+	}
+	public void cont(  double offset, int port ) {
+		this.midiEvent( offset, port, INSTANCE.cont());
+	}
+	public void stop(  double offset, int port ) {
+		this.midiEvent( offset, port, INSTANCE.stop());
+	}
+	public void reset(  double offset, int port ) {
+		this.midiEvent( offset, port, INSTANCE.reset());
+	}
+	public void cc_bankSelect( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_bankSelect(channel, controlValue));
+	}
+	public void cc_modulation( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_modulation(channel, controlValue));
+	}
+	public void cc_breathController( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_breathController(channel, controlValue));
+	}
+	public void cc_footController( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_footController(channel, controlValue));
+	}
+	public void cc_portamentoTime( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_portamentoTime(channel, controlValue));
+	}
+	public void cc_dataEntryMsb( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_dataEntryMsb(channel, controlValue));
+	}
+	public void cc_volume( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_volume(channel, controlValue));
+	}
+	public void cc_balance( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_balance(channel, controlValue));
+	}
+	public void cc_pan( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_pan(channel, controlValue));
+	}
+	public void cc_expression( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_expression(channel, controlValue));
+	}
+	public void cc_effectController1( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_effectController1(channel, controlValue));
+	}
+	public void cc_effectController2( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_effectController2(channel, controlValue));
+	}
+	public void cc_sustainPedal( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_sustainPedal(channel, controlValue));
+	}
+	public void cc_portamentoSwitch( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_portamentoSwitch(channel, controlValue));
+	}
+	public void cc_sostenutoSwitch( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_sostenutoSwitch(channel, controlValue));
+	}
+	public void cc_pedalSwitch( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_pedalSwitch(channel, controlValue));
+	}
+	public void cc_legatoSwitch( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_legatoSwitch(channel, controlValue));
+	}
+	public void cc_hold2( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_hold2(channel, controlValue));
+	}
+	public void cc_soundController1( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_soundController1(channel, controlValue));
+	}
+	public void cc_soundController2( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_soundController2(channel, controlValue));
+	}
+	public void cc_soundController3( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_soundController3(channel, controlValue));
+	}
+	public void cc_soundController4( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_soundController4(channel, controlValue));
+	}
+	public void cc_soundController5( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_soundController5(channel, controlValue));
+	}
+	public void cc_soundController6( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_soundController6(channel, controlValue));
+	}
+	public void cc_soundController7( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_soundController7(channel, controlValue));
+	}
+	public void cc_soundController8( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_soundController8(channel, controlValue));
+	}
+	public void cc_soundController9( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_soundController9(channel, controlValue));
+	}
+	public void cc_soundController10( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_soundController10(channel, controlValue));
+	}
+	public void cc_generalPurpose01( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_generalPurpose01(channel, controlValue));
+	}
+	public void cc_generalPurpose02( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_generalPurpose02(channel, controlValue));
+	}
+	public void cc_generalPurpose03( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_generalPurpose03(channel, controlValue));
+	}
+	public void cc_generalPurpose04( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_generalPurpose04(channel, controlValue));
+	}
+	public void cc_portamento( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_portamento(channel, controlValue));
+	}
+	public void cc_effect1( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_effect1(channel, controlValue));
+	}
+	public void cc_effect2( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_effect2(channel, controlValue));
+	}
+	public void cc_effect3( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_effect3(channel, controlValue));
+	}
+	public void cc_effect4( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_effect4(channel, controlValue));
+	}
+	public void cc_effect5( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_effect5(channel, controlValue));
+	}
+	public void cc_dataIncrement( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_dataIncrement(channel, controlValue));
+	}
+	public void cc_dataDecrement( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_dataDecrement(channel, controlValue));
+	}
+	public void cc_nrpnLsb( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_nrpnLsb(channel, controlValue));
+	}
+	public void cc_nrpnMsb( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_nrpnMsb(channel, controlValue));
+	}
+	public void cc_rpnLsb( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_rpnLsb(channel, controlValue));
+	}
+	public void cc_rpnMsb( double offset, int port, int channel, int controlValue) {
+		this.midiEvent( offset, port, INSTANCE.cc_rpnMsb(channel, controlValue));
+	}
+	public void error( double offset, int port, String string) {
+		this.midiEvent( offset, port, INSTANCE.error(string));
 	}
 }
 
