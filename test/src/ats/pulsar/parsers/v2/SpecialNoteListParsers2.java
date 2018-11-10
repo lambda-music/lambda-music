@@ -21,7 +21,7 @@ import ats.pulsar.NoteListParserElement;
 import ats.pulsar.Pulsar;
 import ats.pulsar.RunnableSchemeProcedure;
 import ats.pulsar.SchemeSequence;
-import ats.pulsar.lib.SchemeUtils;
+import ats.pulsar.lib.swing.SchemeUtils;
 import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;

@@ -1,5 +1,12 @@
 package ats.metro;
 
+/**
+ * 
+ * @see MetroBufferedMidiReceiver
+ * 
+ * @author Ats Oka
+ * @param <T>
+ */
 public interface MetroMidiReceiver<T> {
 	// basic
 	public T error( String string );

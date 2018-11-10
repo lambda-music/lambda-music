@@ -1,5 +1,8 @@
 package ats.metro;
-
+/**
+ * @see MetroMidiReceiver .
+ * @author Ats Oka
+ */
 public interface MetroBufferedMidiReceiver {
 	// basic 
 	public void noteOn( double offset, int port, int channel, int note, double velocity );

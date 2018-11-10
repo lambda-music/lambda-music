@@ -66,13 +66,13 @@ import org.jaudiolibs.jnajack.JackException;
 
 import ats.kawapad.PulsarScratchPad;
 import ats.pulsar.Pulsar.TempoTapperTempoNotifier;
-import ats.pulsar.lib.Action2;
-import ats.pulsar.lib.SchemeUtils;
+import ats.pulsar.lib.swing.Action2;
 import ats.pulsar.lib.swing.FlawLayout;
 import ats.pulsar.lib.swing.JNamedPanel;
 import ats.pulsar.lib.swing.JPulsarRadioButton;
 import ats.pulsar.lib.swing.JSelectableUserObject;
 import ats.pulsar.lib.swing.LayoutUtils;
+import ats.pulsar.lib.swing.SchemeUtils;
 import ats.pulsar.lib.swing.SpringLayoutUtil;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;

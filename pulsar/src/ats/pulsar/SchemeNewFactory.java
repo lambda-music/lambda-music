@@ -29,7 +29,6 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import ats.pulsar.lib.SchemeUtils;
 import ats.pulsar.lib.swing.FlawLayout;
 import ats.pulsar.lib.swing.JNamedPanel;
 import ats.pulsar.lib.swing.JPulsarButton;
@@ -38,6 +37,7 @@ import ats.pulsar.lib.swing.JPulsarComboBox;
 import ats.pulsar.lib.swing.JPulsarRadioButton;
 import ats.pulsar.lib.swing.JUserObjectContainer;
 import ats.pulsar.lib.swing.PulsarListItem;
+import ats.pulsar.lib.swing.SchemeUtils;
 import gnu.expr.Language;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;

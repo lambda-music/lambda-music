@@ -12,7 +12,7 @@ import ats.metro.MetroEventBuffer;
 import ats.metro.MetroSequence;
 import ats.metro.MetroTrack;
 import ats.metro.MetroTrackInfo;
-import ats.pulsar.lib.SchemeUtils;
+import ats.pulsar.lib.swing.SchemeUtils;
 import gnu.lists.AbstractSequence;
 import gnu.lists.EmptyList;
 import gnu.lists.ImmutablePair;

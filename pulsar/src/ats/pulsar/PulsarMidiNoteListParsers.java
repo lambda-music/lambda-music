@@ -76,8 +76,8 @@ import ats.metro.MetroMidi.MetroMidiSongPositionPointer;
 import ats.metro.MetroMidi.MetroMidiSongSelect;
 import ats.metro.MetroMidi.MetroMidiStart;
 import ats.metro.MetroMidi.MetroMidiStop;
+import ats.pulsar.lib.swing.SchemeUtils;
 import ats.metro.MetroTrack;
-import ats.pulsar.lib.SchemeUtils;
 
 /**
  * Defines MIDI events.

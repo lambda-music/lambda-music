@@ -1,3 +1,22 @@
+/*
+ * Pulsar-Sequencer written by Atsushi Oka 
+ * Copyright 2018 Atsushi Oka
+ *
+ * This file is part of Pulsar-Sequencer. 
+ * 
+ * Pulsar-Sequencer is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Pulsar-Sequencer is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Pulsar-Sequencer.  If not, see <https://www.gnu.org/licenses/>.
+ */
 package ats.pulsar;
 
 import java.awt.event.ActionEvent;
@@ -28,8 +47,8 @@ import org.jaudiolibs.jnajack.JackException;
 import ats.metro.Metro;
 import ats.metro.MetroTrack;
 import ats.metro.MetroTrack.SyncType;
-import ats.pulsar.lib.SchemeUtils;
 import ats.pulsar.lib.swing.MersenneTwisterFast;
+import ats.pulsar.lib.swing.SchemeUtils;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.LList;
@@ -92,7 +111,7 @@ import kawa.standard.Scheme;
  * This behavior could probably be used as implementing sub-modules.
  * <h3>Pulsar API<h3>
  * 
- * @author whatsupAts
+ * @author Atsushi Oka
  */
 public final class Pulsar extends Metro {
 	/**

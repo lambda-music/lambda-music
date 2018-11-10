@@ -79,7 +79,7 @@ import ats.metro.MetroMidi.MetroMidiStart;
 import ats.metro.MetroMidi.MetroMidiStop;
 import ats.metro.MetroTrack;
 import ats.pulsar.NoteListParserElement;
-import ats.pulsar.lib.SchemeUtils;
+import ats.pulsar.lib.swing.SchemeUtils;
 
 /**
  * Defines MIDI events.

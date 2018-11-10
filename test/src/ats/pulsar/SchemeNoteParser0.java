@@ -15,7 +15,7 @@ import ats.metro.MetroBufferedMidiReceiver;
 import ats.metro.MetroEventBuffer;
 import ats.metro.MetroTrack;
 import ats.metro.MetroTrack.SyncType;
-import ats.pulsar.lib.SchemeUtils;
+import ats.pulsar.lib.swing.SchemeUtils;
 import gnu.lists.AbstractSequence;
 import gnu.lists.Pair;
 import gnu.mapping.Environment;
