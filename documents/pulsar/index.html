@@ -1,0 +1,248 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<!-- This manual is for Pulsar Sequencer (version 0.1, 11 Novenber 2018),
+which is a music sequencer system build on Scheme language.
+
+Copyright (C) 2018 Atsushi Oka.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+Texts.  A copy of the license is included in the section entitled
+"GNU Free Documentation License".
+ -->
+<!-- Created by GNU Texinfo 6.1, http://www.gnu.org/software/texinfo/ -->
+<head>
+<title>Pulsar Sequencer 0.1: Top</title>
+
+<meta name="description" content="Pulsar Sequencer 0.1: Top">
+<meta name="keywords" content="Pulsar Sequencer 0.1: Top">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="makeinfo">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="#Top" rel="start" title="Top">
+<link href="Index.html#Index" rel="index" title="Index">
+<link href="#SEC_Contents" rel="contents" title="Table of Contents">
+<link href="../dir/index.html" rel="up" title="(dir)">
+<link href="A-Chapter-Contains-A-Small-Section.html#A-Chapter-Contains-A-Small-Section" rel="next" title="A Chapter Contains A Small Section">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en">
+<h1 class="settitle" align="center">Pulsar Sequencer 0.1</h1>
+
+
+
+
+<a name="SEC_Contents"></a>
+<h2 class="contents-heading">Table of Contents</h2>
+
+<div class="contents">
+
+<ul class="no-bullet">
+  <li><a name="toc-News" href="#News">1 News</a></li>
+  <li><a name="toc-Features" href="#Features">2 Features</a></li>
+  <li><a name="toc-Community" href="#Community">3 Community</a></li>
+  <li><a name="toc-How-to-Run-Pulsar" href="#How-to-Run-Pulsar">4 How to Run Pulsar</a>
+  <ul class="no-bullet">
+    <li><a name="toc-System-Requirements" href="#System-Requirements">4.1 System Requirements</a></li>
+    <li><a name="toc-Installation" href="#Installation">4.2 Installation</a></li>
+    <li><a name="toc-Directories" href="#Directories">4.3 Directories</a></li>
+    <li><a name="toc-Execution" href="#Execution">4.4 Execution</a></li>
+  </ul></li>
+  <li><a name="toc-Pulsar-Music-Sequencer-Tutorial" href="#Pulsar-Music-Sequencer-Tutorial">5 Pulsar Music Sequencer Tutorial</a>
+  <ul class="no-bullet">
+    <li><a name="toc-Introduction" href="#Introduction">5.1 Introduction</a></li>
+    <li><a name="toc-Getting-Started" href="#Getting-Started">5.2 Getting Started</a></li>
+  </ul></li>
+  <li><a name="toc-Reference-Manual" href="#Reference-Manual">6 Reference Manual</a></li>
+  <li><a name="toc-A-Chapter-Contains-A-Small-Section-1" href="A-Chapter-Contains-A-Small-Section.html#A-Chapter-Contains-A-Small-Section">7 A Chapter Contains A Small Section</a>
+  <ul class="no-bullet">
+    <li><a name="toc-A-Small-Section" href="A-Chapter-Contains-A-Small-Section.html#A-Small-Section">7.1 A Small Section</a>
+    <ul class="no-bullet">
+      <li><a name="toc-This-is-a-subsection_002c-here_002e" href="A-Chapter-Contains-A-Small-Section.html#This-is-a-subsection_002c-here_002e">7.1.1 This is a subsection, here.</a></li>
+    </ul></li>
+  </ul></li>
+  <li><a name="toc-GNU-Free-Documentation-License-1" href="GNU-Free-Documentation-License.html#GNU-Free-Documentation-License">Appendix A GNU Free Documentation License</a></li>
+  <li><a name="toc-Index-1" href="Index.html#Index">Index</a></li>
+</ul>
+</div>
+
+
+<a name="Top"></a>
+<div class="header">
+<p>
+Next: <a href="A-Chapter-Contains-A-Small-Section.html#A-Chapter-Contains-A-Small-Section" accesskey="n" rel="next">A Chapter Contains A Small Section</a>, Up: <a href="../dir/index.html" accesskey="u" rel="up">(dir)</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html#Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="The-Pulsar-Music-Sequencer"></a>
+<h1 class="top">The Pulsar Music Sequencer</h1>
+
+<p>Pulsar is a music sequencer program which allows users to write music as Lisp
+Scheme programs.
+</p>
+<p>In this system, musical notes and other informations are written as Scheme&rsquo;s
+association lists. 
+</p>
+<p>The musical notes can be dynamically generated association lists on-the-fly; a
+users can also interact with their programs to affect where the music go to.
+</p>
+<p>With this system, you can learn music and Lisp Scheme at same time.
+</p>
+<p>Pulsar is written in Java8 and Kawa, and processes MIDI data via with Jack
+Audio Connection Kit.  Pulsar has been developed on the Ubuntu 16.04. Pulsar
+is expected to run on any Unix-like systems and versions of Windows.
+</p>
+<p>This manual is for Pulsar Sequencer version 0.1.
+</p>
+
+<table class="menu" border="0" cellspacing="0">
+<tr><td align="left" valign="top">&bull; <a href="A-Chapter-Contains-A-Small-Section.html#A-Chapter-Contains-A-Small-Section" accesskey="1">A Chapter Contains A Small Section</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="GNU-Free-Documentation-License.html#GNU-Free-Documentation-License" accesskey="2">GNU Free Documentation License</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="Index.html#Index" accesskey="3">Index</a>:</td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+</table>
+
+<a name="News"></a>
+<h2 class="chapter">1 News</h2>
+
+<p>The Pulsar Music Sequencer has just been released; this application is very
+new and has not been fully tested yet. 
+</p>
+<p>Please be careful to use this application.
+</p>
+<a name="Features"></a>
+<h2 class="chapter">2 Features</h2>
+
+<ul>
+<li> Enables you to write pieces of music as Lisp Scheme program.
+</li><li> Built with Kawa a very powerful Lisp Scheme implementation.
+</li><li> Works with JACK Audio Connection Kit and can connect to any synthesizer
+      applications support JACK.
+</li><li> Includes Kawapad; Kawapad is an editor to edit Scheme program 
+<ul>
+<li> Kawapad can prettify Lisp code.
+</li><li> Execute a block of code on-the-fly.
+</li><li> Kawapad is extensible by Kawa-Scheme.
+</li></ul>
+
+</li></ul>
+
+
+<a name="Community"></a>
+<h2 class="chapter">3 Community</h2>
+
+<p>Currently Pulsar has no community. Currently Pulsar is developed by only one
+developer (me) and there is no user at all but the developer. The developer
+(me) strongly needs your help to improve the Pulsar.
+</p>
+<a name="How-to-Run-Pulsar"></a>
+<h2 class="chapter">4 How to Run Pulsar</h2>
+
+<a name="System-Requirements"></a>
+<h3 class="section">4.1 System Requirements</h3>
+
+<ul>
+<li> Any operating systems that can run the other subsystems that are described here.
+</li><li> Java 8
+</li><li> JNA Java Native Access
+</li><li> Jack Audio Connection Kit
+</li></ul>
+
+<p>Pulsar has been developed and tested in Ubuntu 16.04. A cursory experiment to run
+Pulsar in Windows 10 with Windows JACK was succeeded. It is still unknown if
+Pulsar can run in OS X and further experiments are needed.
+</p>
+<a name="Installation"></a>
+<h3 class="section">4.2 Installation</h3>
+
+<p>Currently Pulsar has no installer. Though, Pulsar is a simple executable JAR file and
+no installation is required. Place it anywhere convenient to run Pulsar.
+</p>
+<a name="Directories"></a>
+<h3 class="section">4.3 Directories</h3>
+<p>When Pulsar run at first time, Pulsar makes a directory <code>$HOME/.pulsar</code>.
+And created two files :
+</p><ul>
+<li> <code>init.scm</code>
+</li><li> <code>kawapad-extention.scm</code>
+</li></ul>
+
+<p>You can customize behavior of Pulsar by editing these two files.
+</p>
+
+<a name="Execution"></a>
+<h3 class="section">4.4 Execution</h3>
+
+<p>Pulsar is a simple executable JAR file;
+before executing Pulsar, please make sure <code>java</code> is placed on a directory
+in <code>PATH</code>, and then execute 
+<code> java -jar /ppulsar.jar </code>
+may start Pulsar.
+</p>
+<p>If java is properly configured, just double clicking the jar file can also
+start Pulsar.
+</p>
+<p>Currently Pulsar outputs its error messages into <code>stterr</code>; it is necessary
+to execute it in a terminal screen to read its error messages.
+</p>
+<a name="Pulsar-Music-Sequencer-Tutorial"></a>
+<h2 class="chapter">5 Pulsar Music Sequencer Tutorial</h2>
+
+<a name="Introduction"></a>
+<h3 class="section">5.1 Introduction</h3>
+
+<a name="Getting-Started"></a>
+<h3 class="section">5.2 Getting Started</h3>
+
+<div class="example">
+<pre class="example">    (hello foo bar)
+</pre></div>
+
+
+
+<a name="Reference-Manual"></a>
+<h2 class="chapter">6 Reference Manual</h2>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="A-Chapter-Contains-A-Small-Section.html#A-Chapter-Contains-A-Small-Section" accesskey="n" rel="next">A Chapter Contains A Small Section</a>, Up: <a href="../dir/index.html" accesskey="u" rel="up">(dir)</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="Index.html#Index" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

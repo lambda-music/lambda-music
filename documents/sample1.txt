@@ -1,0 +1,41 @@
+= hello1
+	= hello2
+		= hello 3
+
+			foo
+
+				foo
+
+					bar
+
+						foo
+
+					bar
+
+				foo
+
+			bar
+
+			| foo
+			| 	foo
+			| 		bar
+			| 			foo
+			| 		bar
+			| 	foo
+			| bar
+
+			; foo
+			; 	foo
+			; 		bar
+			; 			foo
+			; 		bar
+			; 	foo
+			; bar
+
+= hello1
+	= hello2
+		= hello 3
+			foo
+			bar
+
+;
