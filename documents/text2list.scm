@@ -9,8 +9,9 @@
 (define text->list:not-newline (char-set-complement (char-set #\newline )))
 (define text->list:tab-size 8)
 
-
 (define (text->list s)
+
+
   (let* ((phase-1 
            ; phase-1 : split the passed string by the line-break character `\n`
            ;           and count all leading blank spaces.
@@ -141,79 +142,83 @@
                                  (newline)))
                      (if (cdr (or (assq 'is-heading (car s4))
                                   (cons 'is-heading #f)))
-                       ; Process the stack only when it is a heading;
-                       ; otherwise, ignore the element.
-                       (cond
-                         ((not current-level)
-                          (if DEBUG (begin
-                                      (display "not current-level #t\n" )
-                                      ))
-                          )
-                         ((<                 state:current-level current-level )
-                          (if DEBUG (begin
-                                      (display "descend\n")
-                                      ))
-                          ; push the last heading element of the heading elmenent on the stack
-                          (let ((the-last-element 
-                                  ; Look up the last added heading. Note that the
-                                  ; headings and texts are stored on the list in
-                                  ; reverse order.
-                                  (let lookup-the-last-heading ((e (cdadr state:stack)))
-                                    (if (null? e)
-                                      #f
-                                      ; Check if the element points to the header of a heading object.
-                                      (if (eq? 'heading (cdr (or (assq 'type (caar e))
-                                                                 (cons 'type 'none))))
-                                        ; Then return the element.
-                                        (car e)
-                                        ; Otherwise, advance to the next element.
-                                        (lookup-the-last-heading (cdr e)))))))
-                            (if (pair? the-last-element )
-                              (begin
-                                (if DEBUG (begin 
-                                            (display "push(pair) :")
-                                            (display the-last-element)
-                                            (newline)))
-                                (set-cdr! state:stack (cons       the-last-element   (cdr state:stack ))))
-                              (begin
-                                (if DEBUG (begin (display "push(non pair) :")
-                                                 (display the-last-element)    
-                                                 (newline)
-                                                 ))
-                                (set-cdr! state:stack (cons (list the-last-element ) (cdr state:stack )))))))
-                         ((<   current-level state:current-level )
-                          (if DEBUG (begin
-                                      (display "ascend\n")
-                                      (display current-level)
-                                      (newline)
-                                      ))
-                          (let loop-s ()
+                       (begin
+                         ; Process the stack only when it is a heading;
+                         ; otherwise, ignore the element.
+                         (cond
+                           ((not current-level)
                             (if DEBUG (begin
-                                        (display "pop" )
-                                        (newline)
-                                        (display (caadr state:stack ) )
-                                        (newline)
-                                        (display 'org-indent-level  )
-                                        (display (cdr 
-                                                   (or (assq 'org-indent-level (caadr state:stack ))
-                                                       (cons 'org-indent-level -1))))
+                                        (display "not current-level #t\n" )
+                                        ))
+                            )
+                           ((<                 state:current-level current-level )
+                            (if DEBUG (begin
+                                        (display "descend\n")
+                                        ))
+                            ; push the last heading element of the heading elmenent on the stack
+                            (let ((the-last-element 
+                                    ; Look up the last added heading. Note that the
+                                    ; headings and texts are stored on the list in
+                                    ; reverse order.
+                                    (let lookup-the-last-heading ((e (cdadr state:stack)))
+                                      (if (null? e)
+                                        #f
+                                        ; Check if the element points to the header of a heading object.
+                                        (if (eq? 'heading (cdr (or (assq 'type (caar e))
+                                                                   (cons 'type 'none))))
+                                          ; Then return the element.
+                                          (car e)
+                                          ; Otherwise, advance to the next element.
+                                          (lookup-the-last-heading (cdr e)))))))
+                              (if (pair? the-last-element )
+                                (begin
+                                  (if DEBUG (begin 
+                                              (display "push(pair) :")
+                                              (display the-last-element)
+                                              (newline)))
+                                  (set-cdr! state:stack (cons       the-last-element   (cdr state:stack ))))
+                                (begin
+                                  (if DEBUG (begin (display "push(non pair) :")
+                                                   (display the-last-element)    
+                                                   (newline)
+                                                   ))
+                                  (set-cdr! state:stack (cons (list the-last-element ) (cdr state:stack )))))))
+                           ((<   current-level state:current-level )
+                            (if DEBUG (begin
+                                        (display "ascend\n")
+                                        (display current-level)
                                         (newline)
                                         ))
+                            (let loop-s ()
+                              (if DEBUG (begin
+                                          (display "pop" )
+                                          (newline)
+                                          (display (caadr state:stack ) )
+                                          (newline)
+                                          (display 'org-indent-level  )
+                                          (display (cdr 
+                                                     (or (assq 'org-indent-level (caadr state:stack ))
+                                                         (cons 'org-indent-level -1))))
+                                          (newline)
+                                          ))
 
-                            (if 
-                              (<= current-level
-                                  (cdr 
-                                    (or (assq 'org-indent-level (caadr state:stack ))
-                                        (cons 'org-indent-level -1))))
-                              (begin
-                                (set-cdr! state:stack (cddr state:stack))
-                                (loop-s)))))
-                         (else
-                           (if DEBUG 
-                             (display "stay\n")))))
+                              (if 
+                                (<= current-level
+                                    (cdr 
+                                      (or (assq 'org-indent-level (caadr state:stack ))
+                                          (cons 'org-indent-level -1))))
+                                (begin
+                                  (set-cdr! state:stack (cddr state:stack))
+                                  (loop-s)))))
+                           (else
+                             (if DEBUG 
+                               (display "stay\n"))))
 
-                     (if current-level
-                       (set! state:current-level  current-level))
+                         ; preserve the value of current-level to the current state .
+                         (if current-level
+                           (set! state:current-level  current-level))
+                         ))
+
 
                      ; process the heading object.
                      (let ((ti-heading (cadr state:stack)))
@@ -245,7 +250,7 @@
                                        (list 
                                          `((type . heading)
                                            (level . ,(- (length state:stack) 1 ) )
-                                           (org-indent-level . ,current-level  ))
+                                           (org-indent-level . , current-level  ))
 
                                          ; Set its heading text on the first element.
                                          (list
@@ -260,7 +265,8 @@
                                      ; set the string itself.
                                      (cons
                                        (list 
-                                         '((type . text))
+                                         '((type . text)
+                                           (org-indent-level . , current-level  ))
                                          (cdr
                                            (or (assq 'text (car s4 ))
                                                (cons 'text #f ))))
@@ -438,9 +444,12 @@
 ; (display (disassemble text->list ))
 
 (define l1 (text->list (read-all)))
-(display l1)
-(newline)
-(newline)
+(if DEBUG
+  (begin
+    (display l1)
+    (newline)
+    (newline)
+    ))
 
 (define t1 (list->md l1 ))
 (display t1)

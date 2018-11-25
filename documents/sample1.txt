@@ -32,6 +32,17 @@
 			; 	foo
 			; bar
 
+			= hello 4
+
+			hello
+			hello
+			hello
+
+			= hello 5
+				hello
+				hello
+				hello
+
 = hello1
 	= hello2
 		= hello 3
