@@ -1,8 +1,8 @@
 readme.html: readme.md
-	pandoc -o readme.html readme.md
+	pandoc -o out/readme.html out/readme.md
 
 readme.md: readme.txt
-	kawa text2list.scm < readme.txt > readme.md
+	kawa lib/text2list.scm < readme.txt > out/readme.md
 
 clean:
-	rm readme.md readme.html
+	rm out/readme.md out/readme.html
