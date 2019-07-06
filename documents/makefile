@@ -3,3 +3,6 @@ readme.html: readme.md
 
 readme.md: readme.txt
 	kawa text2list.scm < readme.txt > readme.md
+
+clean:
+	rm readme.md readme.html

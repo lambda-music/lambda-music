@@ -1,7 +1,6 @@
 = hello1
 	= hello2
 		= hello 3
-
 			foo
 
 				foo
@@ -15,6 +14,11 @@
 				foo
 
 			bar
+		bar
+	b
+bar
+	bar
+		bar
 
 			| foo
 			| 	foo
@@ -43,7 +47,7 @@
 				hello
 				hello
 
-= hello1
+= hello11
 	= hello2
 		= hello 3
 			foo
