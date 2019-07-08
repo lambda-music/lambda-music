@@ -1,6 +1,8 @@
 package ats.pulsar.lib.swing;
 
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.LayoutManager;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -128,4 +130,19 @@ public class JNamedPanel extends JPanel implements JSelectableUserObject {
 		}
 		return count;
 	}
+	
+	@Override
+	public Dimension getPreferredSize() {
+		Dimension d = new Dimension( super.getPreferredSize() );
+		if ( d.height == Integer.MAX_VALUE ) {
+			Container p = this.getParent();
+			d.height = (int) ( p == null ? d.height : p.getSize().height - 5 ) ;
+		}
+		if ( d.width == Integer.MAX_VALUE ) {
+			Container p = this.getParent();
+			d.width = (int) ( p == null ? d.width : p.getSize().width - 5 ) ;
+		}
+		return d;
+	}
+	
 }

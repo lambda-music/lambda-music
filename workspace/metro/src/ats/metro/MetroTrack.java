@@ -67,7 +67,10 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 	private static final boolean DEBUG = false;
 
 //	private static final int BUFFER_SIZE = 2;
-	private static final double MARGIN_LENGTH = 2;   
+// MODIFIED >>> (Mon, 08 Jul 2019 20:29:49 +0900)
+//	private static final double MARGIN_LENGTH = 2;   
+	private static final double MARGIN_LENGTH = 3;   
+// MODIFIED <<< 
 
 	int id = (int) (Math.random()* Integer.MAX_VALUE);
 

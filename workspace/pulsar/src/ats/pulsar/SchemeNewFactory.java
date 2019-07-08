@@ -43,9 +43,11 @@ import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import javax.swing.JSlider;
+import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -55,6 +57,7 @@ import ats.pulsar.lib.swing.JPulsarButton;
 import ats.pulsar.lib.swing.JPulsarCheckBox;
 import ats.pulsar.lib.swing.JPulsarComboBox;
 import ats.pulsar.lib.swing.JPulsarRadioButton;
+import ats.pulsar.lib.swing.JPulsarTextField;
 import ats.pulsar.lib.swing.JUserObjectContainer;
 import ats.pulsar.lib.swing.PulsarListItem;
 import ats.pulsar.lib.swing.SchemeUtils;
@@ -237,6 +240,76 @@ public abstract class SchemeNewFactory {
 				}
 			}
 		});
+		register( "text-field", new SchemeNewFactory() {
+			@Override
+			Object create(Pulsar pulsar, List<Object> args ) {
+				if ( 0<args.size()  ) {
+
+					Object caption;
+					Object userObject;
+					{
+						Object arg0 = args.get(0);
+						if ( arg0 instanceof Pair ) {
+							Pair pair = (Pair) arg0;
+							caption = SchemeUtils.toString( pair.getCar() );
+							userObject = pair.getCdr();
+						} else {
+							caption = SchemeUtils.toString( arg0 );
+							userObject = EmptyList.emptyList;
+						}
+					}
+
+					JPulsarTextField textField = new JPulsarTextField( SchemeUtils.toString( caption ), SchemeUtils.toInteger( args.get(1) ) ) ;
+					
+					Procedure procedure = (Procedure) args.get(2);
+					{
+						Environment env = Environment.getCurrent();
+						Language lang = Language.getDefaultLanguage();
+						textField.addActionListener( new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								try {
+									Environment.setCurrent(env);
+									Language.setCurrentLanguage(lang);
+
+									JTextField textField = (JTextField)e.getSource();
+									
+									procedure.applyN( new Object[] {
+											true,
+											SchemeUtils.toSchemeString( textField.getText() ),
+											((JUserObjectContainer)textField).getUserObject(),
+											textField,
+											e
+											} );
+								} catch (Throwable e1) {
+									logError( "" , e1 );
+								}
+							}
+						});
+					}
+					
+					textField.setUserObject( userObject );
+					
+					return textField;
+				} else {
+					return EmptyList.emptyList;
+				}
+			}
+		});
+		register( "frame", new SchemeNewFactory() {
+			@Override
+			Object create(Pulsar pulsar, List<Object> args ) {
+				JFrame panel = new JFrame();
+
+				if ( args.size() == 0 ) {
+					pulsar.gui.guiLayout(panel, "default" );
+				} else if ( 1 <= args.size() ) {
+					pulsar.gui.guiLayout(panel, SchemeUtils.symbolToString( args.get(0) ) );
+				}
+				return panel;
+			}
+		});
+
 		register( "panel", new SchemeNewFactory() {
 			@Override
 			Object create(Pulsar pulsar, List<Object> args ) {
@@ -251,6 +324,26 @@ public abstract class SchemeNewFactory {
 			}
 		});
 		register( "group", new SchemeNewFactory() {
+			@Override
+			Object create(Pulsar pulsar, List<Object> args ) {
+				JNamedPanel panel = new JNamedPanel();
+
+				if ( args.size() == 0 ) {
+					pulsar.gui.guiLayout(panel, "default" );
+				} else if ( 1 <= args.size() ) {
+					String title = SchemeUtils.toString( args.get(0) );
+					panel.setBorder( BorderFactory.createTitledBorder( title ) );
+
+					if ( 2 <= args.size() ) {
+						pulsar.gui.guiLayout(panel, SchemeUtils.symbolToString( args.get(1) ) );
+					} else {
+						pulsar.gui.guiLayout(panel, "flow" );
+					}
+				}
+				return panel;
+			}
+		});
+		register( "tabs", new SchemeNewFactory() {
 			@Override
 			Object create(Pulsar pulsar, List<Object> args ) {
 				JNamedPanel panel = new JNamedPanel();

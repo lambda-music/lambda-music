@@ -77,7 +77,6 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		LOGGER.log(Level.WARNING, msg);
 	}
     
-	//	private final static boolean DEBUG = true;
 	static final boolean DEBUG = false;
 	
 	protected Jack jack = null;
@@ -624,7 +623,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	}
 	protected void unregisterTrack( MetroTrack track ) {
 		if ( DEBUG ) 
-			logInfo( "****** DESTROYED a track is destroyed " + track.id );
+			logInfo( "****** DESTROYED a track is destroyed " + ( track == null ? "(null track)" : track.id ) );
 		synchronized ( this.lock ) {
 			this.unregisteredTracks.add( track );
 			this.notifyCheckBuffer();

@@ -1012,7 +1012,7 @@ class PulsarGui {
 			staticPane = new JPanel() {
 				@Override
 				public Dimension getPreferredSize() {
-					return new Dimension(500,400);
+					return new Dimension(500,300);
 				}
 			};
 			
@@ -1073,7 +1073,9 @@ class PulsarGui {
 			staticPane.add( createStartStopButton(), BorderLayout.LINE_END );
 			staticPane.add( createTempoTapButton(), BorderLayout.CENTER );
 			staticPane.add( createRewindButton(), BorderLayout.LINE_START );
-			staticPane.add( createCueButton(), BorderLayout.PAGE_END );
+//			REMOVED >>> (Mon, 08 Jul 2019 22:06:16 +0900)
+//			staticPane.add( createCueButton(), BorderLayout.PAGE_END );
+//			REMOVED <<< (Mon, 08 Jul 2019 22:06:16 +0900)
 
 			// createEmptyBorder( top left bottom right )
 //				staticPane.setBorder( BorderFactory.createEmptyBorder(10,20,5,20) );
@@ -1301,7 +1303,7 @@ class PulsarGui {
 		
     	JSliderPanel panel_slider = new JSliderPanel();
     	{
-//				add( panel_slider, BorderLayout.PAGE_END );
+				add( panel_slider, BorderLayout.PAGE_END );
     	}
     	class JSliderPanel extends JPanel {
     		public JSliderPanel() {
