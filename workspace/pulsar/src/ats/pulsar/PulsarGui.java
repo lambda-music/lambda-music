@@ -76,6 +76,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SpringLayout;
 import javax.swing.SwingUtilities;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
@@ -150,6 +151,19 @@ class PulsarGui {
 			this.min = min;
 			this.max = max;
 		}
+		public final Action createAction( PulsarGui gui ) {
+			return new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					gui.guiSetTempoRange( TempoRange.this );
+				}
+				{
+					putValue( Action2.NAME,  caption );
+					putValue( Action.MNEMONIC_KEY, (int)caption.charAt(0) );
+//					putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK) );
+				}
+			};
+		};
 	}
     public static BorderLayout newLayout() {
     	return new BorderLayout( BORDER_SIZE, BORDER_SIZE );
@@ -167,6 +181,32 @@ class PulsarGui {
 			this.caption = caption;
 			this.orientation = orientation;
 		}
+		public final Action createSetPanelOrientationAction( PulsarGui gui ) {
+			return new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					gui.guiSetPanelOrientation( PanelOrientation.this );
+				}
+				{
+					putValue( Action2.NAME, caption );
+					putValue( Action.MNEMONIC_KEY, (int)caption.charAt(0) );
+//					putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK) );
+				}
+			};
+		};
+		public final Action createSetScratchpadOrientationAction( PulsarGui gui ) {
+			return new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					gui.frame.guiSetScratchpadOrientation( PanelOrientation.this );
+				}
+				{
+					putValue( Action2.NAME, caption );
+					putValue( Action.MNEMONIC_KEY, (int)caption.charAt(0) );
+//					putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK) );
+				}
+			};
+		};
 	}
 	
 	
@@ -224,6 +264,22 @@ class PulsarGui {
         			Component component = (Component) SchemeUtils.schemeNullToJavaNull( argList.pop() );
     				Container parent = component.getParent();
 					return parent;
+    			} else {
+					throw new RuntimeException( 
+							"Invalid argument error\n"+
+							"usage : (gui-remove-by-name [parent] [name])" );
+    			}
+    		}
+    	});
+
+    	SchemeUtils.defineVar( scheme, "gui-remove-all" , new ProcedureN() {
+    		@Override
+    		public Object applyN(Object[] args) throws Throwable {
+    			if ( 1 <= args.length ) {
+        			ArrayDeque<Object> argList = new ArrayDeque<>( Arrays.asList(args) );
+        			Container parent = (Container) SchemeUtils.schemeNullToJavaNull( argList.pop() );
+        			guiRemoveAll(parent);
+        			return EmptyList.emptyList;
     			} else {
 					throw new RuntimeException( 
 							"Invalid argument error\n"+
@@ -552,11 +608,10 @@ class PulsarGui {
     	});
     	
     	PulsarScratchPad.initScheme( scheme );
-
     }
 	
 	//Create the "cards".
-    JFrame frame;
+    JPulsarFrame frame;
     JComponent rootPane; 
 	JPanel staticPane;
 	JNamedPanel userPane ;
@@ -572,6 +627,8 @@ class PulsarGui {
 	public void guiClear() {
 		userPane.removeAll();
 		guiFlowLayout(userPane);
+		frame.invalidate();
+		frame.revalidate();
 		// frame.pack();
 	}
 	public void guiPack() {
@@ -661,7 +718,7 @@ class PulsarGui {
 		int dividerLocation;
 		Dimension newFrameSize = new Dimension( frameSize );
 		
-//			JSplitPane rootPane = (JSplitPane) this.rootPane;
+//			JSplitPane pulsarRootPane = (JSplitPane) this.rootPane;
 		
 		if ( rootPane instanceof JSplitPane )
 			((JSplitPane)rootPane).setOrientation( panelOrientation.orientation );
@@ -748,6 +805,7 @@ class PulsarGui {
 		
 	}
 	
+	
 	public Component guiResolve( Container parent, Collection<String> path, boolean errorIfNotFound ) {
 		if ( parent == null )
 			parent = userPane;
@@ -783,6 +841,9 @@ class PulsarGui {
 		for ( Object o : argList ) {
 			parent.remove( (Component)o );
 		}
+	}
+	private void guiRemoveAll(Container parent ) {
+		parent.removeAll();
 	}
 
 	public Component guiRemoveByPath( Container parent, Collection<String> path ) {
@@ -886,7 +947,7 @@ class PulsarGui {
 						if ( cdr instanceof Pair ) {
 							guiAdd( parent, (Component)car, LayoutUtils.map2constraint( cdr ) );
 						} else {
-							guiAdd( parent, (Component)car, cdr );
+							guiAdd( parent, (Component)car, SchemeUtils.toString( cdr ) );
 						}
 					}
 				} else {
@@ -919,7 +980,7 @@ class PulsarGui {
 	
 	public void updateFilename(File file) {
 		if ( tf_currentFile != null ) {
-			tf_currentFile.setText( file.getPath() );
+			tf_currentFile.setText( file !=null ? file.getPath() : ""  );
 		}
 		
 		if ( cb_relatedFiles != null ) {
@@ -950,7 +1011,7 @@ class PulsarGui {
 				public Scheme getScheme() {
 					return pulsar.scheme;
 				}
-			};
+			}.initialize();
 		}
 		{
 			putValue( Action2.NAME, "New Scratchpad" );
@@ -959,7 +1020,7 @@ class PulsarGui {
 		}
 	};
 
-	public final Action OPEN_SCRATCHPAD = new AbstractAction() {
+	public final Action EDIT_SCRATCHPAD = new AbstractAction() {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			PulsarScratchPad scratchPad = new PulsarScratchPad() {
@@ -975,35 +1036,180 @@ class PulsarGui {
 			}
 		}
 		{
-			putValue( Action2.NAME, "Open the Current File by Scratchpad" );
+			putValue( Action2.NAME, "Edit Main File" );
 			putValue( Action.MNEMONIC_KEY, (int)'e' );
 			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK) );
 		}
-
 	};
 
-	class JPulsarFrame extends JFrame {
-		public JPulsarFrame() {
-			super( "Pulsar" );
+	public final Action RESET_SEQUENCER = new AbstractAction() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			pulsar.reset();
 		}
-		
 		{
-			JMenuBar menuBar = new JMenuBar();
-			setJMenuBar(menuBar);
+			putValue( Action2.NAME, "Reset the Sequencer" );
+			putValue( Action.MNEMONIC_KEY, (int)'r' );
+			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_R, ActionEvent.CTRL_MASK) );
+		}
+	};
+	
+
+
+	public final Action SET_MAIN_FILE_ACTION = new AbstractAction() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			JFileChooser fc = new JFileChooser();
+			fc.setFileFilter( new FileFilter() {
+				@Override
+				public String getDescription() {
+					return "*.scm (scheme)";
+				}
+				@Override
+				public boolean accept(File f) {
+					return ! f.isFile() || f.getName().endsWith( "scm" );
+				}
+			});
+			{
+				File mainFile = pulsar.getMainFile();
+				if ( mainFile != null ) {
+					fc.setSelectedFile( mainFile );
+				}
+			}
+			int result = fc.showOpenDialog( frame );
+			if ( result == JFileChooser.APPROVE_OPTION ) {
+				pulsar.close();
+				pulsar.setMainFile( null, fc.getSelectedFile() );
+			}
+		}
+		{
+			putValue( Action2.NAME, "Set Main File" );
+			putValue( Action.MNEMONIC_KEY, (int)'s' );
+			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK) );
+		}
+	};
+	public final Action CLEAR_MAIN_FILE_ACTION = new AbstractAction() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			pulsar.close();
+			pulsar.setMainFile( null, null );
+		}
+		{
+			putValue( Action2.NAME, "Clear Main File" );
+			putValue( Action.MNEMONIC_KEY, (int)'c' );
+			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_W, ActionEvent.CTRL_MASK) );
+		}
+	};
+	public final Action TOGGLE_PLAYING_ACTION = new AbstractAction() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			pulsar.togglePlaying();
+		}
+		{
+			putValue( Action2.NAME, "Play/Stop" );
+			putValue( Action.MNEMONIC_KEY, (int)'P' );
+			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, ActionEvent.CTRL_MASK) );
+		}
+	};
+	public final Action RESET_PLAYING_ACTION = new AbstractAction() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			pulsar.rewind();
+		}
+		{
+			putValue( Action2.NAME, "Reset" );
+			putValue( Action.MNEMONIC_KEY, (int)'R' );
+			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_HOME, ActionEvent.CTRL_MASK) );
+		}
+	};
+	public final Action TAP_TEMPO_ACTION = new AbstractAction() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			pulsar.tempoTapper.tap();
+		}
+		{
+			putValue( Action2.NAME, "Tap Tempo" );
+			putValue( Action.MNEMONIC_KEY, (int)'T' );
+			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, ActionEvent.CTRL_MASK) );
+		}
+	};
+
+
+	protected class JPulsarFrame extends PulsarScratchPad {
+		public JPulsarFrame( String title ) {
+			super();
+		}
+		public JPulsarFrame() {
+			this("Pulsar");
+		}
+		@Override
+		public Scheme getScheme() {
+			return PulsarGui.this.pulsar.scheme;
+		}
+
+		{
+//			JMenuBar menuBar = new JMenuBar();
+//			setJMenuBar(menuBar);
 			
-			JMenu m = new JMenu( "File" );
-			m.setMnemonic( 'f' );
+			JMenuBar menuBar = getJMenuBar();
+
+			{
+				JMenu m = new JMenu( "Sequencer" );
+				m.setMnemonic( 's' );
+
+//				m.add( new JMenuItem( NEW_SCRATCHPAD ) );
+				m.add( new JMenuItem( SET_MAIN_FILE_ACTION ) );
+				m.add( new JMenuItem( CLEAR_MAIN_FILE_ACTION ) );
+				m.add( new JMenuItem( EDIT_SCRATCHPAD ) );
+				m.add( new JMenuItem( RESET_SEQUENCER ) );
+				menuBar.add( m,0 );
+			}
 			
-			m.add( new JMenuItem( NEW_SCRATCHPAD ) );
-			m.add( new JMenuItem( OPEN_SCRATCHPAD ) );
-			
-			menuBar.add( m );
+			{
+				JMenu m = new JMenu( "Play" );
+				m.setMnemonic( 'P' );
+
+				m.add( new JMenuItem( TOGGLE_PLAYING_ACTION ) );
+				m.add( new JMenuItem( RESET_PLAYING_ACTION ) );
+				m.add( new JMenuItem( TAP_TEMPO_ACTION ) );
+				menuBar.add( m );
+			}
+			{
+				JMenu m = new JMenu( "View" );
+				m.setMnemonic( 'v' );
+
+				{
+					JMenu mm = new JMenu( "Tempo Range" );
+					for ( PulsarGui.TempoRange r :  TempoRange.values() ) {
+						mm.add( new JMenuItem( r.createAction( PulsarGui.this ) ) );
+					}
+					m.add( mm );
+				}
+
+				{
+					JMenu mm = new JMenu( "Panel Orientation" );
+					for ( PulsarGui.PanelOrientation r :  PanelOrientation.values() ) {
+						mm.add( new JMenuItem( r.createSetPanelOrientationAction( PulsarGui.this ) ) );
+					}
+					m.add( mm );
+				}
+				
+				{
+					JMenu mm = new JMenu( "Scratchpad Orientation" );
+					for ( PulsarGui.PanelOrientation r :  PanelOrientation.values() ) {
+						mm.add( new JMenuItem( r.createSetScratchpadOrientationAction( PulsarGui.this ) ) );
+					}
+					m.add( mm );
+				}
+
+				menuBar.add( m );
+			}
 			
 			Action2.processMenuBar(menuBar);
 		}
 		
 		
-		JComponent rootPane;
+		JComponent pulsarRootPane;
 		JPanel staticPane;
 		JNamedPanel userPane;
 		{
@@ -1012,7 +1218,7 @@ class PulsarGui {
 			staticPane = new JPanel() {
 				@Override
 				public Dimension getPreferredSize() {
-					return new Dimension(500,300);
+					return new Dimension(500,250);
 				}
 			};
 			
@@ -1035,18 +1241,18 @@ class PulsarGui {
 			// SEE TAG_PACK_TWICE
 			
 			if ( false ) {
-				rootPane  = new JSplitPane( JSplitPane.VERTICAL_SPLIT, 
+				pulsarRootPane  = new JSplitPane( JSplitPane.VERTICAL_SPLIT, 
 						staticPane,
 						userPaneOuter
 						);
-				((JSplitPane)rootPane).setContinuousLayout( true );
-				((JSplitPane)rootPane).setDividerSize(5);
-				((JSplitPane)rootPane).setDividerLocation(500);
+				((JSplitPane)pulsarRootPane).setContinuousLayout( true );
+				((JSplitPane)pulsarRootPane).setDividerSize(5);
+				((JSplitPane)pulsarRootPane).setDividerLocation(500);
 
 				// See : 
 				//   Detecting JSplitPane Divider Movement 
 				//   https://stackoverflow.com/questions/14468648/detecting-jsplitpane-divider-movement
-				rootPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, 
+				pulsarRootPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, 
 						new PropertyChangeListener() {
 					@Override
 					public void propertyChange(PropertyChangeEvent pce) {
@@ -1055,18 +1261,24 @@ class PulsarGui {
 					}
 				});
 			} else {
-				rootPane  = new JPanel( new BorderLayout() );
-				rootPane.add( staticPaneOuter, BorderLayout.PAGE_START);
-				rootPane.add( userPaneOuter, BorderLayout.CENTER );
-				rootPane.setMaximumSize( new Dimension( 500, 400 ));
+				pulsarRootPane  = new JPanel( new BorderLayout() );
+				pulsarRootPane.add( staticPaneOuter, BorderLayout.PAGE_START);
+				pulsarRootPane.add( userPaneOuter, BorderLayout.CENTER );
+				pulsarRootPane.setMaximumSize( new Dimension( 500, 400 ));
 				
 			}
 			
 			
 //				staticPane.setMaximumSize( new Dimension(0, 0 ));
 //				userPane.setMaximumSize( new Dimension(0, 0 ));
-			
-			this.getContentPane().add ( rootPane );
+			if ( false ) {
+				this.getContentPane().add ( pulsarRootPane );
+			} else {
+				this.scratchPadRoot.remove( this.scrollPane );
+				this.scratchPadRoot.add( this.scrollPane, BorderLayout.CENTER );
+				this.scratchPadRoot.add( this.pulsarRootPane, BorderLayout.PAGE_START );
+				this.scratchPadRoot.revalidate();
+			}
 
 			// Tempo Button
 	        staticPane.add( new JPusarFilePanel(), BorderLayout.PAGE_START );
@@ -1081,8 +1293,8 @@ class PulsarGui {
 //				staticPane.setBorder( BorderFactory.createEmptyBorder(10,20,5,20) );
 //				userPane.setBorder(   BorderFactory.createEmptyBorder(5,20,20,20) );
 
-//				((JComponent)rootPane).setBorder( BorderFactory.createEmptyBorder() );
-			((JComponent)rootPane).setBorder( BorderFactory.createEmptyBorder(10,10,10,10) );
+//				((JComponent)pulsarRootPane).setBorder( BorderFactory.createEmptyBorder() );
+			((JComponent)pulsarRootPane).setBorder( BorderFactory.createEmptyBorder(10,10,10,10) );
 
 			// frame.setMaximizedBounds(new Rectangle(0, 0, 400, 1000));
 			this.pack();
@@ -1101,7 +1313,7 @@ class PulsarGui {
 				}
 			});
 			
-	        PulsarGui.this.rootPane = rootPane;
+	        PulsarGui.this.rootPane = pulsarRootPane;
 	        PulsarGui.this.staticPane = staticPane;
 	        PulsarGui.this.userPane = userPane;
 	        PulsarGui.this.staticPaneOuter = staticPaneOuter;
@@ -1126,6 +1338,42 @@ class PulsarGui {
 //				pb_position.setBorder( BorderFactory.createEmptyBorder(0,0,0,0) );
 			pb_position.setMaximum( Pulsar.PB_POSITION_MAX );
 			pb_position.setMinimum(0);
+		}
+
+		
+		public void guiSetScratchpadOrientation( PulsarGui.PanelOrientation panelOrientation ) {
+			switch ( panelOrientation ) {
+				case TOP :
+					this.scratchPadRoot.remove( this.scrollPane );
+					this.scratchPadRoot.remove( this.pulsarRootPane );
+					this.scratchPadRoot.add( this.scrollPane, BorderLayout.CENTER );
+					this.scratchPadRoot.add( this.pulsarRootPane, BorderLayout.PAGE_END );
+					this.scratchPadRoot.revalidate();
+					break;
+				case RIGHT :
+					this.scratchPadRoot.remove( this.scrollPane );
+					this.scratchPadRoot.remove( this.pulsarRootPane );
+					this.scratchPadRoot.add( this.scrollPane, BorderLayout.CENTER );
+					this.scratchPadRoot.add( this.pulsarRootPane, BorderLayout.LINE_START );
+					this.scratchPadRoot.revalidate();
+					break;
+				case BOTTOM :
+					this.scratchPadRoot.remove( this.scrollPane );
+					this.scratchPadRoot.remove( this.pulsarRootPane );
+					this.scratchPadRoot.add( this.scrollPane, BorderLayout.CENTER );
+					this.scratchPadRoot.add( this.pulsarRootPane, BorderLayout.PAGE_START );
+					this.scratchPadRoot.revalidate();
+					break;
+				case LEFT :
+					this.scratchPadRoot.remove( this.scrollPane );
+					this.scratchPadRoot.remove( this.pulsarRootPane );
+					this.scratchPadRoot.add( this.scrollPane, BorderLayout.CENTER );
+					this.scratchPadRoot.add( this.pulsarRootPane, BorderLayout.LINE_END );
+					this.scratchPadRoot.revalidate();
+					break;
+				default :
+					throw new RuntimeException( "internal error" );
+			}
 		}
 
 	}
@@ -1169,7 +1417,7 @@ class PulsarGui {
 
         	JPanel panel_exec = new JPanelExtentionExec();
         	{
-        		add( panel_exec, BorderLayout.CENTER );
+//        		add( panel_exec, BorderLayout.CENTER );
         	}
     		class JPanelExtentionExec extends JPanel {
     			public JPanelExtentionExec() {
@@ -1232,41 +1480,50 @@ class PulsarGui {
 
     		JPanel panel_openFile = new JOpenFilePanel();
         	{
-        		add( panel_openFile, BorderLayout.PAGE_START );
+        		add( panel_openFile, BorderLayout.CENTER );
         	}
         	class JOpenFilePanel extends JPanel {
-        		JOpenFilePanel(){ super( newLayout() ); }
+				JOpenFilePanel(){ super( newLayout() ); }
 
-        		JButton openMainFileButton = new JButton( "OPEN" );
-        		{	
-        			this.add( openMainFileButton, BorderLayout.LINE_START );
-        			openMainFileButton.addActionListener(new ActionListener() {
-        				@Override
-        				public void actionPerformed(ActionEvent e) {
-        					JFileChooser fc = new JFileChooser();
-        					fc.setFileFilter( new FileFilter() {
-        						@Override
-        						public String getDescription() {
-        							return "*.scm (scheme)";
-        						}
-        						@Override
-        						public boolean accept(File f) {
-        							return ! f.isFile() || f.getName().endsWith( "scm" );
-        						}
-        					});
-        					int result = fc.showOpenDialog( frame );
-        					if ( result == JFileChooser.APPROVE_OPTION ) {
-        						pulsar.close();
-        						pulsar.setMainFile( null, fc.getSelectedFile() );
-        					}
-        				}
-        			});
-        		}
+				JPanel panel_fileButtons = new JFileButtonsPanel();
+				{
+//					REMOVED >>> (Wed, 10 Jul 2019 01:34:10 +0900)
+//					add( panel_fileButtons, BorderLayout.LINE_START );
+//					REMOVED <<< (Wed, 10 Jul 2019 01:34:10 +0900)
+				}
+				class JFileButtonsPanel extends JPanel {
+					JFileButtonsPanel(){ super( new FlawLayout() ); }
+					JButton openMainFileButton = new JButton( "SET" );
+					{
+//						REMOVED >>> (Wed, 10 Jul 2019 01:34:10 +0900)
+//						add( openMainFileButton  );
+//						REMOVED <<< (Wed, 10 Jul 2019 01:34:10 +0900)
+						openMainFileButton.addActionListener( new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								SET_MAIN_FILE_ACTION.actionPerformed(e);
+							}
+						} );
+					}
+					JButton clearMainFileButton = new JButton( "CLR" );
+					{
+//						REMOVED >>> (Wed, 10 Jul 2019 01:34:10 +0900)
+//						add( clearMainFileButton );
+//						REMOVED <<< (Wed, 10 Jul 2019 01:34:10 +0900)
+						clearMainFileButton.addActionListener( new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								CLEAR_MAIN_FILE_ACTION.actionPerformed(e);
+							}
+						} );
+					}
+				}
         		JTextField currentFile = new JTextField();
         		{
         			tf_currentFile = currentFile;
         			this.add( currentFile, BorderLayout.CENTER );
         			currentFile.setEditable(false);
+        			currentFile.setBorder( new TitledBorder( currentFile.getBorder(), "MAIN FILE" ) );
         		}
         	}
     	}
@@ -1309,12 +1566,12 @@ class PulsarGui {
     		public JSliderPanel() {
     			super( newLayout() );
 			}
+    		// *** UNUSED *** (Tue, 09 Jul 2019 18:04:26 +0900)
     		JTempoScalePanel panel_tempoScale = new JTempoScalePanel();
     		{
-    			add( panel_tempoScale, BorderLayout.CENTER );
+//    			add( panel_tempoScale, BorderLayout.CENTER );
     		}
     		class JTempoScalePanel extends JPanel {
-
     			private final class TempoRangeActionListener implements ActionListener {
 					private final PulsarGui.TempoRange tempoRange;
 					private TempoRangeActionListener(PulsarGui.TempoRange r) {
@@ -1333,29 +1590,22 @@ class PulsarGui {
     			ButtonGroup group = new ButtonGroup();
     			{
     				 for ( PulsarGui.TempoRange r :  TempoRange.values() ) {
-    					 JPulsarRadioButton b = new JPulsarRadioButton( r.caption );
-    					 b.addActionListener( new TempoRangeActionListener(r));
+//    					 JPulsarRadioButton b = new JPulsarRadioButton( r.caption );
+//    					 b.addActionListener( new TempoRangeActionListener(r));
+    					 JPulsarRadioButton b = new JPulsarRadioButton( r.createAction( PulsarGui.this ) );
+    					 Action2.processButton(b);
     					 group.add( b );
     					 add( b );
     				 }
     			}
     		}
     		
+    		// *** UNUSED *** (Tue, 09 Jul 2019 18:04:26 +0900)
     		JPanelOrientationPanel panelOrientationPanel = new JPanelOrientationPanel();
     		{
-    			add(  panelOrientationPanel, BorderLayout.LINE_END );
+//    			add(  panelOrientationPanel, BorderLayout.LINE_END );
     		}
     		class JPanelOrientationPanel extends JPanel {
-				private final class JPanelOrientationActionListener implements ActionListener {
-					private final PulsarGui.PanelOrientation panelOrientation;
-					private JPanelOrientationActionListener(PulsarGui.PanelOrientation panelOrientation) {
-						this.panelOrientation = panelOrientation;
-					}
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						guiSetPanelOrientation( panelOrientation );
-					}
-				}
 				
     			public JPanelOrientationPanel() {
     				super( new FlawLayout( FlawLayout.LEFT ) );
@@ -1364,8 +1614,11 @@ class PulsarGui {
     			ButtonGroup group = new ButtonGroup();
     			{
     				 for ( PulsarGui.PanelOrientation r :  PanelOrientation.values() ) {
-    					 JPulsarRadioButton b = new JPulsarRadioButton( r.caption );
-    					 b.addActionListener( new JPanelOrientationActionListener(r));
+//    					 JPulsarRadioButton b = new JPulsarRadioButton( r.caption );
+//    					 b.addActionListener( new JPanelOrientationActionListener(r));
+    					 JPulsarRadioButton b = new JPulsarRadioButton( r.createSetPanelOrientationAction( PulsarGui.this ) );
+    					 Action2.processButton(b);
+//    					 b.addActionListener( new JPanelOrientationActionListener(r));
     					 group.add( b );
     					 add( b );
     					 orientaionMap.put(r, b );
@@ -1379,7 +1632,8 @@ class PulsarGui {
     		JSlider sl_tempoSlider = new JSlider();
     		{
     			PulsarGui.this.sl_tempoSlider = sl_tempoSlider;
-    			add( sl_tempoSlider, BorderLayout.PAGE_END );
+//    			add( sl_tempoSlider, BorderLayout.PAGE_END );
+    			add( sl_tempoSlider, BorderLayout.CENTER );
     			sl_tempoSlider.setBorder( BorderFactory.createEmptyBorder() );
     			sl_tempoSlider.setMinimum(1);
     			sl_tempoSlider.setMaximum(1000);
@@ -1387,6 +1641,7 @@ class PulsarGui {
     			sl_tempoSlider.setPaintTrack( true);
     			sl_tempoSlider.setMajorTickSpacing(100);
     			sl_tempoSlider.setMinorTickSpacing(25);
+    			sl_tempoSlider.setPreferredSize( new Dimension(500, 80));
     			Dictionary<Integer,JLabel> labelTables = new Hashtable<>();
     			labelTables.put(10, new JLabel( "10" ));
     			labelTables.put(50, new JLabel( "50" ));
@@ -1495,7 +1750,6 @@ class PulsarGui {
     		@Override
     		public void actionPerformed(ActionEvent e) {
     			pulsar.tempoTapper.tap();
-
     		}
     	});
 

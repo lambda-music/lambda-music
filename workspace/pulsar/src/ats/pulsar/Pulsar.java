@@ -132,11 +132,6 @@ public final class Pulsar extends Metro {
 	 */
 	public Pulsar( File file ) {
 		this();
-		if ( ! file.isFile() )
-			throw new RuntimeException( "The specified file does not exist (" + file.getPath() + ")" );
-		
-		// See the comment.
-		setMainFile( null , file );
 	}
 
 
@@ -144,12 +139,13 @@ public final class Pulsar extends Metro {
 	 * The main method which starts up the application. The application opens a file
 	 * which is specified in argument values. When more than one arguments were
 	 * passed to the method, only the first argument is taken. 
+	 * @throws IOException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
+		Pulsar pulsar = new Pulsar();
 		if ( args.length == 0 ) {
-			new Pulsar();
 		} else {
-			new Pulsar( new File( args[0] ) );
+			pulsar.openMainFile(null, new File( args[0] ));
 		}
 	}
 
@@ -277,10 +273,12 @@ public final class Pulsar extends Metro {
 		this.relatedFiles.addAll( fileList );
 		this.relatedFileParent = mainFile;
 
-		if ( this.gui.cb_relatedFiles != null ) {
-			this.gui.cb_relatedFiles.removeAllItems();
-			for ( File f : this.relatedFiles ) {
-				this.gui.cb_relatedFiles.addItem(f.getPath());
+		if ( gui != null ) { 
+			if ( this.gui.cb_relatedFiles != null ) {
+				this.gui.cb_relatedFiles.removeAllItems();
+				for ( File f : this.relatedFiles ) {
+					this.gui.cb_relatedFiles.addItem(f.getPath());
+				}
 			}
 		}
 	}
@@ -291,8 +289,10 @@ public final class Pulsar extends Metro {
 	 */
 	public void addRelatedFile( File f) {
 		this.relatedFiles.add( f );
-		if ( this.gui.cb_relatedFiles != null ) {
-			this.gui.cb_relatedFiles.addItem( f.getPath() );
+		if ( this.gui != null ) {
+			if ( this.gui.cb_relatedFiles != null ) {
+				this.gui.cb_relatedFiles.addItem( f.getPath() );
+			}
 		}
 	}
 
@@ -303,7 +303,8 @@ public final class Pulsar extends Metro {
 	public void reset() {
 		this.scheme = makeScheme();
 		this.execCleanupHook();
-		this.gui.guiClear();
+		if ( gui != null )
+			this.gui.guiClear();
 		this.close();
 		this.lastModifiedOfMainFile = NOT_DEFINED;
 	}
@@ -473,13 +474,25 @@ public final class Pulsar extends Metro {
 	 * @param parentFile
 	 * @param mainFile
 	 */
-	void setMainFile( File parentFile, File mainFile ) {
+	public void setMainFile( File parentFile, File mainFile ) {
 		this.mainFile   = mainFile;
 		this.parentFile = parentFile;
 		this.lastModifiedOfMainFile = NOT_DEFINED;
 	}
 	public File getMainFile() {
 		return mainFile;
+	}
+	
+	public void openMainFile( File parentFile, File mainFile ) throws IOException {
+		if ( ! mainFile.isFile() )
+			throw new RuntimeException( "The specified file does not exist (" + mainFile.getPath() + ")" );
+		
+		// See the comment.
+		setMainFile( null , mainFile );
+		
+		if ( gui != null ) {
+			gui.frame.openFile( mainFile );
+		}
 	}
 	
 	interface TempoTapperTempoNotifier {
@@ -572,12 +585,14 @@ public final class Pulsar extends Metro {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				lastModifiedOfConfigFile  = checkLastModified( configFile,  lastModifiedOfConfigFile , (file)->{}   );
-				lastModifiedOfMainFile    = checkLastModified( mainFile,    lastModifiedOfMainFile,    (file)->gui.updateFilename(file) );
+				lastModifiedOfMainFile    = checkLastModified( mainFile,    lastModifiedOfMainFile,    (file)->{if ( gui != null ) gui.updateFilename(file);} );
 			}
 
 			long checkLastModified( File file, long lastModified, Consumer<File> updateProc ) {
-				if ( file == null ) 
+				if ( file == null ) {
+					updateProc.accept(null);
 					return NOT_DEFINED; // lastModified;
+				}
 				
 				long newLastModified = file.lastModified();
 				if ( newLastModified != lastModified ) {
@@ -792,8 +807,10 @@ public final class Pulsar extends Metro {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				if ( 0 < args.length ) {
-					double value = SchemeUtils.toDouble(args[0]);
-					gui.pb_position.setValue((int) (value * PB_POSITION_MAX) );
+					if ( gui != null ) { 
+						double value = SchemeUtils.toDouble(args[0]);
+						gui.pb_position.setValue((int) (value * PB_POSITION_MAX) );
+					}
 				}
 				 
     			return EmptyList.emptyList;
@@ -982,7 +999,9 @@ public final class Pulsar extends Metro {
     		}
     	});
 
-    	gui.initScheme(scheme);
+    	if ( gui != null ) {
+    		gui.initScheme(scheme);
+    	}
     }
 }
 	

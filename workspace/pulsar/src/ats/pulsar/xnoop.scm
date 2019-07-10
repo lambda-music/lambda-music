@@ -2,7 +2,7 @@
 ; Pulsar-Sequencer written by Atsushi Oka 
 ; Copyright 2018 Atsushi Oka
 ; 
-; This file is part of Pulsar-Sequencer. 
+; This file is a part of Pulsar-Sequencer. 
 ; 
 ; Pulsar-Sequencer is free software: you can redistribute it and/or modify
 ; it under the terms of the GNU General Public License as published by

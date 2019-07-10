@@ -20,11 +20,13 @@
 
 package ats.kawapad;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.HeadlessException;
 import java.awt.MenuBar;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -59,6 +61,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
@@ -97,6 +100,19 @@ import gnu.mapping.Procedure3;
 import gnu.mapping.Symbol;
 import kawa.standard.Scheme;
 
+/**
+ * 
+ * (Tue, 09 Jul 2019 10:28:51 +0900)
+ * <ol>
+ * <li>Every scheme object must be initialized by {@link PulsarScratchPad#initScheme(Scheme)}</li>
+ * <li>{@link PulsarScratchPad#initialize() } must be called before use the object.</li>
+ * </ol>
+ * <pre> 
+ * new PulsarScratchPad( initSchemeForScratchPad( new Scheme() ) ).initialize();
+ * </pre>
+ *  
+ * @author Ats Oka
+ */
 public abstract class PulsarScratchPad extends JFrame {
 	private static final String FLAG_DONE_INIT_PULSAR_SCRATCHPAD = "flag-done-init-pulsar-scratchpad";
 	private static final boolean DEBUG_UNDO_BUFFER = false;
@@ -121,13 +137,18 @@ public abstract class PulsarScratchPad extends JFrame {
 	private static Environment environment = null;
 	private static final boolean enabledEnvironment = false;
 	public PulsarScratchPad() {
-		super( "Pulsar Scheme Scratch Pad" );
-		if ( environment == null )
-			environment = getScheme().getEnvironment();
-		initScheme( getScheme() );
-		initFrame();
+		this( "Pulsar Scheme Scratch Pad" );
 	}
-	
+	public PulsarScratchPad( String title ) throws HeadlessException {
+		super(title);
+		if ( enabledEnvironment ){ 
+			if ( environment == null )
+				environment = getScheme().getEnvironment();
+		}
+//		initScheme( getScheme() );
+//		initialize();
+	}
+
 	public final AbstractAction NEW_SCRATCHPAD_ACTION = new AbstractAction() {
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -137,7 +158,7 @@ public abstract class PulsarScratchPad extends JFrame {
 				public Scheme getScheme() {
 					return self.getScheme();
 				}
-			};
+			}.initialize();
 		}
 		{
 			putValue( Action2.NAME, "Create a New Scratchpad" );
@@ -677,7 +698,7 @@ public abstract class PulsarScratchPad extends JFrame {
 		return new File( System.getProperty("user.home"), ".pulsar/kawapad-extension.scm" );
 	}
 
-	public static void initScheme( Scheme scheme ) {
+	public static Scheme initScheme( Scheme scheme ) {
 		if ( enabledEnvironment )
 			Environment.setCurrent(environment); 
 		
@@ -725,12 +746,15 @@ public abstract class PulsarScratchPad extends JFrame {
 			} catch (Throwable e) {
 				logError( "Ignored an error : ", e);
 			}
+			
 		}
+		return scheme;
 	}
 	
-	private void initFrame() {
+	public PulsarScratchPad initialize() {
 		SchemeUtils.defineVar(getScheme(), frameName, this );
 		eventHandlers.invokeEventHandler( this, getScheme(), EventHandlers.INIT,  this);
+		return this;
 	}
 
 
@@ -746,11 +770,11 @@ public abstract class PulsarScratchPad extends JFrame {
 			purgeKeyFromActionMap(actionMap.getParent(), key );
 	}
 	
-	Container scratchPadRoot;
-	JTextPane textPane;
-	PulsarScratchPadListener textPaneController;
-	JScrollPane scrollPane; 
-	JMenuBar menuBar;
+	protected Container scratchPadRoot;
+	protected JTextPane textPane;
+	protected PulsarScratchPadListener textPaneController;
+	protected JScrollPane scrollPane; 
+	protected JMenuBar menuBar;
 
 	public JTextPane getTextPane() {
 		return textPane;
@@ -758,6 +782,10 @@ public abstract class PulsarScratchPad extends JFrame {
 	@Override
 	public MenuBar getMenuBar() {
 		return super.getMenuBar();
+	}
+
+	public Container getScratchPadRootPane() {
+		return getContentPane();
 	}
 	
 	{
@@ -773,8 +801,10 @@ public abstract class PulsarScratchPad extends JFrame {
 		};
 		scrollPane = new JScrollPane( textPane );
 		textPaneController = new PulsarScratchPadListener();
-		scratchPadRoot = getContentPane();
-		scratchPadRoot.add( scrollPane );
+		scratchPadRoot = new JPanel( new BorderLayout() );
+		getContentPane().add(scratchPadRoot );
+		
+		scratchPadRoot.add( scrollPane, BorderLayout.CENTER );
         textPane.setFont(new Font("monospaced", Font.PLAIN, 12));
         
         /*
@@ -1282,8 +1312,8 @@ public abstract class PulsarScratchPad extends JFrame {
 		editMenuItem.setMnemonic('e');
 		menuBar.add( editMenuItem );
 
-		JMenu schemeMenuItem = new JMenu( "Scheme" );
-		schemeMenuItem.setMnemonic('s');
+		JMenu schemeMenuItem = new JMenu( "Run" );
+		schemeMenuItem.setMnemonic('r');
 		menuBar.add( schemeMenuItem );
 
 		///
@@ -1368,7 +1398,7 @@ public abstract class PulsarScratchPad extends JFrame {
 	}
 	
 	public static void main(String[] args) throws IOException {
-		PulsarScratchPad scratchPad = createStaticInstance(new Scheme());
+		PulsarScratchPad scratchPad = createStaticInstance( initScheme( new Scheme() ) ).initialize();
 		if ( 0 < args.length  ) {
 			scratchPad.openFile( new File( args[0] ) );
 		}

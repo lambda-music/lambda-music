@@ -95,6 +95,10 @@ public abstract class SchemeNewFactory {
 
 
 	public static Object process( Pulsar pulsar,  Object ... args ) {
+		// TODO This has to be reviewed. >>> (Tue, 09 Jul 2019 10:41:00 +0900)
+		if ( pulsar.gui == null ) return EmptyList.emptyList;
+		// <<<
+
 		ArrayList<Object> arguments = new ArrayList<>( Arrays.asList( args ) );
 		Object key = arguments.remove(0);
 		if ( key == null )
@@ -105,6 +109,8 @@ public abstract class SchemeNewFactory {
 		if ( factory == null ) {
 			throw new RuntimeException("unknown object type (" + keyString + ")" );
 		}
+		
+
 		Object result = factory.create( pulsar, arguments );
 
 		return result;

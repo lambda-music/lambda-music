@@ -28,6 +28,22 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
+/**
+ * This is a countermeasure for an improper designing of {@link Action#NAME }.
+ * <p>
+ * The {@link Action#NAME} property is treated as a caption when it is set to a
+ * menu item. In the meanwhile, it is treated as its identifier which is used
+ * when users need to retrieve the menu items from a list. That means you cannot
+ * create two or more menu items which have a same caption string.
+ * <p>
+ * Use Action2#NAME property to set an independent caption string. This requires
+ * additional process : calling processXXX() methods before the menu item is
+ * shown. This is very ugly but I believe the cost is less than its benefit.
+ * <p>
+ * (Tue, 09 Jul 2019 17:53:51 +0900)
+ * 
+ * @author Ats Oka
+ */
 public class Action2 {
 	public static final String NAME = "CAPTION";
 	public static void setCaption( Action action, String caption ) {
