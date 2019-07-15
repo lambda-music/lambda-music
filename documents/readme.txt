@@ -129,6 +129,18 @@
         = Note Builder API
         = Pulser MIDI Controller API
         = Pulser GUI Controller API
+            = gui-add
+                If the specified constraint is "hidden" the object will not be
+                actually added to the container. The added object could still be
+                accessed by gui-get function. This method could be used for
+                storing user data. (Sun, 14 Jul 2019 10:13:54 +0900)
+                |
+                |     hello
+                |     world
+                |     foo
+                |     bar 
+                |
+                TEST
 
     = Files
 

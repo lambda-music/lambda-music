@@ -31,6 +31,10 @@ public class JNamedPanel extends JPanel implements JSelectableUserObject {
 	public void setNextComponentName( String name ) {
 		this.nextComponentName = name;
 	}
+	protected Object nextConstraint = null;
+	public void setNextConstraint( Object constraint ) {
+		this.nextConstraint = constraint;
+	}
 	public Component getComponentByName( String name ) {
 		return namedMap.get( name );
 	}
@@ -39,7 +43,13 @@ public class JNamedPanel extends JPanel implements JSelectableUserObject {
 
 	@Override
 	protected void addImpl(Component comp, Object constraints, int index) {
-		super.addImpl(comp, constraints, index);
+		if ( constraints != null && "hidden".equals( constraints.toString() ) ) {
+			// DO NOTHING 
+		} else {
+			super.addImpl(comp, nextConstraint != null ? nextConstraint : constraints, index);
+		}
+		nextConstraint = null;
+		
 		if ( nextComponentName != null ) {
 			namedMap.put(nextComponentName, comp );
 			invNamedMap.put(comp, nextComponentName);
@@ -134,6 +144,7 @@ public class JNamedPanel extends JPanel implements JSelectableUserObject {
 	@Override
 	public Dimension getPreferredSize() {
 		Dimension d = new Dimension( super.getPreferredSize() );
+		/*
 		if ( d.height == Integer.MAX_VALUE ) {
 			Container p = this.getParent();
 			d.height = (int) ( p == null ? d.height : p.getSize().height - 5 ) ;
@@ -142,6 +153,7 @@ public class JNamedPanel extends JPanel implements JSelectableUserObject {
 			Container p = this.getParent();
 			d.width = (int) ( p == null ? d.width : p.getSize().width - 5 ) ;
 		}
+		*/
 		return d;
 	}
 	

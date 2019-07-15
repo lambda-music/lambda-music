@@ -82,6 +82,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.text.JTextComponent;
 
 import org.jaudiolibs.jnajack.JackException;
 
@@ -91,6 +92,7 @@ import ats.pulsar.lib.swing.Action2;
 import ats.pulsar.lib.swing.FlawLayout;
 import ats.pulsar.lib.swing.JNamedPanel;
 import ats.pulsar.lib.swing.JPulsarRadioButton;
+import ats.pulsar.lib.swing.JPulsarUserObject;
 import ats.pulsar.lib.swing.JSelectableUserObject;
 import ats.pulsar.lib.swing.LayoutUtils;
 import ats.pulsar.lib.swing.SchemeUtils;
@@ -370,7 +372,70 @@ class PulsarGui {
     			
     		}
     	});
+
+    	SchemeUtils.defineVar( scheme, "gui-set-text" , new ProcedureN() {
+    		public Object applyN(Object[] args) throws Throwable {
+    			if ( 2 == args.length ) {
+    				JTextComponent parent = (JTextComponent) args[0];
+        			String userText = SchemeUtils.anyToString( args[1] );
+					parent.setText( userText );
+					return parent; 
+    			} else {
+    				throw new RuntimeException( 
+    						"Invalid argument error\n"+
+    						"usage : (gui-set-text text-component text )" );
+    			}
+    			
+    		}
+    	});
+
+    	
+    	/**
+    	 * (gui-get-user-object (gui-get (part1 'gui) 'self) )
+    	 * 
+    	 */
+    	SchemeUtils.defineVar( scheme, "gui-set-user-object" , new ProcedureN() {
+    		public Object applyN(Object[] args) throws Throwable {
+    			if ( 2 == args.length ) {
+    				JPulsarUserObject parent = (JPulsarUserObject) args[0];
+        			Object userObject = args[1];
+					parent.setUserObject( userObject );
+					return parent; 
+    			} else {
+    				throw new RuntimeException( 
+    						"Invalid argument error\n"+
+    						"usage : (gui-set-user-object parent user-object )" );
+    			}
+    		}
+    	});
+    	SchemeUtils.defineVar( scheme, "gui-get-user-object" , new ProcedureN() {
+    		public Object applyN(Object[] args) throws Throwable {
+    			if ( 1 == args.length ) {
+    				JPulsarUserObject parent = (JPulsarUserObject) args[0];
+					return parent.getUserObject();
+    			} else {
+    				throw new RuntimeException( 
+    						"Invalid argument error\n"+
+    						"usage : (gui-get-user-object parent)" );
+    			}
+    		}
+    	});
     
+    	// XXX
+    	SchemeUtils.defineVar( scheme, "gui-prettify" , new ProcedureN() {
+    		public Object applyN(Object[] args) throws Throwable {
+    			if ( 1 == args.length ) {
+        			String userText = SchemeUtils.anyToString( args[0] );
+					return frame.prettify( userText );
+    			} else {
+    				throw new RuntimeException( 
+    						"Invalid argument error\n"+
+    						"usage : (gui-set-text text-component text )" );
+    			}
+    			
+    		}
+    	});
+
     	SchemeUtils.defineVar( scheme, "gui-divider-location!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
@@ -652,8 +717,13 @@ class PulsarGui {
 		// A simple Countermeasure is just packing twice.
 		//
 		
-		frame.pack();
-		frame.pack();
+//		frame.pack();
+//		frame.pack();
+		
+		// SOMEHOW THIS MAKES THE FRAME SMALLER AND SMALLER WHEN DYNAMICALLY CREATING GROUPS.
+		// SO I DISABLED IT. (Mon, 15 Jul 2019 10:08:05 +0900)
+		// frame.pack();
+		// frame.pack();
 	}
 	public void guiFlowLayout(Container userPane) {
 		userPane.setLayout( new FlawLayout( FlawLayout.LEFT, 2, 2 ) );
@@ -684,7 +754,14 @@ class PulsarGui {
 				guiSpringLayout( container );
 				break;
 			case "grid" :
-				guiGridLayout( container, (int)args[0], (int)args[1], (int)args[2], (int)args[3] );
+				if ( args.length < 4 )
+					throw new IllegalArgumentException("arguments must to be equal or more than four.");
+				guiGridLayout( container, // (Mon, 15 Jul 2019 10:05:46 +0900) 
+						((Number)args[0]).intValue(), 
+						((Number)args[1]).intValue(), 
+						((Number)args[2]).intValue(), 
+						((Number)args[3]).intValue() 
+						);
 				break;
 			case "gridbag" :
 				guiGridBagLayout( container );
@@ -879,7 +956,13 @@ class PulsarGui {
 			parent = userPane;
 		parent.add( c  );
 	}
+
 	public Object guiBuild(Object[] args) {
+		return guiBuild2(args);
+	}
+
+	@SuppressWarnings("unused")
+	private Object guiBuild1(Object[] args) {
 		Container parent;
 		if ( args[0] instanceof Container )
 			parent = (Container) args[0];
@@ -912,6 +995,9 @@ class PulsarGui {
 						case "name":
 							mode = "name";
 							break;
+						case "constraint":
+							mode = "constraint";
+							break;
 						case "label":
 							mode = "label";
 							break;
@@ -929,6 +1015,9 @@ class PulsarGui {
 					mode = null;
 				} else if ( "name".equals( mode ) ) {
 					guiName( parent, SchemeUtils.toString( curr ) ); 
+					mode = null;
+				} else if ( "constraint".equals( mode ) ) {
+					guiConstraint( parent,  curr ); 
 					mode = null;
 				} else {
 					throw new RuntimeException( "An invalid state was detected " + mode );
@@ -960,12 +1049,116 @@ class PulsarGui {
 	}	
 	
 
+	private Object guiBuild2(Object[] args) {
+		Container parent;
+		if ( args[0] instanceof Container )
+			parent = (Container) args[0];
+		else if ( args[0] instanceof EmptyList ) { 
+			parent = null;
+		} else {
+			throw new RuntimeException( "An invalid parent object was specified. " );
+		}
+		
+		String mode = null;
+		for ( int i=1; i<args.length; i++ ) {
+			try {
+				Object curr = args[i];
+	
+				if ( "label".equals( mode ) ) {
+					guiAdd( parent, (Component) SchemeNewFactory.process(
+							pulsar,
+							Symbol.makeUninterned("label"), 
+							SchemeUtils.anyToString( curr ) ) );
+					
+					mode = null;
+				} else if ( "name".equals( mode ) ) {
+					guiName( parent, SchemeUtils.toString( curr ) ); 
+					mode = null;
+				} else if ( "constraint".equals( mode ) ) {
+					guiConstraint( parent,  curr ); 
+					mode = null;
+				} else {
+					if ( curr instanceof Symbol ) {
+						String symbolName = SchemeUtils.symbolToString( curr );
+						switch ( symbolName ) {
+							case "newline" : 
+								guiNewline( parent );
+								break;
+							case "validate" : 
+								guiValidate( parent );
+								break;
+							case "list":
+								mode = "list";
+								break;
+							case "name":
+								mode = "name";
+								break;
+							case "constraint":
+								mode = "constraint";
+								break;
+							case "label":
+								mode = "label";
+								break;
+							default :
+								throw new RuntimeException( "gui-build! unknown type \"" + symbolName + "\"" );
+						}
+					} else {
+	//					if ( curr instanceof Pair  ) {
+	//						Pair p = (Pair) curr;
+	//						if ( "list".equals( mode ) ) {
+	//							for ( Object e : p ) {
+	//								guiAdd( parent, (Component) e );
+	//							}
+	//						} else {
+	//							Object car = p.getCar();
+	//							Object cdr = p.getCdr();
+	//							
+	//							if ( cdr instanceof Pair ) {
+	//								guiAdd( parent, (Component)car, LayoutUtils.map2constraint( cdr ) );
+	//							} else {
+	//								guiAdd( parent, (Component)car, SchemeUtils.toString( cdr ) );
+	//							}
+	//						}
+	//					} else {
+	//						guiAdd( parent, (Component)curr );
+	//					}
+						// MODIFIED SPECIFICATION >>> (Thu, 11 Jul 2019 21:36:31 +0900)
+						if ( curr instanceof Pair ) {
+							Pair p = (Pair) curr;
+							ArrayList al = new ArrayList();
+							al.add( parent );
+							al.addAll( Arrays.asList( p.toArray() ) );
+							guiBuild( al.toArray() );
+						} else if ( curr instanceof EmptyList ) {
+							// 
+						} else {
+							guiAdd( parent, (Component)curr );
+						}
+						// MODIFIED SPECIFICATION <<< (Thu, 11 Jul 2019 21:36:31 +0900)
+						mode = null;
+					}
+				}
+			} catch ( Throwable e ) {
+				throw new RuntimeException( "an error is occured in line " + ( i ) ,e );
+			}
+		}
+		return parent;
+	}	
+
 	public void guiName( Container parent, String name ) {
 		if ( parent == null )
 			parent = userPane;
 		
 		if ( parent instanceof JNamedPanel ) {
 			((JNamedPanel)parent).setNextComponentName( name );
+		}
+	}
+	public void guiConstraint( Container parent, Object constraint ) {
+		if ( parent == null )
+			parent = userPane;
+		
+		if ( parent instanceof JNamedPanel ) {
+			((JNamedPanel)parent).setNextConstraint( constraint );
 		}
 	}
 	public void guiNewline( Container parent ) {
@@ -1038,7 +1231,7 @@ class PulsarGui {
 		{
 			putValue( Action2.NAME, "Edit Main File" );
 			putValue( Action.MNEMONIC_KEY, (int)'e' );
-			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK) );
+			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK ) );
 		}
 	};
 
@@ -1160,7 +1353,7 @@ class PulsarGui {
 //				m.add( new JMenuItem( NEW_SCRATCHPAD ) );
 				m.add( new JMenuItem( SET_MAIN_FILE_ACTION ) );
 				m.add( new JMenuItem( CLEAR_MAIN_FILE_ACTION ) );
-				m.add( new JMenuItem( EDIT_SCRATCHPAD ) );
+//				m.add( new JMenuItem( EDIT_SCRATCHPAD ) );
 				m.add( new JMenuItem( RESET_SEQUENCER ) );
 				menuBar.add( m,0 );
 			}
@@ -1236,8 +1429,10 @@ class PulsarGui {
 
 			//Create and set up the content pane.
 			JScrollPane userPaneOuter = new JScrollPane( userPane );
-			userPaneOuter.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED );
-			userPaneOuter.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED );
+//			userPaneOuter.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED );
+//			userPaneOuter.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED );
+			userPaneOuter.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS );
+			userPaneOuter.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS );
 			// SEE TAG_PACK_TWICE
 			
 			if ( false ) {

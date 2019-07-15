@@ -1,0 +1,13 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2019-07-14T12:15:11+09:00
+
+====== About 'user-object' ======
+
+
+
+{{./pasted_image.png}}
+
+
+{{./pasted_image001.png}}
+

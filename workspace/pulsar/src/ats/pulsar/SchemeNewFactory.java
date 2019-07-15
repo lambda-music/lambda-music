@@ -58,6 +58,7 @@ import ats.pulsar.lib.swing.JPulsarCheckBox;
 import ats.pulsar.lib.swing.JPulsarComboBox;
 import ats.pulsar.lib.swing.JPulsarRadioButton;
 import ats.pulsar.lib.swing.JPulsarTextField;
+import ats.pulsar.lib.swing.JPulsarUserObject;
 import ats.pulsar.lib.swing.JUserObjectContainer;
 import ats.pulsar.lib.swing.PulsarListItem;
 import ats.pulsar.lib.swing.SchemeUtils;
@@ -191,8 +192,21 @@ public abstract class SchemeNewFactory {
 		}
 	}
 	
+	/**
+	 * 
+	 * This method creates "selective" components such as check-boxes,
+	 * radio-buttons, etc. and returns them as a scheme list
+	 * 
+	 * (Fri, 12 Jul 2019 03:45:09 +0900)
+	 * 
+	 * @param type
+	 * @param args
+	 * @param f
+	 * @return a scheme list which contains components.
+	 */
+	
 	static Object createSelectiveComponents( String type, List<Object> args, ComponentFactory f ) {
-		if ( 1 < args.size()  ) {
+		if ( 0 < args.size()  ) {
 			Procedure procedure;
 			{
 				int last = args.size() - 1;
@@ -200,33 +214,39 @@ public abstract class SchemeNewFactory {
 				args.remove(last);
 			}
 			ActionListener listener = f.createActionListener( procedure );
-			
+
 			List<Object> result = new ArrayList();
-			for ( Object e : args ) {
-				if ( e instanceof Symbol ) {
-					String symbol = SchemeUtils.symbolToString(e);
-					switch ( symbol ) {
-						case "selected" :
-							if ( result.size() == 0 ) {
-								throw new RuntimeException( "error : no item was created" );
-							} else {
-								((AbstractButton) result.get( result.size() - 1) ).setSelected(true);
-							}
-							break;
-						default :
-							
-							break;
+			
+			/*
+			 * Returns an empty item when no string object is presented. 
+			 */
+			if ( 0 == args.size() ) {
+				result.add( f.create(listener, "", "" ) );
+			} else {
+				for ( Object e : args ) {
+					if ( e instanceof Symbol ) {
+						String symbol = SchemeUtils.symbolToString(e);
+						switch ( symbol ) {
+							case "selected" :
+								if ( result.size() == 0 ) {
+									throw new RuntimeException( "error : no item was created" );
+								} else {
+									((AbstractButton) result.get( result.size() - 1) ).setSelected(true);
+								}
+								break;
+							default :
+
+								break;
+						}
+					} else if ( e instanceof Pair ) {
+						Pair p = (Pair) e;
+						String caption = SchemeUtils.toString( p.getCar() );
+						Object userObject = p.getCdr();
+						result.add( f.create(listener, caption, userObject  ) );
+					} else {
+						String caption = SchemeUtils.toString(e);
+						result.add( f.create(listener, caption, caption) );
 					}
-				} else if ( e instanceof IString ) {
-					String caption = SchemeUtils.toString(e);
-					result.add( f.create(listener, caption, caption) );
-				} else if ( e instanceof Pair ) {
-					Pair p = (Pair) e;
-					String caption = SchemeUtils.toString( p.getCar() );
-					Object userObject = p.getCdr();
-					result.add( f.create(listener, caption, userObject  ) );
-				} else {
-					
 				}
 			}
 			return Pair.makeList( result );
@@ -234,8 +254,18 @@ public abstract class SchemeNewFactory {
 			throw new RuntimeException( "new " + type + "[ caption, caption, ..., procedure] " + args.size() );
 		}
 	}
-	
+
 	static {
+		register( "user-object", new SchemeNewFactory() {
+			@Override
+			Object create(Pulsar pulsar, List<Object> args ) {
+				if ( 0<args.size()  ) {
+					return new JPulsarUserObject( args.get(0) );
+				} else {
+					return EmptyList.emptyList;
+				}
+			}
+		});
 		register( "label", new SchemeNewFactory() {
 			@Override
 			Object create(Pulsar pulsar, List<Object> args ) {
@@ -324,7 +354,10 @@ public abstract class SchemeNewFactory {
 				if ( args.size() == 0 ) {
 					pulsar.gui.guiLayout(panel, "default" );
 				} else if ( 1 <= args.size() ) {
-					pulsar.gui.guiLayout(panel, SchemeUtils.symbolToString( args.get(0) ) );
+//					pulsar.gui.guiLayout(panel, SchemeUtils.symbolToString( args.get(0) ) );
+					String type  = 0< args.size() ? SchemeUtils.anyToString( args.remove(0) ) : "default";
+					Object[] optionalArguments = args.toArray();
+					pulsar.gui.guiLayout( panel, type, optionalArguments ) ;
 				}
 				return panel;
 			}
@@ -333,18 +366,16 @@ public abstract class SchemeNewFactory {
 			@Override
 			Object create(Pulsar pulsar, List<Object> args ) {
 				JNamedPanel panel = new JNamedPanel();
-
 				if ( args.size() == 0 ) {
 					pulsar.gui.guiLayout(panel, "default" );
 				} else if ( 1 <= args.size() ) {
-					String title = SchemeUtils.toString( args.get(0) );
+					String title = 0< args.size() ? SchemeUtils.anyToString( args.remove(0) ) : "Group";
+					String type  = 0< args.size() ? SchemeUtils.anyToString( args.remove(0) ) : "default";
+					Object[] optionalArguments = args.toArray();
+					
+					// TODO SEE gui-layout! (Mon, 15 Jul 2019 10:05:46 +0900)
 					panel.setBorder( BorderFactory.createTitledBorder( title ) );
-
-					if ( 2 <= args.size() ) {
-						pulsar.gui.guiLayout(panel, SchemeUtils.symbolToString( args.get(1) ) );
-					} else {
-						pulsar.gui.guiLayout(panel, "flow" );
-					}
+					pulsar.gui.guiLayout( panel, type, optionalArguments ) ;
 				}
 				return panel;
 			}

@@ -53,11 +53,13 @@
                                       ; treat leading '|' as the beginning of a line
                                       ((eqv? (car s2)  #\|)
                                        (values #f count 
-                                               (list->string 
-                                                 (if (char-set-contains? char-set:whitespace
-                                                                         (cadr s2) )
-                                                   (cddr s2)
-                                                   (cdr s2)))))
+                                               (if (< 1 (length s2))
+                                                 (list->string 
+                                                   (if (char-set-contains? char-set:whitespace (cadr s2))
+                                                     (cddr s2)
+                                                     (cdr s2)))
+                                                 "    "
+                                                 )))
                                       ; treat leading ';' as a comment line
                                       ((eqv? (car s2)  #\;)
                                        (values #f  #f "" )

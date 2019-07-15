@@ -95,6 +95,7 @@ import gnu.lists.IString;
 import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
+import gnu.mapping.Procedure1;
 import gnu.mapping.Procedure2;
 import gnu.mapping.Procedure3;
 import gnu.mapping.Symbol;
@@ -320,6 +321,14 @@ public abstract class PulsarScratchPad extends JFrame {
 
 		});
 	}
+	public static String prettyPrint(Object resultObject) throws Throwable {
+		StringWriter out = new StringWriter();
+		OutPort outPort = new OutPort( out, true, true );
+		SchemeUtils.toString( kawa.lib.kawa.pprint.pprint.apply2( resultObject, outPort ) );
+		outPort.flush();
+		return out.toString();
+	}
+
 	String getLispWordPatternString() {
 		return PulsarScratchPadHighlighter.lispWordToPatternString( getLispWords( getScheme() ) ); 
 	}
@@ -355,11 +364,7 @@ public abstract class PulsarScratchPad extends JFrame {
 						resultObject = executeScheme(text);
 						textPane.getActionMap();
 
-						StringWriter out = new StringWriter();
-						OutPort outPort = new OutPort( out, true, true );
-						SchemeUtils.toString( kawa.lib.kawa.pprint.pprint.apply2( resultObject, outPort ) );
-						outPort.flush();
-						result = out.toString();
+						result = prettyPrint( resultObject );
 
 					} catch (Throwable e1) {
 						ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -373,6 +378,7 @@ public abstract class PulsarScratchPad extends JFrame {
 
 					SwingUtilities.invokeLater( new InsertTextToTextPane(result, isThereSelection ) );
 				}
+
 			});
 		}
 		{
@@ -516,15 +522,20 @@ public abstract class PulsarScratchPad extends JFrame {
 			formatProc( textPane, new TextFilter() {
 				@Override
 				String process(String text) {
-					return prettify( getLispWords( getScheme() ), text );
+					return prettify( text );
 				}
-
 			});
 		}
 	}
 	
 	public static final String prettify( Collection<String> lispWords, String text  ) {
 		return SimpleSchemePrettifier.prettify( lispWords, text );
+	}
+	public static final String prettify( Scheme scheme, String text ) {
+		return prettify( getLispWords( scheme ), text );
+	}
+	public final String prettify( String text ) {
+		return prettify( getScheme(), text );
 	}
 
 	public final AbstractAction PRETTIFY_ACTION = new PrettifyAction() {
@@ -738,6 +749,18 @@ public abstract class PulsarScratchPad extends JFrame {
 				public Object apply2(Object arg1, Object arg2 ) throws Throwable {
 					eventHandlers.unregister((Symbol)arg1,(Symbol)arg2 );
 					return EmptyList.emptyList;
+				}
+			});
+			SchemeUtils.defineVar(scheme, "pretty-print", new Procedure1() {
+				@Override
+				public Object apply1(Object arg1 ) throws Throwable {
+					return prettify( scheme, SchemeUtils.anyToString(prettyPrint(arg1)));
+				}
+			});
+			SchemeUtils.defineVar(scheme, "prettify", new Procedure1() {
+				@Override
+				public Object apply1(Object arg1 ) throws Throwable {
+					return prettify( scheme, SchemeUtils.anyToString(arg1));
 				}
 			});
 			
