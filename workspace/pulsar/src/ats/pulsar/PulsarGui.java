@@ -249,12 +249,13 @@ class PulsarGui {
     	SchemeUtils.defineVar( scheme, "gui-new" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
-				try {
-					return SchemeNewFactory.process( pulsar, args);
-				} catch ( Exception e ) {
-					logError("", e);
-					return null;
-				}
+//				try {
+//					return SchemeNewFactory.process( pulsar, args);
+//				} catch ( Exception e ) {
+//					logError("", e);
+//					return null;
+//				}
+				return SchemeNewFactory.process( pulsar, args);
     		}
     	});
 
@@ -1091,6 +1092,9 @@ class PulsarGui {
 				} else if ( "constraint".equals( mode ) ) {
 					guiConstraint( parent,  curr ); 
 					mode = null;
+				} else if ( "property".equals( mode ) ) {
+ 					guiProperty( parent, (List<Object>) curr );
+					mode = null;
 				} else {
 					if ( curr instanceof Symbol ) {
 						String symbolName = SchemeUtils.symbolToString( curr );
@@ -1112,6 +1116,9 @@ class PulsarGui {
 								break;
 							case "label":
 								mode = "label";
+								break;
+							case "property":
+								mode = "property";
 								break;
 							default :
 								throw new RuntimeException( "gui-build! unknown type \"" + symbolName + "\"" );
@@ -1165,6 +1172,8 @@ class PulsarGui {
 		
 		if ( parent instanceof JNamedPanel ) {
 			((JNamedPanel)parent).setNextComponentName( name );
+		} else {
+			logWarn( "WARNING guiName: the parent is not JNamedPanel" );
 		}
 	}
 	public void guiConstraint( Container parent, Object constraint ) {
@@ -1173,6 +1182,18 @@ class PulsarGui {
 		
 		if ( parent instanceof JNamedPanel ) {
 			((JNamedPanel)parent).setNextConstraint( constraint );
+		} else {
+			logWarn( "WARNING guiConstraint: the parent is not JNamedPanel" );
+		}
+	}
+	public void guiProperty( Container parent, List<Object> propertyValues ) {
+		if ( parent == null )
+			parent = userPane;
+		
+		if ( parent instanceof JNamedPanel ) {
+			((JNamedPanel)parent).setNextProperty( propertyValues );
+		} else {
+			logWarn( "WARNING guiProperty: the parent is not JNamedPanel" );
 		}
 	}
 	public void guiNewline( Container parent ) {

@@ -1,12 +1,12 @@
 package ats.pulsar.lib.swing;
 
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.LayoutManager;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -34,6 +34,11 @@ public class JNamedPanel extends JPanel implements JSelectableUserObject {
 	protected Object nextConstraint = null;
 	public void setNextConstraint( Object constraint ) {
 		this.nextConstraint = constraint;
+	}
+	// CREATED BUT NOT USED (Tue, 16 Jul 2019 19:18:02 +0900)
+	protected List<Object> nextPropertyValues = null;
+	public void setNextProperty( List<Object> propertyValues ) {
+		this.nextPropertyValues = propertyValues;
 	}
 	public Component getComponentByName( String name ) {
 		return namedMap.get( name );
