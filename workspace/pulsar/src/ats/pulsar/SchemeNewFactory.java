@@ -335,14 +335,17 @@ public abstract class SchemeNewFactory {
 		register( "frame", new SchemeNewFactory() {
 			@Override
 			Object create(Pulsar pulsar, List<Object> args ) {
-				JFrame panel = new JFrame();
+				JFrame frame = new JFrame();
+//				if ( args.size() == 0 ) {
+//					pulsar.gui.guiLayout(panel, "default" );
+//				} else if ( 1 <= args.size() ) {
+//					ArrayList<Object> argList = new ArrayList<>( Arrays.asList(args) );
+//					String    type = 0 < argList.size() ? SchemeUtils.symbolToString( argList.remove(0) ) : "default";
+//					pulsar.gui.guiLayout( panel, type, argList.toArray() );
+//				}
+				pulsar.gui.guiLayout_auto( frame, args.toArray() );
 
-				if ( args.size() == 0 ) {
-					pulsar.gui.guiLayout(panel, "default" );
-				} else if ( 1 <= args.size() ) {
-					pulsar.gui.guiLayout(panel, SchemeUtils.symbolToString( args.get(0) ) );
-				}
-				return panel;
+				return frame;
 			}
 		});
 
@@ -354,10 +357,10 @@ public abstract class SchemeNewFactory {
 				if ( args.size() == 0 ) {
 					pulsar.gui.guiLayout(panel, "default" );
 				} else if ( 1 <= args.size() ) {
-//					pulsar.gui.guiLayout(panel, SchemeUtils.symbolToString( args.get(0) ) );
-					String type  = 0< args.size() ? SchemeUtils.anyToString( args.remove(0) ) : "default";
-					Object[] optionalArguments = args.toArray();
-					pulsar.gui.guiLayout( panel, type, optionalArguments ) ;
+//					String type  = 0< args.size() ? SchemeUtils.anyToString( args.remove(0) ) : "default";
+//					Object[] optionalArguments = args.toArray();
+//					pulsar.gui.guiLayout( panel, type, optionalArguments ) ;
+					pulsar.gui.guiLayout_auto( panel, args.toArray() );
 				}
 				return panel;
 			}
@@ -376,26 +379,6 @@ public abstract class SchemeNewFactory {
 					// TODO SEE gui-layout! (Mon, 15 Jul 2019 10:05:46 +0900)
 					panel.setBorder( BorderFactory.createTitledBorder( title ) );
 					pulsar.gui.guiLayout( panel, type, optionalArguments ) ;
-				}
-				return panel;
-			}
-		});
-		register( "tabs", new SchemeNewFactory() {
-			@Override
-			Object create(Pulsar pulsar, List<Object> args ) {
-				JNamedPanel panel = new JNamedPanel();
-
-				if ( args.size() == 0 ) {
-					pulsar.gui.guiLayout(panel, "default" );
-				} else if ( 1 <= args.size() ) {
-					String title = SchemeUtils.toString( args.get(0) );
-					panel.setBorder( BorderFactory.createTitledBorder( title ) );
-
-					if ( 2 <= args.size() ) {
-						pulsar.gui.guiLayout(panel, SchemeUtils.symbolToString( args.get(1) ) );
-					} else {
-						pulsar.gui.guiLayout(panel, "flow" );
-					}
 				}
 				return panel;
 			}

@@ -613,24 +613,25 @@ class PulsarGui {
     		public Object applyN(Object[] args) throws Throwable {
 				logInfo( "gui-layout" );
 				
-				ArrayList<Object> argList = new ArrayList<>( Arrays.asList(args) );
-				
 				if ( args.length == 0 ) {
-					throw new RuntimeException( "gui-layout! (panel) ['gridbag | 'spring | 'flow | 'grid]" );
-				} else if ( args.length == 1 ) {
+					throw new IllegalArgumentException();
+				} else if ( args.length <= 1 ) {
 					guiLayout( userPane, SchemeUtils.symbolToString( args[0] ) );
-				} else if ( 2 <= args.length ) {
-					Container container = (Container) argList.remove(0);
-					String type         = SchemeUtils.symbolToString( argList.remove(0) );
-					int row  = 0 < argList.size() ? SchemeUtils.toInteger( argList.remove(0)) : 1;
-					int col  = 0 < argList.size() ? SchemeUtils.toInteger( argList.remove(0)) : 0;
-					int hgap = 0 < argList.size() ? SchemeUtils.toInteger( argList.remove(0)) : 0;
-					int vgap = 0 < argList.size() ? SchemeUtils.toInteger( argList.remove(0)) : 0;
-					guiLayout( container, type, row, col, hgap, vgap );
-				} 
-    			return EmptyList.emptyList;
+					return userPane;
+				} else {
+					ArrayList<Object> argList = new ArrayList<>( Arrays.asList(args) );
+					Container container = 0 < argList.size() ? (Container) argList.remove(0) : userPane;
+					String    type      = 0 < argList.size() ? SchemeUtils.symbolToString( argList.remove(0) ) : "default";
+					if ( container instanceof JFrame ){
+						container = ((JFrame)container).getContentPane();
+					}
+					guiLayout( container, type, argList.toArray() );
+
+					return container;
+				}
     		}
     	});
+    	
     	SchemeUtils.defineVar( scheme, "gui-gridbag-layout" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
@@ -741,6 +742,15 @@ class PulsarGui {
 		logInfo( "gridLayout : " + row + " / " + col + " / " + hgap + " / " + vgap );
 		userPane.setLayout( new GridLayout( row, col, hgap, vgap ) );
 	}
+
+	//
+	public void guiLayout_auto( Container container, Object[] args ) {
+		ArrayList<Object> argList = new ArrayList<>( Arrays.asList(args) );
+		String    type = 0 < argList.size() ? SchemeUtils.symbolToString( argList.remove(0) ) : "default";
+		guiLayout( container, type, argList.toArray() );
+	}
+
+
 	public void guiLayout( Container container, String type, Object ... args  ) {
 		switch ( type ) {
 			case "default":
@@ -756,12 +766,16 @@ class PulsarGui {
 			case "grid" :
 				if ( args.length < 4 )
 					throw new IllegalArgumentException("arguments must to be equal or more than four.");
-				guiGridLayout( container, // (Mon, 15 Jul 2019 10:05:46 +0900) 
-						((Number)args[0]).intValue(), 
-						((Number)args[1]).intValue(), 
-						((Number)args[2]).intValue(), 
-						((Number)args[3]).intValue() 
-						);
+				
+				
+				guiGridLayout( container,
+						// 1 (Mon, 15 Jul 2019 10:05:46 +0900)
+						// 2 (Tue, 16 Jul 2019 13:35:24 +0900) 
+						( 0 < args.length ? ((Number)args[0]).intValue() : 0) , 
+						( 1 < args.length ? ((Number)args[1]).intValue() : 0) , 
+						( 2 < args.length ? ((Number)args[2]).intValue() : 0) , 
+						( 3 < args.length ? ((Number)args[3]).intValue() : 0)  
+					);
 				break;
 			case "gridbag" :
 				guiGridBagLayout( container );
