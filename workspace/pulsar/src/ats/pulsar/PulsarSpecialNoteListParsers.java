@@ -157,7 +157,7 @@ public class PulsarSpecialNoteListParsers {
 				value = 0.0d;
 			}
 
-			LOGGER.log( Level.INFO, "a len note = " + value );
+			// LOGGER.log( Level.INFO, "a len note = " + value );
 			((MetroEventBuffer) receiver).setLength( value );
 			return result;
 		}

@@ -3,6 +3,7 @@ package ats.pulsar.lib.swing;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.LayoutManager;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -13,6 +14,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JPanel;
+
+import gnu.mapping.Procedure;
 
 public class JNamedPanel extends JPanel implements JSelectableUserObject {
 	public JNamedPanel() {
@@ -40,6 +43,15 @@ public class JNamedPanel extends JPanel implements JSelectableUserObject {
 	public void setNextProperty( List<Object> propertyValues ) {
 		this.nextPropertyValues = propertyValues;
 	}
+	protected List<Procedure> nextProcedure = new ArrayList<>();
+	public void setNextProcedure( Procedure proc ) {
+		this.nextProcedure.add( proc );
+	}
+	protected int nextIndex = -1;
+	public void setNextIndex( int nextIndex ) {
+		this.nextIndex = nextIndex;
+	}
+
 	public Component getComponentByName( String name ) {
 		return namedMap.get( name );
 	}
@@ -51,9 +63,13 @@ public class JNamedPanel extends JPanel implements JSelectableUserObject {
 		if ( constraints != null && "hidden".equals( constraints.toString() ) ) {
 			// DO NOTHING 
 		} else {
-			super.addImpl(comp, nextConstraint != null ? nextConstraint : constraints, index);
+			super.addImpl(
+					comp, 
+					nextConstraint != null ? nextConstraint : constraints,
+					0 <= nextIndex ? nextIndex : index);
 		}
 		nextConstraint = null;
+		nextIndex = -1;
 		
 		if ( nextComponentName != null ) {
 			namedMap.put(nextComponentName, comp );
@@ -62,6 +78,18 @@ public class JNamedPanel extends JPanel implements JSelectableUserObject {
 			invNamedMap.put(comp, null);
 		}
 		nextComponentName = null;
+		
+		try {
+			for ( Procedure proc : this.nextProcedure ) {
+				try {
+					proc.apply1( comp );
+				} catch (Throwable e) {
+					throw new RuntimeException( e );
+				}
+			}
+		} finally {
+			this.nextProcedure.clear();
+		}
 	}
 	static final Logger LOGGER = Logger.getLogger( JNamedPanel.class.getName() );
 	
@@ -145,21 +173,25 @@ public class JNamedPanel extends JPanel implements JSelectableUserObject {
 		}
 		return count;
 	}
-	
-	@Override
-	public Dimension getPreferredSize() {
-		Dimension d = new Dimension( super.getPreferredSize() );
-		/*
-		if ( d.height == Integer.MAX_VALUE ) {
-			Container p = this.getParent();
-			d.height = (int) ( p == null ? d.height : p.getSize().height - 5 ) ;
-		}
-		if ( d.width == Integer.MAX_VALUE ) {
-			Container p = this.getParent();
-			d.width = (int) ( p == null ? d.width : p.getSize().width - 5 ) ;
-		}
-		*/
-		return d;
-	}
+//	@Override
+//	public Dimension getPreferredSize() {
+//		return super.getMaximumSize();
+//	}
+//	@Override
+//	public Dimension getPreferredSize() {
+//		return super.getPreferredSize();
+////		Dimension d = new Dimension( super.getPreferredSize() );
+//		/*
+//		if ( d.height == Integer.MAX_VALUE ) {
+//			Container p = this.getParent();
+//			d.height = (int) ( p == null ? d.height : p.getSize().height - 5 ) ;
+//		}
+//		if ( d.width == Integer.MAX_VALUE ) {
+//			Container p = this.getParent();
+//			d.width = (int) ( p == null ? d.width : p.getSize().width - 5 ) ;
+//		}
+//		*/
+////		return d;
+//	}
 	
 }

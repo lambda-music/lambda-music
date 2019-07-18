@@ -56,6 +56,7 @@ import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -100,6 +101,7 @@ import ats.pulsar.lib.swing.SpringLayoutUtil;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.Pair;
+import gnu.mapping.Procedure;
 import gnu.mapping.ProcedureN;
 import gnu.mapping.Symbol;
 import kawa.standard.Scheme;
@@ -266,7 +268,7 @@ class PulsarGui {
         			ArrayDeque<Object> argList = new ArrayDeque<>( Arrays.asList(args) );
         			Component component = (Component) SchemeUtils.schemeNullToJavaNull( argList.pop() );
     				Container parent = component.getParent();
-					return parent;
+					return SchemeUtils.javaNullCheck( parent );
     			} else {
 					throw new RuntimeException( 
 							"Invalid argument error\n"+
@@ -601,14 +603,14 @@ class PulsarGui {
     			return EmptyList.emptyList;
     		}
     	});
-    	SchemeUtils.defineVar( scheme, "gui-repaint" , new ProcedureN() {
-			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-//					logInfo("refresh-gui");
-				guiRepaint();
-    			return EmptyList.emptyList;
-    		}
-    	});
+//    	SchemeUtils.defineVar( scheme, "gui-repaint" , new ProcedureN() {
+//			@Override
+//    		public Object applyN(Object[] args) throws Throwable {
+////					logInfo("refresh-gui");
+//				guiRepaint();
+//    			return EmptyList.emptyList;
+//    		}
+//    	});
     	SchemeUtils.defineVar( scheme, "gui-layout!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
@@ -669,7 +671,36 @@ class PulsarGui {
 				} else {
 					throw new RuntimeException( "put-constraint has five parameters( constraint1 component1 pad constraint2 component2  )." );
 				}
-				guiRepaint();
+				guiRepaint(userPane);
+    			return EmptyList.emptyList;
+    		}
+    	});
+    	SchemeUtils.defineVar( scheme, "gui-invalidate" , new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				guiInvalidate((Container) args[0] );
+    			return EmptyList.emptyList;
+    		}
+    	});
+    	SchemeUtils.defineVar( scheme, "gui-validate" , new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				guiValidate((Container) args[0] );
+    			return EmptyList.emptyList;
+    		}
+    	});
+    	
+    	SchemeUtils.defineVar( scheme, "gui-revalidate" , new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				guiRevalidate((Container) args[0] );
+    			return EmptyList.emptyList;
+    		}
+    	});
+    	SchemeUtils.defineVar( scheme, "gui-repaint" , new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				guiRepaint((Container) args[0] );
     			return EmptyList.emptyList;
     		}
     	});
@@ -727,6 +758,7 @@ class PulsarGui {
 		// frame.pack();
 		// frame.pack();
 	}
+	
 	public void guiFlowLayout(Container userPane) {
 		userPane.setLayout( new FlawLayout( FlawLayout.LEFT, 2, 2 ) );
 	}
@@ -735,6 +767,9 @@ class PulsarGui {
 	}
 	public void guiSpringLayout( Container userPane ) {
 		userPane.setLayout( new SpringLayout() );
+	}
+	public void guiBoxLayout( Container userPane, int axis ) {
+		userPane.setLayout( new BoxLayout( userPane, axis ) );
 	}
 	public void guiGridBagLayout(Container userPane) {
 		userPane.setLayout( new GridBagLayout() );
@@ -753,6 +788,7 @@ class PulsarGui {
 
 
 	public void guiLayout( Container container, String type, Object ... args  ) {
+		// logInfo( "guiLayout : container=" + container );
 		switch ( type ) {
 			case "default":
 			case "flow" :
@@ -760,6 +796,11 @@ class PulsarGui {
 				break;
 			case "border" :
 				guiBorderLayout( container );
+				break;
+			case "box" :
+				guiBoxLayout( container,
+						0 < args.length ? ((Number)args[0]).intValue() : BoxLayout.PAGE_AXIS 
+								);
 				break;
 			case "spring" :
 				guiSpringLayout( container );
@@ -785,11 +826,11 @@ class PulsarGui {
 				throw new RuntimeException( "Unknown LayoutManager name : " + type );
 		}
 	}
-	public void guiRepaint() {
-		userPane.revalidate();
-		userPane.repaint();
-        // frame.pack();
-	}
+//	public void guiRepaint() {
+//		userPane.revalidate();
+//		userPane.repaint();
+//        // frame.pack();
+//	}
 	public void guiSetTempoRange( PulsarGui.TempoRange tempoRange ) {
 		this.sl_tempoSlider.setMaximum( tempoRange.max );
 		this.sl_tempoSlider.setMinimum( tempoRange.min );
@@ -1080,11 +1121,11 @@ class PulsarGui {
 				Object curr = args[i];
 	
 				if ( "label".equals( mode ) ) {
-					guiAdd( parent, (Component) SchemeNewFactory.process(
-							pulsar,
-							Symbol.makeUninterned("label"), 
-							SchemeUtils.anyToString( curr ) ) );
-					
+					guiAdd( parent, 
+							(Component)SchemeNewFactory.process(
+									pulsar, 
+									Symbol.makeUninterned("label"), 
+									SchemeUtils.anyToString( curr )));
 					mode = null;
 				} else if ( "name".equals( mode ) ) {
 					guiName( parent, SchemeUtils.toString( curr ) ); 
@@ -1095,6 +1136,12 @@ class PulsarGui {
 				} else if ( "property".equals( mode ) ) {
  					guiProperty( parent, (List<Object>) curr );
 					mode = null;
+				} else if ( "procedure".equals( mode ) ) {
+ 					guiNextProcedure( parent, (Procedure) curr );
+					mode = null;
+				} else if ( "index".equals( mode ) ) {
+ 					guiNextIndex( parent, SchemeUtils.toInteger( curr ) );
+					mode = null;
 				} else {
 					if ( curr instanceof Symbol ) {
 						String symbolName = SchemeUtils.symbolToString( curr );
@@ -1104,6 +1151,9 @@ class PulsarGui {
 								break;
 							case "validate" : 
 								guiValidate( parent );
+								break;
+							case "invalidate" : 
+								guiInvalidate( parent );
 								break;
 							case "list":
 								mode = "list";
@@ -1119,6 +1169,12 @@ class PulsarGui {
 								break;
 							case "property":
 								mode = "property";
+								break;
+							case "procedure":
+								mode = "procedure";
+								break;
+							case "index":
+								mode = "index";
 								break;
 							default :
 								throw new RuntimeException( "gui-build! unknown type \"" + symbolName + "\"" );
@@ -1150,6 +1206,8 @@ class PulsarGui {
 							al.add( parent );
 							al.addAll( Arrays.asList( p.toArray() ) );
 							guiBuild( al.toArray() );
+						} else if ( curr instanceof Procedure ) {
+							((Procedure)curr).apply1( parent  );
 						} else if ( curr instanceof EmptyList ) {
 							// 
 						} else {
@@ -1196,6 +1254,26 @@ class PulsarGui {
 			logWarn( "WARNING guiProperty: the parent is not JNamedPanel" );
 		}
 	}
+	public void guiNextProcedure( Container parent, Procedure proc ) {
+		if ( parent == null )
+			parent = userPane;
+		
+		if ( parent instanceof JNamedPanel ) {
+			((JNamedPanel)parent).setNextProcedure( proc );
+		} else {
+			logWarn( "WARNING guiProperty: the parent is not JNamedPanel" );
+		}
+	}
+	public void guiNextIndex( Container parent, int nextIndex ) {
+		if ( parent == null )
+			parent = userPane;
+		
+		if ( parent instanceof JNamedPanel ) {
+			((JNamedPanel)parent).setNextIndex( nextIndex );
+		} else {
+			logWarn( "WARNING guiProperty: the parent is not JNamedPanel" );
+		}
+	}
 	public void guiNewline( Container parent ) {
 		if ( parent == null )
 			parent = userPane;
@@ -1203,6 +1281,15 @@ class PulsarGui {
 	}
 	public void guiValidate(Container parent) {
 		parent.validate();
+	}
+	public void guiInvalidate(Container parent) {
+		parent.invalidate();
+	}
+	public void guiRevalidate(Container parent) {
+		parent.revalidate();
+	}
+	public void guiRepaint(Container parent) {
+		parent.repaint();;
 	}
 
 	
@@ -1466,8 +1553,8 @@ class PulsarGui {
 			JScrollPane userPaneOuter = new JScrollPane( userPane );
 //			userPaneOuter.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED );
 //			userPaneOuter.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED );
-			userPaneOuter.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS );
-			userPaneOuter.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS );
+			userPaneOuter.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
+			userPaneOuter.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER );
 			// SEE TAG_PACK_TWICE
 			
 			if ( false ) {

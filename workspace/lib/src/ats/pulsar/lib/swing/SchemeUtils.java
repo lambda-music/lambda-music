@@ -199,6 +199,10 @@ public class SchemeUtils {
 			return object;
 		}
 	}	
+	
+	/**
+	 *  use {@link SchemeUtils#javaNullCheck(Object) }
+	 */
 	@Deprecated
 	public static Object javaNullToSchemeNull( Object object ) {
 		if ( object == null )

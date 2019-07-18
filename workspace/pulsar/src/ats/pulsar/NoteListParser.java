@@ -60,12 +60,14 @@ public class NoteListParser {
 	}
 
 	public static final String ID_TYPE      = "type";
+	private static final boolean DEBUG = false;
 	
 	private HashMap<String,NoteListParserElement> shortNameMap = new HashMap<String,NoteListParserElement>();
 	private HashMap<String,NoteListParserElement> longNameMap = new HashMap<String,NoteListParserElement>();
 
 	private void addProc(HashMap<String, NoteListParserElement> map, String key, NoteListParserElement value ) {
-		logInfo( shortNameMap.size() + " : putParser( " + key + " )" );
+		if (DEBUG)
+			logInfo( shortNameMap.size() + " : putParser( " + key + " )" );
 		if ( key == null || key.equals( "" ) ) {
 			throw new RuntimeException( "internal error : " + value.getClass().getName() + " has no name. "  );
 		}
