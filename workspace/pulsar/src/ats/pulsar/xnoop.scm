@@ -103,26 +103,35 @@
                                                  "*FIELD*-" 
                                                  (symbol->string key))))
                                   (field-value value)
-                                  (field-accessor (lambda args
-                                                    (if (= 0 (length args))
-                                                      ; Do nothing. This will never be happen.
-                                                      #f
-                                                      ;write
-                                                      (let ((this   (car args))
-                                                            (args   (cdr args))
-                                                            (fields (cdr this))
-                                                            (cell   (or (xassq field-key fields)
-                                                                        (cons key #f))))
-                                                        (if (= 0 (length args))
-                                                          ;read
-                                                          (begin
-                                                            (cdr cell))
-                                                          ;write
-                                                          (let ((new-value (car args)))
-                                                            (set-cdr! cell new-value)
-                                                            new-value)
-                                                          )))
-                                                    ))
+                                  (field-write-checker (if (< 0 (length args)) 
+                                                         (list-ref args 0)
+                                                         (begin        #f)))
+                                  (field-read-checker  (if (< 1 (length args)) 
+                                                         (list-ref args 1)
+                                                         (begin        #f)))
+                                  (field-accessor      (lambda args
+                                                         (if (= 0 (length args))
+                                                           ; Do nothing. This will never be happen.
+                                                           #f
+                                                           ;write
+                                                           (let ((this   (car args))
+                                                                 (args   (cdr args))
+                                                                 (fields (cdr this))
+                                                                 (cell   (or (xassq field-key fields)
+                                                                             (cons key #f))))
+                                                             (if (= 0 (length args))
+                                                               ;read
+                                                               (if field-read-checker 
+                                                                 (field-read-checker (cdr cell))
+                                                                 (begin              (cdr cell)))
+                                                               ;write
+                                                               (let ((new-value (if field-write-checker
+                                                                                  (field-write-checker (car args))
+                                                                                  (begin               (car args)))))
+                                                                 (set-cdr! cell new-value)
+                                                                 (begin         new-value))
+                                                               )))
+                                                         ))
 
                                   )
                                  (set! fields (xacons field-key field-value    fields))
