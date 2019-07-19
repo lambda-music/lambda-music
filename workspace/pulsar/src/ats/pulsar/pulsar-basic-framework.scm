@@ -1,3 +1,15 @@
+;==============================================================================================
+;
+; Pulsar Code Generator
+; See 
+;    RHYTHM_PATTERNS
+;    INSTRUMENTALS
+;    TracksetManager
+;    Trackset
+;    Track
+;    gui-init-proc!
+;==============================================================================================
+
 (import (srfi 1))
 (import (kawa pprint))
 
@@ -17,7 +29,6 @@
                      (iota n )))))))
 
 ; ====================================================================================
-
 ; bind-pns
 ; This procedure binds a pns(plain n-swing) procedure with an instrument
 ; procedure and returns ns-proc.
@@ -60,6 +71,9 @@
                                            (pb-pos-setter pos))))))))))
       timer-0)))
 
+;==============================================================================================
+; INSTRUMENTALS
+;==============================================================================================
 (define key-name-value-list-to-name-value-list 
   (lambda ( key-name-value-list )
     (map 
@@ -117,7 +131,8 @@
     (iota 20)))
 
 ; ===========================================================================================
-
+; RHYTHM_PATTERNS
+; ===========================================================================================
 (define pns-two-four
   (lambda (inst0 x n) 
     (list
@@ -177,86 +192,184 @@
                                  (list (len 1)))))
 
 ;==============================================================================================
-(define TracksetManager (lambda (self)
-                          (let ((trackset-list (cons 'trackset-list '())))
-                            (self 'define 'field 'trackset-list trackset-list )
-                            (self 'define 'field '*current-trackset #f )
+(define TracksetManager 
+  (lambda (self)
+    (let ((trackset-list (cons 'trackset-list '())))
+      (self 'define 'field 'trackset-list trackset-list )
+      (self 'define 'field '*current-trackset #f )
 
-                            (self 'define 'method 'add-trackset (lambda(self trackset) 
-                                                                  (set-cdr! trackset-list
-                                                                            (append 
-                                                                              (cdr trackset-list)
-                                                                              (list trackset))
-                                                                            )))
-                            (self 'define 'method 'remove-trackset (lambda(self trackset) 
-                                                                     (set-cdr! trackset-list
-                                                                               (delete  
-                                                                                 trackset
-                                                                                 (cdr trackset-list)
-                                                                                 eq? ))))
-                            (self 'define 'method 'current-trackset (lambda (self . args )
-                                                                      (if (= 0 (length args))
-                                                                        ; read
-                                                                        (self '*current-trackset )
+      (self 'define 'method 'add-trackset        (lambda(self trackset) 
+                                                   (begin
+                                                     (set-cdr! trackset-list
+                                                               (append 
+                                                                 (cdr trackset-list)
+                                                                 (list trackset))
+                                                               ))
+                                                   (gui-build!
+                                                     (gui-get main-pane "TOOLBAR" "TRACKSET-SELECTION")
+                                                     'index-from-last 0
+                                                     (trackset 'gui))))
 
-                                                                        ; write
-                                                                        (let ((trackset (car args)))
-                                                                          (if (memq trackset (self 'trackset-list ))
-                                                                            ;then
-                                                                            (begin
-                                                                              (let ((c (self '*current-trackset) ))
-                                                                                (if c
-                                                                                  (c 'set-enabled #f)))
-                                                                              (self '*current-trackset trackset))
+      (self 'define 'method 'remove-trackset     (lambda(self trackset) 
+                                                   (if trackset 
+                                                     ; process it only if trackset is an object; 
+                                                     ; if no trackset exists on the list, this will be #f.
+                                                     (begin
+                                                       ; if the passed trackset equals to the current trackset,
+                                                       ; select a trackset by this algorithm and set it to the 
+                                                       ; current track unless the trackset list is empty.
+                                                       (if (eq? (self 'current-trackset) trackset ) 
+                                                         ;then
+                                                         (begin
+                                                           (display '=========3)
+                                                           (newline)
+                                                           (if (<= (length (cdr trackset-list)) 1 )
+                                                             ;then
+                                                             (self 'current-trackset #f)
 
-                                                                            ;else
-                                                                            (begin
-                                                                              (display "could not find the specified trackset. ignored.")
-                                                                              (newline)))))))
-                            )))
+                                                             ;else
+                                                             (let ((ptrackset (memq trackset (cdr trackset-list ) )))
+                                                               (if ptrackset 
+                                                                 ;then if there is no trackset on the next,
+                                                                 (if (null? (cdr ptrackset ))
+                                                                   ; then select the last one
+                                                                   (self 'current-trackset (second (reverse (cdr trackset-list))))
+
+                                                                   ; otherwise select the next one
+                                                                   (self 'current-trackset (cadr ptrackset)))
+                                                                 ;else
+                                                                 (self 'current-trackset (last (cdr trackset-list))))))
+
+                                                           ; update
+                                                           (let ((t (self 'current-trackset)))
+                                                             (if t
+                                                               (begin
+                                                                 (display '=========)
+                                                                 (display ( t 'trackset-name ) )
+                                                                 (newline)
+                                                                 (t 'update-trackset-view)
+                                                                 (self 'update-trackset-buttons t)
+                                                                 )
+                                                               (begin
+                                                                 (self 'clear-trackset-view)
+                                                                 ))))
+                                                         ;else
+                                                         (begin
+                                                           (values)))
+
+                                                       ; remove the trackset from the list.
+                                                       (set-cdr! trackset-list
+                                                                 (delete  
+                                                                   trackset
+                                                                   (cdr trackset-list)
+                                                                   eq? ))
+                                                       ; remove the trackset button from the toolbar.
+                                                       (gui-build!
+                                                         (gui-get main-pane "TOOLBAR" "TRACKSET-SELECTION")
+                                                         'remove 
+                                                         (trackset 'gui)
+                                                         'revalidate))
+                                                     ; else do nothing.
+                                                     (begin
+                                                       #f
+                                                       
+                                                       ))))
+      (self 'define 'method 'clear-trackset-view   (lambda ( self ) 
+                                                     (display 'clear-trackset-view)
+                                                     (newline)
+                                                     (gui-build!
+                                                       (gui-get main-pane "TRACKS")
+                                                       'remove-all
+                                                       'revalidate)))
+
+      (self 'define 'method 'current-trackset    (lambda (self . args )
+                                                   (if (= 0 (length args))
+                                                     ; read
+                                                     (self '*current-trackset )
+
+                                                     ; write
+                                                     (let ((trackset (car args)))
+                                                       ; note the trackset maybe #f
+                                                       (if trackset 
+                                                         (if (memq trackset (self 'trackset-list ))
+                                                           ;then
+                                                           (begin
+                                                             (let ((c (self '*current-trackset) ))
+                                                               (if c
+                                                                 (c 'set-enabled #f)))
+                                                             (self '*current-trackset trackset))
+                                                           ;else
+                                                           (begin
+                                                             (display "could not find the specified trackset. ignored.")
+                                                             (newline)))
+                                                         ;else
+                                                         (self '*current-trackset trackset))))))
+      ; (self 'define 'method 'for-each-trackset    (lambda (self p)
+      ;                                               (for-each p (cdr trackset-list ))))
+
+      (self 'define 'method 'update-trackset-buttons (lambda (self selected-trackset )
+                                              (if (not selected-trackset ) 
+                                                (set! selected-trackset (self 'current-trackset )))
+                                              (for-each (lambda (e)
+                                                          (if (eq? selected-trackset e)
+                                                            ((e 'gui):setSelected #t)
+                                                            ((e 'gui):setSelected #f)))
+                                                        (cdr trackset-list ))))
+      )))
 
 (define trackset-manager (xnew TracksetManager ))
 
-
 ;==============================================================================================
-; ==== TRACKSET =====
+; TRACKSET
+;==============================================================================================
 (define Trackset 
-  (lambda ( self id )
-    (let ((track-list (cons id '())))
+  (lambda ( self name )
+    ; DON'T FORGET CDR BEFORE USE "track-list" 
+    (let ((track-list (cons 'trackset-head '())))
 
-      (self 'define 'field 'track-list track-list )
-      (self 'define 'method 'set-current-track-list (lambda(self)
-                                                      (set-track-list (self 'track-list ))
-                                                      (update-track-list)))
+      (self 'define 'field 'trackset-name          name )
+      (self 'define 'field 'track-list             track-list )
+      (self 'define 'field 'gui-is-button-selected (lambda (self value)
+                                                     ((self 'gui ):setSelected value)))
 
       (self 'define 'field 'gui (begin 
-                                  (gui-new 'button "NAME" 
-                                           (lambda (sel cmd usr src evt)
-                                             (self 'set-current-track-list )))))
+                                  (let ((b (javax.swing.JToggleButton (self 'trackset-name) )))
+                                    (b:addActionListener
+                                      (object (java.awt.event.ActionListener)
+                                              ((actionPerformed (e ::java.awt.event.ActionEvent))
+                                               ::void
+                                               (if (b:isSelected)
+                                                 (begin
+                                                   (trackset-manager 'update-trackset-buttons self)
+                                                   (trackset-manager 'current-trackset self )
+                                                   (self 'update-trackset-view )))
+                                               )))
+                                    b)
+                                  ))
 
       (self 'define 'method 'add-track (lambda (self track) 
                                          ; Add the passed track to the list.
                                          (set-cdr! track-list (cons track (cdr track-list)))
 
                                          ; Add the passed track's gui to the panel
-                                         (let (( target-p (gui-get main-pane  "SEQUENCES")))
+                                         (let (( target-p (gui-get main-pane  "TRACKS")))
                                            (gui-build!
                                              target-p 
                                              'index 0
                                              (track 'gui)
                                              'invalidate
+                                             'revalidate
                                              )
                                            (gui-repaint main-frame)
-                                           (gui-revalidate main-frame)
+                                           ;(gui-revalidate main-frame)
                                            (gui-pack!)
                                            )))
       (self 'define 'method 'set-enabled-to-all-track  (lambda (self value)
                                                          (for-each (lambda (e)
                                                                      (e 'set-enabled value)) 
-                                                                   track-list )))
+                                                                   (cdr track-list) )))
       (self 'define 'method 'set-enabled  (lambda (self value)
-                                            (self 'set-enabled-to-all-track)
-                                            ))
+                                            (self 'set-enabled-to-all-track value)))
 
       (self 'define 'method 'remove-track (lambda (self track) 
                                             ; disable the track
@@ -290,26 +403,25 @@
                                                              args))
                                                  (set-cdr! track-list '())))
 
-      (self 'define 'method 'update-gui (lambda ( self ) 
-                                          (for-each 
-                                            (lambda (x) 
-                                              (x 'update-gui))
-                                            track-list)
-                                          (let ((target-pane (gui-get main-pane  "SEQUENCES")))
-                                            (gui-remove-all target-pane)
-                                            (apply gui-build!
-                                                   (append
-                                                     (list target-pane)
-                                                     (map 
-                                                       (lambda (track)(track 'gui))
-                                                       (cdr track-list))
-                                                     (list 
-                                                       (javax.swing.Box:createHorizontalGlue)
-                                                       'invalidate)
-                                                     ))
-
-
-                                            )))
+      (self 'define 'method 'update-trackset-view (lambda ( self ) 
+                                                    (display 'update-trackset-view) (newline)
+                                                    (apply gui-build! (append
+                                                                        (list (gui-get main-pane  "TRACKS") )
+                                                                        (list 'remove-all )
+                                                                        (map 
+                                                                          (lambda (track)(track 'gui))
+                                                                          (cdr track-list))
+                                                                        (list 
+                                                                          (javax.swing.Box:createHorizontalGlue)
+                                                                          'invalidate)
+                                                                        ))
+                                                      (main-pane:invalidate)
+                                                      (main-pane:repaint)
+                                                    (for-each 
+                                                      (lambda (x) 
+                                                        (x 'update-track-view))
+                                                      (cdr track-list))
+                                                    ))
 
       (self 'define 'method 'all-tracks-to-lisp (lambda args
                                                   (prettify
@@ -329,16 +441,9 @@
 
       )))
 
-; (define current-trackset (xnew Trackset 'trackset-01 ))
-
 ;==============================================================================================
 
-
-
-
-(define seq-base-00 (lambda()
-                      (list (len 4/4))))
-
+;==============================================================================================
 (define Track 
   (lambda ( self 
             track-id
@@ -478,7 +583,7 @@
                       \",( self 'read 'beat-offset  )\"
                       ' ,( self 'read 'beat-count   ) 
                       ' ,( self 'read 'measure-count ))))
-      (self 'define 'method 'update-value
+      (self 'define 'method 'update-track-view
             (lambda (self)
               (let ((update-value (lambda(id) 
                                     (gui-set-selected 
@@ -497,132 +602,44 @@
                 (self 'beat-offset))
               
               ))
-      ; (self 'update-value)
+      ; (self 'update-track-view)
       (self 'define 'method 'set-enabled (lambda (self v)
                                            (self 'write 'enabled v)
-                                           (self 'update-value))))))
+                                           (self 'update-track-view))))))
 
 (define main-pane #f )
 (define main-frame #f )
 
+(define new-number-counver 0)
+(define (new-number)
+  (let (( v new-number-counver ))
+    (set! new-number-counver (+ v 1))
+    v))
 
-
-; (define track-list (cons 'ptr-track-list '() ))
-;
-; (define add-track (lambda (track) 
-;                    ; Add the passed track to the list.
-;                    (set-cdr! track-list (cons track (cdr track-list)))
-; 
-;                    ; Add the passed track's gui to the panel
-;                    (let (( target-p (gui-get main-pane  "SEQUENCES")))
-;                      (gui-build!
-;                        target-p 
-;                        'index 0
-;                        (track 'gui)
-;                        'invalidate
-;                        )
-;                      (gui-repaint main-frame)
-;                      (gui-revalidate main-frame)
-;                      (gui-pack!)
-;                      )))
-; 
-; (define remove-track (lambda (track) 
-;                       ; disable the track
-;                       (track 'set-enabled #f)
-;                       ; remove the passed track from the list.
-;                       (set-cdr! track-list (delete track (cdr track-list) eq?))
-; 
-;                       ; Remove the passed track's gui to the panel
-;                       (let ((gui (track 'gui)))
-;                         (gui-remove-by-ref (gui-parent gui ) gui))
-;                       (gui-repaint main-frame)
-;                       (gui-pack!)
-;                       (gui-validate main-pane)
-;                       ))
-; 
-; (define add-all-tracks (lambda args
-;                         (for-each add-track 
-;                                   (if (eqv? 0 (length args ) )
-;                                     (cdr track-list)
-;                                     args))))
-; 
-; (define remove-all-tracks (lambda args
-;                            (for-each remove-track
-;                                      (if (eqv? 0 (length args ) )
-;                                        (cdr track-list)
-;                                        args))
-;                            (set-cdr! track-list '())))
-; 
-; 
-; (define update-track-list (lambda () 
-;                            (let ((target-pane (gui-get main-pane  "SEQUENCES")))
-;                              (gui-remove-all target-pane)
-;                              (apply gui-build!
-;                                     (append
-;                                       (list target-pane)
-;                                       (map 
-;                                         (lambda (track)(track 'gui))
-;                                         (cdr track-list))
-;                                       (list 
-;                                         (javax.swing.Box:createHorizontalGlue)
-;                                         'invalidate)
-;                                       )))))
-; 
-; (define set-track-list (lambda (new-track-list)
-;                          ; track-list (global variable)
-;                          (set-cdr! track-list new-track-list )))
-; 
-; (define all-tracks-to-lisp (lambda args
-;                             (prettify
-;                               (apply string-append
-;                                      (append
-;                                        (list "(add-all-tracks " )
-;                                        (map (lambda(x)
-;                                               (string-append
-;                                                 "\n"
-;                                                 (pretty-print (x 'to-lisp))))
-;                                             (if (eqv? 0 (length args) )
-;                                               (cdr track-list)
-;                                               args))
-;                                        (list ") " ))))))
-; 
-; 
-; 
+(define (new-id #!optional (prefix "") (suffix "" ))
+  (string-append
+    prefix
+    (number->string (new-number))
+    suffix))
 
 
 
-; (define symbol->string-rec (e) 
-;   (map (lambda (x)
-;          (if (pair? x)
-;            (symbol->string-rec x)
-;            (symbol->string x)))
-;        e))
 
-(define create-button  (lambda (sel cmd usr src evt) 
-                         (let ((current-trackset (trackset-manager 'current-trackset)))
-                           (current-trackset 'add-track 
-                                             (xnew Track 'hello))
-                           )
-                         ))
 
-(define create-trackset (lambda (sel cmd usr src evt) 
-                          (let (( target-p (gui-get main-pane  "SEQUENCES")))
-                            (gui-remove-all target-p )
-                            )))
-(define destroy-trackset (lambda (sel cmd usr src evt) 
-                           (let (( target-p (gui-get main-pane  "SEQUENCES")))
-                             (gui-remove-all target-p ))))
 (define activate-trackset (lambda (sel cmd usr src evt) 
-                            (let (( target-p (gui-get main-pane  "SEQUENCES")))
+                            (let (( target-p (gui-get main-pane  "TRACKS")))
                               (gui-remove-all target-p ))))
 (define deactivate-trackset (lambda (sel cmd usr src evt) 
-                              (let (( target-p (gui-get main-pane  "SEQUENCES")))
+                              (let (( target-p (gui-get main-pane  "TRACKS")))
                                 (gui-remove-all target-p ))))
 
 (define clear-trackset (lambda (sel cmd usr src evt) 
                          (let ((current-trackset (trackset-manager 'current-trackset)))
                            (current-trackset 'remove-all-tracks )
-                           (current-trackset 'update-gui ))))
+                           (current-trackset 'update-trackset-view ))))
+
+(define seq-base-00 (lambda()
+                      (list (len 4/4))))
 
 (define gui-init-proc!
   (lambda()
@@ -647,56 +664,82 @@
     ; IT IS VERY DIFFICULT TO FIND WHY WHEN THE INSIDE PANELS RESIZE STRANGELY.
     ; (Wed, 17 Jul 2019 06:58:01 +0900)
 
-    ((main-frame:getContentPane ):setBorder 
-     (javax.swing.BorderFactory:createTitledBorder "CONTENT" ))
+    ; SET TITLE TO THE CONTENT PANE
+    (if #f
+      ((main-frame:getContentPane ):setBorder 
+       (javax.swing.BorderFactory:createTitledBorder "CONTENT" )))
+
     (gui-layout! (main-frame:getContentPane )  'border )
     (gui-build! (main-frame:getContentPane )  main-pane)
 
     (gui-layout! main-pane  'border )
+
+    (if #f
+      (main-pane:setBorder 
+        (javax.swing.BorderFactory:createTitledBorder "MAIN-PANE" )))
+
     (gui-build! 
       main-pane
-      'name "TOOLS"
-      (lambda (self)
-        (self:setBorder (javax.swing.BorderFactory:createTitledBorder "ROOT" )))
+
+      ; DOCUMENT ABOUT THIS
+      (if #t
+        (lambda (self)
+          (self:setBorder (javax.swing.BorderFactory:createTitledBorder "Sequencer" )))
+        (lambda (self)
+          (values)))
 
       'constraint java.awt.BorderLayout:PAGE_START
+      'name "TOOLBAR"
       (gui-build! 
-        (gui-new 'group "TOOLS" 'box javax.swing.BoxLayout:Y_AXIS)
+        (gui-new 'panel 'box javax.swing.BoxLayout:Y_AXIS )
+        (lambda (self)
+          (self:setBorder (javax.swing.BorderFactory:createTitledBorder "Tools" )))
+        'name "TRACKSET-MANAGEMENT"
+        (gui-build!
+          (gui-new 'panel 'box javax.swing.BoxLayout:X_AXIS )
+          (lambda (self)
+            (self:setBorder (javax.swing.BorderFactory:createTitledBorder "Trackset Management" ))) 
+          ; (lambda (self) (self:setPreferredSize (java.awt.Dimension 100 100)))
+          (gui-new 'button "Create"     (lambda (sel cmd usr src evt) 
+                                          (let ((trackset0 (xnew Trackset       (new-id "trackset" ))))
+                                            (trackset-manager 'add-trackset     trackset0)
+                                            (trackset-manager 'current-trackset trackset0)
+                                            (trackset-manager 'update-trackset-buttons trackset0)
+                                            (trackset0 'update-trackset-view )
+                                            )
+                                          (gui-build!
+                                            main-frame
+                                            'repaint
+                                            'validate)))
+          (gui-new 'button "Destroy"    (lambda (sel cmd usr src evt) 
+                                          (trackset-manager 'remove-trackset 
+                                                            (trackset-manager 'current-trackset))
+                                          ))
+          (gui-new 'button "Activate"   activate-trackset)
+          (gui-new 'button "Deactivate" deactivate-trackset)
+          (gui-new 'button "Clear"      clear-trackset)
+          (gui-new 'button "New Track"  (lambda (sel cmd usr src evt) 
+                                          (let ((current-trackset (trackset-manager 'current-trackset)))
+                                            (current-trackset 'add-track 
+                                                              (xnew Track 'hello)))))
 
-        'name "TOOL-BUTTONS"
-        (gui-build! 
-          (gui-new 'panel 'box javax.swing.BoxLayout:Y_AXIS )
-          (gui-build!
-            (gui-new 'panel 'box javax.swing.BoxLayout:X_AXIS )
-            ; (lambda (self) (self:setPreferredSize (java.awt.Dimension 100 100)))
-            (gui-new 'button "Create"     create-trackset)
-            (gui-new 'button "Destroy"    destroy-trackset)
-            (gui-new 'button "Activate"   activate-trackset)
-            (gui-new 'button "Deactivate" deactivate-trackset)
-            (gui-new 'button "Clear"      clear-trackset)
+          (javax.swing.Box:createHorizontalGlue )
+          )
 
-            (javax.swing.Box:createHorizontalGlue )
-            )
-
-          'name "SETS"
-          (gui-build!
-            (gui-new 'panel 'box javax.swing.BoxLayout:X_AXIS )
-            ; (lambda (self) (self:setMaximumSize (java.awt.Dimension 100 100)))
-            (gui-new 'button "A"   create-button)
-            (gui-new 'button "B"   create-button)
-            (gui-new 'button "C"   create-button)
-            (gui-new 'button "D"   create-button)
-            (gui-new 'button "E"   create-button)
-            (javax.swing.Box:createHorizontalGlue ))))
+        'name "TRACKSET-SELECTION"
+        (gui-build!
+          (gui-new 'panel 'box javax.swing.BoxLayout:X_AXIS )
+          (lambda (self)
+            (self:setBorder (javax.swing.BorderFactory:createTitledBorder "Trackset Selection" )))
+          ; (lambda (self) (self:setMaximumSize (java.awt.Dimension 100 100)))
+          (javax.swing.Box:createHorizontalGlue )))
 
       'constraint java.awt.BorderLayout:CENTER
-      'name "SEQUENCES"
+      'name "TRACKS"
       (gui-build!
-        (gui-new 'group "Sequences" 'box javax.swing.BoxLayout:Y_AXIS )
+        (gui-new 'group "Tracks" 'box javax.swing.BoxLayout:Y_AXIS )
         (javax.swing.Box:createVerticalGlue))
-
-
-      'validate
+      'invalidate
       )
 
     ; (gui-new 'newline)
@@ -704,7 +747,8 @@
     ; (add-track track2)
     ; (add-track track3)
 
-    (let ((trackset1 (xnew Trackset 'trackset1)))
+    (let ((trackset1 (xnew Trackset (new-id "trackset" ))))
+
       ; (trackset-manager 'add-trackset     trackset1)
       ; (trackset-manager 'current-trackset trackset1)
       (xnew Track 'track1)

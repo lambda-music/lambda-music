@@ -975,6 +975,9 @@ class PulsarGui {
 			parent.remove( (Component)o );
 		}
 	}
+	private void guiRemoveByRef(Container parent, Component component) {
+		parent.remove( component );
+	}
 	private void guiRemoveAll(Container parent ) {
 		parent.removeAll();
 	}
@@ -1142,6 +1145,12 @@ class PulsarGui {
 				} else if ( "index".equals( mode ) ) {
  					guiNextIndex( parent, SchemeUtils.toInteger( curr ) );
 					mode = null;
+				} else if ( "index-from-last".equals( mode ) ) {
+ 					guiNextIndex( parent, parent.getComponentCount() - SchemeUtils.toInteger( curr ) - 1 );
+					mode = null;
+				} else if ( "remove".equals( mode ) ) {
+ 					guiRemoveByRef( parent, (Component)curr);
+					mode = null;
 				} else {
 					if ( curr instanceof Symbol ) {
 						String symbolName = SchemeUtils.symbolToString( curr );
@@ -1154,6 +1163,15 @@ class PulsarGui {
 								break;
 							case "invalidate" : 
 								guiInvalidate( parent );
+								break;
+							case "revalidate" : 
+								guiRevalidate( parent );
+								break;
+							case "repaint" : 
+								guiRepaint( parent );
+								break;
+							case "pack" : 
+								guiPack();
 								break;
 							case "list":
 								mode = "list";
@@ -1175,6 +1193,15 @@ class PulsarGui {
 								break;
 							case "index":
 								mode = "index";
+								break;
+							case "index-from-last":
+								mode = "index-from-last";
+								break;
+							case "remove":
+								mode = "remove";
+								break;
+							case "remove-all" : 
+								guiRemoveAll( parent );
 								break;
 							default :
 								throw new RuntimeException( "gui-build! unknown type \"" + symbolName + "\"" );

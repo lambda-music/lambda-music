@@ -227,10 +227,12 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	private MetroTrack searchTrack( String name ) {
 		if ( "last!".equals( name )) {
 			if ( tracks.size() == 0 ) {
-				logInfo( "searchTrack() last! null (last! was specified but the current track contains no element)" );
+				if ( DEBUG )
+					logInfo( "searchTrack() last! null (last! was specified but the current track contains no element)" );
 				return null;
 			} else
-				logInfo( "searchTrack() last!" );
+				if ( DEBUG )
+					logInfo( "searchTrack() last!" );
 				return tracks.get( tracks.size() -1 );
 		} else {
 			name = name.intern();
@@ -240,7 +242,8 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 					return track;
 				}
 			}
-			logInfo( "searchTrack() null" );
+			if ( DEBUG )
+				logInfo( "searchTrack() null" );
 //			logWarn( "searchTrack() WARNING \"" + name + "\"  was not found." );
 			return null;
 		}
