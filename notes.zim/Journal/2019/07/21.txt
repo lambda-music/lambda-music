@@ -1,0 +1,12 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2019-07-21T02:35:13+09:00
+
+====== Sunday 21 Jul 2019 ======
+
+ (Sun, 21 Jul 2019 02:35:07 +0900)
+
+===== TODO =====
+* Trackset to Source
+* Recording Function
+	* This could be implemented by registering a midi input handler.

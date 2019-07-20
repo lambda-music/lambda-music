@@ -20,6 +20,7 @@
 
 package ats.pulsar;
 
+import gnu.expr.Language;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 
@@ -73,7 +74,45 @@ public class InvocableSchemeProcedure implements Invocable {
 	 * I am quite sure this is not proper way to solve the problem, but it worked
 	 * for me.
 	 */
-	private Environment environment;
+	private final Environment environment;
+	private final Language language;
+	
+	/*-
+	 * (Sat, 20 Jul 2019 11:33:56 +0900)
+	 * 
+	 * When a Scheme procedure is called from SwingUtilities#invokeLater(),
+	 * NullPointerException occurs sometimes. The stack trace is following : 
+	 *
+	 * <pre>
+	 *   java.lang.NullPointerException
+	 *   at gnu.expr.PrimProcedure.decodeType(PrimProcedure.java:404)
+	 *   at gnu.expr.PrimProcedure.<init>(PrimProcedure.java:371)
+	 *   at gnu.kawa.reflect.ClassMethods.getMethods(ClassMethods.java:136)
+	 *   at gnu.kawa.reflect.ClassMethods.apply(ClassMethods.java:252)
+	 *   at gnu.kawa.functions.GetNamedPart.getMemberPart(GetNamedPart.java:120)
+	 *   at gnu.kawa.functions.GetNamedPart.getNamedPart(GetNamedPart.java:106)
+	 *   at gnu.kawa.functions.GetNamedPart.apply2(GetNamedPart.java:46)
+	 *   at atInteractiveLevel-93$frame.lambda14(pulsar-basic-framework.scm:612)
+	 * </pre>
+	 *  The reason this NPE occurs is the passed "lang" argument sometimes becomes null
+	 *
+	 * <pre>
+	 *	    public static Type decodeType(Type javaType,
+	 *	                                  String[] annotTypes, int annotIndex,
+	 *		                                  ParameterizedType parameterizedType,
+	 *		                                  Language lang) {
+	 *		        String annotType = annotTypes != null && annotTypes.length > annotIndex
+	 *		            ? annotTypes[annotIndex] : null;
+	 *		        return lang.decodeType(javaType, annotType, parameterizedType);
+	 *		    }
+	 * </pre>
+	 * 
+	 * Then I found that etting current language by Language.setCurrentLanguage( language ) 
+	 * effectively suppresses the NPE.
+	 *  
+	 * I am pretty sure this is not supposed to be. 
+	 * But I don't know how to manage this problem for some years. 
+	 */
 	
 	/**
 	 * The procedure to invoke.
@@ -83,6 +122,7 @@ public class InvocableSchemeProcedure implements Invocable {
 	public InvocableSchemeProcedure(Object syncObj, Environment environment, Procedure procedure) {
 		this.syncObj = syncObj;
 		this.environment = environment;
+		this.language = Language.getDefaultLanguage();
 		this.procedure = procedure;
 	}
 
@@ -91,11 +131,14 @@ public class InvocableSchemeProcedure implements Invocable {
 		synchronized (syncObj) {
 			try {
 				Environment.setCurrent(this.environment);
-				return procedure.applyN(new Object[] {});
+				Language.setCurrentLanguage( language ); // ADDED (Sat, 20 Jul 2019 11:25:21 +0900)
+				return procedure.applyN( args );
 			} catch (Throwable e) {
 				Pulsar.logError("SchemeInvokableProcedure", e);
 				throw new RuntimeException(e);
 			}
 		}
 	}
+	
+	
 }

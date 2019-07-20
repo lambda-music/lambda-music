@@ -388,6 +388,18 @@ public abstract class PulsarScratchPad extends JFrame {
 		}
 	}
 
+	public void insertText( String t ) {
+		boolean isThereSelection=true;
+		String text = textPane.getSelectedText();
+		if ( text == null ) {
+			text = textPane.getText();
+			isThereSelection = false;
+		}
+		// ??? IS THIS NECESSARY?
+		textPane.getActionMap();
+		SwingUtilities.invokeLater( new InsertTextToTextPane(t, isThereSelection ) );
+	}
+
 	public final AbstractAction INTERRUPT_ACTION = new InterruptAction();
 	private final class InterruptAction extends AbstractAction {
 		@Override

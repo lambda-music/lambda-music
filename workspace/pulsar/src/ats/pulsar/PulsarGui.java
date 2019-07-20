@@ -101,7 +101,9 @@ import ats.pulsar.lib.swing.SpringLayoutUtil;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.Pair;
+import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
+import gnu.mapping.Procedure1;
 import gnu.mapping.ProcedureN;
 import gnu.mapping.Symbol;
 import kawa.standard.Scheme;
@@ -327,7 +329,15 @@ class PulsarGui {
     			}
     		}
     	});
+    	SchemeUtils.defineVar( scheme, "gui-invoke-later" , new ProcedureN() {
+			@Override
+			public Object applyN( Object[] args ) throws Throwable {
+				guiInvokeLater( (Procedure) args[0], Arrays.copyOfRange(args, 1, args.length ) );
+				return true;
+			}
+    	});
 
+    	
     	SchemeUtils.defineVar( scheme, "gui-get" , new ProcedureN() {
     		@Override
     		public Object applyN(Object[] args) throws Throwable {
@@ -704,6 +714,17 @@ class PulsarGui {
     			return EmptyList.emptyList;
     		}
     	});
+    	SchemeUtils.defineVar( scheme, "gui-insert-text" , new ProcedureN() {
+			@Override
+    		public Object applyN(Object[] args) throws Throwable {
+				StringBuilder sb = new StringBuilder();
+				for ( Object o : args ) {
+					sb.append( o.toString() ).append( " " );
+				}
+				frame.insertText( sb.toString().trim() );
+    			return EmptyList.emptyList;
+    		}
+    	});
     	
     	PulsarScratchPad.initScheme( scheme );
     }
@@ -728,6 +749,12 @@ class PulsarGui {
 		frame.invalidate();
 		frame.revalidate();
 		// frame.pack();
+	}
+	public void guiInvokeLater( Procedure p, Object ... args  ) {
+		SwingUtilities.invokeLater( 
+			new RunnableSchemeProcedure( 
+				new InvocableSchemeProcedure( 
+					pulsar.getScheme(), Environment.getCurrent(), p ) , args ) );
 	}
 	public void guiPack() {
 		//
@@ -1490,11 +1517,12 @@ class PulsarGui {
 		}
 
 		{
+			setTitle( "Pulsar - a Lisp Scheme Music Sequencer" );
 //			JMenuBar menuBar = new JMenuBar();
 //			setJMenuBar(menuBar);
 			
 			JMenuBar menuBar = getJMenuBar();
-
+			
 			{
 				JMenu m = new JMenu( "Sequencer" );
 				m.setMnemonic( 's' );
