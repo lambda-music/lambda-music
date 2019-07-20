@@ -6,7 +6,8 @@
 ;    INSTRUMENTALS
 ;    TracksetManager
 ;    Trackset
-;    Track
+;    TrackFactoryAdapter 
+;    SimpleTrack
 ;    gui-init-proc!
 ;==============================================================================================
 
@@ -194,7 +195,9 @@
 ;==============================================================================================
 (define TracksetManager 
   (lambda (self)
-    (let ((trackset-list (cons 'trackset-list '())))
+    (let ((trackset-list (cons 'trackset-list '()))
+          (track-factory-list (cons 'track-factory-list '() ))
+          )
       (self 'define 'field 'trackset-list trackset-list )
       (self 'define 'field '*current-trackset #f )
 
@@ -323,6 +326,15 @@
                                                                      ((e 'gui):setSelected #t)
                                                                      ((e 'gui):setSelected #f)))
                                                                  (cdr trackset-list ))))
+      (self 'define 'method 'register-track-factory (lambda (self track-factory)
+                                                      (set-cdr! track-factory-list
+                                                                (cons track-factory track-factory-list))
+                                                      
+                                                      (gui-build!
+                                                        (gui-get main-pane "TOOLBAR" "TRACK-CONSTRUCTOR")
+                                                        'index-from-last 1
+                                                        (track-factory 'create-track )
+                                                        )))
       )))
 
 (define trackset-manager (xnew TracksetManager ))
@@ -456,10 +468,24 @@
 
       )))
 
-;==============================================================================================
+(define main-pane #f )
+(define main-frame #f )
+
+(define TrackFactoryAdapter 
+  (lambda (self track-name track-class )
+    (self 'define 'field  'track-name    track-name    )
+    (self 'define 'method 'track-class   track-class )
+    (self 'define 'method 'create-track (lambda ( self )
+                                          (gui-new 'button (cons track-name 'hello )
+                                                   (lambda (sel cmd usr src evt ) 
+                                                     ((trackset-manager 'current-trackset) 
+                                                      'add-track (xnew track-class (new-track-id)))))))))
+
 
 ;==============================================================================================
-(define Track 
+; SimpleTrack
+;==============================================================================================
+(define SimpleTrack 
   (lambda ( self 
             track-id
             #!optional 
@@ -515,7 +541,7 @@
       (self 'define 'field 'beat-count           in-beat-count )
       (self 'define 'field 'measure-count        in-measure-count)
       (self 'define 'field 'gui                  (gui-build! 
-                                                   (gui-new 'group "Track" 'box javax.swing.BoxLayout:X_AXIS )
+                                                   (gui-new 'group "Simple-Track" 'box javax.swing.BoxLayout:X_AXIS )
 
                                                    'constraint "hidden"
                                                    'name 'self-ref
@@ -593,8 +619,9 @@
 
       (self 'define 'method 'hello               (lambda (self) (display 'hello)(newline) )  )
 
+      ; public
       (self 'define 'method 'track-to-source     (lambda (self) 
-                                                   `(xnew Track 
+                                                   `(xnew SimpleTrack 
                                                           ' ,( self 'read 'track-id     ) 
                                                           ' ,( self 'read 'instrument   )
                                                           ' ,( self 'read 'pns-pattern  )
@@ -645,8 +672,9 @@
       ; Update status of the components.
       (gui-invoke-later  (lambda () (self 'update-track-view))))))
 
-(define main-pane #f )
-(define main-frame #f )
+(define simple-track-factory (xnew TrackFactoryAdapter "Simple-Track" SimpleTrack ))
+
+
 
 (define create-new-counter (lambda ()
                              (let* ((new-number-counver 0 )
@@ -676,18 +704,6 @@
 
 
 
-(define activate-trackset (lambda (sel cmd usr src evt) 
-                            (let (( target-p (gui-get main-pane  "TRACKS")))
-                              (gui-remove-all target-p ))))
-(define deactivate-trackset (lambda (sel cmd usr src evt) 
-                              (let (( target-p (gui-get main-pane  "TRACKS")))
-                                (gui-remove-all target-p ))))
-
-(define clear-trackset (lambda (sel cmd usr src evt) 
-                         (let ((current-trackset (trackset-manager 'current-trackset)))
-                           (current-trackset 'clear-trackset )
-                           (current-trackset 'update-trackset-view ))))
-
 (define seq-base-00 (lambda()
                       (list (len 4/4))))
 
@@ -708,7 +724,7 @@
 
     ; (main-pane:setPreferredSize (java.awt.Dimension 800 500) )
     (main-frame:setVisible #t)
-    (main-frame:setSize 800 500)
+    (main-frame:setSize 1000 500)
     (main-frame:setDefaultCloseOperation javax.swing.WindowConstants:DISPOSE_ON_CLOSE)
 
     ; DON'T FORGET TO SET A LAYOUT MANAGER TO CONTENT PANE. 
@@ -757,27 +773,41 @@
                                             (trackset-manager 'add-trackset     trackset0)
                                             (trackset-manager 'current-trackset trackset0)
                                             (trackset-manager 'update-trackset-buttons trackset0)
-                                            (trackset0 'update-trackset-view )
-                                            )
+                                            (trackset0 'update-trackset-view ))
+
                                           (gui-build!
                                             main-frame
                                             'repaint
                                             'validate)))
+
           (gui-new 'button "Destroy"    (lambda (sel cmd usr src evt) 
                                           (trackset-manager 'remove-trackset 
-                                                            (trackset-manager 'current-trackset))
-                                          ))
+                                                            (trackset-manager 'current-trackset))))
+
           (gui-new 'button "Activate"   (lambda (sel cmd usr src evt)
                                           ((trackset-manager 'current-trackset) 'set-enabled #t)))
+
           (gui-new 'button "Deactivate" (lambda (sel cmd usr src evt)
                                           ((trackset-manager 'current-trackset) 'set-enabled #f)))
-          (gui-new 'button "Clear"      clear-trackset)
-          (gui-new 'button "New Track"  (lambda (sel cmd usr src evt) 
-                                          ((trackset-manager 'current-trackset) 'add-track 
-                                                                                (xnew Track (new-track-id)))))
+
+          (gui-new 'button "Clear"      (lambda (sel cmd usr src evt) 
+                                          (let ((current-trackset (trackset-manager 'current-trackset)))
+                                            (current-trackset 'clear-trackset )
+                                            (current-trackset 'update-trackset-view ))))
+          
 
           (javax.swing.Box:createHorizontalGlue )
           )
+        'name "TRACK-CONSTRUCTOR"
+        (gui-build!
+          (gui-new 'panel 'box javax.swing.BoxLayout:X_AXIS )
+          (lambda (self)
+            (self:setBorder (javax.swing.BorderFactory:createTitledBorder "Track Construction" )))
+          ; (lambda (self) (self:setMaximumSize (java.awt.Dimension 100 100)))
+          (gui-new 'button "Simple-Track"  (lambda (sel cmd usr src evt) 
+                                             ((trackset-manager 'current-trackset) 'add-track 
+                                                                                   (xnew SimpleTrack (new-track-id)))))
+          (javax.swing.Box:createHorizontalGlue ))
 
         'name "TRACKSET-SELECTION"
         (gui-build!
@@ -785,7 +815,11 @@
           (lambda (self)
             (self:setBorder (javax.swing.BorderFactory:createTitledBorder "Trackset Selection" )))
           ; (lambda (self) (self:setMaximumSize (java.awt.Dimension 100 100)))
-          (javax.swing.Box:createHorizontalGlue )))
+          (javax.swing.Box:createHorizontalGlue ))
+
+        )
+
+        
 
       'constraint java.awt.BorderLayout:CENTER
       'name "TRACKS"
@@ -804,17 +838,17 @@
 
       ; (trackset-manager 'add-trackset     trackset1)
       ; (trackset-manager 'current-trackset trackset1)
-      (xnew Track (new-track-id) )
+      (xnew SimpleTrack (new-track-id) )
       (trackset-manager 'add-trackset trackset1)
       (trackset-manager 'current-trackset trackset1)
-      (trackset1 'add-track (xnew Track (new-track-id)))
-      (trackset1 'add-track (xnew Track (new-track-id)))
-      (trackset1 'add-track (xnew Track (new-track-id)))
+      (trackset1 'add-track (xnew SimpleTrack (new-track-id)))
+      (trackset1 'add-track (xnew SimpleTrack (new-track-id)))
+      (trackset1 'add-track (xnew SimpleTrack (new-track-id)))
       (trackset-manager 'update-trackset-buttons trackset1)
       ; (let ((current-trackset (trackset-manager 'current-trackset))
-      ;       (track1 (xnew Track (new-track-id)))
-      ;       (track2 (xnew Track (new-track-id)))
-      ;       (track3 (xnew Track (new-track-id))))
+      ;       (track1 (xnew SimpleTrack (new-track-id)))
+      ;       (track2 (xnew SimpleTrack (new-track-id)))
+      ;       (track3 (xnew SimpleTrack (new-track-id))))
       ;   ; (current-trackset 'add-track track1)
       ;   ; (current-trackset 'add-track track2)
       ;   ; (current-trackset 'add-track track3))
@@ -826,7 +860,9 @@
                                (cdr (assq 'seq-base seqlst)))
                              default-pb-pos-setter)
 
-    (gui-pack!)))
+    (gui-pack!)
+    (trackset-manager 'register-track-factory simple-track-factory )
+    ))
 
 (newline)
 
