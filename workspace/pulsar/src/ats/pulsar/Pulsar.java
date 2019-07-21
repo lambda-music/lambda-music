@@ -50,6 +50,7 @@ import ats.metro.MetroTrack;
 import ats.metro.MetroTrack.SyncType;
 import ats.pulsar.lib.swing.MersenneTwisterFast;
 import ats.pulsar.lib.swing.SchemeUtils;
+import gnu.expr.Compilation;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.LList;
@@ -142,6 +143,11 @@ public final class Pulsar extends Metro {
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException {
+		// ADDED (Mon, 22 Jul 2019 08:32:52 +0900)
+		// REMOVED (Mon, 22 Jul 2019 08:43:43 +0900) 
+		// NO THIS DOESNT WORK 
+		// Compilation.inlineOk = false;
+		
 		Pulsar pulsar = new Pulsar();
 		if ( args.length == 0 ) {
 		} else {

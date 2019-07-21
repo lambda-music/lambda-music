@@ -38,6 +38,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -111,6 +112,16 @@ import kawa.standard.Scheme;
  * <pre> 
  * new PulsarScratchPad( initSchemeForScratchPad( new Scheme() ) ).initialize();
  * </pre>
+ * 
+ * There are several global variables which are fundamental to this tool.
+ * 
+ * - scheme
+ *     A reference to the current instance of {@link Scheme} class.
+ *   
+ * - frame
+ *     A reference to the current frame where the script was invoked.
+ *     Note that kawa is not multithread safe. In kawa only once thread 
+ *     can be executed at once.
  *  
  * @author Ats Oka
  */
@@ -227,18 +238,56 @@ public abstract class PulsarScratchPad extends JFrame {
 
 	///////////////////////////////////////////////////////////////////////////////////
 
+//	private final class InsertTextToTextPane implements Runnable {
+//		private final String result;
+//		private boolean isThereSelection;
+//		private InsertTextToTextPane(String result, boolean isThereSelection) {
+//			this.result = result;
+//			this.isThereSelection = isThereSelection;
+//		}
+//		
+//		@Override
+//		public void run() {
+//			try {
+//				if ( textPane.getSelectedText() != null ) {
+//					try {
+//						undoManager.startGroup();
+//						undoManager.setSuspended(true);
+//						int selectionEnd = textPane.getSelectionEnd();
+//						textPane.getDocument().insertString( selectionEnd, result, null);
+//						textPane.setSelectionEnd( selectionEnd + result.length() );
+//						textPane.setSelectionStart(selectionEnd + 1 );
+//					} finally {
+//						undoManager.setSuspended(false);
+//						undoManager.startGroup();
+//					}
+//				} else {
+//					try {
+//						undoManager.startGroup();
+//						undoManager.setSuspended(true);
+//						int dot = textPane.getCaret().getDot();
+//						textPane.getDocument().insertString( textPane.getText().length(), result, null);
+//						textPane.getCaret().moveDot(dot);
+//					} finally {
+//						undoManager.setSuspended(false);
+//						undoManager.startGroup();
+//					}
+//				}
+//			} catch (BadLocationException e1) {
+//				e1.printStackTrace();
+//			}
+//		}
+//	}
 	private final class InsertTextToTextPane implements Runnable {
 		private final String result;
-		private boolean isThereSelection;
-		private InsertTextToTextPane(String result, boolean isThereSelection) {
+		private InsertTextToTextPane( String result ) {
 			this.result = result;
-			this.isThereSelection = isThereSelection;
 		}
 		
 		@Override
 		public void run() {
 			try {
-				if ( isThereSelection ) {
+				if ( textPane.getSelectedText() != null ) {
 					try {
 						undoManager.startGroup();
 						undoManager.setSuspended(true);
@@ -255,7 +304,7 @@ public abstract class PulsarScratchPad extends JFrame {
 						undoManager.startGroup();
 						undoManager.setSuspended(true);
 						int dot = textPane.getCaret().getDot();
-						textPane.getDocument().insertString( textPane.getText().length(), result, null);
+						textPane.getDocument().insertString( dot, result, null);
 						textPane.getCaret().moveDot(dot);
 					} finally {
 						undoManager.setSuspended(false);
@@ -344,6 +393,50 @@ public abstract class PulsarScratchPad extends JFrame {
 	
 	
 	
+//	public final AbstractAction EXECUTE_ACTION = new ExecuteAction();
+//	private final class ExecuteAction extends AbstractAction {
+//		@Override
+//		public void actionPerformed(ActionEvent e) {
+//			//	JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
+//			threadManager.startScratchPadThread( new Runnable() {
+//				@Override
+//				public void run() {
+//					boolean isThereSelection=true;
+//					Object resultObject=null;
+//					String result = null;
+//					try {
+//						String text = textPane.getSelectedText();
+//						if ( text == null ) {
+//							text = textPane.getText();
+//							isThereSelection = false;
+//						}
+//						resultObject = executeScheme(text);
+//						textPane.getActionMap();
+//
+//						result = prettyPrint( resultObject );
+//
+//					} catch (Throwable e1) {
+//						ByteArrayOutputStream out = new ByteArrayOutputStream();
+//						PrintStream pout = new PrintStream( out );
+//						e1.printStackTrace( pout );
+//						pout.flush();
+//						result = new String( out.toByteArray() );
+//					}
+//					result = "\n#|\n" + result + "\n|#\n"; 
+//					logInfo( result );
+//
+//					SwingUtilities.invokeLater( new InsertTextToTextPane(result, isThereSelection ) );
+//				}
+//
+//			});
+//		}
+//		{
+//			putValue( Action2.NAME, "Execute" );
+//			putValue( Action.MNEMONIC_KEY, (int)'e' );
+//			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK) );
+//		}
+//	}
+
 	public final AbstractAction EXECUTE_ACTION = new ExecuteAction();
 	private final class ExecuteAction extends AbstractAction {
 		@Override
@@ -352,18 +445,18 @@ public abstract class PulsarScratchPad extends JFrame {
 			threadManager.startScratchPadThread( new Runnable() {
 				@Override
 				public void run() {
-					boolean isThereSelection=true;
 					Object resultObject=null;
 					String result = null;
 					try {
 						String text = textPane.getSelectedText();
 						if ( text == null ) {
 							text = textPane.getText();
-							isThereSelection = false;
 						}
 						resultObject = executeScheme(text);
 						textPane.getActionMap();
-
+						System.out.println("==========================");
+						System.out.println( resultObject.getClass() );
+						System.out.println("==========================");
 						result = prettyPrint( resultObject );
 
 					} catch (Throwable e1) {
@@ -376,7 +469,7 @@ public abstract class PulsarScratchPad extends JFrame {
 					result = "\n#|\n" + result + "\n|#\n"; 
 					logInfo( result );
 
-					SwingUtilities.invokeLater( new InsertTextToTextPane(result, isThereSelection ) );
+					SwingUtilities.invokeLater( new InsertTextToTextPane(result ) );
 				}
 
 			});
@@ -389,15 +482,17 @@ public abstract class PulsarScratchPad extends JFrame {
 	}
 
 	public void insertText( String t ) {
-		boolean isThereSelection=true;
-		String text = textPane.getSelectedText();
-		if ( text == null ) {
-			text = textPane.getText();
-			isThereSelection = false;
-		}
-		// ??? IS THIS NECESSARY?
-		textPane.getActionMap();
-		SwingUtilities.invokeLater( new InsertTextToTextPane(t, isThereSelection ) );
+//		boolean isThereSelection=true;
+//		String text = textPane.getSelectedText();
+//		if ( text == null ) {
+//			text = textPane.getText();
+//			isThereSelection = false;
+//		}
+//		isThereSelection = true;
+//		
+//		// ??? IS THIS NECESSARY?
+//		textPane.getActionMap();
+		SwingUtilities.invokeLater( new InsertTextToTextPane(t) );
 	}
 
 	public final AbstractAction INTERRUPT_ACTION = new InterruptAction();
@@ -560,12 +655,14 @@ public abstract class PulsarScratchPad extends JFrame {
 
 	Object executeScheme(String text) throws Throwable {
 		synchronized ( getScheme() ) {
+			StringReader reader = new StringReader(text);
 			try {
 				if ( enabledEnvironment )
 					Environment.setCurrent(environment);
 				SchemeUtils.putVar(getScheme(), "scheme", getScheme() );
 				SchemeUtils.putVar(getScheme(), "frame", this );
-				return getScheme().eval( text );
+				
+				return getScheme().eval( new InPort(reader) ); 
 //				return scheme.eval( 
 //						"(let (( frame "+ frameName +"))\n" +						
 //								text +
@@ -574,6 +671,7 @@ public abstract class PulsarScratchPad extends JFrame {
 			} finally {
 				SchemeUtils.putVar(getScheme(), "scheme", false );
 				SchemeUtils.putVar(getScheme(), "frame", false );
+				reader.close();
 			}
 		}
 	

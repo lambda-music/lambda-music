@@ -714,7 +714,7 @@ class PulsarGui {
     			return EmptyList.emptyList;
     		}
     	});
-    	SchemeUtils.defineVar( scheme, "gui-insert-text" , new ProcedureN() {
+    	SchemeUtils.defineVar( scheme, "gui-insert-text!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				StringBuilder sb = new StringBuilder();
@@ -1173,7 +1173,7 @@ class PulsarGui {
  					guiNextIndex( parent, SchemeUtils.toInteger( curr ) );
 					mode = null;
 				} else if ( "index-from-last".equals( mode ) ) {
- 					guiNextIndex( parent, parent.getComponentCount() - SchemeUtils.toInteger( curr ) - 1 );
+ 					guiNextIndex( parent, parent.getComponentCount() - SchemeUtils.toInteger( curr )  );
 					mode = null;
 				} else if ( "remove".equals( mode ) ) {
  					guiRemoveByRef( parent, (Component)curr);

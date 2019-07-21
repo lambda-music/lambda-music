@@ -1,6 +1,7 @@
 ;==============================================================================================
 ;
 ; Pulsar Code Generator
+;
 ; See 
 ;    RHYTHM_PATTERNS
 ;    INSTRUMENTALS
@@ -9,6 +10,7 @@
 ;    TrackFactoryAdapter 
 ;    SimpleTrack
 ;    gui-init-proc!
+;
 ;==============================================================================================
 
 (import (srfi 1))
@@ -38,7 +40,7 @@
                          (pns-proc inst x n))))
 
 (define make-pb-pos-setter
-  (lambda (progressbar-0) 
+  (lambda (progressbar-0 ::javax.swing.JProgressBar ) 
     (lambda (pos) 
       (progressbar-0:setValue (* pos 1000))
       (progressbar-0:repaint)
@@ -99,6 +101,8 @@
 
 (define inst-list (list (cons 'inst-cowb   (cons "Cowbell"    (make-perc 0 0 D7  1/8 )))
                         (cons 'inst-rid1   (cons "Ride"       (make-perc 0 0 Db5 1/8 )))
+                        (cons 'inst-csh1   (cons "Crash1"     (make-perc 0 0 E5  1/8 )))
+                        (cons 'inst-csh2   (cons "Crash2"     (make-perc 0 0 Eb5 1/8 )))
                         (cons 'inst-drys   (cons "Dry Snare"  (make-perc 0 0 G3  1/8 )))
                         (cons 'inst-snar   (cons "Snare"      (make-perc 0 0 A3  1/8 )))
                         (cons 'inst-snar2  (cons "Snare2"     (make-perc 0 0 B3  1/8 )))
@@ -111,6 +115,8 @@
 (define inst-hhp1  (cddr (assq 'inst-hhp1   inst-list )))
 (define inst-drys  (cddr (assq 'inst-drys   inst-list )))
 (define inst-rid1  (cddr (assq 'inst-rid1   inst-list )))
+(define inst-csh1  (cddr (assq 'inst-csh1   inst-list )))
+(define inst-csh2  (cddr (assq 'inst-csh2   inst-list )))
 
 (define inst-snar  (cddr (assq 'inst-snar   inst-list )))
 (define inst-snar2 (cddr (assq 'inst-snar2  inst-list )))
@@ -193,7 +199,47 @@
                                  (list (len 1)))))
 
 ;==============================================================================================
-(define TracksetManager 
+;
+;==============================================================================================
+
+(define main-pane ::javax.swing.JPanel #!null )
+(define main-frame ::javax.swing.JFrame #!null )
+
+(define TracksetManager  #f)
+(define trackset-manager #f)
+(define Trackset         #f)
+
+;==============================================================================================
+; UTIL
+;==============================================================================================
+(define create-new-counter (lambda ()
+                             (let* ((new-number-counver 0 )
+                                   (new-number (lambda()
+                                                 (let (( v new-number-counver ))
+                                                   (set! new-number-counver (+ v 1))
+                                                   v)))
+                                   (new-id (lambda (#!optional (prefix "") (suffix "" ))
+                                             (string-append
+                                               prefix
+                                               (number->string (new-number))
+                                               suffix))))
+                               ; return the lambda "new-id"
+                               new-id)))
+
+
+
+(define new-trackset-id (create-new-counter))
+(define new-track-id (let ((new-track-id-string (create-new-counter)))
+                       (lambda ()
+                         (string->symbol (new-track-id-string "track-")))))
+
+; NOTE : (Sat, 20 Jul 2019 08:54:32 +0900)
+; JavaScript has to create a function and execute it in order to create a
+; closure. Lisp Scheme does not have to. In Scheme, you can create closures
+; whenever by using 'let' statement.
+
+;==============================================================================================
+(set! TracksetManager 
   (lambda (self)
     (let ((trackset-list (cons 'trackset-list '()))
           (track-factory-list (cons 'track-factory-list '() ))
@@ -210,8 +256,10 @@
                                                                ))
                                                    (gui-build!
                                                      (gui-get main-pane "TOOLBAR" "TRACKSET-SELECTION")
-                                                     'index-from-last 0
-                                                     (trackset 'gui))))
+                                                     'index-from-last 1
+                                                     (trackset 'gui))
+                                                   trackset
+                                                   ))
 
       (self 'define 'method 'remove-trackset     (lambda(self trackset) 
                                                    (if trackset 
@@ -261,7 +309,7 @@
                                                                  ))))
                                                          ;else
                                                          (begin
-                                                           (values)))
+                                                           #f))
 
                                                        ; remove the trackset from the list.
                                                        (set-cdr! trackset-list
@@ -323,8 +371,8 @@
                                                          (set! selected-trackset (self 'current-trackset )))
                                                        (for-each (lambda (e)
                                                                    (if (eq? selected-trackset e)
-                                                                     ((e 'gui):setSelected #t)
-                                                                     ((e 'gui):setSelected #f)))
+                                                                     ((as javax.swing.AbstractButton (e 'gui)):setSelected #t)
+                                                                     ((as javax.swing.AbstractButton (e 'gui)):setSelected #f)))
                                                                  (cdr trackset-list ))))
       (self 'define 'method 'register-track-factory (lambda (self track-factory)
                                                       (set-cdr! track-factory-list
@@ -335,9 +383,28 @@
                                                         'index-from-last 1
                                                         (track-factory 'create-track )
                                                         )))
+
+      (self 'define 'method 'new-trackset (lambda (self) 
+                                            (let ((trackset0 (xnew Trackset       (new-trackset-id "trackset" ))))
+                                              (trackset-manager 'add-trackset     trackset0)
+                                              (trackset-manager 'current-trackset trackset0)
+                                              (trackset-manager 'update-trackset-buttons trackset0)
+                                              (trackset0 'update-trackset-view )
+                                              (gui-build!
+                                                main-frame
+                                                'revalidate
+                                                'repaint
+                                                'validate) 
+                                              trackset0)))
       )))
 
-(define trackset-manager (xnew TracksetManager ))
+(set! trackset-manager (xnew TracksetManager ))
+(define do-with-preserve-print-right-margin (lambda ( print-right-margin proc )
+                                              (let ((old-value *print-right-margin* ))
+                                                (set! *print-right-margin* print-right-margin)
+                                                (let ((result (proc)))
+                                                  (set! *print-right-margin* old-value)
+                                                  result))))
 
 ;==============================================================================================
 ; TRACKSET
@@ -350,10 +417,10 @@
       (self 'define 'field 'trackset-name          name )
       (self 'define 'field 'track-list             track-list )
       (self 'define 'field 'gui-is-button-selected (lambda (self value)
-                                                     ((self 'gui ):setSelected value)))
+                                                     ((as javax.swing.AbstractButton (self 'gui )) :setSelected value)))
       ; public
       (self 'define 'field 'gui (begin 
-                                  (let ((b (javax.swing.JToggleButton (self 'trackset-name) )))
+                                  (let ((b::javax.swing.JToggleButton (javax.swing.JToggleButton (as java.lang.String (self 'trackset-name)) )))
                                     (b:addActionListener
                                       (object (java.awt.event.ActionListener)
                                               ((actionPerformed (e ::java.awt.event.ActionEvent))
@@ -367,23 +434,30 @@
                                     b)
                                   ))
 
-      (self 'define 'method 'add-track (lambda (self track) 
-                                         ; Add the passed track to the list.
-                                         (set-cdr! track-list (cons track (cdr track-list)))
+      (self 'define 'method 'add-track (lambda (self . tracks) 
+                                         (let add-track-loop ((ptrack tracks))
+                                           (if (null? ptrack)
+                                             ; end loop
+                                             #f
+                                             (begin
+                                               (let ((track (car ptrack)))
+                                                 ; Add the passed track to the list.
+                                                 (set-cdr! track-list (cons track (cdr track-list)))
 
-                                         ; Add the passed track's gui to the panel
-                                         (let (( target-p (gui-get main-pane  "TRACKS")))
-                                           (gui-build!
-                                             target-p 
-                                             'index 0
-                                             (track 'gui)
-                                             'invalidate
-                                             'revalidate
-                                             )
-                                           (gui-repaint main-frame)
-                                           ;(gui-revalidate main-frame)
-                                           (gui-pack!)
-                                           )))
+                                                 ; Add the passed track's gui to the panel
+                                                 (let (( target-p (gui-get main-pane  "TRACKS")))
+                                                   (gui-build!
+                                                     target-p 
+                                                     'index-from-last 1
+                                                     (track 'gui)
+                                                     'invalidate
+                                                     'revalidate
+                                                     'repaint
+                                                     )))
+                                               (add-track-loop (cdr ptrack)))))
+                                         (gui-repaint main-pane)
+                                         ))
+
       (self 'define 'method 'set-enabled-to-all-track  (lambda (self value)
                                                          (for-each (lambda (e)
                                                                      (e 'set-enabled value)
@@ -393,29 +467,35 @@
       (self 'define 'method 'set-enabled  (lambda (self value)
                                             (self 'set-enabled-to-all-track value)))
 
-      (self 'define 'method 'remove-track (lambda (self track) 
-                                            ; disable the track
-                                            (track 'set-enabled #f)
-                                            ; remove the passed track from the list.
-                                            (set-cdr! track-list (delete track (cdr track-list) eq?))
+      (self 'define 'method 'remove-track (lambda (self . tracks) 
+                                            (let remove-track-loop ((ptrack tracks))
+                                              (if (null? ptrack ) 
+                                                ;then
+                                                #f
+                                                ;else
+                                                (let ((track (car ptrack)))
+                                                  ; disable the track
+                                                  (track 'set-enabled #f)
+                                                  ; remove the passed track from the list.
+                                                  (set-cdr! track-list (delete track (cdr track-list) eq?))
 
-                                            ; Remove the passed track's gui to the panel
-                                            (let* ((gui (track 'gui))
-                                                   (parent (gui-parent gui)))
-                                              (if parent
-                                                (gui-remove-by-ref (gui-parent gui ) gui)))
+                                                  ; Remove the passed track's gui to the panel
+                                                  (let* ((gui (track 'gui))
+                                                         (parent (gui-parent gui)))
+                                                    (if parent
+                                                      (gui-remove-by-ref (gui-parent gui ) gui)))
 
-                                            (gui-repaint main-frame)
-                                            (gui-pack!)
-                                            (gui-validate main-pane)
-                                            ))
+                                                  (gui-repaint main-frame)
+                                                  (gui-pack!)
+                                                  (gui-validate main-pane)
+                                                  (remove-track-loop (cdr ptrack)))))))
 
-      (self 'define 'method 'add-all-tracks (lambda (self . args )
-                                              (for-each (lambda (track) 
-                                                          (self 'add-track track))
-                                                        (if (eqv? 0 (length args ) )
-                                                          (cdr track-list)
-                                                          args))))
+      ; (self 'define 'method 'add-all-tracks (lambda (self . args )
+      ;                                         (for-each (lambda (track) 
+      ;                                                     (self 'add-track track))
+      ;                                                   (if (eqv? 0 (length args ) )
+      ;                                                     (cdr track-list)
+      ;                                                     args))))
 
       (self 'define 'method 'remove-all-tracks (lambda (self . args)
                                                  (for-each (lambda (track)
@@ -428,9 +508,13 @@
       ; public
       (self 'define 'method 'clear-trackset       (lambda (self)
                                                     (self 'remove-all-tracks)))
+
+      ; Note that you have repaint,then revalidate. 
+      ; See https://stackoverflow.com/questions/1097366/java-swing-revalidate-vs-repaint
+
       ; public
       (self 'define 'method 'update-trackset-view (lambda ( self ) 
-                                                    (display 'update-trackset-view) (newline)
+                                                    ;; (display 'update-trackset-view) (newline)
                                                     (apply gui-build! (append
                                                                         (list (gui-get main-pane  "TRACKS") )
                                                                         (list 'remove-all )
@@ -439,7 +523,9 @@
                                                                           (cdr track-list))
                                                                         (list 
                                                                           (javax.swing.Box:createHorizontalGlue)
-                                                                          'invalidate)
+                                                                          'invalidate
+                                                                          'repaint
+                                                                          'revalidate)
                                                                         ))
                                                       (main-pane:invalidate)
                                                       (main-pane:repaint)
@@ -451,25 +537,33 @@
 
       ; public
       (self 'define 'method 'trackset-to-source (lambda args
-                                                  (prettify
-                                                    (apply string-append
-                                                           (append
-                                                             (list "(add-all-tracks " )
-                                                             (map (lambda(x)
-                                                                    (string-append
-                                                                      "\n"
-                                                                      (pretty-print (x 'track-to-source ))))
-                                                                  (if (eqv? 0 (length args) )
-                                                                    (cdr track-list)
-                                                                    args))
-                                                             (list ") " ))))))
+                                                  (do-with-preserve-print-right-margin 500
+                                                    (lambda ()
+                                                      (prettify
+                                                        (apply string-append
+                                                               (append
+                                                                 (list "((trackset-manager 'new-trackset) 'add-track " )
+                                                                 (map (lambda(x)
+                                                                        (display x)
+                                                                        (newline)
+                                                                        (string-append
+                                                                          "\n"
+                                                                          (pretty-print (x 'track-to-source ))))
+                                                                      (if (<= (length args) 1 )
+                                                                        (cdr track-list)
+                                                                        ; the first element is self so go to the next element.
+                                                                        (cdr args )))
+                                                                 (list ") " ))))))))
 
 
 
       )))
 
-(define main-pane #f )
-(define main-frame #f )
+
+
+;==============================================================================================
+; TRACKSET
+;==============================================================================================
 
 (define TrackFactoryAdapter 
   (lambda (self track-name track-class )
@@ -621,13 +715,27 @@
 
       ; public
       (self 'define 'method 'track-to-source     (lambda (self) 
-                                                   `(xnew SimpleTrack 
-                                                          ' ,( self 'read 'track-id     ) 
-                                                          ' ,( self 'read 'instrument   )
-                                                          ' ,( self 'read 'pns-pattern  )
-                                                          \",( self 'read 'beat-offset  )\"
-                                                          ' ,( self 'read 'beat-count   ) 
-                                                          ' ,( self 'read 'measure-count ))))
+                                                   (let ((proc-symbol (lambda(v)
+                                                                        (string-append 
+                                                                          "'" 
+                                                                          (symbol->string v))))
+                                                         (proc-string (lambda(v)
+                                                                        (string-append 
+                                                                          "\"" 
+                                                                          v
+                                                                          "\"" 
+                                                                          )))
+                                                         (proc-number (lambda(v)
+                                                                        (number->string v)))
+                                                         )
+                                                     `(xnew SimpleTrack 
+                                                            ;,(proc-symbol (self 'read 'track-id     ))
+                                                             (new-track-id)
+                                                            ,(proc-symbol (self 'read 'instrument   ))
+                                                            ,(proc-symbol (self 'read 'pns-pattern  ))
+                                                            ,(proc-string (self 'read 'beat-offset  ))
+                                                            ,(proc-number (self 'read 'beat-count   )) 
+                                                            ,(proc-number (self 'read 'measure-count))))))
 
       (self 'define 'method 'update-track-view   (lambda (self)
                                                    ; update Act label which denotes 'enabled
@@ -674,33 +782,6 @@
 
 (define simple-track-factory (xnew TrackFactoryAdapter "Simple-Track" SimpleTrack ))
 
-
-
-(define create-new-counter (lambda ()
-                             (let* ((new-number-counver 0 )
-                                   (new-number (lambda()
-                                                 (let (( v new-number-counver ))
-                                                   (set! new-number-counver (+ v 1))
-                                                   v)))
-                                   (new-id (lambda (#!optional (prefix "") (suffix "" ))
-                                             (string-append
-                                               prefix
-                                               (number->string (new-number))
-                                               suffix))))
-                               ; return the lambda "new-id"
-                               new-id)))
-
-
-
-(define new-trackset-id (create-new-counter))
-(define new-track-id (let ((new-track-id-string (create-new-counter)))
-                       (lambda ()
-                         (string->symbol (new-track-id-string "track-")))))
-
-; NOTE : (Sat, 20 Jul 2019 08:54:32 +0900)
-; JavaScript has to create a function and execute it in order to create a
-; closure. Lisp Scheme does not have to. In Scheme, you can create closures
-; whenever by using 'let' statement.
 
 
 
@@ -751,57 +832,56 @@
 
       ; DOCUMENT ABOUT THIS
       (if #t
-        (lambda (self)
+        (lambda (self ::javax.swing.JPanel )
           (self:setBorder (javax.swing.BorderFactory:createTitledBorder "Sequencer" )))
         (lambda (self)
-          (values)))
+          #f))
 
       'constraint java.awt.BorderLayout:PAGE_START
       'name "TOOLBAR"
       (gui-build! 
         (gui-new 'panel 'box javax.swing.BoxLayout:Y_AXIS )
-        (lambda (self)
+        (lambda (self ::javax.swing.JPanel)
           (self:setBorder (javax.swing.BorderFactory:createTitledBorder "Tools" )))
         'name "TRACKSET-MANAGEMENT"
         (gui-build!
           (gui-new 'panel 'box javax.swing.BoxLayout:X_AXIS )
-          (lambda (self)
+          (lambda (self ::javax.swing.JPanel)
             (self:setBorder (javax.swing.BorderFactory:createTitledBorder "Trackset Management" ))) 
           ; (lambda (self) (self:setPreferredSize (java.awt.Dimension 100 100)))
           (gui-new 'button "Create"     (lambda (sel cmd usr src evt) 
-                                          (let ((trackset0 (xnew Trackset       (new-trackset-id "trackset" ))))
-                                            (trackset-manager 'add-trackset     trackset0)
-                                            (trackset-manager 'current-trackset trackset0)
-                                            (trackset-manager 'update-trackset-buttons trackset0)
-                                            (trackset0 'update-trackset-view ))
+                                          (trackset-manager 'new-trackset)))
 
-                                          (gui-build!
-                                            main-frame
-                                            'repaint
-                                            'validate)))
 
-          (gui-new 'button "Destroy"    (lambda (sel cmd usr src evt) 
-                                          (trackset-manager 'remove-trackset 
-                                                            (trackset-manager 'current-trackset))))
 
           (gui-new 'button "Activate"   (lambda (sel cmd usr src evt)
                                           ((trackset-manager 'current-trackset) 'set-enabled #t)))
 
           (gui-new 'button "Deactivate" (lambda (sel cmd usr src evt)
                                           ((trackset-manager 'current-trackset) 'set-enabled #f)))
+          (gui-new 'button "Source"     (lambda (sel cmd usr src evt)
+                                          (gui-insert-text!
+                                            (string-append
+                                              ((trackset-manager 'current-trackset) 'trackset-to-source )
+                                              "\n")
+                                          )))
 
+
+
+
+          (javax.swing.Box:createHorizontalGlue )
           (gui-new 'button "Clear"      (lambda (sel cmd usr src evt) 
                                           (let ((current-trackset (trackset-manager 'current-trackset)))
                                             (current-trackset 'clear-trackset )
                                             (current-trackset 'update-trackset-view ))))
-          
-
-          (javax.swing.Box:createHorizontalGlue )
+          (gui-new 'button "Destroy"    (lambda (sel cmd usr src evt) 
+                                          (trackset-manager 'remove-trackset 
+                                                            (trackset-manager 'current-trackset))))
           )
         'name "TRACK-CONSTRUCTOR"
         (gui-build!
           (gui-new 'panel 'box javax.swing.BoxLayout:X_AXIS )
-          (lambda (self)
+          (lambda (self ::javax.swing.JPanel)
             (self:setBorder (javax.swing.BorderFactory:createTitledBorder "Track Construction" )))
           ; (lambda (self) (self:setMaximumSize (java.awt.Dimension 100 100)))
           (gui-new 'button "Simple-Track"  (lambda (sel cmd usr src evt) 
@@ -812,7 +892,7 @@
         'name "TRACKSET-SELECTION"
         (gui-build!
           (gui-new 'panel 'box javax.swing.BoxLayout:X_AXIS )
-          (lambda (self)
+          (lambda (self ::javax.swing.JPanel)
             (self:setBorder (javax.swing.BorderFactory:createTitledBorder "Trackset Selection" )))
           ; (lambda (self) (self:setMaximumSize (java.awt.Dimension 100 100)))
           (javax.swing.Box:createHorizontalGlue ))
@@ -835,16 +915,15 @@
     ; (add-track track3)
 
     (let ((trackset1 (xnew Trackset (new-trackset-id "trackset" ))))
-
-      ; (trackset-manager 'add-trackset     trackset1)
-      ; (trackset-manager 'current-trackset trackset1)
-      (xnew SimpleTrack (new-track-id) )
-      (trackset-manager 'add-trackset trackset1)
+      (trackset-manager 'add-trackset     trackset1)
       (trackset-manager 'current-trackset trackset1)
-      (trackset1 'add-track (xnew SimpleTrack (new-track-id)))
-      (trackset1 'add-track (xnew SimpleTrack (new-track-id)))
-      (trackset1 'add-track (xnew SimpleTrack (new-track-id)))
+      (trackset1 'add-track 
+                 (xnew SimpleTrack (new-track-id))
+                 (xnew SimpleTrack (new-track-id)))
+
       (trackset-manager 'update-trackset-buttons trackset1)
+      (trackset-manager 'update-trackset-view    trackset1)
+
       ; (let ((current-trackset (trackset-manager 'current-trackset))
       ;       (track1 (xnew SimpleTrack (new-track-id)))
       ;       (track2 (xnew SimpleTrack (new-track-id)))
@@ -852,7 +931,7 @@
       ;   ; (current-trackset 'add-track track1)
       ;   ; (current-trackset 'add-track track2)
       ;   ; (current-trackset 'add-track track3))
-      ;   (values)
+      ;   #f
       ;   )
       )
 
