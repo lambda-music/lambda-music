@@ -174,14 +174,17 @@ public class PulsarSpecialNoteListParsers {
 		@Override
 		public
 		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
-			Scheme scheme2 = ((Pulsar)metro).getScheme();
+			Pulsar pulsar = ((Pulsar)metro);
 
 			double offset        = map.containsKey( ID_OFFSET   )  ? SchemeUtils.toDouble(     map.get( ID_OFFSET    ) ) : 0.0d;
 			Procedure procedure0 = map.containsKey( ID_PROCEDURE ) ?                (Procedure)map.get( ID_PROCEDURE )   : null;
 			// See the note ... XXX_SYNC_01
 			((MetroEventBuffer) receiver).exec( offset, 
 					new RunnableSchemeProcedure( 
-							new InvocableSchemeProcedure( scheme2 /* XXX_SYNC_01 */, Environment.getCurrent(), procedure0) ) );
+							Pulsar.createInvocable(/* XXX_SYNC_01 */
+							// MODIFIED (Mon, 22 Jul 2019 09:34:53 +0900)
+							pulsar.getScheme(), pulsar.getSchemeEnvironment(), pulsar.getSchemeLanguage(),
+								procedure0) ) );
 			return result;
 		}
 	}
@@ -198,7 +201,8 @@ public class PulsarSpecialNoteListParsers {
 		@Override
 		public
 		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
-			Scheme scheme2 = ((Pulsar)metro).getScheme();
+//			Scheme scheme2 = ((Pulsar)metro).getScheme();
+			Pulsar pulsar = ((Pulsar)metro);
 			
 			List<String> el = Collections.emptyList();
 
@@ -211,18 +215,17 @@ public class PulsarSpecialNoteListParsers {
 			Procedure procedure      = getValue( map, ID_PROCEDURE, null, (v)->(Procedure)v );
 
 			if ( id == null )
-				id = createDefaultId(scheme2);
+				id = createDefaultId( pulsar.getScheme() );
 
 			if ( procedure != null ) {
-				Pulsar pulsar = (Pulsar)metro;
-				
 				String id2= id;
 				// See the note ... XXX_SYNC_01
 				((MetroEventBuffer) receiver).exec( offset, new Runnable() {
 					@Override
 					public void run() {
-						SchemeSequence sequence = new SchemeSequence( scheme2,
-								new InvocableSchemeProcedure( scheme2, Environment.getCurrent(), procedure ) );
+						SchemeSequence sequence = new SchemeSequence( pulsar.getScheme(),
+								Pulsar.createInvocable(pulsar.getScheme(), pulsar.getSchemeEnvironment(), pulsar.getSchemeLanguage(),
+									procedure) );
 
 						pulsar.putSequence( id2, tags, sequence, syncType, syncSequenceId, syncOffset  );
 					}
@@ -231,14 +234,16 @@ public class PulsarSpecialNoteListParsers {
 			return result;
 		}
 		public String createDefaultId(Scheme scheme) {
-			String id;
-			try {
-				id = SchemeUtils.symbolToString( scheme.eval( "(make-default-id)" ) );
-			} catch (Throwable e) {
-				LOGGER.log(Level.WARNING, "put: Ignored an error. Default value was applied to the id.: ", e);
-				id = "seq-default";
+			synchronized ( scheme ) {
+				String id;
+				try {
+					id = SchemeUtils.symbolToString( scheme.eval( "(make-default-id)" ) );
+				} catch (Throwable e) {
+					LOGGER.log(Level.WARNING, "put: Ignored an error. Default value was applied to the id.: ", e);
+					id = "seq-default";
+				}
+				return id;
 			}
-			return id;
 		}
 	}
 	public static final RemoveEventParser PARSER_REMOVE = new RemoveEventParser();

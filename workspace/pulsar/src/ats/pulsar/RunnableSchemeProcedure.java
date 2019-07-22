@@ -20,6 +20,8 @@
 
 package ats.pulsar;
 
+import ats.pulsar.lib.kawautil.InvocableSchemeProcedure;
+
 public final class RunnableSchemeProcedure implements Runnable {
 	final InvocableSchemeProcedure procedure;
 	final Object[] args;

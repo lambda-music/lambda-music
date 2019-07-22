@@ -48,9 +48,13 @@ import org.jaudiolibs.jnajack.JackException;
 import ats.metro.Metro;
 import ats.metro.MetroTrack;
 import ats.metro.MetroTrack.SyncType;
+import ats.pulsar.lib.kawautil.Invocable;
+import ats.pulsar.lib.kawautil.InvocableSchemeProcedure;
+import ats.pulsar.lib.kawautil.SimpleInvocableSchemeProcedure;
+import ats.pulsar.lib.message.queue.SimpleMessageQueue;
 import ats.pulsar.lib.swing.MersenneTwisterFast;
 import ats.pulsar.lib.swing.SchemeUtils;
-import gnu.expr.Compilation;
+import gnu.expr.Language;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.LList;
@@ -124,7 +128,7 @@ public final class Pulsar extends Metro {
 	 */
 	public Pulsar() {
 		this.gui = new PulsarGui( this );
-		this.scheme = makeScheme();
+		this.initLanguage();
 	}
 
 	/**
@@ -176,11 +180,38 @@ public final class Pulsar extends Metro {
 		LOGGER.log(Level.WARNING, msg);
 	}
 
-	Scheme scheme;
+	private Scheme scheme;
+	private Language    schemeLanguage;
+	private Environment schemeEnvironment;
+	
 	PulsarGui gui;
+	
+	private final SimpleMessageQueue<Scheme> messageQueue = new SimpleMessageQueue<Scheme>() {
+		@Override
+		protected Scheme getResource() {
+			return Pulsar.this.getScheme();
+		}
+	};
+	public Invocable createInvocable( Procedure procedure ) {
+		return SimpleInvocableSchemeProcedure.createSynchronousllyInvocable( messageQueue, procedure );
+	}
+	
+	public static InvocableSchemeProcedure createInvocable(
+			Object syncObj, Environment environment,
+			Language language, Procedure procedure) {
+		return new InvocableSchemeProcedure(syncObj, environment, language, procedure);
+	}
+
+	
 
 	public Scheme getScheme() {
 		return scheme;
+	}
+	public Language getSchemeLanguage() {
+		return this.schemeLanguage;
+	}
+	public Environment getSchemeEnvironment() {
+		return schemeEnvironment;
 	}
 	
 	MersenneTwisterFast random = new MersenneTwisterFast( new int[] { 
@@ -307,7 +338,7 @@ public final class Pulsar extends Metro {
 	 * filename. This causes reload the script file.
 	 */
 	public void reset() {
-		this.scheme = makeScheme();
+		initLanguage();
 		this.execCleanupHook();
 		if ( gui != null )
 			this.gui.guiClear();
@@ -632,11 +663,12 @@ public final class Pulsar extends Metro {
 	public void loadScheme( File file ) throws FileNotFoundException {
 		SchemeUtils.execSchemeFromFile( scheme, parentFile, file);
 	}
-
-	private Scheme makeScheme() {
-		Scheme scheme = new Scheme();
+	
+	private void initLanguage() {
+		this.scheme = new Scheme();
+		this.schemeEnvironment = this.scheme.getEnvironment();
+		this.schemeLanguage = Language.getDefaultLanguage();
 		initScheme( scheme );
-		return scheme;
 	}
 
 	/**
@@ -738,7 +770,7 @@ public final class Pulsar extends Metro {
 				logInfo("set-main");
 				if ( args.length == 1 ) {
 					Procedure procedure = (Procedure)args[0];
-					setMainProcedure( new InvocableSchemeProcedure( scheme, Environment.getCurrent(), procedure ));
+					setMainProcedure( Pulsar.createInvocable(getScheme(), getSchemeEnvironment(), getSchemeLanguage(), procedure));
 				} else {
 					throw new RuntimeException( "invalid argument length" );
 				}
@@ -751,7 +783,7 @@ public final class Pulsar extends Metro {
 				logInfo("set-cue");
 				if ( args.length == 1 ) {
 					Procedure procedure = (Procedure)args[0];
-					setCueProcedure( new InvocableSchemeProcedure( scheme , Environment.getCurrent(), procedure ));
+					setCueProcedure( Pulsar.createInvocable( getScheme(), getSchemeEnvironment(), getSchemeLanguage(), procedure ) );
 				} else {
 					throw new RuntimeException( "invalid argument length" );
 				}
@@ -904,7 +936,8 @@ public final class Pulsar extends Metro {
 					double offset           = 5<=args.length ? SchemeUtils.toDouble( args[4] ) : 0.0d;
 					
 					SchemeSequence sequence = new SchemeSequence( scheme,
-							new InvocableSchemeProcedure( scheme, Environment.getCurrent(), procedure ) );
+							Pulsar.createInvocable(getScheme(), getSchemeEnvironment(), getSchemeLanguage(),
+								procedure) );
 					
 					putSequence( name, tags, sequence, syncType, syncTrackName, offset );
 					 

@@ -51,6 +51,7 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import ats.pulsar.lib.kawautil.SchemeFunctionExecutor;
 import ats.pulsar.lib.swing.FlawLayout;
 import ats.pulsar.lib.swing.JNamedPanel;
 import ats.pulsar.lib.swing.JPulsarButton;
@@ -119,27 +120,6 @@ public abstract class SchemeNewFactory {
 
 
 
-	static final class SchemeFunctionExecutor {
-		private final Environment env;
-		private final Language lang;
-		private final Procedure procedure;
-		private SchemeFunctionExecutor(Procedure procedure ) {
-			this.env = Environment.getCurrent();
-			this.lang = Language.getDefaultLanguage();
-			this.procedure = procedure;
-		}
-		public Object execute( Object ... args ) {
-			try {
-				Environment.setCurrent(env);
-				Language.setCurrentLanguage(lang);
-				return this.procedure.applyN( args );
-			} catch (Throwable e1) {
-				logError( "" , e1 );
-				return e1;
-			}
-		}
-	}
-	
 	static final class ComponentFactoryActionListener implements ActionListener {
 		SchemeFunctionExecutor executor; 
 		ComponentFactoryActionListener(Procedure procedure) {

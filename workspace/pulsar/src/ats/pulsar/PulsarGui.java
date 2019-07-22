@@ -753,8 +753,7 @@ class PulsarGui {
 	public void guiInvokeLater( Procedure p, Object ... args  ) {
 		SwingUtilities.invokeLater( 
 			new RunnableSchemeProcedure( 
-				new InvocableSchemeProcedure( 
-					pulsar.getScheme(), Environment.getCurrent(), p ) , args ) );
+				Pulsar.createInvocable(pulsar.getScheme(), pulsar.getSchemeEnvironment(), pulsar.getSchemeLanguage(), p) , args ) );
 	}
 	public void guiPack() {
 		//
@@ -1378,7 +1377,7 @@ class PulsarGui {
 			PulsarScratchPad scratchPad = new PulsarScratchPad() {
 				@Override
 				public Scheme getScheme() {
-					return pulsar.scheme;
+					return pulsar.getScheme();
 				}
 			}.initialize();
 		}
@@ -1395,7 +1394,7 @@ class PulsarGui {
 			PulsarScratchPad scratchPad = new PulsarScratchPad() {
 				@Override
 				public Scheme getScheme() {
-					return pulsar.scheme;
+					return pulsar.getScheme();
 				}
 			};
 			try {
@@ -1513,7 +1512,7 @@ class PulsarGui {
 		}
 		@Override
 		public Scheme getScheme() {
-			return PulsarGui.this.pulsar.scheme;
+			return PulsarGui.this.pulsar.getScheme();
 		}
 
 		{
