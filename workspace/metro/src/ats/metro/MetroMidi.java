@@ -63,7 +63,7 @@ import java.util.logging.Logger;
  *  <tr><td>2</td>                                              <td>"Breath Controller"</td>                                <td>"Often times associated with aftertouch messages. It was originally intended for use with a breath MIDI controller in which blowing harder produced higher MIDI control values. It can be used for modulation as well."</td></tr>
  *  <tr><td>4</td>                                              <td>"Foot Controller"</td>                                  <td>"Often used with aftertouch messages. It can send a continuous stream of values based on how the pedal is used."</td></tr>
  *  <tr><td>5</td>                                              <td>"PortamentoTime"</td>                                   <td>"Controls portamento rate to slide between 2 notes played subsequently."</td></tr>
- *  <tr><td>6</td>                                              <td>"Data Entry Most Significant Bit(MSB)"</td>             <td>"Controls Value for NRPN or RPN parameters."</td></tr>
+ *  <tr><td>6</td>                                              <td>"Data InitializerEntry Most Significant Bit(MSB)"</td>             <td>"Controls Value for NRPN or RPN parameters."</td></tr>
  *  <tr><td>7</td>                                              <td>"Volume"</td>                                           <td>"Control the volume of the channel"</td></tr>
  *  <tr><td>8</td>                                              <td>"Balance"</td>                                          <td>"Controls the left and right balance, generally for stereo patches.0 = hard left, 64 = center, 127 = hard right"</td></tr>
  *  <tr><td>10</td>                                             <td>"Pan"</td>                                              <td>"Controls the left and right balance, generally for mono patches.0 = hard left, 64 = center, 127 = hard right"</td></tr>
@@ -827,7 +827,7 @@ public abstract class MetroMidi {
 		{
 			this.shortName = "de-msb";
 			this.longName = "data-entry-msb";
-			this.shortDescription = "Data Entry Most Significant Bit(MSB)";
+			this.shortDescription = "Data InitializerEntry Most Significant Bit(MSB)";
 			this.longDescription = "Controls Value for NRPN or RPN parameters.";
 			this.controlNumber = CC_DATA_ENTRY_MSB                         ;
 		}

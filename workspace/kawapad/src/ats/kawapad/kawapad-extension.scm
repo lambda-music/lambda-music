@@ -142,7 +142,7 @@
                (newline)
                (let* ((text-pane ((this):getTextComponent e ))
                       (pos
-                       (ats.kawapad.PulsarScratchPad:lookupCorrespondingParenthesis 
+                       (ats.kawapad.KawaPad:lookupCorrespondingParenthesis 
                         text-pane:text 
                         text-pane:caret:dot )
                        ))

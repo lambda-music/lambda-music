@@ -1,4 +1,4 @@
-package ats.pulsar.lib.kawa.secretary;
+package ats.pulsar.lib.secretary.scheme;
 
 import ats.pulsar.lib.secretary.Invokable;
 import gnu.expr.Language;

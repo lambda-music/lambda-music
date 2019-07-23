@@ -18,7 +18,7 @@
  * along with Pulsar-Sequencer.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package ats.pulsar.lib.kawa.secretary;
+package ats.pulsar.lib.secretary.scheme;
 
 import ats.pulsar.lib.secretary.Invokable;
 import gnu.mapping.Procedure;

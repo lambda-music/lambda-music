@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import ats.pulsar.lib.swing.SchemeUtils;
+import ats.pulsar.lib.SchemeUtils;
 import gnu.lists.Pair;
 
 public class LayoutUtils {

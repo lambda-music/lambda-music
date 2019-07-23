@@ -4,8 +4,8 @@ import java.io.StringReader;
 
 import javax.swing.JFrame;
 
+import ats.pulsar.lib.SchemeUtils;
 import ats.pulsar.lib.secretary.SecretaryMessage;
-import ats.pulsar.lib.swing.SchemeUtils;
 import gnu.kawa.io.InPort;
 import kawa.standard.Scheme;
 

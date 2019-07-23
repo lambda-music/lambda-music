@@ -45,15 +45,16 @@ import javax.swing.Timer;
 
 import org.jaudiolibs.jnajack.JackException;
 
+import ats.kawapad.KawaPad;
 import ats.metro.Metro;
 import ats.metro.MetroTrack;
 import ats.metro.MetroTrack.SyncType;
-import ats.pulsar.lib.kawa.secretary.SchemeSecretary;
+import ats.pulsar.lib.SchemeUtils;
 import ats.pulsar.lib.secretary.Invokable;
 import ats.pulsar.lib.secretary.InvokablyRunnable;
 import ats.pulsar.lib.secretary.SecretaryMessage;
+import ats.pulsar.lib.secretary.scheme.SchemeSecretary;
 import ats.pulsar.lib.swing.MersenneTwisterFast;
-import ats.pulsar.lib.swing.SchemeUtils;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.LList;
@@ -118,56 +119,6 @@ import kawa.standard.Scheme;
  * @author Atsushi Oka
  */
 public final class Pulsar extends Metro {
-	/**
-	 * Creates an instance of Pulsar object without opening any specific scheme
-	 * file. When a user creates an object by this constructor, the sequencer
-	 * remains closed after the application boots up. The user must explicitly
-	 * open a file to use the application.
-	 */
-	public Pulsar() {
-		this.gui = new PulsarGui( this );
-		this.initLanguage();
-		this.enabledTimer = true; 
-	}
-
-	/**
-	 * Create an instance of Pulsar object and opens the specified scheme file.
-	 * @param file a scheme file to open. 
-	 */
-	public Pulsar( File file ) {
-		this();
-	}
-
-	transient boolean enabledTimer = false;
-
-	/**
-	 * The main method which starts up the application. The application opens a file
-	 * which is specified in argument values. When more than one arguments were
-	 * passed to the method, only the first argument is taken. 
-	 * @throws IOException 
-	 */
-	public static void main(String[] args) throws IOException {
-		// ADDED (Mon, 22 Jul 2019 08:32:52 +0900)
-		// REMOVED (Mon, 22 Jul 2019 08:43:43 +0900) 
-		// NO THIS DOESNT WORK 
-		// Compilation.inlineOk = false;
-		
-		Pulsar pulsar = new Pulsar();
-		if ( args.length == 0 ) {
-		} else {
-			pulsar.openMainFile(null, new File( args[0] ));
-		}
-	}
-
-//	static void logError( String msg, Throwable e ) {
-//        Logger.getLogger(Pulsar.class.getName()).log(Level.SEVERE, msg, e);
-////		System.err.println( msg );
-//	}
-//	static void logInfo( String msg ) {
-////        Logger.getLogger(Pulsar.class.getName()).log(Level.INFO, msg);
-//		System.err.println( msg );
-//	}
-	
 	static final Logger LOGGER = Logger.getLogger(Pulsar.class.getName());
 	static void logError(String msg, Throwable e) {
 		LOGGER.log(Level.SEVERE, msg, e);
@@ -180,44 +131,94 @@ public final class Pulsar extends Metro {
 		LOGGER.log(Level.WARNING, msg);
 	}
 
-	// private Scheme scheme;
-	private SchemeSecretary schemeSecretary = new SchemeSecretary() {
-		public Scheme newScheme() {
-			Scheme scheme = super.newScheme();
-			// 4. This initializes the thread of Metro's message-queue.
-			// See ats.pulsar.lib.kawa.secretary.SchemeSecretary#specialInit()
+	/**
+	 * Creates an instance of Pulsar object without opening any specific scheme
+	 * file. When a user creates an object by this constructor, the sequencer
+	 * remains closed after the application boots up. The user must explicitly
+	 * open a file to use the application.
+	 */
+	public Pulsar() {
+		SchemeSecretary schemeSecretary = new SchemeSecretary();
+		this.schemeSecretary = schemeSecretary;
+		KawaPad.registerGlobalSchemeInitializer( schemeSecretary );
+		this.newScheme();
+		this.gui = new PulsarGui( this );
+		this.initializeSchemeSecretaryDynamic( schemeSecretary );
+		this.gui.frame.registerLocalSchemeInitializers();
+	}
+
+	transient boolean enabledTimer = false;
+
+	/**
+	 * The main method which starts up the application. The application opens a file
+	 * which is specified in argument values. When more than one arguments were
+	 * passed to the method, only the first argument is taken. 
+	 * @throws IOException 
+	 */
+	public static void main(String[] args) throws IOException {
+		Pulsar pulsar = new Pulsar();
+		if ( args.length == 0 ) {
+		} else {
+			pulsar.openMainFile(null, new File( args[0] ));
+		}
+	}
+	
+	PulsarGui gui;
+
+	private final SchemeSecretary schemeSecretary;
+	public SchemeSecretary getSchemeSecretary() {
+		return schemeSecretary;
+	}
+	
+	final SecretaryMessage.NoReturnNoThrow<Scheme> dynamicInitializer01 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+		@Override
+		public void execute0( Scheme scheme, Object[] args ) {
 			postMessage( new Runnable() {
 				@Override
 				public void run() {
-					SchemeSecretary.specialInit( scheme );
+					// 6. This initializes the thread of Metro's message-queue.
+					// See ats.pulsar.lib.secretary.scheme.SchemeSecretary#specialInit()
+					SchemeSecretary.initializeSchemeForCurrentThreadStatic( scheme );
 				}
 			});
-			return scheme;
-		}; 
+		}
 	};
-	public Scheme getScheme() {
-		return schemeSecretary.getScheme();
+	final SecretaryMessage.NoReturnNoThrow<Scheme> dynamicInitializer02 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+		@Override
+		public void execute0( Scheme scheme, Object[] args ) {
+			initScheme( scheme );
+		}
+	};
+	final SecretaryMessage.NoReturnNoThrow<Scheme> dynamicInitializer03 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+		@Override
+		public void execute0( Scheme scheme, Object[] args ) {
+			gui.initScheme( scheme );
+		}
+	};
+	public void initializeSchemeSecretaryDynamic( SchemeSecretary schemeSecretary ) {
+		schemeSecretary.registerNewSchemeHandler( dynamicInitializer01 );
+		schemeSecretary.registerNewSchemeHandler( dynamicInitializer02 );
+		schemeSecretary.registerNewSchemeHandler( dynamicInitializer03 );
 	}
-	PulsarGui gui;
-
-//	public Invokable createInvokable( String script ) {
-////		return InvokableSchemeProcedure.createSecretariallyInvokable( schemeSecretary, procedure );
-//		return schemeSecretary.createSecretarillyInvokable( procedure );
-//	}
+	
+	private void newScheme() {
+		this.enabledTimer = false; 
+		this.getSchemeSecretary().newScheme();
+		this.enabledTimer = true; 
+	}
 
 	public Invokable createInvokable( Procedure procedure ) {
 //		return InvokableSchemeProcedure.createSecretariallyInvokable( schemeSecretary, procedure );
-		return schemeSecretary.createSecretarillyInvokable( procedure );
+		return getSchemeSecretary().createSecretarillyInvokable( procedure );
 	}
 	public Invokable createInvokable2( Procedure procedure ) {
-//		return InvokableSchemeProcedure.createSecretariallyInvokable( schemeSecretary, procedure );
-		return schemeSecretary.createSecretarillyInvokable( procedure );
+//		return InvokableSchemeProcedure.createSecretariallyInvokable( getSchemeSecretary(), procedure );
+		return getSchemeSecretary().createSecretarillyInvokable( procedure );
 	}
 	public Runnable createRunnableAndInvocable( Procedure procedure, Object... args) {
-		return new InvokablyRunnable( schemeSecretary.createSecretarillyInvokable( procedure ), args );
+		return new InvokablyRunnable( getSchemeSecretary().createSecretarillyInvokable( procedure ), args );
 	}
 
-	
 //	public static InvokableSchemeProcedure createInvocable(
 //			Procedure invokable) {
 //		return new InvokableSchemeProcedure(syncObj, environment, language, invokable);
@@ -352,7 +353,7 @@ public final class Pulsar extends Metro {
 			this.enabledTimer = false;
 			
 			// XXX "initLanguage" ... is this supposed to be executed before others?
-			initLanguage();
+			newScheme();
 			
 			this.execCleanupHook();
 			if ( gui != null )
@@ -690,27 +691,13 @@ public final class Pulsar extends Metro {
 	 * @throws FileNotFoundException
 	 */
 	public void loadScheme( File file ) throws FileNotFoundException {
-		schemeSecretary.executeSecretarially(
+		getSchemeSecretary().executeSecretarially(
 			new SecretaryMessage.NoReturn<Scheme,FileNotFoundException>() {
 				@Override
 				public void execute0(Scheme scheme, Object[] args ) throws FileNotFoundException {
 					SchemeUtils.execSchemeFromFile( scheme, parentFile, file );
 				}
 			});
-	}
-
-	private void initLanguage() {
-		schemeSecretary.newScheme();
-		schemeSecretary.executeSecretarially( new SecretariallyInitScheme() );
-	}
-	private final class SecretariallyInitScheme extends SecretaryMessage.NoReturnNoThrow<Scheme> {
-		@Override
-		public void execute0( Scheme scheme, Object[] args ) {
-			initScheme( scheme );
-			if ( gui != null ) {
-				gui.initScheme( scheme );
-			}
-		}
 	}
 
 	/**

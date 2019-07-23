@@ -1,4 +1,7 @@
-package ats.pulsar.lib.kawa.secretary;
+package ats.pulsar.lib.secretary.scheme;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.SwingUtilities;
 
@@ -88,51 +91,113 @@ public class SchemeSecretary extends Secretary<Scheme> {
 	 * But I don't know how to manage this problem for some years. 
 	 */
 
-	protected static void specialInit(Scheme newScheme) {
-		Environment.setCurrent( newScheme.getEnvironment() );
-		Language.setCurrentLanguage( newScheme );
+	public static final void initializeSchemeForCurrentThreadStatic( Scheme scheme ) {
+		Environment.setCurrent( scheme.getEnvironment() );
+		Language.setCurrentLanguage( scheme );
 		{
 			String threadName = Thread.currentThread().getName();
 			System.err.println( threadName +
 				"(Environment.getCurrent() == newScheme.getEnvironment() ) : " + 
-				( Environment.getCurrent() == newScheme.getEnvironment() ) 
+				( Environment.getCurrent() == scheme.getEnvironment() ) 
 					);
 			System.err.println( threadName +
 				"( Language.getDefaultLanguage() == newScheme ) : " + 
-				( Language.getDefaultLanguage() == newScheme ) 
+				( Language.getDefaultLanguage() == scheme ) 
 					);
 		}
 	}
 	
-	public Scheme newScheme() {
+	public final void initializeSchemeForCurrentThread() {
+		initializeSchemeForCurrentThreadStatic( this.getScheme() );
+	}
+	
+	static class InitializerEntry {
+		Object parent;
+		SecretaryMessage.NoReturnNoThrow<Scheme> message;
+		public InitializerEntry(Object parent, SecretaryMessage.NoReturnNoThrow<Scheme> message) {
+			super();
+			this.parent = parent;
+			this.message = message;
+		}
+	}
+	
+	List<SchemeSecretary.InitializerEntry> newSchemeInitializerList = new ArrayList<>();
+	
+	/**
+	 * This method registers a specified initializer.
+	 * @see #invokeSchemeInitializers(Object)
+	 */
+	public void registerSchemeInitializer( Object parent, SecretaryMessage.NoReturnNoThrow<Scheme> message ) {
+		this.newSchemeInitializerList.add( new SchemeSecretary.InitializerEntry( null, message ) );
+	}
+	/**
+	 * This method unregisters a specified initializer.
+	 * @see #invokeSchemeInitializers(Object)
+	 */
+	public void unregisterSchemeInitializer( SecretaryMessage.NoReturnNoThrow<Scheme> message ) {
+		this.newSchemeInitializerList.removeIf( e->e.message == message );
+	}
+
+	/**
+	 * This method invokes registered initializers to which the given condition match.
+	 *  
+	 * @param parent
+	 *     Passing null to invoke all initializers or passing parent object to invoke 
+	 *     only specific initializers. 
+	 * 
+	 *     If the parent argument equals to the parent of a registered initializer, the 
+	 *     initializer will be invoked. If the parent argument is null, all initializers
+	 *     will be invoked.
+	 */
+	public void invokeSchemeInitializers( Object parent ) {
+		for ( SchemeSecretary.InitializerEntry e : newSchemeInitializerList ) {
+			if ( parent == null || e.parent == parent )
+				executeSecretarially( e.message );
+		}
+	}
+
+	{
+		registerSchemeInitializer( null, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+			@Override
+			public void execute0(Scheme scheme, Object[] args) {
+				// 3. This initializes Secretary Message Queue's thread.
+				// // 4. (in most case ) this initializes main-thread
+				initializeSchemeForCurrentThreadStatic( scheme );
+			}
+		} );
+
+		registerSchemeInitializer( null, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+			@Override
+			public void execute0(Scheme scheme, Object[] args) {
+				SwingUtilities.invokeLater( new Runnable() {
+					@Override
+					public void run() {
+						// 5. This initializes AWT-EventQueue's thread.
+						initializeSchemeForCurrentThreadStatic(scheme);
+					}
+				});
+			}
+		});
+	}
+	
+	public void newScheme() {
 		try {
-			// 1. This initializes Secretary Message Queue's thread.
-			Scheme scheme = executeSecretarially( new SecretaryMessage.NoThrow<Scheme,Scheme>() {
+			// 1. Create a new scheme object.
+			executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
 				@Override
-				public Scheme execute0(Scheme scheme, Object[] args) {
+				public void execute0(Scheme scheme, Object[] args) {
 					Scheme newScheme = new Scheme();
 					setExecutive( newScheme );
-					specialInit( newScheme );
-					return newScheme;
 				}
 			});
-			
-			// 2. (in most case ) this initializes main-thread
-			specialInit(scheme);
-			
-			// 3. This initializes AWT-EventQueue's thread.
-			SwingUtilities.invokeLater( new Runnable() {
-				@Override
-				public void run() {
-					specialInit(scheme);
-				}
-			});
-			return scheme;
+			// 2. Execute all the initializers.
+			invokeSchemeInitializers( null );
 		} catch (Throwable e) {
 			throw new RuntimeException(e);
 		}
 	}
-	public void setScheme( Scheme newScheme ) {
+	
+	void setScheme( Scheme newScheme ) {
 		try {
 			executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
 				@Override

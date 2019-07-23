@@ -36,7 +36,7 @@ import ats.metro.MetroBufferedMidiReceiver;
 import ats.metro.MetroEventBuffer;
 import ats.metro.MetroTrack;
 import ats.metro.MetroTrack.SyncType;
-import ats.pulsar.lib.swing.SchemeUtils;
+import ats.pulsar.lib.SchemeUtils;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 import kawa.standard.Scheme;

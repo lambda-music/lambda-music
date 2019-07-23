@@ -433,7 +433,7 @@
                                                )))
                                     b)
                                   ))
-      (self 'define 'method 'add-track (lambda (self track) 
+      (self 'define 'method 'add-track-2 (lambda (self track) 
                                          ; Add the passed track to the list.
                                          (set-cdr! track-list (cons track (cdr track-list)))
 
@@ -451,7 +451,7 @@
                                          track
                                          ))
 
-      (self 'define 'method 'add-track-multi (lambda (self . tracks) 
+      (self 'define 'method 'add-track  (lambda (self . tracks) 
                                                (let add-track-loop ((ptrack tracks))
                                                  (if (null? ptrack)
                                                    ; end loop

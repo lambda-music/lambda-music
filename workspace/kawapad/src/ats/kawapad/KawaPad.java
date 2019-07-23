@@ -86,8 +86,10 @@ import javax.swing.undo.CannotUndoException;
 import ats.kawapad.SimpleSchemeParser.ParserState;
 import ats.kawapad.lib.CompoundGroupedUndoManager;
 import ats.kawapad.lib.GroupedUndoManager;
+import ats.pulsar.lib.SchemeUtils;
+import ats.pulsar.lib.secretary.SecretaryMessage;
+import ats.pulsar.lib.secretary.scheme.SchemeSecretary;
 import ats.pulsar.lib.swing.Action2;
-import ats.pulsar.lib.swing.SchemeUtils;
 import gnu.expr.Language;
 import gnu.kawa.io.InPort;
 import gnu.kawa.io.OutPort;
@@ -106,11 +108,11 @@ import kawa.standard.Scheme;
  * 
  * (Tue, 09 Jul 2019 10:28:51 +0900)
  * <ol>
- * <li>Every scheme object must be initialized by {@link PulsarScratchPad#initScheme(Scheme)}</li>
- * <li>{@link PulsarScratchPad#initialize() } must be called before use the object.</li>
+ * <li>Every scheme object must be initialized by {@link KawaPad#libKawaPad(Scheme)}</li>
+ * <li>{@link KawaPad#initialize() } must be called before use the object.</li>
  * </ol>
  * <pre> 
- * new PulsarScratchPad( initSchemeForScratchPad( new Scheme() ) ).initialize();
+ * new KawaPad( initSchemeForScratchPad( new Scheme() ) ).initialize();
  * </pre>
  * 
  * There are several global variables which are fundamental to this tool.
@@ -125,10 +127,10 @@ import kawa.standard.Scheme;
  *  
  * @author Ats Oka
  */
-public abstract class PulsarScratchPad extends JFrame {
+public class KawaPad extends JFrame {
 	private static final String FLAG_DONE_INIT_PULSAR_SCRATCHPAD = "flag-done-init-pulsar-scratchpad";
 	private static final boolean DEBUG_UNDO_BUFFER = false;
-	private static final Logger LOGGER = Logger.getLogger(PulsarScratchPad.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(KawaPad.class.getName());
 	static void logError( String msg, Throwable e ) {
 		LOGGER.log(Level.SEVERE, msg, e);
 		//		System.err.println( msg );
@@ -136,6 +138,7 @@ public abstract class PulsarScratchPad extends JFrame {
 	static void logInfo( Object msg ) {
 		//        Logger.getLogger(Pulsar.class.getName()).log(Level.INFO, msg);
 		System.err.println( msg );
+		System.err.flush();
 	}
 
 	private final String frameName = newFrameName();
@@ -143,34 +146,100 @@ public abstract class PulsarScratchPad extends JFrame {
 		return this.frameName;
 	}
 	
-	public abstract Scheme getScheme();
+	// private Scheme scheme;
+
+	SchemeSecretary schemeSecretary;
 	
-	// Is this really necessary? (Wed, 10 Oct 2018 05:33:11 +0900)
-	private static Environment environment = null;
-	private static final boolean enabledEnvironment = false;
-	public PulsarScratchPad() {
-		this( "Pulsar Scheme Scratch Pad" );
+	public KawaPad createKawaPad() {
+		return new KawaPad( this.schemeSecretary, this.getTitle() ).registerLocalSchemeInitializers(); 
 	}
-	public PulsarScratchPad( String title ) throws HeadlessException {
+
+	
+	public KawaPad( SchemeSecretary schemeSecretary, String title ) throws HeadlessException {
 		super(title);
-		if ( enabledEnvironment ){ 
-			if ( environment == null )
-				environment = getScheme().getEnvironment();
-		}
-//		initScheme( getScheme() );
-//		initialize();
+		this.schemeSecretary = schemeSecretary;
+		this.setDefaultCloseOperation( DISPOSE_ON_CLOSE );
 	}
+	
+	public <T extends KawaPad> T registerLocalSchemeInitializers() {
+		this.registerLocalSchemeInitializer();
+		this.invokeLocalSchemeInitializer();
+		return (T)this;
+	}
+	
+	@Override
+	public void dispose() {
+		this.unregisterLocalSchemeInitializer();
+		super.dispose();
+	}
+
+
+	static SecretaryMessage.NoReturnNoThrow<Scheme> staticInitializer01 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+		@Override
+		public void execute0( Scheme scheme, Object[] args ) {
+			libKawaPad( scheme );				
+		}
+	};
+
+	SecretaryMessage.NoReturnNoThrow<Scheme> dynamicInitializer01 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+		@Override
+		public void execute0( Scheme scheme, Object[] args ) {
+			libKawaPadFrameName( scheme );				
+		}
+	};
+	SecretaryMessage.NoReturnNoThrow<Scheme> dynamicInitializer02 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+		@Override
+		public void execute0( Scheme scheme, Object[] args ) {
+			eventHandlers.invokeEventHandler( KawaPad.this, EventHandlers.INIT );
+		}
+	};
+
+	
+	/*
+	 * (Tue, 23 Jul 2019 16:30:58 +0900)
+	 * These comments may be difficult to comprehend. Please be attention to the
+	 * life cycle of these variables/functions which the initializers create.
+	 */
+	
+	/**
+	 * Initialize variables to set the reference to the newly created frame. 
+	 */
+	public void invokeLocalSchemeInitializer() {
+		schemeSecretary.invokeSchemeInitializers( this );
+	}
+	
+	/**
+	 * Initialize variables which is necessary to set whenever the environment is created.
+	 * One of such variables is a reference to the frame object. This reference must be
+	 * cleared when the frame is disposed.
+	 */
+	public void registerLocalSchemeInitializer() {
+		schemeSecretary.registerSchemeInitializer( this, dynamicInitializer01 );
+		schemeSecretary.registerSchemeInitializer( this, dynamicInitializer02 );
+	}
+	
+	/**
+	 * Remove initializers that initialize variables for the current frame.
+	 */
+	public void unregisterLocalSchemeInitializer() {
+		schemeSecretary.unregisterSchemeInitializer( dynamicInitializer01 );
+		schemeSecretary.unregisterSchemeInitializer( dynamicInitializer02 );
+	}
+	
+	/**
+	 * This initializes variables which do not need to refer the reference to the
+	 * current frame. This initializer does not have to be removed even if  
+	 * frames are disposed.
+	 */
+	public static void registerGlobalSchemeInitializer( SchemeSecretary schemeSecretary ) {
+		schemeSecretary.registerSchemeInitializer( null, staticInitializer01 );
+	}
+	
 
 	public final AbstractAction NEW_SCRATCHPAD_ACTION = new AbstractAction() {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			PulsarScratchPad self = PulsarScratchPad.this;
-			new PulsarScratchPad() {
-				@Override
-				public Scheme getScheme() {
-					return self.getScheme();
-				}
-			}.initialize();
+			createKawaPad();
 		}
 		{
 			putValue( Action2.NAME, "Create a New Scratchpad" );
@@ -192,8 +261,7 @@ public abstract class PulsarScratchPad extends JFrame {
 				try {
 					LOGGER.log( Level.INFO, "run");
 					// ==== WORKAROUND SEE acvpoeov === (Tue, 23 Jul 2019 11:37:32 +0900) //
-					// Environment.setCurrent( getScheme().getEnvironment() );
-					// Language.setCurrentLanguage(getScheme());
+					schemeSecretary.initializeSchemeForCurrentThread();
 					// ==== WORKAROUND SEE acvpoeov === (Tue, 23 Jul 2019 11:37:32 +0900) //
 					r.run();
 				} finally {
@@ -332,8 +400,8 @@ public abstract class PulsarScratchPad extends JFrame {
 //			System.err.println("PulsarScratchPadTextPaneController.caretUpdate()");
 			if ( ! undoManager.isSuspended() ) {
 				updateHighlightLater();
-				eventHandlers.invokeEventHandler( PulsarScratchPad.this, getScheme(), EventHandlers.CARET,  PulsarScratchPad.this);
-				eventHandlers.invokeEventHandler( PulsarScratchPad.this, getScheme(), EventHandlers.CHANGE,  PulsarScratchPad.this);
+				eventHandlers.invokeEventHandler( KawaPad.this, EventHandlers.CARET,  KawaPad.this);
+				eventHandlers.invokeEventHandler( KawaPad.this, EventHandlers.CHANGE,  KawaPad.this);
 			}
 		}
 		//DocumentListener
@@ -342,8 +410,8 @@ public abstract class PulsarScratchPad extends JFrame {
 //			System.err.println("PulsarScratchPadTextPaneController.insertUpdate()");
 			if ( ! undoManager.isSuspended() ) {
 				updateHighlightLater();
-				eventHandlers.invokeEventHandler( PulsarScratchPad.this, getScheme(), EventHandlers.INSERT,  PulsarScratchPad.this);
-				eventHandlers.invokeEventHandler( PulsarScratchPad.this, getScheme(), EventHandlers.CHANGE,  PulsarScratchPad.this);
+				eventHandlers.invokeEventHandler( KawaPad.this, EventHandlers.INSERT,  KawaPad.this);
+				eventHandlers.invokeEventHandler( KawaPad.this, EventHandlers.CHANGE,  KawaPad.this);
 			}
 		}
 		public void removeUpdate(DocumentEvent e) {
@@ -351,16 +419,16 @@ public abstract class PulsarScratchPad extends JFrame {
 //			System.err.println("PulsarScratchPadTextPaneController.removeUpdate()");
 			if ( ! undoManager.isSuspended() ) {
 				updateHighlightLater();
-				eventHandlers.invokeEventHandler( PulsarScratchPad.this, getScheme(), EventHandlers.REMOVE,  PulsarScratchPad.this);
-				eventHandlers.invokeEventHandler( PulsarScratchPad.this, getScheme(), EventHandlers.CHANGE,  PulsarScratchPad.this);
+				eventHandlers.invokeEventHandler( KawaPad.this, EventHandlers.REMOVE,  KawaPad.this);
+				eventHandlers.invokeEventHandler( KawaPad.this, EventHandlers.CHANGE,  KawaPad.this);
 			}
 		}
 		public void changedUpdate(DocumentEvent e) {
 //			fileModified = true;
 //			System.err.println("PulsarScratchPadTextPaneController.changedUpdate() : ignored");
 			if ( ! undoManager.isSuspended() ) {
-				eventHandlers.invokeEventHandler( PulsarScratchPad.this, getScheme(), EventHandlers.ATTRIBUTE,  PulsarScratchPad.this);
-				eventHandlers.invokeEventHandler( PulsarScratchPad.this, getScheme(), EventHandlers.CHANGE,  PulsarScratchPad.this);
+				eventHandlers.invokeEventHandler( KawaPad.this, EventHandlers.ATTRIBUTE,  KawaPad.this);
+				eventHandlers.invokeEventHandler( KawaPad.this, EventHandlers.CHANGE,  KawaPad.this);
 			}
 			return;
 		}
@@ -383,21 +451,21 @@ public abstract class PulsarScratchPad extends JFrame {
 	}
 
 	String getLispWordPatternString() {
-		return PulsarScratchPadHighlighter.lispWordToPatternString( getLispWords( getScheme() ) ); 
+		return KawaPadHighlighter.lispWordToPatternString( getLispWords() ); 
 	}
 	public void updateHighlight() {
-		PulsarScratchPadHighlighter.resetStyles( textPane );
-//		PulsarScratchPadHighlighter.highlightSyntax( textPane, getLispWordPatternString() );
-		PulsarScratchPadHighlighter.highlightSyntax( textPane, getLispWords( getScheme() ) );
+		KawaPadHighlighter.resetStyles( textPane );
+//		KawaPadHighlighter.highlightSyntax( textPane, getLispWordPatternString() );
+		KawaPadHighlighter.highlightSyntax( textPane, getLispWords() );
 	}
 	public void highlightMatchningParentheses() {
-		PulsarScratchPadHighlighter.highlightMatchingParenthesis( textPane, textPane.getCaretPosition() );
+		KawaPadHighlighter.highlightMatchingParenthesis( textPane, textPane.getCaretPosition() );
 	}
 
 	
 	
 	
-//	public final AbstractAction EXECUTE_ACTION = new ExecuteAction();
+//	public final AbstractAction EVALUATE_ACTION = new ExecuteAction();
 //	private final class ExecuteAction extends AbstractAction {
 //		@Override
 //		public void actionPerformed(ActionEvent e) {
@@ -441,47 +509,72 @@ public abstract class PulsarScratchPad extends JFrame {
 //		}
 //	}
 
-	public final AbstractAction EXECUTE_ACTION = new ExecuteAction();
+	final class ExecuteRunnable implements Runnable {
+		boolean insertText;
+		public ExecuteRunnable(boolean insertText) {
+			super();
+			this.insertText = insertText;
+		}
+
+		@Override
+		public void run() {
+			Object resultObject=null;
+			String result = null;
+			boolean errorOccured = false;
+			try {
+				String text = textPane.getSelectedText();
+				if ( text == null ) {
+					text = textPane.getText();
+				}
+				resultObject = executeScheme( schemeSecretary.getScheme(), KawaPad.this,  text );
+
+				textPane.getActionMap();
+				System.out.println("==========================");
+				System.out.println( resultObject.getClass() );
+				System.out.println("==========================");
+				result = prettyPrint( resultObject );
+
+			} catch (Throwable e1) {
+				errorOccured = true;
+				ByteArrayOutputStream out = new ByteArrayOutputStream();
+				PrintStream pout = new PrintStream( out );
+				e1.printStackTrace( pout );
+				pout.flush();
+				result = new String( out.toByteArray() );
+			}
+			result = "\n#|\n" + result + "\n|#\n"; 
+			logInfo( result );
+
+			if ( insertText || errorOccured )
+				SwingUtilities.invokeLater( new InsertTextToTextPane(result) );
+		}
+	}
+
+	public final AbstractAction EVALUATE_ACTION = new ExecuteAction();
 	private final class ExecuteAction extends AbstractAction {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			//	JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
-			threadManager.startScratchPadThread( new Runnable() {
-				@Override
-				public void run() {
-					Object resultObject=null;
-					String result = null;
-					try {
-						String text = textPane.getSelectedText();
-						if ( text == null ) {
-							text = textPane.getText();
-						}
-						resultObject = executeScheme(text);
-						textPane.getActionMap();
-						System.out.println("==========================");
-						System.out.println( resultObject.getClass() );
-						System.out.println("==========================");
-						result = prettyPrint( resultObject );
-
-					} catch (Throwable e1) {
-						ByteArrayOutputStream out = new ByteArrayOutputStream();
-						PrintStream pout = new PrintStream( out );
-						e1.printStackTrace( pout );
-						pout.flush();
-						result = new String( out.toByteArray() );
-					}
-					result = "\n#|\n" + result + "\n|#\n"; 
-					logInfo( result );
-
-					SwingUtilities.invokeLater( new InsertTextToTextPane(result ) );
-				}
-
-			});
+			threadManager.startScratchPadThread( new ExecuteRunnable( true ) );
 		}
 		{
-			putValue( Action2.NAME, "Execute" );
+			putValue( Action2.NAME, "Evaluate" );
 			putValue( Action.MNEMONIC_KEY, (int)'e' );
 			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK) );
+		}
+	}
+
+	public final AbstractAction RUN_ACTION = new RunAction();
+	private final class RunAction extends AbstractAction {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			//	JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
+			threadManager.startScratchPadThread( new ExecuteRunnable( false ) );
+		}
+		{
+			putValue( Action2.NAME, "Run" );
+			putValue( Action.MNEMONIC_KEY, (int)'r' );
+			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_R, ActionEvent.CTRL_MASK) );
 		}
 	}
 
@@ -643,10 +736,15 @@ public abstract class PulsarScratchPad extends JFrame {
 		return SimpleSchemePrettifier.prettify( lispWords, text );
 	}
 	public static final String prettify( Scheme scheme, String text ) {
-		return prettify( getLispWords( scheme ), text );
+		return prettify( getLispWords0( scheme ), text );
 	}
 	public final String prettify( String text ) {
-		return prettify( getScheme(), text );
+		return schemeSecretary.executeSecretarially( new SecretaryMessage.NoThrow<Scheme, String>() {
+			@Override
+			public String execute0( Scheme scheme, Object[] args ) {
+				return prettify( scheme, text );
+			}
+		}, text );
 	}
 
 	public final AbstractAction PRETTIFY_ACTION = new PrettifyAction() {
@@ -657,28 +755,26 @@ public abstract class PulsarScratchPad extends JFrame {
 		}
 	};
 
-	Object executeScheme(String text) throws Throwable {
-		synchronized ( getScheme() ) {
+	static Object executeScheme( Scheme scheme, KawaPad kawaPad, String text) throws Throwable {
+		synchronized ( scheme ) {
 			StringReader reader = new StringReader(text);
 			try {
-				if ( enabledEnvironment )
-					Environment.setCurrent(environment);
-				SchemeUtils.putVar( getScheme(), "scheme", getScheme() );
-				SchemeUtils.putVar( getScheme(), "frame", this );
+			
+				SchemeUtils.putVar( scheme , "scheme", scheme  );
+				SchemeUtils.putVar( scheme , "frame", kawaPad );
 				
-				return getScheme().eval( new InPort(reader) ); 
+				return scheme .eval( new InPort(reader) ); 
 //				return scheme.eval( 
 //						"(let (( frame "+ frameName +"))\n" +						
 //								text +
 //								"\n)"
 //						);
 			} finally {
-				SchemeUtils.putVar( getScheme(), "scheme", false );
-				SchemeUtils.putVar( getScheme(), "frame", false );
+				SchemeUtils.putVar( scheme , "scheme", false );
+				SchemeUtils.putVar( scheme , "frame", false );
 				reader.close();
 			}
 		}
-	
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -693,8 +789,17 @@ public abstract class PulsarScratchPad extends JFrame {
 	 */
 
 	private static List<String> FALLBACK_LISP_WORDS = Arrays.asList("let","lambda" );
-	
-	public static Collection<String> getLispWords( Scheme scheme ) {
+
+	public Collection<String> getLispWords() {
+		return schemeSecretary.executeSecretarially( new SecretaryMessage.NoThrow<Scheme, Collection<String>>() {
+			@Override
+			public Collection<String> execute0(Scheme scheme, Object[] args) {
+				return getLispWords0( scheme );
+			}
+		});
+	}
+
+	public static Collection<String> getLispWords0( Scheme scheme ) {
 		Collection<String> lispWords = FALLBACK_LISP_WORDS;
 		try {
 			Object object = scheme.getEnvironment().get( Symbol.valueOf("lisp-words") );
@@ -776,34 +881,28 @@ public abstract class PulsarScratchPad extends JFrame {
 			Map<Symbol, SchemeProcedure> eventType = getEventType(eventTypeID);
 			eventType.remove( procID );
 		}
-		public void invokeEventHandler( PulsarScratchPad frame, Scheme scheme, String eventTypeID, Object ...args ) {
-			synchronized ( scheme ) {
-				try {
-//					Environment.setCurrent( Environment.getGlobal()  );
-//					logInfo( "invokeEventHandler" + frame.frameName );
-					
-					SchemeUtils.putVar( scheme, "scheme", scheme );
-					SchemeUtils.putVar( scheme, "frame",  frame );
+		public void invokeEventHandler( KawaPad kawaPad, String eventTypeID, Object ... args ) {
+			kawaPad.schemeSecretary.executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+				@Override
+				public void execute0( Scheme scheme, Object[] args ) {
+					try {
+						SchemeUtils.putVar( scheme, "scheme", scheme );
+						SchemeUtils.putVar( scheme, "frame",  kawaPad );
 
-					for( Entry<Symbol,SchemeProcedure> e :  getEventType(eventTypeID).entrySet() ) {
-						try {
-//							e.getValue().procedure.setProperty(Symbol.valueOf("scheme") , scheme );
-//							e.getValue().procedure.setProperty(Symbol.valueOf("frame") , frame );
-//							
-//							SchemeUtils.putVar( e.getValue().environment, "scheme", scheme );
-//							SchemeUtils.putVar( e.getValue().environment, "frame", frame );
-							
-							e.getValue().invoke( args );
-						} catch ( Throwable t ) {
-							logError("invoking event handlers : ", t);
+						for( Entry<Symbol,SchemeProcedure> e :  getEventType(eventTypeID).entrySet() ) {
+							try {
+								e.getValue().invoke( args );
+							} catch ( Throwable t ) {
+								logError("invoking event handlers : ", t);
+							}
 						}
-					}
 
-				} finally {
-					SchemeUtils.putVar( scheme, "scheme", false );
-					SchemeUtils.putVar( scheme, "frame", false );
+					} finally {
+						SchemeUtils.putVar( scheme, "scheme", false );
+						SchemeUtils.putVar( scheme, "frame", false );
+					}
 				}
-			}
+			}, kawaPad );
 		}
 		
 //		void invokeEventHandlers( String )
@@ -823,10 +922,7 @@ public abstract class PulsarScratchPad extends JFrame {
 		return new File( System.getProperty("user.home"), ".pulsar/kawapad-extension.scm" );
 	}
 
-	public static Scheme initScheme( Scheme scheme ) {
-		if ( enabledEnvironment )
-			Environment.setCurrent(environment); 
-		
+	public static Scheme libKawaPad( Scheme scheme ) {
 		if ( ! SchemeUtils.isDefined(scheme, FLAG_DONE_INIT_PULSAR_SCRATCHPAD ) ) {
 			logInfo("initScheme");
 			SchemeUtils.defineVar(scheme, FLAG_DONE_INIT_PULSAR_SCRATCHPAD, true );  
@@ -888,11 +984,10 @@ public abstract class PulsarScratchPad extends JFrame {
 		return scheme;
 	}
 	
-	public PulsarScratchPad initialize() {
-		SchemeUtils.defineVar(getScheme(), frameName, this );
-		eventHandlers.invokeEventHandler( this, getScheme(), EventHandlers.INIT,  this);
-		return this;
+	protected void libKawaPadFrameName( Scheme scheme ) {
+		SchemeUtils.defineVar( scheme, frameName, this );
 	}
+	
 
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1011,7 +1106,7 @@ public abstract class PulsarScratchPad extends JFrame {
 
 		                	String text = target.getText();
 		                	int pos = target.getCaretPosition();
-		                	String indentString = calculateIndentSize(text, pos, getLispWords( getScheme() ));
+		                	String indentString = calculateIndentSize(text, pos, getLispWords());
 		                	target.replaceSelection( "\n" + indentString );
 		                } finally {
 		                	undoManager.setSuspended(false);
@@ -1128,7 +1223,7 @@ public abstract class PulsarScratchPad extends JFrame {
          * @param e the action event
          */
         public void actionPerformed(ActionEvent e) {
-        	logInfo("PulsarScratchPad.PasteAction.actionPerformed()");
+        	logInfo("KawaPad.PasteAction.actionPerformed()");
             JTextComponent target = getTextComponent(e);
             if (target != null) {
             	try {
@@ -1173,7 +1268,7 @@ public abstract class PulsarScratchPad extends JFrame {
 							@Override
 							public void run() {
 								updateHighlight();
-								PulsarScratchPadHighlighter.highlightMatchingParenthesis( textPane, pos  ); 
+								KawaPadHighlighter.highlightMatchingParenthesis( textPane, pos  ); 
 
 								Timer t = new Timer(300 , new ActionListener() {
 									@Override
@@ -1191,7 +1286,7 @@ public abstract class PulsarScratchPad extends JFrame {
                 		break;
                 }
                 
-				eventHandlers.invokeEventHandler( PulsarScratchPad.this, getScheme(), EventHandlers.TYPED, target, SchemeUtils.toSchemeString( content ) );
+				eventHandlers.invokeEventHandler( KawaPad.this, EventHandlers.TYPED, target, SchemeUtils.toSchemeString( content ) );
             }
 		}
 	};
@@ -1461,7 +1556,8 @@ public abstract class PulsarScratchPad extends JFrame {
 		fileMenuItem.add( new JMenuItem( SAVE_FILE ) );
 		fileMenuItem.add( new JMenuItem( SAVE_FILE_AS ) );
 
-		schemeMenuItem.add( new JMenuItem( EXECUTE_ACTION ) );
+		schemeMenuItem.add( new JMenuItem( EVALUATE_ACTION ) );
+		schemeMenuItem.add( new JMenuItem( RUN_ACTION ) );
 		schemeMenuItem.add( new JMenuItem( INTERRUPT_ACTION ) );
 
 		editMenuItem.add( new JMenuItem( UNDO_ACTION ) );
@@ -1492,8 +1588,8 @@ public abstract class PulsarScratchPad extends JFrame {
 					result = false;
 				}
 				if ( result ) {
-					PulsarScratchPad.this.setVisible(false);
-					PulsarScratchPad.this.dispose();
+					KawaPad.this.setVisible(false);
+					KawaPad.this.dispose();
 				} else {
 					// Stay open
 				}
@@ -1517,27 +1613,16 @@ public abstract class PulsarScratchPad extends JFrame {
 //		actionMap.get( DefaultEditorKit.copyAction ).putValue(Action2.NAME, "Backspace");
 	}
 	
-	private static final class StaticPulsarScratchPad extends PulsarScratchPad {
-		private final Scheme scheme;
-		private StaticPulsarScratchPad(Scheme scheme) {
-			this.scheme = scheme;
-		}
-		@Override
-		public Scheme getScheme() {
-			return scheme;
-		}
-		public static PulsarScratchPad createInstance( Scheme scheme ) {
-			return new StaticPulsarScratchPad(scheme);
-		}
+	public static KawaPad createStaticInstance() {
+		SchemeSecretary schemeSecretary = new SchemeSecretary();
+		registerGlobalSchemeInitializer( schemeSecretary );
+		schemeSecretary.newScheme();
+		return new KawaPad( schemeSecretary, "Scheme Scratch Pad" ).registerLocalSchemeInitializers();
 	}
-	public static PulsarScratchPad createStaticInstance( Scheme scheme ) {
-		return StaticPulsarScratchPad.createInstance(scheme);
-	}
-	
 	public static void main(String[] args) throws IOException {
-		PulsarScratchPad scratchPad = createStaticInstance( initScheme( new Scheme() ) ).initialize();
+		KawaPad kawaPad = createStaticInstance();
 		if ( 0 < args.length  ) {
-			scratchPad.openFile( new File( args[0] ) );
+			kawaPad.openFile( new File( args[0] ) );
 		}
 	}
 }

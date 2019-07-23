@@ -18,7 +18,7 @@
  * along with SchemeUtils.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package ats.pulsar.lib.swing;
+package ats.pulsar.lib;
 
 import java.io.File;
 import java.io.FileNotFoundException;

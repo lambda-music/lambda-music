@@ -17,6 +17,14 @@ public abstract class SecretaryMessageQueue<R> implements SecretaryMessageExecut
 	static void logWarn(String msg) {
 		LOGGER.log(Level.WARNING, msg);
 	}
+
+	private boolean directMeeting = false;
+	public void setDirectMeeting( boolean directMeeting ) {
+		this.directMeeting = directMeeting;
+	}
+	public boolean isDirectMeeting() {
+		return directMeeting;
+	}
 	
 	protected abstract R getExecutive();
 
@@ -77,10 +85,11 @@ public abstract class SecretaryMessageQueue<R> implements SecretaryMessageExecut
 			throw new NullPointerException();
 		
 		try {
+//			System.out.println( "executeSequentially:" + Thread.currentThread().getName() );
+
 			// Check if this call is a reentrant call. (Mon, 22 Jul 2019 14:31:58 +0900)
 			// does this work? (Tue, 23 Jul 2019 04:00:55 +0900)
-			System.out.println( "executeSequentially:" + Thread.currentThread().getName() );
-			if ( Thread.currentThread().equals( this.thread ) ) {
+			if ( directMeeting || Thread.currentThread().equals( this.thread ) ) {
 				return message.execute( getExecutive(), args );
 			} else {
 				SecretaryMessageWrapper<R,T,E> messageWrapper = new SecretaryMessageWrapper( message, args );

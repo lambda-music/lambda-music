@@ -26,6 +26,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.HeadlessException;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -87,8 +88,10 @@ import javax.swing.text.JTextComponent;
 
 import org.jaudiolibs.jnajack.JackException;
 
-import ats.kawapad.PulsarScratchPad;
+import ats.kawapad.KawaPad;
 import ats.pulsar.Pulsar.TempoTapperTempoNotifier;
+import ats.pulsar.lib.SchemeUtils;
+import ats.pulsar.lib.secretary.scheme.SchemeSecretary;
 import ats.pulsar.lib.swing.Action2;
 import ats.pulsar.lib.swing.FlawLayout;
 import ats.pulsar.lib.swing.JNamedPanel;
@@ -96,7 +99,6 @@ import ats.pulsar.lib.swing.JPulsarRadioButton;
 import ats.pulsar.lib.swing.JPulsarUserObject;
 import ats.pulsar.lib.swing.JSelectableUserObject;
 import ats.pulsar.lib.swing.LayoutUtils;
-import ats.pulsar.lib.swing.SchemeUtils;
 import ats.pulsar.lib.swing.SpringLayoutUtil;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
@@ -134,11 +136,12 @@ class PulsarGui {
 	Pulsar pulsar;
 	PulsarGui( Pulsar pulsar ) {
 		this.pulsar = pulsar;
+		
 		/**
 		 * Initialize GUI 
 		 */
-        //Create and set up the window.
-        this.frame = new JPulsarFrame();
+        // Create and set up the window.
+        this.frame = new JPulsarFrame( pulsar.getSchemeSecretary(), "Pulsar" );
 	}
 
 	enum TempoRange {
@@ -724,7 +727,7 @@ class PulsarGui {
     		}
     	});
     	
-    	PulsarScratchPad.initScheme( scheme );
+    	KawaPad.libKawaPad( scheme );
     }
 	
 	//Create the "cards".
@@ -1370,12 +1373,7 @@ class PulsarGui {
 		@SuppressWarnings("unused")
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			PulsarScratchPad scratchPad = new PulsarScratchPad() {
-				@Override
-				public Scheme getScheme() {
-					return pulsar.getScheme();
-				}
-			}.initialize();
+			KawaPad scratchPad = frame.createKawaPad();
 		}
 		{
 			putValue( Action2.NAME, "New Scratchpad" );
@@ -1387,12 +1385,7 @@ class PulsarGui {
 	public final Action EDIT_SCRATCHPAD = new AbstractAction() {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			PulsarScratchPad scratchPad = new PulsarScratchPad() {
-				@Override
-				public Scheme getScheme() {
-					return pulsar.getScheme();
-				}
-			};
+			KawaPad scratchPad = frame.createKawaPad();
 			try {
 				scratchPad.openFile( pulsar.getMainFile() );
 			} catch (IOException e1) {
@@ -1499,16 +1492,9 @@ class PulsarGui {
 	};
 
 
-	protected class JPulsarFrame extends PulsarScratchPad {
-		public JPulsarFrame( String title ) {
-			super();
-		}
-		public JPulsarFrame() {
-			this("Pulsar");
-		}
-		@Override
-		public Scheme getScheme() {
-			return PulsarGui.this.pulsar.getScheme();
+	protected class JPulsarFrame extends KawaPad {
+		public JPulsarFrame( SchemeSecretary schemeSecretary, String title ) throws HeadlessException {
+			super( schemeSecretary, title );
 		}
 
 		{

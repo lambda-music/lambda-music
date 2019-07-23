@@ -51,6 +51,7 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import ats.pulsar.lib.SchemeUtils;
 import ats.pulsar.lib.secretary.Invokable;
 import ats.pulsar.lib.swing.FlawLayout;
 import ats.pulsar.lib.swing.JNamedPanel;
@@ -62,7 +63,6 @@ import ats.pulsar.lib.swing.JPulsarTextField;
 import ats.pulsar.lib.swing.JPulsarUserObject;
 import ats.pulsar.lib.swing.JUserObjectContainer;
 import ats.pulsar.lib.swing.PulsarListItem;
-import ats.pulsar.lib.swing.SchemeUtils;
 import gnu.expr.Language;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
