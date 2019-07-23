@@ -390,11 +390,11 @@
                                               (trackset-manager 'current-trackset trackset0)
                                               (trackset-manager 'update-trackset-buttons trackset0)
                                               (trackset0 'update-trackset-view )
-                                              (gui-build!
+                                             #| (gui-build!
                                                 main-frame
                                                 'revalidate
                                                 'repaint
-                                                'validate) 
+                                                'validate) |#
                                               trackset0)))
       )))
 
@@ -433,30 +433,47 @@
                                                )))
                                     b)
                                   ))
+      (self 'define 'method 'add-track (lambda (self track) 
+                                         ; Add the passed track to the list.
+                                         (set-cdr! track-list (cons track (cdr track-list)))
 
-      (self 'define 'method 'add-track (lambda (self . tracks) 
-                                         (let add-track-loop ((ptrack tracks))
-                                           (if (null? ptrack)
-                                             ; end loop
-                                             #f
-                                             (begin
-                                               (let ((track (car ptrack)))
-                                                 ; Add the passed track to the list.
-                                                 (set-cdr! track-list (cons track (cdr track-list)))
-
-                                                 ; Add the passed track's gui to the panel
-                                                 (let (( target-p (gui-get main-pane  "TRACKS")))
-                                                   (gui-build!
-                                                     target-p 
-                                                     'index-from-last 1
-                                                     (track 'gui)
-                                                     'invalidate
-                                                     'revalidate
-                                                     'repaint
-                                                     )))
-                                               (add-track-loop (cdr ptrack)))))
+                                         ; Add the passed track's gui to the panel
+                                         (let (( target-p (gui-get main-pane  "TRACKS")))
+                                           (gui-build!
+                                             target-p 
+                                             'index-from-last 1
+                                             (track 'gui)
+                                             'invalidate
+                                             'revalidate
+                                             'repaint
+                                             ))
                                          (gui-repaint main-pane)
+                                         track
                                          ))
+
+      (self 'define 'method 'add-track-multi (lambda (self . tracks) 
+                                               (let add-track-loop ((ptrack tracks))
+                                                 (if (null? ptrack)
+                                                   ; end loop
+                                                   #f
+                                                   (begin
+                                                     (let ((track (car ptrack)))
+                                                       ; Add the passed track to the list.
+                                                       (set-cdr! track-list (cons track (cdr track-list)))
+
+                                                       ; Add the passed track's gui to the panel
+                                                       (let (( target-p (gui-get main-pane  "TRACKS")))
+                                                         (gui-build!
+                                                           target-p 
+                                                           'index-from-last 1
+                                                           (track 'gui)
+                                                           'invalidate
+                                                           'revalidate
+                                                           'repaint
+                                                           )))
+                                                     (add-track-loop (cdr ptrack)))))
+                                               (gui-repaint main-pane)
+                                               ))
 
       (self 'define 'method 'set-enabled-to-all-track  (lambda (self value)
                                                          (for-each (lambda (e)
@@ -966,7 +983,8 @@
                          "./test01.scm" 
                          "./test02.scm" 
                          "./test03.scm" ))
-  (rewind!))
+  ; (rewind!)
+  )
 
 (if (not (open?))
   (begin 

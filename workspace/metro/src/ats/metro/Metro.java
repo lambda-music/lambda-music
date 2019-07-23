@@ -323,7 +323,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
         // Create a thread.
 //    	this.sequence.setParent( this );
         this.activate();
-        this.thread = new Thread( this );
+        this.thread = new Thread( this , "MetroSequencer" );
         this.thread.start();
     }
     

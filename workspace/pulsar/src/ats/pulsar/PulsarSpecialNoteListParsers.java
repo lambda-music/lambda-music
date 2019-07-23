@@ -38,7 +38,6 @@ import ats.metro.MetroTrack;
 import ats.metro.MetroTrack.SyncType;
 import ats.pulsar.lib.swing.SchemeUtils;
 import gnu.lists.Pair;
-import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import kawa.standard.Scheme;
 
@@ -169,7 +168,7 @@ public class PulsarSpecialNoteListParsers {
 	static final class ExecEventParser extends SpecialNoteListParserElement {
 		{
 			this.shortName = "exec";
-			this.longName = "execute-procedure";
+			this.longName = "execute-invokable";
 		}
 		@Override
 		public
@@ -180,11 +179,7 @@ public class PulsarSpecialNoteListParsers {
 			Procedure procedure0 = map.containsKey( ID_PROCEDURE ) ?                (Procedure)map.get( ID_PROCEDURE )   : null;
 			// See the note ... XXX_SYNC_01
 			((MetroEventBuffer) receiver).exec( offset, 
-					new RunnableSchemeProcedure( 
-							Pulsar.createInvocable(/* XXX_SYNC_01 */
-							// MODIFIED (Mon, 22 Jul 2019 09:34:53 +0900)
-							pulsar.getScheme(), pulsar.getSchemeEnvironment(), pulsar.getSchemeLanguage(),
-								procedure0) ) );
+					pulsar.createRunnableAndInvocable( procedure0 ));
 			return result;
 		}
 	}
@@ -192,6 +187,11 @@ public class PulsarSpecialNoteListParsers {
 //	};
 	public static final PutEventParser PARSER_PUT = new PutEventParser();
 	static { register( PARSER_PUT ); }
+	
+	static int tempNewIdCounter = 0;
+	synchronized static String createTempNewId() {
+		return "TEMPID-" + ( tempNewIdCounter++ );
+	}
 	static final class PutEventParser extends SpecialNoteListParserElement {
 		{
 			this.shortName = "add";
@@ -214,8 +214,11 @@ public class PulsarSpecialNoteListParsers {
 			double syncOffset        = getValue( map, "syof", 0.0d, (v)-> SchemeUtils.toDouble( v )   );
 			Procedure procedure      = getValue( map, ID_PROCEDURE, null, (v)->(Procedure)v );
 
-			if ( id == null )
-				id = createDefaultId( pulsar.getScheme() );
+			if ( id == null ) {
+				// MODIFIED (Tue, 23 Jul 2019 05:55:01 +0900)
+				// id = createDefaultId( pulsar.getScheme() );
+				id = createTempNewId();
+			}
 
 			if ( procedure != null ) {
 				String id2= id;
@@ -223,16 +226,18 @@ public class PulsarSpecialNoteListParsers {
 				((MetroEventBuffer) receiver).exec( offset, new Runnable() {
 					@Override
 					public void run() {
-						SchemeSequence sequence = new SchemeSequence( pulsar.getScheme(),
-								Pulsar.createInvocable(pulsar.getScheme(), pulsar.getSchemeEnvironment(), pulsar.getSchemeLanguage(),
-									procedure) );
-
+						SchemeSequence sequence = new SchemeSequence( pulsar.createInvokable(procedure) );
 						pulsar.putSequence( id2, tags, sequence, syncType, syncSequenceId, syncOffset  );
 					}
-				} );
+				});
 			}
 			return result;
 		}
+		
+		/*
+		 * DEPRECATED? (Tue, 23 Jul 2019 05:57:34 +0900)
+		 */
+		@Deprecated
 		public String createDefaultId(Scheme scheme) {
 			synchronized ( scheme ) {
 				String id;

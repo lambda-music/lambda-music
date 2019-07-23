@@ -101,9 +101,7 @@ import ats.pulsar.lib.swing.SpringLayoutUtil;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.Pair;
-import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
-import gnu.mapping.Procedure1;
 import gnu.mapping.ProcedureN;
 import gnu.mapping.Symbol;
 import kawa.standard.Scheme;
@@ -750,10 +748,8 @@ class PulsarGui {
 		frame.revalidate();
 		// frame.pack();
 	}
-	public void guiInvokeLater( Procedure p, Object ... args  ) {
-		SwingUtilities.invokeLater( 
-			new RunnableSchemeProcedure( 
-				Pulsar.createInvocable(pulsar.getScheme(), pulsar.getSchemeEnvironment(), pulsar.getSchemeLanguage(), p) , args ) );
+	public void guiInvokeLater( Procedure procedure, Object ... args  ) {
+		SwingUtilities.invokeLater( pulsar.createRunnableAndInvocable( procedure, args ) );
 	}
 	public void guiPack() {
 		//
@@ -1165,7 +1161,7 @@ class PulsarGui {
 				} else if ( "property".equals( mode ) ) {
  					guiProperty( parent, (List<Object>) curr );
 					mode = null;
-				} else if ( "procedure".equals( mode ) ) {
+				} else if ( "invokable".equals( mode ) ) {
  					guiNextProcedure( parent, (Procedure) curr );
 					mode = null;
 				} else if ( "index".equals( mode ) ) {
@@ -1214,8 +1210,8 @@ class PulsarGui {
 							case "property":
 								mode = "property";
 								break;
-							case "procedure":
-								mode = "procedure";
+							case "invokable":
+								mode = "invokable";
 								break;
 							case "index":
 								mode = "index";

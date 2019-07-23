@@ -32,7 +32,7 @@ import ats.metro.MetroEventBuffer;
 import ats.metro.MetroSequence;
 import ats.metro.MetroTrack;
 import ats.metro.MetroTrackInfo;
-import ats.pulsar.lib.kawautil.Invocable;
+import ats.pulsar.lib.secretary.Invokable;
 import ats.pulsar.lib.swing.SchemeUtils;
 import gnu.lists.AbstractSequence;
 import gnu.lists.EmptyList;
@@ -41,7 +41,6 @@ import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.ProcedureN;
 import gnu.mapping.Symbol;
-import kawa.standard.Scheme;
 
 public class SchemeSequence extends MetroSequence {
 	static final Logger LOGGER = Logger.getLogger(SchemeSequence.class.getName());
@@ -72,15 +71,12 @@ public class SchemeSequence extends MetroSequence {
 
 	/*
 	 * Note (XXX_SYNC_01):
-	 * It is not necessary to refer to the Kawa scheme instance to invoke the procedure.
+	 * It is not necessary to refer to the Kawa scheme instance to invoke the invokable.
 	 * It is necessary because 
 	 * 
 	 */
-	final Scheme scheme;
-	
-	final Invocable procedure;
-	public SchemeSequence ( Scheme scheme, Invocable procedure ) {
-		this.scheme = scheme;
+	final Invokable procedure;
+	public SchemeSequence ( Invokable procedure ) {
 		this.procedure = procedure;
 	}
 
@@ -106,8 +102,8 @@ public class SchemeSequence extends MetroSequence {
 		return result;
 	}
 	private static final NoteListParser PARSER = PulsarNoteListParser.getInstance();
-	public static boolean scheme2buf( Metro metro, MetroTrack track, Invocable procedure, MetroEventBuffer buf) {
-		// Call the procedure to get a note list of the next measure.
+	public static boolean scheme2buf( Metro metro, MetroTrack track, Invokable procedure, MetroEventBuffer buf) {
+		// Call the invokable to get a note list of the next measure.
 		AbstractSequence<Object> pattern = (AbstractSequence<Object>)procedure.invoke();
 		
 		// Parse the retrieved list to execute.

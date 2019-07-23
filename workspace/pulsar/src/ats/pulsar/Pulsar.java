@@ -48,18 +48,16 @@ import org.jaudiolibs.jnajack.JackException;
 import ats.metro.Metro;
 import ats.metro.MetroTrack;
 import ats.metro.MetroTrack.SyncType;
-import ats.pulsar.lib.kawautil.Invocable;
-import ats.pulsar.lib.kawautil.InvocableSchemeProcedure;
-import ats.pulsar.lib.kawautil.SimpleInvocableSchemeProcedure;
-import ats.pulsar.lib.message.queue.SimpleMessageQueue;
+import ats.pulsar.lib.kawa.secretary.SchemeSecretary;
+import ats.pulsar.lib.secretary.Invokable;
+import ats.pulsar.lib.secretary.InvokablyRunnable;
+import ats.pulsar.lib.secretary.SecretaryMessage;
 import ats.pulsar.lib.swing.MersenneTwisterFast;
 import ats.pulsar.lib.swing.SchemeUtils;
-import gnu.expr.Language;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.LList;
 import gnu.lists.Pair;
-import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.ProcedureN;
 import gnu.math.DFloNum;
@@ -92,7 +90,7 @@ import kawa.standard.Scheme;
  * <p>
  * <ul>
  * <li>main-file
- * <li>main-procedure
+ * <li>main-invokable
  * </ul>
  * <p>
  * The <code>main-file</code> is a file path to the main file which Pulsar is
@@ -100,12 +98,12 @@ import kawa.standard.Scheme;
  * trying to detect file modification. Whenever Pulsar detects any timestamp
  * update on the file, Pulsar automatically reads it and execute.
  * <p>
- * The <code>main-procedure</code> is the procedure which initializes the state
+ * The <code>main-invokable</code> is the invokable which initializes the state
  * of the sequencer. This method is the place where Pulsar starts a new song.
  * <p>
- * If a script file sets <code>main-procedure</code>, this is effectively the
+ * If a script file sets <code>main-invokable</code>, this is effectively the
  * application <i>opens</i> a new-file in the sense of general applications. A
- * script file could also leave <code>main-procedure</code> untouched.
+ * script file could also leave <code>main-invokable</code> untouched.
  * <p>
  * This behavior is designed to be useful in some scenarios. For example, when a
  * user repeatedly updates/modifies the script file repeatedly in order to check
@@ -129,6 +127,7 @@ public final class Pulsar extends Metro {
 	public Pulsar() {
 		this.gui = new PulsarGui( this );
 		this.initLanguage();
+		this.enabledTimer = true; 
 	}
 
 	/**
@@ -139,6 +138,7 @@ public final class Pulsar extends Metro {
 		this();
 	}
 
+	transient boolean enabledTimer = false;
 
 	/**
 	 * The main method which starts up the application. The application opens a file
@@ -180,39 +180,49 @@ public final class Pulsar extends Metro {
 		LOGGER.log(Level.WARNING, msg);
 	}
 
-	private Scheme scheme;
-	private Language    schemeLanguage;
-	private Environment schemeEnvironment;
-	
-	PulsarGui gui;
-	
-	private final SimpleMessageQueue<Scheme> messageQueue = new SimpleMessageQueue<Scheme>() {
-		@Override
-		protected Scheme getResource() {
-			return Pulsar.this.getScheme();
-		}
+	// private Scheme scheme;
+	private SchemeSecretary schemeSecretary = new SchemeSecretary() {
+		public Scheme newScheme() {
+			Scheme scheme = super.newScheme();
+			// 4. This initializes the thread of Metro's message-queue.
+			// See ats.pulsar.lib.kawa.secretary.SchemeSecretary#specialInit()
+			postMessage( new Runnable() {
+				@Override
+				public void run() {
+					SchemeSecretary.specialInit( scheme );
+				}
+			});
+			return scheme;
+		}; 
 	};
-	public Invocable createInvocable( Procedure procedure ) {
-		return SimpleInvocableSchemeProcedure.createSynchronousllyInvocable( messageQueue, procedure );
-	}
-	
-	public static InvocableSchemeProcedure createInvocable(
-			Object syncObj, Environment environment,
-			Language language, Procedure procedure) {
-		return new InvocableSchemeProcedure(syncObj, environment, language, procedure);
-	}
-
-	
-
 	public Scheme getScheme() {
-		return scheme;
+		return schemeSecretary.getScheme();
 	}
-	public Language getSchemeLanguage() {
-		return this.schemeLanguage;
+	PulsarGui gui;
+
+//	public Invokable createInvokable( String script ) {
+////		return InvokableSchemeProcedure.createSecretariallyInvokable( schemeSecretary, procedure );
+//		return schemeSecretary.createSecretarillyInvokable( procedure );
+//	}
+
+	public Invokable createInvokable( Procedure procedure ) {
+//		return InvokableSchemeProcedure.createSecretariallyInvokable( schemeSecretary, procedure );
+		return schemeSecretary.createSecretarillyInvokable( procedure );
 	}
-	public Environment getSchemeEnvironment() {
-		return schemeEnvironment;
+	public Invokable createInvokable2( Procedure procedure ) {
+//		return InvokableSchemeProcedure.createSecretariallyInvokable( schemeSecretary, procedure );
+		return schemeSecretary.createSecretarillyInvokable( procedure );
 	}
+	public Runnable createRunnableAndInvocable( Procedure procedure, Object... args) {
+		return new InvokablyRunnable( schemeSecretary.createSecretarillyInvokable( procedure ), args );
+	}
+
+	
+//	public static InvokableSchemeProcedure createInvocable(
+//			Procedure invokable) {
+//		return new InvokableSchemeProcedure(syncObj, environment, language, invokable);
+//	}
+
 	
 	MersenneTwisterFast random = new MersenneTwisterFast( new int[] { 
 			(int) System.currentTimeMillis(),
@@ -221,27 +231,27 @@ public final class Pulsar extends Metro {
 	
 	
 	/**
-	 * This field specifies the procedure to reset all of the states inside the
+	 * This field specifies the invokable to reset all of the states inside the
 	 * sequencer and effectively this method starts a song. Whenever a user call
-	 * {@link Pulsar#rewind()}, this procedure will be invoked.
+	 * {@link Pulsar#rewind()}, this invokable will be invoked.
 	 */
-	transient Invocable mainProcedure = null;
+	transient Invokable mainProcedure = null;
 
 	/**
-	 * Sets the main-procedure object.
+	 * Sets the main-invokable object.
 	 * 
 	 * @see Pulsar#mainProcedure 
 	 */
-	public void setMainProcedure( Invocable mainProcedure ) {
+	public void setMainProcedure( Invokable mainProcedure ) {
 		this.mainProcedure = mainProcedure;
 	}
 	
 	/**
-	 * Returns the main-procedure object.
+	 * Returns the main-invokable object.
 	 * 
 	 * @see Pulsar#mainProcedure 
 	 */
-	public Invocable getMainProcedure() {
+	public Invokable getMainProcedure() {
 		return mainProcedure;
 	}
 	
@@ -250,23 +260,23 @@ public final class Pulsar extends Metro {
 	 * sequencer is always playing a specific region of a song repeatedly and
 	 * remains in the region and only when the user send a "cue" to the sequencer,
 	 * the sequencer goes to next region. When users call {@link Pulsar#cue() },
-	 * this procedure is invoked. 
+	 * this invokable is invoked. 
 	 */
-	transient Invocable cueProcedure = null;
+	transient Invokable cueProcedure = null;
 	/**
-	 * Sets the cue-procedure object.
+	 * Sets the cue-invokable object.
 	 * 
 	 * @see Pulsar#cueProcedure 
 	 */
-	public void setCueProcedure( Invocable cueProcedure ) {
+	public void setCueProcedure( Invokable cueProcedure ) {
 		this.cueProcedure = cueProcedure;
 	}
 	/**
-	 * Returns the cue-procedure object.
+	 * Returns the cue-invokable object.
 	 * 
 	 * @see Pulsar#cueProcedure 
 	 */
-	public Invocable getCueProcedure() {
+	public Invokable getCueProcedure() {
 		return cueProcedure;
 	}
 
@@ -338,19 +348,27 @@ public final class Pulsar extends Metro {
 	 * filename. This causes reload the script file.
 	 */
 	public void reset() {
-		initLanguage();
-		this.execCleanupHook();
-		if ( gui != null )
-			this.gui.guiClear();
-		this.close();
-		this.lastModifiedOfMainFile = NOT_DEFINED;
+		try {
+			this.enabledTimer = false;
+			
+			// XXX "initLanguage" ... is this supposed to be executed before others?
+			initLanguage();
+			
+			this.execCleanupHook();
+			if ( gui != null )
+				this.gui.guiClear();
+			this.close();
+			this.lastModifiedOfMainFile = NOT_DEFINED;
+		} finally {
+			this.enabledTimer = true;
+		}
 	}
 	
 	
     /**
 	 * {@link Pulsar#rewind()} method resets the state of the object and calls main
-	 * procedure to back to the state of beginning of the project. This method
-	 * effectively invoke the main procedure. See {@link Pulsar#mainProcedure}
+	 * invokable to back to the state of beginning of the project. This method:9
+	 * effectively invoke the main invokable. See {@link Pulsar#mainProcedure}
 	 */
     public void rewind() { 
     	logInfo( "===rewind" );
@@ -361,7 +379,7 @@ public final class Pulsar extends Metro {
     }
 
     /**
-     * Invokes cue-procedure. See {@link Pulsar#cueProcedure } 
+     * Invokes cue-invokable. See {@link Pulsar#cueProcedure } 
      */
     public void cue() {
     	logInfo( "===cue" );
@@ -370,7 +388,7 @@ public final class Pulsar extends Metro {
     }
     
     /**
-     * This method clears main procedure and state.
+     * This method clears main invokable and state.
      */
     public void clear() { 
     	logInfo( "===clear" );
@@ -532,6 +550,7 @@ public final class Pulsar extends Metro {
 		}
 	}
 	
+
 	interface TempoTapperTempoNotifier {
 		void notifyTempo( double beatPerMinute );
 	}
@@ -621,8 +640,10 @@ public final class Pulsar extends Metro {
 		Timer timer = new Timer(1000, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				lastModifiedOfConfigFile  = checkLastModified( configFile,  lastModifiedOfConfigFile , (file)->{}   );
-				lastModifiedOfMainFile    = checkLastModified( mainFile,    lastModifiedOfMainFile,    (file)->{if ( gui != null ) gui.updateFilename(file);} );
+				if ( enabledTimer ) {
+					lastModifiedOfConfigFile  = checkLastModified( configFile,  lastModifiedOfConfigFile , (file)->{}   );
+					lastModifiedOfMainFile    = checkLastModified( mainFile,    lastModifiedOfMainFile,    (file)->{if ( gui != null ) gui.updateFilename(file);} );
+				}
 			}
 
 			long checkLastModified( File file, long lastModified, Consumer<File> updateProc ) {
@@ -634,14 +655,22 @@ public final class Pulsar extends Metro {
 				long newLastModified = file.lastModified();
 				if ( newLastModified != lastModified ) {
 					logInfo( "Detected that the file was modified." );
+					
 					try {
-						// XXX THIS IS BOGUS
-						if ( scheme != null)
-							loadScheme( file );
+//						// XXX THIS IS BOGUS
+//						if ( getScheme() != null)
+//							loadScheme( file );
+						// (Mon, 22 Jul 2019 17:22:39 +0900) 
+						// Therefore it is executed sequentially now,
+						// this getScheme() !=null check may not be necessary anymore.
+						
+						loadScheme( file );
 						updateProc.accept( file );
 					} catch (FileNotFoundException e) {
 						logError( "" , e );
 					}
+					
+					
 				}
 				return newLastModified;
 			}
@@ -661,14 +690,27 @@ public final class Pulsar extends Metro {
 	 * @throws FileNotFoundException
 	 */
 	public void loadScheme( File file ) throws FileNotFoundException {
-		SchemeUtils.execSchemeFromFile( scheme, parentFile, file);
+		schemeSecretary.executeSecretarially(
+			new SecretaryMessage.NoReturn<Scheme,FileNotFoundException>() {
+				@Override
+				public void execute0(Scheme scheme, Object[] args ) throws FileNotFoundException {
+					SchemeUtils.execSchemeFromFile( scheme, parentFile, file );
+				}
+			});
 	}
-	
+
 	private void initLanguage() {
-		this.scheme = new Scheme();
-		this.schemeEnvironment = this.scheme.getEnvironment();
-		this.schemeLanguage = Language.getDefaultLanguage();
-		initScheme( scheme );
+		schemeSecretary.newScheme();
+		schemeSecretary.executeSecretarially( new SecretariallyInitScheme() );
+	}
+	private final class SecretariallyInitScheme extends SecretaryMessage.NoReturnNoThrow<Scheme> {
+		@Override
+		public void execute0( Scheme scheme, Object[] args ) {
+			initScheme( scheme );
+			if ( gui != null ) {
+				gui.initScheme( scheme );
+			}
+		}
 	}
 
 	/**
@@ -677,20 +719,20 @@ public final class Pulsar extends Metro {
 	 * @param scheme
 	 *            the scheme instance to initialize.
 	 */
-    private void initScheme(Scheme scheme) {
-    	{
-    		SchemeUtils.execScheme( Pulsar.class, scheme, "init0.scm"  );
-    		SchemeUtils.execScheme( Pulsar.class, scheme, "init.scm"  );
-    		SchemeUtils.execScheme( Pulsar.class, scheme, "xnoop.scm" );
-//    		execScheme( scheme, "event-parser.scm" );
-    	}
-    	SchemeUtils.defineVar( scheme, "open?" , new ProcedureN() {
+	public void initScheme( Scheme scheme ) {
+		{
+			SchemeUtils.execScheme( Pulsar.class, scheme, "init0.scm"  );
+			SchemeUtils.execScheme( Pulsar.class, scheme, "init.scm"  );
+			SchemeUtils.execScheme( Pulsar.class, scheme, "xnoop.scm" );
+			//	    		execScheme( scheme, "event-parser.scm" );
+		}
+		SchemeUtils.defineVar( scheme, "open?" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				return running;
-    		}
-    	});
-    	SchemeUtils.defineVar( scheme, "open!" , new ProcedureN() {
+			}
+		});
+		SchemeUtils.defineVar( scheme, "open!" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				for ( Object o : args ) {
@@ -698,16 +740,16 @@ public final class Pulsar extends Metro {
 					open( name );
 				}
 				return EmptyList.emptyList;
-    		}
-    	});
-    	SchemeUtils.defineVar( scheme, "close!" , new ProcedureN() {
+			}
+		});
+		SchemeUtils.defineVar( scheme, "close!" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				close();
 				return EmptyList.emptyList;
-    		}
-    	});
-    	SchemeUtils.defineVar( scheme, "output!" , new ProcedureN() {
+			}
+		});
+		SchemeUtils.defineVar( scheme, "output!" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				for ( Object o : args ) {
@@ -715,9 +757,9 @@ public final class Pulsar extends Metro {
 					createOutputPort( name );
 				}
 				return EmptyList.emptyList;
-    		}
-    	});
-    	SchemeUtils.defineVar( scheme, "input!" , new ProcedureN() {
+			}
+		});
+		SchemeUtils.defineVar( scheme, "input!" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				for ( Object o : args ) {
@@ -725,9 +767,9 @@ public final class Pulsar extends Metro {
 					createInputPort( name );
 				}
 				return EmptyList.emptyList;
-    		}
-    	});
-    	SchemeUtils.defineVar( scheme, "connect!" , new ProcedureN() {
+			}
+		});
+		SchemeUtils.defineVar( scheme, "connect!" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				ArrayDeque<Object> deque = new ArrayDeque<>( Arrays.asList( args ) );
@@ -746,53 +788,53 @@ public final class Pulsar extends Metro {
 					}
 				}
 				return EmptyList.emptyList;
-    		}
-    	});
+			}
+		});
 
-    	SchemeUtils.defineVar( scheme, "get-all-input" , new ProcedureN() {
+		SchemeUtils.defineVar( scheme, "get-all-input" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				return Pair.makeList( getInputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
-						.collect( Collectors.toList() ) );
-    		}
-    	});
-    	SchemeUtils.defineVar( scheme, "get-all-output" , new ProcedureN() {
+					.collect( Collectors.toList() ) );
+			}
+		});
+		SchemeUtils.defineVar( scheme, "get-all-output" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				return Pair.makeList( getOutputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
-						.collect( Collectors.toList() ) );
-    		}
-    	});
+					.collect( Collectors.toList() ) );
+			}
+		});
 
-    	SchemeUtils.defineVar( scheme, "set-main!" , new ProcedureN() {
+		SchemeUtils.defineVar( scheme, "set-main!" , new ProcedureN() {
 			@Override
-    		public Object applyN(Object[] args) throws Throwable {
+			public Object applyN(Object[] args) throws Throwable {
 				logInfo("set-main");
 				if ( args.length == 1 ) {
 					Procedure procedure = (Procedure)args[0];
-					setMainProcedure( Pulsar.createInvocable(getScheme(), getSchemeEnvironment(), getSchemeLanguage(), procedure));
+					setMainProcedure( Pulsar.this.createInvokable(procedure) );
 				} else {
 					throw new RuntimeException( "invalid argument length" );
 				}
-    			return EmptyList.emptyList;
-    		}
-    	});
-    	SchemeUtils.defineVar( scheme, "set-cue!" , new ProcedureN() {
+				return EmptyList.emptyList;
+			}
+		});
+		SchemeUtils.defineVar( scheme, "set-cue!" , new ProcedureN() {
 			@Override
-    		public Object applyN(Object[] args) throws Throwable {
+			public Object applyN(Object[] args) throws Throwable {
 				logInfo("set-cue");
 				if ( args.length == 1 ) {
 					Procedure procedure = (Procedure)args[0];
-					setCueProcedure( Pulsar.createInvocable( getScheme(), getSchemeEnvironment(), getSchemeLanguage(), procedure ) );
+					setCueProcedure( Pulsar.this.createInvokable( procedure ) );
 				} else {
 					throw new RuntimeException( "invalid argument length" );
 				}
-    			return EmptyList.emptyList;
-    		}
-    	});
-    	SchemeUtils.defineVar( scheme, "set-playing!" , new ProcedureN() {
+				return EmptyList.emptyList;
+			}
+		});
+		SchemeUtils.defineVar( scheme, "set-playing!" , new ProcedureN() {
 			@Override
-    		public Object applyN(Object[] args) throws Throwable {
+			public Object applyN(Object[] args) throws Throwable {
 				if ( args.length == 0 ) {
 					togglePlaying();
 				} else if ( args.length == 1 ) {
@@ -800,147 +842,145 @@ public final class Pulsar extends Metro {
 				} else {
 					throw new RuntimeException( "invalid argument length" );
 				}
-    			return EmptyList.emptyList;
-    		}
-    	});
-    	SchemeUtils.defineVar( scheme, "playing?" , new ProcedureN() {
+				return EmptyList.emptyList;
+			}
+		});
+		SchemeUtils.defineVar( scheme, "playing?" , new ProcedureN() {
 			@Override
-    		public Object applyN(Object[] args) throws Throwable {
+			public Object applyN(Object[] args) throws Throwable {
 				return getPlaying();
-    		}
-    	});
-    	SchemeUtils.defineVar( scheme, "play!" , new ProcedureN() {
+			}
+		});
+		SchemeUtils.defineVar( scheme, "play!" , new ProcedureN() {
 			@Override
-    		public Object applyN(Object[] args) throws Throwable {
+			public Object applyN(Object[] args) throws Throwable {
 				setPlaying( true ); 
-    			return EmptyList.emptyList;
-    		}
-    	});
-    	SchemeUtils.defineVar( scheme, "stop!" , new ProcedureN() {
+				return EmptyList.emptyList;
+			}
+		});
+		SchemeUtils.defineVar( scheme, "stop!" , new ProcedureN() {
 			@Override
-    		public Object applyN(Object[] args) throws Throwable {
+			public Object applyN(Object[] args) throws Throwable {
 				setPlaying( false ); 
-    			return EmptyList.emptyList;
-    		}
-    	});
-    	SchemeUtils.defineVar( scheme, "tap!" , new ProcedureN() {
+				return EmptyList.emptyList;
+			}
+		});
+		SchemeUtils.defineVar( scheme, "tap!" , new ProcedureN() {
 			@Override
-    		public Object applyN(Object[] args) throws Throwable {
+			public Object applyN(Object[] args) throws Throwable {
 				tempoTapper.tap(); 
-    			return EmptyList.emptyList;
-    		}
-    	});
-    	SchemeUtils.defineVar( scheme, "set-tempo!" , new ProcedureN() {
+				return EmptyList.emptyList;
+			}
+		});
+		SchemeUtils.defineVar( scheme, "set-tempo!" , new ProcedureN() {
 			@Override
-    		public Object applyN(Object[] args) throws Throwable {
+			public Object applyN(Object[] args) throws Throwable {
 				if ( 0 < args.length ) {
 					double bpm = SchemeUtils.toDouble(args[0]);
 					tempoTapper.setBeatsPerMinute( bpm );
 				}
-				 
-    			return EmptyList.emptyList;
-    		}
-    	});
-    	SchemeUtils.defineVar( scheme, "set-progress-pos!" , new ProcedureN() {
+
+				return EmptyList.emptyList;
+			}
+		});
+		SchemeUtils.defineVar( scheme, "set-progress-pos!" , new ProcedureN() {
 			@Override
-    		public Object applyN(Object[] args) throws Throwable {
+			public Object applyN(Object[] args) throws Throwable {
 				if ( 0 < args.length ) {
 					if ( gui != null ) { 
 						double value = SchemeUtils.toDouble(args[0]);
 						gui.pb_position.setValue((int) (value * PB_POSITION_MAX) );
 					}
 				}
-				 
-    			return EmptyList.emptyList;
-    		}
-    	});
-    	SchemeUtils.defineVar( scheme, "set-related-files!" , new ProcedureN() {
-    		@Override
-    		public Object applyN(Object[] args) throws Throwable {
-    			if ( args.length == 1  ) {
-    				Pair p = (Pair)args[0];
-    				Collection<File> files= SchemeUtils.<Object,File>convertList( p, (v)->new File( SchemeUtils.anyToString(v) ) );
-    				setRelatedFiles( files );
-    			} else {
-    				throw new RuntimeException( "invalid argument length" );
-    			}
-    			return EmptyList.emptyList;
-    		}
-    	});
-    	SchemeUtils.defineVar( scheme, "get-related-files" , new ProcedureN() {
-    		@Override
-    		public Object applyN(Object[] args) throws Throwable {
-    			Pair p = new Pair();
-    			ArrayList<IString> ss = new ArrayList<>();
-    			for ( File f : relatedFiles ) {
-    				ss.add( IString.valueOf( f.getPath() ) );
-    			}
-    			p.addAll( ss );
-    			return p;
-    		}
-    	});
-    	SchemeUtils.defineVar( scheme, "cue!" , new ProcedureN() {
-			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-				cue();
-    			return EmptyList.emptyList;
-    		}
-    	});
-    	SchemeUtils.defineVar( scheme, "reset!" , new ProcedureN() {
-			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-				reset();
-    			return EmptyList.emptyList;
-    		}
-    	});
-    	SchemeUtils.defineVar( scheme, "rewind!" , new ProcedureN() {
-			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-				rewind();
-    			return EmptyList.emptyList;
-    		}
-    	});
-    	SchemeUtils.defineVar( scheme, "clear!" , new ProcedureN() {
-			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-				clear();
-    			return EmptyList.emptyList;
-    		}
-    	});
 
-    	SchemeUtils.defineVar( scheme, "put-seq!" , new ProcedureN() {
+				return EmptyList.emptyList;
+			}
+		});
+		SchemeUtils.defineVar( scheme, "set-related-files!" , new ProcedureN() {
 			@Override
-    		public Object applyN(Object[] args) throws Throwable {
+			public Object applyN(Object[] args) throws Throwable {
+				if ( args.length == 1  ) {
+					Pair p = (Pair)args[0];
+					Collection<File> files= SchemeUtils.<Object,File>convertList( p, (v)->new File( SchemeUtils.anyToString(v) ) );
+					setRelatedFiles( files );
+				} else {
+					throw new RuntimeException( "invalid argument length" );
+				}
+				return EmptyList.emptyList;
+			}
+		});
+		SchemeUtils.defineVar( scheme, "get-related-files" , new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				Pair p = new Pair();
+				ArrayList<IString> ss = new ArrayList<>();
+				for ( File f : relatedFiles ) {
+					ss.add( IString.valueOf( f.getPath() ) );
+				}
+				p.addAll( ss );
+				return p;
+			}
+		});
+		SchemeUtils.defineVar( scheme, "cue!" , new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				cue();
+				return EmptyList.emptyList;
+			}
+		});
+		SchemeUtils.defineVar( scheme, "reset!" , new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				reset();
+				return EmptyList.emptyList;
+			}
+		});
+		SchemeUtils.defineVar( scheme, "rewind!" , new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				rewind();
+				return EmptyList.emptyList;
+			}
+		});
+		SchemeUtils.defineVar( scheme, "clear!" , new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				clear();
+				return EmptyList.emptyList;
+			}
+		});
+
+		SchemeUtils.defineVar( scheme, "put-seq!" , new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
 				if ( 2 <= args.length  ) {
 					logInfo( "put-seq! : " + Arrays.asList(args).toString() );
-					
+
 					String name;
 					Collection<String> tags;
 					if ( args[0] instanceof Pair ) {
 						Pair p = ((Pair)args[0]);
 						name = SchemeUtils.symbolToString( p.getCar() );
-						
-//						Pair.makeList( getInputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
-//								.collect( Collectors.toList() ) );
+
+						//							Pair.makeList( getInputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
+						//									.collect( Collectors.toList() ) );
 
 						tags = SchemeUtils.symbolListToStringList(p);
-						
+
 					} else {
 						name = SchemeUtils.symbolToString( args[0] );
 						tags = null;
 					}
-					
+
 					Procedure procedure     = (Procedure) args[1];
 					SyncType syncType       = 3<=args.length ? str2sync( args[2] ) : SyncType.IMMEDIATE;
 					String syncTrackName    = 4<=args.length ? SchemeUtils.anyToString( SchemeUtils.schemeNullCheck( args[3] ) ) : null;
 					double offset           = 5<=args.length ? SchemeUtils.toDouble( args[4] ) : 0.0d;
-					
-					SchemeSequence sequence = new SchemeSequence( scheme,
-							Pulsar.createInvocable(getScheme(), getSchemeEnvironment(), getSchemeLanguage(),
-								procedure) );
-					
+
+					SchemeSequence sequence = new SchemeSequence( Pulsar.this.createInvokable( procedure ) );
+
 					putSequence( name, tags, sequence, syncType, syncTrackName, offset );
-					 
+
 					return EmptyList.emptyList;
 				} else {
 					throw new RuntimeException( "Invalid parameter. usage : (put-seq! [name] [lambda] [syncType(immediate|parallel|serial)] [sync-parent-name] [offset] ) " );
@@ -949,11 +989,11 @@ public final class Pulsar extends Metro {
 			private SyncType str2sync(Object object) {
 				return SyncType.valueOf( SchemeUtils.symbolToString( object ).toUpperCase() );
 			}
-    	});
-    	
-    	SchemeUtils.defineVar( scheme, "remove-seq!" , new ProcedureN() {
+		});
+
+		SchemeUtils.defineVar( scheme, "remove-seq!" , new ProcedureN() {
 			@Override
-    		public Object applyN(Object[] args) throws Throwable {
+			public Object applyN(Object[] args) throws Throwable {
 				if ( args.length == 1 ) {
 					String name = SchemeUtils.toString( args[0] );
 					removeTrack(name);
@@ -962,30 +1002,30 @@ public final class Pulsar extends Metro {
 					throw new RuntimeException( "Invalid parameter. usage : (new-sequence [name] [lambda] ) " );
 				}
 			}
-    	});
-    	SchemeUtils.defineVar( scheme, "clear-seq!" , new ProcedureN() {
+		});
+		SchemeUtils.defineVar( scheme, "clear-seq!" , new ProcedureN() {
 			@Override
-    		public Object applyN(Object[] args) throws Throwable {
+			public Object applyN(Object[] args) throws Throwable {
 				clearTracks();
 				return EmptyList.emptyList;
 			}
-    	});
-    	SchemeUtils.defineVar( scheme, "has-seq?" , new ProcedureN() {
+		});
+		SchemeUtils.defineVar( scheme, "has-seq?" , new ProcedureN() {
 			@Override
-    		public Object applyN(Object[] args) throws Throwable {
+			public Object applyN(Object[] args) throws Throwable {
 				if ( args.length == 1 ) {
 					String name = SchemeUtils.toString( args[0] );
-					
+
 					return getTrack(name) != null;
 				} else {
 					throw new RuntimeException( "Invalid parameter. usage : (new-sequence [name] [lambda] ) " );
 				}
 			}
-    	});
-    	SchemeUtils.defineVar( scheme, "list-seq" , new ProcedureN() {
+		});
+		SchemeUtils.defineVar( scheme, "list-seq" , new ProcedureN() {
 			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-//				logInfo("list-seq");
+			public Object applyN(Object[] args) throws Throwable {
+				//					logInfo("list-seq");
 				synchronized ( lock ) {
 					ArrayList<LList> list = new ArrayList<>( tracks.size() );
 					for ( MetroTrack track :  tracks ) {
@@ -995,52 +1035,48 @@ public final class Pulsar extends Metro {
 					return LList.makeList(list);
 				}
 			}
-    	});
-    	
-    	SchemeUtils.defineVar( scheme, "typeof" , new ProcedureN() {
-    		public Object applyN(Object[] args) throws Throwable {
-    			if ( 0 < args.length  ) {
-    				return args[0].getClass().getName();
-    			} else {
-    				return EmptyList.emptyList;
-    			}
-    		}
-    	});
+		});
 
-    	SchemeUtils.defineVar( scheme, "rnd" , new ProcedureN() {
-    		@Override
-    		public Object applyN(Object[] args) throws Throwable {
-    			switch ( args.length ) {
-    				case 0 :
-    					return DFloNum.valueOf( random.nextDouble() );
-    				case 1 : {
-    					double range = SchemeUtils.toDouble( args[0] );
-    					return DFloNum.valueOf( random.nextDouble() * range );
-    				}
-    				default :
-    				{
-    					double rangeMin = SchemeUtils.toDouble( args[0] );
-    					double rangeMax = SchemeUtils.toDouble( args[1] );
-    					double range    = rangeMax - rangeMin;
-    					
-    					return DFloNum.valueOf( random.nextDouble() * range + rangeMin );
-    				}
-    			}
-    		}
-    	});
-    	SchemeUtils.defineVar( scheme, "luck" , new ProcedureN() {
-    		@Override
-    		public Object applyN(Object[] args) throws Throwable {
-    			double probability = args.length == 0 ? 0.5 : SchemeUtils.toDouble( args[0] );
-    			if ( probability < 0 ) return false;
-    			if ( 1.0<=probability  ) return true;
+		SchemeUtils.defineVar( scheme, "typeof" , new ProcedureN() {
+			public Object applyN(Object[] args) throws Throwable {
+				if ( 0 < args.length  ) {
+					return args[0].getClass().getName();
+				} else {
+					return EmptyList.emptyList;
+				}
+			}
+		});
+
+		SchemeUtils.defineVar( scheme, "rnd" , new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				switch ( args.length ) {
+					case 0 :
+						return DFloNum.valueOf( random.nextDouble() );
+					case 1 : {
+						double range = SchemeUtils.toDouble( args[0] );
+						return DFloNum.valueOf( random.nextDouble() * range );
+					}
+					default :
+					{
+						double rangeMin = SchemeUtils.toDouble( args[0] );
+						double rangeMax = SchemeUtils.toDouble( args[1] );
+						double range    = rangeMax - rangeMin;
+
+						return DFloNum.valueOf( random.nextDouble() * range + rangeMin );
+					}
+				}
+			}
+		});
+		SchemeUtils.defineVar( scheme, "luck" , new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				double probability = args.length == 0 ? 0.5 : SchemeUtils.toDouble( args[0] );
+				if ( probability < 0 ) return false;
+				if ( 1.0<=probability  ) return true;
 				return random.nextBoolean( probability );
-    		}
-    	});
-
-    	if ( gui != null ) {
-    		gui.initScheme(scheme);
-    	}
-    }
+			}
+		});
+	}	
 }
 	

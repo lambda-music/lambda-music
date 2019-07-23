@@ -191,6 +191,10 @@ public abstract class PulsarScratchPad extends JFrame {
 			public void run() {
 				try {
 					LOGGER.log( Level.INFO, "run");
+					// ==== WORKAROUND SEE acvpoeov === (Tue, 23 Jul 2019 11:37:32 +0900) //
+					// Environment.setCurrent( getScheme().getEnvironment() );
+					// Language.setCurrentLanguage(getScheme());
+					// ==== WORKAROUND SEE acvpoeov === (Tue, 23 Jul 2019 11:37:32 +0900) //
 					r.run();
 				} finally {
 					logInfo("end");
@@ -659,8 +663,8 @@ public abstract class PulsarScratchPad extends JFrame {
 			try {
 				if ( enabledEnvironment )
 					Environment.setCurrent(environment);
-				SchemeUtils.putVar(getScheme(), "scheme", getScheme() );
-				SchemeUtils.putVar(getScheme(), "frame", this );
+				SchemeUtils.putVar( getScheme(), "scheme", getScheme() );
+				SchemeUtils.putVar( getScheme(), "frame", this );
 				
 				return getScheme().eval( new InPort(reader) ); 
 //				return scheme.eval( 
@@ -669,8 +673,8 @@ public abstract class PulsarScratchPad extends JFrame {
 //								"\n)"
 //						);
 			} finally {
-				SchemeUtils.putVar(getScheme(), "scheme", false );
-				SchemeUtils.putVar(getScheme(), "frame", false );
+				SchemeUtils.putVar( getScheme(), "scheme", false );
+				SchemeUtils.putVar( getScheme(), "frame", false );
 				reader.close();
 			}
 		}

@@ -51,7 +51,7 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import ats.pulsar.lib.kawautil.SchemeFunctionExecutor;
+import ats.pulsar.lib.secretary.Invokable;
 import ats.pulsar.lib.swing.FlawLayout;
 import ats.pulsar.lib.swing.JNamedPanel;
 import ats.pulsar.lib.swing.JPulsarButton;
@@ -121,14 +121,14 @@ public abstract class SchemeNewFactory {
 
 
 	static final class ComponentFactoryActionListener implements ActionListener {
-		SchemeFunctionExecutor executor; 
-		ComponentFactoryActionListener(Procedure procedure) {
-			this.executor = new SchemeFunctionExecutor(procedure); 
+		Invokable invokable; 
+		ComponentFactoryActionListener( Invokable invokable ) {
+			this.invokable = invokable; 
 		}
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			AbstractButton button = (AbstractButton)e.getSource();
-			executor.execute( 
+			invokable.invoke( 
 					button.isSelected(),
 					IString.valueOf( e.getActionCommand() ),
 					((JUserObjectContainer)button).getUserObject(),
@@ -139,13 +139,13 @@ public abstract class SchemeNewFactory {
 
 	static abstract class ComponentFactory {
 		abstract Component create( ActionListener l, String caption, Object userObject );
-		abstract ActionListener createActionListener( Procedure procedure );
+		abstract ActionListener createActionListener( Invokable invokable );
 	}
 	static class JRadioButtonFactory extends ComponentFactory {
 		ButtonGroup group = new ButtonGroup();
 		@Override
-		ActionListener createActionListener( Procedure procedure ) {
-			return new ComponentFactoryActionListener( procedure );
+		ActionListener createActionListener( Invokable invokable ) {
+			return new ComponentFactoryActionListener( invokable );
 		}
 		@Override
 		Component create(ActionListener l, String caption, Object userObject) {
@@ -159,8 +159,8 @@ public abstract class SchemeNewFactory {
 	}
 	static class JCheckBoxFactory extends ComponentFactory {
 		@Override
-		ActionListener createActionListener( Procedure procedure ) {
-			return new ComponentFactoryActionListener( procedure );
+		ActionListener createActionListener( Invokable invokable ) {
+			return new ComponentFactoryActionListener( invokable );
 		}
 		@Override
 		Component create(ActionListener l, String caption, Object userObject) {
@@ -185,7 +185,7 @@ public abstract class SchemeNewFactory {
 	 * @return a scheme list which contains components.
 	 */
 	
-	static Object createSelectiveComponents( String type, List<Object> args, ComponentFactory f ) {
+	static Object createSelectiveComponents( Pulsar pulsar, String type, List<Object> args, ComponentFactory f ) {
 		if ( 0 < args.size()  ) {
 			Procedure procedure;
 			{
@@ -193,7 +193,7 @@ public abstract class SchemeNewFactory {
 				procedure = (Procedure) args.get( last );
 				args.remove(last);
 			}
-			ActionListener listener = f.createActionListener( procedure );
+			ActionListener listener = f.createActionListener( pulsar.createInvokable2( procedure ) );
 
 			List<Object> result = new ArrayList();
 			
@@ -231,7 +231,7 @@ public abstract class SchemeNewFactory {
 			}
 			return Pair.makeList( result );
 		} else {
-			throw new RuntimeException( "new " + type + "[ caption, caption, ..., procedure] " + args.size() );
+			throw new RuntimeException( "new " + type + "[ caption, caption, ..., invokable] " + args.size() );
 		}
 	}
 
@@ -442,11 +442,11 @@ public abstract class SchemeNewFactory {
 //					Language lang = Language.getDefaultLanguage();
 					{
 						JPulsarButton button = new JPulsarButton( caption );
-						SchemeFunctionExecutor executor = new SchemeFunctionExecutor( procedure );
+						Invokable executor = pulsar.createInvokable2( procedure );
 						button.addMouseListener(new MouseAdapter() {
 							@Override
 							public void mousePressed(MouseEvent e) {
-								executor.execute( 
+								executor.invoke( 
 										true,
 										SchemeUtils.toSchemeString( button.getText() ),
 										((JUserObjectContainer)button).getUserObject(),
@@ -460,7 +460,7 @@ public abstract class SchemeNewFactory {
 								switch ( e.getKeyCode() ) {
 									case KeyEvent.VK_SPACE: 
 									case KeyEvent.VK_ENTER:
-										executor.execute( 
+										executor.invoke( 
 												true,
 												SchemeUtils.toSchemeString( button.getText() ),
 												((JUserObjectContainer)button).getUserObject(),
@@ -505,12 +505,12 @@ public abstract class SchemeNewFactory {
 			}
 
 			public Object createTimer(Pulsar pulsar, long delay, long interval, Procedure procedure) {
-				SchemeFunctionExecutor executor = new SchemeFunctionExecutor( procedure );
+				Invokable invokable = pulsar.createInvokable2( procedure );
 				java.util.Timer timer = new java.util.Timer( true );
 				timer.scheduleAtFixedRate( new java.util.TimerTask() {
 					@Override
 					public void run() {
-						Object result = executor.execute();
+						Object result = invokable.invoke();
 						if ( Boolean.FALSE.equals( result ) ) {
 							timer.cancel();
 						}
@@ -537,13 +537,13 @@ public abstract class SchemeNewFactory {
 		register( "stimer", new SchemeNewFactory() {
 			final class ActionListenerImplementation implements ActionListener {
 				javax.swing.Timer timer;
-				SchemeFunctionExecutor executor;
-				ActionListenerImplementation( Procedure procedure ) {
-					this.executor = new SchemeFunctionExecutor( procedure );
+				Invokable invokable;
+				ActionListenerImplementation( Invokable invokable ) {
+					this.invokable = invokable;
 				}
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					Object result = executor.execute();					
+					Object result = invokable.invoke();					
 					if ( Boolean.FALSE.equals( result ) ) {
 						timer.stop();
 					}
@@ -556,7 +556,7 @@ public abstract class SchemeNewFactory {
 					int interval = SchemeUtils.toInteger(args.get(0));
 					Procedure procedure = (Procedure)args.get(1);
 
-					ActionListenerImplementation listener = new ActionListenerImplementation( procedure );
+					ActionListenerImplementation listener = new ActionListenerImplementation( pulsar.createInvokable2( procedure ) );
 					javax.swing.Timer timer = new javax.swing.Timer( interval,  listener );
 					listener.timer = timer;
 					pulsar.addCleanupHook( new Runnable() {
@@ -650,7 +650,7 @@ public abstract class SchemeNewFactory {
 		register( "radio", new SchemeNewFactory() {
 			@Override
 			Object create( Pulsar pulsar, List<Object> args ) {
-				return createSelectiveComponents( "'radio", args, new JRadioButtonFactory() );
+				return createSelectiveComponents( pulsar, "'radio", args, new JRadioButtonFactory() );
 			}
 
 		});
@@ -658,7 +658,7 @@ public abstract class SchemeNewFactory {
 		register( "check", new SchemeNewFactory() {
 			@Override
 			Object create( Pulsar pulsar, List<Object> args ) {
-				return createSelectiveComponents( "'check", args, new JCheckBoxFactory() );
+				return createSelectiveComponents( pulsar,  "'check", args, new JCheckBoxFactory() );
 			}
 		});
 		register( "combo", new SchemeNewFactory() {
@@ -723,7 +723,7 @@ public abstract class SchemeNewFactory {
 					
 					return c; 
 				} else {
-					throw new RuntimeException( "(new 'combo [procedure] [caption | (cons caption . userData)]... " );
+					throw new RuntimeException( "(new 'combo [invokable] [caption | (cons caption . userData)]... " );
 				}
 			}
 		});
