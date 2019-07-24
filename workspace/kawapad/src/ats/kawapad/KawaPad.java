@@ -108,7 +108,7 @@ import kawa.standard.Scheme;
  * 
  * (Tue, 09 Jul 2019 10:28:51 +0900)
  * <ol>
- * <li>Every scheme object must be initialized by {@link KawaPad#libKawaPad(Scheme)}</li>
+ * <li>Every scheme object must be initialized by {@link KawaPad#staticInitScheme(Scheme)}</li>
  * <li>{@link KawaPad#initialize() } must be called before use the object.</li>
  * </ol>
  * <pre> 
@@ -141,91 +141,40 @@ public class KawaPad extends JFrame {
 		System.err.flush();
 	}
 
-	private final String frameName = newFrameName();
-	public String getFrameName() {
-		return this.frameName;
-	}
-	
-	// private Scheme scheme;
-
-	SchemeSecretary schemeSecretary;
-	
-	public KawaPad createKawaPad() {
-		return new KawaPad( this.schemeSecretary, this.getTitle() ).registerLocalSchemeInitializers(); 
-	}
-
-	
-	public KawaPad( SchemeSecretary schemeSecretary, String title ) throws HeadlessException {
-		super(title);
-		this.schemeSecretary = schemeSecretary;
-		this.setDefaultCloseOperation( DISPOSE_ON_CLOSE );
-	}
-	
-	public <T extends KawaPad> T registerLocalSchemeInitializers() {
-		this.registerLocalSchemeInitializer();
-		this.invokeLocalSchemeInitializer();
-		return (T)this;
-	}
-	
-	@Override
-	public void dispose() {
-		this.unregisterLocalSchemeInitializer();
-		super.dispose();
-	}
-
-
-	static SecretaryMessage.NoReturnNoThrow<Scheme> staticInitializer01 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
-		@Override
-		public void execute0( Scheme scheme, Object[] args ) {
-			libKawaPad( scheme );				
-		}
-	};
-
-	SecretaryMessage.NoReturnNoThrow<Scheme> dynamicInitializer01 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
-		@Override
-		public void execute0( Scheme scheme, Object[] args ) {
-			libKawaPadFrameName( scheme );				
-		}
-	};
-	SecretaryMessage.NoReturnNoThrow<Scheme> dynamicInitializer02 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
-		@Override
-		public void execute0( Scheme scheme, Object[] args ) {
-			eventHandlers.invokeEventHandler( KawaPad.this, EventHandlers.INIT );
-		}
-	};
-
-	
-	/*
-	 * (Tue, 23 Jul 2019 16:30:58 +0900)
-	 * These comments may be difficult to comprehend. Please be attention to the
-	 * life cycle of these variables/functions which the initializers create.
-	 */
-	
-	/**
-	 * Initialize variables to set the reference to the newly created frame. 
-	 */
-	public void invokeLocalSchemeInitializer() {
-		schemeSecretary.invokeSchemeInitializers( this );
-	}
+	///////////////////////////////////////////////////////////////////////////////////////////////
 	
 	/**
 	 * Initialize variables which is necessary to set whenever the environment is created.
 	 * One of such variables is a reference to the frame object. This reference must be
 	 * cleared when the frame is disposed.
 	 */
-	public void registerLocalSchemeInitializer() {
-		schemeSecretary.registerSchemeInitializer( this, dynamicInitializer01 );
-		schemeSecretary.registerSchemeInitializer( this, dynamicInitializer02 );
+	public static void registerLocalSchemeInitializers( SchemeSecretary schemeSecretary, KawaPad kawaPad ) {
+		schemeSecretary.registerSchemeInitializer( kawaPad, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+			@Override
+			public void execute0( Scheme scheme, Object[] args ) {
+				kawaPad.initScheme( scheme );				
+			}
+		});
+		schemeSecretary.registerSchemeInitializer( kawaPad, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+			@Override
+			public void execute0( Scheme scheme, Object[] args ) {
+				logInfo( "eventinvokeEventHandler of KawaPad#registerSchemeInitializer " );
+				eventHandlers.invokeEventHandler( kawaPad, EventHandlers.INIT );
+			}
+		});
 	}
 	
+	public static void invokeLocalSchemeInitializers( SchemeSecretary schemeSecretary, KawaPad kawaPad ) {
+		schemeSecretary.invokeSchemeInitializers( kawaPad );
+	}
+
 	/**
 	 * Remove initializers that initialize variables for the current frame.
 	 */
-	public void unregisterLocalSchemeInitializer() {
-		schemeSecretary.unregisterSchemeInitializer( dynamicInitializer01 );
-		schemeSecretary.unregisterSchemeInitializer( dynamicInitializer02 );
+	public static void unregisterLocalSchemeInitializers(SchemeSecretary schemeSecretary, KawaPad kawaPad ) {
+		schemeSecretary.unregisterSchemeInitializer( kawaPad );
 	}
-	
+
 	/**
 	 * This initializes variables which do not need to refer the reference to the
 	 * current frame. This initializer does not have to be removed even if  
@@ -234,6 +183,42 @@ public class KawaPad extends JFrame {
 	public static void registerGlobalSchemeInitializer( SchemeSecretary schemeSecretary ) {
 		schemeSecretary.registerSchemeInitializer( null, staticInitializer01 );
 	}
+	static SecretaryMessage.NoReturnNoThrow<Scheme> staticInitializer01 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+		@Override
+		public void execute0( Scheme scheme, Object[] args ) {
+			staticInitScheme( scheme );				
+		}
+	};
+
+	///////////////////////////////////////////////////////////////////////////////////////////////
+	
+	private final String frameName = newFrameName();
+	public String getFrameName() {
+		return this.frameName;
+	}
+	
+	// private Scheme scheme;
+
+	protected SchemeSecretary schemeSecretary;
+	public KawaPad createKawaPad() {
+		return new KawaPad( this.schemeSecretary, this.getTitle() ); 
+	}
+	
+	public KawaPad( SchemeSecretary schemeSecretary, String title ) throws HeadlessException {
+		super(title);
+		this.schemeSecretary = schemeSecretary;
+		this.setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
+		
+		registerLocalSchemeInitializers( schemeSecretary, this );
+		invokeLocalSchemeInitializers( schemeSecretary, this);
+	}
+
+	@Override
+	public void dispose() {
+		unregisterLocalSchemeInitializers( this.schemeSecretary, this );
+		super.dispose();
+	}
+
 	
 
 	public final AbstractAction NEW_SCRATCHPAD_ACTION = new AbstractAction() {
@@ -529,9 +514,9 @@ public class KawaPad extends JFrame {
 				resultObject = executeScheme( schemeSecretary.getScheme(), KawaPad.this,  text );
 
 				textPane.getActionMap();
-				System.out.println("==========================");
-				System.out.println( resultObject.getClass() );
-				System.out.println("==========================");
+//				System.out.println("==========================");
+//				System.out.println( resultObject.getClass() );
+//				System.out.println("==========================");
 				result = prettyPrint( resultObject );
 
 			} catch (Throwable e1) {
@@ -600,7 +585,7 @@ public class KawaPad extends JFrame {
 		}
 		{
 			putValue( Action2.NAME, "Interrupt" );
-			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK) );
+			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_G, ActionEvent.CTRL_MASK) );
 			putValue( Action.MNEMONIC_KEY , (int) 'i' );
 		}
 	}
@@ -816,7 +801,15 @@ public class KawaPad extends JFrame {
 	}
 
 	static final class SchemeProcedure {
+		/*
+		 *  The variable environment and language are not necessary anymore
+		 *  but there are many that setting these so left them their be.
+		 *  This class should also be replaced to Invokable.
+		 *  (Wed, 24 Jul 2019 16:21:59 +0900)
+		 */
+		@SuppressWarnings("unused")
 		private final Environment environment;
+		@SuppressWarnings("unused")
 		private final Language language;
 		private final Procedure procedure;
 		SchemeProcedure( Procedure procedure , Environment environmen ) {
@@ -827,8 +820,8 @@ public class KawaPad extends JFrame {
 		public Object invoke( Object... args ) {
 			try {
 //				Environment.setCurrent( this.environment );
-				Environment.setCurrent(environment);
-				Language.setCurrentLanguage(this.language);
+//				Environment.setCurrent( environment );
+//				Language.setCurrentLanguage( this.language );
 				return procedure.applyN( args );
 			} catch (Throwable e) {
 				logError( "SchemeInvokableProcedure:error" , e );
@@ -882,9 +875,11 @@ public class KawaPad extends JFrame {
 			eventType.remove( procID );
 		}
 		public void invokeEventHandler( KawaPad kawaPad, String eventTypeID, Object ... args ) {
+//			logInfo( "eventHandlers.invokeEventHandler(outer)" );
 			kawaPad.schemeSecretary.executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
 				@Override
 				public void execute0( Scheme scheme, Object[] args ) {
+//					logInfo( "eventHandlers.invokeEventHandler(inner)" );
 					try {
 						SchemeUtils.putVar( scheme, "scheme", scheme );
 						SchemeUtils.putVar( scheme, "frame",  kawaPad );
@@ -922,9 +917,15 @@ public class KawaPad extends JFrame {
 		return new File( System.getProperty("user.home"), ".pulsar/kawapad-extension.scm" );
 	}
 
-	public static Scheme libKawaPad( Scheme scheme ) {
+	protected void initScheme( Scheme scheme ) {
+		logInfo( "KawaPad#initScheme" );
+		SchemeUtils.defineVar( scheme, frameName, this );
+	}
+
+	public static Scheme staticInitScheme( Scheme scheme ) {
+		logInfo( "KawaPad#staticInitScheme" );
+
 		if ( ! SchemeUtils.isDefined(scheme, FLAG_DONE_INIT_PULSAR_SCRATCHPAD ) ) {
-			logInfo("initScheme");
 			SchemeUtils.defineVar(scheme, FLAG_DONE_INIT_PULSAR_SCRATCHPAD, true );  
 
 			SchemeUtils.defineVar(scheme, "frame", false );
@@ -984,9 +985,6 @@ public class KawaPad extends JFrame {
 		return scheme;
 	}
 	
-	protected void libKawaPadFrameName( Scheme scheme ) {
-		SchemeUtils.defineVar( scheme, frameName, this );
-	}
 	
 
 
@@ -1617,7 +1615,7 @@ public class KawaPad extends JFrame {
 		SchemeSecretary schemeSecretary = new SchemeSecretary();
 		registerGlobalSchemeInitializer( schemeSecretary );
 		schemeSecretary.newScheme();
-		return new KawaPad( schemeSecretary, "Scheme Scratch Pad" ).registerLocalSchemeInitializers();
+		return new KawaPad( schemeSecretary, "Scheme Scratch Pad" );
 	}
 	public static void main(String[] args) throws IOException {
 		KawaPad kawaPad = createStaticInstance();

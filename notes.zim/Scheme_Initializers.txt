@@ -1,0 +1,29 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2019-07-24T07:18:33+09:00
+
+====== Scheme Initializers ======
+Created Wednesday 24 July 2019
+
+Yesterday I could not correctly imagine what the scheme initialization
+on the Pulsar system supposed to be. Yesterday I categorized those many
+initializers into two : dynamic/static but the way to categorize did not
+seem to be proper. It did not work properly in my mind and I could not
+figure out how.
+
+This morning I realized that I am struggling with the objects which have
+totally uneven life cycle and each of those objects supposed to have two
+kind of initializers.
+
+There are some object in an instance of Pulsar application.
+
+	1. The scheme object; that is, an environment object.
+	2. Frame objects.
+
+
+
+1. Whenever scheme object is renewed, every initializer including frame's initializers must be invoked.
+2. Whenever a new frame is created, some new initializers must be and invoked.
+3. The frame's initializers must be removed when the frame is disposed.
+
+The problem is 

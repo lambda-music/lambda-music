@@ -939,7 +939,7 @@
                  (xnew SimpleTrack (new-track-id)))
 
       (trackset-manager 'update-trackset-buttons trackset1)
-      (trackset-manager 'update-trackset-view    trackset1)
+      (trackset1 'update-trackset-view    )
 
       ; (let ((current-trackset (trackset-manager 'current-trackset))
       ;       (track1 (xnew SimpleTrack (new-track-id)))

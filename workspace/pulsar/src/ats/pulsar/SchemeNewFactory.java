@@ -98,7 +98,7 @@ public abstract class SchemeNewFactory {
 
 	public static Object process( Pulsar pulsar,  Object ... args ) {
 		// TODO This has to be reviewed. >>> (Tue, 09 Jul 2019 10:41:00 +0900)
-		if ( pulsar.gui == null ) return EmptyList.emptyList;
+		if ( pulsar.pulsarGui == null ) return EmptyList.emptyList;
 		// <<<
 
 		ArrayList<Object> arguments = new ArrayList<>( Arrays.asList( args ) );
@@ -323,7 +323,7 @@ public abstract class SchemeNewFactory {
 //					String    type = 0 < argList.size() ? SchemeUtils.symbolToString( argList.remove(0) ) : "default";
 //					pulsar.gui.guiLayout( panel, type, argList.toArray() );
 //				}
-				pulsar.gui.guiLayout_auto( frame, args.toArray() );
+				pulsar.pulsarGui.guiLayout_auto( frame, args.toArray() );
 
 				return frame;
 			}
@@ -335,12 +335,12 @@ public abstract class SchemeNewFactory {
 				JNamedPanel panel = new JNamedPanel();
 
 				if ( args.size() == 0 ) {
-					pulsar.gui.guiLayout(panel, "default" );
+					pulsar.pulsarGui.guiLayout(panel, "default" );
 				} else if ( 1 <= args.size() ) {
 //					String type  = 0< args.size() ? SchemeUtils.anyToString( args.remove(0) ) : "default";
 //					Object[] optionalArguments = args.toArray();
 //					pulsar.gui.guiLayout( panel, type, optionalArguments ) ;
-					pulsar.gui.guiLayout_auto( panel, args.toArray() );
+					pulsar.pulsarGui.guiLayout_auto( panel, args.toArray() );
 				}
 				return panel;
 			}
@@ -350,15 +350,15 @@ public abstract class SchemeNewFactory {
 			Object create(Pulsar pulsar, List<Object> args ) {
 				JNamedPanel panel = new JNamedPanel();
 				if ( args.size() == 0 ) {
-					pulsar.gui.guiLayout(panel, "default" );
+					pulsar.pulsarGui.guiLayout(panel, "default" );
 				} else if ( 1 <= args.size() ) {
 					String title = 0< args.size() ? SchemeUtils.anyToString( args.remove(0) ) : "Group";
 					String type  = 0< args.size() ? SchemeUtils.anyToString( args.remove(0) ) : "default";
 					Object[] optionalArguments = args.toArray();
 					
-					// TODO SEE gui-layout! (Mon, 15 Jul 2019 10:05:46 +0900)
+					// TODO SEE pulsarGui-layout! (Mon, 15 Jul 2019 10:05:46 +0900)
 					panel.setBorder( BorderFactory.createTitledBorder( title ) );
-					pulsar.gui.guiLayout( panel, type, optionalArguments ) ;
+					pulsar.pulsarGui.guiLayout( panel, type, optionalArguments ) ;
 				}
 				return panel;
 			}

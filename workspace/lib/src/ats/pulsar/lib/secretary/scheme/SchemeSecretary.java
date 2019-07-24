@@ -128,14 +128,14 @@ public class SchemeSecretary extends Secretary<Scheme> {
 	 * @see #invokeSchemeInitializers(Object)
 	 */
 	public void registerSchemeInitializer( Object parent, SecretaryMessage.NoReturnNoThrow<Scheme> message ) {
-		this.newSchemeInitializerList.add( new SchemeSecretary.InitializerEntry( null, message ) );
+		this.newSchemeInitializerList.add( new SchemeSecretary.InitializerEntry( parent, message ) );
 	}
 	/**
 	 * This method unregisters a specified initializer.
 	 * @see #invokeSchemeInitializers(Object)
 	 */
-	public void unregisterSchemeInitializer( SecretaryMessage.NoReturnNoThrow<Scheme> message ) {
-		this.newSchemeInitializerList.removeIf( e->e.message == message );
+	public void unregisterSchemeInitializer( Object parent ) {
+		this.newSchemeInitializerList.removeIf( e->e.parent == parent );
 	}
 
 	/**
@@ -179,6 +179,61 @@ public class SchemeSecretary extends Secretary<Scheme> {
 			}
 		});
 	}
+
+	/*-
+	 *  A memorandum (Wed, 24 Jul 2019 09:43:02 +0900) 
+	 *
+	 * 	Yesterday I could not correctly imagine what the scheme initialization
+	 * 	on the Pulsar system is supposed to be. Yesterday I categorized those
+	 * 	many initializers into two : dynamic/static but the way to categorize
+	 * 	did not seem to be proper. It did not work properly in my mind and I
+	 * 	could not figure out how.
+	 * 
+	 * 	This morning I realized that I am struggling with the objects which
+	 * 	have totally uneven life cycle and each of those objects supposed to
+	 * 	have two kind of initializers.
+	 * 
+	 * 	There are some types of objects in an instance of Pulsar application.
+	 * 
+	 * 	1. The scheme object 
+	 * 	2. Pulsar's  Frame objects (global/local)
+	 * 	3. KawaPad's Frame objects (global/local)
+	 * 
+	 * 	|                                          |                                        |
+	 * 	|                                          |                                        |
+	 * 	|<===== 1. SCHEME OBJECT LIFE SPAN =======>|<===== 1. SCHEME OBJECT LIFE SPAN =====>|
+	 * 	|                                          |                                        |
+	 * 	|       |<=== 2.FRAME LIFE SPAN ===>|      |  |<==== 2. FRAME LIFE SPAN ====>|      |
+	 * 	|   |<=== 3.FRAME LIFE SPAN ===>|   |<==== 3. FRAME LIFE SPAN ====>|                |
+	 * 	|                                          |                                        |
+	 * 	
+	 * 
+	 * 	1. Whenever scheme object is renewed, every initializer including
+	 * 	   frame's initializers must be invoked.
+	 *
+	 * 	2. Whenever a new frame is created, some new initializers must be
+	 * 	   registered and invoked at the same time.
+	 *
+	 * 	3. The frame's initializers must be removed when the frame is disposed.
+	 *
+	 * 	4.  When the current scheme object is destroyed and created a new
+	 * 	    scheme object, we have to initialize the object again.
+	 *
+	 * 	5.  Some of initializers are shared between all instance, and others are not shared
+	 * 	    and tied to a single instance of frame.
+	 *
+	 * 	We categorize these initializers into two groups :
+	 *
+	 * 	  1. Global Initializer
+	 * 	  2. Local Initializer
+	 * 
+	 * The problem is, how we create the first scheme object and initialize it.
+	 * 
+	 *
+	 *
+	 * This memo is not completed. This is left for future reference.
+	 * (Wed, 24 Jul 2019 10:10:41 +0900)
+	*/
 	
 	public void newScheme() {
 		try {

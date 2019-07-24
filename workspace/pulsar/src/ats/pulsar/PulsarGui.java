@@ -36,6 +36,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -91,6 +92,7 @@ import org.jaudiolibs.jnajack.JackException;
 import ats.kawapad.KawaPad;
 import ats.pulsar.Pulsar.TempoTapperTempoNotifier;
 import ats.pulsar.lib.SchemeUtils;
+import ats.pulsar.lib.secretary.SecretaryMessage;
 import ats.pulsar.lib.secretary.scheme.SchemeSecretary;
 import ats.pulsar.lib.swing.Action2;
 import ats.pulsar.lib.swing.FlawLayout;
@@ -109,14 +111,6 @@ import gnu.mapping.Symbol;
 import kawa.standard.Scheme;
 
 class PulsarGui {
-//	static void logError( String msg, Throwable e ) {
-//        Logger.getLogger(Pulsar.class.getName()).log(Level.SEVERE, msg, e);
-////		System.err.println( msg );
-//	}
-//	static void logInfo( String msg ) {
-////        Logger.getLogger(Pulsar.class.getName()).log(Level.INFO, msg);
-//		System.err.println( msg );
-//	}
 	static final Logger LOGGER = Logger.getLogger(PulsarGui.class.getName());
 	static void logError(String msg, Throwable e) {
 		LOGGER.log(Level.SEVERE, msg, e);
@@ -132,15 +126,27 @@ class PulsarGui {
 	static final int BORDER_SIZE = 10;
 	static final PanelOrientation DEFAULT_PANEL_ORIENTATION = PanelOrientation.BOTTOM;
 	
+	public static void registerLocalSchemeInitializers( SchemeSecretary schemeSecretary, PulsarGui pulsarGui ) {
+		schemeSecretary.registerSchemeInitializer( pulsarGui, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+			@Override
+			public void execute0( Scheme scheme, Object[] args ) {
+				pulsarGui.initScheme( scheme );
+			}
+		});
+	}
+	public static void invokeLocalSchemeInitializers( SchemeSecretary schemeSecretary, PulsarGui pulsarGui ) {
+		schemeSecretary.invokeSchemeInitializers( pulsarGui );
+	}
+	public static void unregisterLocalSchemeInitializers( SchemeSecretary schemeSecretary, PulsarGui pulsarGui ) {
+		schemeSecretary.unregisterSchemeInitializer( pulsarGui );
+	}
+
 
 	Pulsar pulsar;
 	PulsarGui( Pulsar pulsar ) {
 		this.pulsar = pulsar;
 		
-		/**
-		 * Initialize GUI 
-		 */
-        // Create and set up the window.
+	    // Create and set up the window.
         this.frame = new JPulsarFrame( pulsar.getSchemeSecretary(), "Pulsar" );
 	}
 
@@ -215,6 +221,7 @@ class PulsarGui {
 			};
 		};
 	}
+	
 	
 	
     void initScheme(Scheme scheme) {
@@ -727,7 +734,7 @@ class PulsarGui {
     		}
     	});
     	
-    	KawaPad.libKawaPad( scheme );
+    	KawaPad.staticInitScheme( scheme );
     }
 	
 	//Create the "cards".
@@ -1410,7 +1417,19 @@ class PulsarGui {
 			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_R, ActionEvent.CTRL_MASK) );
 		}
 	};
-	
+
+	public final Action QUIT_SEQUENCER = new AbstractAction() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+		}
+		{
+			putValue( Action2.NAME, "Quit" );
+			putValue( Action.MNEMONIC_KEY, (int)'q' );
+			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK) );
+		}
+	};
+
 
 
 	public final Action SET_MAIN_FILE_ACTION = new AbstractAction() {
@@ -1495,8 +1514,16 @@ class PulsarGui {
 	protected class JPulsarFrame extends KawaPad {
 		public JPulsarFrame( SchemeSecretary schemeSecretary, String title ) throws HeadlessException {
 			super( schemeSecretary, title );
+			PulsarGui.registerLocalSchemeInitializers( schemeSecretary, PulsarGui.this );
+			PulsarGui.invokeLocalSchemeInitializers( schemeSecretary, PulsarGui.this );
 		}
 
+		@Override
+		public void dispose() {
+			super.dispose();
+			PulsarGui.unregisterLocalSchemeInitializers( schemeSecretary, PulsarGui.this );
+		}
+		
 		{
 			setTitle( "Pulsar - a Lisp Scheme Music Sequencer" );
 //			JMenuBar menuBar = new JMenuBar();
@@ -1513,6 +1540,7 @@ class PulsarGui {
 				m.add( new JMenuItem( CLEAR_MAIN_FILE_ACTION ) );
 //				m.add( new JMenuItem( EDIT_SCRATCHPAD ) );
 				m.add( new JMenuItem( RESET_SEQUENCER ) );
+				m.add( new JMenuItem( QUIT_SEQUENCER ) );
 				menuBar.add( m,0 );
 			}
 			
@@ -1564,7 +1592,9 @@ class PulsarGui {
 		JPanel staticPane;
 		JNamedPanel userPane;
 		{
-			this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//			this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			setDefaultCloseOperation( JFrame.DO_NOTHING_ON_CLOSE );
+
 
 			staticPane = new JPanel() {
 				@Override

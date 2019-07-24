@@ -131,6 +131,32 @@ public final class Pulsar extends Metro {
 		LOGGER.log(Level.WARNING, msg);
 	}
 
+	public static void registerLocalSchemeInitializers( SchemeSecretary schemeSecretary, Pulsar pulsar ) {
+		schemeSecretary.registerSchemeInitializer( pulsar, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+			@Override
+			public void execute0( Scheme scheme, Object[] args ) {
+				pulsar.postMessage( new Runnable() {
+					@Override
+					public void run() {
+						// 6. This initializes the thread of Metro's message-queue.
+						// See ats.pulsar.lib.secretary.scheme.SchemeSecretary#specialInit()
+						SchemeSecretary.initializeSchemeForCurrentThreadStatic( scheme );
+					}
+				});
+			}
+		});
+		schemeSecretary.registerSchemeInitializer( pulsar, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+			@Override
+			public void execute0( Scheme scheme, Object[] args ) {
+				pulsar.initScheme( scheme );
+			}
+		});
+	}
+	public static void invokeLocalSchemeInitializers( SchemeSecretary schemeSecretary, Pulsar pulsar ) {
+		schemeSecretary.invokeSchemeInitializers( pulsar );
+	}
+
+	
 	/**
 	 * Creates an instance of Pulsar object without opening any specific scheme
 	 * file. When a user creates an object by this constructor, the sequencer
@@ -138,13 +164,16 @@ public final class Pulsar extends Metro {
 	 * open a file to use the application.
 	 */
 	public Pulsar() {
-		SchemeSecretary schemeSecretary = new SchemeSecretary();
-		this.schemeSecretary = schemeSecretary;
+		this.schemeSecretary = new SchemeSecretary();
 		KawaPad.registerGlobalSchemeInitializer( schemeSecretary );
-		this.newScheme();
-		this.gui = new PulsarGui( this );
-		this.initializeSchemeSecretaryDynamic( schemeSecretary );
-		this.gui.frame.registerLocalSchemeInitializers();
+		this.schemeSecretary.newScheme();
+
+		Pulsar.registerLocalSchemeInitializers( schemeSecretary, this );
+		Pulsar.invokeLocalSchemeInitializers( schemeSecretary, this );
+		
+		this.pulsarGui = new PulsarGui( this );
+		
+		this.enabledTimer = true;
 	}
 
 	transient boolean enabledTimer = false;
@@ -163,42 +192,11 @@ public final class Pulsar extends Metro {
 		}
 	}
 	
-	PulsarGui gui;
+	PulsarGui pulsarGui;
 
 	private final SchemeSecretary schemeSecretary;
 	public SchemeSecretary getSchemeSecretary() {
 		return schemeSecretary;
-	}
-	
-	final SecretaryMessage.NoReturnNoThrow<Scheme> dynamicInitializer01 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
-		@Override
-		public void execute0( Scheme scheme, Object[] args ) {
-			postMessage( new Runnable() {
-				@Override
-				public void run() {
-					// 6. This initializes the thread of Metro's message-queue.
-					// See ats.pulsar.lib.secretary.scheme.SchemeSecretary#specialInit()
-					SchemeSecretary.initializeSchemeForCurrentThreadStatic( scheme );
-				}
-			});
-		}
-	};
-	final SecretaryMessage.NoReturnNoThrow<Scheme> dynamicInitializer02 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
-		@Override
-		public void execute0( Scheme scheme, Object[] args ) {
-			initScheme( scheme );
-		}
-	};
-	final SecretaryMessage.NoReturnNoThrow<Scheme> dynamicInitializer03 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
-		@Override
-		public void execute0( Scheme scheme, Object[] args ) {
-			gui.initScheme( scheme );
-		}
-	};
-	public void initializeSchemeSecretaryDynamic( SchemeSecretary schemeSecretary ) {
-		schemeSecretary.registerNewSchemeHandler( dynamicInitializer01 );
-		schemeSecretary.registerNewSchemeHandler( dynamicInitializer02 );
-		schemeSecretary.registerNewSchemeHandler( dynamicInitializer03 );
 	}
 	
 	private void newScheme() {
@@ -321,11 +319,11 @@ public final class Pulsar extends Metro {
 		this.relatedFiles.addAll( fileList );
 		this.relatedFileParent = mainFile;
 
-		if ( gui != null ) { 
-			if ( this.gui.cb_relatedFiles != null ) {
-				this.gui.cb_relatedFiles.removeAllItems();
+		if ( pulsarGui != null ) { 
+			if ( this.pulsarGui.cb_relatedFiles != null ) {
+				this.pulsarGui.cb_relatedFiles.removeAllItems();
 				for ( File f : this.relatedFiles ) {
-					this.gui.cb_relatedFiles.addItem(f.getPath());
+					this.pulsarGui.cb_relatedFiles.addItem(f.getPath());
 				}
 			}
 		}
@@ -337,9 +335,9 @@ public final class Pulsar extends Metro {
 	 */
 	public void addRelatedFile( File f) {
 		this.relatedFiles.add( f );
-		if ( this.gui != null ) {
-			if ( this.gui.cb_relatedFiles != null ) {
-				this.gui.cb_relatedFiles.addItem( f.getPath() );
+		if ( this.pulsarGui != null ) {
+			if ( this.pulsarGui.cb_relatedFiles != null ) {
+				this.pulsarGui.cb_relatedFiles.addItem( f.getPath() );
 			}
 		}
 	}
@@ -356,8 +354,8 @@ public final class Pulsar extends Metro {
 			newScheme();
 			
 			this.execCleanupHook();
-			if ( gui != null )
-				this.gui.guiClear();
+			if ( pulsarGui != null )
+				this.pulsarGui.guiClear();
 			this.close();
 			this.lastModifiedOfMainFile = NOT_DEFINED;
 		} finally {
@@ -546,8 +544,8 @@ public final class Pulsar extends Metro {
 		// See the comment.
 		setMainFile( null , mainFile );
 		
-		if ( gui != null ) {
-			gui.frame.openFile( mainFile );
+		if ( pulsarGui != null ) {
+			pulsarGui.frame.openFile( mainFile );
 		}
 	}
 	
@@ -643,7 +641,7 @@ public final class Pulsar extends Metro {
 			public void actionPerformed(ActionEvent e) {
 				if ( enabledTimer ) {
 					lastModifiedOfConfigFile  = checkLastModified( configFile,  lastModifiedOfConfigFile , (file)->{}   );
-					lastModifiedOfMainFile    = checkLastModified( mainFile,    lastModifiedOfMainFile,    (file)->{if ( gui != null ) gui.updateFilename(file);} );
+					lastModifiedOfMainFile    = checkLastModified( mainFile,    lastModifiedOfMainFile,    (file)->{if ( pulsarGui != null ) pulsarGui.updateFilename(file);} );
 				}
 			}
 
@@ -874,9 +872,9 @@ public final class Pulsar extends Metro {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				if ( 0 < args.length ) {
-					if ( gui != null ) { 
+					if ( pulsarGui != null ) { 
 						double value = SchemeUtils.toDouble(args[0]);
-						gui.pb_position.setValue((int) (value * PB_POSITION_MAX) );
+						pulsarGui.pb_position.setValue((int) (value * PB_POSITION_MAX) );
 					}
 				}
 
