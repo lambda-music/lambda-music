@@ -1415,7 +1415,7 @@ class PulsarGui {
 		{
 			putValue( Action2.NAME, "Reset the Sequencer" );
 			putValue( Action.MNEMONIC_KEY, (int)'r' );
-			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_R, ActionEvent.CTRL_MASK) );
+			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0 ) );
 		}
 	};
 
