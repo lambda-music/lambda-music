@@ -60,7 +60,9 @@ import gnu.lists.IString;
 import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
+import gnu.mapping.Procedure0;
 import gnu.mapping.ProcedureN;
+import gnu.mapping.Values;
 import gnu.math.DFloNum;
 import kawa.standard.Scheme;
 
@@ -156,6 +158,11 @@ public final class Pulsar extends Metro {
 		schemeSecretary.invokeSchemeInitializers( pulsar );
 	}
 
+	@Override
+	protected void onCreateThread() {
+		super.onCreateThread();
+		registerLocalSchemeInitializers( this.schemeSecretary, this );
+	}
 	
 	/**
 	 * Creates an instance of Pulsar object without opening any specific scheme
@@ -165,6 +172,7 @@ public final class Pulsar extends Metro {
 	 */
 	public Pulsar() {
 		this.schemeSecretary = new SchemeSecretary();
+		this.schemeSecretary.setDirectMeeting( true );
 		KawaPad.registerGlobalSchemeInitializer( schemeSecretary );
 		this.schemeSecretary.newScheme();
 
@@ -194,6 +202,12 @@ public final class Pulsar extends Metro {
 	
 	PulsarGui pulsarGui;
 
+	public void quit() {
+		close();
+		if ( timer != null )
+			timer.stop();
+		
+	}
 	private final SchemeSecretary schemeSecretary;
 	public SchemeSecretary getSchemeSecretary() {
 		return schemeSecretary;
@@ -633,10 +647,10 @@ public final class Pulsar extends Metro {
 	}
 	final TempoTapper tempoTapper = new TempoTapper();
 	
-	
+	Timer timer =null;
 	// a watchdog Timer
 	{
-		Timer timer = new Timer(1000, new ActionListener() {
+		this.timer = new Timer(1000, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if ( enabledTimer ) {
@@ -1007,6 +1021,28 @@ public final class Pulsar extends Metro {
 				}
 			}
 		});
+		SchemeUtils.defineVar( scheme, "print-stack-trace" , new ProcedureN() {
+			@Override
+			public Object apply1(Object arg) throws Throwable {
+				((Throwable)arg).printStackTrace();
+				return arg;
+			}
+		});
+		SchemeUtils.defineVar( scheme, "display-warn" , new ProcedureN() {
+			@Override
+			public Object apply1(Object arg) throws Throwable {
+				System.err.print( arg );
+				return Values.empty;
+			}
+		});
+		SchemeUtils.defineVar( scheme, "newline-warn" , new Procedure0() {
+			@Override
+			public Object apply0() throws Throwable {
+				System.err.println();
+				return Values.empty;
+			}
+		});
+
 		SchemeUtils.defineVar( scheme, "list-seq" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {

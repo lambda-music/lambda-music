@@ -325,7 +325,34 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
         this.activate();
         this.thread = new Thread( this , "MetroSequencer" );
         this.thread.start();
+        this.postMessage( new Runnable() {
+			@Override
+			public void run() {
+				onCreateThread();
+			}
+		});
     }
+
+    /*
+     * (Thu, 25 Jul 2019 06:05:39 +0900)
+     * 
+	 * This method is called when the system create a thread. This method is
+	 * intended to use as a hook to initialize the thread which the system create.
+	 * 
+	 * Background : especially in kawa scheme, Environment and Language objects are
+	 * kept in thread local variables. When a scheme object is accessed by
+	 * multiple threads, the chances are that the threads miss the current
+	 * language object and the current environment object. I am not sure it is by
+	 * spec or a bug, but anyway it means that every thread must be properly
+	 * initialized by setting those thread local variables.
+	 * 
+	 * This ignorant thread eventually call scheme functions later time and causes
+	 * error due to missing thread local objects.
+	 * 
+	 * Therefore here is.
+	 */
+    protected void onCreateThread() {
+	}
     
     public void close() {
     	logInfo( running + "===close()");

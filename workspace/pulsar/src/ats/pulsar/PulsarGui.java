@@ -225,6 +225,7 @@ class PulsarGui {
 	
 	
     void initScheme(Scheme scheme) {
+    	logInfo("PulsarGui#initScheme=======================================");
     	//////////////////////////////////////////////////////
     	
     	SchemeUtils.defineVar( scheme, "gui-get-pane" , new ProcedureN() {
@@ -1522,6 +1523,7 @@ class PulsarGui {
 		public void dispose() {
 			super.dispose();
 			PulsarGui.unregisterLocalSchemeInitializers( schemeSecretary, PulsarGui.this );
+			pulsar.quit();
 		}
 		
 		{
@@ -1587,6 +1589,11 @@ class PulsarGui {
 			Action2.processMenuBar(menuBar);
 		}
 		
+		@Override
+		protected void onCloseWindow() {
+			pulsar.close();
+//			System.exit(0);
+		}
 		
 		JComponent pulsarRootPane;
 		JPanel staticPane;

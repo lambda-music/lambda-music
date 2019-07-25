@@ -55,23 +55,25 @@
   (lambda (seq-selector pb-pos-setter)
     (let* 
       ((timer-0 (gui-new 'timer 50 (lambda args  
-                                 (call-with-current-continuation
-                                   (lambda (k)
-                                     (with-exception-handler
-                                       (lambda (x)
-                                         (display "condition: ")
-                                         (write x)
-                                         (newline)
-                                         (k 'exception))
-                                       (lambda ()
-                                         (let ((pos 
-                                                 (apply
-                                                   (cdr
-                                                     (assq 'position 
-                                                           (seq-selector (list-seq))))
-                                                   '())))
-                                           ; (display pos)(newline)
-                                           (pb-pos-setter pos))))))))))
+                                     (call-with-current-continuation
+                                       (lambda (k)
+                                         (with-exception-handler
+                                           (lambda (x)
+                                             (display "condition: ")
+                                             (print-stack-trace x)
+                                             (newline)
+                                             (k 'exception))
+                                           (lambda ()
+                                             (let ((pos 
+                                                     (apply
+                                                       (cdr
+                                                         (or (assq 'position 
+                                                                   (seq-selector (list-seq)))
+                                                             (cons 'not-found 
+                                                                   (lambda () 0) )))
+                                                       '())))
+                                               ; (display pos)(newline)
+                                               (pb-pos-setter pos))))))))))
       timer-0)))
 
 ;==============================================================================================
@@ -537,7 +539,7 @@
                                                                         (list 'remove-all )
                                                                         (map 
                                                                           (lambda (track)(track 'gui))
-                                                                          (cdr track-list))
+                                                                          (reverse (cdr track-list)))
                                                                         (list 
                                                                           (javax.swing.Box:createHorizontalGlue)
                                                                           'invalidate
@@ -567,7 +569,7 @@
                                                                           "\n"
                                                                           (pretty-print (x 'track-to-source ))))
                                                                       (if (<= (length args) 1 )
-                                                                        (cdr track-list)
+                                                                        (reverse (cdr track-list))
                                                                         ; the first element is self so go to the next element.
                                                                         (cdr args )))
                                                                  (list ") " ))))))))
@@ -952,9 +954,17 @@
       ;   )
       )
 
-    (create-progress-bar-seq (lambda (seqlst) 
-                               (cdr (assq 'seq-base seqlst)))
-                             default-pb-pos-setter)
+    (if #f
+      (create-progress-bar-seq (lambda (seqlst) 
+                                 (cdr (or (assq 'seq-base seqlst)
+                                          (begin 
+                                            (display-warn "PROGRESS-BAR: WARNING!!!!! COULD NOT GET 'seq-base !!!" )
+                                            (newline-warn)
+                                            (list
+                                              (cons 'position (lambda() 0 ))
+                                              (cons 'dummy    (lambda() 0 ))))
+                                          )))
+                               default-pb-pos-setter))
 
     (gui-pack!)
     (trackset-manager 'register-track-factory simple-track-factory )
@@ -977,13 +987,16 @@
 
 (define (init-proc!) 
   (clear!)
+
   (set-main! (lambda()
+               (display-warn "====set-main! SET-MAIN!  ========\n" )
                (put-seq! 'seq-base       (new-delegator seq-base-00))))
+
   (set-related-files! '( "./pulsar-ex00.scm"
                          "./test01.scm" 
                          "./test02.scm" 
                          "./test03.scm" ))
-  ; (rewind!)
+  (rewind!)
   )
 
 (if (not (open?))

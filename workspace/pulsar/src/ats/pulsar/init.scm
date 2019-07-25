@@ -72,7 +72,10 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(import (srfi 95))
+; SRFI 95: Sorting and Merging - Scheme Requests for Implementation
+(import (srfi 95)) 
+
+; SRFI 13: String Libraries - Scheme Requests for Implementation
 (import (srfi 13))
 
 (define (note-sorter a b)

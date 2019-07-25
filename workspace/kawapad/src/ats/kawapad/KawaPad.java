@@ -246,7 +246,7 @@ public class KawaPad extends JFrame {
 				try {
 					LOGGER.log( Level.INFO, "run");
 					// ==== WORKAROUND SEE acvpoeov === (Tue, 23 Jul 2019 11:37:32 +0900) //
-					schemeSecretary.initializeSchemeForCurrentThread();
+//					schemeSecretary.initializeSchemeForCurrentThread();
 					// ==== WORKAROUND SEE acvpoeov === (Tue, 23 Jul 2019 11:37:32 +0900) //
 					r.run();
 				} finally {
@@ -1586,6 +1586,7 @@ public class KawaPad extends JFrame {
 					result = false;
 				}
 				if ( result ) {
+					onCloseWindow();
 					KawaPad.this.setVisible(false);
 					KawaPad.this.dispose();
 				} else {
@@ -1597,6 +1598,8 @@ public class KawaPad extends JFrame {
 		setVisible(true);
 	}
 	
+	protected void onCloseWindow() {
+	}
 
 	static {
 		ActionMap actionMap = new JTextPane().getActionMap();
