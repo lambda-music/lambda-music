@@ -249,7 +249,7 @@ public class SchemeUtils {
 	}
 	
 	
-	public static void execSchemeFromFile( Scheme scheme, File parentFile, File file) throws FileNotFoundException {
+	public static void execSchemeFromFile( Object lock, Scheme scheme, File parentFile, File file) throws FileNotFoundException {
 		if ( ! file.isFile() ) {
 			throw new FileNotFoundException( file.getPath() );
 		}
@@ -269,7 +269,7 @@ public class SchemeUtils {
 //			}
 			Path path = Path.valueOf(file);
 			in = path.openInputStream();
-			synchronized ( scheme ) {
+			synchronized ( lock ) {
 				scheme.eval( InPort.openFile( in , path ) );
 			}
 		} catch (IOException e) {

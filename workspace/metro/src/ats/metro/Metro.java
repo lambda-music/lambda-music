@@ -186,7 +186,19 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		} else if ( nameObject instanceof MetroTrack ) {
 			return (MetroTrack) nameObject;
 		} else if ( nameObject instanceof String ) {
-			return searchTrack( (String) nameObject );
+			MetroTrack t = searchTrack( (String) nameObject );
+			if ( t== null ) {
+				logWarn( "Dump track names ===> " );
+				String name = ((String) nameObject).intern();
+				for ( Iterator<MetroTrack> i=tracks.iterator(); i.hasNext(); ) {
+					MetroTrack track = i.next();
+					logWarn( track.name );
+				}
+				logWarn( "Dump track names <=== " );
+
+				throw new RuntimeException( "Error : Track " + nameObject + " was not found." );
+			}
+			return t;
 		} else {
 			throw new RuntimeException( "Unsupported object on syncTrack" );
 		}
@@ -225,27 +237,29 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	}
 	
 	private MetroTrack searchTrack( String name ) {
-		if ( "last!".equals( name )) {
-			if ( tracks.size() == 0 ) {
-				if ( DEBUG )
-					logInfo( "searchTrack() last! null (last! was specified but the current track contains no element)" );
-				return null;
-			} else
-				if ( DEBUG )
-					logInfo( "searchTrack() last!" );
+		synchronized( lock ) {
+			if ( "last!".equals( name )) {
+				if ( tracks.size() == 0 ) {
+					if ( DEBUG )
+						logInfo( "searchTrack() last! null (last! was specified but the current track contains no element)" );
+					return null;
+				} else
+					if ( DEBUG )
+						logInfo( "searchTrack() last!" );
 				return tracks.get( tracks.size() -1 );
-		} else {
-			name = name.intern();
-			for ( Iterator<MetroTrack> i=tracks.iterator(); i.hasNext(); ) {
-				MetroTrack track = i.next();
-				if ( track.name == name ) {
-					return track;
+			} else {
+				name = name.intern();
+				for ( Iterator<MetroTrack> i=tracks.iterator(); i.hasNext(); ) {
+					MetroTrack track = i.next();
+					if ( track.name == name ) {
+						return track;
+					}
 				}
+				if ( DEBUG )
+					logInfo( "searchTrack() null" );
+				//			logWarn( "searchTrack() WARNING \"" + name + "\"  was not found." );
+				return null;
 			}
-			if ( DEBUG )
-				logInfo( "searchTrack() null" );
-//			logWarn( "searchTrack() WARNING \"" + name + "\"  was not found." );
-			return null;
 		}
 	}
 	Collection<MetroTrack> searchTrackByTag( String tag ) {

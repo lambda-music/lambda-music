@@ -2,7 +2,7 @@
 ; Pulsar-Sequencer written by Atsushi Oka 
 ; Copyright 2018 Atsushi Oka
 ; 
-; This file is part of Pulsar-Sequencer. 
+; This file is a part of Pulsar-Sequencer. 
 ; 
 ; Pulsar-Sequencer is free software: you can redistribute it and/or modify
 ; it under the terms of the GNU General Public License as published by
@@ -38,6 +38,7 @@
 
 
 
+
 ; pretty stringification
 (define (pstring e #!key ( margin 90 ) )
   (let* ((old-margin *print-right-margin* )
@@ -51,26 +52,6 @@
     (w:toString)))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; Defining a fundamental function No.1 Delegator
-(define-syntax new-delegator
-  (syntax-rules ()
-                ((new-delegator proc )
-                 (lambda args
-                   (apply (eval 'proc) args)))))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; Defining a fundamental function No.2 "invoker"
-
-(define new-invoker (lambda args
-                      (lambda args-0
-                        (apply (car args) (cdr args) ))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; Defining Utilities
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; SRFI 95: Sorting and Merging - Scheme Requests for Implementation
 (import (srfi 95)) 
@@ -171,20 +152,50 @@
                                note ))))
                        notes )))))
 
-; note
+; === note ===
+; "n" stands for "note" 
+
+; 1. A way to shorten the creation of note data.
+;    (n C4 0.1 0.3) => ((note . 60) (pos . 0.1) (velo . 0.1))
+;   arg0 => note number
+;   arg1 => position
+;   arg2 => velocity
+;
+; 2. Bulk setting properties on the passed note data.
+;    (n chan: 4 (n C4 0/4 0.1)
+;               (n D4 1/4 0.1)
+;               (n E4 2/4 0.1)
+;               (n F4 3/4 0.1)) => (((chan . 4) (note . 60) (pos .  0/4) (velo . 0.1))
+;                                   ((chan . 4) (note . 62) (pos .  1/4) (velo . 0.1))
+;                                   ((chan . 4) (note . 64) (pos .  1/2) (velo . 0.1))
+;                                   ((chan . 4) (note . 65) (pos .  3/4) (velo . 0.1)))
+
+
 (define (n . args)
   (apply n-implementation (cons append args )))
 
-; parallel
+; === parallel ===
+; "p" stands for parallel processing for something I fogot.
+; # This seems to be not used anywhere; you need to reconfirm that.
+; (Sun, 28 Jul 2019 13:43:45 +0900)
 (define (p . args)
   (apply n-implementation (cons append args )))
 
-; serial
+; === serial ===
+; "s" stands for serial processing for something I fogot.
+; (Sun, 28 Jul 2019 13:43:45 +0900)
 (define (s . args)
   (apply append-notes args))
 
+; Added at (Sun, 28 Jul 2019 16:04:25 +0900)
+; === map ===
+; "m" stands for mapping 
+(define (m . args)
+  )
 
 
+; Currently this funciton is not used.
+; (Sun, 28 Jul 2019 13:43:45 +0900)
 (define (nmap proc . args)
   (let ((total-count (length args)))
     (let loop ((args args)
@@ -199,6 +210,9 @@
 
 
 
+; This function performs deep copy on a cons cell.
+; Currently this funciton is not used.
+; (Sun, 28 Jul 2019 13:43:45 +0900)
 (define (copy-cons c)
   (if (pair? c)
     (cons 
@@ -206,6 +220,11 @@
      (copy-cons (cdr c)))
     c))
 
+; === tie ===
+; "t" stands for "tie"
+; This seems to be there for connecting notes which are placed next to each
+; other. For further information, I forgot.
+; (Sun, 28 Jul 2019 13:48:04 +0900)
 (define (t . args) 
   (set! args (copy-cons args))
   (let ((notes (reverse (let loop (( args args))
@@ -1139,9 +1158,17 @@
 
     result))
 
+; melody : parse simple MML commands and generate pulsar's note data.
+; (melody '( do re mi fa sol ) )
+; => (((type . note) (pos . 0)   (len . 1/4) (velo . 3/5) (note . 60))
+;     ((type . note) (pos . 1/4) (len . 1/4) (velo . 3/5) (note . 62))
+;     ((type . note) (pos . 1/2) (len . 1/4) (velo . 3/5) (note . 64))
+;     ((type . note) (pos . 3/4) (len . 1/4) (velo . 3/5) (note . 65))
+;     ((type . note) (pos . 1)   (len . 1/4) (velo . 3/5) (note . 67))
+;     ((type . len)  (val . 5/4)))
+
 (define (melody notes)
   (translate-notes (parse-notes (cor notes))))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; appending note lists
@@ -1177,7 +1204,7 @@
                                              (mov! pos (car bars))
                                               notes)
                                             len))
-                        (raise "no note which type is 'len was found" )))))))
+                        (raise "no 'len' note was found" )))))))
               (append
                (filter (lambda(note)
                          (not (eq? 'len (cdr (or (assq 'type note )
@@ -1199,13 +1226,13 @@
  |#
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define-syntax new-seq-putter
-  (syntax-rules ()
-                ((new-seq-putter name proc args ... )
-                 (begin
-                    ; (display-args args ... )(newline)
-                    (new-invoker put-seq! name (new-delegator proc) args ... )))))
+
+
+
+
+
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define make-perc (lambda (port chan note len)
@@ -1323,55 +1350,6 @@
                                   (mov! trans notes )))
                               notes))))
 
-#|
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define centering-notes-example 
-  (lambda()
-    (centering-notes! 'Z 3/4 
-                     (append
-                       (list
-                         (hhp1 'A   #f  1/4 0.7 )
-                         (hhp1 'A   #f  3/4 0.7 )
-
-                         (rid1 '(A  ) (luck 1.00 ) (+ 0/4 0   ) (+ 0.5  (rnd -0.0  0.0 )))
-                         (rid1 '(A  ) (luck 0.50 ) (+ 0/4 1/8 ) (+ 0.75 (rnd -0.0  0.0 )))
-
-                         (rid1 '(A  ) (luck 1.00 ) (+ 1/4 0   ) (+ 0.5  (rnd -0.0  0.0 )))
-                         (rid1 '(A  ) (luck 1.00 ) (+ 1/4 1/8 ) (+ 0.75 (rnd -0.0  0.0 )))
-
-                         (rid1 '(A  ) (luck 1.00 ) (+ 2/4 0   ) (+ 0.5  (rnd -0.0  0.0 )))
-                         (rid1 '(A  ) (luck 0.50 ) (+ 2/4 1/8 ) (+ 0.75 (rnd -0.0  0.0 )))
-
-                         (rid1 '(A  ) (luck 1.00 ) (+ 3/4 0   ) (+ 0.5  (rnd -0.0  0.0 )))
-                         (rid1 '(A Z) (luck 1.00 ) (+ 3/4 1/8 ) (+ 0.75 (rnd -0.0  0.0 )))
-
-                         (len 1.0 ))))))
-
- (display-notes #f (centering-notes-example))
-
-(display-notes #f
-                 (cpy
-                   (cut mov! 10 <>)
-                   (list
-                     (hhp1 'A   #f  1/4 0.7 )
-                     (hhp1 'A   #f  3/4 0.7 )
-
-                     (rid1 '(A  ) (luck 1.00 ) (+ 0/4 0   ) (+ 0.5  (rnd -0.0  0.0 )))
-                     (rid1 '(A  ) (luck 0.50 ) (+ 0/4 1/8 ) (+ 0.75 (rnd -0.0  0.0 )))
-
-                     (rid1 '(A  ) (luck 1.00 ) (+ 1/4 0   ) (+ 0.5  (rnd -0.0  0.0 )))
-                     (rid1 '(A  ) (luck 1.00 ) (+ 1/4 1/8 ) (+ 0.75 (rnd -0.0  0.0 )))
-
-                     (rid1 '(A  ) (luck 1.00 ) (+ 2/4 0   ) (+ 0.5  (rnd -0.0  0.0 )))
-                     (rid1 '(A  ) (luck 0.50 ) (+ 2/4 1/8 ) (+ 0.75 (rnd -0.0  0.0 )))
-
-                     (rid1 '(A  ) (luck 1.00 ) (+ 3/4 0   ) (+ 0.5  (rnd -0.0  0.0 )))
-                     (rid1 '(A Z) (luck 1.00 ) (+ 3/4 1/8 ) (+ 0.75 (rnd -0.0  0.0 )))
-
-                     (len 1.0 ))))
-(newline)
-
-|#
 
 (define default-id-counter 0)
 (define (make-default-id)
@@ -1380,6 +1358,7 @@
     (string-append 
       "seq-" 
       (number->string default-id-counter))))
+
 
 (define (send! p #!key (name #f) (start #f) (end #f) (once #f) )
   (if (not name)
@@ -1453,10 +1432,67 @@
                             'immediate 
                             ))))
 
+; Process ProgressBar
+; This moved here at (Sat, 27 Jul 2019 07:34:16 +0900)
+
+; Now displaying the current position in a progress bar is implemented 
+; in Pulsar class; the following code is not necessary anymore.
+; >>> (Sat, 27 Jul 2019 15:28:31 +0900)
+
+(define default-pb-pos-setter
+    (lambda (pos) 
+      (set-progress-pos! pos )))
+
+(define create-progress-bar-seq
+  (lambda (seq-selector pb-pos-setter)
+    (let* 
+      ((timer-0 (mktimer 10000 50 (lambda args  
+                                   (call-with-current-continuation
+                                     (lambda (k)
+                                       (with-exception-handler
+                                         (lambda (x)
+                                           (display "condition: ")
+                                           (print-stack-trace x)
+                                           (newline)
+                                           (k 'exception))
+                                         (lambda ()
+                                           (let ((pos 
+                                                   (apply
+                                                     (cdr
+                                                       (or (assq 'position 
+                                                                 (seq-selector (list-seq)))
+                                                           (cons 'not-found 
+                                                                 (lambda () 0) )))
+                                                     '())))
+                                             (display '===)(newline)
+                                             (display (list-seq) )(newline)
+                                             (display pos)(newline)
+                                             (pb-pos-setter pos))))))))))
+      timer-0)))
+
+(if #f
+  (create-progress-bar-seq (lambda (seqlst) 
+                             (cdr (or (assq 'main seqlst)
+                                      (begin 
+                                        ; (display-warn "PROGRESS-BAR: WARNING!!!!! COULD NOT GET 'main !!!" )
+                                        ; (newline-warn)
+                                        (list
+                                          (cons 'position (lambda() 0.5 ))
+                                          (cons 'dummy    (lambda() 0 ))))
+                                      )))
+                           default-pb-pos-setter))
 
 
 
+(define make-pb-pos-setter
+  (lambda (progressbar-0 ::javax.swing.JProgressBar ) 
+    (lambda (pos) 
+      (progressbar-0:setValue (* pos 1000))
+      (progressbar-0:repaint)
+      (progressbar-0:revalidate)
+      (progressbar-0:repaint))))
 
+; <<< (Sat, 27 Jul 2019 15:28:31 +0900)
 
 
 ; vim: filetype=scheme expandtab :

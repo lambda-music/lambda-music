@@ -86,6 +86,10 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 	transient boolean ending = false;
 	transient double endingLength = 0;
 	
+	public Object getLock() {
+		return buffers;
+	}
+	
 	public MetroTrack( Metro metro, String name, Collection<String> tags, MetroSequence sequence, SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
 //		LOGGER.info( "Track(" + name + ") : " + tags + " : " + syncType + " : " + syncOffset );
 		this.name = name.intern();

@@ -20,8 +20,6 @@ There are some object in an instance of Pulsar application.
 	1. The scheme object; that is, an environment object.
 	2. Frame objects.
 
-
-
 1. Whenever scheme object is renewed, every initializer including frame's initializers must be invoked.
 2. Whenever a new frame is created, some new initializers must be and invoked.
 3. The frame's initializers must be removed when the frame is disposed.

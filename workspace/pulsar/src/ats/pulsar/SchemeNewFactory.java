@@ -483,19 +483,29 @@ public abstract class SchemeNewFactory {
 
 
 		register( "timer", new SchemeNewFactory() {
+			private ProcedureN wrapRunnable( Runnable runnable ) {
+				return new ProcedureN() {
+					public Object applyN(Object[] args) throws Throwable {
+						runnable.run();
+						return EmptyList.emptyList;
+					};
+				};
+			}
 			@Override
 			Object create( Pulsar pulsar, List<Object> args ) {
 				if ( 2 == args.size() ) {
 					long interval = SchemeUtils.toLong(args.get(0));
 					Procedure procedure = (Procedure)args.get(1);
 
-					return createTimer(pulsar, interval, interval, procedure);
+					return wrapRunnable(
+						Pulsar.createTimer(pulsar, interval, interval, pulsar.createInvokable2( procedure ) ) );
 				} else if ( 3 <= args.size() ) {
 					long delay = SchemeUtils.toLong(args.get(0));
 					long interval = SchemeUtils.toLong(args.get(1));
 					Procedure procedure = (Procedure)args.get(2);
 
-					return createTimer(pulsar, delay, interval, procedure);
+					return wrapRunnable(
+						Pulsar.createTimer(pulsar, delay, interval, pulsar.createInvokable2( procedure ) ) );
 
 				} else {
 					
@@ -504,33 +514,6 @@ public abstract class SchemeNewFactory {
 				}
 			}
 
-			public Object createTimer(Pulsar pulsar, long delay, long interval, Procedure procedure) {
-				Invokable invokable = pulsar.createInvokable2( procedure );
-				java.util.Timer timer = new java.util.Timer( true );
-				timer.scheduleAtFixedRate( new java.util.TimerTask() {
-					@Override
-					public void run() {
-						Object result = invokable.invoke();
-						if ( Boolean.FALSE.equals( result ) ) {
-							timer.cancel();
-						}
-					}
-				}, delay, interval );
-
-				pulsar.addCleanupHook( new Runnable() {
-					@Override
-					public void run() {
-						timer.cancel();
-					}
-				});
-				
-				return new ProcedureN() {
-					public Object applyN(Object[] args) throws Throwable {
-						timer.cancel();
-						return EmptyList.emptyList;
-					};
-				};
-			}
 		});
 
 

@@ -1,0 +1,20 @@
+
+(Sun, 28 Jul 2019 07:39:14 +0900)
+
+1. Adding multiple tracks at a time.
+2. Using a persistent panel for each track objects.
+3. Adding a new kind of panel. The panel should contain only track id.
+4. Parallel Note Data Construction
+5. Specifying note name directly
+
+
+
+aaaa bbb 
+   
+
+
+
+   
+
+; vim: spell
+

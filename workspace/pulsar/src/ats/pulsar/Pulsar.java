@@ -61,6 +61,7 @@ import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 import gnu.mapping.Procedure0;
+import gnu.mapping.Procedure3;
 import gnu.mapping.ProcedureN;
 import gnu.mapping.Values;
 import gnu.math.DFloNum;
@@ -122,6 +123,8 @@ import kawa.standard.Scheme;
  */
 public final class Pulsar extends Metro {
 	static final Logger LOGGER = Logger.getLogger(Pulsar.class.getName());
+
+
 	static void logError(String msg, Throwable e) {
 		LOGGER.log(Level.SEVERE, msg, e);
 	}
@@ -169,10 +172,11 @@ public final class Pulsar extends Metro {
 	 * file. When a user creates an object by this constructor, the sequencer
 	 * remains closed after the application boots up. The user must explicitly
 	 * open a file to use the application.
+	 * @throws IOException 
 	 */
-	public Pulsar() {
+	public Pulsar() throws IOException {
 		this.schemeSecretary = new SchemeSecretary();
-		this.schemeSecretary.setDirectMeeting( true );
+		this.schemeSecretary.setDirectMeeting( false );
 		KawaPad.registerGlobalSchemeInitializer( schemeSecretary );
 		this.schemeSecretary.newScheme();
 
@@ -182,6 +186,32 @@ public final class Pulsar extends Metro {
 		this.pulsarGui = new PulsarGui( this );
 		
 		this.enabledTimer = true;
+		
+		initPulsar();
+		initPulsarHttp( 8192 );
+	}
+	
+	void initPulsar() {
+		createTimer(this, 1000, 20, new Invokable() {
+			@Override
+			public Object invoke(Object... args) {
+				MetroTrack track = Pulsar.this.getTrack( "main" );
+				if ( track != null && pulsarGui != null && pulsarGui.pb_position != null ) {
+					double value=0;
+					synchronized ( track.getLock() ) {
+						value = track.getTrackPosition();
+					}
+					pulsarGui.pb_position.setValue((int) (value * PB_POSITION_MAX) );
+					pulsarGui.pb_position.repaint();
+					pulsarGui.pb_position.revalidate();
+				}
+				return Values.noArgs;
+			}
+		});
+	}
+    
+	void initPulsarHttp( int port ) throws IOException {
+		this.pulsarHttp = new PulsarHttp( this, port );
 	}
 
 	transient boolean enabledTimer = false;
@@ -201,13 +231,35 @@ public final class Pulsar extends Metro {
 	}
 	
 	PulsarGui pulsarGui;
+	PulsarHttp pulsarHttp;
 
 	public void quit() {
 		close();
 		if ( timer != null )
 			timer.stop();
 		
+		executeQuitHook();
 	}
+	
+    final Collection<Runnable> quitHook = new LinkedList<>();
+    public void addQuitHook( Runnable runnable ) {
+    	synchronized ( this.quitHook ) {
+    		this.quitHook.add( runnable );
+    	}
+    }
+    public void executeQuitHook() {
+    	synchronized ( this.quitHook ) {
+    		for ( Runnable r : this.quitHook ) {
+    			try {
+    				r.run();
+    			} catch ( Throwable e ) {
+    				logError("", e);
+    			}
+    		}
+    	}
+    }
+
+	
 	private final SchemeSecretary schemeSecretary;
 	public SchemeSecretary getSchemeSecretary() {
 		return schemeSecretary;
@@ -358,7 +410,7 @@ public final class Pulsar extends Metro {
 
 	/**
 	 * Reset the current state of the sequencer except the current opened script
-	 * filename. This causes reload the script file.
+	 * filename. This causes the application to reload the script file.
 	 */
 	public void reset() {
 		try {
@@ -411,12 +463,13 @@ public final class Pulsar extends Metro {
 		clearTracks();
     }
     
-    
+    /**
+     * This hook objects will be invoked whenever reset() method is called.
+     */
     final Collection<Runnable> cleanupHook = new LinkedList<>();
     
     /**
-     * 
-     * @return
+     * Add a hook that will be invoked whenever reset() method is called.
      */
     public void addCleanupHook( Runnable runnable ) {
     	synchronized ( cleanupHook ) { 
@@ -564,6 +617,33 @@ public final class Pulsar extends Metro {
 	}
 	
 
+	public static Runnable createTimer( Pulsar pulsar, long delay, long interval, Invokable invokable ) {
+		java.util.Timer timer = new java.util.Timer( true );
+		timer.scheduleAtFixedRate( new java.util.TimerTask() {
+			@Override
+			public void run() {
+				Object result = invokable.invoke();
+				if ( Boolean.FALSE.equals( result ) ) {
+					timer.cancel();
+				}
+			}
+		}, delay, interval );
+
+		pulsar.addCleanupHook( new Runnable() {
+			@Override
+			public void run() {
+				timer.cancel();
+			}
+		});
+		
+		return new Runnable() {
+			@Override
+			public void run() {
+				timer.cancel();
+			}
+		};
+	}
+
 	interface TempoTapperTempoNotifier {
 		void notifyTempo( double beatPerMinute );
 	}
@@ -707,7 +787,7 @@ public final class Pulsar extends Metro {
 			new SecretaryMessage.NoReturn<Scheme,FileNotFoundException>() {
 				@Override
 				public void execute0(Scheme scheme, Object[] args ) throws FileNotFoundException {
-					SchemeUtils.execSchemeFromFile( scheme, parentFile, file );
+					SchemeUtils.execSchemeFromFile( lock,  scheme, parentFile, file );
 				}
 			});
 	}
@@ -719,12 +799,6 @@ public final class Pulsar extends Metro {
 	 *            the scheme instance to initialize.
 	 */
 	public void initScheme( Scheme scheme ) {
-		{
-			SchemeUtils.execScheme( Pulsar.class, scheme, "init0.scm"  );
-			SchemeUtils.execScheme( Pulsar.class, scheme, "init.scm"  );
-			SchemeUtils.execScheme( Pulsar.class, scheme, "xnoop.scm" );
-			//	    		execScheme( scheme, "event-parser.scm" );
-		}
 		SchemeUtils.defineVar( scheme, "open?" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
@@ -816,6 +890,12 @@ public final class Pulsar extends Metro {
 					throw new RuntimeException( "invalid argument length" );
 				}
 				return EmptyList.emptyList;
+			}
+		});
+		SchemeUtils.defineVar( scheme, "get-main" , new Procedure0() {
+			@Override
+			public Object apply0() throws Throwable {
+				return getMainProcedure();
 			}
 		});
 		SchemeUtils.defineVar( scheme, "set-cue!" , new ProcedureN() {
@@ -1068,6 +1148,23 @@ public final class Pulsar extends Metro {
 			}
 		});
 
+		SchemeUtils.defineVar( scheme, "mktimer" , new Procedure3() {
+			@Override
+			public Object apply3(Object arg0, Object arg1,Object arg2 ) throws Throwable {
+				Runnable runnable = createTimer( Pulsar.this, 
+					SchemeUtils.toInteger( arg0 ), 
+					SchemeUtils.toInteger( arg1 ), 
+					Pulsar.this.createInvokable2( (Procedure)arg2 ) );
+
+				return new Procedure0() {
+					public Object apply0() throws Throwable {
+						runnable.run();
+						return Values.noArgs;
+					};
+				};
+			}
+		});
+
 		SchemeUtils.defineVar( scheme, "rnd" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
@@ -1098,6 +1195,13 @@ public final class Pulsar extends Metro {
 				return random.nextBoolean( probability );
 			}
 		});
+
+		{
+			SchemeUtils.execScheme( Pulsar.class, scheme, "lib/init0.scm"  );
+			SchemeUtils.execScheme( Pulsar.class, scheme, "lib/init.scm"  );
+			SchemeUtils.execScheme( Pulsar.class, scheme, "lib/xnoop.scm" );
+			//	    		execScheme( scheme, "event-parser.scm" );
+		}
 	}	
 }
 	

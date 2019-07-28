@@ -140,6 +140,7 @@ public class KawaPad extends JFrame {
 		System.err.println( msg );
 		System.err.flush();
 	}
+	public static final Map<Object,Object> memoMap = new HashMap<Object,Object>();
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	
@@ -532,6 +533,19 @@ public class KawaPad extends JFrame {
 
 			if ( insertText || errorOccured )
 				SwingUtilities.invokeLater( new InsertTextToTextPane(result) );
+		}
+	}
+
+	public final AbstractAction RESET_ACTION = new ResetAction();
+	private final class ResetAction extends AbstractAction {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			schemeSecretary.newScheme();
+		}
+		{
+			putValue( Action2.NAME, "Reset" );
+			putValue( Action.MNEMONIC_KEY, (int)'s' );
+//			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK) );
 		}
 	}
 
@@ -1554,6 +1568,8 @@ public class KawaPad extends JFrame {
 		fileMenuItem.add( new JMenuItem( SAVE_FILE ) );
 		fileMenuItem.add( new JMenuItem( SAVE_FILE_AS ) );
 
+		schemeMenuItem.add( new JMenuItem( RESET_ACTION ) );
+		schemeMenuItem.addSeparator();
 		schemeMenuItem.add( new JMenuItem( EVALUATE_ACTION ) );
 		schemeMenuItem.add( new JMenuItem( RUN_ACTION ) );
 		schemeMenuItem.add( new JMenuItem( INTERRUPT_ACTION ) );
