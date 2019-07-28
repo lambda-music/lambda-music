@@ -24,6 +24,26 @@ import ats.pulsar.lib.secretary.scheme.SchemeSecretary;
 import gnu.kawa.io.InPort;
 import kawa.standard.Scheme;
 
+
+/**
+ * This class enables you to execute scripts from your editor. For example, in
+ * vim you can achieve it by creating a new keybind as following :
+ * 
+ * > xmap <Return> :!curl -sSd "`cat`" http://localhost:8192/pulsar^M^M
+ * 
+ * After creating the keybind, press enter after entering visual-mode in vim to
+ * execute the selection as scheme program in the current Pulsar application
+ * instance.
+ * 
+ * This class uses {@link com.sun.net.httpserver.HttpServer} class. Usually
+ * these com.sun.* classes should not be used by non-system applications. But I
+ * believe that it is allowed to use these class because it is marked
+ * as @jdk.Exported. 
+ * 
+ * @see <a href="https://www.google.com/search?q=jdk.Exported">https://www.google.com/search?q=jdk.Exported</a> 
+ * 
+ */
+
 class PulsarHttp {
 	static final Logger LOGGER = Logger.getLogger(PulsarHttp.class.getName());
 	static void logError(String msg, Throwable e) {

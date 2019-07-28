@@ -633,6 +633,9 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
         } catch (JackException ex) {
             logError( "ERROR" , ex);
             return false;
+        } catch (Throwable t) {
+            logError( "ERROR" , t);
+            return true;
         }
     }
     

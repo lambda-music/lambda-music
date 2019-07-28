@@ -187,12 +187,164 @@
 (define (s . args)
   (apply append-notes args))
 
+
+; from https://stackoverflow.com/questions/8028490/mapping-uneven-lists-help-scheme
+(define (map-longest func filler . lists)
+  (define (car-or-filler x)
+    (if (pair? x) (car x) filler))
+  (define (cdr-or-null x)
+    (if (pair? x) (cdr x) '()))
+  (unfold (lambda (lists)
+            (every null? lists))
+          (lambda (lists)
+            (apply func (map car-or-filler lists)))
+          (lambda (lists)
+            (map cdr-or-null lists))
+          lists))
+
+
 ; Added at (Sun, 28 Jul 2019 16:04:25 +0900)
 ; === map ===
-; "m" stands for mapping 
-(define (m . args)
-  )
+; "m" stands for mapping.
+;
+; ex1) 
+; (m '(((note . 60) (pos .  0/4) (velo . 0.0))
+;     ((note . 62) (pos .  1/4) (velo . 0.0))
+;     ((note . 64) (pos .  2/4)             )
+;     ((note . 65) (pos .  3/4) (velo . 0.0)))
+;    velo: '( 0.1 0.2 0.3 0.4 )
+;    pos : '( 0/8 1/8 2/8 3/8 ))              
+;
+; =>  (((note . 60) (pos .  0/8) (velo . 0.1))
+;      ((note . 62) (pos .  1/8) (velo . 0.2))
+;      ((note . 64) (pos .  2/8) (velo . 0.3))
+;      ((note . 65) (pos .  3/8) (velo . 0.4)))
+;
+; ex2) 
+; (m 
+;   (m #f pos: '( 1 2 3 ))
+;   pos: (lambda (v)
+;          (display v)
+;          (newline)
+;          (+ v 1 ) ))
+;
+; => (((pos . 2)) ((pos . 3)) ((pos . 4)))
+;
+; === TEST ===
+;  (display-notes #t (m (copy-cons '(((note . 60) (pos .  0/4) (velo . 0.0))
+;                                    ((note . 62) (pos .  1/4) (velo . 0.0))
+;                                    ((note . 64) (pos .  2/4)             )
+;                                    ((note . 65) (pos .  3/4) (velo . 0.0))))
+;
+;                       velo: '( 0.1 0.2 0.3 0.4 )
+;                       pos:  '( 0/8 1/8 2/8 3/8 )))
+;                                        => (((note . 60) (pos . 0)   (velo . 0.1))
+;                                            ((note . 62) (pos . 1/8) (velo . 0.2))
+;                                            ((note . 64) (pos . 1/4) (velo . 0.3))
+;                                            ((note . 65) (pos . 3/8) (velo . 0.4))) 
 
+(define (m . args)
+  (let ((lst-of-alst (car args ))
+        (args        (cdr args )))
+
+    (if (number? lst-of-alst )
+      (set! lst-of-alst (make-list lst-of-alst '())))
+
+    (let loop ((args args))
+      (if (<= 2 (length args) ) 
+        ;then
+        (let ((k    (car  args))
+              (v    (cadr args))
+              (args (cddr args)))
+
+          (if (and (keyword? k ))
+            ;then
+            (begin
+              (cond
+                ((list? v)
+                 (let ((kwd-val   (string->symbol (keyword->string k )))
+                       (lst-of-val v ))
+                   (set! lst-of-alst 
+                     (map-longest (lambda (alst cur-val) (if cur-val 
+                                      ;then
+                                      (begin
+                                        (if (not alst ) 
+                                          (set! alst '()))
+                                        (let ((alst alst))
+                                          (set-cdr!
+                                            ; set the current value to the cons-cell.
+                                            (or (assq kwd-val alst)
+                                                ; create a new cons cell if not found
+                                                (let ((new-cell (cons kwd-val #f)))
+                                                  ; if the specific association element was not
+                                                  ; found, append the newly created cell to the
+                                                  ; alst. Additionally recreate alst.
+                                                  (set! alst (append alst (list new-cell)))
+                                                  new-cell))
+                                            cur-val)
+                                          alst ))
+                                      ;else
+                                      (begin
+                                        alst)))
+                                  #f
+                                  lst-of-alst
+                                  lst-of-val ))
+                   ))
+                ((procedure? v) 
+                 (let ((kwd-val   (string->symbol (keyword->string k )))
+                       (map-proc v ))
+                   (set! lst-of-alst 
+                     (map (lambda (alst)
+                            (let* ((the-cell (or (assq kwd-val alst)
+                                                 ; create a new cons cell if not found
+                                                 (let ((new-cell (cons kwd-val #f)))
+                                                   ; if the specific association element was not
+                                                   ; found, append the newly created cell to the
+                                                   ; alst. Additionally recreate alst.
+                                                   (set! alst (append alst (list new-cell)))
+                                                   new-cell)))
+                                   (the-cell-value (map-proc (cdr the-cell)) ))
+
+                              (set-cdr!
+                                the-cell
+                                ; set the current value to the cons-cell.
+                                the-cell-value))
+                            alst
+                            )
+                          lst-of-alst
+                          ))))
+                (else 
+                  (raise 'invalid-argument-error-1))))
+            ;else
+            (raise 'invalid-argument-error-2))
+          (loop args))
+        ;else
+        (values)))
+
+    lst-of-alst))
+
+
+; The name of the function "ap" stands for arithmetic progression.
+; ex)
+;   (ap 4 1 )=> '( 0/4 1/4 2/4 3/4 )
+;   (ap 3 4 )=> '( 0/4 1/4 2/4 3/4 )
+;   (ap 3 1 )=> '( 0/3 1/3 2/3 )
+;   (ap 3 2 )=> '( 0 2/3 4/3 )
+;   (ap 4 2 )=> '( 0 1/2 1 3/2 )
+;
+; This function maybe useful for creating polyrhythmic patterns.
+
+(define (ap n l)
+  (fold-right (lambda (x y) (cons (* (/ x n ) l )  y)) '() (iota n)))
+
+
+
+(display-notes #t (m (copy-cons '(((note . 60) (pos .  0/4) (velo . 0.0))
+                                  ((note . 62) (pos .  1/4) (velo . 0.0))
+                                  ((note . 64) (pos .  2/4)             )
+                                  ((note . 65) (pos .  3/4) (velo . 0.0))))
+                     velo: '( 0.1 0.2 0.3 0.4 )
+                     pos:  '( 0/8 1/8 2/8 3/8 )))
 
 ; Currently this funciton is not used.
 ; (Sun, 28 Jul 2019 13:43:45 +0900)
@@ -1056,21 +1208,22 @@
                                  (if (< direction 0 )
                                    (set! direction (+ direction 1)))))
                               
-                              (display (format 
-                                         "\
-                                         interval: ~a
-                                         state-interval: ~a
-                                         input-direction: ~a
-                                         state-direction: ~a
-                                         direction: ~a
-                                         "
-                                         interval
-                                         state-interval
-                                         input-direction
-                                         state-direction
-                                         direction
-                                         ))
-                              (newline)
+                              (if debug-translate-notes (begin (display (format 
+                                                                          "\
+                                                                          interval: ~a
+                                                                          state-interval: ~a
+                                                                          input-direction: ~a
+                                                                          state-direction: ~a
+                                                                          direction: ~a
+                                                                          "
+                                                                          interval
+                                                                          state-interval
+                                                                          input-direction
+                                                                          state-direction
+                                                                          direction
+                                                                          ))
+                                                               (newline)
+                                                               ))
 
                               ; calculate note value
                               (set! octave
