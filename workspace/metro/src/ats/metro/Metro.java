@@ -54,7 +54,7 @@ import ats.metro.MetroTrack.SyncType;
  * @author Ats Oka
  */
 public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallback, JackTimebaseCallback, Runnable {
-	public final Object lock = new Object();
+	final Object lock = new Object();
 	
 	/**
 	 * The every routines which access to the `tracks` field must synchronize
@@ -62,7 +62,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	 */
 	@Override
 	public final Object getMetroLock() {
-		return lock;
+		return Metro.this.lock;
 	}
 	
 	static final Logger LOGGER = Logger.getLogger(Metro.class.getName());
@@ -136,6 +136,14 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		return logicList;
 	}
 	
+	/**
+	 * This is a utility method to create a Metro instance with a single sequence.
+	 * 
+	 * @param clientName
+	 * @param sequence
+	 * @return
+	 * @throws JackException
+	 */
 	public static Metro startClient( String clientName, MetroSequence sequence ) throws JackException {
 		try {
             Metro metro = new Metro();
@@ -172,14 +180,32 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	 * (Sat, 18 Aug 2018 19:03:18 +0900)
 	 */
 	public void putSequence( String name, MetroSequence sequence ) {
-		putSequence( name, null, sequence, SyncType.PARALLEL, null, 0.0d );
+		putTrack( createTrack( name, null, sequence, SyncType.PARALLEL, null, 0.0d  ) );
 	}
-	public void putSequence( String name, Collection<String> tags, MetroSequence sequence, SyncType syncType, Object syncTrackObject, double syncOffset ) {
-		putTrack( createTrack( name, tags, sequence, syncType, syncTrackObject, syncOffset ) );
-	}
-	public void putSequence( String name, Collection<String> tags, MetroSequence sequence, SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
-		putTrack( createTrack( name, tags, sequence, syncType, syncTrack, syncOffset ) );
-	}
+//	This method was removed at (Mon, 29 Jul 2019 09:13:06 +0900)
+//	public void putSequence( String name, Collection<String> tags, MetroSequence sequence, SyncType syncType, Object syncTrackObject, double syncOffset ) {
+//		putTrack( createTrack( name, tags, sequence, syncType, syncTrackObject, syncOffset ) );
+//	}
+//	This method was removed at (Mon, 29 Jul 2019 13:24:48 +0900)
+//	public void putSequence( String name, Collection<String> tags, MetroSequence sequence, SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
+//		putTrack( createTrack( name, tags, sequence, syncType, syncTrack, syncOffset ) );
+//	}
+	
+	/**
+	 * getTrack()
+	 * 
+	 * 1. When the passed object is null, this method returns null. Note that
+	 *    the null for the track object parameter is allowed in putSequence().
+	 *    
+	 * 2. If the object is an instance of MetroTrack, this method returns it.
+	 * 
+	 * 3. If the object is an instance of String, this method works same as
+	 *    searchTrack() method except it throws an exception when the specified
+	 *    track is not found.
+	 *    
+	 * 4. Otherwise, this method throws an exception.
+	 */
+	@Deprecated
 	public MetroTrack getTrack( Object nameObject ) {
 		if ( nameObject == null ) {
 			return null;
@@ -188,14 +214,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		} else if ( nameObject instanceof String ) {
 			MetroTrack t = searchTrack( (String) nameObject );
 			if ( t== null ) {
-				logWarn( "Dump track names ===> " );
-				String name = ((String) nameObject).intern();
-				for ( Iterator<MetroTrack> i=tracks.iterator(); i.hasNext(); ) {
-					MetroTrack track = i.next();
-					logWarn( track.name );
-				}
-				logWarn( "Dump track names <=== " );
-
+				dumpTracks();
 				throw new RuntimeException( "Error : Track " + nameObject + " was not found." );
 			}
 			return t;
@@ -204,40 +223,75 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		}
 	}
 	public MetroTrack getTrack( String name ) {
-		return searchTrack( name );
+		MetroTrack track = searchTrack( name );
+		if ( track == null ) {
+			dumpTracks();
+			throw new RuntimeException( "Error : Track " + name + " was not found." );
+		} else {
+			return track;
+		}
 	}
+	private void dumpTracks() {
+		logWarn( "Dump all tracks ===> " );
+		for ( Iterator<MetroTrack> i=tracks.iterator(); i.hasNext(); ) {
+			MetroTrack track = i.next();
+			logWarn( track.name );
+		}
+		logWarn( "Dump all tracks <=== " );
+	}
+	public Collection<MetroTrack> getTrackByTag( String tag ) {
+		return searchTrackByTag(tag);
+	}
+	public Collection<MetroTrack> getTrackByTagSet( Collection<String> tagSet ) {
+		HashSet<MetroTrack> set = new HashSet<>();
+		for ( String tag : tagSet ) {
+			set.addAll( searchTrackByTag( tag ) );
+		}
+		return set;
+	}
+	
 	public void putTrack( MetroTrack track ) {
 		registerTrack( track );
+	}
+	public void putAllTracks( Collection<MetroTrack> tracks ) {
+		registerAllTracks( tracks );
 	}
 	public void removeTrack( MetroTrack track ) {
 		unregisterTrack( track );
 	}
-	public void removeTrack( String name ) {
-		removeTrack( getTrack( name ) );
-	}
-	public void removeTrack( Object nameObject ) {
-		removeTrack( getTrack( nameObject ) );
-	}
-	public void removeTrackAll( Collection<MetroTrack> tracks ) {
-		unregisterTrackAll( tracks );
+//	This method was removed. (Mon, 29 Jul 2019 11:37:24 +0900)
+//	At the time of removing, there were two occurrences of referring this method.
+//	These are inlined. 
+//	public void removeTrack( String name ) {
+//		removeTrack( getTrack( name ) );
+//	}
+//	This method was removed. (Mon, 29 Jul 2019 09:55:02 +0900)
+//	At the time of removing, no method refers this.
+//	public void removeTrack( Object nameObject ) {
+//		removeTrack( getTrack( nameObject ) );
+//	}
+	public void removeAllTracks( Collection<MetroTrack> tracks ) {
+		unregisterAllTracks( tracks );
 	}
 
-	public MetroTrack createTrack(  
+	public MetroTrack createTrack( 
 			String name, Collection<String> tags, MetroSequence sequence,
-			SyncType syncType, MetroTrack syncTrack, double syncOffset) 
+			SyncType syncType, MetroTrack syncTrack, double syncOffset ) 
 	{
 		return new MetroTrack( this, name, tags, sequence, syncType, syncTrack, syncOffset );
 	}
-	public MetroTrack createTrack(  
-			String name, Collection<String> tags, MetroSequence sequence,
-			SyncType syncType, Object syncTrackObject, double syncOffset) 
-	{
-		MetroTrack syncTrack = getTrack( syncTrackObject ); 
-		return new MetroTrack( this, name, tags, sequence, syncType, syncTrack, syncOffset );
-	}
+
+//	This method was removed at (Mon, 29 Jul 2019 09:13:06 +0900)
+//	public MetroTrack createTrack(  
+//			String name, Collection<String> tags, MetroSequence sequence,
+//			SyncType syncType, Object syncTrackObject, double syncOffset) 
+//	{
+//		MetroTrack syncTrack = getTrack( syncTrackObject ); 
+//		return new MetroTrack( this, name, tags, sequence, syncType, syncTrack, syncOffset );
+//	}
 	
-	private MetroTrack searchTrack( String name ) {
-		synchronized( lock ) {
+	public MetroTrack searchTrack( String name ) {
+		synchronized( getMetroLock() ) {
 			if ( "last!".equals( name )) {
 				if ( tracks.size() == 0 ) {
 					if ( DEBUG )
@@ -262,7 +316,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 			}
 		}
 	}
-	Collection<MetroTrack> searchTrackByTag( String tag ) {
+	private Collection<MetroTrack> searchTrackByTag( String tag ) {
 		ArrayList<MetroTrack> list = new ArrayList<>(); 
 		for ( Iterator<MetroTrack> i = tracks.iterator(); i.hasNext();  ) {
 			 MetroTrack track = i.next();
@@ -273,41 +327,50 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		return list;
 	}
 	
-	public Collection<MetroTrack> getTrackByTag( String tag ) {
-		return searchTrackByTag(tag);
-	}
-	public Collection<MetroTrack> getTrackByTags( Collection<String> tags ) {
-		HashSet<MetroTrack> set = new HashSet<>();
-		for ( String tag : tags ) {
-			set.addAll( searchTrackByTag( tag ) );
-		}
-		return set;
-	}
+//	@Deprecated
+//	public void enableTrackByTag( String tag, boolean enabled ) {
+//		for ( MetroTrack track : searchTrackByTag( tag ) ) {
+//			track.setTrackEnabled( enabled );
+//		}
+//	}
 
 
-	public void removeLogicDirect( String name ) {
-		Iterator<MetroTrack> iterator = lookupTrackDirect(name);
-		if ( iterator != null  ) {
-			iterator.remove();
-		}
-	}
-	private Iterator<MetroTrack> lookupTrackDirect( String name ) {
-		name = name.intern();
-		for ( Iterator<MetroTrack> i=tracks.iterator(); i.hasNext(); ) {
-			MetroTrack track = i.next();
-			if ( track.name == name ) {
-				return i;
-			}
-		}
-		return null;
-	}
+	/**
+	 * This method removes the specified track directory. This method requires
+	 * inherently dangerous operation and may cause a
+	 * ConcurrentModificationException to be thrown. This method should not be used.
+	 * 
+	 * @param name
+	 */
+//	removed (Mon, 29 Jul 2019 10:30:21 +0900)
+//	@Deprecated
+//	public void removeLogicDirect( String name ) {
+//		Iterator<MetroTrack> iterator = lookupTrackDirect(name);
+//		if ( iterator != null  ) {
+//			iterator.remove();
+//		}
+//	}
 
+	/**
+	 * This method removes the specified track directory. This method requires
+	 * inherently dangerous operation and may cause a
+	 * ConcurrentModificationException to be thrown. This method should not be used.
+	 * 
+	 * @param name
+	 */
+//	removed (Mon, 29 Jul 2019 10:30:21 +0900)
+//	@Deprecated
+//	private Iterator<MetroTrack> lookupTrackDirect( String name ) {
+//		name = name.intern();
+//		for ( Iterator<MetroTrack> i=tracks.iterator(); i.hasNext(); ) {
+//			MetroTrack track = i.next();
+//			if ( track.name == name ) {
+//				return i;
+//			}
+//		}
+//		return null;
+//	}
 
-	public void enableTrackByTag( String tag, boolean enabled ) {
-		for ( MetroTrack track : searchTrackByTag( tag ) ) {
-			track.setTrackEnabled( enabled );
-		}
-	}
 
 	protected volatile boolean running = false;
     public void open( String clientName ) throws JackException {
@@ -415,7 +478,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
     
     // ???
     public void refreshTracks() {
-		synchronized ( this.lock ) {
+		synchronized ( this.getMetroLock() ) {
 			for ( MetroTrack s : this.tracks ) {
 				s.clearBuffer();
 			}
@@ -429,7 +492,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		}
     }
     public void clearTracks() {
-		synchronized ( this.lock ) {
+		synchronized ( this.getMetroLock() ) {
 			this.tracks.clear();
 			this.notifyCheckBuffer();
 		}
@@ -443,7 +506,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	//        	String s = this.debugQueue.take();
 	//        	System.err.println( s );
 	        	
-				synchronized ( this.lock ) {
+				synchronized ( this.getMetroLock() ) {
 					for ( MetroTrack track : this.tracks  ) {
 						track.checkBuffer( this,  this.client, this.position );
 					}
@@ -472,7 +535,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 					this.registeredTracks.clear();
 					this.messageQueue.clear(); // FIXED (Sun, 30 Sep 2018 01:41:24 +0900) 
 					
-					this.lock.wait( 1 );
+					this.getMetroLock().wait( 1 );
 				}
 //				logInfo( this.tracks.size() );
 //	        	Thread.sleep(0);
@@ -485,7 +548,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	}
 	
 	void reprepareTrack(double prevBeatsPerMinute, double beatsPerMinute) throws JackException {
-		synchronized ( this.lock ) {
+		synchronized ( this.getMetroLock() ) {
 			// int barInFrames = Metro.calcBarInFrames( this, this.client, this.position );
 			for ( MetroTrack track : this.tracks ) {
 				track.reprepare( this, this.client, this.position, prevBeatsPerMinute, beatsPerMinute );
@@ -596,7 +659,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 //                logInfo( "ev:" + eventCount + " this.outputMidiEventList  : " + this.outputMidiEventList.size() );
         	}
 
-            synchronized ( this.lock ) {
+            synchronized ( this.getMetroLock() ) {
                 if ( 0 < this.inputMidiEventList.size() )
 	            	for ( MetroTrack track : this.tracks ) {
 	            		track.sequence.processDirect( this, this.inputMidiEventList, this.outputMidiEventList );
@@ -650,34 +713,46 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
     protected void registerTrack( MetroTrack track ) {
 		if ( DEBUG ) 
 			logInfo( "****** CREATED a new track is created " + track.id );
-		synchronized ( this.lock ) {
-			MetroTrack foundTrack = null;
-			{
-				for ( MetroTrack track0 : this.tracks  ) {
-					if ( track0.name.equals( track.name ) ) {
-						foundTrack = track0;
-						break;
-					}
-				}
-			}
-
-			this.registeredTracks.add( track );
-			if ( foundTrack != null) {
-				this.unregisteredTracks.add( foundTrack );
+		
+		synchronized ( this.getMetroLock() ) {
+			registerTrackProc(track);
+			this.notifyCheckBuffer();
+		}
+	}
+    protected void registerAllTracks( Collection<MetroTrack> tracks ) {
+		synchronized ( this.getMetroLock() ) {
+			for ( MetroTrack track : tracks ) {
+				registerTrackProc( track );
 			}
 			this.notifyCheckBuffer();
 		}
 	}
+	private void registerTrackProc(MetroTrack track) {
+		MetroTrack foundTrack = null;
+		{
+			for ( MetroTrack track0 : this.tracks  ) {
+				if ( track0.name.equals( track.name ) ) {
+					foundTrack = track0;
+					break;
+				}
+			}
+		}
+		this.registeredTracks.add( track );
+		if ( foundTrack != null) {
+			this.unregisteredTracks.add( foundTrack );
+		}
+	}
+	
 	protected void unregisterTrack( MetroTrack track ) {
 		if ( DEBUG ) 
 			logInfo( "****** DESTROYED a track is destroyed " + ( track == null ? "(null track)" : track.id ) );
-		synchronized ( this.lock ) {
+		synchronized ( this.getMetroLock() ) {
 			this.unregisteredTracks.add( track );
 			this.notifyCheckBuffer();
 		}
 	}
-	protected void unregisterTrackAll( Collection<MetroTrack> tracks ) {
-		synchronized ( this.lock ) {
+	protected void unregisterAllTracks( Collection<MetroTrack> tracks ) {
+		synchronized ( this.getMetroLock() ) {
 			this.unregisteredTracks.addAll( tracks );
 			this.notifyCheckBuffer();
 		}
@@ -685,15 +760,15 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
     protected void postMessage( Runnable runnable ) {
 		if ( DEBUG )
 			logInfo( "****** postMessage 1");
-		synchronized ( this.lock ) {
+		synchronized ( this.getMetroLock() ) {
 			this.messageQueue.add( runnable );
 			this.notifyCheckBuffer();
 		}
 	}
 
 	protected void notifyCheckBuffer() {
-		synchronized ( this.lock ) {
-			this.lock.notify();
+		synchronized ( this.getMetroLock() ) {
+			this.getMetroLock().notify();
 		}
 	}
 

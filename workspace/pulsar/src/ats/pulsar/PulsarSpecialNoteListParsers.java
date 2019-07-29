@@ -49,6 +49,11 @@ import kawa.standard.Scheme;
 public class PulsarSpecialNoteListParsers {
 	static final Logger LOGGER = Logger.getLogger(PulsarSpecialNoteListParsers.class.getName());
 
+	/*
+	 * XXX this value is inconsistent now (Mon, 29 Jul 2019 09:17:14 +0900)
+	 */
+	public static final String SEQ_BASE = "seq-base";
+	
 	/**
 	 * Returns a collection object which contains parser elements defined in this class. 
 	 * @return
@@ -193,6 +198,7 @@ public class PulsarSpecialNoteListParsers {
 		return "TEMPID-" + ( tempNewIdCounter++ );
 	}
 	static final class PutEventParser extends SpecialNoteListParserElement {
+
 		{
 			this.shortName = "add";
 			this.longName = "new-track";
@@ -210,7 +216,7 @@ public class PulsarSpecialNoteListParsers {
 			String id                = getValue( map, "id",   null, (v)-> SchemeUtils.anyToString(    SchemeUtils.schemeNullCheck( v ) ) );
 			Collection<String> tags  = getValue( map, "tags", el,   (v)-> SchemeUtils.symbolListToStringList((Pair)v ) );
 			SyncType syncType        = getValue( map, "syty", SyncType.SERIAL, (v)-> SyncType.valueOf( SchemeUtils.symbolToString( SchemeUtils.schemeNullCheck( v ) ).toUpperCase() ) );
-			String syncSequenceId    = getValue( map, "syid", "seq-base", (v)-> SchemeUtils.anyToString(    SchemeUtils.schemeNullCheck( v ) ) );
+			String syncSequenceId    = getValue( map, "syid", SEQ_BASE, (v)-> SchemeUtils.anyToString(    SchemeUtils.schemeNullCheck( v ) ) );
 			double syncOffset        = getValue( map, "syof", 0.0d, (v)-> SchemeUtils.toDouble( v )   );
 			Procedure procedure      = getValue( map, ID_PROCEDURE, null, (v)->(Procedure)v );
 
@@ -227,7 +233,21 @@ public class PulsarSpecialNoteListParsers {
 					@Override
 					public void run() {
 						SchemeSequence sequence = new SchemeSequence( pulsar.createInvokable(procedure) );
-						pulsar.putSequence( id2, tags, sequence, syncType, syncSequenceId, syncOffset  );
+						
+						MetroTrack syncTrack;
+						// synchronized block added at (Mon, 29 Jul 2019 13:36:52 +0900)
+						synchronized ( metro.getMetroLock() ) {
+							if ( syncSequenceId == null ) {
+								syncTrack = null;
+							} else {
+								syncTrack = pulsar.searchTrack( syncSequenceId );
+								if ( syncTrack == null ) {
+									logWarn( "PARSER_PUT : syncTrackId '" + syncSequenceId + "' was not found and it was ignored. " );
+								}
+							}
+							pulsar.putTrack( 
+								pulsar.createTrack( id2, tags, sequence, syncType, syncTrack, syncOffset ) );
+						}
 					}
 				});
 			}
@@ -270,12 +290,19 @@ public class PulsarSpecialNoteListParsers {
 			
 			Pulsar pulsar = (Pulsar)metro;
 
-
 			if ( id != null ) {
 				((MetroEventBuffer) receiver).exec( offset, new Runnable() {
 					@Override
 					public void run() {
-						pulsar.removeTrack( id );
+						// synchronized block added at (Mon, 29 Jul 2019 13:36:52 +0900)
+						synchronized ( pulsar.getMetroLock() ) {
+							MetroTrack t = pulsar.searchTrack( id );
+							if ( t != null ) {
+								pulsar.removeTrack( t );
+							} else {
+								logWarn( "PARSER_REMOVE : id '"+ id + "' was not found." );
+							}
+						}
 					}
 				} );
 			}
@@ -284,7 +311,10 @@ public class PulsarSpecialNoteListParsers {
 				((MetroEventBuffer) receiver).exec( offset, new Runnable() {
 					@Override
 					public void run() {
-						pulsar.removeTrackAll( pulsar.getTrackByTags(tags) );
+						// synchronized block added at (Mon, 29 Jul 2019 13:36:52 +0900)
+						synchronized ( pulsar.getMetroLock() ) {
+							pulsar.removeAllTracks( pulsar.getTrackByTagSet(tags) );
+						}
 					}
 				} );
 			}

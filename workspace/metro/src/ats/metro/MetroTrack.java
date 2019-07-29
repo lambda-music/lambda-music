@@ -90,6 +90,30 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 		return buffers;
 	}
 	
+	/**
+	 * This constructor is <code>public</code> but this is usually called only from
+	 * {@link Metro#createTrack(String, Collection, MetroSequence, SyncType, MetroTrack, double)}
+	 * and users should not call this constructor directory. Though it is still left public
+	 * for further hacking.
+	 * 
+	 * @param metro
+	 *            Specifying the parent metro object.
+	 * @param name
+	 *            Specifying the identifier of the track.
+	 * @param tags
+	 *            Specifying the tag strings. This could be null and treated as an
+	 *            empty set.
+	 * @param sequence
+	 *            Specifying the sequence object to play.
+	 * @param syncType
+	 *            Specifying the way to synchronize with the syncTrack object. See
+	 *            {@link SyncType}
+	 * @param syncTrack
+	 *            Specifying the track object to synchronize with.
+	 * @param syncOffset
+	 *            Specifying the distance from the track object with which is
+	 *            synchronized.
+	 */
 	public MetroTrack( Metro metro, String name, Collection<String> tags, MetroSequence sequence, SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
 //		LOGGER.info( "Track(" + name + ") : " + tags + " : " + syncType + " : " + syncOffset );
 		this.name = name.intern();
@@ -108,7 +132,7 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 	
 	@Override
 	public Object getMetroLock() {
-		return this.metro.lock;
+		return this.metro.getMetroLock();
 	}
 	
 	public MetroSequence getSequence() {

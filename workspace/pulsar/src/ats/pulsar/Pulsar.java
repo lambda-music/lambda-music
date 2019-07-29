@@ -124,7 +124,6 @@ import kawa.standard.Scheme;
 public final class Pulsar extends Metro {
 	static final Logger LOGGER = Logger.getLogger(Pulsar.class.getName());
 
-
 	static void logError(String msg, Throwable e) {
 		LOGGER.log(Level.SEVERE, msg, e);
 	}
@@ -184,7 +183,6 @@ public final class Pulsar extends Metro {
 		Pulsar.invokeLocalSchemeInitializers( schemeSecretary, this );
 		
 		this.pulsarGui = new PulsarGui( this );
-		
 		this.enabledTimer = true;
 		
 		initPulsar();
@@ -195,7 +193,14 @@ public final class Pulsar extends Metro {
 		createTimer(this, 1000, 20, new Invokable() {
 			@Override
 			public Object invoke(Object... args) {
-				MetroTrack track = Pulsar.this.getTrack( "main" );
+				MetroTrack track = Pulsar.this.searchTrack( "main" );
+				
+//				This happens quite often so let us ignore it. (Mon, 29 Jul 2019 12:21:50 +0900)
+//				Additionally this code have never been executed. Just added this for describing the concept.
+//				if ( track == null ) {
+//					logWarn( "" );
+//				}
+				
 				if ( track != null && pulsarGui != null && pulsarGui.pb_position != null ) {
 					double value=0;
 					synchronized ( track.getLock() ) {
@@ -787,7 +792,7 @@ public final class Pulsar extends Metro {
 			new SecretaryMessage.NoReturn<Scheme,FileNotFoundException>() {
 				@Override
 				public void execute0(Scheme scheme, Object[] args ) throws FileNotFoundException {
-					SchemeUtils.execSchemeFromFile( lock,  scheme, parentFile, file );
+					SchemeUtils.execSchemeFromFile( getMetroLock(),  scheme, parentFile, file );
 				}
 			});
 	}
@@ -1058,7 +1063,13 @@ public final class Pulsar extends Metro {
 
 					SchemeSequence sequence = new SchemeSequence( Pulsar.this.createInvokable( procedure ) );
 
-					putSequence( name, tags, sequence, syncType, syncTrackName, offset );
+					// synchronized block added at (Mon, 29 Jul 2019 13:36:52 +0900)
+					synchronized ( getMetroLock() ) {
+						// The method getTrack() now throws an exception when it is null.
+						// (Mon, 29 Jul 2019 12:21:50 +0900)
+						MetroTrack syncTrack = syncTrackName == null ? null : getTrack( syncTrackName );
+						putTrack( createTrack( name, tags, sequence, syncType, syncTrack, offset ) );
+					}
 
 					return EmptyList.emptyList;
 				} else {
@@ -1075,8 +1086,12 @@ public final class Pulsar extends Metro {
 			public Object applyN(Object[] args) throws Throwable {
 				if ( args.length == 1 ) {
 					String name = SchemeUtils.toString( args[0] );
-					removeTrack(name);
-					return EmptyList.emptyList;
+					// synchronized block added at (Mon, 29 Jul 2019 13:36:52 +0900)
+					synchronized ( getMetroLock() ) { 
+						// getTrack() throws an exception when it is null. (Mon, 29 Jul 2019 12:21:50 +0900)
+						removeTrack( getTrack( name ) );
+						return EmptyList.emptyList;
+					}
 				} else {
 					throw new RuntimeException( "Invalid parameter. usage : (new-sequence [name] [lambda] ) " );
 				}
@@ -1095,7 +1110,7 @@ public final class Pulsar extends Metro {
 				if ( args.length == 1 ) {
 					String name = SchemeUtils.toString( args[0] );
 
-					return getTrack(name) != null;
+					return searchTrack(name) != null;
 				} else {
 					throw new RuntimeException( "Invalid parameter. usage : (new-sequence [name] [lambda] ) " );
 				}
@@ -1127,7 +1142,7 @@ public final class Pulsar extends Metro {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				//					logInfo("list-seq");
-				synchronized ( lock ) {
+				synchronized ( getMetroLock() ) {
 					ArrayList<LList> list = new ArrayList<>( tracks.size() );
 					for ( MetroTrack track :  tracks ) {
 						SchemeSequence sequence = (SchemeSequence)track.getSequence();
