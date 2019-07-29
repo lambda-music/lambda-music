@@ -90,8 +90,10 @@ import javax.swing.text.JTextComponent;
 import org.jaudiolibs.jnajack.JackException;
 
 import ats.kawapad.KawaPad;
+import ats.metro.MetroTrack;
 import ats.pulsar.Pulsar.TempoTapperTempoNotifier;
 import ats.pulsar.lib.SchemeUtils;
+import ats.pulsar.lib.secretary.Invokable;
 import ats.pulsar.lib.secretary.SecretaryMessage;
 import ats.pulsar.lib.secretary.scheme.SchemeSecretary;
 import ats.pulsar.lib.swing.Action2;
@@ -108,6 +110,7 @@ import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 import gnu.mapping.ProcedureN;
 import gnu.mapping.Symbol;
+import gnu.mapping.Values;
 import kawa.standard.Scheme;
 
 class PulsarGui {
@@ -125,7 +128,8 @@ class PulsarGui {
 
 	static final int BORDER_SIZE = 10;
 	static final PanelOrientation DEFAULT_PANEL_ORIENTATION = PanelOrientation.BOTTOM;
-	
+	static final int PB_POSITION_MAX = 1024;
+
 	public static void registerLocalSchemeInitializers( SchemeSecretary schemeSecretary, PulsarGui pulsarGui ) {
 		schemeSecretary.registerSchemeInitializer( pulsarGui, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
 			@Override
@@ -148,6 +152,34 @@ class PulsarGui {
 		
 	    // Create and set up the window.
         this.frame = new JPulsarFrame( pulsar.getSchemeSecretary(), "Pulsar" );
+        
+        initPulsarGui();
+	}
+
+	private void initPulsarGui() {
+		Pulsar.createTimer(pulsar, 1000, 20, new Invokable() {
+			@Override
+			public Object invoke(Object... args) {
+				MetroTrack track = pulsar.searchTrack( "main" );
+
+				//	This happens quite often so let us ignore it. (Mon, 29 Jul 2019 12:21:50 +0900)
+				//	Additionally this code have never been executed. Just added this for describing the concept.
+				//	if ( track == null ) {
+				//		logWarn( "" );
+				//	}
+
+				if ( track != null && pb_position != null ) {
+					double value=0;
+					synchronized ( track.getLock() ) {
+						value = track.getTrackPosition();
+					}
+					pb_position.setValue((int) (value * PulsarGui.PB_POSITION_MAX) );
+					pb_position.repaint();
+					pb_position.revalidate();
+				}
+				return Values.noArgs;
+			}
+		});
 	}
 
 	enum TempoRange {
@@ -244,6 +276,16 @@ class PulsarGui {
     			return frame;
     		}
     	});
+		SchemeUtils.defineVar( scheme, "gui-set-progress-pos!" , new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				if ( 0 < args.length ) {
+					double value = SchemeUtils.toDouble(args[0]);
+					pb_position.setValue((int) (value * PB_POSITION_MAX) );
+				}
+				return EmptyList.emptyList;
+			}
+		});
     	SchemeUtils.defineVar( scheme, "gui-clear!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
@@ -752,6 +794,10 @@ class PulsarGui {
 	JProgressBar pb_position;
 	JSlider sl_tempoSlider;
 	
+	public void quit() {
+		frame.dispatchEvent( new WindowEvent(frame, WindowEvent.WINDOW_CLOSING) );
+	}
+
 	public void guiClear() {
 		userPane.removeAll();
 		guiFlowLayout(userPane);
@@ -1422,7 +1468,7 @@ class PulsarGui {
 	public final Action QUIT_SEQUENCER = new AbstractAction() {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+			quit();
 		}
 		{
 			putValue( Action2.NAME, "Quit" );
@@ -1726,7 +1772,7 @@ class PulsarGui {
 					BorderFactory.createEmptyBorder(10,10,10,10),
 					pb_position.getBorder()) );
 //				pb_position.setBorder( BorderFactory.createEmptyBorder(0,0,0,0) );
-			pb_position.setMaximum( Pulsar.PB_POSITION_MAX );
+			pb_position.setMaximum( PB_POSITION_MAX );
 			pb_position.setMinimum(0);
 		}
 

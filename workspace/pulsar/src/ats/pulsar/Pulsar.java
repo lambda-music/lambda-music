@@ -20,7 +20,6 @@
 
 package ats.pulsar;
 
-import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -136,6 +135,8 @@ public final class Pulsar extends Metro {
 		LOGGER.log(Level.WARNING, msg);
 	}
 
+	long shutdownWait = 1024;
+
 	public static void registerLocalSchemeInitializers( SchemeSecretary schemeSecretary, Pulsar pulsar ) {
 		schemeSecretary.registerSchemeInitializer( pulsar, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
 			@Override
@@ -174,7 +175,7 @@ public final class Pulsar extends Metro {
 	 * open a file to use the application.
 	 * @throws IOException 
 	 */
-	public Pulsar() throws IOException {
+	public Pulsar( boolean windowInterface, boolean httpInterface ) throws IOException {
 		this.schemeSecretary = new SchemeSecretary();
 		this.schemeSecretary.setDirectMeeting( false );
 		KawaPad.registerGlobalSchemeInitializer( schemeSecretary );
@@ -183,43 +184,19 @@ public final class Pulsar extends Metro {
 		Pulsar.registerLocalSchemeInitializers( schemeSecretary, this );
 		Pulsar.invokeLocalSchemeInitializers( schemeSecretary, this );
 		
-		this.pulsarGui = new PulsarGui( this );
-		this.enabledTimer = true;
+		if ( windowInterface )
+			this.pulsarGui = new PulsarGui( this );
+		else
+			this.pulsarGui = null;
 		
-		initPulsar();
-		initPulsarHttp( 8192 );
+		if ( httpInterface )
+			this.pulsarHttp = new PulsarHttp( this, 8192 );
+		else
+			this.pulsarHttp = null;
+		
+		this.enabledTimer = true;
 	}
 	
-	void initPulsar() {
-		if ( isGuiAvailable() ) 
-			createTimer(this, 1000, 20, new Invokable() {
-				@Override
-				public Object invoke(Object... args) {
-					MetroTrack track = Pulsar.this.searchTrack( "main" );
-
-					//	This happens quite often so let us ignore it. (Mon, 29 Jul 2019 12:21:50 +0900)
-					//	Additionally this code have never been executed. Just added this for describing the concept.
-					//	if ( track == null ) {
-					//		logWarn( "" );
-					//	}
-
-					if ( track != null && isGuiAvailable() && pulsarGui.pb_position != null ) {
-						double value=0;
-						synchronized ( track.getLock() ) {
-							value = track.getTrackPosition();
-						}
-						pulsarGui.pb_position.setValue((int) (value * PB_POSITION_MAX) );
-						pulsarGui.pb_position.repaint();
-						pulsarGui.pb_position.revalidate();
-					}
-					return Values.noArgs;
-				}
-			});
-	}
-
-	void initPulsarHttp( int port ) throws IOException {
-		this.pulsarHttp = new PulsarHttp( this, port );
-	}
 
 	transient boolean enabledTimer = false;
 
@@ -230,7 +207,7 @@ public final class Pulsar extends Metro {
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException {
-		Pulsar pulsar = new Pulsar();
+		Pulsar pulsar = new Pulsar( false, true );
 		if ( args.length == 0 ) {
 		} else {
 			pulsar.openMainFile(null, new File( args[0] ));
@@ -245,6 +222,9 @@ public final class Pulsar extends Metro {
 	}
 
 	public void quit() {
+		if ( isGuiAvailable() ) {
+			this.pulsarGui.quit();
+		}
 		close();
 		if ( timer != null )
 			timer.stop();
@@ -574,7 +554,6 @@ public final class Pulsar extends Metro {
 				}
 		}
 	}
-	static final int PB_POSITION_MAX = 1024;
 	private static final int NOT_DEFINED = -1;
 
 	final File configFile = getConfigFile();
@@ -955,6 +934,30 @@ public final class Pulsar extends Metro {
 				return EmptyList.emptyList;
 			}
 		});
+		SchemeUtils.defineVar( scheme, "quit!" , new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				Thread t = new Thread() {
+					@Override
+					public void run() {
+						schemeSecretary.executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+							@Override
+							public void execute0(Scheme resource, Object[] args) {
+								try {
+									Thread.sleep( shutdownWait );
+								} catch (InterruptedException e) {
+									logWarn( e.getMessage() );
+								}
+								quit(); 
+							}
+						}, Invokable.NOARG );
+					}
+				};
+				t.start();
+				
+				return "Now Pulsar will shutdown in " + shutdownWait + " milliseconds...";
+			}
+		});
 		SchemeUtils.defineVar( scheme, "tap!" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
@@ -970,20 +973,6 @@ public final class Pulsar extends Metro {
 					tempoTapper.setBeatsPerMinute( bpm );
 				}
 
-				return EmptyList.emptyList;
-			}
-		});
-		SchemeUtils.defineVar( scheme, "set-progress-pos!" , new ProcedureN() {
-			@Override
-			public Object applyN(Object[] args) throws Throwable {
-				if ( 0 < args.length ) {
-					if ( isGuiAvailable() ) { 
-						double value = SchemeUtils.toDouble(args[0]);
-						pulsarGui.pb_position.setValue((int) (value * PB_POSITION_MAX) );
-					} else {
-						throw new HeadlessException();
-					}
-				}
 				return EmptyList.emptyList;
 			}
 		});
