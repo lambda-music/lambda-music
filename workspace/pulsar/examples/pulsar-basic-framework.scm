@@ -191,6 +191,8 @@
                        h2-inst-database ))
 
 (define (sym2inst s )
+  (if (not (symbol? s))
+    (raise (cons 'invalid-argument-exception s  ) ))
   (cdr (or (assq s inst-list)
            (raise (string-append "instrumental not found error "
                                  (symbol->string s))))))
@@ -672,7 +674,7 @@
   (lambda ( self 
             track-id
             #!optional 
-            (in-instrument  'inst-kikl )
+            (in-instrument  'inst-Kick-Long )
             (in-pns-pattern 'pns-basic-one )
             (in-beat-offset "(+ 0/4 0 )" )
             (in-beat-count 4 )
@@ -709,11 +711,13 @@
                                   (beat-offset   
                                     (eval (read (open-input-string (self 'read 'beat-offset)))))
                                   (enabled       (self 'read 'enabled)))
-                              (set! instrument (cdr (sym2inst instrument )))
                               (if enabled
                                 (put-seq! track-id 
                                           (lambda ()
-                                            (n-swing beat-count measure-count (bind-pns instrument (eval pns-pattern) )))
+                                            (display '=====================)
+                                            (display instrument)
+                                            (newline)
+                                            (n-swing beat-count measure-count (bind-pns (cdr (sym2inst instrument )) (eval pns-pattern) )))
                                           'parallel 'main beat-offset)
                                 (remove-seq! track-id ))))))
 
@@ -744,8 +748,8 @@
                                                           (append
                                                             (list 'combo )
                                                             (insert-list-by-index 
-                                                              ; (key-name-value-list-to-name-key-list inst-list )
-                                                              (key-name-value-list-to-name-value-list  inst-list )
+                                                              (key-name-value-list-to-name-key-list inst-list )
+                                                              ; (key-name-value-list-to-name-value-list  inst-list )
                                                               (list 'selected) 
                                                               2 )
                                                             (list (lambda (sel cmd usr src evt ) 
@@ -888,6 +892,32 @@
 ;                                 (apply (eval 'main) args )))))
 
 
+; Note: 
+; it is possible to debug inside these object.  `trackset-manager` is the root
+; of those panel objects. So you can retrieve arbitrary leaf objects from the root as: 
+;
+; >   (symbol?
+; >    ((cadr ((cadr (trackset-manager 'trackset-list)) 
+; >            'track-list)) 'instrument ))
+; 
+; Note that 'trackset-list and 'track-list return lists.  The first element is
+; a cons cell which the cdr points to the list.  I usually regard the first
+; element on a list as its pointer to the list. This makes modifying lists much
+; easier.
+;
+; + (trackset-manager
+;     +trackset
+;          +track
+;          +track
+;          +track
+;     +trackset
+;          +track
+;          +track
+;          +track
+;     +trackset
+;          +track
+;          +track
+;          +track
 
 (define create-gui!
   (lambda()

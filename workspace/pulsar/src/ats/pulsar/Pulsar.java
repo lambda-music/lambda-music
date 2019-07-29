@@ -1089,7 +1089,12 @@ public final class Pulsar extends Metro {
 					// synchronized block added at (Mon, 29 Jul 2019 13:36:52 +0900)
 					synchronized ( getMetroLock() ) { 
 						// getTrack() throws an exception when it is null. (Mon, 29 Jul 2019 12:21:50 +0900)
-						removeTrack( getTrack( name ) );
+						MetroTrack track = searchTrack( name );
+						if ( track != null )
+							removeTrack( track );
+						// If track is not found, ignore it. 
+						// It is not necessary to report it in this case.
+						// (Mon, 29 Jul 2019 14:13:27 +0900)
 						return EmptyList.emptyList;
 					}
 				} else {
