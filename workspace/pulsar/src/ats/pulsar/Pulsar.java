@@ -20,6 +20,7 @@
 
 package ats.pulsar;
 
+import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -190,31 +191,32 @@ public final class Pulsar extends Metro {
 	}
 	
 	void initPulsar() {
-		createTimer(this, 1000, 20, new Invokable() {
-			@Override
-			public Object invoke(Object... args) {
-				MetroTrack track = Pulsar.this.searchTrack( "main" );
-				
-//				This happens quite often so let us ignore it. (Mon, 29 Jul 2019 12:21:50 +0900)
-//				Additionally this code have never been executed. Just added this for describing the concept.
-//				if ( track == null ) {
-//					logWarn( "" );
-//				}
-				
-				if ( track != null && pulsarGui != null && pulsarGui.pb_position != null ) {
-					double value=0;
-					synchronized ( track.getLock() ) {
-						value = track.getTrackPosition();
+		if ( isGuiAvailable() ) 
+			createTimer(this, 1000, 20, new Invokable() {
+				@Override
+				public Object invoke(Object... args) {
+					MetroTrack track = Pulsar.this.searchTrack( "main" );
+
+					//	This happens quite often so let us ignore it. (Mon, 29 Jul 2019 12:21:50 +0900)
+					//	Additionally this code have never been executed. Just added this for describing the concept.
+					//	if ( track == null ) {
+					//		logWarn( "" );
+					//	}
+
+					if ( track != null && isGuiAvailable() && pulsarGui.pb_position != null ) {
+						double value=0;
+						synchronized ( track.getLock() ) {
+							value = track.getTrackPosition();
+						}
+						pulsarGui.pb_position.setValue((int) (value * PB_POSITION_MAX) );
+						pulsarGui.pb_position.repaint();
+						pulsarGui.pb_position.revalidate();
 					}
-					pulsarGui.pb_position.setValue((int) (value * PB_POSITION_MAX) );
-					pulsarGui.pb_position.repaint();
-					pulsarGui.pb_position.revalidate();
+					return Values.noArgs;
 				}
-				return Values.noArgs;
-			}
-		});
+			});
 	}
-    
+
 	void initPulsarHttp( int port ) throws IOException {
 		this.pulsarHttp = new PulsarHttp( this, port );
 	}
@@ -237,6 +239,10 @@ public final class Pulsar extends Metro {
 	
 	PulsarGui pulsarGui;
 	PulsarHttp pulsarHttp;
+
+	boolean isGuiAvailable() {
+		return pulsarGui != null;
+	}
 
 	public void quit() {
 		close();
@@ -390,7 +396,7 @@ public final class Pulsar extends Metro {
 		this.relatedFiles.addAll( fileList );
 		this.relatedFileParent = mainFile;
 
-		if ( pulsarGui != null ) { 
+		if ( isGuiAvailable() ) { 
 			if ( this.pulsarGui.cb_relatedFiles != null ) {
 				this.pulsarGui.cb_relatedFiles.removeAllItems();
 				for ( File f : this.relatedFiles ) {
@@ -406,7 +412,7 @@ public final class Pulsar extends Metro {
 	 */
 	public void addRelatedFile( File f) {
 		this.relatedFiles.add( f );
-		if ( this.pulsarGui != null ) {
+		if ( this.isGuiAvailable() ) {
 			if ( this.pulsarGui.cb_relatedFiles != null ) {
 				this.pulsarGui.cb_relatedFiles.addItem( f.getPath() );
 			}
@@ -425,7 +431,7 @@ public final class Pulsar extends Metro {
 			newScheme();
 			
 			this.execCleanupHook();
-			if ( pulsarGui != null )
+			if ( isGuiAvailable() )
 				this.pulsarGui.guiClear();
 			this.close();
 			this.lastModifiedOfMainFile = NOT_DEFINED;
@@ -616,7 +622,7 @@ public final class Pulsar extends Metro {
 		// See the comment.
 		setMainFile( null , mainFile );
 		
-		if ( pulsarGui != null ) {
+		if ( isGuiAvailable() ) {
 			pulsarGui.frame.openFile( mainFile );
 		}
 	}
@@ -740,7 +746,7 @@ public final class Pulsar extends Metro {
 			public void actionPerformed(ActionEvent e) {
 				if ( enabledTimer ) {
 					lastModifiedOfConfigFile  = checkLastModified( configFile,  lastModifiedOfConfigFile , (file)->{}   );
-					lastModifiedOfMainFile    = checkLastModified( mainFile,    lastModifiedOfMainFile,    (file)->{if ( pulsarGui != null ) pulsarGui.updateFilename(file);} );
+					lastModifiedOfMainFile    = checkLastModified( mainFile,    lastModifiedOfMainFile,    (file)->{if ( isGuiAvailable() ) pulsarGui.updateFilename(file);} );
 				}
 			}
 
@@ -971,12 +977,13 @@ public final class Pulsar extends Metro {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				if ( 0 < args.length ) {
-					if ( pulsarGui != null ) { 
+					if ( isGuiAvailable() ) { 
 						double value = SchemeUtils.toDouble(args[0]);
 						pulsarGui.pb_position.setValue((int) (value * PB_POSITION_MAX) );
+					} else {
+						throw new HeadlessException();
 					}
 				}
-
 				return EmptyList.emptyList;
 			}
 		});
@@ -1206,6 +1213,7 @@ public final class Pulsar extends Metro {
 				}
 			}
 		});
+		
 		SchemeUtils.defineVar( scheme, "luck" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {

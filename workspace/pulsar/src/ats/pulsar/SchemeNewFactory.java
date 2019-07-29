@@ -323,7 +323,9 @@ public abstract class SchemeNewFactory {
 //					String    type = 0 < argList.size() ? SchemeUtils.symbolToString( argList.remove(0) ) : "default";
 //					pulsar.gui.guiLayout( panel, type, argList.toArray() );
 //				}
-				pulsar.pulsarGui.guiLayout_auto( frame, args.toArray() );
+				if ( pulsar.isGuiAvailable() ) {
+					pulsar.pulsarGui.guiLayout_auto( frame, args.toArray() );
+				}
 
 				return frame;
 			}

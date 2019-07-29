@@ -359,7 +359,51 @@
           (loop (cdr args) (+ index 1)))
         ))))
 
+; "cl" stands for circular-list
+; This function is shorthand for srfi-1's default circular-list function.
+(define (cl lst ) 
+  (if (null? lst)
+    (raise (cons 'invalid-argument-exception "arg0 cannot be null" ))
+    (let (( lst2 (list-copy lst) ))
+      (set-cdr! (last-pair lst2 ) lst2 )
+      lst2)))
 
+
+; "nc" stands for note-count.
+; This function counts notes in the passed note data.
+; ex)
+;     (nc (melody '(do re mi end )) )
+;        => 3
+;     (nc (melody '(do re mi fa sol end )) )
+;        => 5
+(define (nc lst)
+  (fold (lambda (alst count)
+          (if (eq? 'note
+                   (cdr (or (assq 'type alst )
+                            (cons 'type #f   ))))
+            (+ count 1 )
+            (+ count 0 )))
+        0
+        lst ))
+
+
+; "lm" stands for "limit".
+; lm function limit the length of the passed list;
+; if the length of the list exceeds the number
+; that is passed as count parameter, this returns
+; (take lst count) .
+; Otherwise this returns the passed list.
+; (lm '(0 1 2 3 ) 5 )
+;    => (0 1 2 3 ) 
+; (lm '(0 1 2 3 ) 2 )
+;    => (0 1 ) 
+;
+; Added (Mon, 29 Jul 2019 16:13:44 +0900)
+;
+(define (lm count lst)
+  (if (<= (length lst) count )
+    lst
+    (take lst count)))
 
 
 ; This function performs deep copy on a cons cell.

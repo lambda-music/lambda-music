@@ -676,6 +676,7 @@
             #!optional 
             (in-instrument  'inst-Kick-Long )
             (in-pns-pattern 'pns-basic-one )
+            (in-velo-values "'( 2/4 2/4 2/4 3/4 )" )
             (in-beat-offset "(+ 0/4 0 )" )
             (in-beat-count 4 )
             (in-measure-count 1))
@@ -708,16 +709,19 @@
                                   (pns-pattern   (self 'read 'pns-pattern ))
                                   (beat-count    (self 'read 'beat-count ))
                                   (measure-count (self 'read 'measure-count ))
-                                  (beat-offset   
+                                  (velo-values
+                                    (eval (read (open-input-string (self 'read 'velo-values)))))
+                                  (beat-offset
                                     (eval (read (open-input-string (self 'read 'beat-offset)))))
                                   (enabled       (self 'read 'enabled)))
                               (if enabled
                                 (put-seq! track-id 
                                           (lambda ()
-                                            (display '=====================)
-                                            (display instrument)
-                                            (newline)
-                                            (n-swing beat-count measure-count (bind-pns (cdr (sym2inst instrument )) (eval pns-pattern) )))
+                                            (let ((notes (n-swing beat-count measure-count 
+                                                                  (bind-pns (cdr (sym2inst instrument )) 
+                                                                            (eval pns-pattern))) ))
+                                              (m notes velo: (lm (nc notes) velo-values )))
+                                            )
                                           'parallel 'main beat-offset)
                                 (remove-seq! track-id ))))))
 
@@ -725,6 +729,7 @@
       (self 'define 'field 'enabled              #f )
       (self 'define 'field 'instrument           in-instrument )
       (self 'define 'field 'pns-pattern          in-pns-pattern)
+      (self 'define 'field 'velo-values          in-velo-values )
       (self 'define 'field 'beat-offset          in-beat-offset )
       (self 'define 'field 'beat-count           in-beat-count )
       (self 'define 'field 'measure-count        in-measure-count)
@@ -784,6 +789,16 @@
                                                    (gui-new 'label "Bar" )
                                                    'name 'measure-count
                                                    (make-combo 'measure-count 0 )
+
+                                                   (gui-new 'label "  " )
+                                                   (gui-new 'label "VELOS" )
+                                                   'name 'text-velo-values
+                                                   (gui-new 'text-field  "" 16
+                                                            (lambda (sel cmd usr src evt ) 
+                                                              (display cmd)
+                                                              (newline) 
+                                                              (self 'write 'velo-values cmd )
+                                                              (update-inst)))
                                                    (gui-new 'label "  " )
                                                    (gui-new 'label "OFFS" )
                                                    'name 'text-beat-offset
@@ -828,6 +843,7 @@
                                                              (new-track-id)
                                                             ,(proc-symbol (self 'read 'instrument   ))
                                                             ,(proc-symbol (self 'read 'pns-pattern  ))
+                                                            ,(proc-string (self 'read 'velo-values  ))
                                                             ,(proc-string (self 'read 'beat-offset  ))
                                                             ,(proc-number (self 'read 'beat-count   )) 
                                                             ,(proc-number (self 'read 'measure-count))))))
@@ -856,7 +872,9 @@
                                                      (update-value 'instrument )
                                                      (update-value 'pns-pattern)
                                                      )
-
+                                                   (gui-set-text 
+                                                     (gui-get (self 'read 'gui) 'text-velo-values )
+                                                     (self 'velo-values ))
                                                    (gui-set-text 
                                                      (gui-get (self 'read 'gui) 'text-beat-offset )
                                                      (self 'beat-offset))

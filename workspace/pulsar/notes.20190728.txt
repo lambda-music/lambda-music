@@ -7,14 +7,7 @@
 4. Parallel Note Data Construction
 5. Specifying note name directly
 
-
-
-aaaa bbb 
-   
-
-
-
-   
+  
 
 ; vim: spell
 

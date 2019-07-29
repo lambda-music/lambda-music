@@ -1,34 +1,34 @@
 (load "./pulsar-basic-framework.scm" )
 
-(send2! 
- (n chan: 0 port: 2 
-    (melody '( o 4 do 1/5 re mi fi sol re , mi ' fi sol la mi , fi ' sol la ti end ))))
+(if #f (begin
+        (send2! 
+         (n chan: 0 port: 2 
+            (melody '( o 4 do 1/5 re mi fi sol re , mi ' fi sol la mi , fi ' sol la ti end ))))
+
+
+        ((trackset-manager 'new-trackset) 'add-track 
+                                          (xnew SimpleTrack (new-track-id) 'inst-Kick-Long 'pns-basic-one "(+ 0/4 0 )" 4 1)
+                                          (xnew SimpleTrack (new-track-id) 'inst-Hand-Clap 'pns-basic-one "(+ -1/4 0 )" 2 1)
+                                          (xnew SimpleTrack (new-track-id) 'inst-SB-Crash2BA1 'pns-basic-one "(+ -1/8 0 )" 1 4))
+
+        ))
+
+(take (apply circular-list '( 2/4 2/4 2/4 3/4 ) ) 10 )
+
+
+
+
 
 
 ((trackset-manager 'new-trackset) 'add-track 
-                                  (xnew SimpleTrack (new-track-id) 'inst-Kick-Long 'pns-basic-one "(+ 0/4 0 )" 4 1)
-                                  (xnew SimpleTrack (new-track-id) 'inst-Hand-Clap 'pns-basic-one "(+ -1/4 0 )" 2 1)
-                                  (xnew SimpleTrack (new-track-id) 'inst-SB-Crash2BA1 'pns-basic-one "(+ -1/8 0 )" 1 4))
-
-#|
-ats.pulsar.lib.swing.JNamedPanel[,5,190,990x305,invalid,layout=javax.swing.BoxLayout,alignmentX=0.0,alignmentY=0.0,border=javax.swing.border.TitledBorder@2a17ff46,flags=9,maximumSize=,minimumSize=,preferredSize=] ats.pulsar.lib.swing.JNamedPanel[,5,190,990x305,invalid,layout=javax.swing.BoxLayout,alignmentX=0.0,alignmentY=0.0,border=javax.swing.border.TitledBorder@2a17ff46,flags=9,maximumSize=,minimumSize=,preferredSize=] ats.pulsar.lib.swing.JNamedPanel[,5,190,990x305,invalid,layout=javax.swing.BoxLayout,alignmentX=0.0,alignmentY=0.0,border=javax.swing.border.TitledBorder@2a17ff46,flags=9,maximumSize=,minimumSize=,preferredSize=] ()
-|#
+                                  (xnew SimpleTrack (new-track-id) 'inst-Kick-Long 'pns-basic-one "(map (lambda(x) (/ x 5)) '( 1 1 1 5 ) )" "(+ 0/4 0 )" 4 1)
+                                  (xnew SimpleTrack (new-track-id) 'inst-Ride-Jazz 'pns-basic-4-swing " (apply circular-list '( 2/4 2/4 2/4 3/4 ) )  " "(+ 0/4 0 )" 4 1))
 
 
-
-
-
-
-
- 
-
-
-
-
-
-
-
-
+((trackset-manager 'new-trackset) 'add-track 
+                                  (xnew SimpleTrack (new-track-id) 'inst-Kick-Long 'pns-basic-one "'( 1/4 3/4 1/4 3/4 )" "(+ 1/4 0 )" 4 1)
+                                  (xnew SimpleTrack (new-track-id) 'inst-Ride-Rock 'pns-basic-4-swing "(cl '( 2/4 2/4 2/4 4/4 ) )" "(+ 0/4 0 )" 4 1)
+                                  (xnew SimpleTrack (new-track-id) 'inst-sn-33 'pns-basic-one "'( 2/4 2/4 2/4 3/4 )" "(+ 0/8 0 )" 1 1))
 
 
 (if #f 
