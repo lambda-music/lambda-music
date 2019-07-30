@@ -62,11 +62,6 @@
     (let-values (((head tail) (split-at dst-list idx )))
                 (append head src-list tail))))
   
-(define name-value-list-select-by-value 
-  (lambda ( name-value-list value )
-    #f
-    ))
-
 
 (define h2-inst-database 
   `(( inst-Hi-Hat-Free .           ( "Hi Hat Free" .               36 ))
@@ -190,20 +185,12 @@
                                      )))
                        h2-inst-database ))
 
-(define (sym2inst s )
+(define (sym2val s lst)
   (if (not (symbol? s))
     (raise (cons 'invalid-argument-exception s  ) ))
-  (cdr (or (assq s inst-list)
+  (cdr (or (assq s lst)
            (raise (string-append "instrumental not found error "
                                  (symbol->string s))))))
-
-(define cnt-a (make-perc 1 0 (+ B3  0)  1/16 ))
-(define cnt-b (make-perc 1 0 (+ Bb3 1 )  1/16 ))
-
-(define cnt0  (make-perc 1 0 (+ C4  0)  1/4 ))
-(define cnt1  (make-perc 1 0 (+ C4  1)  1/4 ))
-(define cnt2  (make-perc 1 0 (+ C4  2)  1/4 ))
-(define cnt3  (make-perc 1 0 (+ C4  3)  1/4 ))
 
 (define count-voices 
   (map 
@@ -214,63 +201,63 @@
 ; ===========================================================================================
 ; RHYTHM_PATTERNS
 ; ===========================================================================================
-(define pns-two-four
-  (lambda (inst0 x n) 
-    (list
-      (inst0 'A           #t (/ 2 4) (+ 0.5  (rnd -0.0  0.1 )))))) 
 
-(define pns-basic-one 
-  (lambda (inst0 x n) 
-    (list
-      (inst0 'A (luck 1.00 ) 0 (+ 0.3  (rnd -0.0  0.1 )))
-      ))) 
+(define pns-list
+  `((pns-two-four         .  ( "2-4 Beat"    . ,(lambda (inst0 x n) 
+                                                  (list
+                                                    (inst0 'A           #t (/ 2 4) (+ 0.5  (rnd -0.0  0.1 )))))) )
 
-(define pns-basic-4-swing 
-  (lambda (inst0 x n) 
-    (list
-      (inst0 'A (luck 1.00 ) (/ 0 4) (+ 0.3  (rnd -0.0  0.1 )))
-      (inst0 'A (luck 0.00 ) (/ 1 4) (+ 0.5  (rnd -0.0  0.1 )))
-      (inst0 'A (luck 1.00 ) (/ 2 4) (+ 0.3  (rnd -0.0  0.1 )))
-      (inst0 'A (luck 1.00 ) (/ 3 4) (+ 0.5  (rnd -0.0  0.3 )))
-      ))) 
+    (pns-basic-one        .  ( "1 Beat"      . ,(lambda (inst0 x n) 
+                                                  (list
+                                                    (inst0 'A (luck 1.00 ) 0 (+ 0.3  (rnd -0.0  0.1 )))))) )
 
-(define pns-basic-6-swing 
-  (lambda (inst0 x n) 
-    (list
-      (inst0 'A (luck 1.00 ) (/ 0 6) (+ 0.3  (rnd -0.0  0.1 )))
-      (inst0 'A (luck 0.00 ) (/ 2 6) (+ 0.3  (rnd -0.0  0.1 )))
-      (inst0 'A (luck 1.00 ) (/ 3 6) (+ 0.3  (rnd -0.0  0.1 )))
-      (inst0 'A (luck 1.00 ) (/ 5 6) (+ 0.5  (rnd -0.0  0.3 )))
-      ))) 
+    (pns-basic-4-swing    .  ( "4-Swing"     . ,(lambda (inst0 x n) 
+                                                  (list
+                                                    (inst0 'A (luck 1.00 ) (/ 0 4) (+ 0.3  (rnd -0.0  0.1 )))
+                                                    (inst0 'A (luck 0.00 ) (/ 1 4) (+ 0.5  (rnd -0.0  0.1 )))
+                                                    (inst0 'A (luck 1.00 ) (/ 2 4) (+ 0.3  (rnd -0.0  0.1 )))
+                                                    (inst0 'A (luck 1.00 ) (/ 3 4) (+ 0.5  (rnd -0.0  0.3 )))))) )
 
-(define pns-basic-5-swing 
-  (lambda (inst0 x n) 
-    (list
-      (inst0 'A (luck 1.00 ) (/ 0 5) (+ 0.3  (rnd -0.0  0.1 )))
-      (inst0 'A (luck 0.00 ) (/ 1 5) (+ 0.3  (rnd -0.0  0.1 )))
-      (inst0 'A (luck 1.00 ) (/ 2 5) (+ 0.3  (rnd -0.0  0.1 )))
-      (inst0 'A (luck 0.00 ) (/ 3 5) (+ 0.3  (rnd -0.0  0.1 )))
-      (inst0 'A (luck 1.00 ) (/ 4 5) (+ 0.5  (rnd -0.0  0.3 )))))) 
+    (pns-basic-6-swing    .  ( "6-Swing"     . ,(lambda (inst0 x n) 
+                                                  (list
+                                                    (inst0 'A (luck 1.00 ) (/ 0 6) (+ 0.3  (rnd -0.0  0.1 )))
+                                                    (inst0 'A (luck 0.00 ) (/ 2 6) (+ 0.3  (rnd -0.0  0.1 )))
+                                                    (inst0 'A (luck 1.00 ) (/ 3 6) (+ 0.3  (rnd -0.0  0.1 )))
+                                                    (inst0 'A (luck 1.00 ) (/ 5 6) (+ 0.5  (rnd -0.0  0.3 ))))))) 
 
-(define pns-ntime  
-  (lambda (inst0 x n) 
-    (list
-      (inst0 'A (luck 1.00 ) (/ 0 4) (+ 0.3  (rnd -0.0  0.1 )))))) 
+    (pns-basic-5-swing    .  ( "5-Swing"     . ,(lambda (inst0 x n) 
+                                                  (list
+                                                    (inst0 'A (luck 1.00 ) (/ 0 5) (+ 0.3  (rnd -0.0  0.1 )))
+                                                    (inst0 'A (luck 0.00 ) (/ 1 5) (+ 0.3  (rnd -0.0  0.1 )))
+                                                    (inst0 'A (luck 1.00 ) (/ 2 5) (+ 0.3  (rnd -0.0  0.1 )))
+                                                    (inst0 'A (luck 0.00 ) (/ 3 5) (+ 0.3  (rnd -0.0  0.1 )))
+                                                    (inst0 'A (luck 1.00 ) (/ 4 5) (+ 0.5  (rnd -0.0  0.3 )))))) )
 
-(define pns-counting
-  (lambda (dummy-inst x n)
-    (list
-        (let ((cnt (list-ref count-voices x)))
-          (cnt '(A) #t 0 (rnd 0.5 0.7 ))))))
+    (pns-ntime            .  ( "pns-ntime"   .          ,(lambda (inst0 x n) 
+                                                           (list
+                                                             (inst0 'A (luck 1.00 ) (/ 0 4) (+ 0.3  (rnd -0.0  0.1 )))))) )
 
-(define create-count-measure (lambda (nm)
-                               (append
-                                 (map
-                                   (lambda (n)
-                                     (let ((cnt (list-ref count-voices n)))
-                                       (cnt '(A) #t (/ n nm ) (rnd 0.5 0.7 ))))
-                                   (iota nm))
-                                 (list (len 1)))))
+    (pns-counting         .  ( "Count Beat"  . ,(lambda (dummy-inst x n)
+                                                  (list
+                                                    (let ((cnt (list-ref count-voices x)))
+                                                      (cnt '(A) #t 0 (rnd 0.5 0.7 )))))))
+
+    (create-count-measure . ( "Count Bar"    .  ,(lambda (nm)
+                                                   (append
+                                                     (map
+                                                       (lambda (n)
+                                                         (let ((cnt (list-ref count-voices n)))
+                                                           (cnt '(A) #t (/ n nm ) (rnd 0.5 0.7 ))))
+                                                       (iota nm))
+                                                     (list (len 1))))))))
+(list
+  (cons "1 Beat"   'pns-basic-one )
+  'selected
+  (cons "2-4 Beat" 'pns-two-four )
+  (cons "4 Swing"  'pns-basic-4-swing )
+  (cons "5 Swing"  'pns-basic-5-swing )
+  (cons "6 Swing"  'pns-basic-6-swing )
+  (cons "Counting" 'pns-counting ))
 
 ;==============================================================================================
 ;
@@ -677,7 +664,7 @@
             (in-instrument  'inst-Kick-Long )
             (in-pns-pattern 'pns-basic-one )
             (in-velo-values "'( 2/4 2/4 2/4 3/4 )" )
-            (in-beat-offset "(+ 0/4 0 )" )
+            (in-beat-offset "(+ -0/4 -0/32)" )
             (in-beat-count 4 )
             (in-measure-count 1))
     (letrec ((make-combo 
@@ -718,8 +705,8 @@
                                 (put-seq! track-id 
                                           (lambda ()
                                             (let ((notes (n-swing beat-count measure-count 
-                                                                  (bind-pns (cdr (sym2inst instrument )) 
-                                                                            (eval pns-pattern))) ))
+                                                                  (bind-pns (cdr (sym2val instrument inst-list )) 
+                                                                            (cdr (sym2val pns-pattern pns-list )))) ))
                                               (m notes velo: (lm (nc notes) velo-values )))
                                             )
                                           'parallel 'main beat-offset)
@@ -766,6 +753,22 @@
                                                    (gui-new 'label " " )
                                                    (gui-new 'label "Pat" ); 'name 'pattern
                                                    'name 'pns-pattern
+
+                                                   (apply gui-new 
+                                                     (append
+                                                       (list 'combo )
+                                                       (insert-list-by-index 
+                                                         (key-name-value-list-to-name-key-list pns-list )
+                                                         (list 'selected) 
+                                                         2 )
+                                                       
+                                                       (list
+                                                         (lambda (sel cmd usr src evt ) 
+                                                           (display cmd)
+                                                           (newline) 
+                                                           (self 'write 'pns-pattern usr )
+                                                           (update-inst)))))
+                                                   #|
                                                    (gui-new 'combo 
                                                             (cons "1 Beat"   'pns-basic-one )
                                                             'selected
@@ -779,6 +782,7 @@
                                                               (newline) 
                                                               (self 'write 'pns-pattern usr )
                                                               (update-inst)))
+                                                   |#
                                                    (gui-new 'label " " )
                                                    (gui-new 'label "Beat" )
                                                    'name 'beat-count
@@ -793,7 +797,7 @@
                                                    (gui-new 'label "  " )
                                                    (gui-new 'label "VELOS" )
                                                    'name 'text-velo-values
-                                                   (gui-new 'text-field  "" 16
+                                                   (gui-new 'text-field  "" 32 
                                                             (lambda (sel cmd usr src evt ) 
                                                               (display cmd)
                                                               (newline) 
@@ -802,7 +806,7 @@
                                                    (gui-new 'label "  " )
                                                    (gui-new 'label "OFFS" )
                                                    'name 'text-beat-offset
-                                                   (gui-new 'text-field  "" 16
+                                                   (gui-new 'text-field  "" 12 
                                                             (lambda (sel cmd usr src evt ) 
                                                               (display cmd)
                                                               (newline) 

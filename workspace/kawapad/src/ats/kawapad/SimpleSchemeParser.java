@@ -23,6 +23,8 @@ package ats.kawapad;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 
+import ats.pulsar.lib.SimpleSchemeIndentChanger;
+
 public class SimpleSchemeParser {
 	public static enum ParseDirection { FORWARD,BACKWARD }
 	public static enum ModeType { PARENTHESIS, STRING, ESCAPESEQUENCE }

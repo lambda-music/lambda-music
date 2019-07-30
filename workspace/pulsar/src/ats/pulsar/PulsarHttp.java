@@ -18,6 +18,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
+import ats.pulsar.lib.SimpleSchemePrettifier;
 import ats.pulsar.lib.secretary.Invokable;
 import ats.pulsar.lib.secretary.SecretaryMessage;
 import ats.pulsar.lib.secretary.scheme.SchemeSecretary;
@@ -117,7 +118,7 @@ class PulsarHttp {
 				if ( result == null ) {
 					bo.write( "#!null".getBytes() );
 				} else {
-					bo.write( result.toString().getBytes( charset ) );
+					bo.write( SimpleSchemePrettifier.prettyPrint( result ).getBytes( charset ) );
 					bo.write( '\n' );
 				}
 			} else {

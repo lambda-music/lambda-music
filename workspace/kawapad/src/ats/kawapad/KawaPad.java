@@ -39,7 +39,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
@@ -87,12 +86,13 @@ import ats.kawapad.SimpleSchemeParser.ParserState;
 import ats.kawapad.lib.CompoundGroupedUndoManager;
 import ats.kawapad.lib.GroupedUndoManager;
 import ats.pulsar.lib.SchemeUtils;
+import ats.pulsar.lib.SimpleSchemeIndentChanger;
+import ats.pulsar.lib.SimpleSchemePrettifier;
 import ats.pulsar.lib.secretary.SecretaryMessage;
 import ats.pulsar.lib.secretary.scheme.SchemeSecretary;
 import ats.pulsar.lib.swing.Action2;
 import gnu.expr.Language;
 import gnu.kawa.io.InPort;
-import gnu.kawa.io.OutPort;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.Pair;
@@ -428,14 +428,6 @@ public class KawaPad extends JFrame {
 
 		});
 	}
-	public static String prettyPrint(Object resultObject) throws Throwable {
-		StringWriter out = new StringWriter();
-		OutPort outPort = new OutPort( out, true, true );
-		SchemeUtils.toString( kawa.lib.kawa.pprint.pprint.apply2( resultObject, outPort ) );
-		outPort.flush();
-		return out.toString();
-	}
-
 	String getLispWordPatternString() {
 		return KawaPadHighlighter.lispWordToPatternString( getLispWords() ); 
 	}
@@ -518,7 +510,7 @@ public class KawaPad extends JFrame {
 //				System.out.println("==========================");
 //				System.out.println( resultObject.getClass() );
 //				System.out.println("==========================");
-				result = prettyPrint( resultObject );
+				result = SchemeUtils.anyToString( SimpleSchemePrettifier.prettyPrint( resultObject ) );
 
 			} catch (Throwable e1) {
 				errorOccured = true;
@@ -979,7 +971,7 @@ public class KawaPad extends JFrame {
 			SchemeUtils.defineVar(scheme, "pretty-print", new Procedure1() {
 				@Override
 				public Object apply1(Object arg1 ) throws Throwable {
-					return prettify( scheme, SchemeUtils.anyToString(prettyPrint(arg1)));
+					return prettify( scheme, SchemeUtils.anyToString(SimpleSchemePrettifier.prettyPrint(arg1)));
 				}
 			});
 			SchemeUtils.defineVar(scheme, "prettify", new Procedure1() {

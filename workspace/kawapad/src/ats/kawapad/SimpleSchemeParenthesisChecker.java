@@ -27,6 +27,7 @@ import ats.kawapad.SimpleSchemeParser.ModeFactory;
 import ats.kawapad.SimpleSchemeParser.ModeType;
 import ats.kawapad.SimpleSchemeParser.ParseDirection;
 import ats.kawapad.SimpleSchemeParser.ParserState;
+import ats.pulsar.lib.SimpleSchemeIndentChanger;
 
 /**
  *  October 3, 2018 at 9:52:22 PM

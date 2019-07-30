@@ -61,6 +61,7 @@ import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 import gnu.mapping.Procedure0;
+import gnu.mapping.Procedure1;
 import gnu.mapping.Procedure3;
 import gnu.mapping.ProcedureN;
 import gnu.mapping.Values;
@@ -207,7 +208,7 @@ public final class Pulsar extends Metro {
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException {
-		Pulsar pulsar = new Pulsar( false, true );
+		Pulsar pulsar = new Pulsar( true, true );
 		if ( args.length == 0 ) {
 		} else {
 			pulsar.openMainFile(null, new File( args[0] ));
@@ -221,7 +222,12 @@ public final class Pulsar extends Metro {
 		return pulsarGui != null;
 	}
 
+	boolean isQuitting = false;
 	public void quit() {
+		if ( isQuitting )
+			return;
+		isQuitting = true;
+		
 		if ( isGuiAvailable() ) {
 			this.pulsarGui.quit();
 		}
@@ -782,6 +788,40 @@ public final class Pulsar extends Metro {
 			});
 	}
 
+	interface ConnectProc {
+		void apply( Pulsar pulsar, String from, String to ) throws JackException;
+		ConnectProc CONNECT = new ConnectProc() {
+			@Override
+			public void apply(Pulsar pulsar, String from, String to) throws JackException {
+				pulsar.connectPort(from, to);
+			}
+		};
+		ConnectProc DISCONNECT = new ConnectProc() {
+			@Override
+			public void apply(Pulsar pulsar, String from, String to) throws JackException {
+				pulsar.disconnectPort(from, to);
+			}
+		};
+	}
+	
+	static void connectProc(Pulsar pulsar, Object[] args, ConnectProc proc ) {
+		ArrayDeque<Object> deque = new ArrayDeque<>( Arrays.asList( args ) );
+		while ( 0 < deque.size() ) {
+			Object fromObj = deque.pop();
+			Object toObj = deque.pop();
+			if ( fromObj == null || toObj == null ) {
+				break;
+			}
+			String from = fromObj != null ? SchemeUtils.toString( fromObj ) : null;
+			String to   = toObj   != null ? SchemeUtils.toString( toObj   ) : null;
+			try {
+				proc.apply(pulsar, from, to );
+			} catch ( JackException e  ) {
+				logError( "" , e );
+			}
+		}
+	}
+
 	/**
 	 * Initializes an environment of scheme engine and defines API for the scripts.
 	 * 
@@ -795,13 +835,10 @@ public final class Pulsar extends Metro {
 				return running;
 			}
 		});
-		SchemeUtils.defineVar( scheme, "open!" , new ProcedureN() {
+		SchemeUtils.defineVar( scheme, "open!" , new Procedure1() {
 			@Override
-			public Object applyN(Object[] args) throws Throwable {
-				for ( Object o : args ) {
-					String name = SchemeUtils.toString( o );
-					open( name );
-				}
+			public Object apply1(Object arg0) throws Throwable {
+				open( SchemeUtils.toString( arg0 ) );
 				return EmptyList.emptyList;
 			}
 		});
@@ -835,21 +872,14 @@ public final class Pulsar extends Metro {
 		SchemeUtils.defineVar( scheme, "connect!" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
-				ArrayDeque<Object> deque = new ArrayDeque<>( Arrays.asList( args ) );
-				while ( 0 < deque.size() ) {
-					Object fromObj = deque.pop();
-					Object toObj = deque.pop();
-					if ( fromObj == null || toObj == null ) {
-						break;
-					}
-					String from = fromObj != null ? SchemeUtils.toString( fromObj ) : null;
-					String to   = toObj   != null ? SchemeUtils.toString( toObj   ) : null;
-					try {
-						connectPort( from, to );
-					} catch ( JackException e  ) {
-						logError( "" , e );
-					}
-				}
+				connectProc(Pulsar.this, args, ConnectProc.CONNECT );
+				return EmptyList.emptyList;
+			}
+		});
+		SchemeUtils.defineVar( scheme, "disconnect!" , new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				connectProc(Pulsar.this, args, ConnectProc.DISCONNECT );
 				return EmptyList.emptyList;
 			}
 		});

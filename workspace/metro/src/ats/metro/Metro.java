@@ -587,6 +587,8 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
         		logInfo( s );
         	}
         }
+        logInfo( "========================");
+        logInfo( "" );
     }
     
 	public void connectPort( Map<String, String> map ) {
@@ -602,11 +604,18 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 			}
 		}
 	}
-	public void connectPort(String source, String desitination) throws JackException {
+	public void connectPort(String from, String to) throws JackException {
 		try {
-			this.jack.connect( this.client, source, desitination);
+			this.jack.connect( this.client, from, to);
 		} catch ( JackException e ) {
-			throw new JackException( "Error occured while connecting from " + source + " to " + desitination, e );
+			throw new JackException( "Error occured while connecting from " + from + " to " + to, e );
+		}
+	}
+	public void disconnectPort(String from, String to) throws JackException {
+		try {
+			this.jack.disconnect( this.client, from, to);
+		} catch ( JackException e ) {
+			throw new JackException( "Error occured while connecting from " + from + " to " + to, e );
 		}
 	}
     
