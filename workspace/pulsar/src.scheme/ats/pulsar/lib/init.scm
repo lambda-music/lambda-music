@@ -28,9 +28,17 @@
 (define display-notes (lambda (flg notes) 
                         (if flg
                           (begin
-                            (set! *print-right-margin* 80)
-                            (pprint notes)
-                            (newline)))
+                            (set! *print-right-margin* 8000)
+                            (display "(")
+                            (for-each (lambda(note)
+                                        (pprint note)
+                                        (newline))
+                                      notes)
+                            (display ")")
+                            (newline)
+                            (newline)
+                            ))
+
                         notes))
 
 ; display-args
@@ -88,9 +96,39 @@
   | Check if it is a list of associate lists or an associate list. 
   | Note that this examination presumes the first element of a note 
   | which is an associate list is '(type . note).  
+  |
+  | >> MODIFIED now it is not as above. (Tue, 30 Jul 2019 14:18:12 +0900)
   |#
-(define (note? e)
-  (symbol? (caar e)))
+; renamed note? -> notation? (Tue, 30 Jul 2019 14:29:43 +0900)
+(define (notation? e)
+  (and (pair? e)
+       (pair? (car e ))
+       (symbol? (caar e))
+       (not (pair?   (cdar e)))))
+
+; this function retrieves the note type value.
+; ex)
+; (get-notation-type '((type . note )( 1 2) ) )
+; => note
+(define (get-notation-type e)
+  (if (not (notation? e))
+    ; if the object is not a note, return #f.
+    #f
+    ; (raise  '( invalid-argument-error . "the passed object is not a note object.") )
+    ; otherwise get the type value.
+    (cdr (or (assq 'type e)
+             (cons 'type #f)))))
+
+
+; ((make-notation-type-checker 'note) '((type . note)(1 2)))
+; => #t
+(define (make-notation-type-checker type)
+  (lambda (e) 
+    (eq? type (get-notation-type e ))))
+
+
+(define note? (make-notation-type-checker 'note))
+
 
 (define debug-n-implementation #f)
 (define (n-implementation append-proc . args)
@@ -124,7 +162,7 @@
                              (loop (+ idx 1) (cdr args) (cons (cons k v) params)  notes))
                            ))
                         ((pair? e)
-                         (if (note? e)
+                         (if (notation? e)
                            (loop (+ idx 1 ) (cdr args) params (append-proc notes (list e)))
                            (loop (+ idx 1 ) (cdr args) params (append-proc notes       e))))
                         (else 
@@ -205,24 +243,30 @@
 
 ; Added at (Sun, 28 Jul 2019 16:04:25 +0900)
 ; === map ===
-; "m" stands for mapping.
+; m!  
+; The name of function "m" stands for mapping.
+;
+; The function m! takes a note list and a value list and set values on the
+; notes of the specified property. This function modifies the passed note
+; objects directly; therefore the name of this function postfixed with an
+; exclamation mark.
 ;
 ; ex1) 
-; (m '(((note . 60) (pos .  0/4) (velo . 0.0))
-;     ((note . 62) (pos .  1/4) (velo . 0.0))
-;     ((note . 64) (pos .  2/4)             )
-;     ((note . 65) (pos .  3/4) (velo . 0.0)))
-;    velo: '( 0.1 0.2 0.3 0.4 )
-;    pos : '( 0/8 1/8 2/8 3/8 ))              
-;
+;  (m! '(((note . 60) (pos .  0/4) (velo . 0.0))
+;        ((note . 62) (pos .  1/4) (velo . 0.0))
+;        ((note . 64) (pos .  2/4)             )
+;        ((note . 65) (pos .  3/4) (velo . 0.0)))
+;      velo: '( 0.1 0.2 0.3 0.4 )
+;      pos : '( 0/8 1/8 2/8 3/8 ))              
+; ;
 ; =>  (((note . 60) (pos .  0/8) (velo . 0.1))
 ;      ((note . 62) (pos .  1/8) (velo . 0.2))
 ;      ((note . 64) (pos .  2/8) (velo . 0.3))
 ;      ((note . 65) (pos .  3/8) (velo . 0.4)))
 ;
 ; ex2) 
-; (m 
-;   (m #f pos: '( 1 2 3 ))
+; (m! 
+;   (m! #f pos: '( 1 2 3 ))
 ;   pos: (lambda (v)
 ;          (display v)
 ;          (newline)
@@ -231,7 +275,7 @@
 ; => (((pos . 2)) ((pos . 3)) ((pos . 4)))
 ;
 ; === TEST ===
-;  (display-notes #t (m (copy-cons '(((note . 60) (pos .  0/4) (velo . 0.0))
+;  (display-notes #t (m! (copy-cons '(((note . 60) (pos .  0/4) (velo . 0.0))
 ;                                    ((note . 62) (pos .  1/4) (velo . 0.0))
 ;                                    ((note . 64) (pos .  2/4)             )
 ;                                    ((note . 65) (pos .  3/4) (velo . 0.0))))
@@ -243,7 +287,8 @@
 ;                                            ((note . 64) (pos . 1/4) (velo . 0.3))
 ;                                            ((note . 65) (pos . 3/8) (velo . 0.4))) 
 
-(define (m . args)
+
+(define (m! . args)
   (let ((lst-of-alst (car args ))
         (args        (cdr args )))
 
@@ -323,6 +368,14 @@
 
     lst-of-alst))
 
+; (display-notes #t (m! (copy-cons '(((note . 60) (pos .  0/4) (velo . 0.0))
+;                                    ((note . 62) (pos .  1/4) (velo . 0.0))
+;                                    ((note . 64) (pos .  2/4)             )
+;                                    ((note . 65) (pos .  3/4) (velo . 0.0))))
+;                       velo: '( 0.1 0.2 0.3 0.4 )
+;                       pos:  '( 0/8 1/8 2/8 3/8 )))
+; 
+
 
 ; The name of the function "ap" stands for arithmetic progression.
 ; ex)
@@ -339,12 +392,6 @@
 
 
 
-(display-notes #t (m (copy-cons '(((note . 60) (pos .  0/4) (velo . 0.0))
-                                  ((note . 62) (pos .  1/4) (velo . 0.0))
-                                  ((note . 64) (pos .  2/4)             )
-                                  ((note . 65) (pos .  3/4) (velo . 0.0))))
-                     velo: '( 0.1 0.2 0.3 0.4 )
-                     pos:  '( 0/8 1/8 2/8 3/8 )))
 
 ; Currently this funciton is not used.
 ; (Sun, 28 Jul 2019 13:43:45 +0900)
@@ -393,13 +440,14 @@
 ; that is passed as count parameter, this returns
 ; (take lst count) .
 ; Otherwise this returns the passed list.
-; (lm '(0 1 2 3 ) 5 )
+; (lm 5 '(0 1 2 3 ) )
 ;    => (0 1 2 3 ) 
-; (lm '(0 1 2 3 ) 2 )
+; (lm 2 '(0 1 2 3 ) )
 ;    => (0 1 ) 
 ;
 ; Added (Mon, 29 Jul 2019 16:13:44 +0900)
 ;
+
 (define (lm count lst)
   (if (<= (length lst) count )
     lst
@@ -426,7 +474,7 @@
   (let ((notes (reverse (let loop (( args args))
                           (if (null? args)
                             '()      
-                            (if (note? (car args))
+                            (if (notation? (car args))
                               (cons (car args) (loop (cdr args)))
                               (append (car args) (loop (cdr args)))))))))
     (reverse
@@ -856,14 +904,14 @@
 
                     ; check if the result contains a special note
                     ; which is called 'msg' note, 
-                    (let ((note-type (cdr (or
+                    (let ((notation-type (cdr (or
                                             (assq 'type (car result))
                                             (cons 'type #f)))))
                       (if debug-parse-notes (begin
-                                              (display (format "note-type  : ~a " note-type ))
+                                              (display (format "notation-type  : ~a " notation-type ))
                                               (newline)))
 
-                      (if (eq? note-type 'tmp-parser-note)
+                      (if (eq? notation-type 'tmp-parser-note)
                         ; while the result contains a msg note,
                         ; merge it to the result note.
                         (begin
