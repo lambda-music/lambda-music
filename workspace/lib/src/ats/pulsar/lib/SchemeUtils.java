@@ -190,30 +190,12 @@ public class SchemeUtils {
 		return Symbol.valueOf(value);
 	}
 	
-	@Deprecated
-	public static <T> T schemeNullToJavaNull( T object ) {
-		if ( object instanceof EmptyList ) {
+	public static <T> T schemeNullCheck( T object ) {
+		if ( object == null ) {
 			return null;
-		} else {
-			return object;
-		}
-	}	
-	
-	/**
-	 *  use {@link SchemeUtils#javaNullCheck(Object) }
-	 */
-	@Deprecated
-	public static Object javaNullToSchemeNull( Object object ) {
-		if ( object == null )
-			return EmptyList.emptyList;
-		else
-			return object;
-	}
-	
-	public static Object schemeNullCheck( Object object ) {
-		if ( (object instanceof Boolean ) && 
-             ( ((Boolean)object).booleanValue() == false ) ) 
-		{
+		} else if ( object instanceof EmptyList ) {
+			return null;
+		} else if ( Boolean.FALSE.equals( object ) ) {
 			return null;
 		} else {
 			return object;

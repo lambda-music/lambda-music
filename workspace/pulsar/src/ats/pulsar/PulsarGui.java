@@ -319,7 +319,7 @@ class PulsarGui {
     		public Object applyN(Object[] args) throws Throwable {
     			if ( 1 <= args.length ) {
         			ArrayDeque<Object> argList = new ArrayDeque<>( Arrays.asList(args) );
-        			Component component = (Component) SchemeUtils.schemeNullToJavaNull( argList.pop() );
+        			Component component = (Component) SchemeUtils.schemeNullCheck(argList.pop());
     				Container parent = component.getParent();
 					return SchemeUtils.javaNullCheck( parent );
     			} else {
@@ -335,7 +335,7 @@ class PulsarGui {
     		public Object applyN(Object[] args) throws Throwable {
     			if ( 1 <= args.length ) {
         			ArrayDeque<Object> argList = new ArrayDeque<>( Arrays.asList(args) );
-        			Container parent = (Container) SchemeUtils.schemeNullToJavaNull( argList.pop() );
+        			Container parent = (Container) SchemeUtils.schemeNullCheck(argList.pop());
         			guiRemoveAll(parent);
         			return EmptyList.emptyList;
     			} else {
@@ -351,7 +351,7 @@ class PulsarGui {
     		public Object applyN(Object[] args) throws Throwable {
     			if ( 1 < args.length ) {
         			ArrayDeque<Object> argList = new ArrayDeque<>( Arrays.asList(args) );
-        			Container parent = (Container) SchemeUtils.schemeNullToJavaNull( argList.pop() );
+        			Container parent = (Container) SchemeUtils.schemeNullCheck(argList.pop());
         			guiRemoveByRef( parent, argList );
         			return EmptyList.emptyList;
     			} else {
@@ -367,12 +367,12 @@ class PulsarGui {
     		public Object applyN(Object[] args) throws Throwable {
     			if ( 1 < args.length ) {
         			ArrayDeque<Object> argList = new ArrayDeque<>( Arrays.asList(args) );
-        			Container parent = (Container) SchemeUtils.schemeNullToJavaNull( argList.pop() );
+        			Container parent = (Container) SchemeUtils.schemeNullCheck(argList.pop());
         			Collection<String> path = SchemeUtils.convertList(argList, (o)->{
     					return SchemeUtils.toString(o);
     				});
     				Component c  = guiRemoveByPath( parent, path );
-    				return SchemeUtils.javaNullToSchemeNull( c );
+    				return SchemeUtils.javaNullCheck(c);
     			} else {
 					throw new RuntimeException( 
 							"Invalid argument error\n"+
@@ -403,13 +403,13 @@ class PulsarGui {
 					return Pair.makeList( (List)list );
     			} else if ( 1 < args.length ) {
         			ArrayDeque<Object> argList = new ArrayDeque<>( Arrays.asList(args) );
-        			Container parent = (Container) SchemeUtils.schemeNullToJavaNull( argList.pop() );
+        			Container parent = (Container) SchemeUtils.schemeNullCheck(argList.pop());
         			Collection<String> path = SchemeUtils.convertList(argList, (o)->{
     					return SchemeUtils.toString(o);
     				});
         			
     				Component c  = guiGet( parent, path );
-    				return SchemeUtils.javaNullToSchemeNull( c );
+    				return SchemeUtils.javaNullCheck(c);
     			} else {
     				throw new RuntimeException( 
     						"Invalid argument error\n"+
@@ -2008,7 +2008,7 @@ class PulsarGui {
 //    			add( panel_tempoScale, BorderLayout.CENTER );
     		}
     		class JTempoScalePanel extends JPanel {
-    			private final class TempoRangeActionListener implements ActionListener {
+    			final class TempoRangeActionListener implements ActionListener {
 					private final PulsarGui.TempoRange tempoRange;
 					private TempoRangeActionListener(PulsarGui.TempoRange r) {
 						this.tempoRange = r;
@@ -2164,7 +2164,8 @@ class PulsarGui {
     	return b;
     }
 
-    private JButton createCueButton() {
+    @SuppressWarnings("unused")
+	private JButton createCueButton() {
     	JButton b = new JButton( "=== CUE ===" ) {
     		@Override
     		public Dimension getPreferredSize() {
