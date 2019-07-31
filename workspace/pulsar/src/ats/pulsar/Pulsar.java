@@ -829,7 +829,7 @@ public final class Pulsar extends Metro {
 	 *            the scheme instance to initialize.
 	 */
 	public void initScheme( Scheme scheme ) {
-		SchemeUtils.defineVar( scheme, "open?" , new ProcedureN() {
+		SchemeUtils.defineVar( scheme, "open?" , new ProcedureN( "open?" ) {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				return running;

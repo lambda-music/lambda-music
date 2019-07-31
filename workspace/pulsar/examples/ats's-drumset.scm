@@ -1,9 +1,9 @@
 ;===============================================================================
 ;
-; This scheme script file defines a number of instruments which Ats frequently
-; use. This does not make sense for those people other than Ats but
-; this also might be an example to understand how to access to your favorite
-; instruments from Pulsar sequencer.
+; This scheme script file defines a number of instruments which I frequently
+; use. This does not make sense for those people other than me but this also
+; might be an example to understand how to access to your favorite instruments
+; from Pulsar sequencer.
 ;
 ; See 
 ;    RHYTHM_PATTERNS

@@ -41,7 +41,6 @@ import gnu.lists.AbstractSequence;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.Pair;
-import gnu.mapping.Environment;
 import gnu.mapping.SimpleSymbol;
 import gnu.mapping.Symbol;
 import gnu.math.DFloNum;
@@ -229,20 +228,17 @@ public class SchemeUtils {
 	}
 	
 	public static Pair acons( String key, Object value ) {
-		return new Pair( toSchemeSymbol( key ) , value );
+		return Pair.make( toSchemeSymbol( key ) , value );
 	}
 
 	public static final void defineVar( Scheme scheme, String name, Object value ) {
 		scheme.getEnvironment().define( SimpleSymbol.make( "", name ), null, value );
 	}
-	public static final void putVar( Scheme scheme, String name, Object value ) {
-		scheme.getEnvironment().put( SimpleSymbol.make( "", name ), null, value );
-	}
-	public static final void putVar( Environment e, String name, Object value ) {
-		e.put( SimpleSymbol.make( "", name ), null, value );
-	}
 	public static final boolean isDefined( Scheme scheme, String name  ) {
 		return scheme.getEnvironment().isBound( SimpleSymbol.make( "", name ) );
+	}
+	public static final void putVar( Scheme scheme, String name, Object value ) {
+		scheme.getEnvironment().put( SimpleSymbol.make( "", name ), null, value );
 	}
 	public static final Object getVar( Scheme scheme, String name  ) {
 		return scheme.getEnvironment().get( SimpleSymbol.make( "", name ) );
