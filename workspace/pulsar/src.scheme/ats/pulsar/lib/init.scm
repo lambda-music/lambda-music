@@ -41,6 +41,22 @@
 
                         notes))
 
+(define pprint-notes (lambda (notes) 
+                       (begin
+                         (set! *print-right-margin* 8000)
+                         (let ((oos (open-output-string)) )
+                           (display "(" oos)
+                           (for-each (lambda(note)
+                                       (pprint note oos)
+                                       (newline oos))
+                                     notes)
+                           (display ")\n"  oos  )
+                           (newline      oos  )
+                           (get-output-string oos)))))
+
+(pprint-notes (melody '( do re mi end )))
+
+
 ; display-args
 (define display-args  (lambda args (map display args )))
 
@@ -130,8 +146,20 @@
 (define note? (make-notation-type-checker 'note))
 
 
+
+(define << <<: ) 
+(define >> >>: ) 
+
+; ==============================================
+;
+; n ... this is (note) function
+; s ... this is (serial) function
+; p ... this is (parallel) function
+;
+; ==============================================
+
 (define debug-n-implementation #f)
-(define (n-implementation append-proc . args)
+(define (n-implementation default-param-proc append-proc . args)
   (if debug-n-implementation (begin
                                (display 'append-proc)
                                (display append-proc)
@@ -139,60 +167,157 @@
                                (display 'args)
                                (display args)
                                (newline)))
-  (let-values (((params notes) 
+  (let-values (((params mapvals notes default-param-name)
+                ; parsing the args; filtering them into params and notes.
                 (let loop ((idx 0)
                            (args args)
                            (params '())
-                           (notes '()))
+                           (mapvals '())
+                           (notes '())
+                           (default-param-name #f))
                   (if debug-n-implementation (begin
                                                (display 'append-proc-args)
                                                (display args)
-                                               (newline)
-                                               ))
+                                               (newline)))
                   (if (null? args)
-                    (values params notes)
+                    ; end the loop
+                    (values params mapvals notes default-param-name)
+                    ; process loop
                     (let ((e (car args)))
                       (cond
                         ((keyword? e)
+                         ; advance to next element.
                          (set! args (cdr args))
                          (if (null? args)
-                           (raise '(invalid-argument-error . "" ))
+                           ; 
+                           (raise '(invalid-argument-error . "insufficient number of argument error" ))
+
+                           ; if the current value is a keyword, then treat it as a property name.
+                           ; Treat the next value as a property value.
+                           ; (n velo: xx chan: aa ... )
                            (let ((k (string->symbol (keyword->string e)))
                                  (v (car args)))
-                             (loop (+ idx 1) (cdr args) (cons (cons k v) params)  notes))
-                           ))
+
+                             ; Check special property value(s).
+                             (cond
+                               ; About ">>"
+                               ; Treat >>: as default parameter specifier.  We treat a parameter that
+                               ; was passed with a value >>: as "default-param-name"; when a non-note
+                               ; value is specified in the note list, we treat the value as a
+                               ; property value of the "default-param-name".  For further information,
+                               ; see the examples in the comment following.
+                               ((and (keyword? v) (string=? (keyword->string v) ">>" ) )
+                                (if debug-n-implementation (begin
+                                                             (display "n-implementation >> called k=")
+                                                             (display k)
+                                                             (newline)))
+                                (loop (+ idx 1) (cdr args)                  params mapvals notes k ))
+
+                               ; About "<<"  TODO
+                               ((and (keyword? v) (string=? (keyword->string v) "<<" ) )
+                                ; advance to next element, again.
+                                (set! args (cdr args))
+                                (if (null? args)
+                                  (raise '(invalid-argument-error . "insufficient number of argument error" )))
+
+                                (let ((vv (car args)))
+                                  (loop (+ idx 1) (cdr args) params (cons (cons k vv) mapvals) notes default-param-name)))
+
+                               ; Treat as a normal parameter name.
+                               (else
+                                (loop (+ idx 1) (cdr args) (cons (cons k v) params) mapvals notes default-param-name))))))
+
                         ((pair? e)
+                         ; error check
+                         (if (circular-list? e )
+                           (raise '( invalid-argument-error . "a circular list is not allowed here." ) ))
+
                          (if (notation? e)
-                           (loop (+ idx 1 ) (cdr args) params (append-proc notes (list e)))
-                           (loop (+ idx 1 ) (cdr args) params (append-proc notes       e))))
+                           (loop (+ idx 1 ) (cdr args) params mapvals (append-proc notes (list e)) default-param-name)
+                           (loop (+ idx 1 ) (cdr args) params mapvals (append-proc notes       e)  default-param-name)))
                         (else 
-                          (cond
-                            ((= idx 0)
-                             (loop (+ idx 1) (cdr args) (cons (cons 'note e) params)  notes))
-                            ((= idx 1)
-                             (loop (+ idx 1) (cdr args) (cons (cons 'pos  e) params)  notes))
-                            ((= idx 2)
-                             (loop (+ idx 1) (cdr args) (cons (cons 'velo e) params)  notes))
+                          ; when it is neither a parameter nor a note.
+                          (cond 
+                            ((eq? 'go-to-param default-param-proc)
+                             ; default it to params.
+                             (cond
+                               ((= idx 0)
+                                (loop (+ idx 1) (cdr args) (cons (cons 'note e) params) mapvals notes default-param-name))
+                               ((= idx 1)
+                                (loop (+ idx 1) (cdr args) (cons (cons 'pos  e) params) mapvals notes default-param-name))
+                               ((= idx 2)
+                                (loop (+ idx 1) (cdr args) (cons (cons 'velo e) params) mapvals notes default-param-name))
+                               (else
+                                 (raise '(invalid-argument-error . "illegal position as a default parameter value" ))))
+                             ; otherwise, default it to notes.
+                             )
+                            ((eq? 'go-to-notes default-param-proc )
+                             (loop (+ idx 1) (cdr args) params mapvals (append-proc notes (list e)) default-param-name))
+                            ((eq? 'go-to-error default-param-proc )
+                             (raise '(invalid-argument-error . "default parameter is not allowed here." ) ))
                             (else
-                              (raise '(invalid-argument-error . "" )))))))))))
-              (if (= 0 (length notes))
-                ; If no note was specified, the `params` object becomes a note object.
-                (sort-note-properties 
-                  (cleanup-note-properties 
-                    (reverse params)))
-                ; Otherwise, apply the params to the passed note objects.
-                (begin
-                  (map (lambda (note)
-                         (sort-note-properties 
-                           (cleanup-note-properties
-                             (append 
-                               (reverse params) 
-                               note ))))
-                       notes )))))
+                              (raise '(internal-error . (string-append "mysterious internal error " 
+                                                                       (symbol->string default-param-proc)))))))))))))
+
+              (let ((notes notes))
+                (if (= 0 (length notes))
+                  ; If no note was specified, the `params` object becomes a note object.
+                  (begin
+                    (if debug-n-implementation (begin
+                                                 (display "n-implementation no note")))
+                    (set! notes
+                      (sort-note-properties 
+                        (cleanup-note-properties 
+                          (reverse params))))
+                    notes)
+
+                  ; Otherwise, apply the params to the passed note objects.
+                  (begin
+                    (if debug-n-implementation (begin
+                                                 (display "n-implementation yes we have notes")))
+                    (set! notes 
+                      (map (lambda (note)
+                             (if (not (notation? note))
+                               (if default-param-name
+                                 (set! note (list (cons  default-param-name note )))
+                                 (raise '( illegal-state-error . "no default-param-name was specified." ))))
+
+                             (set! note 
+                               (sort-note-properties 
+                                 (cleanup-note-properties
+                                   (append 
+                                     ; duplicate each association. dont let it shared from multiple notes.
+                                     ; (Wed, 31 Jul 2019 16:19:53 +0900)
+                                     (ccons (reverse params))
+                                     note ))))
+                             note)
+                           notes ))
+
+                    ;             curr-var last-var
+                    (set! notes
+                      (fold (lambda(a-mapval notes)
+                              ; We return the result of the map and 
+                              ; it goes to fold result. It will come back
+                              ; as 'notes' at the next turn.
+                              (let ((prop-name  (car a-mapval))
+                                    (prop-vals  (cdr a-mapval)))
+                                (map (lambda(a-note a-prop-val)
+                                       (sort-note-properties 
+                                         (cleanup-note-properties
+                                           (cons
+                                             (cons prop-name a-prop-val)
+                                             a-note))))
+                                     notes
+                                     prop-vals
+                                     )))
+                            notes 
+                            mapvals))
+                    notes)))
+              ))
 
 ; === note ===
-; "n" stands for "note" 
-
+; This function creates a note. "n" stands for "note". 
+;
 ; 1. A way to shorten the creation of note data.
 ;    (n C4 0.1 0.3) => ((note . 60) (pos . 0.1) (velo . 0.1))
 ;   arg0 => note number
@@ -210,20 +335,31 @@
 
 
 (define (n . args)
-  (apply n-implementation (cons append args )))
+  (apply n-implementation (cons* 'go-to-param append args )))
 
 ; === parallel ===
-; "p" stands for parallel processing for something I fogot.
+; "p" stands for parallel.
 ; # This seems to be not used anywhere; you need to reconfirm that.
 ; (Sun, 28 Jul 2019 13:43:45 +0900)
 (define (p . args)
-  (apply n-implementation (cons append args )))
+  (apply n-implementation (cons* 'go-to-notes append args )))
 
 ; === serial ===
 ; "s" stands for serial processing for something I fogot.
 ; (Sun, 28 Jul 2019 13:43:45 +0900)
+; (define (s . args)
+;   (apply append-notes args))
 (define (s . args)
-  (apply append-notes args))
+  (display args)
+  (apply n-implementation (cons* 'go-to-error append-notes args)))
+
+
+; === repeat ===
+; repeat the passed notes.
+(define (repeat times lst )
+  (apply append-notes (map ccons (make-list times lst ))))
+
+
 
 
 ; from https://stackoverflow.com/questions/8028490/mapping-uneven-lists-help-scheme
@@ -275,7 +411,7 @@
 ; => (((pos . 2)) ((pos . 3)) ((pos . 4)))
 ;
 ; === TEST ===
-;  (display-notes #t (m! (copy-cons '(((note . 60) (pos .  0/4) (velo . 0.0))
+;  (display-notes #t (m! (ccons '(((note . 60) (pos .  0/4) (velo . 0.0))
 ;                                    ((note . 62) (pos .  1/4) (velo . 0.0))
 ;                                    ((note . 64) (pos .  2/4)             )
 ;                                    ((note . 65) (pos .  3/4) (velo . 0.0))))
@@ -368,7 +504,7 @@
 
     lst-of-alst))
 
-; (display-notes #t (m! (copy-cons '(((note . 60) (pos .  0/4) (velo . 0.0))
+; (display-notes #t (m! (ccons '(((note . 60) (pos .  0/4) (velo . 0.0))
 ;                                    ((note . 62) (pos .  1/4) (velo . 0.0))
 ;                                    ((note . 64) (pos .  2/4)             )
 ;                                    ((note . 65) (pos .  3/4) (velo . 0.0))))
@@ -387,9 +523,14 @@
 ;
 ; This function maybe useful for creating polyrhythmic patterns.
 
-(define (ap n l)
-  (fold-right (lambda (x y) (cons (* (/ x n ) l )  y)) '() (iota n)))
-
+; divisor : divisor 
+; time-length : a number of bars to divide.
+(define (ap time-divisor time-length)
+  (fold-right (lambda (x y) 
+                (cons (* (/ x time-divisor ) time-length )
+                      y)) 
+              '() 
+              (iota time-divisor)))
 
 
 
@@ -408,7 +549,7 @@
 
 ; "cl" stands for circular-list
 ; This function is shorthand for srfi-1's default circular-list function.
-(define (cl lst ) 
+(define (cl . lst ) 
   (if (null? lst)
     (raise (cons 'invalid-argument-exception "arg0 cannot be null" ))
     (let (( lst2 (list-copy lst) ))
@@ -457,11 +598,11 @@
 ; This function performs deep copy on a cons cell.
 ; Currently this funciton is not used.
 ; (Sun, 28 Jul 2019 13:43:45 +0900)
-(define (copy-cons c)
+(define (ccons c)
   (if (pair? c)
     (cons 
-     (copy-cons (car c)) 
-     (copy-cons (cdr c)))
+     (ccons (car c)) 
+     (ccons (cdr c)))
     c))
 
 ; === tie ===
@@ -470,7 +611,7 @@
 ; other. For further information, I forgot.
 ; (Sun, 28 Jul 2019 13:48:04 +0900)
 (define (t . args) 
-  (set! args (copy-cons args))
+  (set! args (ccons args))
   (let ((notes (reverse (let loop (( args args))
                           (if (null? args)
                             '()      
@@ -955,13 +1096,13 @@
                 ))
 
             ;; experimentally convert it to a number
-            ;(let ((n (string->number (symbol->string (car notes))) ))
-            ;  (if n 
+            ;(let ((nu (string->number (symbol->string (car notes))) ))
+            ;  (if nu 
             ;    ; if the value is a number
             ;    (cons
             ;      (list
             ;        (cons 'type 'tmp-len )
-            ;        (cons 'value n ))
+            ;        (cons 'value nu ))
 
             ;      (loop (cdr notes) transpose octave ))
 
@@ -1420,47 +1561,69 @@
 ;
 (define (get-len notes)
   (let ((len-note
-         (find (lambda (note)
-                      (eq? 'len (cdr (or (assq 'type note)
-                                         (cons 'type #f)) )))
-                    (reverse notes) )))    
+          (find (lambda (note)
+                  (and 
+                    (notation? note) 
+                    (eq? 'len (cdr (or (assq 'type note)
+                                       (cons 'type #f))))))
+                (reverse notes))))
     (if len-note
-      (cdr (or (assq 'value len-note)
-               (cons 'value #f)))
+      ; CAUTION : 'val not 'value you make mistakes quite often. (Wed, 31 Jul 2019 12:13:46 +0900)
+      (cdr (or (assq 'val len-note)
+               (cons 'val #f)))
       #f)))
 
-(define debug-append-notes #f)
+(define debug-append-notes #t)
 
 (define (append-notes . args )
   (if debug-append-notes (begin
+                           (display '==================)
+                           (newline)
                            (display args)
                            (newline)
+                           (display '==================)
                            ))
   (let-values (((notes len)
                 (let loop ((bars args)
                            (pos 0 ))
                   (if (null? bars ) 
                     (values '() pos)
-                    (let ((len (get-len (car bars))))
-                      (if len
-                        (let-values (((notes len)
-                                      (loop (cdr bars) (+ pos len ))))
-                                    (values (append
-                                             (mov! pos (car bars))
-                                              notes)
-                                            len))
-                        (raise "no 'len' note was found" )))))))
+                    (if (null? (car bars))
+                      ; if the current element on args is empty, ignore it.
+                      ; Following is code for "ignore it". 
+                      ; Note that (loop) returns two values.
+                      ; (Wed, 31 Jul 2019 13:50:06 +0900)
+                      (let-values (((notes len)
+                                    (loop (cdr bars) pos )))
+                                  (values notes len))
+
+                      ; otherwise
+                      (let ((len (get-len (car bars))))
+                        (if len
+                          (let-values (((notes len)
+                                        (loop (cdr bars) (+ pos len ))))
+                                      (values (append
+                                                (mov! pos (car bars))
+                                                notes)
+                                              len))
+                          (raise "no 'len' note was found" ))))))))
               (append
-               (filter (lambda(note)
-                         (not (eq? 'len (cdr (or (assq 'type note )
-                                            (cons 'type #f))))))
-                       notes)
+                (filter (lambda(note)
+                          (not (eq? 'len (cdr (or (assq 'type note )
+                                                  (cons 'type #f))))))
+                        notes)
                 (list
-                 (list
-                  (cons 'type 'len)
-                  ; CAUTION : 'val not 'value (Tue, 23 Oct 2018 14:25:27 +0900)
-                  (cons 'val len)))
+                  (list
+                    (cons 'type 'len)
+                    ; CAUTION : 'val not 'value (Tue, 23 Oct 2018 14:25:27 +0900)
+                    (cons 'val len)))
                 )))
+#|
+
+|#
+#|
+
+|#
 
 #| 
  | (append-notes 
@@ -1605,7 +1768,7 @@
       (number->string default-id-counter))))
 
 
-(define (send! p #!key (name #f) (start #f) (end #f) (once #f) )
+(define (send-old! p #!key (name #f) (start #f) (end #f) (once #f) )
   (if (not name)
     (set! name (make-default-id)))
 
@@ -1663,19 +1826,27 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define send2! (lambda (x)
-                (set! default-id-counter (+ 1 default-id-counter))
-                (let ((id 
-                        (string->symbol
-                          (string-append 
-                            "seq-" 
-                            (number->string default-id-counter )))))
-                  (put-seq! id
-                            (lambda() 
-                              (append x
-                                      '(((type . end)))))
-                            'immediate 
-                            ))))
+(define send! (lambda (x . args )
+                 (or (and
+                       (list? x)
+                       (or (= (length x) 0 )
+                           (notation? (car x))))
+                     (raise  '( 
+                                invalid-argument-exception . 
+                                "the argument must be a list of notation data" )))
+
+                 (set! default-id-counter (+ 1 default-id-counter))
+                 (let ((id 
+                         (string->symbol
+                           (string-append 
+                             "seq-" 
+                             (number->string default-id-counter )))))
+                   (put-seq! id
+                             (lambda() 
+                               (append x
+                                       '(((type . end)))))
+                             'immediate 
+                             ))))
 
 ; Process ProgressBar
 ; This moved here at (Sat, 27 Jul 2019 07:34:16 +0900)

@@ -283,21 +283,21 @@ class PulsarGui {
 					double value = SchemeUtils.toDouble(args[0]);
 					pb_position.setValue((int) (value * PB_POSITION_MAX) );
 				}
-				return EmptyList.emptyList;
+				return Invokable.NO_RESULT;
 			}
 		});
     	SchemeUtils.defineVar( scheme, "gui-clear!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				guiClear();
-    			return EmptyList.emptyList;
+    			return Invokable.NO_RESULT;
     		}
     	});
     	SchemeUtils.defineVar( scheme, "gui-pack!" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				guiPack();
-    			return EmptyList.emptyList;
+    			return Invokable.NO_RESULT;
     		}
     	});
 
@@ -337,7 +337,7 @@ class PulsarGui {
         			ArrayDeque<Object> argList = new ArrayDeque<>( Arrays.asList(args) );
         			Container parent = (Container) SchemeUtils.schemeNullCheck(argList.pop());
         			guiRemoveAll(parent);
-        			return EmptyList.emptyList;
+        			return Invokable.NO_RESULT;
     			} else {
 					throw new RuntimeException( 
 							"Invalid argument error\n"+
@@ -353,7 +353,7 @@ class PulsarGui {
         			ArrayDeque<Object> argList = new ArrayDeque<>( Arrays.asList(args) );
         			Container parent = (Container) SchemeUtils.schemeNullCheck(argList.pop());
         			guiRemoveByRef( parent, argList );
-        			return EmptyList.emptyList;
+        			return Invokable.NO_RESULT;
     			} else {
 					throw new RuntimeException( 
 							"Invalid argument error\n"+
@@ -661,7 +661,7 @@ class PulsarGui {
 				else
 					guiNewline((JComponent) args[0]);
 				
-    			return EmptyList.emptyList;
+    			return Invokable.NO_RESULT;
     		}
     	});
 //    	SchemeUtils.defineVar( scheme, "gui-repaint" , new ProcedureN() {
@@ -669,7 +669,7 @@ class PulsarGui {
 //    		public Object applyN(Object[] args) throws Throwable {
 ////					logInfo("refresh-gui");
 //				guiRepaint();
-//    			return EmptyList.emptyList;
+//    			return Invokable.NO_RESULT;
 //    		}
 //    	});
     	SchemeUtils.defineVar( scheme, "gui-layout!" , new ProcedureN() {
@@ -701,7 +701,7 @@ class PulsarGui {
     		public Object applyN(Object[] args) throws Throwable {
 				logInfo( "gui-gridbag-layout" );
 				guiGridBagLayout(userPane);
-    			return EmptyList.emptyList;
+    			return Invokable.NO_RESULT;
     		}
     	});
     	SchemeUtils.defineVar( scheme, "gui-spring-layout" , new ProcedureN() {
@@ -709,7 +709,7 @@ class PulsarGui {
     		public Object applyN(Object[] args) throws Throwable {
 				logInfo( "gui-spring-layout" );
 				guiSpringLayout(userPane);
-    			return EmptyList.emptyList;
+    			return Invokable.NO_RESULT;
     		}
     	});
     	SchemeUtils.defineVar( scheme, "gui-flow-layout" , new ProcedureN() {
@@ -717,7 +717,7 @@ class PulsarGui {
     		public Object applyN(Object[] args) throws Throwable {
 				logInfo( "gui-flow-layout" );
 				guiFlowLayout(userPane);
-    			return EmptyList.emptyList;
+    			return Invokable.NO_RESULT;
     		}
     	});
     	SchemeUtils.defineVar( scheme, "gui-put-constraint" , new ProcedureN() {
@@ -733,21 +733,21 @@ class PulsarGui {
 					throw new RuntimeException( "put-constraint has five parameters( constraint1 component1 pad constraint2 component2  )." );
 				}
 				guiRepaint(userPane);
-    			return EmptyList.emptyList;
+    			return Invokable.NO_RESULT;
     		}
     	});
     	SchemeUtils.defineVar( scheme, "gui-invalidate" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				guiInvalidate((Container) args[0] );
-    			return EmptyList.emptyList;
+    			return Invokable.NO_RESULT;
     		}
     	});
     	SchemeUtils.defineVar( scheme, "gui-validate" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				guiValidate((Container) args[0] );
-    			return EmptyList.emptyList;
+    			return Invokable.NO_RESULT;
     		}
     	});
     	
@@ -755,14 +755,14 @@ class PulsarGui {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				guiRevalidate((Container) args[0] );
-    			return EmptyList.emptyList;
+    			return Invokable.NO_RESULT;
     		}
     	});
     	SchemeUtils.defineVar( scheme, "gui-repaint" , new ProcedureN() {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				guiRepaint((Container) args[0] );
-    			return EmptyList.emptyList;
+    			return Invokable.NO_RESULT;
     		}
     	});
     	SchemeUtils.defineVar( scheme, "gui-insert-text!" , new ProcedureN() {
@@ -773,7 +773,7 @@ class PulsarGui {
 					sb.append( o.toString() ).append( " " );
 				}
 				frame.insertText( sb.toString().trim() );
-    			return EmptyList.emptyList;
+    			return Invokable.NO_RESULT;
     		}
     	});
     	

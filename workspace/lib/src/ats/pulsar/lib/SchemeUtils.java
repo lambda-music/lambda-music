@@ -114,20 +114,22 @@ public class SchemeUtils {
 		return Symbol.valueOf( string );
 	}
 
-	public static String anyToString( Object schemeVal ) {
-		if ( schemeVal == null ) {
-			return null;
-		} else if ( schemeVal instanceof Boolean ) {
-			return ((Boolean) schemeVal ).toString();
-		} else if ( schemeVal instanceof IString ) {
-			return ((IString)schemeVal).toString();
-		} else if ( schemeVal instanceof Symbol ) {
-			return ((Symbol)schemeVal).getName();
-		} else if ( schemeVal instanceof String ) {
-			return (String) schemeVal;
-		} else {
-			return ((Quantity) schemeVal).toString();
-		}
+	public static String anyToString( Object value ) {
+		return toString( value );
+		// modified (Wed, 31 Jul 2019 21:51:55 +0900)
+//		if ( schemeVal == null ) {
+//			return null;
+//		} else if ( schemeVal instanceof Boolean ) {
+//			return ((Boolean) schemeVal ).toString();
+//		} else if ( schemeVal instanceof IString ) {
+//			return ((IString)schemeVal).toString();
+//		} else if ( schemeVal instanceof Symbol ) {
+//			return ((Symbol)schemeVal).getName();
+//		} else if ( schemeVal instanceof String ) {
+//			return (String) schemeVal;
+//		} else {
+//			return ((Quantity) schemeVal).toString();
+//		}
 	}
 	
 	public static Boolean toBoolean( Object schemeVal ) {
@@ -136,8 +138,12 @@ public class SchemeUtils {
 		else
 			return Boolean.TRUE; // treat everything as #t except #f.
 	}
-	public static String toString( Object schemeVal ) {
-		return schemeVal.toString();
+	public static String toString( Object value ) {
+		if ( value == null ) 
+			return null;
+		else
+			return value.toString();
+		
 //		if ( schemeVal instanceof String )
 //			return (String) schemeVal;
 //		else

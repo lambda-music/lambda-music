@@ -160,6 +160,10 @@
            (raise (string-append "instrumental not found error "
                                  (symbol->string s))))))
 
+; ADDED (Wed, 31 Jul 2019 19:53:22 +0900)
+(define (counting-voice x)
+  (make-perc 1 0 (+ C4  x)  1/4 ))
+
 (define count-voices 
   (map 
     (lambda (x)

@@ -47,6 +47,7 @@ import org.jaudiolibs.jnajack.JackException;
 
 import ats.kawapad.KawaPad;
 import ats.metro.Metro;
+import ats.metro.MetroSequence;
 import ats.metro.MetroTrack;
 import ats.metro.MetroTrack.SyncType;
 import ats.pulsar.lib.SchemeUtils;
@@ -55,7 +56,6 @@ import ats.pulsar.lib.secretary.InvokablyRunnable;
 import ats.pulsar.lib.secretary.SecretaryMessage;
 import ats.pulsar.lib.secretary.scheme.SchemeSecretary;
 import ats.pulsar.lib.swing.MersenneTwisterFast;
-import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.LList;
 import gnu.lists.Pair;
@@ -839,14 +839,14 @@ public final class Pulsar extends Metro {
 			@Override
 			public Object apply1(Object arg0) throws Throwable {
 				open( SchemeUtils.toString( arg0 ) );
-				return EmptyList.emptyList;
+				return Invokable.NO_RESULT;
 			}
 		});
 		SchemeUtils.defineVar( scheme, "close!" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				close();
-				return EmptyList.emptyList;
+				return Invokable.NO_RESULT;
 			}
 		});
 		SchemeUtils.defineVar( scheme, "output!" , new ProcedureN() {
@@ -856,7 +856,7 @@ public final class Pulsar extends Metro {
 					String name = SchemeUtils.toString( o );
 					createOutputPort( name );
 				}
-				return EmptyList.emptyList;
+				return Invokable.NO_RESULT;
 			}
 		});
 		SchemeUtils.defineVar( scheme, "input!" , new ProcedureN() {
@@ -866,21 +866,21 @@ public final class Pulsar extends Metro {
 					String name = SchemeUtils.toString( o );
 					createInputPort( name );
 				}
-				return EmptyList.emptyList;
+				return Invokable.NO_RESULT;
 			}
 		});
 		SchemeUtils.defineVar( scheme, "connect!" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				connectProc(Pulsar.this, args, ConnectProc.CONNECT );
-				return EmptyList.emptyList;
+				return Invokable.NO_RESULT;
 			}
 		});
 		SchemeUtils.defineVar( scheme, "disconnect!" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				connectProc(Pulsar.this, args, ConnectProc.DISCONNECT );
-				return EmptyList.emptyList;
+				return Invokable.NO_RESULT;
 			}
 		});
 
@@ -909,7 +909,7 @@ public final class Pulsar extends Metro {
 				} else {
 					throw new RuntimeException( "invalid argument length" );
 				}
-				return EmptyList.emptyList;
+				return Invokable.NO_RESULT;
 			}
 		});
 		SchemeUtils.defineVar( scheme, "get-main" , new Procedure0() {
@@ -928,7 +928,7 @@ public final class Pulsar extends Metro {
 				} else {
 					throw new RuntimeException( "invalid argument length" );
 				}
-				return EmptyList.emptyList;
+				return Invokable.NO_RESULT;
 			}
 		});
 		SchemeUtils.defineVar( scheme, "set-playing!" , new ProcedureN() {
@@ -941,7 +941,7 @@ public final class Pulsar extends Metro {
 				} else {
 					throw new RuntimeException( "invalid argument length" );
 				}
-				return EmptyList.emptyList;
+				return Invokable.NO_RESULT;
 			}
 		});
 		SchemeUtils.defineVar( scheme, "playing?" , new ProcedureN() {
@@ -954,14 +954,14 @@ public final class Pulsar extends Metro {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				setPlaying( true ); 
-				return EmptyList.emptyList;
+				return Invokable.NO_RESULT;
 			}
 		});
 		SchemeUtils.defineVar( scheme, "stop!" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				setPlaying( false ); 
-				return EmptyList.emptyList;
+				return Invokable.NO_RESULT;
 			}
 		});
 		SchemeUtils.defineVar( scheme, "quit!" , new ProcedureN() {
@@ -992,7 +992,7 @@ public final class Pulsar extends Metro {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				tempoTapper.tap(); 
-				return EmptyList.emptyList;
+				return Invokable.NO_RESULT;
 			}
 		});
 		SchemeUtils.defineVar( scheme, "set-tempo!" , new ProcedureN() {
@@ -1003,7 +1003,7 @@ public final class Pulsar extends Metro {
 					tempoTapper.setBeatsPerMinute( bpm );
 				}
 
-				return EmptyList.emptyList;
+				return Invokable.NO_RESULT;
 			}
 		});
 		SchemeUtils.defineVar( scheme, "set-related-files!" , new ProcedureN() {
@@ -1016,7 +1016,7 @@ public final class Pulsar extends Metro {
 				} else {
 					throw new RuntimeException( "invalid argument length" );
 				}
-				return EmptyList.emptyList;
+				return Invokable.NO_RESULT;
 			}
 		});
 		SchemeUtils.defineVar( scheme, "get-related-files" , new ProcedureN() {
@@ -1031,36 +1031,42 @@ public final class Pulsar extends Metro {
 				return p;
 			}
 		});
-		SchemeUtils.defineVar( scheme, "cue!" , new ProcedureN() {
+		SchemeUtils.defineVar( scheme, "cue!" , new Procedure0( "cue!" ) {
 			@Override
-			public Object applyN(Object[] args) throws Throwable {
+			public Object apply0() throws Throwable {
 				cue();
-				return EmptyList.emptyList;
+				return Invokable.NO_RESULT;
 			}
 		});
-		SchemeUtils.defineVar( scheme, "reset!" , new ProcedureN() {
+		
+		/**
+		 * This function only reset the current scheme environment.
+		 * See {@link Pulsar#reset }
+		 */
+		Procedure0 resetScheme = new Procedure0( "reset!" ) {
 			@Override
-			public Object applyN(Object[] args) throws Throwable {
+			public Object apply0() throws Throwable {
 				reset();
-				return EmptyList.emptyList;
+				return Invokable.NO_RESULT;
 			}
-		});
-		SchemeUtils.defineVar( scheme, "rewind!" , new ProcedureN() {
+		};
+		SchemeUtils.defineVar( scheme, "reset!" , resetScheme );
+		SchemeUtils.defineVar( scheme, "rewind!" , new Procedure0("rewind!") {
 			@Override
-			public Object applyN(Object[] args) throws Throwable {
+			public Object apply0() throws Throwable {
 				rewind();
-				return EmptyList.emptyList;
+				return Invokable.NO_RESULT;
 			}
 		});
-		SchemeUtils.defineVar( scheme, "clear!" , new ProcedureN() {
+		SchemeUtils.defineVar( scheme, "clear!" , new Procedure0( "clear!" ) {
 			@Override
-			public Object applyN(Object[] args) throws Throwable {
+			public Object apply0() throws Throwable {
 				clear();
-				return EmptyList.emptyList;
+				return Invokable.NO_RESULT;
 			}
 		});
 
-		SchemeUtils.defineVar( scheme, "put-seq!" , new ProcedureN() {
+		ProcedureN put = new ProcedureN( "put!" ) {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				if ( 2 <= args.length  ) {
@@ -1081,9 +1087,22 @@ public final class Pulsar extends Metro {
 						name = SchemeUtils.symbolToString( args[0] );
 						tags = null;
 					}
+					
+					Procedure procedure;
+					if ( args[1] instanceof Procedure ) {
+						procedure = (Procedure) args[1];
+					} else if ( args[1] instanceof Pair ) {
+						procedure = new Procedure0() {
+							@Override
+							public Object apply0() throws Throwable {
+								return args[1];
+							}
+						};
+					} else {
+						throw new IllegalArgumentException( "unsupported type of the argument" );
+					}
 
-					Procedure procedure     = (Procedure) args[1];
-					SyncType syncType       = 3<=args.length ? str2sync( args[2] ) : SyncType.IMMEDIATE;
+					SyncType syncType       = 3<=args.length ? SyncType.toSyncType( args[2] ) : SyncType.IMMEDIATE;
 					String syncTrackName    = 4<=args.length ? SchemeUtils.anyToString( SchemeUtils.schemeNullCheck( args[3] ) ) : null;
 					double offset           = 5<=args.length ? SchemeUtils.toDouble( args[4] ) : 0.0d;
 
@@ -1097,17 +1116,16 @@ public final class Pulsar extends Metro {
 						putTrack( createTrack( name, tags, sequence, syncType, syncTrack, offset ) );
 					}
 
-					return EmptyList.emptyList;
+					return Invokable.NO_RESULT;
 				} else {
 					throw new RuntimeException( "Invalid parameter. usage : (put-seq! [name] [lambda] [syncType(immediate|parallel|serial)] [sync-parent-name] [offset] ) " );
 				}
 			}
-			private SyncType str2sync(Object object) {
-				return SyncType.valueOf( SchemeUtils.symbolToString( object ).toUpperCase() );
-			}
-		});
+		};
+		SchemeUtils.defineVar( scheme, "put-seq!" , put);
+		SchemeUtils.defineVar( scheme, "put!" , put);
 
-		SchemeUtils.defineVar( scheme, "remove-seq!" , new ProcedureN() {
+		ProcedureN remove = new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				if ( args.length == 1 ) {
@@ -1121,32 +1139,53 @@ public final class Pulsar extends Metro {
 						// If track is not found, ignore it. 
 						// It is not necessary to report it in this case.
 						// (Mon, 29 Jul 2019 14:13:27 +0900)
-						return EmptyList.emptyList;
+						return Invokable.NO_RESULT;
 					}
 				} else {
 					throw new RuntimeException( "Invalid parameter. usage : (new-sequence [name] [lambda] ) " );
 				}
 			}
-		});
-		SchemeUtils.defineVar( scheme, "clear-seq!" , new ProcedureN() {
+		};
+		SchemeUtils.defineVar( scheme, "remove-seq!" , remove);
+		SchemeUtils.defineVar( scheme, "rm!" , remove);
+		SchemeUtils.defineVar( scheme, "ls" , new Procedure0() {
 			@Override
-			public Object applyN(Object[] args) throws Throwable {
-				clearTracks();
-				return EmptyList.emptyList;
-			}
-		});
-		SchemeUtils.defineVar( scheme, "has-seq?" , new ProcedureN() {
-			@Override
-			public Object applyN(Object[] args) throws Throwable {
-				if ( args.length == 1 ) {
-					String name = SchemeUtils.toString( args[0] );
-
-					return searchTrack(name) != null;
-				} else {
-					throw new RuntimeException( "Invalid parameter. usage : (new-sequence [name] [lambda] ) " );
+			public Object apply0() throws Throwable {
+				synchronized ( getMetroLock() ) {
+					ArrayList<String> list = new ArrayList<>( tracks.size() );
+					for ( MetroTrack track :  tracks ) {
+						MetroSequence sequence = track.getSequence();
+						if ( sequence instanceof SchemeSequence ) {
+							list.add( ((SchemeSequence)sequence).getTrackName() );
+						}
+					}
+					return Pair.makeList(list);
 				}
+
 			}
 		});
+		Procedure0 clr = new Procedure0("clear") {
+			@Override
+			public Object apply0() throws Throwable {
+				clearTracks();
+				return Invokable.NO_RESULT;
+			}
+		};
+		SchemeUtils.defineVar( scheme, "clr!" , clr);
+		SchemeUtils.defineVar( scheme, "clear-seq!" , clr);
+		
+		Procedure1 has = new Procedure1( "has?" ) {
+			@Override
+			public Object apply1(Object arg0) throws Throwable {
+				String value = SchemeUtils.toString( SchemeUtils.schemeNullCheck( arg0 ) );
+				if ( value == null ) {
+					throw new IllegalArgumentException( "cannot be null" );
+				}
+				return searchTrack( value ) != null;
+			}
+		};
+		SchemeUtils.defineVar( scheme, "has-seq?" , has );
+		SchemeUtils.defineVar( scheme, "has?" , has );
 		SchemeUtils.defineVar( scheme, "print-stack-trace" , new ProcedureN() {
 			@Override
 			public Object apply1(Object arg) throws Throwable {
@@ -1189,7 +1228,7 @@ public final class Pulsar extends Metro {
 				if ( 0 < args.length  ) {
 					return args[0].getClass().getName();
 				} else {
-					return EmptyList.emptyList;
+					return Invokable.NO_RESULT;
 				}
 			}
 		});

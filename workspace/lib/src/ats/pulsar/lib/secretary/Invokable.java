@@ -20,6 +20,9 @@
 
 package ats.pulsar.lib.secretary;
 
+import ats.pulsar.lib.secretary.scheme.InvokableSchemeProcedure;
+import gnu.mapping.Values;
+
 /**
  * This class defines an interface that executes an arbitrary invokable.
  * Currently there is only one class which implements this interface. See
@@ -29,6 +32,8 @@ package ats.pulsar.lib.secretary;
  */
 public abstract interface Invokable {
 	Object NOARG = new Object[0];
+//	Object NO_RESULT = EmptyList.emptyList;
+	Object NO_RESULT = Values.empty;
 
 	/**
 	 * This method invokes the invokable which is denoted by the subclasses

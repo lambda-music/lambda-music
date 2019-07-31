@@ -34,6 +34,8 @@ import org.jaudiolibs.jnajack.JackClient;
 import org.jaudiolibs.jnajack.JackException;
 import org.jaudiolibs.jnajack.JackPosition;
 
+import ats.pulsar.lib.SchemeUtils;
+
 public class MetroTrack implements MetroTrackInfo, MetroLock {
 	static final Logger LOGGER = Logger.getLogger(MetroTrack.class.getName());
 	static void logError(String msg, Throwable e) {
@@ -49,7 +51,16 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 
 
 	public enum SyncType {
-		IMMEDIATE, PARALLEL, SERIAL,  
+		IMMEDIATE, PARALLEL, SERIAL;
+		public static SyncType toSyncType( Object value ) {
+			String s = SchemeUtils.toString( value ).toUpperCase();
+			if ( "para".equals( value ) )
+				return PARALLEL;
+			else if ( "seri".equals( value ) )
+				return SyncType.SERIAL;
+			else
+				return SyncType.valueOf( s );
+		}
 	}
 	
 	

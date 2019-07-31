@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.logging.Logger;
 
 /** @formatter:off */
+
 /**
  * This class defines constant objects to generate a byte array which could
  * represent various MIDI messages.
@@ -37,25 +38,24 @@ import java.util.logging.Logger;
  * constant objects defined here must contain a method which name is
  * "notifyMidiEvent".
  * <p>
- * 
  * See <a href=
  * "http://nickfever.com/music/midi-cc-list">http://nickfever.com/music/midi-cc-list</a>
  * for further information about MIDI messages.
  * <p>
- * When I wrote this class, I was looking for the official specification of MIDI
- * control change messages. But I could not find it. It seems that MIDI control
- * change messages are implicitly defined between those commercial products and
- * there is no officially declared specification for it.
+ * When I wrote this class, I was looking for the official specification of
+ * MIDI control change messages but I could not find it. It seems that MIDI
+ * control change messages are privately defined by each developer of those
+ * commercial products and there is no officially declared specification.
  * <p>
- * Therefore, I referred <a href=
+ * This is the reason why I referred <a href=
  * "http://nickfever.com/music/midi-cc-list">http://nickfever.com/music/midi-cc-list</a>.
+ * This is a very good explanation about MIDI control change messages. Special
+ * thanks go to <a href=
+ * "http://nickfever.com/music/midi-cc-list">nickfever</a>.  The designing of
+ * this class is based on the document.
  * <p>
- * This is a very good explanation about MIDI control change messages. But as
- * this article is not official, this might contain mistakes.
+ * The following table is an excerpt from the site.
  * <p>
- * The following table is a quotation from the site.
- * <p>
- *
  * 
  * <table border="1" cellpadding="2">
  *  <tr><td>0</td>                                              <td>"Bank Select"</td>                                      <td>"Allows user to switch bank for patch selection. Program change used with Bank Select. MIDI can access 16,384 patches per MIDI channel."</td></tr>
