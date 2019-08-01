@@ -54,7 +54,7 @@
                            (newline      oos  )
                            (get-output-string oos)))))
 
-(pprint-notes (melody '( do re mi end )))
+; (pprint-notes (melody '( do re mi end )))
 
 
 ; display-args
