@@ -170,7 +170,7 @@ public class SchemeSequence extends MetroSequence {
 					public Object getCdr() {
 						return new ProcedureN() {
 							public Object applyN(Object[] args) throws Throwable {
-								player.removeTrack( SchemeUtils.toBoolean( args[0]) );
+								player.removeTrack( SchemeUtils.toBoolean( args[0]), XXX, xxxull );
 								return EmptyList.emptyList;
 							};
 						};

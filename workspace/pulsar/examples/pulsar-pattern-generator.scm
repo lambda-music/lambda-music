@@ -459,18 +459,18 @@
                                     (eval (read (open-input-string (self 'read 'beat-offset)))))
                                   (enabled       (self 'read 'enabled)))
                               (if enabled
-                                (put-seq! track-id 
-                                          (lambda ()
-                                            (let ((notes (n-swing beat-count measure-count 
-                                                                  (bind-pns (cdr (sym2val instrument inst-list )) 
-                                                                            (cdr (sym2val pns-pattern pns-list )))) ))
-                                              ; The notes object contains non-note objects, too.
-                                              ; So we have to filter the list. 
-                                              (m! (filter note? notes)
-                                                  velo: (lm (+ 1  (nc notes)) velo-values ))
-                                              notes))
-                                          'parallel 'main beat-offset)
-                                (remove-seq! track-id ))))))
+                                (add-track! track-id 
+                                                   (lambda ()
+                                                     (let ((notes (n-swing beat-count measure-count 
+                                                                           (bind-pns (cdr (sym2val instrument inst-list )) 
+                                                                                     (cdr (sym2val pns-pattern pns-list )))) ))
+                                                       ; The notes object contains non-note objects, too.
+                                                       ; So we have to filter the list. 
+                                                       (m! (filter note? notes)
+                                                           velo: (lm (+ 1  (nc notes)) velo-values ))
+                                                       notes))
+                                                   'parallel 'main beat-offset)
+                                (del-track! track-id ))))))
 
       (self 'define 'field 'track-id             track-id )
       (self 'define 'field 'enabled              #f )
@@ -668,10 +668,10 @@
 ; (set-main! (lambda()
 ;              (display-warn "====set-main! SET-MAIN!  ========\n" )
 ;              (newline-warn)
-;              (put-seq! 'main  (lambda args
+;              (add-tracks 'main  (lambda args
 ;                                 (display-warn "====set-main! SET-MAIN! INSIDE ========\n" )
 ;                                 (newline-warn)
-;                                 (apply (eval 'main) args )))))
+;                                 (apply (eval 'main) args ))))))
 
 
 ; Note: 

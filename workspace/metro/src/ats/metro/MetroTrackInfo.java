@@ -27,6 +27,6 @@ public interface MetroTrackInfo {
 	public Set<String> getTrackTags();
 	public boolean isTrackEnabled();
 	public void setTrackEnabled(boolean enabled);
-	public void removeTrack(boolean graceful);
+	public void removeGracefully(Runnable onEnd);
 	public double getTrackPosition();
 }

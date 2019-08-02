@@ -1779,23 +1779,23 @@
   ;c ... counter
   (let ((cp p)
         (c 0))
-    (put-seq! name (lambda ()
-                     (if (or (not (pair? cp))
-                             (null? cp)
-                             (and end (<= end c)))
+    (add-track!  name (lambda ()
+                              (if (or (not (pair? cp))
+                                      (null? cp)
+                                      (and end (<= end c)))
 
-                       ; end the loop
-                       (list 
-                         (n type: 'end )
-                         (n type: 'len val: 5 ))
+                                ; end the loop
+                                (list 
+                                  (n type: 'end )
+                                  (n type: 'len val: 5 ))
 
-                       ; value ...  ;current value
-                       (let ((value (car cp)))
-                         (set! cp (cdr cp))
-                         (set! c (+ 1 c ))
-                         value)
-                       ))
-              'immediate)))
+                                ; value ...  ;current value
+                                (let ((value (car cp)))
+                                  (set! cp (cdr cp))
+                                  (set! c (+ 1 c ))
+                                  value)
+                                ))
+                       'immediate)))
 
 
 (define (make-standard-sequence p) (let ((start-pos p)
@@ -1841,12 +1841,12 @@
                            (string-append 
                              "seq-" 
                              (number->string default-id-counter )))))
-                   (put-seq! id
-                             (lambda() 
-                               (append x
-                                       '(((type . end)))))
-                             'immediate 
-                             ))))
+                   (add-track! 'id
+                                      (lambda() 
+                                        (append x
+                                                '(((type . end)))))
+                                      'immediate 
+                                      ))))
 
 ; Process ProgressBar
 ; This moved here at (Sat, 27 Jul 2019 07:34:16 +0900)

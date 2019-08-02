@@ -104,8 +104,9 @@ public class PulsarSpecialNoteListParsers {
 	static { register( PARSER_VOID ); }
 	public static final class VoidEventParser extends SpecialNoteListParserElement {
 		{
+			// RENAMED (Thu, 01 Aug 2019 13:09:08 +0900)
 			this.shortName = "nop";
-			this.longName = "void";
+			this.longName = "no-operation";
 		}
 		@Override
 		public
@@ -200,8 +201,9 @@ public class PulsarSpecialNoteListParsers {
 	static final class PutEventParser extends SpecialNoteListParserElement {
 
 		{
+			// RENAMED (Thu, 01 Aug 2019 13:09:08 +0900)
 			this.shortName = "add";
-			this.longName = "new-track";
+			this.longName  = "add-track";
 //			this.longName = "add a new track";
 		}
 		@Override
@@ -275,8 +277,9 @@ public class PulsarSpecialNoteListParsers {
 	static { register( PARSER_REMOVE ); }
 	static final class RemoveEventParser extends SpecialNoteListParserElement {
 		{
-			this.shortName = "kill";
-			this.longName = "kill-track";
+			// RENAMED (Thu, 01 Aug 2019 13:09:08 +0900)
+			this.shortName = "del";
+			this.longName  = "del-track";
 //			this.longName = "Remove the specified track";
 		}
 		@Override
@@ -298,10 +301,18 @@ public class PulsarSpecialNoteListParsers {
 						synchronized ( pulsar.getMetroLock() ) {
 							MetroTrack t = pulsar.searchTrack( id );
 							if ( t != null ) {
-								pulsar.removeTrack( t );
+								t.removeTrack(true, XXX, xxxull);
 							} else {
 								logWarn( "PARSER_REMOVE : id '"+ id + "' was not found." );
 							}
+							
+// 							>>> DELETED (Thu, 01 Aug 2019 13:09:08 +0900)
+//							if ( t != null ) {
+//								pulsar.removeTrack( t );
+//							} else {
+//								logWarn( "PARSER_REMOVE : id '"+ id + "' was not found." );
+//							}
+//							<<< DELETED (Thu, 01 Aug 2019 13:09:08 +0900)
 						}
 					}
 				} );
@@ -313,7 +324,12 @@ public class PulsarSpecialNoteListParsers {
 					public void run() {
 						// synchronized block added at (Mon, 29 Jul 2019 13:36:52 +0900)
 						synchronized ( pulsar.getMetroLock() ) {
-							pulsar.removeAllTracks( pulsar.getTrackByTagSet(tags) );
+							for ( MetroTrack t : pulsar.getTrackByTagSet(tags) ) {
+								t.removeTrack(true, XXX, xxxull);
+							}
+// 							>>> DELETED (Thu, 01 Aug 2019 13:09:08 +0900)
+//							pulsar.removeAllTracks( pulsar.getTrackByTagSet(tags) );
+//							<<< DELETED (Thu, 01 Aug 2019 13:09:08 +0900)
 						}
 					}
 				} );

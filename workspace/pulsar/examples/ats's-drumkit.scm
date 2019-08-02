@@ -234,8 +234,8 @@
 (set-main!   (lambda()
                (display-warn "====set-main! SET-MAIN!  ========\n" )
                (newline-warn)
-               (put-seq! 'main  (lambda args
-                                  (apply main args )))))
+               (add-track! 'main  (lambda args
+                                           (apply main args )))))
 
 
 

@@ -640,6 +640,18 @@ public final class Pulsar extends Metro {
 		};
 	}
 
+	private final class TrackProcedure extends Procedure0 {
+		private final Pair pair;
+
+		private TrackProcedure( Pair pair ) {
+			this.pair = pair;
+		}
+
+		@Override
+		public Object apply0() throws Throwable {
+			return pair;
+		}
+	}
 	interface TempoTapperTempoNotifier {
 		void notifyTempo( double beatPerMinute );
 	}
@@ -819,6 +831,69 @@ public final class Pulsar extends Metro {
 			} catch ( JackException e  ) {
 				logError( "" , e );
 			}
+		}
+	}
+
+	MetroTrack procTrack( boolean requestPut, Object[] args ) {
+		if ( 2 <= args.length  ) {
+			logInfo( "put-seq! : " + Arrays.asList(args).toString() );
+			
+			for ( int i=0; i<args.length; i++ ) {
+				args[i] = SchemeUtils.schemeNullCheck(args[i]);
+			}
+
+			// Process the value on index 0 of arguments.
+			String name;
+			Collection<String> tags;
+			if ( args[0] instanceof Pair ) {
+				LinkedList<String> list = new LinkedList<>( SchemeUtils.symbolListToStringList( ((Pair)args[0]) ) );
+
+				if ( 0 < list.size() ) {
+					name = SchemeUtils.schemeNullCheck( list.remove(0) );
+				} else {
+					name = null;
+				}
+
+				tags = list;
+			} else {
+				name = args[0] == null ? null : SchemeUtils.symbolToString( args[0] );
+				tags = null;
+			}
+
+			// Process the value on index 1 of arguments.
+			Procedure procedure;
+			if ( args[1] instanceof Procedure ) {
+				procedure = (Procedure) args[1];
+			} else if ( args[1] instanceof Pair ) {
+				procedure = new TrackProcedure((Pair)args[1]);
+			} else {
+				throw new IllegalArgumentException( "unsupported type of the argument" );
+			}
+
+			// Process the value on index 2 of arguments.
+			SyncType syncType       = 3<=args.length && args[2] !=null ? SyncType.toSyncType( SchemeUtils.toString( args[2] ) ) : SyncType.IMMEDIATE;
+
+			// Process the value on index 3 of arguments.
+			String syncTrackName    = 4<=args.length && args[3] !=null ? SchemeUtils.anyToString( SchemeUtils.schemeNullCheck( args[3] ) ) : null;
+			
+			// Process the value on index 4 of arguments.
+			double offset           = 5<=args.length && args[4] !=null ? SchemeUtils.toDouble( args[4] ) : 0.0d;
+
+			SchemeSequence sequence = new SchemeSequence( Pulsar.this.createInvokable( procedure ) );
+
+			// synchronized block added at (Mon, 29 Jul 2019 13:36:52 +0900)
+			synchronized ( getMetroLock() ) {
+				// The method getTrack() now throws an exception when it is null.
+				// (Mon, 29 Jul 2019 12:21:50 +0900)
+				MetroTrack syncTrack = syncTrackName == null ? null : getTrack( syncTrackName );
+				MetroTrack track = createTrack( name, tags, sequence, syncType, syncTrack, offset );
+				if ( requestPut ) {
+					putTrack( track );
+				}
+				return track;
+			}
+		} else {
+			throw new RuntimeException( "Invalid parameter. usage : (put-seq! [name] [lambda] [syncType(immediate|parallel|serial)] [sync-parent-name] [offset] ) " );
 		}
 	}
 
@@ -1066,79 +1141,98 @@ public final class Pulsar extends Metro {
 			}
 		});
 
-		ProcedureN put = new ProcedureN( "put!" ) {
+		ProcedureN addTrack = new ProcedureN( "add-track!" ) {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
-				if ( 2 <= args.length  ) {
-					logInfo( "put-seq! : " + Arrays.asList(args).toString() );
+				putTrack( procTrack( true, args ) );
+				return Invokable.NO_RESULT;
+			}
+		};
+		SchemeUtils.defineVar( scheme, "add!" , addTrack);
+		SchemeUtils.defineVar( scheme, "add-track!" , addTrack);
 
-					String name;
-					Collection<String> tags;
-					if ( args[0] instanceof Pair ) {
-						Pair p = ((Pair)args[0]);
-						name = SchemeUtils.symbolToString( p.getCar() );
-
-						//							Pair.makeList( getInputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
-						//									.collect( Collectors.toList() ) );
-
-						tags = SchemeUtils.symbolListToStringList(p);
-
-					} else {
-						name = SchemeUtils.symbolToString( args[0] );
-						tags = null;
+		
+		ProcedureN addAllTrackProc = new ProcedureN( "add-all-tracks!" ) {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				synchronized ( getMetroLock() ) {
+					if ( args.length < 1 ) {
+						throw new IllegalArgumentException( "add-all takes one argument at least." );
 					}
-					
-					Procedure procedure;
-					if ( args[1] instanceof Procedure ) {
-						procedure = (Procedure) args[1];
-					} else if ( args[1] instanceof Pair ) {
-						procedure = new Procedure0() {
-							@Override
-							public Object apply0() throws Throwable {
-								return args[1];
-							}
-						};
-					} else {
-						throw new IllegalArgumentException( "unsupported type of the argument" );
+					List<MetroTrack> tracks = new ArrayList<>();
+					for ( int i=1; i<args.length; i++ ) {
+						tracks.add( procTrack( false, (Object[]) args[i] ) );
 					}
+					putAllTracks( tracks );
+				}
+				return Invokable.NO_RESULT;
+			}
+		};
+		SchemeUtils.defineVar( scheme, "add-all!" ,        addAllTrackProc );
+		SchemeUtils.defineVar( scheme, "add-all-tracks!" , addAllTrackProc );
+//		SchemeUtils.defineVar( scheme, "add-tracks!" , addAllTrack);
 
-					SyncType syncType       = 3<=args.length ? SyncType.toSyncType( args[2] ) : SyncType.IMMEDIATE;
-					String syncTrackName    = 4<=args.length ? SchemeUtils.anyToString( SchemeUtils.schemeNullCheck( args[3] ) ) : null;
-					double offset           = 5<=args.length ? SchemeUtils.toDouble( args[4] ) : 0.0d;
-
-					SchemeSequence sequence = new SchemeSequence( Pulsar.this.createInvokable( procedure ) );
-
-					// synchronized block added at (Mon, 29 Jul 2019 13:36:52 +0900)
-					synchronized ( getMetroLock() ) {
-						// The method getTrack() now throws an exception when it is null.
-						// (Mon, 29 Jul 2019 12:21:50 +0900)
-						MetroTrack syncTrack = syncTrackName == null ? null : getTrack( syncTrackName );
-						putTrack( createTrack( name, tags, sequence, syncType, syncTrack, offset ) );
+		ProcedureN deleteTrackProc = new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				List<MetroTrack> tracks= new ArrayList<>();
+				synchronized ( getMetroLock() ) {
+					for ( Object arg : args ) {
+						if ( arg instanceof MetroTrack ) {
+							tracks.add( (MetroTrack)arg );
+						} else if ( arg instanceof IString ) {
+							tracks.add( searchTrack( SchemeUtils.toString( arg )));
+						} else {
+							throw new IllegalArgumentException( "" );
+						}
 					}
-
+					removeAllTracksGracefully( tracks, null);
 					return Invokable.NO_RESULT;
-				} else {
-					throw new RuntimeException( "Invalid parameter. usage : (put-seq! [name] [lambda] [syncType(immediate|parallel|serial)] [sync-parent-name] [offset] ) " );
 				}
 			}
 		};
-		SchemeUtils.defineVar( scheme, "put-seq!" , put);
-		SchemeUtils.defineVar( scheme, "put!" , put);
 
-		ProcedureN remove = new ProcedureN() {
+		ProcedureN deleteTrackProc0 = new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				if ( args.length == 1 ) {
-					String name = SchemeUtils.toString( args[0] );
+					args[0] = SchemeUtils.schemeNullCheck( args[0] );
+					String name = args[0] != null ? SchemeUtils.toString( args[0] ) : null;
+					boolean graceful = 1 < args.length ? SchemeUtils.toBoolean( args[1] ) : false;   
+					
 					// synchronized block added at (Mon, 29 Jul 2019 13:36:52 +0900)
 					synchronized ( getMetroLock() ) { 
 						// getTrack() throws an exception when it is null. (Mon, 29 Jul 2019 12:21:50 +0900)
 						MetroTrack track = searchTrack( name );
-						if ( track != null )
-							removeTrack( track );
+						
 						// If track is not found, ignore it. 
 						// It is not necessary to report it in this case.
 						// (Mon, 29 Jul 2019 14:13:27 +0900)
+						if ( track != null )
+							track.removeGracefully( null );
+						
+//						if ( track != null )
+//							removeTrack( track );
+						
+						return Invokable.NO_RESULT;
+					}
+				} else if ( 1 < args.length ) {
+					boolean graceful = SchemeUtils.toBoolean( args[0] );   
+
+					List<String> trackNameList= new ArrayList<>();
+					for ( int i=1; i<args.length; i++ ) {
+						args[i] = SchemeUtils.schemeNullCheck( args[i] );
+						String name = args[i] != null ? SchemeUtils.toString( args[i] ) : null;
+						if ( name != null ) {
+							trackNameList.add( name );
+						}
+					}
+
+					List<MetroTrack> tracks= new ArrayList<>();
+					synchronized ( getMetroLock() ) {
+						for ( String name : trackNameList )
+							tracks.add( searchTrack( name ) );
+						removeAllTracksGracefully( tracks, null  );
 						return Invokable.NO_RESULT;
 					}
 				} else {
@@ -1146,8 +1240,50 @@ public final class Pulsar extends Metro {
 				}
 			}
 		};
-		SchemeUtils.defineVar( scheme, "remove-seq!" , remove);
-		SchemeUtils.defineVar( scheme, "rm!" , remove);
+		SchemeUtils.defineVar( scheme, "del!" ,       deleteTrackProc );
+		SchemeUtils.defineVar( scheme, "del-track!" , deleteTrackProc );
+		
+		
+		ProcedureN endTrackProc = new ProcedureN() {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				if ( args.length == 0  )
+					return Invokable.NO_RESULT;
+				if ( args.length == 1 )
+					return Invokable.NO_RESULT;
+
+				ArrayDeque queue = new ArrayDeque( Arrays.asList( args ) );
+				Procedure onEnd = (Procedure) queue.removeLast();
+
+				List<MetroTrack> tracks= new ArrayList<>();
+				synchronized ( getMetroLock() ) {
+					for ( Object arg : args ) {
+						if ( arg instanceof MetroTrack ) {
+							tracks.add( (MetroTrack)arg );
+						} else if ( arg instanceof IString ) {
+							tracks.add( searchTrack( SchemeUtils.toString( arg )));
+						} else {
+							throw new IllegalArgumentException( "" );
+						}
+					}
+					removeAllTracksGracefully( tracks, new Runnable() {
+						@Override
+						public void run() {
+							try {
+								onEnd.apply0();
+							} catch (Throwable e) {
+								logError("", e);
+							}
+						}
+					});
+					return Invokable.NO_RESULT;
+				}
+			}
+		};
+
+		SchemeUtils.defineVar( scheme, "end!" , endTrackProc);
+		SchemeUtils.defineVar( scheme, "end-track!" , endTrackProc);
+		
 		SchemeUtils.defineVar( scheme, "ls" , new Procedure0() {
 			@Override
 			public Object apply0() throws Throwable {
@@ -1171,8 +1307,7 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		};
-		SchemeUtils.defineVar( scheme, "clr!" , clr);
-		SchemeUtils.defineVar( scheme, "clear-seq!" , clr);
+		SchemeUtils.defineVar( scheme, "clear-tracks!" , clr);
 		
 		Procedure1 has = new Procedure1( "has?" ) {
 			@Override

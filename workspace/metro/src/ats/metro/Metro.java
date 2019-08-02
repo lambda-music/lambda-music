@@ -253,25 +253,30 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	public void putTrack( MetroTrack track ) {
 		registerTrack( track );
 	}
+	public void removeTrack( MetroTrack track, boolean graceful, Runnable onEnd ) {
+		unregisterTrack(track);
+	}
+	
 	public void putAllTracks( Collection<MetroTrack> tracks ) {
 		registerAllTracks( tracks );
 	}
-	public void removeTrack( MetroTrack track ) {
-		unregisterTrack( track );
+	public void removeAllTracksGracefully( Collection<MetroTrack> tracks, Runnable onEnd ) {
+		synchronized ( getMetroLock() ) {
+			for ( MetroTrack track : tracks ) {
+				track.removeGracefully( onEnd  );
+				// Note that set onEnd on the first element only so we set null to the variable.
+				onEnd = null;
+			}
+		}
 	}
-//	This method was removed. (Mon, 29 Jul 2019 11:37:24 +0900)
-//	At the time of removing, there were two occurrences of referring this method.
-//	These are inlined. 
-//	public void removeTrack( String name ) {
-//		removeTrack( getTrack( name ) );
-//	}
-//	This method was removed. (Mon, 29 Jul 2019 09:55:02 +0900)
-//	At the time of removing, no method refers this.
-//	public void removeTrack( Object nameObject ) {
-//		removeTrack( getTrack( nameObject ) );
-//	}
 	public void removeAllTracks( Collection<MetroTrack> tracks ) {
-		unregisterAllTracks( tracks );
+		synchronized ( getMetroLock() ) {
+			for ( MetroTrack track : tracks ) {
+				track.removeGracefully( onEnd  );
+				// Note that set onEnd on the first element only so we set null to the variable.
+				onEnd = null;
+			}
+		}
 	}
 
 	public MetroTrack createTrack( 
@@ -280,16 +285,6 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	{
 		return new MetroTrack( this, name, tags, sequence, syncType, syncTrack, syncOffset );
 	}
-
-//	This method was removed at (Mon, 29 Jul 2019 09:13:06 +0900)
-//	public MetroTrack createTrack(  
-//			String name, Collection<String> tags, MetroSequence sequence,
-//			SyncType syncType, Object syncTrackObject, double syncOffset) 
-//	{
-//		MetroTrack syncTrack = getTrack( syncTrackObject ); 
-//		return new MetroTrack( this, name, tags, sequence, syncType, syncTrack, syncOffset );
-//	}
-	
 	public MetroTrack searchTrack( String name ) {
 		synchronized( getMetroLock() ) {
 			if ( "last!".equals( name )) {
@@ -326,6 +321,28 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		}
 		return list;
 	}
+	
+//	This method was removed. (Mon, 29 Jul 2019 11:37:24 +0900)
+//	At the time of removing, there were two occurrences of referring this method.
+//	These are inlined. 
+//	public void removeTrack( String name ) {
+//		removeTrack( getTrack( name ) );
+//	}
+//	This method was removed. (Mon, 29 Jul 2019 09:55:02 +0900)
+//	At the time of removing, no method refers this.
+//	public void removeTrack( Object nameObject ) {
+//		removeTrack( getTrack( nameObject ) );
+//	}
+
+//	This method was removed at (Mon, 29 Jul 2019 09:13:06 +0900)
+//	public MetroTrack createTrack(  
+//			String name, Collection<String> tags, MetroSequence sequence,
+//			SyncType syncType, Object syncTrackObject, double syncOffset) 
+//	{
+//		MetroTrack syncTrack = getTrack( syncTrackObject ); 
+//		return new MetroTrack( this, name, tags, sequence, syncType, syncTrack, syncOffset );
+//	}
+	
 	
 //	@Deprecated
 //	public void enableTrackByTag( String tag, boolean enabled ) {
@@ -534,7 +551,9 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 					this.unregisteredTracks.clear();
 					this.registeredTracks.clear();
 					this.messageQueue.clear(); // FIXED (Sun, 30 Sep 2018 01:41:24 +0900) 
-					
+
+					// METRO_LOCK_WAIT
+					// XXX ??? why not zero?? (Thu, 01 Aug 2019 11:49:55 +0900)
 					this.getMetroLock().wait( 1 );
 				}
 //				logInfo( this.tracks.size() );
@@ -711,6 +730,13 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
         }
     }
     
+    // @see METRO_LOCK_WAIT
+	protected void notifyCheckBuffer() {
+		synchronized ( this.getMetroLock() ) {
+			this.getMetroLock().notify();
+		}
+	}
+
     /*
      * NOTE : DON'T FORGET THIS
      * 
@@ -719,15 +745,35 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
      * These lists are referred by Metro.run() method which is executed by another thread. 
      * 
      */
+    
+    /**
+	 * Register a track and play.
+	 * <p>
+	 * Any caller of this method {@link #registerTrack(MetroTrack)} has
+	 * responsibility to call {@link #notifyCheckBuffer()} method after calling.
+	 * When multiple tracks are registered at once, the caller must call
+	 * {@link #notifyCheckBuffer()} at least once and not necessarily call every
+	 * time registering a track.
+	 * <p>
+	 * It is preferable that a user who performs any bulk-registering calls
+	 * {@link #notifyCheckBuffer()} method only once after the registering a set of
+	 * track and they should avoid to redundantly call {@link #notifyCheckBuffer()}
+	 * multiple times.
+	 * <p>
+	 * Any caller of this method should place the calling inside a synchronized block
+	 * of an object which you can retrieve by {@link #getMetroLock()} method; otherwise
+	 * you will get an unexpected result. 
+	 * <p>
+	 * @param track
+	 */
     protected void registerTrack( MetroTrack track ) {
 		if ( DEBUG ) 
 			logInfo( "****** CREATED a new track is created " + track.id );
 		
-		synchronized ( this.getMetroLock() ) {
-			registerTrackProc(track);
-			this.notifyCheckBuffer();
-		}
+		this.registeredTracks.add( track );
 	}
+    
+    @Deprecated
     protected void registerAllTracks( Collection<MetroTrack> tracks ) {
 		synchronized ( this.getMetroLock() ) {
 			for ( MetroTrack track : tracks ) {
@@ -735,7 +781,16 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 			}
 			this.notifyCheckBuffer();
 		}
-	}
+    }
+    
+    /*
+	 * This is incorrect because if you remove the track which name is identical to
+	 * the new track here, the removed track will abruptly stop playing. We should
+	 * just leave the track stay and let users manipulate correctly.
+	 * 
+	 * Leave this chunk of code for future reference.
+	 */
+    @Deprecated
 	private void registerTrackProc(MetroTrack track) {
 		MetroTrack foundTrack = null;
 		{
@@ -751,21 +806,29 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 			this.unregisteredTracks.add( foundTrack );
 		}
 	}
-	
-	protected void unregisterTrack( MetroTrack track ) {
-		if ( DEBUG ) 
-			logInfo( "****** DESTROYED a track is destroyed " + ( track == null ? "(null track)" : track.id ) );
-		synchronized ( this.getMetroLock() ) {
-			this.unregisteredTracks.add( track );
-			this.notifyCheckBuffer();
-		}
-	}
-	protected void unregisterAllTracks( Collection<MetroTrack> tracks ) {
-		synchronized ( this.getMetroLock() ) {
-			this.unregisteredTracks.addAll( tracks );
-			this.notifyCheckBuffer();
-		}
-	}
+    
+    
+    
+	/**
+	 * Unregister the specified track.  This method should be called with
+	 * the same protocol with {@link #registerTrack(MetroTrack)} method. 
+	 * @see {@link #registerTrack(MetroTrack)}
+	 * @param track
+	 */
+    protected void unregisterTrack( MetroTrack track ) {
+    	if ( DEBUG ) { 
+    		logInfo( "****** DESTROYED a track is destroyed " + ( track == null ? "(null track)" : track.id ) );
+    	}
+    	this.unregisteredTracks.add( track );
+    }
+    
+	/**
+	 * Post a new message which is denoted by a runnable objects. The messages are
+	 * invoked by the main thread of this Metro instance.
+	 * 
+	 * @param runnable
+	 *            the procedure to run at a later time.
+	 */
     protected void postMessage( Runnable runnable ) {
 		if ( DEBUG )
 			logInfo( "****** postMessage 1");
@@ -775,11 +838,6 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		}
 	}
 
-	protected void notifyCheckBuffer() {
-		synchronized ( this.getMetroLock() ) {
-			this.getMetroLock().notify();
-		}
-	}
 
 //	public void registerTrackImmediately(Track track, Track syncTrack, 
 //			double offset) 

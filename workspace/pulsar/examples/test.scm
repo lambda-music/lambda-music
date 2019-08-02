@@ -14,7 +14,7 @@
 
 (let ((bar-count 17 )
       (note-name 73))
-  (put! 'he2 
+  (add! 'he2 
         (n type: 'note chan: 0 port: 0 
            len: 0.1
            velo: << 
@@ -34,7 +34,7 @@
         ))
 
 (let ((bar-count 11 ))
-  (put! 'he 
+  (add! 'he 
         (n type: 'note chan: 0 port: 0 
            len: 0.1
            velo: << 
@@ -97,7 +97,7 @@
        )
      ))
 
-(send2!
+(send!
   (n chan: 0 port: 0 
      (p
        (p type: 'note chan: 0 port: 0 len: 0.5 pos: 0 velo: 1.0 note: >> (iota 200 ) )

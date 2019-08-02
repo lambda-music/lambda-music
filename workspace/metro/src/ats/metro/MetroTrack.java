@@ -34,8 +34,6 @@ import org.jaudiolibs.jnajack.JackClient;
 import org.jaudiolibs.jnajack.JackException;
 import org.jaudiolibs.jnajack.JackPosition;
 
-import ats.pulsar.lib.SchemeUtils;
-
 public class MetroTrack implements MetroTrackInfo, MetroLock {
 	static final Logger LOGGER = Logger.getLogger(MetroTrack.class.getName());
 	static void logError(String msg, Throwable e) {
@@ -52,14 +50,15 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 
 	public enum SyncType {
 		IMMEDIATE, PARALLEL, SERIAL;
-		public static SyncType toSyncType( Object value ) {
-			String s = SchemeUtils.toString( value ).toUpperCase();
+		public static SyncType toSyncType( String value ) {
+			if ( value == null ) throw new IllegalArgumentException();
+			value=value.toUpperCase();
 			if ( "para".equals( value ) )
 				return PARALLEL;
 			else if ( "seri".equals( value ) )
 				return SyncType.SERIAL;
 			else
-				return SyncType.valueOf( s );
+				return SyncType.valueOf( value );
 		}
 	}
 	
@@ -96,6 +95,7 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 	protected final MetroSequence sequence;
 	transient boolean ending = false;
 	transient double endingLength = 0;
+	transient Runnable endingProc = null;
 	
 	public Object getLock() {
 		return buffers;
@@ -127,7 +127,11 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 	 */
 	public MetroTrack( Metro metro, String name, Collection<String> tags, MetroSequence sequence, SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
 //		LOGGER.info( "Track(" + name + ") : " + tags + " : " + syncType + " : " + syncOffset );
-		this.name = name.intern();
+		if ( name == null )
+			this.name = createUniqueTrackName();
+		else
+			this.name = name.intern();
+		
 		if ( tags == null )
 			this.tags = new HashSet<>();
 		else
@@ -139,6 +143,14 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 		this.syncOffset = syncOffset;
 		
 		sequence.setTrackInfo( this );
+	}
+
+	private static Object uniqueTrackNameLock = new Object();
+	private static transient int uniqueTrackNameCounter = 0;
+	private static String createUniqueTrackName() {
+		synchronized ( uniqueTrackNameLock ) {
+			return "track-" + ( uniqueTrackNameCounter ++ ); 
+		}
 	}
 	
 	@Override
@@ -167,11 +179,12 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 		this.enabled = enabled;
 	}
 	@Override
-	public void removeTrack( boolean graceful ) {
-		if ( graceful ) {
-			this.ending = true;
+	public void removeGracefully( Runnable onEnd ) {
+		if ( this.ending ) {
+			logWarn( "removeTrack was called with graceful but the track is already removed." );
 		} else {
-			metro.unregisterTrack( this );
+			this.ending = true;
+			this.endingProc = onEnd;
 		}
 	}
 	@Override

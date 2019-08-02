@@ -132,11 +132,19 @@ public class SchemeUtils {
 //		}
 	}
 	
+	/**
+	 * Treat everything as Java's //true// except 
+	 * Scheme's //#f// and Java's //null//. 
+	 * Note that scheme's //'()// is treated as Java's //true//.
+	 * Scheme does not have a counterpart for Java's null.
+	 */
 	public static Boolean toBoolean( Object schemeVal ) {
-		if ( schemeVal instanceof Boolean)
+		if ( schemeVal == null )
+			return false;
+		else if ( schemeVal instanceof Boolean)
 			return (Boolean)schemeVal;
 		else
-			return Boolean.TRUE; // treat everything as #t except #f.
+			return Boolean.TRUE; 
 	}
 	public static String toString( Object value ) {
 		if ( value == null ) 
@@ -178,7 +186,7 @@ public class SchemeUtils {
 	}
 	
 	public static Collection<String> symbolListToStringList(Pair p) {
-		return SchemeUtils.<Object,String>convertList((Collection<Object>)p.getCdr(), (v)->SchemeUtils.symbolToString(v));
+		return SchemeUtils.<Object,String>convertList((Collection<Object>)p, (v)->SchemeUtils.symbolToString(v) );
 	}
 	
 	public static IString toSchemeString( String value ) {
