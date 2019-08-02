@@ -12,6 +12,39 @@
 
 (p chan: 0 port: 0 note: << (cl  3 2 1 ) velo: >> '( 1 2 3 )  )
 
+(play!)
+(add-all! (list 'm1
+                (n chan: 0 port: 0 
+                   (melody '( do re mi sol end )))
+                'parallel 'main )
+          (list 'm2
+                (n chan: 0 port: 0 
+                   (melody '( mi fa sol ti end )))
+                'parallel 'main ))
+
+(add-all! (list 'm1
+                (n chan: 0 port: 0 
+                   (melody '( do re mi sol end )))
+                'immediate  )
+          (list 'm2
+                (n chan: 0 port: 0 
+                   (melody '( mi fa sol ti end )))
+                'immediate  ))
+
+(add! 'm1 (list (n type: 'exec pos: 0.4 proc: (lambda()
+                                                (display 'hello)
+                                                (newline)
+                                                ))
+                (n type: 'end )
+                ))
+
+(del! 'm1 'm2 )
+(end! 'track-0 )
+(ls)
+(get-track 'track-0)
+
+
+
 (let ((bar-count 17 )
       (note-name 73))
   (add! 'he2 
@@ -32,6 +65,8 @@
 
         'parallel 'main
         ))
+(ls)
+(del! 'he2)
 
 (let ((bar-count 11 ))
   (add! 'he 
@@ -54,7 +89,7 @@
 
 
 (ls)
-(rm! 'he)
+(del! 'he)
 
 (acos -1)
 (take (cl 1 2 3) 3)
@@ -66,7 +101,7 @@
         (n type: 'note port: 1 chan: 0 velo: 0.7 len: 0.5 note: << (iota 10 60)  pos: >> (ap 10 3 ) )
         (n type: 'len val: 3 )) 'parallel 'main
       )
-(rm! 'cnt)
+(del! 'cnt)
 
 (put! 'cnt22
           (n
@@ -74,16 +109,17 @@
             (n type: 'len val: 2 )) 'parallel 'main
           )
 
-(rm! 'cnt22 )
+(del! 'cnt22 )
 
 
 (put! 'he1
   (n chan: 0 port: 2  velo: 1
                    (repeat 2 (melody '( o 3 do 1   re mi sol r   end )))
                    (repeat 6 (melody '( o 4 mi 1/3 fi sol ti r   end )))) 'parallel 'main) 
-(ls!)
+(ls)
 
-(rm! 'he1)
+(del! 'seq-2)
+(end! 'track-1)
 
 (snd!
   (n chan: 0 port: 0 
@@ -109,6 +145,9 @@
        (melody '( o 4 do 1/32 re mi sol end ))
        )
      ))
+#|
+#MetroTrack:seq-1#
+|#
 
 (send2!  (n (n chan: 0 port: 0 (repeat 16 (melody '( o 4 do 1/32 r  r sol end ))))))
 (send2!  (n (n chan: 5 port: 2 (melody '( o 4 mi sol ti end )) (melody '( o 4 do mi sol end )))))
@@ -118,3 +157,4 @@
   (n chan: 0 port: 2 
      (melody '( o 4 do 1/5 re mi fi sol re , mi ' fi sol la mi , fi ' sol la ti end ))))
 
+; vim: expandtab :

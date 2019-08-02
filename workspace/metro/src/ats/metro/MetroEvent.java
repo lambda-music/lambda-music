@@ -68,12 +68,14 @@ public abstract class MetroEvent implements MetroAbstractEvent {
 		}
 	};
 	
+	String id;
 	final double barOffset;
 	int barOffsetInFrames;
 	int midiOffset;
 	
-	public MetroEvent(double offset ) {
+	public MetroEvent( String id, double offset ) {
 		super();
+		this.id = id == null ? super.toString() : id;
 		this.barOffset = offset;
 	}
 	public final double getBarOffset() {
@@ -112,9 +114,15 @@ public abstract class MetroEvent implements MetroAbstractEvent {
 		return sb.toString();
 	}
 	public void dumpProc( String prefix, StringBuilder sb ) {
-		sb.append(prefix).append( "            offset: " + barOffset ).append( "\n" );
+		sb.append(prefix).append( "                id: " + id                ).append( "\n" );
+		sb.append(prefix).append( "            offset: " + barOffset         ).append( "\n" );
 		sb.append(prefix).append( "    offsetInFrames: " + barOffsetInFrames ).append( "\n" );
 	}
+	
+	@Override
+		public String toString() {
+			return "(MidiEvent " + id + ")";
+		}
 
 //	public static void main(String[] args) {
 //		MetroMidiEvent event = new MetroMidiEvent(1, 0.0d, new byte[] {} );

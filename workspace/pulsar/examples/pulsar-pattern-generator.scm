@@ -23,6 +23,7 @@
 (define main-pane ::javax.swing.JPanel #!null )
 (define main-frame ::javax.swing.JFrame #!null )
 
+(define DEBUG #f)
 (define TracksetManager  #f)
 (define trackset-manager #f)
 (define Trackset         #f)
@@ -93,8 +94,10 @@
                                                        (if (eq? (self 'current-trackset) trackset ) 
                                                          ;then
                                                          (begin
-                                                           (display '=========3)
-                                                           (newline)
+                                                           (if DEBUG (begin
+                                                                       (display '=========3)
+                                                                       (newline)
+                                                                       ))
                                                            (if (<= (length (cdr trackset-list)) 1 )
                                                              ;then
                                                              (self 'current-trackset #f)
@@ -116,9 +119,11 @@
                                                            (let ((t (self 'current-trackset)))
                                                              (if t
                                                                (begin
-                                                                 (display '=========)
-                                                                 (display ( t 'trackset-name ) )
-                                                                 (newline)
+                                                                 (if DEBUG (begin
+                                                                             (display '=========)
+                                                                             (display ( t 'trackset-name ) )
+                                                                             (newline)
+                                                                             ))
                                                                  (t 'update-trackset-view)
                                                                  (self 'update-trackset-buttons t)
                                                                  )
@@ -147,8 +152,9 @@
                                                        
                                                        ))))
       (self 'define 'method 'clear-trackset-view   (lambda ( self ) 
-                                                     (display 'clear-trackset-view)
-                                                     (newline)
+                                                     (if DEBUG (begin 
+                                                                 (display 'clear-trackset-view)
+                                                                 (newline) ))
                                                      (gui-build!
                                                        (gui-get main-pane "TRACKS")
                                                        'remove-all
@@ -379,8 +385,10 @@
                                                                (append
                                                                  (list "((trackset-manager 'new-trackset) 'add-track " )
                                                                  (map (lambda(x)
-                                                                        (display x)
-                                                                        (newline)
+                                                                        (if DEBUG (begin
+                                                                                    (display x)
+                                                                                    (newline)
+                                                                                    ))
                                                                         (string-append
                                                                           "\n"
                                                                           (pretty-print (x 'track-to-source ))))
@@ -444,8 +452,10 @@
                                   ; list No.2
                                   (list 
                                     (lambda (sel cmd usr src evt ) 
-                                      (display cmd)
-                                      (newline) 
+                                      (if DEBUG (begin
+                                                  (display cmd)
+                                                  (newline) 
+                                                  ))
                                       (self 'write field-name usr )
                                       (update-inst)))))))
              (update-inst (lambda ()
@@ -505,8 +515,10 @@
                                                               (list 'selected) 
                                                               2 )
                                                             (list (lambda (sel cmd usr src evt ) 
-                                                                    (display cmd)
-                                                                    (newline) 
+                                                                    (if DEBUG (begin
+                                                                                (display cmd)
+                                                                                (newline) 
+                                                                                ))
                                                                     (self 'write 'instrument usr )
                                                                     (update-inst)))))
 
@@ -524,8 +536,10 @@
                                                        
                                                        (list
                                                          (lambda (sel cmd usr src evt ) 
-                                                           (display cmd)
-                                                           (newline) 
+                                                           (if DEBUG (begin
+                                                                       (display cmd)
+                                                                       (newline) 
+                                                                       ))
                                                            (self 'write 'pns-pattern usr )
                                                            (update-inst)))))
                                                    #|
@@ -559,8 +573,10 @@
                                                    'name 'text-velo-values
                                                    (gui-new 'text-field  "" 32 
                                                             (lambda (sel cmd usr src evt ) 
-                                                              (display cmd)
-                                                              (newline) 
+                                                              (if DEBUG (begin
+                                                                          (display cmd)
+                                                                          (newline) 
+                                                                          ))
                                                               (self 'write 'velo-values cmd )
                                                               (update-inst)))
                                                    (gui-new 'label "  " )
@@ -568,8 +584,10 @@
                                                    'name 'text-beat-offset
                                                    (gui-new 'text-field  "" 12 
                                                             (lambda (sel cmd usr src evt ) 
-                                                              (display cmd)
-                                                              (newline) 
+                                                              (if DEBUG (begin
+                                                                          (display cmd)
+                                                                          (newline) 
+                                                                          ))
                                                               (self 'write 'beat-offset cmd )
                                                               (update-inst)))
                                                    (gui-new 'label "  " )
@@ -615,12 +633,14 @@
       (self 'define 'method 'update-track-view   (lambda (self)
                                                    ; update Act label which denotes 'enabled
                                                    (let ((label (gui-get (self 'gui) 'enabled)))
-                                                     (display 'label)
-                                                     (display label)
-                                                     (newline)
-                                                     
-                                                     (display (self 'enabled))
-                                                     (newline)
+                                                     (if DEBUG (begin
+                                                                 (display 'label)
+                                                                 (display label)
+                                                                 (newline)
+
+                                                                 (display (self 'enabled))
+                                                                 (newline)
+                                                                 ))
                                                      (if label 
                                                        (label:setSelected (self 'enabled))))
                                                    
@@ -719,6 +739,7 @@
     ; (main-pane:setPreferredSize (java.awt.Dimension 800 500) )
     (main-frame:setVisible #t)
     (main-frame:setSize 1000 500)
+    (main-frame:setLocation 800 0 )
     (main-frame:setDefaultCloseOperation javax.swing.WindowConstants:DISPOSE_ON_CLOSE)
 
     ; DON'T FORGET TO SET A LAYOUT MANAGER TO CONTENT PANE. 

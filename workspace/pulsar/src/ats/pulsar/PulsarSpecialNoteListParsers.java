@@ -23,6 +23,7 @@ package ats.pulsar;
 import static ats.pulsar.PulsarMidiNoteListParsers.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +38,8 @@ import ats.metro.MetroEventBuffer;
 import ats.metro.MetroTrack;
 import ats.metro.MetroTrack.SyncType;
 import ats.pulsar.lib.SchemeUtils;
+import gnu.lists.IString;
+import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 import kawa.standard.Scheme;
@@ -247,8 +250,13 @@ public class PulsarSpecialNoteListParsers {
 									logWarn( "PARSER_PUT : syncTrackId '" + syncSequenceId + "' was not found and it was ignored. " );
 								}
 							}
-							pulsar.putTrack( 
-								pulsar.createTrack( id2, tags, sequence, syncType, syncTrack, syncOffset ) );
+						
+							try {
+								pulsar.registerTrack( 
+									pulsar.createTrack( id2, tags, sequence, syncType, syncTrack, syncOffset ) );
+							} finally {
+								pulsar.notifyTrackChange();
+							}
 						}
 					}
 				});
@@ -273,49 +281,48 @@ public class PulsarSpecialNoteListParsers {
 			}
 		}
 	}
-	public static final RemoveEventParser PARSER_REMOVE = new RemoveEventParser();
-	static { register( PARSER_REMOVE ); }
-	static final class RemoveEventParser extends SpecialNoteListParserElement {
-		{
-			// RENAMED (Thu, 01 Aug 2019 13:09:08 +0900)
-			this.shortName = "del";
-			this.longName  = "del-track";
-//			this.longName = "Remove the specified track";
-		}
+	
+	static abstract class AbstractRemoveEventParser extends SpecialNoteListParserElement {
+		abstract void removeTrackProc( Metro metro, MetroTrack track );
 		@Override
 		public
 		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
 			List<String> el = Collections.emptyList();
 
 			double offset            = getValue( map, ID_OFFSET, 0.0d, (v)-> SchemeUtils.toDouble( v )   );
-			String id                = getValue( map, "id",   null, (v)-> SchemeUtils.anyToString(    SchemeUtils.schemeNullCheck( v ) ) );
+			Collection argTrackList  = getValue( map, "id",   null, (v)-> v instanceof Pair ? (Collection)v : (Collection)LList.makeList(Arrays.asList( v ) ));
 			Collection<String> tags  = getValue( map, "tags", el,   (v)-> SchemeUtils.symbolListToStringList((Pair)v ) );
 			
-			Pulsar pulsar = (Pulsar)metro;
-
-			if ( id != null ) {
+			if ( ( argTrackList != null ) && ! argTrackList.isEmpty() ) {
 				((MetroEventBuffer) receiver).exec( offset, new Runnable() {
 					@Override
 					public void run() {
 						// synchronized block added at (Mon, 29 Jul 2019 13:36:52 +0900)
-						synchronized ( pulsar.getMetroLock() ) {
-							MetroTrack t = pulsar.searchTrack( id );
-							if ( t != null ) {
-								t.removeTrack(true, XXX, xxxull);
-							} else {
-								logWarn( "PARSER_REMOVE : id '"+ id + "' was not found." );
+						synchronized ( metro.getMetroLock() ) {
+							try {
+								for ( Object v : argTrackList ) {
+									v = SchemeUtils.schemeNullCheck(v);
+									
+									MetroTrack track=null;
+									if ( v instanceof IString ) {
+										String id = v==null ? null : SchemeUtils.anyToString( v );
+										track = metro.searchTrack( id );
+									} else if ( v instanceof MetroTrack ) {
+										track = (MetroTrack) v ;
+									}
+	
+									if ( track != null ) {
+										removeTrackProc( metro, track );
+									} else {
+										logWarn( "PARSER_REMOVE : the passed value '"+v+"' was improper. We ignored it." );
+									}
+								}
+							} finally {
+								metro.notifyTrackChange();
 							}
-							
-// 							>>> DELETED (Thu, 01 Aug 2019 13:09:08 +0900)
-//							if ( t != null ) {
-//								pulsar.removeTrack( t );
-//							} else {
-//								logWarn( "PARSER_REMOVE : id '"+ id + "' was not found." );
-//							}
-//							<<< DELETED (Thu, 01 Aug 2019 13:09:08 +0900)
 						}
 					}
-				} );
+				});
 			}
 
 			if ( tags != null ) {
@@ -323,13 +330,10 @@ public class PulsarSpecialNoteListParsers {
 					@Override
 					public void run() {
 						// synchronized block added at (Mon, 29 Jul 2019 13:36:52 +0900)
-						synchronized ( pulsar.getMetroLock() ) {
-							for ( MetroTrack t : pulsar.getTrackByTagSet(tags) ) {
-								t.removeTrack(true, XXX, xxxull);
+						synchronized ( metro.getMetroLock() ) {
+							for ( MetroTrack t : metro.searchTracksByTagSet(tags) ) {
+								removeTrackProc( metro, t );
 							}
-// 							>>> DELETED (Thu, 01 Aug 2019 13:09:08 +0900)
-//							pulsar.removeAllTracks( pulsar.getTrackByTagSet(tags) );
-//							<<< DELETED (Thu, 01 Aug 2019 13:09:08 +0900)
 						}
 					}
 				} );
@@ -337,18 +341,39 @@ public class PulsarSpecialNoteListParsers {
 			return result;
 		}
 	}
+
+	
+	public static final RemoveEventParser PARSER_REMOVE = new RemoveEventParser();
+	static { register( PARSER_REMOVE ); }
+	static final class RemoveEventParser extends AbstractRemoveEventParser {
+		{
+			// RENAMED (Thu, 01 Aug 2019 13:09:08 +0900)
+			this.shortName = "del";
+			this.longName  = "del-track";
+//			this.longName = "Remove the specified track";
+		}
+		@Override
+		void removeTrackProc(Metro metro, MetroTrack track) {
+			synchronized ( metro.getMetroLock() ) {
+				try {
+					metro.unregisterTrack(track);
+				} finally {
+					metro.notifyTrackChange();
+				}
+			}
+		}
+	}
 	
 	public static final EndEventParser PARSER_END = new EndEventParser();
 	static { register( PARSER_END ); }
-	static final class EndEventParser extends SpecialNoteListParserElement {
+	static final class EndEventParser extends AbstractRemoveEventParser {
 		{
 			this.shortName = "end";
 			this.longName = "end-of-track";
 		}
 		@Override
-		public
-		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
-			return false;
+		void removeTrackProc(Metro metro, MetroTrack track) {
+			track.removeGracefully( null );
 		}
 	}
 

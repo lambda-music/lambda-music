@@ -147,8 +147,14 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	public static Metro startClient( String clientName, MetroSequence sequence ) throws JackException {
 		try {
             Metro metro = new Metro();
-            metro.putSequence( "main", sequence );
             metro.open( clientName );
+            synchronized ( metro.getMetroLock() ) {
+            	try {
+            		metro.registerTrack( metro.createTrack( "main", sequence ) );
+            	} finally {
+            		metro.notifyTrackChange();
+            	}
+            }
             return metro;
         } catch (JackException ex) {
             logError( null, ex);
@@ -174,54 +180,6 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 			);
 	}
 	
-	/*
-	 * Note that  There is no `this.logics`. Instead of that all of MetroSequence objects are 
-	 * wrapped by Track and stored as `this.tracks`.   
-	 * (Sat, 18 Aug 2018 19:03:18 +0900)
-	 */
-	public void putSequence( String name, MetroSequence sequence ) {
-		putTrack( createTrack( name, null, sequence, SyncType.PARALLEL, null, 0.0d  ) );
-	}
-//	This method was removed at (Mon, 29 Jul 2019 09:13:06 +0900)
-//	public void putSequence( String name, Collection<String> tags, MetroSequence sequence, SyncType syncType, Object syncTrackObject, double syncOffset ) {
-//		putTrack( createTrack( name, tags, sequence, syncType, syncTrackObject, syncOffset ) );
-//	}
-//	This method was removed at (Mon, 29 Jul 2019 13:24:48 +0900)
-//	public void putSequence( String name, Collection<String> tags, MetroSequence sequence, SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
-//		putTrack( createTrack( name, tags, sequence, syncType, syncTrack, syncOffset ) );
-//	}
-	
-	/**
-	 * getTrack()
-	 * 
-	 * 1. When the passed object is null, this method returns null. Note that
-	 *    the null for the track object parameter is allowed in putSequence().
-	 *    
-	 * 2. If the object is an instance of MetroTrack, this method returns it.
-	 * 
-	 * 3. If the object is an instance of String, this method works same as
-	 *    searchTrack() method except it throws an exception when the specified
-	 *    track is not found.
-	 *    
-	 * 4. Otherwise, this method throws an exception.
-	 */
-	@Deprecated
-	public MetroTrack getTrack( Object nameObject ) {
-		if ( nameObject == null ) {
-			return null;
-		} else if ( nameObject instanceof MetroTrack ) {
-			return (MetroTrack) nameObject;
-		} else if ( nameObject instanceof String ) {
-			MetroTrack t = searchTrack( (String) nameObject );
-			if ( t== null ) {
-				dumpTracks();
-				throw new RuntimeException( "Error : Track " + nameObject + " was not found." );
-			}
-			return t;
-		} else {
-			throw new RuntimeException( "Unsupported object on syncTrack" );
-		}
-	}
 	public MetroTrack getTrack( String name ) {
 		MetroTrack track = searchTrack( name );
 		if ( track == null ) {
@@ -240,43 +198,13 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		logWarn( "Dump all tracks <=== " );
 	}
 	public Collection<MetroTrack> getTrackByTag( String tag ) {
-		return searchTrackByTag(tag);
-	}
-	public Collection<MetroTrack> getTrackByTagSet( Collection<String> tagSet ) {
-		HashSet<MetroTrack> set = new HashSet<>();
-		for ( String tag : tagSet ) {
-			set.addAll( searchTrackByTag( tag ) );
-		}
-		return set;
+		return searchTracksByTag(tag);
 	}
 	
-	public void putTrack( MetroTrack track ) {
-		registerTrack( track );
-	}
-	public void removeTrack( MetroTrack track, boolean graceful, Runnable onEnd ) {
-		unregisterTrack(track);
-	}
 	
-	public void putAllTracks( Collection<MetroTrack> tracks ) {
-		registerAllTracks( tracks );
-	}
-	public void removeAllTracksGracefully( Collection<MetroTrack> tracks, Runnable onEnd ) {
-		synchronized ( getMetroLock() ) {
-			for ( MetroTrack track : tracks ) {
-				track.removeGracefully( onEnd  );
-				// Note that set onEnd on the first element only so we set null to the variable.
-				onEnd = null;
-			}
-		}
-	}
-	public void removeAllTracks( Collection<MetroTrack> tracks ) {
-		synchronized ( getMetroLock() ) {
-			for ( MetroTrack track : tracks ) {
-				track.removeGracefully( onEnd  );
-				// Note that set onEnd on the first element only so we set null to the variable.
-				onEnd = null;
-			}
-		}
+
+	public MetroTrack createTrack( String name, MetroSequence sequence ) {
+		return createTrack( name, null, sequence, SyncType.IMMEDIATE, null, 0.0d  );
 	}
 
 	public MetroTrack createTrack( 
@@ -285,7 +213,10 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	{
 		return new MetroTrack( this, name, tags, sequence, syncType, syncTrack, syncOffset );
 	}
+
 	public MetroTrack searchTrack( String name ) {
+		if ( name == null ) throw new NullPointerException( "name was null" );
+		
 		synchronized( getMetroLock() ) {
 			if ( "last!".equals( name )) {
 				if ( tracks.size() == 0 ) {
@@ -311,7 +242,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 			}
 		}
 	}
-	private Collection<MetroTrack> searchTrackByTag( String tag ) {
+	public Collection<MetroTrack> searchTracksByTag( String tag ) {
 		ArrayList<MetroTrack> list = new ArrayList<>(); 
 		for ( Iterator<MetroTrack> i = tracks.iterator(); i.hasNext();  ) {
 			 MetroTrack track = i.next();
@@ -321,6 +252,14 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		}
 		return list;
 	}
+	public Collection<MetroTrack> searchTracksByTagSet( Collection<String> tagSet ) {
+		HashSet<MetroTrack> set = new HashSet<>();
+		for ( String tag : tagSet ) {
+			set.addAll( searchTracksByTag( tag ) );
+		}
+		return set;
+	}
+
 	
 //	This method was removed. (Mon, 29 Jul 2019 11:37:24 +0900)
 //	At the time of removing, there were two occurrences of referring this method.
@@ -511,7 +450,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
     public void clearTracks() {
 		synchronized ( this.getMetroLock() ) {
 			this.tracks.clear();
-			this.notifyCheckBuffer();
+			this.notifyTrackChange();
 		}
     }
     
@@ -731,11 +670,49 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
     }
     
     // @see METRO_LOCK_WAIT
-	protected void notifyCheckBuffer() {
+	/**
+	 * <p>
+	 * Any caller of the methods {@link #registerTrack(MetroTrack)} and
+	 * {@link #unregisterTrack(MetroTrack)} has responsibility to call
+	 * {@link #notifyTrackChange()} method after calling. When multiple tracks are
+	 * registered/unregistered at once, the caller must call
+	 * {@link #notifyTrackChange()} at least once a session and not necessarily call
+	 * every time registering a track.
+	 * <p>
+	 * It is preferable that a user who performs any bulk-registering calls
+	 * {@link #notifyTrackChange()} method only once after the registering a set of
+	 * track and they should avoid to redundantly call {@link #notifyTrackChange()}
+	 * multiple times.
+	 * <p>
+	 * Any caller of this method should place the calling inside a synchronized
+	 * block of an object which you can retrieve by {@link #getMetroLock()} method;
+	 * otherwise you will get an unexpected result.
+	 * <p>
+	 * 
+	 * <pre>
+	 * synchronized (getMetroLock()) {
+	 *  MetroTrack track = createTrack(...);
+	 * 	registerTrack(track);
+	 * 	notifyCheckBuffer();
+	 * }
+	 * </pre>
+	 * 
+	 * @param track
+	 */
+
+	public void notifyTrackChange() {
 		synchronized ( this.getMetroLock() ) {
 			this.getMetroLock().notify();
 		}
 	}
+
+	/*
+	 * NOTE :
+	 * 
+	 * Note that  There is no `this.logics`. Instead of that all of MetroSequence objects are 
+	 * wrapped by Track and stored as `this.tracks`.   
+	 * (Sat, 18 Aug 2018 19:03:18 +0900)
+	 */
 
     /*
      * NOTE : DON'T FORGET THIS
@@ -748,77 +725,38 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
     
     /**
 	 * Register a track and play.
-	 * <p>
-	 * Any caller of this method {@link #registerTrack(MetroTrack)} has
-	 * responsibility to call {@link #notifyCheckBuffer()} method after calling.
-	 * When multiple tracks are registered at once, the caller must call
-	 * {@link #notifyCheckBuffer()} at least once and not necessarily call every
-	 * time registering a track.
-	 * <p>
-	 * It is preferable that a user who performs any bulk-registering calls
-	 * {@link #notifyCheckBuffer()} method only once after the registering a set of
-	 * track and they should avoid to redundantly call {@link #notifyCheckBuffer()}
-	 * multiple times.
-	 * <p>
-	 * Any caller of this method should place the calling inside a synchronized block
-	 * of an object which you can retrieve by {@link #getMetroLock()} method; otherwise
-	 * you will get an unexpected result. 
-	 * <p>
-	 * @param track
-	 */
-    protected void registerTrack( MetroTrack track ) {
-		if ( DEBUG ) 
-			logInfo( "****** CREATED a new track is created " + track.id );
-		
-		this.registeredTracks.add( track );
-	}
-    
-    @Deprecated
-    protected void registerAllTracks( Collection<MetroTrack> tracks ) {
-		synchronized ( this.getMetroLock() ) {
-			for ( MetroTrack track : tracks ) {
-				registerTrackProc( track );
-			}
-			this.notifyCheckBuffer();
-		}
-    }
-    
-    /*
-	 * This is incorrect because if you remove the track which name is identical to
-	 * the new track here, the removed track will abruptly stop playing. We should
-	 * just leave the track stay and let users manipulate correctly.
 	 * 
-	 * Leave this chunk of code for future reference.
 	 */
-    @Deprecated
-	private void registerTrackProc(MetroTrack track) {
-		MetroTrack foundTrack = null;
-		{
-			for ( MetroTrack track0 : this.tracks  ) {
-				if ( track0.name.equals( track.name ) ) {
-					foundTrack = track0;
-					break;
-				}
-			}
-		}
-		this.registeredTracks.add( track );
-		if ( foundTrack != null) {
-			this.unregisteredTracks.add( foundTrack );
-		}
-	}
-    
-    
-    
+	
+	
 	/**
-	 * Unregister the specified track.  This method should be called with
+	 * This registers the specified track.  This method should be called with
 	 * the same protocol with {@link #registerTrack(MetroTrack)} method. 
 	 * @see {@link #registerTrack(MetroTrack)}
 	 * @param track
 	 */
-    protected void unregisterTrack( MetroTrack track ) {
+    public void registerTrack( MetroTrack track ) {
+		if ( DEBUG ) 
+			logInfo( "****** CREATED a new track is created " + track.id );
+		
+		if ( track == null )
+			throw new NullPointerException( "track was null" );
+		
+		this.registeredTracks.add( track );
+	}
+    
+	/**
+	 * This method unregister the specified track.  This method should be called with
+	 * the same protocol with {@link #registerTrack(MetroTrack)} method. 
+	 * @see {@link #registerTrack(MetroTrack)}
+	 * @param track
+	 */
+    public void unregisterTrack( MetroTrack track ) {
     	if ( DEBUG ) { 
     		logInfo( "****** DESTROYED a track is destroyed " + ( track == null ? "(null track)" : track.id ) );
     	}
+		if ( track == null )
+			throw new NullPointerException( "track was null" );
     	this.unregisteredTracks.add( track );
     }
     
@@ -829,27 +767,14 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	 * @param runnable
 	 *            the procedure to run at a later time.
 	 */
-    protected void postMessage( Runnable runnable ) {
+    public void postMessage( Runnable runnable ) {
 		if ( DEBUG )
 			logInfo( "****** postMessage 1");
 		synchronized ( this.getMetroLock() ) {
 			this.messageQueue.add( runnable );
-			this.notifyCheckBuffer();
+			this.notifyTrackChange();
 		}
 	}
-
-
-//	public void registerTrackImmediately(Track track, Track syncTrack, 
-//			double offset) 
-//	{
-//		if ( DEBUG ) 
-//			logInfo( "****** CREATED a new track is created " + track.id );
-//		
-//		synchronized ( this.lock ) {
-//			this.tracks.add( track );
-//			track.prepare(barInFrames);
-//		}
-//	}
 
 
     @Override
@@ -859,7 +784,6 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	@Override
 	public void updatePosition(JackClient invokingClient, JackTransportState state, int nframes, JackPosition position,
 			boolean newPosition) {
-		// logInfo("*****************************************TEMPO");
 		
 	}
 

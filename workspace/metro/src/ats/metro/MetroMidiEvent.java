@@ -26,8 +26,8 @@ import java.util.List;
 public class MetroMidiEvent extends MetroEvent implements MetroAbstractMidiEvent {
 	final int outputPortNo;
 	byte[] midiData;
-	public MetroMidiEvent( double offset, int outputPortNo, byte[] data ) {
-		super( offset );
+	public MetroMidiEvent( String id, double offset, int outputPortNo, byte[] data ) {
+		super( id, offset );
 		this.outputPortNo = outputPortNo;
 		this.midiData = data;
 	}

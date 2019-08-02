@@ -1827,26 +1827,26 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define send! (lambda (x . args )
-                 (or (and
-                       (list? x)
-                       (or (= (length x) 0 )
-                           (notation? (car x))))
-                     (raise  '( 
-                                invalid-argument-exception . 
-                                "the argument must be a list of notation data" )))
+                (or (and
+                      (list? x)
+                      (or (= (length x) 0 )
+                          (notation? (car x))))
+                    (raise  '( 
+                               invalid-argument-exception . 
+                               "the argument must be a list of notation data" )))
 
-                 (set! default-id-counter (+ 1 default-id-counter))
-                 (let ((id 
-                         (string->symbol
-                           (string-append 
-                             "seq-" 
-                             (number->string default-id-counter )))))
-                   (add-track! 'id
-                                      (lambda() 
-                                        (append x
-                                                '(((type . end)))))
-                                      'immediate 
-                                      ))))
+                (set! default-id-counter (+ 1 default-id-counter))
+                (let ((id 
+                        (string->symbol
+                          (string-append 
+                            "seq-" 
+                            (number->string default-id-counter )))))
+                  (add-track! id
+                              (lambda() 
+                                (append x
+                                        '(((type . end)))))
+                              'immediate 
+                              ))))
 
 ; Process ProgressBar
 ; This moved here at (Sat, 27 Jul 2019 07:34:16 +0900)

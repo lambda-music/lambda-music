@@ -74,7 +74,7 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 	protected Set<String> tags;
 	protected boolean enabled = true;
 
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 
 //	private static final int BUFFER_SIZE = 2;
 // MODIFIED >>> (Mon, 08 Jul 2019 20:29:49 +0900)
@@ -94,6 +94,7 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 	
 	protected final MetroSequence sequence;
 	transient boolean ending = false;
+	transient boolean endingDone = false;
 	transient double endingLength = 0;
 	transient Runnable endingProc = null;
 	
@@ -183,8 +184,8 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 		if ( this.ending ) {
 			logWarn( "removeTrack was called with graceful but the track is already removed." );
 		} else {
-			this.ending = true;
 			this.endingProc = onEnd;
+			this.ending = true;
 		}
 	}
 	@Override
@@ -333,7 +334,8 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 						it.remove();
 //						this.buffers.poll();
 						if (DEBUG)
-							logInfo( String.format( "currentLengthInFrames:%d currentCursor:%d ", currentLengthInFrames , currentCursor ) );
+							logInfo( String.format( "progressCursor: currentLengthInFrames:%d currentCursor:%d lengthInFrames:%d", 
+								currentLengthInFrames , currentCursor, b.getLengthInFrames() ) );
 
 					} else {
 						break;
@@ -341,15 +343,15 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 				}
 				
 				if ( 0< pollCount )
-					metro.notifyCheckBuffer();
+					metro.notifyTrackChange();
 
 				this.cursor = nextCursor;
 				this.lastLengthInFrames = lengthInFrame;
 				this.lastAccumulatedLength = accumulatedLength;
 			}
 			
-			if ( Metro.DEBUG && false)
-				logInfo( currentCursor + "/" + (this.buffers.isEmpty() ? "empty" : this.buffers.peek().getLengthInFrames()  ));
+			if ( DEBUG && false )
+				logInfo( "progressCursor(2):" + currentCursor + "/" + (this.buffers.isEmpty() ? "empty" : this.buffers.peek().getLengthInFrames()  ));
 		}
 	}
 
@@ -438,7 +440,7 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 		for ( MetroEventBuffer b : this.buffers ) {
 			accumulatedLength += b.getLength();
 		}
-//		logInfo( "accumulatedLength" + accumulatedLength );
+//		logInfo( "accumulatedLength(" + name + "):" + accumulatedLength );
 
 		return accumulatedLength;
 	}
@@ -447,9 +449,15 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 //			if ( this.buffers.size() < BUFFER_SIZE ) {
 //				this.offerNewBuffer( metro, client, position );
 //			}
+			
+//			MODIFIED >>> (Fri, 02 Aug 2019 16:52:08 +0900)
+//			while ( getAccumulatedLength() < MARGIN_LENGTH * MARGIN_LENGTH ) {
+//				this.offerNewBuffer( metro, client, position );
+//			}
 			while ( getAccumulatedLength() < MARGIN_LENGTH * MARGIN_LENGTH ) {
 				this.offerNewBuffer( metro, client, position );
 			}
+//			MODIFIED <<< (Fri, 02 Aug 2019 16:52:08 +0900)
 		}
 	}
 	
@@ -468,20 +476,40 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 
 	private void offerNewBuffer( Metro metro, JackClient client, JackPosition position ) throws JackException {
 		synchronized ( this.buffers ) {
+//			logInfo( "offerNewBuffer:" );
 			if ( this.ending ) {
-				MetroEventBuffer buf = new MetroEventBuffer();
-				buf.exec( this.endingLength , new Runnable() {
-					@Override
-					public void run() {
-						System.err.println( "UNREGISTER THIS" );
-						metro.unregisterTrack( MetroTrack.this );
-					}
-				});
-				buf.setLength( this.endingLength );
-				buf.prepare( metro, client, position, true );
-				this.buffers.offer( buf );
+//				logInfo( "offerNewBuffer:ending (" + this.name  + ")");
+
+				if ( this.endingDone ) {
+					MetroEventBuffer buf = new MetroEventBuffer();
+					buf.setLength( 1.0 );
+					buf.prepare( metro, client, position, true );
+					this.buffers.offer( buf );
+					
+				} else {
+					this.endingDone = true;
+
+					MetroEventBuffer buf = new MetroEventBuffer();
+					buf.exec( this.endingLength , new Runnable() {
+						@Override
+						public void run() {
+							logInfo( "UNREGISTER THIS" );
+							synchronized ( metro.getMetroLock() ) {
+								try {
+									metro.unregisterTrack( MetroTrack.this );
+								} finally {
+									metro.notifyTrackChange();
+								}
+							}
+						}
+					});
+					buf.setLength( this.endingLength + 0.5 );
+					buf.prepare( metro, client, position, true );
+					this.buffers.offer( buf );
+				}
 				
 			} else {
+//				logInfo( "offerNewBuffer:normal (" + this.name  + ")");
 				MetroEventBuffer buf = new MetroEventBuffer();
 				boolean result = this.sequence.processBuffered( metro, this, buf );
 				buf.prepare( metro, client, position, true );
@@ -513,5 +541,9 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 	@Override
 	public int hashCode() {
 		return this.name.hashCode() * 2;
+	}
+	@Override
+	public String toString() {
+		return "#" + MetroTrack.class.getSimpleName() + ":" + this.name + "#";
 	}
 } 

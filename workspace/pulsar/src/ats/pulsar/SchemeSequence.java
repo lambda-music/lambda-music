@@ -35,7 +35,6 @@ import ats.metro.MetroTrackInfo;
 import ats.pulsar.lib.SchemeUtils;
 import ats.pulsar.lib.secretary.Invokable;
 import gnu.lists.AbstractSequence;
-import gnu.lists.EmptyList;
 import gnu.lists.ImmutablePair;
 import gnu.lists.LList;
 import gnu.lists.Pair;
@@ -120,6 +119,7 @@ public class SchemeSequence extends MetroSequence {
 	}
 
 
+	@Deprecated
 	public static LList createPairs( MetroTrackInfo player ) {
 		Pair[] pairs = {
 				new ImmutablePair() {
@@ -170,8 +170,8 @@ public class SchemeSequence extends MetroSequence {
 					public Object getCdr() {
 						return new ProcedureN() {
 							public Object applyN(Object[] args) throws Throwable {
-								player.removeTrack( SchemeUtils.toBoolean( args[0]), XXX, xxxull );
-								return EmptyList.emptyList;
+								// XXX
+								throw new UnsupportedOperationException();
 							};
 						};
 					}

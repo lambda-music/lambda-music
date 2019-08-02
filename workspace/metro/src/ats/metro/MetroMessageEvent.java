@@ -24,8 +24,8 @@ import java.util.List;
 
 public class MetroMessageEvent extends MetroEvent {
 	private final Runnable message;
-	public MetroMessageEvent(double offset, Runnable message ) {
-		super(offset);
+	public MetroMessageEvent( String id, double offset, Runnable message ) {
+		super(id, offset);
 		this.message = message;
 	}
 	public void execute( Metro metro ) {
