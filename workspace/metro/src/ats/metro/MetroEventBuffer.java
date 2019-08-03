@@ -86,7 +86,8 @@ public class MetroEventBuffer implements Iterable<MetroEvent>, MetroBufferedMidi
 		return length;
 	}
 	public void setLength(double length) {
-		if (DEBUG) logInfo( "setLength():" + length );
+		if (DEBUG) 
+			logInfo( "setLength():" + length );
 		this.length = length;
 	}
 	public double getActualLength() {

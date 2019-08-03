@@ -38,10 +38,19 @@
                 (n type: 'end )
                 ))
 
+(add 'm1 (n type: note pos: >> (ap 4 1) ) )
+
+
+(play!)
+
+(add-all!  
+  (list 'm1    (n chan: 0 port: 0 type: 'note note: 60 velo: << (cl 0.9 0.4 0.4 0.4 )  pos: >> (ap 4 1)             ) )
+  (list 'm2 (p (n chan: 0 port: 0 type: 'note note: 68 velo: << (cl 0.8 )              pos: >> (ap 7 3)  ) (len 3 ) ) )
+  )
+
+
 (del! 'm1 'm2 )
-(end! 'track-0 )
-(ls)
-(get-track 'track-0)
+(end! 'm1 'm2 #f )
 
 
 

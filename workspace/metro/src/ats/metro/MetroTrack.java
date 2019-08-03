@@ -34,6 +34,17 @@ import org.jaudiolibs.jnajack.JackClient;
 import org.jaudiolibs.jnajack.JackException;
 import org.jaudiolibs.jnajack.JackPosition;
 
+/*
+ * To acquire further understanding about buffering of this Metro framework,
+ * activate log output to see what come out from it. See the keyword UNDERSTANDING_METRO_BUFFERING .
+ * ( I mean, select the CAPITALIZED_KEYWORD and hit CTRL-F thing to find the string in this file. )
+ */
+
+/**
+ * 
+ * @author Ats Oka
+ *
+ */
 public class MetroTrack implements MetroTrackInfo, MetroLock {
 	static final Logger LOGGER = Logger.getLogger(MetroTrack.class.getName());
 	static void logError(String msg, Throwable e) {
@@ -74,14 +85,27 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 	protected Set<String> tags;
 	protected boolean enabled = true;
 
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = false;
 
 //	private static final int BUFFER_SIZE = 2;
 // MODIFIED >>> (Mon, 08 Jul 2019 20:29:49 +0900)
 //	private static final double MARGIN_LENGTH = 2;   
-	private static final double MARGIN_LENGTH = 3;   
+//	private static final double MARGIN_LENGTH = 9;   
 // MODIFIED <<< 
 
+	/*
+	 * Memo : I think this is not necessary anymore; this used to be margin length
+	 * to fetch the next buffer or something that I don't quite remember. With a
+	 * quick investigation to set it to one and it seems that it does not cause any
+	 * problem. So
+	 * 
+	 * The value one means that it is not used anymore. The related code might be
+	 * unused,too. But it needs more investigation to delete it; so I left it be
+	 * like this for now. (Sat, 03 Aug 2019 12:20:59 +0900)
+	 */
+	private static final double MARGIN_LENGTH = 1;   
+
+	
 	int id = (int) (Math.random()* Integer.MAX_VALUE);
 
 	private transient SyncType syncType;
@@ -219,25 +243,38 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 
 	
 	/*
-	 * === About `found` flag ===
-	 * There are three stages :
+	 * === About `found` flag === ( COMMENT_A )
+	 * 
+	 * We have data for some notes in a bar. And we have 
+	 * to search for the notes between the current area.
+	 * We are in the area between the last cursor position
+	 * and the next cursor position which is located n-frames
+	 * behind it. The n-frame is the parameter nframes.
+	 * 
+	 * We have to iterate every note data and see if the note
+	 * is in the area. This requires that the note data are sorted.
+	 *    
+	 * The searching process contains three stages :
 	 *
 	 * 1. While between() function returns false,
 	 * the current position should be before the area.
+	 * 
 	 * 2. While between() function returns true,
-	 * the current position should be in the area. 
+	 * the current position should be in the area.
+	 *  
 	 * 3. When between() function return false 
 	 * after between() function return true,
 	 * the current position should be after the area.
 	 * 
-	 * If it entered to the stage-3, between() function will not
-	 * return true again; therefore the searching process is
-	 * not necessary to continue anymore.
+	 * Note that when it comes to the stage-3, between() 
+	 * function will not return true again; therefore the 
+	 * searching process is not necessary to continue anymore.
 	 * 
-	 * * Asterisk denotes a Note Event Object. 
+	 * Asterisk denotes a Note Event Object. 
+	 *
 	 * 
-	 * 
-	 *                    | THE AREA   |
+	 *                    THE SEARCH AREA
+	 *                    |            |
 	 *  *                 |            |
 	 *    *               |            |
 	 *         *          |            |
@@ -252,12 +289,13 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 	 *                    |            |             *
 	 */
 
-
 	static int BUFFER_REMOVAL_STRATEGY = 3;
 
 	/* 
 	 * (Sat, 23 Dec 2017 23:16:25 +0900)
-	 * 1. 
+	 * 
+	 * Note : 
+	 * 1.
 	 * This "if" statement should not be like :
 	 *     buf.getLengthInFrames() <= nextCursor
 	 * This should be :
@@ -298,7 +336,7 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 						found = true;
 						e.process( metro, actualCursor, actualNextCursor, nframes, result );
 					} else {
-						if ( found )
+						if ( found ) // SEE COMMENT_A (Fri, 02 Aug 2019 19:20:40 +0900)
 							break;
 					}
 				}
@@ -435,16 +473,26 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 
 	}
 
-	private double getAccumulatedLength() {
-		double accumulatedLength = 0;
+	private long getTotalBufferLength() {
+		long total = 0;
 		for ( MetroEventBuffer b : this.buffers ) {
-			accumulatedLength += b.getLength();
+			total += b.getLengthInFrames();
 		}
-//		logInfo( "accumulatedLength(" + name + "):" + accumulatedLength );
-
-		return accumulatedLength;
+		total -= cursor;
+		
+		// UNDERSTANDING_METRO_BUFFERING
+		if ( DEBUG )
+			logInfo( "getTotalBufferLength(" + name + "):(count:" + this.buffers.size() + ") " + total );
+		return total;
 	}
-	protected  void checkBuffer( Metro metro, JackClient client, JackPosition position ) throws JackException {
+	
+	/*
+	 * Lazy initializing field
+	 */
+	private int cacheUpdateThreshold = -1;
+	private static final int MIN_UPDATE_THRESHOLD = 256;
+	private static final int MAX_UPDATE_THRESHOLD = 44100*4;
+	protected  void checkBuffer( Metro metro, JackClient client, JackPosition position, int barInFrames) throws JackException {
 		synchronized ( this.buffers ) { // << ADDED synchronided (Sun, 30 Sep 2018 11:45:13 +0900)
 //			if ( this.buffers.size() < BUFFER_SIZE ) {
 //				this.offerNewBuffer( metro, client, position );
@@ -454,7 +502,32 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 //			while ( getAccumulatedLength() < MARGIN_LENGTH * MARGIN_LENGTH ) {
 //				this.offerNewBuffer( metro, client, position );
 //			}
-			while ( getAccumulatedLength() < MARGIN_LENGTH * MARGIN_LENGTH ) {
+			
+			int updateThreshold = cacheUpdateThreshold;
+			if ( updateThreshold < 0 ) {
+				double metroUpdateThreshold = metro.getUpdateSequenceThreshold();
+				
+				updateThreshold = (int)((double)barInFrames * metroUpdateThreshold);
+				String message = "" + updateThreshold +"=" + barInFrames + "*" + metroUpdateThreshold +" (updateThreshold = barInFrames * metroUpdateThreshold)";
+				
+				if ( updateThreshold  < MIN_UPDATE_THRESHOLD ) {
+					logWarn( "Too small update-threshold value causes system to become unstable. " + message );
+					updateThreshold = 256;
+					logWarn( "We ignored the specified update-threshold value; reset to " + updateThreshold  + "." );
+				} else if ( MAX_UPDATE_THRESHOLD < updateThreshold ) {
+					logWarn( "Too large update-threshold value causes system to become unstable. " + message );
+					updateThreshold = MAX_UPDATE_THRESHOLD;
+				} else {
+					cacheUpdateThreshold = updateThreshold;
+					logWarn( "We set updateThreshold value. " + message );
+				}
+			}
+
+			// UNDERSTANDING_METRO_BUFFERING 
+			if ( DEBUG )
+				logInfo( "checkBuffer(" + name + "):thre:" + updateThreshold  );
+			
+			while ( getTotalBufferLength() < updateThreshold ) {
 				this.offerNewBuffer( metro, client, position );
 			}
 //			MODIFIED <<< (Fri, 02 Aug 2019 16:52:08 +0900)

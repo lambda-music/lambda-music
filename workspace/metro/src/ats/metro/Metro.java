@@ -120,6 +120,21 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		// reprepareTrack();
 	}
 
+	/**
+	 * This property can control when a track creates the next sequence pattern. The
+	 * value of this property denotes the ratio of measure to the threshold length;
+	 * setting 1 causes it to be the same length as the length of a measure in the
+	 * current tempo, and setting 0.5 to be half.
+	 */
+	private double updateSequenceThreshold = 1.0d/ 32.0d;
+	public void setUpdateSequenceThreshold(double value) {
+		this.updateSequenceThreshold = value;
+	}
+	public double getUpdateSequenceThreshold() {
+		return updateSequenceThreshold;
+	}
+
+
 	private transient boolean playing = false;
 
 	public boolean getPlaying() {
@@ -327,6 +342,21 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 //		return null;
 //	}
 
+    /**
+     * The method {@link #open(String)} creates a server instance and starts it.
+     * <p>
+     * NOTE : 
+     * The reason that the {@link #open(String)} method throws an exception when it is called
+	 * duplicately in the meantime the {@link #close()} method just ignores it.
+	 * 
+	 * When a user duplicately start a server, this maybe because of mistakenly
+	 * starting the server without any clean up the before state; therefore it
+	 * should report it to the user.
+	 * 
+	 * When a user duplicately stop a server, this maybe because of the user want to
+	 * clean up the server's state. In this case, the user usually want to stop the
+	 * server no matter it is already running or not.
+	 */
 
 	protected volatile boolean running = false;
     public void open( String clientName ) throws JackException {
@@ -418,19 +448,6 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
     	}
     }
     
-    /*
-     * NOTE : 
-     * The reason that the start() method throws an exception when it is called
-	 * duplicately in the meantime the stop() method just ignores it.
-	 * 
-	 * When a user duplicately start a server, this maybe because of mistakenly
-	 * starting the server without any clean up the before state; therefore it
-	 * should report it to the user.
-	 * 
-	 * When a user duplicately stop a server, this maybe because of the user want to
-	 * clean up the server's state. In this case, the user usually want to stop the
-	 * server no matter it is already running or not.
-	 */
     
     // ???
     public void refreshTracks() {
@@ -440,7 +457,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 			}
         	for ( MetroTrack track : this.tracks  ) {
         		try {
-					track.checkBuffer( this,  this.client, this.position );
+					track.checkBuffer( this,  this.client, this.position, 0 /* XXX */ );
 				} catch (JackException e) {
 					logError("", e);
 				}
@@ -453,7 +470,10 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 			this.notifyTrackChange();
 		}
     }
-    
+
+    /**
+     * This method is called by another thread.
+     */
 	public void run()  {
 		try {
 			logInfo("Metro.run()");
@@ -463,8 +483,10 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	//        	System.err.println( s );
 	        	
 				synchronized ( this.getMetroLock() ) {
+					int barInFrames = Metro.calcBarInFrames( this, client, position );
+
 					for ( MetroTrack track : this.tracks  ) {
-						track.checkBuffer( this,  this.client, this.position );
+						track.checkBuffer( this,  this.client, this.position, barInFrames );
 					}
 
 					for ( Runnable r : this.messageQueue ) {
@@ -480,11 +502,10 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 					this.tracks.addAll( this.registeredTracks );
 					
 					if ( ! this.registeredTracks.isEmpty() ) {
-						int barInFrames = Metro.calcBarInFrames( this, client, position);
 						for ( MetroTrack track : this.registeredTracks ) {
 							track.prepare( barInFrames );
 							// ADDED (Sun, 30 Sep 2018 12:39:32 +0900)
-							track.checkBuffer( this,  this.client, this.position );
+							track.checkBuffer( this,  this.client, this.position, barInFrames);
 						}
 					}		
 					this.unregisteredTracks.clear();
@@ -493,6 +514,17 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 
 					// METRO_LOCK_WAIT
 					// XXX ??? why not zero?? (Thu, 01 Aug 2019 11:49:55 +0900)
+					/*
+					 * Note : originally this loop was designed to be executed only when other
+					 * threads eagerly call getMetroLocl().notifyEvent(). But later, it appeared to
+					 * be like that checking if the number of the buffers is sufficient only sometime
+					 * causes buffer-underflow when it comes to fast tempo music.     
+					 * 
+					 * Therefore, I changed this value to 1 to obtain faster looping.
+					 * 
+					 * Also note that looping excessively fast causes holding getMetroLock() longer time;
+					 * this very likely leads Pulsar works jumpy. 
+					 */
 					this.getMetroLock().wait( 1 );
 				}
 //				logInfo( this.tracks.size() );
@@ -584,6 +616,10 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		}
 	}
 
+	/**
+	 * This method handles JACK's <code>process</code> event.
+	 * This is possibly called by JACK's thread.   
+	 */
     @Override
     public boolean process(JackClient client, int nframes) {
     	if ( ! this.playing ) {
