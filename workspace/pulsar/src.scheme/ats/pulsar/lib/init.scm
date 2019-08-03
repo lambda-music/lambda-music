@@ -1826,11 +1826,11 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define send! (lambda (x . args )
+(define send! (lambda (note-list . args )
                 (or (and
-                      (list? x)
-                      (or (= (length x) 0 )
-                          (notation? (car x))))
+                      (list? note-list)
+                      (or (= (length note-list) 0 )
+                          (notation? (car note-list))))
                     (raise  '( 
                                invalid-argument-exception . 
                                "the argument must be a list of notation data" )))
@@ -1843,7 +1843,7 @@
                             (number->string default-id-counter )))))
                   (add-track! id
                               (lambda() 
-                                (append x
+                                (append note-list
                                         '(((type . end)))))
                               'immediate 
                               ))))

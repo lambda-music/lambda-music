@@ -1562,7 +1562,9 @@ class PulsarGui {
 		public JPulsarFrame( SchemeSecretary schemeSecretary, String title ) throws HeadlessException {
 			super( schemeSecretary, title );
 			PulsarGui.registerLocalSchemeInitializers( schemeSecretary, PulsarGui.this );
-			PulsarGui.invokeLocalSchemeInitializers( schemeSecretary, PulsarGui.this );
+//			DELETED >>> INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
+//			PulsarGui.invokeLocalSchemeInitializers( schemeSecretary, PulsarGui.this );
+//			DELETED <<< INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
 		}
 
 		@Override

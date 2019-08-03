@@ -206,8 +206,9 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 	@Override
 	public void removeGracefully( Runnable onEnd ) {
 		if ( this.ending ) {
-			logWarn( "removeTrack was called with graceful but the track is already removed." );
+			logWarn( "removeGracefully was called; but the track is already removed." );
 		} else {
+			logInfo( "removeGracefully was called; the ending flag is set." );
 			this.endingProc = onEnd;
 			this.ending = true;
 		}
@@ -554,19 +555,21 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 //				logInfo( "offerNewBuffer:ending (" + this.name  + ")");
 
 				if ( this.endingDone ) {
+					logInfo( "offerNewBuffer(): endingDone is true" );
 					MetroEventBuffer buf = new MetroEventBuffer();
 					buf.setLength( 1.0 );
 					buf.prepare( metro, client, position, true );
 					this.buffers.offer( buf );
 					
 				} else {
+					logInfo( "offerNewBuffer(" + name + ") setting true endingDone " );
 					this.endingDone = true;
 
 					MetroEventBuffer buf = new MetroEventBuffer();
 					buf.exec( this.endingLength , new Runnable() {
 						@Override
 						public void run() {
-							logInfo( "UNREGISTER THIS" );
+							logInfo( "offerNewBuffer(" +name + ") UNREGISTER THIS" );
 							synchronized ( metro.getMetroLock() ) {
 								try {
 									metro.unregisterTrack( MetroTrack.this );
@@ -576,7 +579,7 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 							}
 						}
 					});
-					buf.setLength( this.endingLength + 0.5 );
+					buf.setLength( this.endingLength  );
 					buf.prepare( metro, client, position, true );
 					this.buffers.offer( buf );
 				}
@@ -593,7 +596,9 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 				this.buffers.offer( buf );
 				
 				if ( result ) {
+					logInfo( "offerNewBuffer(" +name + ") CONTINUE" );
 				} else {
+					logInfo( "offerNewBuffer(" +name + ") ENDING started");
 					this.ending = true;
 					this.endingLength = buf.getActualLength();
 					if ( this.endingLength < 1 )

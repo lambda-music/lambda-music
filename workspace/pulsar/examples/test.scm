@@ -1,3 +1,33 @@
+(load "./ats's-drumkit.scm" )
+(play!)
+(close!)
+(quit!)
+
+(send!
+  (n chan: 0 port: 0 
+     (p
+       (p type: 'note chan: 0 port: 0 len: 0.5 pos: 0 velo: 1.0 note: >> (iota 400 ) )
+       (p type: 'len val: 1 )
+       (n type: 'end )
+       )
+
+     (s
+       (repeat 2 (melody '( o 4 sol 1/32 re mi sol end )))
+       (melody '( o 4 do 1/32 re mi sol end ))
+       (melody '( o 4 do 1/32 re mi sol end ))
+       )
+     )
+  )
+
+(ls)
+(del! 'seq-1 #f)
+
+(kill! 'seq-14 'seq-15)
+(kill! 'seq-7 'seq-8 'seq-9 'seq-10 'seq-11)
+
+(send! 
+  (n (n chan: 0 port: 2 (melody '( do re mi fa sol end ) ) )))
+
 
 (list-tabulate 4 make-list)
 
@@ -38,10 +68,8 @@
                 (n type: 'end )
                 ))
 
-(add 'm1 (n type: note pos: >> (ap 4 1) ) )
+(add! 'm1 (n type: note pos: >> (ap 4 1) ) )
 
-
-(play!)
 
 (add-all!  
   (list 'm1    (n chan: 0 port: 0 type: 'note note: 60 velo: << (cl 0.9 0.4 0.4 0.4 )  pos: >> (ap 4 1)             ) )
@@ -49,9 +77,11 @@
   )
 
 
-(del! 'm1 'm2 )
-(end! 'm1 'm2 #f )
-
+(kill! 'm1 'm2 )
+(del! 'm1 'm2 #f )
+(list (len 1) )
+(add! 'main (list (len 1) ) )
+(ls)
 
 
 (let ((bar-count 17 )
@@ -75,7 +105,7 @@
         'parallel 'main
         ))
 (ls)
-(del! 'he2)
+(kill! 'he2)
 
 (let ((bar-count 11 ))
   (add! 'he 
@@ -96,9 +126,11 @@
         'parallel 'main
         ))
 
+(play!)
 
 (ls)
-(del! 'he)
+
+(kill! 'seq-1)
 
 (acos -1)
 (take (cl 1 2 3) 3)
@@ -110,7 +142,7 @@
         (n type: 'note port: 1 chan: 0 velo: 0.7 len: 0.5 note: << (iota 10 60)  pos: >> (ap 10 3 ) )
         (n type: 'len val: 3 )) 'parallel 'main
       )
-(del! 'cnt)
+(kill! 'cnt)
 
 (put! 'cnt22
           (n
@@ -118,7 +150,7 @@
             (n type: 'len val: 2 )) 'parallel 'main
           )
 
-(del! 'cnt22 )
+(kill! 'cnt22 )
 
 
 (put! 'he1
@@ -126,9 +158,11 @@
                    (repeat 2 (melody '( o 3 do 1   re mi sol r   end )))
                    (repeat 6 (melody '( o 4 mi 1/3 fi sol ti r   end )))) 'parallel 'main) 
 (ls)
+(open! "")
 
-(del! 'seq-2)
-(end! 'track-1)
+
+(kill! 'seq-2)
+(del! 'track-1)
 
 (snd!
   (n chan: 0 port: 0 
@@ -154,9 +188,6 @@
        (melody '( o 4 do 1/32 re mi sol end ))
        )
      ))
-#|
-#MetroTrack:seq-1#
-|#
 
 (send2!  (n (n chan: 0 port: 0 (repeat 16 (melody '( o 4 do 1/32 r  r sol end ))))))
 (send2!  (n (n chan: 5 port: 2 (melody '( o 4 mi sol ti end )) (melody '( o 4 do mi sol end )))))

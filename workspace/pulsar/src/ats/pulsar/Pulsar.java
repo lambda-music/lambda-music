@@ -49,7 +49,6 @@ import org.jaudiolibs.jnajack.JackException;
 
 import ats.kawapad.KawaPad;
 import ats.metro.Metro;
-import ats.metro.MetroSequence;
 import ats.metro.MetroTrack;
 import ats.metro.MetroTrack.SyncType;
 import ats.pulsar.lib.SchemeUtils;
@@ -139,20 +138,39 @@ public final class Pulsar extends Metro {
 		LOGGER.log(Level.WARNING, msg);
 	}
 
+	static String messageWarnIgnoredMissingSyncTrack( Object arg ) {
+		return "could not find a track which name was " + arg + " ... ignored.";
+	}
+
+	
+	
+	
 	long shutdownWait = 1024;
 
 	public static void registerLocalSchemeInitializers( SchemeSecretary schemeSecretary, Pulsar pulsar ) {
 		schemeSecretary.registerSchemeInitializer( pulsar, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
 			@Override
 			public void execute0( Scheme scheme, Object[] args ) {
-				pulsar.postMessage( new Runnable() {
-					@Override
-					public void run() {
-						// 6. This initializes the thread of Metro's message-queue.
-						// See ats.pulsar.lib.secretary.scheme.SchemeSecretary#specialInit()
-						SchemeSecretary.initializeSchemeForCurrentThreadStatic( scheme );
-					}
-				});
+				/*
+				 * INIT_02
+				 * We give up to initialize current thread if it is not running.
+				 * This might happen in initializing the object in the constructor method.
+				 * This seems to be a problem, but it will be initialized when Metro is opened
+				 * by open() method; therefore, we temporally give up the initializing process.  
+				 */
+				if ( pulsar.isOpened() ) {
+					logWarn( "registerLocalSchemeInitializers_POSTMESSAGE  DONE" );
+					pulsar.postMessage( new Runnable() {
+						@Override
+						public void run() {
+							// 6. This initializes the thread of Metro's message-queue.
+							// See ats.pulsar.lib.secretary.scheme.SchemeSecretary#specialInit()
+							SchemeSecretary.initializeSchemeForCurrentThreadStatic( scheme );
+						}
+					});
+				} else {
+					logWarn( "registerLocalSchemeInitializers_POSTMESSAGE IGNORED" );
+				}
 			}
 		});
 		schemeSecretary.registerSchemeInitializer( pulsar, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
@@ -169,7 +187,7 @@ public final class Pulsar extends Metro {
 	@Override
 	protected void onCreateThread() {
 		super.onCreateThread();
-		registerLocalSchemeInitializers( this.schemeSecretary, this );
+//		registerLocalSchemeInitializers( this.schemeSecretary, this );
 	}
 	
 	/**
@@ -179,14 +197,29 @@ public final class Pulsar extends Metro {
 	 * open a file to use the application.
 	 * @throws IOException 
 	 */
-	public Pulsar( boolean windowInterface, boolean httpInterface ) throws IOException {
+	public Pulsar( boolean windowInterface, boolean httpInterface, int httpPort ) throws IOException {
+		super();
+		
+//		>>> VERSION 1 
+//		this.schemeSecretary = new SchemeSecretary();
+//		this.schemeSecretary.setDirectMeeting( false );
+//		KawaPad.registerGlobalSchemeInitializer( schemeSecretary );
+//		this.schemeSecretary.newScheme();
+//
+//		Pulsar.registerLocalSchemeInitializers( schemeSecretary, this );
+//		Pulsar.invokeLocalSchemeInitializers( schemeSecretary, this );
+//		<<< VERSION 1
+
+		/*
+		 * Search INIT_02 inside the entire workspace to know the modification of the
+		 * order of Pulsar's initialization.
+		 */
+//		>>> VERSION INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
 		this.schemeSecretary = new SchemeSecretary();
 		this.schemeSecretary.setDirectMeeting( false );
 		KawaPad.registerGlobalSchemeInitializer( schemeSecretary );
-		this.schemeSecretary.newScheme();
-
 		Pulsar.registerLocalSchemeInitializers( schemeSecretary, this );
-		Pulsar.invokeLocalSchemeInitializers( schemeSecretary, this );
+//		<<< VERSION INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
 		
 		if ( windowInterface )
 			this.pulsarGui = new PulsarGui( this );
@@ -194,13 +227,61 @@ public final class Pulsar extends Metro {
 			this.pulsarGui = null;
 		
 		if ( httpInterface )
-			this.pulsarHttp = new PulsarHttp( this, 8192 );
+			this.pulsarHttp = new PulsarHttp( this, httpPort );
 		else
 			this.pulsarHttp = null;
 		
-		this.enabledTimer = true;
+//		REMOVED >>> INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
+//		setting enableTime should be done only in newScheme(); 
+//		this.enabledTimer = true;
+//		REMOVED <<< INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
+		
+		newScheme();
 	}
 	
+	static Pulsar parseArgsAndCreatePulsar( String[] args ) throws IOException {
+		
+		boolean argHttp = true;
+		int     argHttpPort = 8192;
+		boolean argGui = true;
+		String  argFileName = null;
+		
+		for ( int i=0; i<args.length; i++ ) {
+			String s = args[i];
+
+			if ( s.startsWith( "--http=" ) ) {
+				argHttp = true;
+				argHttpPort = Integer.parseInt( s.substring( "--http=".length() ) );
+				break;
+			} else if ( s.equals( "--http" ) ) { 
+				argHttp = true;
+				argHttpPort = 8192;
+				break;
+			} else if ( s.equals( "--gui" ) ) { 
+				argGui = true;
+				break;
+			} else if ( s.equals( "--no-http" ) ) { 
+				argHttp = false;
+				break;
+			} else if ( s.equals( "--no-gui" ) ) { 
+				argGui = false;
+				break;
+			} else {
+				argFileName = s;
+			}
+		}
+
+		if ( argHttp || argGui ) {
+			Pulsar pulsar = new Pulsar( argGui , argHttp, argHttpPort );
+			if ( argFileName != null )
+				pulsar.openMainFile(null, new File( argFileName ));
+			
+			return pulsar;
+		} else {
+			System.err.println( "hmm... you have to have at least one interface to control the system." );
+			return null;
+		}
+	}
 
 	transient boolean enabledTimer = false;
 
@@ -211,12 +292,15 @@ public final class Pulsar extends Metro {
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException {
-		Pulsar pulsar = new Pulsar( true, true );
-		if ( args.length == 0 ) {
-		} else {
-			pulsar.openMainFile(null, new File( args[0] ));
-		}
+		parseArgsAndCreatePulsar(args);
 	}
+	
+	@Override
+	public void open(String clientName) throws JackException {
+		super.open(clientName);
+		newScheme();
+	}
+	
 	
 	PulsarGui pulsarGui;
 	PulsarHttp pulsarHttp;
@@ -416,7 +500,6 @@ public final class Pulsar extends Metro {
 		try {
 			this.enabledTimer = false;
 			
-			// XXX "initLanguage" ... is this supposed to be executed before others?
 			newScheme();
 			
 			this.execCleanupHook();
@@ -883,7 +966,10 @@ public final class Pulsar extends Metro {
 					if (args[3] instanceof MetroTrack ) {
 						syncTrack = (MetroTrack) args[3];
 					} else {
-						syncTrack =  getTrack( SchemeUtils.anyToString( SchemeUtils.schemeNullCheck( args[3] ) ) ); 
+						syncTrack = searchTrack( SchemeUtils.anyToString( SchemeUtils.schemeNullCheck( args[3] ) ) );
+						if ( syncTrack == null )
+							logWarn( messageWarnIgnoredMissingSyncTrack( args[3]) );
+
 					}
 				} else {
 					syncTrack = null;
@@ -911,7 +997,7 @@ public final class Pulsar extends Metro {
 		SchemeUtils.defineVar( scheme, "open?" , new ProcedureN( "open?" ) {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
-				return running;
+				return isOpened();
 			}
 		});
 		SchemeUtils.defineVar( scheme, "open!" , new Procedure1() {
@@ -1085,6 +1171,22 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		});
+		// TODO XXX
+		SchemeUtils.defineVar( scheme, "get-main-file" , new Procedure0() {
+			@Override
+			public Object apply0() throws Throwable {
+				return SchemeUtils.toSchemeString( getMainFile().getName() );
+			}
+		});
+		// TODO XXX
+		SchemeUtils.defineVar( scheme, "set-main-file" , new Procedure1() {
+			@Override
+			public Object apply1( Object arg ) throws Throwable {
+				// XXX
+				setMainFile( null, new File( SchemeUtils.toString( arg ) ) );
+				return Invokable.NO_RESULT;
+			}
+		});
 		SchemeUtils.defineVar( scheme, "set-related-files!" , new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
@@ -1181,8 +1283,8 @@ public final class Pulsar extends Metro {
 		SchemeUtils.defineVar( scheme, "add-all!" ,        addAllTrackProc );
 		SchemeUtils.defineVar( scheme, "add-all-tracks!" , addAllTrackProc );
 //		SchemeUtils.defineVar( scheme, "add-tracks!" , addAllTrack);
-
-		ProcedureN deleteTrackProc = new ProcedureN() {
+1
+		ProcedureN killTrackProc = new ProcedureN() {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				synchronized ( getMetroLock() ) {
@@ -1194,11 +1296,11 @@ public final class Pulsar extends Metro {
 							} else if ( arg instanceof IString ) {
 								track  = ( searchTrack( SchemeUtils.anyToString( arg )));
 								if ( track == null )
-									logWarn( "could not find a track which name was " + arg + " ... ignored.");
+									logWarn( messageWarnIgnoredMissingSyncTrack(arg) );
 							} else if ( arg instanceof Symbol) {
 								track  = ( searchTrack( SchemeUtils.anyToString( arg )));
 								if ( track == null )
-									logWarn( "could not find a track which name was " + arg + " ... ignored.");
+									logWarn( messageWarnIgnoredMissingSyncTrack(arg) );
 							} else {
 								throw new IllegalArgumentException( "Unsupported type " + arg );
 							}
@@ -1212,21 +1314,31 @@ public final class Pulsar extends Metro {
 					return Invokable.NO_RESULT;
 				}
 			}
+
 		};
-		SchemeUtils.defineVar( scheme, "del!" ,       deleteTrackProc );
-		SchemeUtils.defineVar( scheme, "del-track!" , deleteTrackProc );
+		SchemeUtils.defineVar( scheme, "kill!" ,       killTrackProc );
+		SchemeUtils.defineVar( scheme, "kill-track!" , killTrackProc );
 		
 		
-		ProcedureN endTrackProc = new ProcedureN() {
+		final class DelTrackProcedure extends ProcedureN {
+			boolean parseEndEvent = false;
+			public DelTrackProcedure( boolean parseEndEvent ) {
+				this.parseEndEvent = parseEndEvent;
+			}
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				if ( args.length == 0  )
 					return Invokable.NO_RESULT;
-				if ( args.length == 1 )
+				if ( args.length == 1 && this.parseEndEvent )
 					return Invokable.NO_RESULT;
 
 				ArrayDeque queueArgs = new ArrayDeque( Arrays.asList( args ) );
-				Procedure onEnd = (Procedure) SchemeUtils.schemeNullCheck( queueArgs.removeLast() );
+				Procedure onEnd;
+				if ( parseEndEvent ) {
+					onEnd = (Procedure) SchemeUtils.schemeNullCheck( queueArgs.removeLast() );
+				} else {
+					onEnd = null;
+				}
 				
 				CountDownLatch latch= new CountDownLatch( queueArgs.size() + 1 );
 				Thread thread=null;
@@ -1277,7 +1389,7 @@ public final class Pulsar extends Metro {
 						if ( track != null ) {
 							track.removeGracefully( runnable );
 						} else {
-							logWarn( "could not find a track which name was " + arg + " ... ignored.");
+							logWarn( messageWarnIgnoredMissingSyncTrack( arg ) );
 						}
 					}
 				}
@@ -1290,24 +1402,27 @@ public final class Pulsar extends Metro {
 
 				return Invokable.NO_RESULT;
 			}
-		};
+		}
+		ProcedureN deleteTrackProc = new DelTrackProcedure(false);
 
-		SchemeUtils.defineVar( scheme, "end!" ,       endTrackProc);
-		SchemeUtils.defineVar( scheme, "end-track!" , endTrackProc);
+		SchemeUtils.defineVar( scheme, "del!" ,       deleteTrackProc );
+		SchemeUtils.defineVar( scheme, "del-track!" , deleteTrackProc );
+		
+		ProcedureN replaceTrackProc = new DelTrackProcedure(true);
+
+		SchemeUtils.defineVar( scheme, "rep!" ,       replaceTrackProc );
+		SchemeUtils.defineVar( scheme, "rep-track!" , replaceTrackProc );
+		
 		
 		SchemeUtils.defineVar( scheme, "ls" , new Procedure0() {
 			@Override
 			public Object apply0() throws Throwable {
-				synchronized ( getMetroLock() ) {
-					ArrayList<String> list = new ArrayList<>( tracks.size() );
-					for ( MetroTrack track :  tracks ) {
-						MetroSequence sequence = track.getSequence();
-						if ( sequence instanceof SchemeSequence ) {
-							list.add( ((SchemeSequence)sequence).getTrackName() );
-						}
-					}
-					return Pair.makeList(list);
+				List<MetroTrack> tempAllTracks = replicateAllTracks(); 
+				ArrayList<Symbol> list = new ArrayList<>( tempAllTracks.size() );
+				for ( MetroTrack track :  tempAllTracks ) {
+					list.add( SchemeUtils.toSchemeSymbol( track.getTrackName() ) );
 				}
+				return Pair.makeList(list);
 
 			}
 		});
@@ -1358,9 +1473,10 @@ public final class Pulsar extends Metro {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				//					logInfo("list-seq");
+				List<MetroTrack> tempAllTracks = replicateAllTracks();
 				synchronized ( getMetroLock() ) {
-					ArrayList<LList> list = new ArrayList<>( tracks.size() );
-					for ( MetroTrack track :  tracks ) {
+					ArrayList<LList> list = new ArrayList<>( tempAllTracks.size() );
+					for ( MetroTrack track :  tempAllTracks ) {
 						SchemeSequence sequence = (SchemeSequence)track.getSequence();
 						list.add( SchemeUtils.acons( sequence.getTrackName(), sequence.asociationList ));
 					}

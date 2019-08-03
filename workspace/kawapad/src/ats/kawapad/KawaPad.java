@@ -211,7 +211,9 @@ public class KawaPad extends JFrame {
 		this.setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
 		
 		registerLocalSchemeInitializers( schemeSecretary, this );
-		invokeLocalSchemeInitializers( schemeSecretary, this);
+//		DELETED >>> INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
+//		invokeLocalSchemeInitializers( schemeSecretary, this);
+//		DELETED <<< INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
 	}
 
 	@Override

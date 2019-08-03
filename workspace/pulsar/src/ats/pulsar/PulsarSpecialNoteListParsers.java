@@ -314,7 +314,7 @@ public class PulsarSpecialNoteListParsers {
 									if ( track != null ) {
 										removeTrackProc( metro, track );
 									} else {
-										logWarn( "PARSER_REMOVE : the passed value '"+v+"' was improper. We ignored it." );
+										logWarn( "PARSER_KILL : the passed value '"+v+"' was improper. We ignored it." );
 									}
 								}
 							} finally {
@@ -338,18 +338,19 @@ public class PulsarSpecialNoteListParsers {
 					}
 				} );
 			}
+			
 			return result;
 		}
 	}
 
 	
-	public static final RemoveEventParser PARSER_REMOVE = new RemoveEventParser();
-	static { register( PARSER_REMOVE ); }
-	static final class RemoveEventParser extends AbstractRemoveEventParser {
+	public static final KillEventParser PARSER_KILL = new KillEventParser();
+	static { register( PARSER_KILL ); }
+	static final class KillEventParser extends AbstractRemoveEventParser {
 		{
 			// RENAMED (Thu, 01 Aug 2019 13:09:08 +0900)
-			this.shortName = "del";
-			this.longName  = "del-track";
+			this.shortName = "kil";
+			this.longName  = "kill-track";
 //			this.longName = "Remove the specified track";
 		}
 		@Override
@@ -364,12 +365,12 @@ public class PulsarSpecialNoteListParsers {
 		}
 	}
 	
-	public static final EndEventParser PARSER_END = new EndEventParser();
-	static { register( PARSER_END ); }
-	static final class EndEventParser extends AbstractRemoveEventParser {
+	public static final DeleteEventParser PARSER_DELETE = new DeleteEventParser();
+	static { register( PARSER_DELETE ); }
+	static final class DeleteEventParser extends AbstractRemoveEventParser {
 		{
-			this.shortName = "end";
-			this.longName = "end-of-track";
+			this.shortName = "del";
+			this.longName = "delete-track";
 		}
 		@Override
 		void removeTrackProc(Metro metro, MetroTrack track) {
@@ -377,4 +378,17 @@ public class PulsarSpecialNoteListParsers {
 		}
 	}
 
+	public static final EndEventParser PARSER_END = new EndEventParser();
+	static { register( PARSER_END ); } 
+	static final class EndEventParser extends SpecialNoteListParserElement {
+		{
+			this.shortName = "end";
+			this.longName  = "end-track";
+		}
+		@Override
+		public
+		boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+			return false;
+		}
+	}
 }
