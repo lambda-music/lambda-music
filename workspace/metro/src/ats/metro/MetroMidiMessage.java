@@ -20,6 +20,8 @@
 
 package ats.metro;
 
+import java.lang.invoke.MethodHandles;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** @formatter:off */
@@ -134,7 +136,10 @@ public class MetroMidiMessage implements MetroMidiReceiver<byte[]> {
 	}
 	
 	/** @formatter:on */
-	static final Logger LOGGER = Logger.getLogger( MetroMidiMessage.class.getName() );
+	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+	static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+	static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
+	static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 	
 	public byte[] noteOn( int channel, int note, double velocity ) {
 		return MetroMidiMessageGen.noteOn (channel, note, velocity );

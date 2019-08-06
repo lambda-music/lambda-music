@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.lang.invoke.MethodHandles;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -46,13 +47,12 @@ import kawa.standard.Scheme;
  */
 
 class PulsarHttp {
-	static final Logger LOGGER = Logger.getLogger(PulsarHttp.class.getName());
+	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
 	static void logError(String msg, Throwable e) {
 		LOGGER.log(Level.SEVERE, msg, e);
 	}
 	static void logInfo(String msg) {
-		// LOGGER.log(Level.INFO, msg);
-		System.err.println(msg);
+		LOGGER.log(Level.INFO, msg);
 	}
 	static void logWarn(String msg) {
 		LOGGER.log(Level.WARNING, msg);
@@ -105,6 +105,8 @@ class PulsarHttp {
 	}
 	
 	public static String executeScheme( SchemeSecretary schemeSecretary, Charset charset, String schemeScript, boolean requestResult ) throws IOException {
+		schemeSecretary.initializeSchemeForCurrentThread();
+		
 		ByteArrayOutputStream bo = new ByteArrayOutputStream();
 		ByteArrayInputStream bi = new ByteArrayInputStream( schemeScript.getBytes( charset ));
 		try {

@@ -22,6 +22,7 @@ package ats.metro;
 
 import static ats.metro.Metro.*;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -39,17 +40,10 @@ import org.jaudiolibs.jnajack.JackPosition;
  * @author Ats Oka
  */
 public class MetroEventBuffer implements Iterable<MetroEvent>, MetroBufferedMidiReceiver {
-	static final Logger LOGGER = Logger.getLogger(MetroEventBuffer.class.getName());
-	static void logError(String msg, Throwable e) {
-		LOGGER.log(Level.SEVERE, msg, e);
-	}
-	static void logInfo(String msg) {
-		// LOGGER.log(Level.INFO, msg);
-		System.err.println(msg);
-	}
-	static void logWarn(String msg) {
-		LOGGER.log(Level.WARNING, msg);
-	}
+	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+	static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+	static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
+	static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
     private static final MetroMidiMessage MIDI_MESSAGE_GEN = MetroMidiMessage.getInstance();
 	

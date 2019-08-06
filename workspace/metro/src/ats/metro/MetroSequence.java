@@ -67,9 +67,9 @@ public abstract class MetroSequence implements MetroTrackInfo {
 		trackInfo.setTrackEnabled(enabled);
 	}
 	@Override
-	public void removeGracefully(Runnable onEnd ) {
+	public void removeGracefully( ) {
 		check();
-		trackInfo.removeGracefully( onEnd );
+		trackInfo.removeGracefully( );
 	}
 	@Override
 	public double getTrackPosition() {

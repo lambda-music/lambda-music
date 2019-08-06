@@ -20,6 +20,7 @@
 
 package ats.metro;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -54,7 +55,11 @@ import ats.metro.MetroTrack.SyncType;
  * @author Ats Oka
  */
 public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallback, JackTimebaseCallback, Runnable {
-	final Object lock = new Object();
+	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+	static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+	static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
+	static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
+	private final Object lock = new Object();
 	
 	/**
 	 * The every routines which access to the `tracks` field must synchronize
@@ -65,17 +70,6 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		return Metro.this.lock;
 	}
 	
-	static final Logger LOGGER = Logger.getLogger(Metro.class.getName());
-	static void logError(String msg, Throwable e) {
-		LOGGER.log(Level.SEVERE, msg, e);
-	}
-	static void logInfo(String msg) {
-		// LOGGER.log(Level.INFO, msg);
-		System.err.println(msg);
-	}
-	static void logWarn(String msg) {
-		LOGGER.log(Level.WARNING, msg);
-	}
 	
 	public Metro() {
 	}
@@ -179,7 +173,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
             metro.open( clientName );
             synchronized ( metro.getMetroLock() ) {
             	try {
-            		metro.registerTrack( metro.createTrack( "main", sequence ) );
+            		metro.registerTrack( metro.createTrack( "main", null, sequence ) );
             	} finally {
             		metro.notifyTrackChange();
             	}
@@ -230,17 +224,39 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	
 	
 
-	public MetroTrack createTrack( String name, MetroSequence sequence ) {
-		return createTrack( name, null, sequence, SyncType.IMMEDIATE, null, 0.0d  );
+	public MetroTrack createTrack( String name, Collection<String> tags, MetroSequence sequence ) {
+		return new MetroTrack( this, name, tags, sequence );
 	}
 
-	public MetroTrack createTrack( 
+	
+	
+/*	
+	public MetroTrack addTrack(
 			String name, Collection<String> tags, MetroSequence sequence,
 			SyncType syncType, MetroTrack syncTrack, double syncOffset ) 
 	{
-		return new MetroTrack( this, name, tags, sequence, syncType, syncTrack, syncOffset );
+		MetroTrack track = createTrack(name, tags, sequence, syncType, syncTrack, syncOffset);
+		registerTrack(track);
+		return track;
 	}
-
+	public MetroTrack deleteTrack(
+			MetroTrack track, SyncType syncType, MetroTrack syncTrack, double syncOffset ) 
+	{
+		switch ( syncType ) {
+			case IMMEDIATE:
+				unregisterTrack( track );
+				break;
+			case PARALLEL:
+				track.removeGracefully( null );
+				break;
+			case SERIAL : 
+				break;
+		}
+		registerTrack(track);
+		return track;
+	}
+*/
+	
 	/*
 	 * This duplicates the "this.tracks" object inside a synchronized block. This
 	 * effectively make these algorithms managing "this.track" get outside from
@@ -819,7 +835,26 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 
 	public void notifyTrackChange() {
 		synchronized ( this.getMetroLock() ) {
-			this.getMetroLock().notify();
+			if ( entrantCount == 0 ) {
+				this.getMetroLock().notify();
+			}
+		}
+	}
+	private transient int entrantCount =0;
+	public void enterTrackChangeBlock() {
+		synchronized ( this.getMetroLock() ) {
+			this.entrantCount ++;
+		}
+	}
+	public void leaveTrackChangeBlock() {
+		synchronized ( this.getMetroLock() ) {
+			this.entrantCount --;
+			if ( this.entrantCount < 0 ) {
+				logWarn( String.format( 
+					"this.entrantCount < 0 %d Corrected the invalid value of entrantCount.",
+					this.entrantCount ) );
+				this.entrantCount = 0;
+			}
 		}
 	}
 
@@ -902,6 +937,29 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 			this.notifyTrackChange();
 		}
 	}
+    
+    public void putTrack( MetroTrack track, SyncType syncType, MetroTrack syncTrack, double syncOffset )  {
+    	if ( track == null )
+    		addTrack(track, syncType, syncTrack, syncOffset);
+    	else
+    		deleteTrack( track, syncType, syncTrack, syncOffset); 
+    }
+    public void addTrack( MetroTrack track, SyncType syncType, MetroTrack syncTrack, double syncOffset )  {
+    	registerTrack( track.setSyncStatus( syncType, syncTrack, syncOffset ) );
+    }
+    public void deleteTrack( MetroTrack track, SyncType syncType, MetroTrack syncTrack, double syncOffset )  {
+    	switch ( syncType ) {
+    		case IMMEDIATE :
+    	    	unregisterTrack( track );
+    			break;
+    		case PARALLEL :
+    			throw new UnsupportedOperationException();
+//				break;
+			case SERIAL :
+    			track.removeGracefully();
+    			break;
+    	}
+    }
 
     @Override
     public void clientShutdown(JackClient client) {

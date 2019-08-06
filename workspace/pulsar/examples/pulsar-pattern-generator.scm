@@ -28,6 +28,11 @@
 (define trackset-manager #f)
 (define Trackset         #f)
 
+; (display-warn "===================================" );
+; (display-warn "pulsar-code-generator(1)" );
+; (display-warn ((java.lang.Thread:currentThread):getName))
+; (newline-warn)
+
 ;==============================================================================================
 ; UTIL
 ;==============================================================================================
@@ -233,7 +238,7 @@
 ;==============================================================================================
 ; TRACKSET
 ;==============================================================================================
-(define Trackset 
+(set! Trackset 
   (lambda ( self name )
     ; DON'T FORGET CDR BEFORE USE "track-list" 
     (let ((track-list (cons 'trackset-head '())))
@@ -878,5 +883,9 @@
 (newline)
 (create-gui!)
 
+; (display-warn "===================================" );
+; (display-warn "pulsar-code-generator(2)" );
+; (display-warn ((java.lang.Thread:currentThread):getName))
+; (newline-warn)
 
 ; vim: filetype=scheme expandtab :

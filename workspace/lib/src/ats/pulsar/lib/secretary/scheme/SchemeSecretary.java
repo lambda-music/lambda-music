@@ -1,7 +1,10 @@
 package ats.pulsar.lib.secretary.scheme;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.SwingUtilities;
 
@@ -15,12 +18,16 @@ import gnu.mapping.Procedure;
 import kawa.standard.Scheme;
 
 public class SchemeSecretary extends Secretary<Scheme> {
+	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+	static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+	static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
+	static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 	public SchemeSecretary() {
 	}
 	public Invokable createSecretarillyInvokable( Procedure procedure ) {
 		return new SecretariallyInvokable( this, new InvokableSchemeProcedure( procedure ) );  
 	}
-	public Scheme getScheme() {
+	Scheme getScheme() {
 		return getExecutive();
 	}
 	
@@ -94,16 +101,20 @@ public class SchemeSecretary extends Secretary<Scheme> {
 	public static final void initializeSchemeForCurrentThreadStatic( Scheme scheme ) {
 		Environment.setCurrent( scheme.getEnvironment() );
 		Language.setCurrentLanguage( scheme );
-		{
+		if ( false ) {
 			String threadName = Thread.currentThread().getName();
-			System.err.println( threadName +
+			logInfo( threadName +
 				"(Environment.getCurrent() == newScheme.getEnvironment() ) : " + 
 				( Environment.getCurrent() == scheme.getEnvironment() ) 
-					);
-			System.err.println( threadName +
+			);
+			logInfo( threadName +
 				"( Language.getDefaultLanguage() == newScheme ) : " + 
 				( Language.getDefaultLanguage() == scheme ) 
 					);
+//			logInfo( threadName +
+//				"(Environment.getCurrent() == env ) : " + 
+//				( Environment.getCurrent() == env ) 
+//			);
 		}
 	}
 	
@@ -180,6 +191,42 @@ public class SchemeSecretary extends Secretary<Scheme> {
 		});
 	}
 
+
+	static class FinalizerEntry {
+		Object parent;
+		SecretaryMessage.NoReturnNoThrow<Scheme> message;
+		public FinalizerEntry(Object parent, SecretaryMessage.NoReturnNoThrow<Scheme> message) {
+			super();
+			this.parent = parent;
+			this.message = message;
+		}
+	}
+
+	List<SchemeSecretary.FinalizerEntry> newSchemeFinalizerList = new ArrayList<>();
+	
+	/**
+	 * This method registers a specified finalizer.
+	 * @see #invokeSchemeFinalizer(Object)
+	 */
+	public void registerSchemeFinalizer( Object parent, SecretaryMessage.NoReturnNoThrow<Scheme> message ) {
+		this.newSchemeFinalizerList.add( new SchemeSecretary.FinalizerEntry( parent, message ) );
+	}
+	/**
+	 * This method unregisters a specified finalizer.
+	 * @see #invokeSchemeFinalizer(Object)
+	 */
+	public void unregisterSchemeFinalizer( Object parent ) {
+		this.newSchemeFinalizerList.removeIf( e->e.parent == parent );
+	}
+
+	public void invokeSchemeFinalizer( Object parent ) {
+		for ( SchemeSecretary.FinalizerEntry e : newSchemeFinalizerList ) {
+			if ( parent == null || e.parent == parent )
+				executeSecretarially( e.message );
+		}
+	}
+
+
 	/*-
 	 *  A memorandum (Wed, 24 Jul 2019 09:43:02 +0900) 
 	 *
@@ -234,15 +281,32 @@ public class SchemeSecretary extends Secretary<Scheme> {
 	 * This memo is not completed. This is left for future reference.
 	 * (Wed, 24 Jul 2019 10:10:41 +0900)
 	*/
-	
+
+//	static Environment env=null;
 	public void newScheme() {
 		try {
+
+			// 0. Create a new scheme object.
+			executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+				@Override
+				public void execute0(Scheme scheme, Object[] args) {
+					logInfo( "SchemeSecretary#newScheme()" );
+					if ( scheme != null ) {
+						// 0. Execute all the initializers.
+						invokeSchemeFinalizer( null );
+					}
+				}
+			});
+			
+			
 			// 1. Create a new scheme object.
 			executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
 				@Override
 				public void execute0(Scheme scheme, Object[] args) {
+					logInfo( "SchemeSecretary#newScheme()" );
 					Scheme newScheme = new Scheme();
 					setExecutive( newScheme );
+//					env = newScheme.getEnvironment();
 				}
 			});
 			// 2. Execute all the initializers.

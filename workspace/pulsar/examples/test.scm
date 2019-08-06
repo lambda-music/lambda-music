@@ -3,6 +3,7 @@
 (close!)
 (quit!)
 
+trackset-manager
 (send!
   (n chan: 0 port: 0 
      (p
@@ -25,9 +26,11 @@
 (kill! 'seq-14 'seq-15)
 (kill! 'seq-7 'seq-8 'seq-9 'seq-10 'seq-11)
 
-(send! 
+(add! 'hello 
   (n (n chan: 0 port: 2 (melody '( do re mi fa sol end ) ) )))
 
+(ls)
+(del! 'hello)
 
 (list-tabulate 4 make-list)
 

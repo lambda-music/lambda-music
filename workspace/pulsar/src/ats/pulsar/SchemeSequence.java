@@ -20,6 +20,7 @@
 
 package ats.pulsar;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -42,13 +43,12 @@ import gnu.mapping.ProcedureN;
 import gnu.mapping.Symbol;
 
 public class SchemeSequence extends MetroSequence {
-	static final Logger LOGGER = Logger.getLogger(SchemeSequence.class.getName());
+	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
 	static void logError(String msg, Throwable e) {
 		LOGGER.log(Level.SEVERE, msg, e);
 	}
 	static void logInfo(String msg) {
-		// LOGGER.log(Level.INFO, msg);
-		System.err.println(msg);
+		LOGGER.log(Level.INFO, msg);
 	}
 	static void logWarn(String msg) {
 		LOGGER.log(Level.WARNING, msg);

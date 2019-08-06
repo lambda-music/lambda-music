@@ -8,15 +8,9 @@ import java.util.logging.Logger;
 
 public abstract class SecretaryMessageQueue<R> implements SecretaryMessageExecutor<R> {
 	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
-	static void logError(String msg, Throwable e) {
-		LOGGER.log(Level.SEVERE, msg, e);
-	}
-	static void logInfo(String msg) {
-		LOGGER.log(Level.INFO, msg);
-	}
-	static void logWarn(String msg) {
-		LOGGER.log(Level.WARNING, msg);
-	}
+	static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+	static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
+	static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
 	private boolean directMeeting = false;
 	public void setDirectMeeting( boolean directMeeting ) {

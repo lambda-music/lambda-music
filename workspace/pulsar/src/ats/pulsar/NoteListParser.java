@@ -20,6 +20,7 @@
 
 package ats.pulsar;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -47,13 +48,12 @@ import gnu.lists.Pair;
  * @author ats
  */
 public class NoteListParser {
-	static final Logger LOGGER = Logger.getLogger(NoteListParser.class.getName());
+	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
 	static void logError(String msg, Throwable e) {
 		LOGGER.log(Level.SEVERE, msg, e);
 	}
 	static void logInfo(String msg) {
-		// LOGGER.log(Level.INFO, msg);
-		System.err.println(msg);
+		LOGGER.log(Level.INFO, msg);
 	}
 	static void logWarn(String msg) {
 		LOGGER.log(Level.WARNING, msg);

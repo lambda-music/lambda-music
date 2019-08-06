@@ -27,6 +27,7 @@ import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.HeadlessException;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -41,6 +42,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,6 +56,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
@@ -114,13 +117,12 @@ import gnu.mapping.Values;
 import kawa.standard.Scheme;
 
 class PulsarGui {
-	static final Logger LOGGER = Logger.getLogger(PulsarGui.class.getName());
+	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
 	static void logError(String msg, Throwable e) {
 		LOGGER.log(Level.SEVERE, msg, e);
 	}
 	static void logInfo(String msg) {
-		// LOGGER.log(Level.INFO, msg);
-		System.err.println(msg);
+		LOGGER.log(Level.INFO, msg);
 	}
 	static void logWarn(String msg) {
 		LOGGER.log(Level.WARNING, msg);
@@ -135,6 +137,7 @@ class PulsarGui {
 			@Override
 			public void execute0( Scheme scheme, Object[] args ) {
 				pulsarGui.initScheme( scheme );
+		        pulsarGui.initPulsarGui();
 			}
 		});
 	}
@@ -152,30 +155,37 @@ class PulsarGui {
 		
 	    // Create and set up the window.
         this.frame = new JPulsarFrame( pulsar.getSchemeSecretary(), "Pulsar" );
-        
+
         initPulsarGui();
+	}
+	
+	// INIT_03
+	void init() {
+		this.frame.init();
 	}
 
 	private void initPulsarGui() {
 		Pulsar.createTimer(pulsar, 1000, 20, new Invokable() {
 			@Override
 			public Object invoke(Object... args) {
-				MetroTrack track = pulsar.searchTrack( "main" );
-
-				//	This happens quite often so let us ignore it. (Mon, 29 Jul 2019 12:21:50 +0900)
-				//	Additionally this code have never been executed. Just added this for describing the concept.
-				//	if ( track == null ) {
-				//		logWarn( "" );
-				//	}
-
-				if ( track != null && pb_position != null ) {
-					double value=0;
-					synchronized ( track.getLock() ) {
-						value = track.getTrackPosition();
+				if ( pulsar.isOpened() ) {
+					MetroTrack track = pulsar.searchTrack( "main" );
+					
+					//	This happens quite often so let us ignore it. (Mon, 29 Jul 2019 12:21:50 +0900)
+					//	Additionally this code have never been executed. Just added this for describing the concept.
+					//	if ( track == null ) {
+					//		logWarn( "" );
+					//	}
+					
+					if ( track != null && pb_position != null ) {
+						double value=0;
+						synchronized ( track.getLock() ) {
+							value = track.getTrackPosition();
+						}
+						pb_position.setValue((int) (value * PulsarGui.PB_POSITION_MAX) );
+						pb_position.repaint();
+						pb_position.revalidate();
 					}
-					pb_position.setValue((int) (value * PulsarGui.PB_POSITION_MAX) );
-					pb_position.repaint();
-					pb_position.revalidate();
 				}
 				return Values.noArgs;
 			}
@@ -1565,6 +1575,30 @@ class PulsarGui {
 //			DELETED >>> INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
 //			PulsarGui.invokeLocalSchemeInitializers( schemeSecretary, PulsarGui.this );
 //			DELETED <<< INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
+			
+			initIcon();
+		}
+
+		// THIS IS NOT WORKING. (Tue, 06 Aug 2019 10:04:23 +0900)
+		// This doesn't work and I don't know why. It maybe because GTK thing. 
+		void initIcon() {
+			try  {
+				ArrayList<Image> list = new ArrayList<>();
+				list.add( ImageIO.read( PulsarGui.class.getResource("pulsar-32x32.png")));
+				list.add( ImageIO.read( PulsarGui.class.getResource("pulsar-64x64.png")));
+				list.add( ImageIO.read( PulsarGui.class.getResource("pulsar-500x500.png")));
+				list.add( ImageIO.read( PulsarGui.class.getResource("pulsar-512x512.png")));
+				this.setIconImages(list);
+//				JFrame.setDefaultLookAndFeelDecorated(true);
+			} catch ( Exception e ) {
+				logError("failed to load icon", e );
+			}
+		}
+		
+		// INIT_03
+		@Override
+		public void init(){
+			super.init();
 		}
 
 		@Override

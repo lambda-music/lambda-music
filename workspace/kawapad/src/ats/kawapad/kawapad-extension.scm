@@ -161,52 +161,60 @@
                       ((this):putValue javax.swing.Action:MNEMONIC_KEY  (->java.lang.Integer (char->integer #\p ) ))
                       )))
 
-
 (define init-proc (lambda (frame)
-               (set! lisp-words (append default-lisp-words
-                         '(object append define-class define-simple-class )
-                         '(register-event-handler unregister-event-handler )
-                           ))
+                    (set! lisp-words (append default-lisp-words
+                                             '(object append define-class define-simple-class )
+                                             '(register-event-handler unregister-event-handler )
+                                             ))))
 
-               ((frame:j-menu-bar:get-menu 1):add (javax.swing.JMenuItem (jump-to-corresponding-parenthesis-action "hello1" #t)))
-               ((frame:j-menu-bar:get-menu 1):add (javax.swing.JMenuItem (jump-to-corresponding-parenthesis-action "hello2" #f)))
-
-               (frame:text-pane:addMouseListener
-                (object (java.awt.event.MouseAdapter) 
-                        ((mousePressed e)
-                         (display 'hello)
-                         (newline)
-                         (if (e:isPopupTrigger)
-                           (let ((popup (javax.swing.JPopupMenu))
-                                 (jlist (javax.swing.JList) )
-                                 (text-area (javax.swing.JTextArea "hello" ))
-                                 )                 
-                             (popup:addPopupMenuListener
-                              (object (javax.swing.event.PopupMenuListener)
-                                      ((popupMenuWillBecomeVisible e)
-                                       (text-area:request-focus)
-                                       )
-                                      ((popupMenuWillBecomeInvisible e)
-                                       (newline)
-                                       )
-                                      ((popupMenuCanceled e)
-                                       (newline)
-                                       )))
-
-                             (jlist:setListData (apply object[]  get-variables frame ))
-                             ; (jlist:setPreferredSize (java.awt.Dimension 200 300 ) )
-                             ; (popup:add (javax.swing.JMenuItem "hello" ))
-                             ;(popup:add (javax.swing.JMenuItem "hoo" ))
-                             ;(popup:add (javax.swing.JButton "hoo" ))
-                             (popup:add text-area)
-                             (popup:add (javax.swing.JScrollPane jlist ))
-                             (popup:show e:component e:x e:y )
-                             )
-                           #f
-                           )
-                         )))))
 
 (register-event-handler 'init 'init-0 init-proc )
+
+(define create-proc (lambda (frame)
+                    (set! lisp-words (append default-lisp-words
+                                             '(object append define-class define-simple-class )
+                                             '(register-event-handler unregister-event-handler )
+                                             ))
+
+                    ((frame:j-menu-bar:get-menu 1):add (javax.swing.JMenuItem (jump-to-corresponding-parenthesis-action "hello1" #t)))
+                    ((frame:j-menu-bar:get-menu 1):add (javax.swing.JMenuItem (jump-to-corresponding-parenthesis-action "hello2" #f)))
+
+                    (frame:text-pane:addMouseListener
+                      (object (java.awt.event.MouseAdapter) 
+                              ((mousePressed e)
+                               (display 'hello)
+                               (newline)
+                               (if (e:isPopupTrigger)
+                                 (let ((popup (javax.swing.JPopupMenu))
+                                       (jlist (javax.swing.JList) )
+                                       (text-area (javax.swing.JTextArea "hello" ))
+                                       )                 
+                                   (popup:addPopupMenuListener
+                                     (object (javax.swing.event.PopupMenuListener)
+                                             ((popupMenuWillBecomeVisible e)
+                                              (text-area:request-focus)
+                                              )
+                                             ((popupMenuWillBecomeInvisible e)
+                                              (newline)
+                                              )
+                                             ((popupMenuCanceled e)
+                                              (newline)
+                                              )))
+
+                                   (jlist:setListData (apply object[]  get-variables frame ))
+                                   ; (jlist:setPreferredSize (java.awt.Dimension 200 300 ) )
+                                   ; (popup:add (javax.swing.JMenuItem "hello" ))
+                                   ;(popup:add (javax.swing.JMenuItem "hoo" ))
+                                   ;(popup:add (javax.swing.JButton "hoo" ))
+                                   (popup:add text-area)
+                                   (popup:add (javax.swing.JScrollPane jlist ))
+                                   (popup:show e:component e:x e:y )
+                                   )
+                                 #f
+                                 )
+                               )))))
+
+(register-event-handler 'create 'create-0 create-proc )
 
 
 ; Example of defining a simple class

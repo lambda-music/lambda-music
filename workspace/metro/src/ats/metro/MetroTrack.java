@@ -20,6 +20,7 @@
 
 package ats.metro;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -46,17 +47,10 @@ import org.jaudiolibs.jnajack.JackPosition;
  *
  */
 public class MetroTrack implements MetroTrackInfo, MetroLock {
-	static final Logger LOGGER = Logger.getLogger(MetroTrack.class.getName());
-	static void logError(String msg, Throwable e) {
-		LOGGER.log(Level.SEVERE, msg, e);
-	}
-	static void logInfo(String msg) {
-		// LOGGER.log(Level.INFO, msg);
-		System.err.println(msg);
-	}
-	static void logWarn(String msg) {
-		LOGGER.log(Level.WARNING, msg);
-	}
+	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+	static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+	static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
+	static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
 
 	public enum SyncType {
@@ -74,24 +68,7 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 	}
 	
 	
-	/**
-	 * 
-	 */
-	private final Metro metro;
-	/**
-	 * Note that the String object which is stored in name field must be interned.  
-	 */
-	protected final String name;
-	protected Set<String> tags;
-	protected boolean enabled = true;
-
 	private static final boolean DEBUG = false;
-
-//	private static final int BUFFER_SIZE = 2;
-// MODIFIED >>> (Mon, 08 Jul 2019 20:29:49 +0900)
-//	private static final double MARGIN_LENGTH = 2;   
-//	private static final double MARGIN_LENGTH = 9;   
-// MODIFIED <<< 
 
 	/*
 	 * Memo : I think this is not necessary anymore; this used to be margin length
@@ -105,8 +82,31 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 	 */
 	private static final double MARGIN_LENGTH = 1;   
 
+	/*
+	 * This value is only for debugging purpose. 
+	 */
+	final int id = (int) (Math.random()* Integer.MAX_VALUE);
 	
-	int id = (int) (Math.random()* Integer.MAX_VALUE);
+	/**
+	 * 
+	 */
+	private final Metro metro;
+	/**
+	 * Note that the String object which is stored in name field must be interned.  
+	 */
+	protected final String name;
+	protected final Set<String> tags;
+	protected final MetroSequence sequence;
+
+	protected transient boolean prepared = false;
+	protected transient boolean enabled = true;
+
+//	private static final int BUFFER_SIZE = 2;
+// MODIFIED >>> (Mon, 08 Jul 2019 20:29:49 +0900)
+//	private static final double MARGIN_LENGTH = 2;   
+//	private static final double MARGIN_LENGTH = 9;   
+// MODIFIED <<< 
+
 
 	private transient SyncType syncType;
 	private transient MetroTrack syncTrack;
@@ -116,7 +116,6 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 	protected transient int lastLengthInFrames = 0;
 	protected transient int lastAccumulatedLength = 0;
 	
-	protected final MetroSequence sequence;
 	transient boolean ending = false;
 	transient boolean endingDone = false;
 	transient double endingLength = 0;
@@ -127,6 +126,8 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 	}
 	
 	/**
+	 * Create a MetroTrack object with default synchronizing status.
+	 *
 	 * This constructor is <code>public</code> but this is usually called only from
 	 * {@link Metro#createTrack(String, Collection, MetroSequence, SyncType, MetroTrack, double)}
 	 * and users should not call this constructor directory. Though it is still left public
@@ -141,17 +142,8 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 	 *            empty set.
 	 * @param sequence
 	 *            Specifying the sequence object to play.
-	 * @param syncType
-	 *            Specifying the way to synchronize with the syncTrack object. See
-	 *            {@link SyncType}
-	 * @param syncTrack
-	 *            Specifying the track object to synchronize with.
-	 * @param syncOffset
-	 *            Specifying the distance from the track object with which is
-	 *            synchronized.
 	 */
-	public MetroTrack( Metro metro, String name, Collection<String> tags, MetroSequence sequence, SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
-//		LOGGER.info( "Track(" + name + ") : " + tags + " : " + syncType + " : " + syncOffset );
+	MetroTrack( Metro metro, String name, Collection<String> tags, MetroSequence sequence ) {
 		if ( name == null )
 			this.name = createUniqueTrackName();
 		else
@@ -161,15 +153,17 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 			this.tags = new HashSet<>();
 		else
 			this.tags = (new HashSet<>( tags ));
+
 		this.metro = metro;
 		this.sequence = sequence;
-		this.syncType = syncType;
-		this.syncTrack = syncTrack;
-		this.syncOffset = syncOffset;
+		
+		this.syncType = SyncType.IMMEDIATE;
+		this.syncTrack = null;
+		this.syncOffset = 0.0d;
 		
 		sequence.setTrackInfo( this );
 	}
-
+	
 	private static Object uniqueTrackNameLock = new Object();
 	private static transient int uniqueTrackNameCounter = 0;
 	private static String createUniqueTrackName() {
@@ -204,12 +198,11 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 		this.enabled = enabled;
 	}
 	@Override
-	public void removeGracefully( Runnable onEnd ) {
+	public void removeGracefully() {
 		if ( this.ending ) {
 			logWarn( "removeGracefully was called; but the track is already removed." );
 		} else {
 			logInfo( "removeGracefully was called; the ending flag is set." );
-			this.endingProc = onEnd;
 			this.ending = true;
 		}
 	}
@@ -221,8 +214,35 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 			return (double)( cursor - lastAccumulatedLength + lastLengthInFrames )  / (double)lastLengthInFrames;
 		}
 	}
-
 	
+	/**
+	 * @param syncType
+	 *            Specifying the way to synchronize with the syncTrack object. See
+	 *            {@link SyncType}
+	 * @param syncTrack
+	 *            Specifying the track object to synchronize with.
+	 * @param syncOffset
+	 *            Specifying the distance from the track object with which is
+	 *            synchronized.
+	 * @return this object
+	 * 
+	 */
+	public MetroTrack setSyncStatus( SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
+		this.prepared = false;
+		this.syncType = syncType;
+		this.syncTrack = syncTrack;
+		this.syncOffset = syncOffset;
+		return this;
+	}
+	public SyncType getSyncType() {
+		return syncType;
+	}
+	public MetroTrack getSyncTrack() {
+		return syncTrack;
+	}
+	public double getSyncOffset() {
+		return syncOffset;
+	}
 	
 //	@Override
 //	public boolean equals(Object obj) {
@@ -394,7 +414,17 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 		}
 	}
 
-	protected void prepare( int barInFrames ) throws JackException {
+	/**
+	 * This method will be called only once by the Metro messaging thread when
+	 * MetroTrack is added to registered Track.
+	 * 
+	 * @param barInFrames
+	 */
+	void prepare( int barInFrames ) {
+		if ( prepared ) 
+			throw new IllegalStateException();
+		this.prepared = true;
+		
 		int offset = (int) (-1.0d * this.syncOffset * barInFrames);
 
 		switch ( this.syncType ) {
@@ -432,12 +462,12 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 				}
 				break;
 			default :
-				throw new RuntimeException( "Internal Error"); // this won't occur.
+				throw new RuntimeException( "Internal Error" ); // this won't occur.
 		}
 
 	}
 
-	protected  void reprepare( Metro metro, JackClient client, JackPosition position, 
+	void reprepare( Metro metro, JackClient client, JackPosition position, 
 			double prevBeatsPerMinute, double beatsPerMinute ) throws JackException 
 	{
 		synchronized ( this.buffers ) {

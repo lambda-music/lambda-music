@@ -20,10 +20,12 @@
 
 package ats.pulsar;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import ats.metro.Metro;
@@ -96,8 +98,8 @@ import ats.metro.MetroMidi.MetroMidiSongPositionPointer;
 import ats.metro.MetroMidi.MetroMidiSongSelect;
 import ats.metro.MetroMidi.MetroMidiStart;
 import ats.metro.MetroMidi.MetroMidiStop;
-import ats.pulsar.lib.SchemeUtils;
 import ats.metro.MetroTrack;
+import ats.pulsar.lib.SchemeUtils;
 
 /**
  * Defines MIDI events.
@@ -109,7 +111,16 @@ import ats.metro.MetroTrack;
  */
 @SuppressWarnings("unused")
 public class PulsarMidiNoteListParsers {
-	static final Logger LOGGER = Logger.getLogger( PulsarMidiNoteListParsers.class.getName() );
+	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+	static void logError(String msg, Throwable e) {
+		LOGGER.log(Level.SEVERE, msg, e);
+	}
+	static void logInfo(String msg) {
+		LOGGER.log(Level.INFO, msg);
+	}
+	static void logWarn(String msg) {
+		LOGGER.log(Level.WARNING, msg);
+	}
 
 	/**
 	 * 

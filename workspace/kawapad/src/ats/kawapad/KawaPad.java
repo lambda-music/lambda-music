@@ -39,6 +39,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringReader;
+import java.lang.invoke.MethodHandles;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
@@ -85,10 +86,13 @@ import javax.swing.undo.CannotUndoException;
 import ats.kawapad.SimpleSchemeParser.ParserState;
 import ats.kawapad.lib.CompoundGroupedUndoManager;
 import ats.kawapad.lib.GroupedUndoManager;
+import ats.pulsar.lib.PulsarLogger;
 import ats.pulsar.lib.SchemeUtils;
 import ats.pulsar.lib.SimpleSchemeIndentChanger;
 import ats.pulsar.lib.SimpleSchemePrettifier;
+import ats.pulsar.lib.secretary.Invokable;
 import ats.pulsar.lib.secretary.SecretaryMessage;
+import ats.pulsar.lib.secretary.SecretaryMessage.NoReturnNoThrow;
 import ats.pulsar.lib.secretary.scheme.SchemeSecretary;
 import ats.pulsar.lib.swing.Action2;
 import gnu.expr.Language;
@@ -128,18 +132,13 @@ import kawa.standard.Scheme;
  * @author Ats Oka
  */
 public class KawaPad extends JFrame {
+	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+	static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+	static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
+	static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 	private static final String FLAG_DONE_INIT_PULSAR_SCRATCHPAD = "flag-done-init-pulsar-scratchpad";
 	private static final boolean DEBUG_UNDO_BUFFER = false;
-	private static final Logger LOGGER = Logger.getLogger(KawaPad.class.getName());
-	static void logError( String msg, Throwable e ) {
-		LOGGER.log(Level.SEVERE, msg, e);
-		//		System.err.println( msg );
-	}
-	static void logInfo( Object msg ) {
-		//        Logger.getLogger(Pulsar.class.getName()).log(Level.INFO, msg);
-		System.err.println( msg );
-		System.err.flush();
-	}
+
 	public static final Map<Object,Object> memoMap = new HashMap<Object,Object>();
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
@@ -160,7 +159,8 @@ public class KawaPad extends JFrame {
 			@Override
 			public void execute0( Scheme scheme, Object[] args ) {
 				logInfo( "eventinvokeEventHandler of KawaPad#registerSchemeInitializer " );
-				eventHandlers.invokeEventHandler( kawaPad, EventHandlers.INIT );
+//				eventHandlers.invokeEventHandler( kawaPad, EventHandlers.INIT );
+				eventHandlers.invokeEventHandler( kawaPad, EventHandlers.CREATE );
 			}
 		});
 	}
@@ -183,6 +183,13 @@ public class KawaPad extends JFrame {
 	 */
 	public static void registerGlobalSchemeInitializer( SchemeSecretary schemeSecretary ) {
 		schemeSecretary.registerSchemeInitializer( null, staticInitializer01 );
+		schemeSecretary.registerSchemeFinalizer(null, new NoReturnNoThrow<Scheme>() {
+			@Override
+			public void execute0(Scheme scheme, Object[] args) {
+				logInfo("finalizer() eventHandlers.clear()");
+				eventHandlers.clear();
+			}
+		});
 	}
 	static SecretaryMessage.NoReturnNoThrow<Scheme> staticInitializer01 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
 		@Override
@@ -214,7 +221,20 @@ public class KawaPad extends JFrame {
 //		DELETED >>> INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
 //		invokeLocalSchemeInitializers( schemeSecretary, this);
 //		DELETED <<< INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
+	
 	}
+
+//	ADDED >>> (Tue, 06 Aug 2019 09:29:54 +0900)
+	public void init() {
+//		ADDED >>> (Tue, 06 Aug 2019 08:47:14 +0900)
+		/*
+		 * At that time, I didn't realize that creation of a frame should be done in a INIT_03
+		 * different way from the creation of a scheme object. (Tue, 06 Aug 2019 08:47:14 +0900) 
+		 */
+		eventHandlers.invokeEventHandler( KawaPad.this, EventHandlers.CREATE,  KawaPad.this );
+//		ADDED <<< (Tue, 06 Aug 2019 08:47:14 +0900)
+	}
+//	ADDED <<< (Tue, 06 Aug 2019 09:29:54 +0900)
 
 	@Override
 	public void dispose() {
@@ -502,11 +522,21 @@ public class KawaPad extends JFrame {
 			String result = null;
 			boolean errorOccured = false;
 			try {
-				String text = textPane.getSelectedText();
-				if ( text == null ) {
-					text = textPane.getText();
+				String text;
+				{
+					String s = textPane.getSelectedText();
+					if ( s == null ) {
+						s = textPane.getText();
+					}
+					text = s;
 				}
-				resultObject = executeScheme( schemeSecretary.getScheme(), KawaPad.this,  text );
+				resultObject =
+						schemeSecretary.executeSecretarially( new SecretaryMessage<Scheme, Object, Throwable>() {
+							@Override
+							public Object execute(Scheme scheme, Object[] args) throws Throwable {
+								return executeScheme( scheme, KawaPad.this,  text );
+							} 
+						}, Invokable.NOARG );
 
 				textPane.getActionMap();
 //				System.out.println("==========================");
@@ -593,7 +623,7 @@ public class KawaPad extends JFrame {
 		}
 		{
 			putValue( Action2.NAME, "Interrupt" );
-			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_G, ActionEvent.CTRL_MASK) );
+			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_K, ActionEvent.CTRL_MASK) );
 			putValue( Action.MNEMONIC_KEY , (int) 'i' );
 		}
 	}
@@ -843,7 +873,8 @@ public class KawaPad extends JFrame {
 		
 	}
 	public static class EventHandlers {
-		private static final String INIT      = "init";
+		private static final String INIT      = "init";   // occurs when initializing scheme objects. (Tue, 06 Aug 2019 08:37:12 +0900)
+		private static final String CREATE    = "create"; // occurs when creating form objects.       (Tue, 06 Aug 2019 08:37:12 +0900)
 		private static final String CARET     = "caret";
 		private static final String INSERT    = "insert";
 		private static final String REMOVE    = "remove";
@@ -854,6 +885,7 @@ public class KawaPad extends JFrame {
 		final Map<Symbol,Map<Symbol,SchemeProcedure>> map = new HashMap<>();
 		{
 			map.put( Symbol.valueOf(INIT),      new HashMap<>() );
+			map.put( Symbol.valueOf(CREATE),      new HashMap<>() );
 			map.put( Symbol.valueOf(CARET),     new HashMap<>() );
 			map.put( Symbol.valueOf(INSERT),    new HashMap<>() );
 			map.put( Symbol.valueOf(REMOVE),    new HashMap<>() );
@@ -866,6 +898,17 @@ public class KawaPad extends JFrame {
 			if ( eventType == null )
 				throw new RuntimeException( "unknown event type + ( " + eventTypeID + ")"  );
 			return eventType;
+		}
+		public void clear() {
+			logInfo("EventHandlers#clear()");
+			map.get( Symbol.valueOf(INIT)).clear();
+			map.get( Symbol.valueOf(CREATE)).clear();
+			map.get( Symbol.valueOf(CARET)).clear();
+			map.get( Symbol.valueOf(INSERT)).clear();
+			map.get( Symbol.valueOf(REMOVE)).clear();
+			map.get( Symbol.valueOf(ATTRIBUTE)).clear();
+			map.get( Symbol.valueOf(CHANGE)).clear();
+			map.get( Symbol.valueOf(TYPED)).clear();
 		}
 		Map<Symbol, SchemeProcedure> getEventType(String eventTypeID) {
 			return getEventType( Symbol.valueOf(eventTypeID));
@@ -984,6 +1027,7 @@ public class KawaPad extends JFrame {
 			});
 			
 			try {
+				logInfo( "scheme.eval( InPort.openFile( getInitFile() ) );" );
 				scheme.eval( InPort.openFile( getInitFile() ) );
 			} catch (Throwable e) {
 				logError( "Ignored an error : ", e);
@@ -1617,7 +1661,7 @@ public class KawaPad extends JFrame {
 		// Dump
 		if ( false ) 
 			for ( Object o : actionMap.allKeys() ) {
-				logInfo(o );
+				logInfo( o == null ? null : o.toString() );
 			}
 		
 		actionMap.get( DefaultEditorKit.deletePrevCharAction ).putValue(Action2.NAME, "Backspace");
@@ -1631,6 +1675,7 @@ public class KawaPad extends JFrame {
 		return new KawaPad( schemeSecretary, "Scheme Scratch Pad" );
 	}
 	public static void main(String[] args) throws IOException {
+		PulsarLogger.init();
 		KawaPad kawaPad = createStaticInstance();
 		if ( 0 < args.length  ) {
 			kawaPad.openFile( new File( args[0] ) );

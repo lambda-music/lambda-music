@@ -30,6 +30,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -74,15 +75,14 @@ import gnu.mapping.Symbol;
 import gnu.math.IntNum;
 
 public abstract class SchemeNewFactory {
-	static final Logger LOGGER = Logger.getLogger(SchemeNewFactory.class.getName());
-	static void logError( String msg, Throwable e ) {
-        LOGGER.log(Level.SEVERE, msg, e);
+	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+	static void logError(String msg, Throwable e) {
+		LOGGER.log(Level.SEVERE, msg, e);
 	}
-	static void logInfo( String msg ) {
-//      LOGGER.log(Level.INFO, msg);
-		System.err.println( msg );
+	static void logInfo(String msg) {
+		LOGGER.log(Level.INFO, msg);
 	}
-	static void logWarn( String msg ) {
+	static void logWarn(String msg) {
 		LOGGER.log(Level.WARNING, msg);
 	}
 		

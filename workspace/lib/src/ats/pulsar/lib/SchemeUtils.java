@@ -110,26 +110,31 @@ public class SchemeUtils {
 		return map;
 	}
 	
+	/*
+	 * We changed the policy the way to treat null here;
+	 * now we are ignoring null value. (Sun, 04 Aug 2019 22:01:39 +0900)
+	 */
 	public static Symbol schemeSymbol( String string ) {
 		return Symbol.valueOf( string );
 	}
 
-	public static String anyToString( Object value ) {
-		return toString( value );
+	public static String anyToString( Object schemeVal ) {
 		// modified (Wed, 31 Jul 2019 21:51:55 +0900)
-//		if ( schemeVal == null ) {
-//			return null;
-//		} else if ( schemeVal instanceof Boolean ) {
-//			return ((Boolean) schemeVal ).toString();
-//		} else if ( schemeVal instanceof IString ) {
-//			return ((IString)schemeVal).toString();
-//		} else if ( schemeVal instanceof Symbol ) {
-//			return ((Symbol)schemeVal).getName();
-//		} else if ( schemeVal instanceof String ) {
-//			return (String) schemeVal;
-//		} else {
-//			return ((Quantity) schemeVal).toString();
-//		}
+		// reverted (Sun, 04 Aug 2019 21:52:21 +0900)  
+		// return toString( value );
+		if ( schemeVal == null ) {
+			return null;
+		} else if ( schemeVal instanceof Boolean ) {
+			return ((Boolean) schemeVal ).toString();
+		} else if ( schemeVal instanceof IString ) {
+			return ((IString)schemeVal).toString();
+		} else if ( schemeVal instanceof Symbol ) {
+			return ((Symbol)schemeVal).getName();
+		} else if ( schemeVal instanceof String ) {
+			return (String) schemeVal;
+		} else {
+			return toString( schemeVal );
+		}
 	}
 	
 	/**
@@ -151,14 +156,12 @@ public class SchemeUtils {
 			return null;
 		else
 			return value.toString();
-		
-//		if ( schemeVal instanceof String )
-//			return (String) schemeVal;
-//		else
-//			return ((IString)schemeVal).toString();
 	}
 	public static String symbolToString( Object schemeVal ) {
-		return ((Symbol)schemeVal).getName();
+		if ( schemeVal == null ) 
+			return null;
+		else
+			return ((Symbol)schemeVal).getName();
 	}
 	public static double toDouble( Object schemeVal ) {
 		return ((Quantity) schemeVal).doubleValue();
@@ -202,6 +205,12 @@ public class SchemeUtils {
 
 	public static Symbol toSchemeSymbol(String value) {
 		return Symbol.valueOf(value);
+	}
+	
+	
+	public static <T> T errorIfNull( T object ) {
+		if ( object == null ) throw new NullPointerException();
+		return object;
 	}
 	
 	public static <T> T schemeNullCheck( T object ) {
@@ -248,9 +257,10 @@ public class SchemeUtils {
 		
 		if ( ! file.isAbsolute() ) {
 			if ( parentFile == null )
-				throw new FileNotFoundException( "cannot resolve relative path because no parent file is known." );
-			
-			file = new File( parentFile.getParentFile(), file.getPath() );
+				file = new File( file.getPath() );
+//				throw new FileNotFoundException( "cannot resolve relative path because no parent file is known." );
+			else	
+				file = new File( parentFile.getParentFile(), file.getPath() );
 		}
 		
 		InputStream in=null;

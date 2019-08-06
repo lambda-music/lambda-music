@@ -242,7 +242,7 @@
 
 (if (not (open?))
   (begin 
-    (close!)
+    ;(close!)
     (open!     "pulsar" )
     (output!   "out-h2" "out-counter" "out-fluidsynth" )
     (input!    "MIDI Input0"  "MIDI Input1"  )

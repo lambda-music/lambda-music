@@ -22,6 +22,7 @@ package ats.pulsar;
 
 import static ats.pulsar.PulsarMidiNoteListParsers.*;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,7 +51,16 @@ import kawa.standard.Scheme;
  * @author ats
  */
 public class PulsarSpecialNoteListParsers {
-	static final Logger LOGGER = Logger.getLogger(PulsarSpecialNoteListParsers.class.getName());
+	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+	static void logError(String msg, Throwable e) {
+		LOGGER.log(Level.SEVERE, msg, e);
+	}
+	static void logInfo(String msg) {
+		LOGGER.log(Level.INFO, msg);
+	}
+	static void logWarn(String msg) {
+		LOGGER.log(Level.WARNING, msg);
+	}
 
 	/*
 	 * XXX this value is inconsistent now (Mon, 29 Jul 2019 09:17:14 +0900)
@@ -65,18 +75,6 @@ public class PulsarSpecialNoteListParsers {
 		return Collections.unmodifiableList( elements );
 	}
 
-	static void logError(String msg, Throwable e) {
-		LOGGER.log(Level.SEVERE, msg, e);
-	}
-
-	static void logInfo(String msg) {
-		// LOGGER.log(Level.INFO, msg);
-		System.err.println(msg);
-	}
-
-	static void logWarn(String msg) {
-		LOGGER.log(Level.WARNING, msg);
-	}
 
 	static final <V> V getValue( Map<String,Object> map, String key, V defaultValue, Function<Object,V> converter ) {
 		if ( map.containsKey(key) )
@@ -253,7 +251,7 @@ public class PulsarSpecialNoteListParsers {
 						
 							try {
 								pulsar.registerTrack( 
-									pulsar.createTrack( id2, tags, sequence, syncType, syncTrack, syncOffset ) );
+									pulsar.createTrack( id2, tags, sequence ).setSyncStatus(syncType, syncTrack, syncOffset) );
 							} finally {
 								pulsar.notifyTrackChange();
 							}
@@ -374,7 +372,7 @@ public class PulsarSpecialNoteListParsers {
 		}
 		@Override
 		void removeTrackProc(Metro metro, MetroTrack track) {
-			track.removeGracefully( null );
+			track.removeGracefully( );
 		}
 	}
 
