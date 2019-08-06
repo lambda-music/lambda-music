@@ -129,7 +129,7 @@ public class SchemeSequence extends MetroSequence {
 					}
 					@Override
 					public Object getCdr() {
-						return SchemeUtils.toSchemeSymbol( player.getTrackName() );
+						return player.getTrackName();
 					}
 				},
 				new ImmutablePair() {
@@ -141,7 +141,7 @@ public class SchemeSequence extends MetroSequence {
 					public Object getCdr() {
 						return LList.makeList((List)
 								SchemeUtils.<String,Symbol>convertList(
-										player.getTrackTags() , (v)->SchemeUtils.toSchemeSymbol(v) ) );
+										new ArrayList( player.getTrackTags() ) , (v)->SchemeUtils.toSchemeSymbol(v) ) );
 					}
 				},
 				new ImmutablePair() {

@@ -155,14 +155,15 @@ public class KawaPad extends JFrame {
 				kawaPad.initScheme( scheme );				
 			}
 		});
-		schemeSecretary.registerSchemeInitializer( kawaPad, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
-			@Override
-			public void execute0( Scheme scheme, Object[] args ) {
-				logInfo( "eventinvokeEventHandler of KawaPad#registerSchemeInitializer " );
-//				eventHandlers.invokeEventHandler( kawaPad, EventHandlers.INIT );
-				eventHandlers.invokeEventHandler( kawaPad, EventHandlers.CREATE );
-			}
-		});
+//		WARNING This should be done only in init(); (Tue, 06 Aug 2019 18:07:49 +0900)
+//		schemeSecretary.registerSchemeInitializer( kawaPad, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+//			@Override
+//			public void execute0( Scheme scheme, Object[] args ) {
+//				logInfo( "eventinvokeEventHandler of KawaPad#registerLocalSchemeInitializers " );
+////				eventHandlers.invokeEventHandler( kawaPad, EventHandlers.INIT );
+//				eventHandlers.invokeEventHandler( kawaPad, EventHandlers.CREATE );
+//			}
+//		});
 	}
 	
 	public static void invokeLocalSchemeInitializers( SchemeSecretary schemeSecretary, KawaPad kawaPad ) {
@@ -530,8 +531,9 @@ public class KawaPad extends JFrame {
 					}
 					text = s;
 				}
+				// xxx
 				resultObject =
-						schemeSecretary.executeSecretarially( new SecretaryMessage<Scheme, Object, Throwable>() {
+						schemeSecretary.executeWithoutSecretarially( new SecretaryMessage<Scheme, Object, Throwable>() {
 							@Override
 							public Object execute(Scheme scheme, Object[] args) throws Throwable {
 								return executeScheme( scheme, KawaPad.this,  text );
@@ -885,7 +887,7 @@ public class KawaPad extends JFrame {
 		final Map<Symbol,Map<Symbol,SchemeProcedure>> map = new HashMap<>();
 		{
 			map.put( Symbol.valueOf(INIT),      new HashMap<>() );
-			map.put( Symbol.valueOf(CREATE),      new HashMap<>() );
+			map.put( Symbol.valueOf(CREATE),    new HashMap<>() );
 			map.put( Symbol.valueOf(CARET),     new HashMap<>() );
 			map.put( Symbol.valueOf(INSERT),    new HashMap<>() );
 			map.put( Symbol.valueOf(REMOVE),    new HashMap<>() );

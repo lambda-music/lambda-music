@@ -160,6 +160,9 @@ class PulsarGui {
 	}
 	
 	// INIT_03
+	/**
+	 * This method is called whenever the frame is created.
+	 */
 	void init() {
 		this.frame.init();
 	}
@@ -376,9 +379,9 @@ class PulsarGui {
     		@Override
     		public Object applyN(Object[] args) throws Throwable {
     			if ( 1 < args.length ) {
-        			ArrayDeque<Object> argList = new ArrayDeque<>( Arrays.asList(args) );
-        			Container parent = (Container) SchemeUtils.schemeNullCheck(argList.pop());
-        			Collection<String> path = SchemeUtils.convertList(argList, (o)->{
+        			ArrayList<Object> argList = new ArrayList<>( Arrays.asList(args) );
+        			Container parent = (Container) SchemeUtils.schemeNullCheck(argList.remove(0) );
+        			List<String> path = SchemeUtils.convertList(argList, (o)->{
     					return SchemeUtils.toString(o);
     				});
     				Component c  = guiRemoveByPath( parent, path );
@@ -404,7 +407,7 @@ class PulsarGui {
     		public Object applyN(Object[] args) throws Throwable {
     			if ( 1 == args.length ) {
         			Container parent = (Container) args[0];
-        			Collection<Entry<String, Component>> list =  guiListAll(parent);
+        			List<Entry<String, Component>> list =  guiListAll(parent);
     				SchemeUtils.<Entry<String, Component>, Pair>convertList(list, (e)->{
     					String key = e.getKey();
     					return Pair.make(
@@ -412,9 +415,9 @@ class PulsarGui {
     				});
 					return Pair.makeList( (List)list );
     			} else if ( 1 < args.length ) {
-        			ArrayDeque<Object> argList = new ArrayDeque<>( Arrays.asList(args) );
-        			Container parent = (Container) SchemeUtils.schemeNullCheck(argList.pop());
-        			Collection<String> path = SchemeUtils.convertList(argList, (o)->{
+        			ArrayList<Object> argList = new ArrayList<>( Arrays.asList(args) );
+        			Container parent = (Container) SchemeUtils.schemeNullCheck(argList.remove(0));
+        			List<String> path = SchemeUtils.convertList(argList, (o)->{
     					return SchemeUtils.toString(o);
     				});
         			
@@ -1080,7 +1083,7 @@ class PulsarGui {
 	public Component guiGet( Container parent, Collection<String> path ) {
 		return guiResolve( parent, path,  false );
 	}
-	public Collection<Entry<String, Component>> guiListAll( Container parent ) {
+	public List<Entry<String, Component>> guiListAll( Container parent ) {
 		ArrayList<Entry<String, Component>> list = new ArrayList<>();
 		if ( parent instanceof JNamedPanel  ) {
 			for ( Iterator<Entry<String, Component>> iterator = ((JNamedPanel)parent).listAllComponent();
@@ -1596,6 +1599,9 @@ class PulsarGui {
 		}
 		
 		// INIT_03
+		/**
+		 * This method is called whenever the frame is created.
+		 */
 		@Override
 		public void init(){
 			super.init();

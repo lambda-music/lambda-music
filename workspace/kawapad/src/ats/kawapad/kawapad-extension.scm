@@ -53,61 +53,40 @@
 
 ; get-variables frame)
 ;(invoke ((java.lang.Class:getMethods frame:class) 0 ) 'getName  )
-(define (show-completion parent e ) 
-  (let ((popup (javax.swing.JPopupMenu))
-        (jlist (javax.swing.JList) )
-        (text-area (javax.swing.JTextArea "hello" ))
-        )                 
-    (popup:addPopupMenuListener
-     (object (javax.swing.event.PopupMenuListener)
-             ((popupMenuWillBecomeVisible e)
-              (text-area:request-focus)
-              )
-             ((popupMenuWillBecomeInvisible e)
-              (newline)
-              )
-             ((popupMenuCanceled e)
-              (newline)
-              )))
-
-    (jlist:setListData (apply object[]  (get-variables frame ) )  )
-    ; (jlist:setPreferredSize (java.awt.Dimension 200 300 ) )
-    ; (popup:add (javax.swing.JMenuItem "hello" ))
-    ;(popup:add (javax.swing.JMenuItem "hoo" ))
-    ;(popup:add (javax.swing.JButton "hoo" ))
-    (popup:add text-area)
-    (popup:add (javax.swing.JScrollPane jlist ))
-    (popup:show parent e:x e:y )))
-
+; (define (show-completion parent e ) 
+;   (let ((popup (javax.swing.JPopupMenu))
+;         (jlist (javax.swing.JList) )
+;         (text-area (javax.swing.JTextArea "hello" ))
+;         )                 
+;     (popup:addPopupMenuListener
+;      (object (javax.swing.event.PopupMenuListener)
+;              ((popupMenuWillBecomeVisible e)
+;               (text-area:request-focus)
+;               )
+;              ((popupMenuWillBecomeInvisible e)
+;               (newline)
+;               )
+;              ((popupMenuCanceled e)
+;               (newline)
+;               )))
+; 
+;     (jlist:setListData (apply object[]  (get-variables frame ) )  )
+;     ; (jlist:setPreferredSize (java.awt.Dimension 200 300 ) )
+;     ; (popup:add (javax.swing.JMenuItem "hello" ))
+;     ;(popup:add (javax.swing.JMenuItem "hoo" ))
+;     ;(popup:add (javax.swing.JButton "hoo" ))
+;     (popup:add text-area)
+;     (popup:add (javax.swing.JScrollPane jlist ))
+;     (popup:show parent e:x e:y )))
+; 
 
 ; Example 
 ; (show-completion frame:text-pane frame:text-pane:caret:magic-caret-position )
 
 
-; This creates a window and set a mouselistener to show a popup menu.
-(define init-completion (lambda ()
-                          (let ((menu-bar (javax.swing.JMenuBar))
-                                (this-frame (javax.swing.JFrame 
-                                              visible:#t 
-                                              size:(java.awt.Dimension 500 500 )
-                                              ))
-                                )
-                            (menu-bar:add (javax.swing.JMenu "hello" ))
-                            (this-frame:set-j-menu-bar menu-bar)
-                            (this-frame:addMouseListener
-                              (object (java.awt.event.MouseAdapter) 
-                                      ((mousePressed e)
-                                       (display 'hello)
-                                       (newline)
-                                       (if (e:isPopupTrigger)
-                                         (show-completion e:component e )
-                                         #f
-                                         )
-                                       ))))
-                          ))
-; (init-completion)
 
 
+#|
 (define-class class-show-completion (javax.swing.AbstractAction) 
               ((actionPerformed e)
                (display 'hello)
@@ -118,101 +97,152 @@
                        ))
               )
 
-(class-show-completion)
+|#
+
+; don't execute it now.
+; (class-show-completion)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ; (ats.pulsar.editor.PulsarScratchPad:lookupCorrespondingParenthesis "(hello)" 5 )
 
 ;(register-event-handler 'caret 'test)
 
-(define-class jump-to-corresponding-parenthesis-action (javax.swing.text.TextAction)
-              ((*init* (name ::java.lang.String)(with-select-0 ::boolean))
-               (invoke-special javax.swing.text.TextAction (this) '*init* name)
-               (set! with-select with-select-0)
-               ((this):putValue javax.swing.Action:ACCELERATOR_KEY (javax.swing.KeyStroke:getKeyStroke 
-                                                                    java.awt.event.KeyEvent:VK_G
-                                                                    (if with-select
-                                                                      (+ java.awt.event.KeyEvent:CTRL_MASK
-                                                                         java.awt.event.KeyEvent:SHIFT_MASK )
-                                                                      java.awt.event.KeyEvent:CTRL_MASK ))))
-              (with-select ::boolean 5)
-                                                  
-              ;((*init*) #!void)
-              ((actionPerformed e)
-               (display (this))
-               (newline)
-               (let* ((text-pane ((this):getTextComponent e ))
-                      (pos
-                       (ats.kawapad.KawaPad:lookupCorrespondingParenthesis 
-                        text-pane:text 
-                        text-pane:caret:dot )
-                       ))
-                 (if (<= 0 pos)
-                   (begin
-                    (if with-select 
-                      (text-pane:caret:move-dot pos)
-                      (set! text-pane:caret:dot pos)
-                      )
-                    #t)
-                   #f)))
-              (x 1)
-              (init: (begin
-                      ((this):putValue javax.swing.Action:NAME        (->java.lang.String "Jump to the Corresponding Parenthesis" ))
-                      ((this):putValue ats.pulsar.lib.swing.Action2:NAME (->java.lang.String "Jump to the Corresponding Parenthesis" ))
-                      ((this):putValue javax.swing.Action:MNEMONIC_KEY  (->java.lang.Integer (char->integer #\p ) ))
-                      )))
 
+
+
+
+; ========================================================
+; init-proc is called whenever a scheme object is created.
+; ========================================================
 (define init-proc (lambda (frame)
                     (set! lisp-words (append default-lisp-words
                                              '(object append define-class define-simple-class )
                                              '(register-event-handler unregister-event-handler )
                                              ))))
 
-
 (register-event-handler 'init 'init-0 init-proc )
 
+
+; ========================================================
+; create-proc is called whenever a FRAME object is created.
+; ========================================================
 (define create-proc (lambda (frame)
-                    (set! lisp-words (append default-lisp-words
-                                             '(object append define-class define-simple-class )
-                                             '(register-event-handler unregister-event-handler )
-                                             ))
+                      (display "==================")
+                      (display 'create-proc)
+                      (display "==================")
+                      (newline)
+                      ; ========================================================
+                      ; Note : all procedures that register event handlers should be executed in (create-proc).
+                      ; (Tue, 06 Aug 2019 17:36:50 +0900)
+                      ; ========================================================
 
-                    ((frame:j-menu-bar:get-menu 1):add (javax.swing.JMenuItem (jump-to-corresponding-parenthesis-action "hello1" #t)))
-                    ((frame:j-menu-bar:get-menu 1):add (javax.swing.JMenuItem (jump-to-corresponding-parenthesis-action "hello2" #f)))
+                      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-                    (frame:text-pane:addMouseListener
-                      (object (java.awt.event.MouseAdapter) 
-                              ((mousePressed e)
-                               (display 'hello)
-                               (newline)
-                               (if (e:isPopupTrigger)
-                                 (let ((popup (javax.swing.JPopupMenu))
-                                       (jlist (javax.swing.JList) )
-                                       (text-area (javax.swing.JTextArea "hello" ))
-                                       )                 
-                                   (popup:addPopupMenuListener
-                                     (object (javax.swing.event.PopupMenuListener)
-                                             ((popupMenuWillBecomeVisible e)
-                                              (text-area:request-focus)
-                                              )
-                                             ((popupMenuWillBecomeInvisible e)
-                                              (newline)
-                                              )
-                                             ((popupMenuCanceled e)
-                                              (newline)
-                                              )))
+                      ; This creates a window and set a mouselistener to show a popup menu.
+                      ;(define init-completion (lambda ()
+                      ;                          (let ((menu-bar (javax.swing.JMenuBar))
+                      ;                                (this-frame (javax.swing.JFrame 
+                      ;                                              visible:#t 
+                      ;                                              size:(java.awt.Dimension 500 500 )
+                      ;                                              ))
+                      ;                                )
+                      ;                            (menu-bar:add (javax.swing.JMenu "hello" ))
+                      ;                            (this-frame:set-j-menu-bar menu-bar)
+                      ;                            (this-frame:addMouseListener
+                      ;                              (object (java.awt.event.MouseAdapter) 
+                      ;                                      ((mousePressed e)
+                      ;                                       ; (display 'hello)
+                      ;                                       ; (newline)
+                      ;                                       (if (e:isPopupTrigger)
+                      ;                                         (show-completion e:component e )
+                      ;                                         #f
+                      ;                                         )
+                      ;                                       ))))
+                      ;                          ))
+                      ; This class is not completed. Don't execute it.
+                      ; (Tue, 06 Aug 2019 17:35:09 +0900)
+                      ; (init-completion)
 
-                                   (jlist:setListData (apply object[]  get-variables frame ))
-                                   ; (jlist:setPreferredSize (java.awt.Dimension 200 300 ) )
-                                   ; (popup:add (javax.swing.JMenuItem "hello" ))
-                                   ;(popup:add (javax.swing.JMenuItem "hoo" ))
-                                   ;(popup:add (javax.swing.JButton "hoo" ))
-                                   (popup:add text-area)
-                                   (popup:add (javax.swing.JScrollPane jlist ))
-                                   (popup:show e:component e:x e:y )
+                      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+                      (define-class jump-to-corresponding-parenthesis-action (javax.swing.text.TextAction)
+                                    ((*init* (name ::java.lang.String)(with-select-0 ::boolean))
+                                     (invoke-special javax.swing.text.TextAction (this) '*init* name)
+                                     (set! with-select with-select-0)
+                                     ((this):putValue javax.swing.Action:ACCELERATOR_KEY (javax.swing.KeyStroke:getKeyStroke 
+                                                                                           java.awt.event.KeyEvent:VK_G
+                                                                                           (if with-select
+                                                                                             (+ java.awt.event.KeyEvent:CTRL_MASK
+                                                                                                java.awt.event.KeyEvent:SHIFT_MASK )
+                                                                                             java.awt.event.KeyEvent:CTRL_MASK ))))
+                                    (with-select ::boolean 5)
+
+                                    ;((*init*) #!void)
+                                    ((actionPerformed e)
+                                     (display (this))
+                                     (newline)
+                                     (let* ((text-pane ((this):getTextComponent e ))
+                                            (pos
+                                              (ats.kawapad.KawaPad:lookupCorrespondingParenthesis 
+                                                text-pane:text 
+                                                text-pane:caret:dot )
+                                              ))
+                                       (if (<= 0 pos)
+                                         (begin
+                                           (if with-select 
+                                             (text-pane:caret:move-dot pos)
+                                             (set! text-pane:caret:dot pos)
+                                             )
+                                           #t)
+                                         #f)))
+                                    (x 1)
+                                    (init: (begin
+                                             ((this):putValue javax.swing.Action:NAME        (->java.lang.String "Jump to the Corresponding Parenthesis" ))
+                                             ((this):putValue ats.pulsar.lib.swing.Action2:NAME (->java.lang.String "Jump to the Corresponding Parenthesis" ))
+                                             ((this):putValue javax.swing.Action:MNEMONIC_KEY  (->java.lang.Integer (char->integer #\p ) ))
+                                             )))
+
+                      ((frame:j-menu-bar:get-menu 1):add (javax.swing.JMenuItem (jump-to-corresponding-parenthesis-action "hello1" #t)))
+                      ((frame:j-menu-bar:get-menu 1):add (javax.swing.JMenuItem (jump-to-corresponding-parenthesis-action "hello2" #f)))
+
+                      (display 'frame:text-pane:addMouseListener )
+                      (newline)
+                      (frame:text-pane:addMouseListener
+                        (object (java.awt.event.MouseAdapter) 
+                                ((mousePressed e)
+                                 (display "hello-hello")
+                                 (newline)
+                                 (if (e:isPopupTrigger)
+                                   (let ((popup (javax.swing.JPopupMenu))
+                                         (jlist (javax.swing.JList) )
+                                         (text-area (javax.swing.JTextArea "hello" ))
+                                         )                 
+                                     (popup:addPopupMenuListener
+                                       (object (javax.swing.event.PopupMenuListener)
+                                               ((popupMenuWillBecomeVisible e)
+                                                (text-area:request-focus)
+                                                )
+                                               ((popupMenuWillBecomeInvisible e)
+                                                (newline)
+                                                )
+                                               ((popupMenuCanceled e)
+                                                (newline)
+                                                )))
+
+                                     (jlist:setListData (apply object[]  get-variables frame ))
+                                     ; (jlist:setPreferredSize (java.awt.Dimension 200 300 ) )
+                                     ; (popup:add (javax.swing.JMenuItem "hello" ))
+                                     ;(popup:add (javax.swing.JMenuItem "hoo" ))
+                                     ;(popup:add (javax.swing.JButton "hoo" ))
+                                     (popup:add text-area)
+                                     (popup:add (javax.swing.JScrollPane jlist ))
+                                     (popup:show e:component e:x e:y )
+                                     )
+                                   #f
                                    )
-                                 #f
-                                 )
-                               )))))
+                                 )))))
 
 (register-event-handler 'create 'create-0 create-proc )
 

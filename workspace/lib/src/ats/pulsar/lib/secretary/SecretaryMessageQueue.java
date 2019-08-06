@@ -73,6 +73,11 @@ public abstract class SecretaryMessageQueue<R> implements SecretaryMessageExecut
 		thread.start();
 	}
 
+	// ADDED (Tue, 06 Aug 2019 19:17:35 +0900)
+	public <T,E extends Throwable> T executeWithoutSecretarially( SecretaryMessage<R,T,E> message, Object... args ) throws E {
+		return message.execute( getExecutive(), args );
+	}
+	
 	@Override
 	public <T,E extends Throwable> T executeSecretarially( SecretaryMessage<R,T,E> message, Object... args ) throws E {
 		if ( message == null )

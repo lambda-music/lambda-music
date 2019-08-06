@@ -47,12 +47,12 @@ public abstract class MetroSequence implements MetroTrackInfo {
 			throw new RuntimeException( "No ParentPlayer is specified." );
 	}
 	@Override
-	public String getTrackName() {
+	public Object getTrackName() {
 		check();
 		return trackInfo.getTrackName();
 	}
 	@Override
-	public Set<String> getTrackTags() {
+	public Set<Object> getTrackTags() {
 		check();
 		return trackInfo.getTrackTags();
 	}

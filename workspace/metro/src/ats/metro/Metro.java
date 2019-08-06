@@ -49,6 +49,7 @@ import org.jaudiolibs.jnajack.JackTimebaseCallback;
 import org.jaudiolibs.jnajack.JackTransportState;
 
 import ats.metro.MetroTrack.SyncType;
+import ats.pulsar.lib.secretary.Invokable;
 
 /**
  * 
@@ -213,18 +214,16 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		List<MetroTrack> tempAllTracks = replicateAllTracks();
 		for ( Iterator<MetroTrack> i=tempAllTracks.iterator(); i.hasNext(); ) {
 			MetroTrack track = i.next();
-			logWarn( track.name );
+			logWarn( "" + track.name );
 		}
 		logWarn( "Dump all tracks <=== " );
 	}
 	
 	public Collection<MetroTrack> getTrackByTag( String tag ) {
-		return searchTracksByTag(tag);
+		return searchTracksByTag( tag );
 	}
 	
-	
-
-	public MetroTrack createTrack( String name, Collection<String> tags, MetroSequence sequence ) {
+	public MetroTrack createTrack( Object name, Collection<Object> tags, MetroSequence sequence ) {
 		return new MetroTrack( this, name, tags, sequence );
 	}
 
@@ -268,45 +267,60 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 			return new ArrayList<MetroTrack>( this.tracks );
 		}
 	}
+
+//	if ( name.endsWith("!" ) ) {
+//		if ( "last!".equals( name )) {
+//			if ( tempAllTracks.size() == 0 ) {
+//				if ( DEBUG ) logInfo( "searchTrack() last! null (last! was specified but the current track contains no element)" );
+//				return null;
+//			} else {
+//				if ( DEBUG ) logInfo( "searchTrack() last!" );
+//				return tempAllTracks.get( tempAllTracks.size() -1 );
+//			}
+//		} else if ( "first!".equals( name )) {
+//			if ( tempAllTracks.size() == 0 ) {
+//				if ( DEBUG ) logInfo( "searchTrack() first! null (first! was specified but the current track contains no element)" );
+//				return null;
+//			} else {
+//				if ( DEBUG ) logInfo( "searchTrack() first!" );
+//				return tempAllTracks.get( tempAllTracks.size() -1 );
+//			}
+//		} else {
+//			return tempAllTracks.get( Integer.parseInt( name.substring(0,name.length()-1) ) );
+//		}
+//	} else {
+
+	
+	public List<MetroTrack> searchTrack( Invokable invokable ) {
+		List<MetroTrack> tempAllTracks = replicateAllTracks();
+		List<MetroTrack> resultAllTracks = new ArrayList<>();
+
+		for ( Iterator<MetroTrack> i=tempAllTracks.iterator(); i.hasNext(); ) {
+			MetroTrack track = i.next();
+			if ( Boolean.FALSE.equals( invokable.invoke( track.name ) ) ) {
+				continue;
+			} else {
+				resultAllTracks.add( track );
+			}
+		}
+		if ( DEBUG )
+			logInfo( "searchTrack() null" );
+		//			logWarn( "searchTrack() WARNING \"" + name + "\"  was not found." );
+		return resultAllTracks;
+	}
 	
 	public MetroTrack searchTrack( String name ) {
 		if ( name == null ) throw new NullPointerException( "name was null" );
-		
-		List<MetroTrack> tempAllTracks = replicateAllTracks();
-
-		if ( name.endsWith("!" ) ) {
-			if ( "last!".equals( name )) {
-				if ( tempAllTracks.size() == 0 ) {
-					if ( DEBUG ) logInfo( "searchTrack() last! null (last! was specified but the current track contains no element)" );
-					return null;
-				} else {
-					if ( DEBUG ) logInfo( "searchTrack() last!" );
-					return tempAllTracks.get( tempAllTracks.size() -1 );
-				}
-			} else if ( "first!".equals( name )) {
-				if ( tempAllTracks.size() == 0 ) {
-					if ( DEBUG ) logInfo( "searchTrack() first! null (first! was specified but the current track contains no element)" );
-					return null;
-				} else {
-					if ( DEBUG ) logInfo( "searchTrack() first!" );
-					return tempAllTracks.get( tempAllTracks.size() -1 );
-				}
-			} else {
-				return tempAllTracks.get( Integer.parseInt( name.substring(0,name.length()-1) ) );
+		List<MetroTrack> list = searchTrack( new Invokable() {
+			@Override
+			public Object invoke(Object... args) {
+				return name.equals( args[0] );
 			}
-		} else {
-			name = name.intern();
-			for ( Iterator<MetroTrack> i=tempAllTracks.iterator(); i.hasNext(); ) {
-				MetroTrack track = i.next();
-				if ( track.name == name ) {
-					return track;
-				}
-			}
-			if ( DEBUG )
-				logInfo( "searchTrack() null" );
-			//			logWarn( "searchTrack() WARNING \"" + name + "\"  was not found." );
+		});
+		if ( list.size() == 0 ) 
 			return null;
-		}
+		else
+			return list.remove(0);
 	}
 
 	private Collection<MetroTrack> searchTracksByTagImpl( String tag, 
@@ -889,15 +903,26 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	 */
     public void registerTrack( MetroTrack track ) {
     	checkState();
-
 		if ( DEBUG ) 
-			logInfo( "****** CREATED a new track is created " + track.id );
+			logInfo( "MetroTrack#registerTrack(MetroTrack)" );
 		
 		if ( track == null )
-			throw new NullPointerException( "track was null" );
+			throw new NullPointerException( "track is null" );
 		
 		synchronized (getMetroLock()) {
 			this.registeredTracks.add( track );
+		}
+	}
+    public void registerTrack( Collection<MetroTrack> trackList ) {
+    	checkState();
+		if ( DEBUG ) 
+			logInfo( "MetroTrack#registerTrack(Collection)" );
+		
+		if ( trackList == null )
+			throw new NullPointerException( "the passed list is null" );
+		
+		synchronized (getMetroLock()) {
+			this.registeredTracks.addAll( trackList );
 		}
 	}
     
@@ -917,6 +942,19 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 			throw new NullPointerException( "track was null" );
 		synchronized (getMetroLock()) {
 			this.unregisteredTracks.add( track );
+		}
+    }
+    public void unregisterTrack( Collection<MetroTrack> trackList ) {
+    	checkState();
+
+		if ( DEBUG ) 
+			logInfo( "MetroTrack#unregisterTrack(Collection)" );
+
+		if ( trackList == null )
+			throw new NullPointerException();
+		
+		synchronized (getMetroLock()) {
+			this.unregisteredTracks.addAll( trackList );
 		}
     }
     
@@ -939,15 +977,15 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	}
     
     public void putTrack( MetroTrack track, SyncType syncType, MetroTrack syncTrack, double syncOffset )  {
-    	if ( track == null )
-    		addTrack(track, syncType, syncTrack, syncOffset);
-    	else
-    		deleteTrack( track, syncType, syncTrack, syncOffset); 
-    }
-    public void addTrack( MetroTrack track, SyncType syncType, MetroTrack syncTrack, double syncOffset )  {
     	registerTrack( track.setSyncStatus( syncType, syncTrack, syncOffset ) );
     }
-    public void deleteTrack( MetroTrack track, SyncType syncType, MetroTrack syncTrack, double syncOffset )  {
+    public void putTrack( Collection<MetroTrack> trackList, SyncType syncType, MetroTrack syncTrack, double syncOffset )  {
+    	for ( MetroTrack track : trackList ) {
+    		track.setSyncStatus( syncType, syncTrack, syncOffset );
+    	}
+    	registerTrack( trackList );
+    }
+    public void removeTrack( MetroTrack track, SyncType syncType, MetroTrack syncTrack, double syncOffset )  {
     	switch ( syncType ) {
     		case IMMEDIATE :
     	    	unregisterTrack( track );
@@ -957,6 +995,23 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 //				break;
 			case SERIAL :
     			track.removeGracefully();
+    			break;
+    	}
+    }
+    public void removeTrack( Collection<MetroTrack> trackList, SyncType syncType, MetroTrack syncTrack, double syncOffset )  {
+    	switch ( syncType ) {
+    		case IMMEDIATE :
+    	    	for ( MetroTrack track : trackList ) {
+    	    		unregisterTrack( track );
+    	    	}
+    			break;
+    		case PARALLEL :
+    			throw new UnsupportedOperationException();
+//				break;
+			case SERIAL :
+    	    	for ( MetroTrack track : trackList ) {
+    	    		track.removeGracefully();
+    	    	}
     			break;
     	}
     }

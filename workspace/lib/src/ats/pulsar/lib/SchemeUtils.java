@@ -25,7 +25,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -118,6 +117,9 @@ public class SchemeUtils {
 		return Symbol.valueOf( string );
 	}
 
+	// If it is allowed to return null (in case such return type is Object), then
+	// return null. Otherwise, ( in case such return type is double) then throw an
+	// error. (Tue, 06 Aug 2019 14:41:05 +0900) 
 	public static String anyToString( Object schemeVal ) {
 		// modified (Wed, 31 Jul 2019 21:51:55 +0900)
 		// reverted (Sun, 04 Aug 2019 21:52:21 +0900)  
@@ -184,12 +186,12 @@ public class SchemeUtils {
 		return list;
 	}
 	
-	public static <P,T> Collection<T> convertList(Collection<P> list, Function<P,T> f) {
+	public static <P,T> List<T> convertList(List<P> list, Function<P,T> f) {
 		return list.stream().map(f).collect(Collectors.toList());
 	}
 	
-	public static Collection<String> symbolListToStringList(Pair p) {
-		return SchemeUtils.<Object,String>convertList((Collection<Object>)p, (v)->SchemeUtils.symbolToString(v) );
+	public static List<String> symbolListToStringList(Pair p) {
+		return SchemeUtils.<Object,String>convertList((List<Object>)p, (v)->SchemeUtils.symbolToString(v) );
 	}
 	
 	public static IString toSchemeString( String value ) {

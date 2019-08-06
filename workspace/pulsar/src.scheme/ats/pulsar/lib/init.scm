@@ -361,7 +361,6 @@
 
 
 
-
 ; from https://stackoverflow.com/questions/8028490/mapping-uneven-lists-help-scheme
 (define (map-longest func filler . lists)
   (define (car-or-filler x)

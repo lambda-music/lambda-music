@@ -94,8 +94,8 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 	/**
 	 * Note that the String object which is stored in name field must be interned.  
 	 */
-	protected final String name;
-	protected final Set<String> tags;
+	protected final Object name;
+	protected final Set<Object> tags;
 	protected final MetroSequence sequence;
 
 	protected transient boolean prepared = false;
@@ -143,11 +143,12 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 	 * @param sequence
 	 *            Specifying the sequence object to play.
 	 */
-	MetroTrack( Metro metro, String name, Collection<String> tags, MetroSequence sequence ) {
+	MetroTrack( Metro metro, Object name, Collection<Object> tags, MetroSequence sequence ) {
 		if ( name == null )
 			this.name = createUniqueTrackName();
 		else
-			this.name = name.intern();
+			this.name = checkName( name );
+		
 		
 		if ( tags == null )
 			this.tags = new HashSet<>();
@@ -172,6 +173,14 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 		}
 	}
 	
+	private static Object checkName( Object name ) {
+		if ( name instanceof String ) {
+			return ((String)name).intern();
+		} else {
+			return name;
+		}
+	}
+	
 	@Override
 	public Object getMetroLock() {
 		return this.metro.getMetroLock();
@@ -181,11 +190,11 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 		return this.sequence;
 	}
 	@Override
-	public String getTrackName() {
+	public Object getTrackName() {
 		return name;
 	}
 	@Override
-	public Set<String> getTrackTags() {
+	public Set<Object> getTrackTags() {
 		return tags;
 	}
 	
