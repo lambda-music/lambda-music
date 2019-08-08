@@ -1,0 +1,15 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2019-08-08T11:59:41+09:00
+
+====== Architecture ======
+Created Thursday 08 August 2019
+
+===== The Initialization Process of Pulsar Sequencer =====
+
+The script kawapad-extension.scm is executed whenever a KawaPad class is loaded. The script file is executed by KawaPad.init(). KawaPad has an event management system. The system has CREATE event and INIT event and they are distinct events. Understanding the difference between two is crucial. CREATE event is executed only when KawaPad class is loaded to JVM; in the meantime INIT event is  executed every time KawaPad is instantiated.
+
+===== quit() / close() / shutdown() =====
+* quit() is to ask the current interfaces to quit. The interface can deny.
+* close() is to close the current jack connection and reset scheme object. A user can eagerly reopen the scheme object.
+* shutdown() is to shutdown the application.

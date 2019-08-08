@@ -231,8 +231,8 @@
 
 
 (define main (lambda () (list (len 4/4))))
-(set-main!   (lambda()
-               (display-warn "====set-main! SET-MAIN!  ========\n" )
+(set-main   (lambda()
+               (display-warn "====set-main SET-MAIN ========\n" )
                (newline-warn)
                (put-track  (new-track 'main (lambda args
                                               (apply main args ))))))
@@ -242,21 +242,21 @@
 
 (if (not (open?))
   (begin 
-    ;(close!)
-    (open!     "pulsar" )
-    (output!   "out-h2" "out-counter" "out-fluidsynth" )
-    (input!    "MIDI Input0"  "MIDI Input1"  )
-    (set-tempo! 120)
+    ;(close)
+    (open     "pulsar" )
+    (output   "out-h2" "out-counter" "out-fluidsynth" )
+    (input    "MIDI Input0"  "MIDI Input1"  )
+    (set-tempo 120)
 
-    (connect!  "pulsar:out-h2"         "hydrogen-midi:RX" )
-    (connect!  "pulsar:out-counter"    "qsynth-counter:midi" )
-    (connect!  "pulsar:out-fluidsynth" "qsynth-fluidsynth:midi" )
+    (connect  "pulsar:out-h2"         "hydrogen-midi:RX" )
+    (connect  "pulsar:out-counter"    "qsynth-counter:midi" )
+    (connect  "pulsar:out-fluidsynth" "qsynth-fluidsynth:midi" )
 
-    (set-related-files! '( "./pulsar-ex00.scm"
+    (set-related-files '( "./pulsar-ex00.scm"
                            "./test01.scm" 
                            "./test02.scm" 
                            "./test03.scm" ))
-    (rewind!)))
+    (rewind)))
 
 
 ; vim: filetype=scheme expandtab :

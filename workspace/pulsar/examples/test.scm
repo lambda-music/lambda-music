@@ -2,8 +2,35 @@
 (play!)
 (close!)
 (quit!)
+(list? (ls))
+
+(remt (gett 'hello1) 's)
+(putt (newt 'hello1 (n             chan: 1 port: 0 (melody '( do re mi sol end ) ) ) ) 'serial (gett 'main))  
+(putt (newt 'hello1 (n             chan: 1 port: 2 (melody '( do re mi sol end ) ) ) ) 'serial (gett 'main))  
+(putt (newt 'count1 
+            (n 
+              (n type: 'note chan: 1 port: 1 
+                 velo: << (cl 0.8) 
+                 len:  << (cl 1/4 ) 
+                 pos:  << (cl 0/4 1/4 2/4 3/4 4/4 )
+                 note: >> 60 61 62 63 64  )
+              (n type: 'len val: 5/4 ))
+            )
+      's (gett 'main))
+
+(remt (gett  'hello1  ))
+(remt (gett  'count1  ))
+(n  pos: >> 1 2 3  )
+(ap 5 2)
+(ls)
+(remt (gett 'hello1  ))
+(gett 'hello1 'hello2 )
+(remt (gett 'hello2 ))
+
+
 
 trackset-manager
+
 (send!
   (n chan: 0 port: 0 
      (p
@@ -199,5 +226,23 @@ trackset-manager
 (send2! 
   (n chan: 0 port: 2 
      (melody '( o 4 do 1/5 re mi fi sol re , mi ' fi sol la mi , fi ' sol la ti end ))))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ; vim: expandtab :

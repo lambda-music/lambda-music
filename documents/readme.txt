@@ -62,8 +62,9 @@
         main file `pulsar.jar` to any location where it is convenient.
 
     = Execution
-        Pulsar is simply an executable JAR file; before executing Pulsar, please
-        make sure `java` is placed on a directory in `PATH`, and then execute 
+        Pulsar is compiled into an executable JAR file; before executing Pulsar,
+        please make sure `java` is placed on a directory in `PATH`, and then
+        execute 
 
             `java -jar (directory where you placed jar)/pulsar.jar`
 

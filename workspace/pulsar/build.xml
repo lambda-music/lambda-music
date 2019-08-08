@@ -9,14 +9,19 @@
     <target name="create_run_jar">
         <jar destfile="${dir.jarfile}/pulsar.jar" filesetmanifest="mergewithoutmain">
             <manifest>
-                <attribute name="Main-Class" value="ats.pulsar.Pulsar"/>
+                <attribute name="Main-Class" value="pulsar.Pulsar"/>
                 <attribute name="Class-Path" value="."/>
             </manifest>
             <fileset dir="${dir.jarfile}/bin"/>
-            <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/pulsar-lib/lib/jna-4.5.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/pulsar-lib/lib/jna-platform-4.5.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/pulsar-lib/lib/jnajack-1.3.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/pulsar-lib/lib/kawa.jar"/>
+            <fileset dir="${dir.workspace}/lib/bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/lib/lib/jna-4.5.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/lib/lib/jna-platform-4.5.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/lib/lib/jnajack-1.3.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/lib/lib/kawa.jar"/>
+            <fileset dir="${dir.workspace}/metro/bin"/>
+            <fileset dir="${dir.workspace}/kawapad/bin"/>
+            <fileset dir="${dir.workspace}/kawapad/bin.scheme"/>
+            <fileset dir="${dir.jarfile}/bin.scheme"/>
         </jar>
     </target>
 </project>

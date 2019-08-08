@@ -9,7 +9,7 @@
 ;    Trackset
 ;    TrackFactoryAdapter 
 ;    SimpleTrack
-;    create-gui!
+;    create-gui
 ;
 ;==============================================================================================
 
@@ -78,7 +78,7 @@
                                                                  (cdr trackset-list)
                                                                  (list trackset))
                                                                ))
-                                                   (gui-build!
+                                                   (gui-build
                                                      (gui-get main-pane "TOOLBAR" "TRACKSET-SELECTION")
                                                      'index-from-last 1
                                                      (trackset 'gui))
@@ -146,7 +146,7 @@
                                                                    (cdr trackset-list)
                                                                    eq? ))
                                                        ; remove the trackset button from the toolbar.
-                                                       (gui-build!
+                                                       (gui-build
                                                          (gui-get main-pane "TOOLBAR" "TRACKSET-SELECTION")
                                                          'remove 
                                                          (trackset 'gui)
@@ -160,7 +160,7 @@
                                                      (if DEBUG (begin 
                                                                  (display 'clear-trackset-view)
                                                                  (newline) ))
-                                                     (gui-build!
+                                                     (gui-build
                                                        (gui-get main-pane "TRACKS")
                                                        'remove-all
                                                        'revalidate)))
@@ -207,7 +207,7 @@
                                                       (set-cdr! track-factory-list
                                                                 (cons track-factory track-factory-list))
                                                       
-                                                      (gui-build!
+                                                      (gui-build
                                                         (gui-get main-pane "TOOLBAR" "TRACK-CONSTRUCTOR")
                                                         'index-from-last 1
                                                         (track-factory 'create-track )
@@ -219,7 +219,7 @@
                                               (trackset-manager 'current-trackset trackset0)
                                               (trackset-manager 'update-trackset-buttons trackset0)
                                               (trackset0 'update-trackset-view )
-                                             #| (gui-build!
+                                             #| (gui-build
                                                 main-frame
                                                 'revalidate
                                                 'repaint
@@ -268,7 +268,7 @@
 
                                          ; Add the passed track's gui to the panel
                                          (let (( target-p (gui-get main-pane  "TRACKS")))
-                                           (gui-build!
+                                           (gui-build
                                              target-p 
                                              'index-from-last 1
                                              (track 'gui)
@@ -292,7 +292,7 @@
 
                                                        ; Add the passed track's gui to the panel
                                                        (let (( target-p (gui-get main-pane  "TRACKS")))
-                                                         (gui-build!
+                                                         (gui-build
                                                            target-p 
                                                            'index-from-last 1
                                                            (track 'gui)
@@ -332,7 +332,7 @@
                                                       (gui-remove-by-ref (gui-parent gui ) gui)))
 
                                                   (gui-repaint main-frame)
-                                                  (gui-pack!)
+                                                  (gui-pack)
                                                   (gui-validate main-pane)
                                                   (remove-track-loop (cdr ptrack)))))))
 
@@ -361,7 +361,7 @@
       ; public
       (self 'define 'method 'update-trackset-view (lambda ( self ) 
                                                     ;; (display 'update-trackset-view) (newline)
-                                                    (apply gui-build! (append
+                                                    (apply gui-build (append
                                                                         (list (gui-get main-pane  "TRACKS") )
                                                                         (list 'remove-all )
                                                                         (map 
@@ -474,18 +474,18 @@
                                     (eval (read (open-input-string (self 'read 'beat-offset)))))
                                   (enabled       (self 'read 'enabled)))
                               (if enabled
-                                (add-track! track-id 
-                                                   (lambda ()
-                                                     (let ((notes (n-swing beat-count measure-count 
-                                                                           (bind-pns (cdr (sym2val instrument inst-list )) 
-                                                                                     (cdr (sym2val pns-pattern pns-list )))) ))
-                                                       ; The notes object contains non-note objects, too.
-                                                       ; So we have to filter the list. 
-                                                       (m! (filter note? notes)
-                                                           velo: (lm (+ 1  (nc notes)) velo-values ))
-                                                       notes))
-                                                   'parallel 'main beat-offset)
-                                (del-track! track-id ))))))
+                                (put-track (new-track track-id 
+                                                      (lambda ()
+                                                        (let ((notes (n-swing beat-count measure-count 
+                                                                              (bind-pns (cdr (sym2val instrument inst-list )) 
+                                                                                        (cdr (sym2val pns-pattern pns-list )))) ))
+                                                          ; The notes object contains non-note objects, too.
+                                                          ; So we have to filter the list. 
+                                                          (n velo: (lm (+ 1  (nc notes)) velo-values )
+                                                             (filter note? notes))
+                                                          notes)))
+                                           'parallel (get-track 'main) beat-offset)
+                                (remove-track (get-track track-id)))))))
 
       (self 'define 'field 'track-id             track-id )
       (self 'define 'field 'enabled              #f )
@@ -495,7 +495,7 @@
       (self 'define 'field 'beat-offset          in-beat-offset )
       (self 'define 'field 'beat-count           in-beat-count )
       (self 'define 'field 'measure-count        in-measure-count)
-      (self 'define 'field 'gui                  (gui-build! 
+      (self 'define 'field 'gui                  (gui-build 
                                                    (gui-new 'group "Simple-Track" 'box javax.swing.BoxLayout:X_AXIS )
 
                                                    'constraint "hidden"
@@ -690,11 +690,11 @@
 ; (define main (lambda()
 ;                (list (len 4/4))))
 ; 
-; (set-main! (lambda()
-;              (display-warn "====set-main! SET-MAIN!  ========\n" )
+; (set-main (lambda()
+;              (display-warn "====set-main SET-MAIN  ========\n" )
 ;              (newline-warn)
 ;              (add-tracks 'main  (lambda args
-;                                 (display-warn "====set-main! SET-MAIN! INSIDE ========\n" )
+;                                 (display-warn "====set-main SET-MAIN INSIDE ========\n" )
 ;                                 (newline-warn)
 ;                                 (apply (eval 'main) args ))))))
 
@@ -726,14 +726,14 @@
 ;          +track
 ;          +track
 
-(define create-gui!
+(define create-gui
   (lambda()
-    (gui-clear!)
-    ;(gui-frame-divider-position! 500 )
-    (gui-frame-orientation!      'bottom)
-    (gui-frame-width! 800)
-    (gui-frame-height! 600)
-    (gui-frame-divider-position! 800)
+    (gui-clear)
+    ;(gui-frame-divider-position 500 )
+    (gui-frame-orientation      'bottom)
+    (gui-frame-width 800)
+    (gui-frame-height 600)
+    (gui-frame-divider-position 800)
     (gui-repaint (gui-get-pane) )
 
     (set! main-frame  (gui-new 'frame ))
@@ -757,16 +757,16 @@
       ((main-frame:getContentPane ):setBorder 
        (javax.swing.BorderFactory:createTitledBorder "CONTENT" )))
 
-    (gui-layout! (main-frame:getContentPane )  'border )
-    (gui-build! (main-frame:getContentPane )  main-pane)
+    (gui-layout (main-frame:getContentPane )  'border )
+    (gui-build (main-frame:getContentPane )  main-pane)
 
-    (gui-layout! main-pane  'border )
+    (gui-layout main-pane  'border )
 
     (if #f
       (main-pane:setBorder 
         (javax.swing.BorderFactory:createTitledBorder "MAIN-PANE" )))
 
-    (gui-build! 
+    (gui-build 
       main-pane
 
       ; DOCUMENT ABOUT THIS
@@ -778,12 +778,12 @@
 
       'constraint java.awt.BorderLayout:PAGE_START
       'name "TOOLBAR"
-      (gui-build! 
+      (gui-build 
         (gui-new 'panel 'box javax.swing.BoxLayout:Y_AXIS )
         (lambda (self ::javax.swing.JPanel)
           (self:setBorder (javax.swing.BorderFactory:createTitledBorder "Tools" )))
         'name "TRACKSET-MANAGEMENT"
-        (gui-build!
+        (gui-build
           (gui-new 'panel 'box javax.swing.BoxLayout:X_AXIS )
           (lambda (self ::javax.swing.JPanel)
             (self:setBorder (javax.swing.BorderFactory:createTitledBorder "Trackset Management" ))) 
@@ -799,7 +799,7 @@
           (gui-new 'button "Deactivate" (lambda (sel cmd usr src evt)
                                           ((trackset-manager 'current-trackset) 'set-enabled #f)))
           (gui-new 'button "Source"     (lambda (sel cmd usr src evt)
-                                          (gui-insert-text!
+                                          (gui-insert-text
                                             (string-append
                                               ((trackset-manager 'current-trackset) 'trackset-to-source )
                                               "\n")
@@ -818,7 +818,7 @@
                                                             (trackset-manager 'current-trackset))))
           )
         'name "TRACK-CONSTRUCTOR"
-        (gui-build!
+        (gui-build
           (gui-new 'panel 'box javax.swing.BoxLayout:X_AXIS )
           (lambda (self ::javax.swing.JPanel)
             (self:setBorder (javax.swing.BorderFactory:createTitledBorder "Track Construction" )))
@@ -829,7 +829,7 @@
           (javax.swing.Box:createHorizontalGlue ))
 
         'name "TRACKSET-SELECTION"
-        (gui-build!
+        (gui-build
           (gui-new 'panel 'box javax.swing.BoxLayout:X_AXIS )
           (lambda (self ::javax.swing.JPanel)
             (self:setBorder (javax.swing.BorderFactory:createTitledBorder "Trackset Selection" )))
@@ -842,7 +842,7 @@
 
       'constraint java.awt.BorderLayout:CENTER
       'name "TRACKS"
-      (gui-build!
+      (gui-build
         (gui-new 'group "Tracks" 'box javax.swing.BoxLayout:Y_AXIS )
         (javax.swing.Box:createVerticalGlue))
       'invalidate
@@ -853,35 +853,36 @@
     ; (add-track track2)
     ; (add-track track3)
 
-    (let ((trackset1 (xnew Trackset (new-trackset-id "trackset" ))))
-      (trackset-manager 'add-trackset     trackset1)
-      (trackset-manager 'current-trackset trackset1)
-      (trackset1 'add-track 
-                 (xnew SimpleTrack (new-track-id))
-                 (xnew SimpleTrack (new-track-id)))
+    (if #f
+      (let ((trackset1 (xnew Trackset (new-trackset-id "trackset" ))))
+        (trackset-manager 'add-trackset     trackset1)
+        (trackset-manager 'current-trackset trackset1)
+        (trackset1 'add-track 
+                   (xnew SimpleTrack (new-track-id))
+                   (xnew SimpleTrack (new-track-id)))
 
-      (trackset-manager 'update-trackset-buttons trackset1)
-      (trackset1 'update-trackset-view    )
+        (trackset-manager 'update-trackset-buttons trackset1)
+        (trackset1 'update-trackset-view    )
 
-      ; (let ((current-trackset (trackset-manager 'current-trackset))
-      ;       (track1 (xnew SimpleTrack (new-track-id)))
-      ;       (track2 (xnew SimpleTrack (new-track-id)))
-      ;       (track3 (xnew SimpleTrack (new-track-id))))
-      ;   ; (current-trackset 'add-track track1)
-      ;   ; (current-trackset 'add-track track2)
-      ;   ; (current-trackset 'add-track track3))
-      ;   #f
-      ;   )
-      )
+        ; (let ((current-trackset (trackset-manager 'current-trackset))
+        ;       (track1 (xnew SimpleTrack (new-track-id)))
+        ;       (track2 (xnew SimpleTrack (new-track-id)))
+        ;       (track3 (xnew SimpleTrack (new-track-id))))
+        ;   ; (current-trackset 'add-track track1)
+        ;   ; (current-trackset 'add-track track2)
+        ;   ; (current-trackset 'add-track track3))
+        ;   #f
+        ;   )
+        ))
 
     
 
-    (gui-pack!)
+    (gui-pack)
     (trackset-manager 'register-track-factory simple-track-factory )
     ))
 
 (newline)
-(create-gui!)
+; (create-gui)
 
 ; (display-warn "===================================" );
 ; (display-warn "pulsar-code-generator(2)" );
