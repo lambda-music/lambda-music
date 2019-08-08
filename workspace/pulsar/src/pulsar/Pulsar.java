@@ -1528,13 +1528,14 @@ public final class Pulsar extends Metro {
 				List<MetroTrack> tempAllTracks = replicateAllTracks(); 
 				ArrayList<Object> list = new ArrayList<>( tempAllTracks.size() );
 				for ( MetroTrack track :  tempAllTracks ) {
-					list.add( track.getTrackName() );
+					list.add( track );
 				}
+				Collections.reverse(list);
 				return Pair.makeList(list);
 
 			}
 		});
-		Procedure0 clr = new Procedure0("clear") {
+		Procedure0 clr = new Procedure0("clear-tracks") {
 			@Override
 			public Object apply0() throws Throwable {
 				clearTracks();

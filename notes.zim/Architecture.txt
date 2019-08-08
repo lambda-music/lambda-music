@@ -13,3 +13,18 @@ The script kawapad-extension.scm is executed whenever a KawaPad class is loaded.
 * quit() is to ask the current interfaces to quit. The interface can deny.
 * close() is to close the current jack connection and reset scheme object. A user can eagerly reopen the scheme object.
 * shutdown() is to shutdown the application.
+
+
+====== Side effects ======
+(Thu, 08 Aug 2019 18:50:26 +0900)
+The problem is side-effects. 
+{{{code: lang="scheme" linenumbers="True"
+(define a1 (n type: 'note velo: 0.5 ) )
+(define a2 (n type: 'note velo: 0.8 ) )
+(define l1 (list a1 a2))
+
+(eq? (car (n    a1 a2) ) a1) ; => #t
+(eq? (car (list a1 a2) ) a1) ; => #f
+
+
+}}}

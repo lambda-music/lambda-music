@@ -481,9 +481,10 @@
                                                                                         (cdr (sym2val pns-pattern pns-list )))) ))
                                                           ; The notes object contains non-note objects, too.
                                                           ; So we have to filter the list. 
-                                                          (n velo: (lm (+ 1  (nc notes)) velo-values )
-                                                             (filter note? notes))
-                                                          notes)))
+                                                          (n velo: << (lm (+ 1  (nc notes)) velo-values ) notes)
+                                                          ;notes ;;; comment out now (n) duplicates notation data.
+                                                                 ;;; (Thu, 08 Aug 2019 18:50:26 +0900)
+                                                          )))
                                            'parallel (get-track 'main) beat-offset)
                                 (remove-track (get-track track-id)))))))
 

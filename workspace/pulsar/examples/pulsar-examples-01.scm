@@ -3,11 +3,21 @@
    (load "./ats's-drumkit.scm" )
    (load "./pulsar-pattern-generator.scm" )
    (create-gui)
+
    ))
 
 ; (quit!)
 
+(n chan: 1 port: 1 (melody '(do re mi fi sol la end )) )
 
+
+
+
+((trackset-manager 'new-trackset) 'add-track 
+                                  (xnew SimpleTrack (new-track-id) 'inst-Ride-Bell 'pns-basic-one "(cl 1/4 1/4 3/4 )" "(+ -0/4 -0/32)" 9 2)
+                                  (xnew SimpleTrack (new-track-id) 'inst-Kick-Long 'pns-basic-one "'( 3/4 3/4 3/4 2/4 )" "(+ -0/4 -0/32)" 2 1)
+                                  (xnew SimpleTrack (new-track-id) 'inst-sn-33 'pns-basic-one "'( 2/4 2/4 2/4 3/4 )" "(+ -1/4 -0/32)" 2 1)
+                                  (xnew SimpleTrack (new-track-id) 'inst-SB-Kik22psoA1 'pns-two-four "(cl 2/4 3/4 1/4 4/4 )" "(+ -1/36 -0/32)" 9 1))
 
 
 (if #f (begin

@@ -146,6 +146,7 @@
 
 
 (define note? (make-notation-type-checker 'note))
+(define len?  (make-notation-type-checker 'len))
 
 
 
@@ -169,21 +170,22 @@
                                (display 'args)
                                (display args)
                                (newline)))
-  (let-values (((params mapvals notes default-param-name)
+  (let-values (((params mapvals notes default-param-name target-notation?)
                 ; parsing the args; filtering them into params and notes.
                 (let loop ((idx 0)
                            (args args)
                            (params '())
                            (mapvals '())
                            (notes '())
-                           (default-param-name #f))
+                           (default-param-name #f)
+                           (target-notation? note?))
                   (if debug-n-implementation (begin
                                                (display 'append-proc-args)
                                                (display args)
                                                (newline)))
                   (if (null? args)
                     ; end the loop
-                    (values params mapvals notes default-param-name)
+                    (values params mapvals notes default-param-name target-notation?)
                     ; process loop
                     (let ((e (car args)))
                       (cond
@@ -191,9 +193,10 @@
                          ; advance to next element.
                          (set! args (cdr args))
                          (if (null? args)
-                           ; 
+                           ; then
                            (raise '(invalid-argument-error . "insufficient number of argument error" ))
 
+                           ;else
                            ; if the current value is a keyword, then treat it as a property name.
                            ; Treat the next value as a property value.
                            ; (n velo: xx chan: aa ... )
@@ -208,12 +211,12 @@
                                ; value is specified in the note list, we treat the value as a
                                ; property value of the "default-param-name".  For further information,
                                ; see the examples in the comment following.
-                               ((and (keyword? v) (string=? (keyword->string v) ">>" ) )
+                               ((and (keyword? v) (string=? (keyword->string v) ">>" ))
                                 (if debug-n-implementation (begin
                                                              (display "n-implementation >> called k=")
                                                              (display k)
                                                              (newline)))
-                                (loop (+ idx 1) (cdr args)                  params mapvals notes k ))
+                                (loop (+ idx 1) (cdr args)                  params mapvals notes k target-notation?))
 
                                ; About "<<"  TODO
                                ((and (keyword? v) (string=? (keyword->string v) "<<" ) )
@@ -223,11 +226,17 @@
                                   (raise '(invalid-argument-error . "insufficient number of argument error" )))
 
                                 (let ((vv (car args)))
-                                  (loop (+ idx 1) (cdr args) params (cons (cons k vv) mapvals) notes default-param-name)))
+                                  (loop (+ idx 1) (cdr args) params (cons (cons k vv) mapvals) notes default-param-name target-notation?)))
+
+                               ; targ: set "target-notation?" (Thu, 08 Aug 2019 18:48:01 +0900)
+                               ((eq? k 'targ )
+                                (if (not (procedure? v))
+                                  (raise (cons 'illegal-argument-exception "non procedure value was passed to targ: " ) ))
+                                (loop (+ idx 1) (cdr args) params mapvals notes default-param-name v))
 
                                ; Treat as a normal parameter name.
                                (else
-                                (loop (+ idx 1) (cdr args) (cons (cons k v) params) mapvals notes default-param-name))))))
+                                (loop (+ idx 1) (cdr args) (cons (cons k v) params) mapvals notes default-param-name target-notation?))))))
 
                         ((pair? e)
                          ; error check
@@ -235,8 +244,8 @@
                            (raise '( invalid-argument-error . "a circular list is not allowed here." ) ))
 
                          (if (notation? e)
-                           (loop (+ idx 1 ) (cdr args) params mapvals (append-proc notes (list e)) default-param-name)
-                           (loop (+ idx 1 ) (cdr args) params mapvals (append-proc notes       e)  default-param-name)))
+                           (loop (+ idx 1 ) (cdr args) params mapvals (append-proc notes (list e)) default-param-name target-notation?)
+                           (loop (+ idx 1 ) (cdr args) params mapvals (append-proc notes       e)  default-param-name target-notation?)))
                         (else 
                           ; when it is neither a parameter nor a note.
                           (cond 
@@ -244,17 +253,17 @@
                              ; default it to params.
                              (cond
                                ((= idx 0)
-                                (loop (+ idx 1) (cdr args) (cons (cons 'note e) params) mapvals notes default-param-name))
+                                (loop (+ idx 1) (cdr args) (cons (cons 'note e) params) mapvals notes default-param-name target-notation?))
                                ((= idx 1)
-                                (loop (+ idx 1) (cdr args) (cons (cons 'pos  e) params) mapvals notes default-param-name))
+                                (loop (+ idx 1) (cdr args) (cons (cons 'pos  e) params) mapvals notes default-param-name target-notation?))
                                ((= idx 2)
-                                (loop (+ idx 1) (cdr args) (cons (cons 'velo e) params) mapvals notes default-param-name))
+                                (loop (+ idx 1) (cdr args) (cons (cons 'velo e) params) mapvals notes default-param-name target-notation?))
                                (else
                                  (raise '(invalid-argument-error . "illegal position as a default parameter value" ))))
                              ; otherwise, default it to notes.
                              )
                             ((eq? 'go-to-notes default-param-proc )
-                             (loop (+ idx 1) (cdr args) params mapvals (append-proc notes (list e)) default-param-name))
+                             (loop (+ idx 1) (cdr args) params mapvals (append-proc notes (list e)) default-param-name target-notation?))
                             ((eq? 'go-to-error default-param-proc )
                              (raise '(invalid-argument-error . "default parameter is not allowed here." ) ))
                             (else
@@ -284,41 +293,79 @@
                                  (set! note (list (cons  default-param-name note )))
                                  (raise '( illegal-state-error . "no default-param-name was specified." ))))
 
-                             (set! note 
-                               (sort-note-properties 
-                                 (cleanup-note-properties
-                                   (append 
-                                     ; duplicate each association. dont let it shared from multiple notes.
-                                     ; (Wed, 31 Jul 2019 16:19:53 +0900)
-                                     (ccons (reverse params))
-                                     note ))))
+                             (if (target-notation? note)
+                               (set! note 
+                                 (sort-note-properties 
+                                   (cleanup-note-properties
+                                     (append 
+                                       ; duplicate each association. dont let it shared from multiple notes.
+                                       ; (Wed, 31 Jul 2019 16:19:53 +0900)
+                                       (ccons (reverse params))
+                                       note ))))
+                               )
+                             
                              note)
-                           notes ))
+                           notes))
 
                     ;             curr-var last-var
                     (set! notes
                       (fold (lambda(a-mapval notes)
-                              ; We return the result of the map and 
-                              ; it goes to fold result. It will come back
-                              ; as 'notes' at the next turn.
+                              ; We return the result of the map and it goes to
+                              ; fold's result. It will come back as 'notes' at
+                              ; the next turn.
                               (let ((prop-name  (car a-mapval))
                                     (prop-vals  (cdr a-mapval)))
-                                (map (lambda(a-note a-prop-val)
-                                       (sort-note-properties 
-                                         (cleanup-note-properties
-                                           (cons
-                                             (cons prop-name a-prop-val)
-                                             a-note))))
-                                     notes
-                                     prop-vals
-                                     )))
+
+                                (let loop ((notes notes)
+                                           (prop-vals prop-vals ))
+                                  (if (null? notes)
+                                    ;then
+                                    '()
+                                    ;else
+                                    (if (null? prop-vals) 
+                                      ;then
+                                      (cons notes 
+                                            (loop (cdr notes) prop-vals))
+                                      ;else
+                                      (let ((a-note     (car notes))
+                                            (a-prop-val (car prop-vals)))
+
+                                        (if (target-notation? a-note) 
+                                          ;then
+                                          (cons
+                                            ; the current value
+                                            (sort-note-properties 
+                                              (cleanup-note-properties
+                                                (cons
+                                                  (cons prop-name a-prop-val)
+                                                  a-note)))
+                                            ; the next value
+                                            (loop (cdr notes) (cdr prop-vals)))
+                                          ;else
+                                          ; note that we do not cdr the prop-vals to remain on the current value.
+                                          (cons a-note (loop (cdr notes)    prop-vals )))))))
+                                ;(if #f
+                                ;  (map (lambda(a-note a-prop-val)
+                                ;         (if (target-notation? a-note) 
+                                ;           ;then
+                                ;           (sort-note-properties 
+                                ;             (cleanup-note-properties
+                                ;               (cons
+                                ;                 (cons prop-name a-prop-val)
+                                ;                 a-note)))
+                                ;           ;else
+                                ;           a-note))
+                                ;       notes
+                                ;       prop-vals))
+                                
+                                ))
                             notes 
                             mapvals))
                     notes)))
               ))
 
 ; === note ===
-; This function creates a note. "n" stands for "note". 
+; This function creates a note. "n" stands for "notation". 
 ;
 ; 1. A way to shorten the creation of note data.
 ;    (n C4 0.1 0.3) => ((note . 60) (pos . 0.1) (velo . 0.1))

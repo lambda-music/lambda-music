@@ -137,6 +137,10 @@ public class PulsarSpecialNoteListParsers {
 			double velocity  = map.containsKey( ID_VELOCITY ) ? SchemeUtils.toDouble(       map.get(ID_VELOCITY  ) ) : 63;
 			double length    = map.containsKey( ID_LENGTH   ) ? SchemeUtils.toDouble(       map.get(ID_LENGTH    ) ) : -1d;
 			
+//			System.err.println("velocity");
+//			System.err.println(velocity);
+//			System.err.println ( map );
+			
 			if ( length < 0 )
 				length = 0.0025d;
 

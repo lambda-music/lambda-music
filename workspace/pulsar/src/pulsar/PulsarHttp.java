@@ -58,7 +58,7 @@ class PulsarHttp {
 		LOGGER.log(Level.WARNING, msg);
 	}
 
-	
+
 	Pulsar pulsar;
 	HttpServer httpServer;
 	Charset charset = Charset.forName( "UTF-8" );
@@ -69,24 +69,24 @@ class PulsarHttp {
 	}
 	private void init( int port ) throws IOException {
 		httpServer = HttpServer.create(new InetSocketAddress( port ), 0);
-        httpServer.createContext("/pulsar", new PulsarHttpHandler() );
-        httpServer.setExecutor(null); // creates a default executor
-        httpServer.start();
-        pulsar.addShutdownHook( new Runnable() {
+		httpServer.createContext("/pulsar", new PulsarHttpHandler() );
+		httpServer.setExecutor(null); // creates a default executor
+		httpServer.start();
+		pulsar.addShutdownHook( new Runnable() {
 			@Override
 			public void run() {
 				stop();
 			}
 		});
 	}
-	
+
 	void start(){
 		this.httpServer.start();
 	}
 	void stop(){
 		this.httpServer.stop(0);
 	}
-	
+
 	static String readInputStream( InputStream inputStream ) throws IOException {
 		BufferedInputStream bis = new BufferedInputStream(inputStream);
 		ByteArrayOutputStream buf = new ByteArrayOutputStream();
@@ -103,10 +103,10 @@ class PulsarHttp {
 			return buf.toString();
 		}
 	}
-	
+
 	public static String executeScheme( SchemeSecretary schemeSecretary, Charset charset, String schemeScript, boolean requestResult ) throws IOException {
 		schemeSecretary.initializeSchemeForCurrentThread();
-		
+
 		ByteArrayOutputStream bo = new ByteArrayOutputStream();
 		ByteArrayInputStream bi = new ByteArrayInputStream( schemeScript.getBytes( charset ));
 		try {
@@ -141,7 +141,7 @@ class PulsarHttp {
 		public void handle(HttpExchange t) throws IOException {
 			logInfo( "=========PulsarHttp========" );
 			logInfo( t.getRemoteAddress().toString() );
-			
+
 			if ( t.getRemoteAddress().getAddress().isLoopbackAddress() ) {
 				String requestString = readInputStream( t.getRequestBody() ); 
 				logInfo( requestString );
@@ -174,6 +174,4 @@ class PulsarHttp {
 			}
 		}
 	}
-
-
 }
