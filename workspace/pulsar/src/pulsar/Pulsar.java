@@ -1107,13 +1107,6 @@ public final class Pulsar extends Metro {
 	 *            the scheme instance to initialize.
 	 */
 	public void initScheme( Scheme scheme ) {
-		SchemeUtils.defineVar( scheme, "load-file" , new ProcedureN( "eval-file" ) {
-			@Override
-			public Object applyN(Object[] args) throws Throwable {
-				loadScheme( new File( args[0].toString() ) );
-				return Invokable.NO_RESULT; 
-			}
-		});
 		SchemeUtils.defineVar( scheme, "open?" , new ProcedureN( "open?" ) {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
@@ -1359,6 +1352,7 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		});
+		
 		SchemeUtils.defineVar( scheme, "clear" , new Procedure0( "clear" ) {
 			@Override
 			public Object apply0() throws Throwable {
@@ -1522,7 +1516,7 @@ public final class Pulsar extends Metro {
 		SchemeUtils.defineVar( scheme, "nott" ,         notifyTrackChange );
 		SchemeUtils.defineVar( scheme, "notify-track-change" , notifyTrackChange );
 
-		SchemeUtils.defineVar( scheme, "ls" , new Procedure0("ls") {
+		SchemeUtils.defineVar( scheme, "lst" , new Procedure0("ls") {
 			@Override
 			public Object apply0() throws Throwable {
 				List<MetroTrack> tempAllTracks = replicateAllTracks(); 
@@ -1545,18 +1539,6 @@ public final class Pulsar extends Metro {
 		SchemeUtils.defineVar( scheme, "clet" , clr);
 		SchemeUtils.defineVar( scheme, "clear-tracks" , clr);
 		
-		Procedure1 has = new Procedure1( "has?" ) {
-			@Override
-			public Object apply1(Object arg0) throws Throwable {
-				String value = SchemeUtils.toString( SchemeUtils.schemeNullCheck( arg0 ) );
-				if ( value == null ) {
-					throw new IllegalArgumentException( "cannot be null" );
-				}
-				return searchTrack( value ) != null;
-			}
-		};
-		SchemeUtils.defineVar( scheme, "has-seq?" , has );
-		SchemeUtils.defineVar( scheme, "has?" , has );
 		SchemeUtils.defineVar( scheme, "print-stack-trace" , new ProcedureN("print-stack-trace") {
 			@Override
 			public Object apply1(Object arg) throws Throwable {
