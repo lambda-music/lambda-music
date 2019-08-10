@@ -32,9 +32,11 @@ Pulsar consists three parts of components :
 
 ### How to Install ###
 
-Currently Pulsar does not have installer. Pulsar is a simple JAR (Java Archive)
-file and it is not necessary to install to a specific directory. 
-
+Pulsar requires Java8; please make sure Java8 is installed on your environment.
+Download [pulsar.jar on the MASTER branch](https://github.com/lisp-scheme-music/pulsar/blob/master/workspace/pulsar/pulsar.jar)
+and save the file anywhere convenient for you.  Currently Pulsar does not have
+installer. Pulsar is a simple JAR (Java Archive) file and it is not necessary
+to install to a specific directory. 
 
 ### How to Run ###
 
@@ -89,12 +91,6 @@ Such kind of trick should easily be implemented in Emacs or other editors.
 Running Pulsar in a public computer which has a network interface with any
 global IP assigned or a running production server etc. causes great security
 risks. Do not run Pulsar in such situations.
-
-
-
-
-
-
 
 
 
