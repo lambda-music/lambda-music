@@ -41,8 +41,9 @@ file and it is not necessary to install to a specific directory.
 After making sure that your pulsar.jar is located in a directory which is
 specified in the //PATH// environment, 
 
+```bash
 > java -jar pulsar.jar
-
+```
 is suffice to make it run. In most platforms, you can also execute the application
 by double-clicking on the file in your file-browser.
 
@@ -54,7 +55,6 @@ Pulsar has two interfaces : HTTP interface and window interface.
 ```bash
 > java jar pulsar.jar --no-gui 
 ```
-
 This disables the window interface.
 
 
@@ -72,6 +72,7 @@ If you are a VIM user,
 ```VIM
 :xmap <Return> :!curl -sSd "`cat`" http://localhost:8192/pulsar
 ```
+
 this VIM command effectively turns your VIM into a Lisp Scheme interactive
 editor. Select the specific text and hit your enter-key then the text will be
 executed in the Pulsar application instance.
@@ -88,6 +89,10 @@ Such kind of trick should easily be implemented in Emacs or other editors.
 Running Pulsar in a public computer which has a network interface with any
 global IP assigned or a running production server etc. causes great security
 risks. Do not run Pulsar in such situations.
+
+
+
+
 
 
 
