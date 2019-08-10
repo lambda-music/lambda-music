@@ -3,7 +3,7 @@ Pulsar List Scheme Music Sequencer
 ===================================
 
 
-=== Pulsar lets you write a piece of music by Lisp Scheme! ===
+### === Pulsar lets you write a piece of music by Lisp Scheme! ===###
 
 Pulsar is written in Java and Lisp Scheme which is powered by Kawa a Java based
 Scheme implementation. You can manage audio data by JackAudio a multiplatform
@@ -30,13 +30,13 @@ Pulsar consists three parts of components :
   three components Metro, KawaPad and Kawa  in order to implement the
   accessibility to JackAudio from Lisp Scheme.
 
-=== How to Install ===
+### How to Install ###
 
 Currently Pulsar does not have installer. Pulsar is a simple JAR (Java Archive)
 file and it is not necessary to install to a specific directory. 
 
 
-=== How to Run ===
+### How to Run ###
 
 After making sure that your pulsar.jar is located in a directory which is
 specified in the //PATH// environment, 
@@ -48,7 +48,7 @@ is suffice to make it run. In most platforms, you can also execute the applicati
 by double-clicking on the file in your file-browser.
 
 
-=== Command Line Arguments ===
+### Command Line Arguments ###
 
 Pulsar has two interfaces : HTTP interface and window interface.
 
@@ -65,7 +65,7 @@ This disables the window interface.
 This disables the HTTP interface.
 
 
-=== Execute Lisp Scheme Commands from Your Editors ===
+### Execute Lisp Scheme Commands from Your Editors ###
 
 If you are a VIM user, 
 
