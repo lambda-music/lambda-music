@@ -95,12 +95,17 @@ public abstract class SchemeNewFactory {
 		map.put(key, factory );
 	}
 
-
+	/**
+	 * @param pulsar
+	 * 	  This parameter is not used except button/fast-button/frame.
+	 *    The other components do not need <code>pulsar</code> not to be null
+	 *    so users can eagerly pass null to the <code>pulsar</code> parameter.
+	 *    (Sat, 10 Aug 2019 15:13:34 +0900)  
+	 * @param args
+	 * @return
+	 */
+	
 	public static Object process( Pulsar pulsar,  Object ... args ) {
-		// TODO This has to be reviewed. >>> (Tue, 09 Jul 2019 10:41:00 +0900)
-		if ( pulsar.pulsarGui == null ) return EmptyList.emptyList;
-		// <<<
-
 		ArrayList<Object> arguments = new ArrayList<>( Arrays.asList( args ) );
 		Object key = arguments.remove(0);
 		if ( key == null )
@@ -324,7 +329,7 @@ public abstract class SchemeNewFactory {
 //					pulsar.gui.guiLayout( panel, type, argList.toArray() );
 //				}
 				if ( pulsar.isGuiAvailable() ) {
-					pulsar.pulsarGui.guiLayout_auto( frame, args.toArray() );
+					PulsarGuiUtils.guiLayout_auto( frame, args.toArray() );
 				}
 
 				return frame;
@@ -337,12 +342,12 @@ public abstract class SchemeNewFactory {
 				JNamedPanel panel = new JNamedPanel();
 
 				if ( args.size() == 0 ) {
-					pulsar.pulsarGui.guiLayout(panel, "default" );
+					PulsarGuiUtils.guiLayout(panel, "default" );
 				} else if ( 1 <= args.size() ) {
 //					String type  = 0< args.size() ? SchemeUtils.anyToString( args.remove(0) ) : "default";
 //					Object[] optionalArguments = args.toArray();
 //					pulsar.gui.guiLayout( panel, type, optionalArguments ) ;
-					pulsar.pulsarGui.guiLayout_auto( panel, args.toArray() );
+					PulsarGuiUtils.guiLayout_auto( panel, args.toArray() );
 				}
 				return panel;
 			}
@@ -352,7 +357,7 @@ public abstract class SchemeNewFactory {
 			Object create(Pulsar pulsar, List<Object> args ) {
 				JNamedPanel panel = new JNamedPanel();
 				if ( args.size() == 0 ) {
-					pulsar.pulsarGui.guiLayout(panel, "default" );
+					PulsarGuiUtils.guiLayout(panel, "default" );
 				} else if ( 1 <= args.size() ) {
 					String title = 0< args.size() ? SchemeUtils.anyToString( args.remove(0) ) : "Group";
 					String type  = 0< args.size() ? SchemeUtils.anyToString( args.remove(0) ) : "default";
@@ -360,7 +365,7 @@ public abstract class SchemeNewFactory {
 					
 					// TODO SEE pulsarGui-layout! (Mon, 15 Jul 2019 10:05:46 +0900)
 					panel.setBorder( BorderFactory.createTitledBorder( title ) );
-					pulsar.pulsarGui.guiLayout( panel, type, optionalArguments ) ;
+					PulsarGuiUtils.guiLayout( panel, type, optionalArguments ) ;
 				}
 				return panel;
 			}

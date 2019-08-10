@@ -9,9 +9,9 @@ connection system and Kawa a Java based Scheme.
 
 Pulsar consists three parts of components :
 
-[Pulsar](./workspace/pulsar/readme.md )
-[Metro](./workspace/metro/readme.md )
-[KawaPad](./workspace/kawapad/readme.md )
+- [Pulsar](./workspace/pulsar/readme.md )
+- [Metro](./workspace/metro/readme.md )
+- [KawaPad](./workspace/kawapad/readme.md )
 
 
 <!-- vim: set spell: -->

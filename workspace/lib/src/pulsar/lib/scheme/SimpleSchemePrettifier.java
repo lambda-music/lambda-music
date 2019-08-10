@@ -389,7 +389,8 @@ public class SimpleSchemePrettifier {
 	public static String prettyPrint(Object resultObject) throws Throwable {
 		StringWriter out = new StringWriter();
 		OutPort outPort = new OutPort( out, true, true );
-		SchemeUtils.toString( kawa.lib.kawa.pprint.pprint.apply2( resultObject, outPort ) );
+//		SchemeUtils.toString( kawa.lib.kawa.pprint.pprint.apply2( resultObject, outPort ) );
+		SchemeUtils.toString( kawa.lib.ports.write.apply2( resultObject, outPort ) );
 		outPort.flush();
 		return out.toString();
 	}
