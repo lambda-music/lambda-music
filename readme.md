@@ -72,7 +72,6 @@ If you are a VIM user,
 ```VIM
 :xmap <Return> :!curl -sSd "`cat`" http://localhost:8192/pulsar
 ```
-
 this VIM command effectively turns your VIM into a Lisp Scheme interactive
 editor. Select the specific text and hit your enter-key then the text will be
 executed in the Pulsar application instance.
@@ -89,13 +88,6 @@ Such kind of trick should easily be implemented in Emacs or other editors.
 Running Pulsar in a public computer which has a network interface with any
 global IP assigned or a running production server etc. causes great security
 risks. Do not run Pulsar in such situations.
-
-
-
-
-
-
-
 
 
 
