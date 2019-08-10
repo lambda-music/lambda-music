@@ -5,38 +5,77 @@ Pulsar Lisp Scheme Music Sequencer
 
 ### Pulsar lets you write a piece of music by Lisp Scheme! ###
 
+Pulsar is a music sequencer program which enables users to write music as Lisp
+Scheme programs. In this system, musical notes and other informations are
+written as Scheme's association lists. The musical notes can be dynamically
+generated as Scheme's association lists on-the-fly. Users can also interact
+with the dynamically generated music at runtime and affect the direction that
+the music is going.
+
 Pulsar is written in Java and Lisp Scheme which is powered by Kawa a Java based
-Scheme implementation. You can manage audio data by JackAudio a multiplatform
-audio connection system via Java Native Access.
+Scheme implementation. You can process MIDI data via Jack Audio Connection Kit
+a multiplatform audio connection system which is accessed via Java Native
+Access.
 
 Pulsar runs on most major platforms which can run Java such as Windows, Mac-OSX
 and Linux distributions. 
 
+### Feature ###
+- Enables you to write pieces of music as Lisp Scheme program.
+- Built with Kawa a powerful Lisp Scheme implementation.
+- Works with JACK Audio Connection Kit and can connect to any synthesizer
+  applications support JACK.
+- Includes Kawapad; Kawapad is an editor to edit Scheme program 
+	- Kawapad can prettify Lisp code.
+	- Execute a block of code on-the-fly.
+	- Kawapad is extensible by Kawa-Scheme.
+
+### System Requirements ###
+Any operating systems that can run the following systems :
+- Java 8
+- JNA Java Native Access
+- Jack Audio Connection Kit
+
+Pulsar has been developed and tested in Ubuntu 16.04. A cursory experiment to
+run Pulsar in Windows 10 with Windows JACK was succeeded.  It is still unknown
+if Pulsar can run in OS X and further experiments are needed.
+
+Pulser uses following libraries :
+
+- JNA-4.5.0
+- JNAJACK-1.3.0
+- KAWA-3.0
+
+These are statically linked to the main file `pulser.jar`.
 
 ### How to Install ###
 
-Pulsar requires Java8; please make sure Java8 is installed on your environment.
-Then download [pulsar.jar on the MASTER branch](https://github.com/lisp-scheme-music/pulsar/blob/master/workspace/pulsar/pulsar.jar)
-and save the file anywhere convenient for you.  Currently Pulsar does not have
-installer. Pulsar is a simple JAR (Java Archive) file and it is not necessary
-to install to a specific directory. 
+Pulsar requires [Java8](https://www.java.com/en/download/) and [Jack Audio
+Connection Kit](http://jackaudio.org/). Please make sure that these are
+properly installed on your environment.
+
+After these prerequisites are installed, just download the JAR file from
+[pulsar.jar on the MASTER
+branch](https://github.com/lisp-scheme-music/pulsar/blob/master/workspace/pulsar/pulsar.jar).
+
+Currently Pulsar have no installer. Though, Pulsar is a simple JAR (Java
+Archive) file and no installation process is required. Just locate the file
+anywhere convenient for you, preferably in any directory which is on your
+//$PATH// list.
+
 
 ### How to Run ###
 
-After making sure that your pulsar.jar is located in a directory which is
-specified in the //PATH// environment, 
-
+In shell command,
 ```bash
-> java -jar pulsar.jar
+> java -jar /the-path-to-the-file/pulsar.jar
 ```
-is suffice to make it run. In most platforms, you can also execute the application
-by double-clicking on the file in your file-browser.
+is sufficient to make it run. 
 
-
-### Command Line Arguments ###
+In most platforms, you can also execute the application by double-clicking on
+the file in your file-browser.
 
 Pulsar has two interfaces : HTTP interface and window interface.
-
 ```bash
 > java jar pulsar.jar --no-gui 
 ```
@@ -46,8 +85,31 @@ This disables the window interface.
 ```bash
 > java jar pulsar.jar --no-http
 ```
-
 This disables the HTTP interface.
+
+```bash
+> java jar pulsar.jar [filename]
+```
+Otherwise every argument is taken as filename. Though, only the first argument
+is applied; other arguments are silently ignored. Note that when //--no-gui//
+is specified, no filename is applied since there is no editor to edit in that
+case.
+
+### How to Run (Advanced) ###
+
+It is very interesting that Kawa can invoke every method on the fly; that is
+you do not have to specify the startup class when you start the JVM. Add the
+path of//pulsar.jar// to your CLASSPATH then execute Kawa's REPL.
+
+```bash
+CLASSPATH="$CLASSPATH:/path-to-pulsar-dir/pulsar.jar" kawa
+```
+Then, execute the following command in Kawa's REPL.
+```scheme
+(pulsar.Pulsar:main (java.lang.String[]))
+```
+This also starts Pulsar sequencer. This may give you some possibility to
+control of the application more precisely.
 
 
 ### Execute Lisp Scheme Commands from Your Editors ###
@@ -74,10 +136,13 @@ global IP assigned or a running production server etc. causes great security
 risks. Do not run Pulsar in such situations.
 
 
+### Basic  ### 
 
+TODO
 
 
 ### Architecture of Pulsar Sequencer ###
+
 
 Pulsar consists three parts of components :
 
@@ -98,6 +163,36 @@ Pulsar consists three parts of components :
   accessibility to JackAudio from Lisp Scheme.
 
 
+### Compilation ###
+
+Pulsar is developed by Eclipse and its repository contains entire
+Eclipse's workspace directory.
+
+In most case, opening the workspace directory by Eclipse should compile
+the projects inside automatically. In case the project dependency could
+not be restored properly, reconfigure it.
+
+Currently there are four projects under Pulsar's workspace; each project
+depends on following projects :
+
+```memo
+- lib
+- kawapad
+    +>lib
+- metro 
+    +-> lib
+- pulsar 
+    +-> lib
+    +-> metro
+    +-> kawapad
+```
+
+#### Compilation by Ant ####
+[workspace]/pulsar/build.xml is a ANT build file which was generated by
+Eclipse. This build file can build Pulsar-Sequencer.
 
 
-<!-- vim: set spell: -->
+
+
+
+<!-- vim: set spell expandtab : -->
