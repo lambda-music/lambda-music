@@ -1,5 +1,5 @@
 
-Pulsar Lisp Scheme Music Sequencer
+Pulsar a Lisp Scheme Music Sequencer
 ===================================
 
 
@@ -66,7 +66,7 @@ anywhere convenient for you, preferably in any directory which is on your
 
 ### How to Run ###
 
-In shell command,
+In your shell command prompt,
 ```bash
 > java -jar /the-path-to-the-file/pulsar.jar
 ```
@@ -138,7 +138,11 @@ risks. Do not run Pulsar in such situations.
 
 ### Basic  ### 
 
-TODO
+
+
+
+
+### Command Reference ###
 
 
 ### Architecture of Pulsar Sequencer ###

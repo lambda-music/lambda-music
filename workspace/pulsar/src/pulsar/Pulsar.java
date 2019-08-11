@@ -62,6 +62,7 @@ import gnu.math.DFloNum;
 import kawa.standard.Scheme;
 import kawapad.KawaPad;
 import metro.Metro;
+import metro.MetroPort;
 import metro.MetroTrack;
 import metro.MetroTrack.SyncType;
 import pulsar.lib.PulsarLogger;
@@ -1134,26 +1135,84 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		});
-		SchemeUtils.defineVar( scheme, "output" , new ProcedureN("output") {
+		ProcedureN openOutput = new ProcedureN("open-output") {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				ArrayList<MetroPort> list = new ArrayList<>();
+				for ( Object o : args ) {
+					list.add( createOutputPort( o ) );
+				}
+				return LList.makeList( list );
+			}
+		};
+		SchemeUtils.defineVar( scheme, "output" ,      openOutput );
+		SchemeUtils.defineVar( scheme, "openo" ,       openOutput );
+		SchemeUtils.defineVar( scheme, "open-output" , openOutput );
+		
+		ProcedureN openInput = new ProcedureN("open-input") {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				ArrayList<MetroPort> list = new ArrayList<>();
+				for ( Object o : args ) {
+					list.add( createInputPort( o ) );
+				}
+				return LList.makeList( list );
+			}
+		};
+		SchemeUtils.defineVar( scheme, "input" ,      openInput );
+		SchemeUtils.defineVar( scheme, "open-input" , openInput );
+		SchemeUtils.defineVar( scheme, "openi" ,      openInput );
+
+		
+		ProcedureN closeOutput = new ProcedureN("close-output") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				for ( Object o : args ) {
-					String name = SchemeUtils.toString( o );
-					createOutputPort( name );
+					destroyOutputPort((MetroPort) o );
 				}
 				return Invokable.NO_RESULT;
 			}
-		});
-		SchemeUtils.defineVar( scheme, "input" , new ProcedureN("input") {
+		};
+		SchemeUtils.defineVar( scheme, "close-output", closeOutput );
+		SchemeUtils.defineVar( scheme, "closeo" ,      closeOutput );
+		
+		ProcedureN closeInput = new ProcedureN("close-input") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				for ( Object o : args ) {
-					String name = SchemeUtils.toString( o );
-					createInputPort( name );
+					destroyInputPort((MetroPort) o );
 				}
 				return Invokable.NO_RESULT;
 			}
-		});
+		};
+		SchemeUtils.defineVar( scheme, "close-input", closeInput );
+		SchemeUtils.defineVar( scheme, "closei" ,     closeInput );
+
+
+		ProcedureN outputInput = new ProcedureN("list-output") {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				List<MetroPort> list = getOutputPorts();
+				Collections.reverse( list );
+				return LList.makeList( list  );
+			}
+		};
+		SchemeUtils.defineVar( scheme, "list-output", outputInput );
+		SchemeUtils.defineVar( scheme, "lso" ,        outputInput );
+		
+		ProcedureN listInput = new ProcedureN("list-input") {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				List<MetroPort> list = getInputPorts();
+				Collections.reverse( list );
+				return LList.makeList( list  );
+			}
+		};
+		SchemeUtils.defineVar( scheme, "list-input", listInput );
+		SchemeUtils.defineVar( scheme, "lsi" ,       listInput );
+
+
+		
 		SchemeUtils.defineVar( scheme, "connect" , new ProcedureN("connect") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
@@ -1172,14 +1231,14 @@ public final class Pulsar extends Metro {
 		SchemeUtils.defineVar( scheme, "get-all-input" , new ProcedureN("get-all-input") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
-				return Pair.makeList( getInputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
+				return Pair.makeList( getAllInputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
 					.collect( Collectors.toList() ) );
 			}
 		});
 		SchemeUtils.defineVar( scheme, "get-all-output" , new ProcedureN("get-all-output") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
-				return Pair.makeList( getOutputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
+				return Pair.makeList( getAllOutputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
 					.collect( Collectors.toList() ) );
 			}
 		});

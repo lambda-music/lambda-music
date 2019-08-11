@@ -37,9 +37,9 @@ public interface MetroAbstractMidiEvent extends Comparable<MetroAbstractMidiEven
 		}
 	};
 
-	int    getOutputPortNo();
-	int    getMidiOffset();
-	byte[] getMidiData();
+	MetroPort getOutputPort();
+	int       getMidiOffset();
+	byte[]    getMidiData();
 	
 	public default int compareTo( MetroAbstractMidiEvent o ) {
 		return this.getMidiOffset() - o.getMidiOffset();

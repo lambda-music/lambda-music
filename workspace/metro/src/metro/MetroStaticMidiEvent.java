@@ -21,20 +21,20 @@
 package metro;
 
 public final class MetroStaticMidiEvent implements MetroAbstractMidiEvent {
-	private int outputPortNo;
+	private MetroPort outputPort;
 	private int midiOffset;
 	private byte[] midiData;
-	public MetroStaticMidiEvent( int outputPortNo, int offset, byte[] data ) {
-		this.outputPortNo = outputPortNo;
+	public MetroStaticMidiEvent( MetroPort outputPort, int offset, byte[] data ) {
+		this.outputPort = outputPort;
 		this.midiOffset = offset;
 		this.midiData = data;
 	}
 	@Override
-	public int getOutputPortNo() {
-		return outputPortNo;
+	public MetroPort getOutputPort() {
+		return outputPort;
 	}
-	public void setOutputPortNo( int outputPortNo ) {
-		this.outputPortNo = outputPortNo;
+	public void setOutputPort( MetroPort outputPort ) {
+		this.outputPort = outputPort;
 	}
 	@Override
 	public int getMidiOffset() {

@@ -41,6 +41,7 @@ import kawa.standard.Scheme;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroEventBuffer;
+import metro.MetroPort;
 import metro.MetroTrack;
 import metro.MetroTrack.SyncType;
 import pulsar.lib.scheme.SchemeUtils;
@@ -66,6 +67,27 @@ public class PulsarSpecialNoteListParsers {
 	 * XXX this value is inconsistent now (Mon, 29 Jul 2019 09:17:14 +0900)
 	 */
 	public static final String SEQ_BASE = "seq-base";
+
+	static MetroPort getPort( Metro metro, Map<String, Object> map ) {
+		if ( map.containsKey( ID_PORT ) ) {
+			Object o = map.get(ID_PORT );
+			if ( o instanceof Number ) {
+				int i = ((Number)o).intValue();
+				List<MetroPort> list = metro.getOutputPorts();
+				if ( 0 < i ||  list.size() <= i )
+					throw new IllegalStateException();
+				return list.get(i);
+			} else {
+				return (MetroPort)o;
+			}
+		} else {
+			List<MetroPort> list = metro.getOutputPorts();
+			if ( list.isEmpty() )
+				throw new IllegalStateException();
+			return list.get(0);
+		}
+	}
+
 	
 	/**
 	 * Returns a collection object which contains parser elements defined in this class. 
@@ -130,7 +152,7 @@ public class PulsarSpecialNoteListParsers {
 			if ( ! enabled )
 				return result;
 
-			int port         = map.containsKey( ID_PORT_NO  ) ? SchemeUtils.toInteger(      map.get(ID_PORT_NO   ) ) : 1;
+			MetroPort port   = getPort(metro, map);
 			int channel      = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
 			double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
 			int note         = map.containsKey( ID_NOTE     ) ? SchemeUtils.toInteger(      map.get(ID_NOTE      ) ) : 63;  

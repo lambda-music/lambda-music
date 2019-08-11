@@ -38,7 +38,6 @@ import org.jaudiolibs.jnajack.JackClient;
 import org.jaudiolibs.jnajack.JackException;
 import org.jaudiolibs.jnajack.JackMidi;
 import org.jaudiolibs.jnajack.JackOptions;
-import org.jaudiolibs.jnajack.JackPort;
 import org.jaudiolibs.jnajack.JackPortFlags;
 import org.jaudiolibs.jnajack.JackPortType;
 import org.jaudiolibs.jnajack.JackPosition;
@@ -49,6 +48,7 @@ import org.jaudiolibs.jnajack.JackTimebaseCallback;
 import org.jaudiolibs.jnajack.JackTransportState;
 
 import metro.MetroTrack.SyncType;
+import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.Invokable;
 
 /**
@@ -80,8 +80,8 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	protected Jack jack = null;
     protected JackClient client = null;
     protected Thread thread = null;
-    protected final ArrayList<JackPort> inputPortList = new ArrayList<JackPort>();
-    protected final ArrayList<JackPort> outputPortList = new ArrayList<JackPort>();;
+    protected final ArrayList<MetroPort> inputPortList = new ArrayList<MetroPort>();
+    protected final ArrayList<MetroPort> outputPortList = new ArrayList<MetroPort>();;
     
 
     private final JackMidi.Event midiEvent = new JackMidi.Event();
@@ -187,22 +187,59 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	}
     
 	
-	public void createInputPort(String inputPortName) throws JackException {
-		checkState();
-		this.inputPortList.add( 
-				this.client.registerPort(
-		    		inputPortName, 
-		    		JackPortType.MIDI, JackPortFlags.JackPortIsInput
-		    	)
-			);
+	public MetroPort createInputPort(Object portName) throws JackException {
+		return createPort(portName, this.inputPortList, JackPortFlags.JackPortIsInput);
 	}
-	public void createOutputPort(String outputPortName) throws JackException {
-		this.outputPortList.add( 
-				this.client.registerPort(
-		    		outputPortName, 
-		    		JackPortType.MIDI, JackPortFlags.JackPortIsOutput
-		    	)
-			);
+	public MetroPort createOutputPort(Object portName) throws JackException {
+		return createPort(portName, this.outputPortList, JackPortFlags.JackPortIsOutput);
+	}
+	public boolean destroyOutputPort(MetroPort port) throws JackException {
+		return destroyPort(port, JackPortFlags.JackPortIsOutput, this.outputPortList);
+	}
+	public boolean destroyInputPort(MetroPort port) throws JackException {
+		return destroyPort(port, JackPortFlags.JackPortIsInput, this.inputPortList);
+	}
+
+	public List<MetroPort> getInputPorts() {
+		checkState();
+		return new ArrayList<MetroPort>( this.inputPortList );
+	}
+	public List<MetroPort> getOutputPorts()  {
+		checkState();
+		return new ArrayList<MetroPort>( this.outputPortList );
+	}
+	
+	private MetroPort createPort(Object portName, List<MetroPort> list, JackPortFlags flag) throws JackException {
+		checkState();
+		MetroPort port = new MetroPort( 
+			portName,
+			flag,
+			this.client.registerPort( 
+				SchemeUtils.anyToString(portName), 
+				JackPortType.MIDI, 
+				flag
+			)
+		);
+		list.add( port );
+		return port;
+	}
+	private boolean destroyPort(MetroPort targetPort, JackPortFlags portFlag, ArrayList<MetroPort> list) throws JackException {
+		checkState();
+		if ( ! targetPort.jackPortFlag.equals( portFlag ) ) {
+			throw new IllegalArgumentException();
+		}
+		boolean result = this.client.unregisterPort( targetPort.jackPort ) == 0;
+		if (result){
+			list.remove( targetPort );
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	private void clearPorts() {
+		this.inputPortList.clear();
+		this.outputPortList.clear();
 	}
 	
 	/**
@@ -537,6 +574,11 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 				logError("", e);
     		}
     		try {
+    			clearPorts();
+    		} catch ( Exception e ) {
+				logError("", e);
+    		}
+    		try {
     			finalizeThread();
     		} catch ( Exception e ) {
 				logError("", e);
@@ -655,12 +697,12 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		}
 	}
 	
-	public List<String> getOutputPorts() throws JackException {
+	public List<String> getAllOutputPorts() throws JackException {
 		checkState();
     	String[] ports = this.jack.getPorts( this.client, "", JackPortType.MIDI, EnumSet.of( JackPortFlags.JackPortIsOutput ) );
     	return new ArrayList<String>( Arrays.asList( ports ) );
 	}
-	public List<String> getInputPorts() throws JackException {
+	public List<String> getAllInputPorts() throws JackException {
 		checkState();
     	String[] ports = this.jack.getPorts( this.client, "", JackPortType.MIDI, EnumSet.of( JackPortFlags.JackPortIsInput ) );
     	return new ArrayList<String>( Arrays.asList( ports ) );
@@ -730,8 +772,8 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		checkState();
 
 		Metro metro = this;
-		for ( JackPort p : metro.outputPortList ) {
-			JackMidi.clearBuffer( p );
+		for ( MetroPort p : metro.outputPortList ) {
+			JackMidi.clearBuffer( p.jackPort );
 		}
 	}
 
@@ -747,24 +789,23 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
     	
 		try {
             // JackMidi.clearBuffer(this.outputPort);
-            for ( JackPort p : Metro.this.outputPortList )
-            	JackMidi.clearBuffer( p );
+            for ( MetroPort p : Metro.this.outputPortList )
+            	JackMidi.clearBuffer( p.jackPort );
             
             
             this.inputMidiEventList.clear();
         	this.outputMidiEventList.clear();
             
-        	int inputPortNo = 0;
-        	for ( Iterator<JackPort> pi = this.inputPortList.iterator(); pi.hasNext(); ) {
-        		JackPort inputPort = pi.next();
+        	for ( Iterator<MetroPort> pi = this.inputPortList.iterator(); pi.hasNext(); ) {
+        		MetroPort inputPort = pi.next();
         		
-                int eventCount = JackMidi.getEventCount( inputPort );
+                int eventCount = JackMidi.getEventCount( inputPort.jackPort );
                 for (int i = 0; i < eventCount; ++i) {
-                	JackMidi.eventGet( this.midiEvent, inputPort, i );
+                	JackMidi.eventGet( this.midiEvent, inputPort.jackPort, i );
                 	int size = this.midiEvent.size();
                 	byte[] data = new byte[size];
                 	this.midiEvent.read( data );
-                	this.inputMidiEventList.add( new MetroStaticMidiEvent( inputPortNo, this.midiEvent.time(), data ) );
+                	this.inputMidiEventList.add( new MetroStaticMidiEvent( inputPort, this.midiEvent.time(), data ) );
 
 //                    this.sb.setLength(0);
 //                    this.sb.append(this.midiEvent.time());
@@ -798,8 +839,8 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
             		if ( DEBUG ) logInfo( this.outputMidiEventList.toString() );
 
             	for ( MetroAbstractMidiEvent e : this.outputMidiEventList ) {
-            		JackMidi.eventWrite( 
-            				Metro.this.outputPortList.get( e.getOutputPortNo() ), 
+					JackMidi.eventWrite(
+            				e.getOutputPort().jackPort, 
             				e.getMidiOffset(), 
             				e.getMidiData(), 
             				e.getMidiData().length 
@@ -823,6 +864,18 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
             return true;
         }
     }
+	public MetroPort outputPortNumberToPort(int i) {
+		if ( 0<=i && i < outputPortList.size()  ) 
+			return outputPortList.get( i );
+		else
+			throw new IllegalArgumentException();
+	}
+	public MetroPort inputPortNumberToPort(int i) {
+		if ( 0<=i && i < inputPortList.size()  ) 
+			return inputPortList.get( i );
+		else
+			throw new IllegalArgumentException();
+	}
     
     // @see METRO_LOCK_WAIT
 	/**

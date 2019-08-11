@@ -168,7 +168,7 @@ public abstract class MetroMidi {
 			this.shortName = "non";
 			this.longName = "note on";
 		}
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int ch, int note, double velocity ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int ch, int note, double velocity ) {
 			receiver.noteOn( offset, port, ch, note, velocity );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int ch, int note, double velocity ) {
@@ -190,7 +190,7 @@ public abstract class MetroMidi {
 			this.shortName = "noff";
 			this.longName = "note off";
 		}
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver,  double offset, int port, int ch, int note, double velocity ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver,  double offset, MetroPort port, int ch, int note, double velocity ) {
 			receiver.noteOff( offset, port, ch, note, velocity );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver,  int ch, int note, double velocity ) {
@@ -215,7 +215,7 @@ public abstract class MetroMidi {
 			this.longName  = "key-pressure";
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int ch, int note, double value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int ch, int note, double value ) {
 			receiver.keyPressure( offset, port, ch, note, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int ch, int note, double value ) {
@@ -239,7 +239,7 @@ public abstract class MetroMidi {
 			// this.name = "control";
 			this.longName = "control-change";
 		}
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int ch, int controlNumber, int controlValue ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int ch, int controlNumber, int controlValue ) {
 			receiver.controlChange( offset, port, ch, controlNumber, controlValue );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int ch, int controlNumber, int controlValue ) {
@@ -261,7 +261,7 @@ public abstract class MetroMidi {
 			this.shortName = "pc";
 			this.longName = "program";
 		}
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int ch, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int ch, int value ) {
 			receiver.programChange( offset, port, ch, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver,  int ch, int value ) {
@@ -283,7 +283,7 @@ public abstract class MetroMidi {
 			this.shortName = "cp";
 			this.longName = "channel-pressure";
 		}
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int ch, double value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int ch, double value ) {
 			receiver.channelPressure( offset, port, ch, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver,  int ch, double value ) {
@@ -305,7 +305,7 @@ public abstract class MetroMidi {
 			this.shortName = "pb";
 			this.longName = "pitch-bend";
 		}
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int ch, double value) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int ch, double value) {
 			receiver.pitchBend( offset, port, ch, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int ch, double value) {
@@ -341,7 +341,7 @@ public abstract class MetroMidi {
 			this.longName = "all-sound-off";
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, int port,int ch) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int ch) {
 			receiver.cc_allSoundOff ( offset, port, ch );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver ,int ch) {
@@ -364,7 +364,7 @@ public abstract class MetroMidi {
 			this.longName = "reset-all-controllers";
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, int port,int ch) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int ch) {
 			receiver.cc_resetAllControllers ( offset, port, ch );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver ,int ch) {
@@ -387,7 +387,7 @@ public abstract class MetroMidi {
 			this.longName = "local-controls";
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, int port,int ch,boolean value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int ch,boolean value ) {
 			receiver.cc_localControls ( offset, port, ch, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver ,int ch,boolean value ) {
@@ -410,7 +410,7 @@ public abstract class MetroMidi {
 			this.longName = "all-note-off";
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, int port,int ch) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int ch) {
 			receiver.cc_allNoteOff ( offset, port, ch );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver ,int ch) {
@@ -429,7 +429,7 @@ public abstract class MetroMidi {
 	public static final MetroMidiOmniModeOff  MIDI_OMNI_MODE_OFF = new MetroMidiOmniModeOff(); 
 	public static final class MetroMidiOmniModeOff extends MetroMidi {
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, int port,int ch) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int ch) {
 			receiver.cc_omniModeOff ( offset, port, ch );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver ,int ch) {
@@ -457,7 +457,7 @@ public abstract class MetroMidi {
 			this.longName = "omni-mode-on";
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, int port,int ch) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int ch) {
 			receiver.cc_omniModeOn ( offset, port, ch );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver ,int ch) {
@@ -480,7 +480,7 @@ public abstract class MetroMidi {
 			this.longName = "mono-mode-on";
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, int port,int ch) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int ch) {
 			receiver.cc_monoModeOn ( offset, port, ch );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver ,int ch) {
@@ -503,7 +503,7 @@ public abstract class MetroMidi {
 			this.longName = "poly-mode-on";
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, int port,int ch) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int ch) {
 			receiver.cc_polyModeOn ( offset, port, ch );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver ,int ch) {
@@ -527,7 +527,7 @@ public abstract class MetroMidi {
 			this.longName = "sys-song-position-pointer";
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, int port, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port, int value ) {
 			receiver.songPositionPointer ( offset, port, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver , int value ) {
@@ -550,7 +550,7 @@ public abstract class MetroMidi {
 			this.longName = "sys-song-select";
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, int port,int value) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int value) {
 			receiver.songSelect ( offset, port, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver ,int value) {
@@ -572,7 +572,7 @@ public abstract class MetroMidi {
 			this.shortName = "eoe";
 			this.longName = "sys-end-of-exclusive";
 		}
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, int port ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
 			receiver.endOfExclusive ( offset, port );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver ) {
@@ -594,7 +594,7 @@ public abstract class MetroMidi {
 			this.shortName = "clock";
 			this.longName = "sys-clock";
 		}
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, int port ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
 			receiver.clock ( offset, port );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver ) {
@@ -617,7 +617,7 @@ public abstract class MetroMidi {
 			this.shortName = "start";
 			this.longName = "sys-start";
 		}
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, int port ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
 			receiver.start ( offset, port );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver ) {
@@ -639,7 +639,7 @@ public abstract class MetroMidi {
 			this.shortName = "cont";
 			this.longName = "sys-continue";
 		}
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, int port ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
 			receiver.cont( offset, port );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver ) {
@@ -661,7 +661,7 @@ public abstract class MetroMidi {
 			this.shortName = "stop";
 			this.longName = "sys-stop";
 		}
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, int port ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
 			receiver.stop ( offset, port );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver ) {
@@ -683,7 +683,7 @@ public abstract class MetroMidi {
 			this.shortName = "reset";
 			this.longName = "sys-reset";
 		}
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, int port ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
 			receiver.reset ( offset, port );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver ) {
@@ -712,7 +712,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_BANK_SELECT                            ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_bankSelect ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -736,7 +736,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_MODULATION                             ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_modulation ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -760,7 +760,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_BREATH_CTRL                            ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_breathController ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -784,7 +784,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_FOOT_CTRL                              ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_footController ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -808,7 +808,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_PORTAMENTO_TIME                        ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_portamentoTime ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -832,7 +832,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_DATA_ENTRY_MSB                         ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_dataEntryMsb ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -856,7 +856,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_VOLUME                                 ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_volume ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -880,7 +880,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_BALANCE                                ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_balance ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -904,7 +904,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_PAN                                    ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_pan ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -928,7 +928,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_EXPRESSION                             ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_expression ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -952,7 +952,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_EFFECT_CTRL_1                          ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_effectController1 ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -976,7 +976,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_EFFECT_CTRL_2                          ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_effectController2 ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1000,7 +1000,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_SUSTAIN_PEDAL                          ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_sustainPedal ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1024,7 +1024,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_PORTAMENTO_SWITCH                      ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_portamentoSwitch ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1048,7 +1048,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_SOSTENUTO_SWITCH                       ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_sostenutoSwitch ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1072,7 +1072,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_SOFT_PEDAL_SWITCH                      ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_pedalSwitch ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1096,7 +1096,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_LEGATO_FOOTSWITCH                      ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_legatoSwitch ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1120,7 +1120,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_HOLD_2                                 ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_hold2 ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1144,7 +1144,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_SOUND_CTRL_01                          ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_soundController1 ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1168,7 +1168,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_SOUND_CTRL_02                          ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_soundController2 ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1192,7 +1192,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_SOUND_CTRL_03                          ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_soundController3 ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1216,7 +1216,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_SOUND_CTRL_04                          ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_soundController4 ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1240,7 +1240,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_SOUND_CTRL_05                          ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_soundController5 ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1264,7 +1264,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_SOUND_CTRL_06                          ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_soundController6 ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1288,7 +1288,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_SOUND_CTRL_07                          ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_soundController7 ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1312,7 +1312,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_SOUND_CTRL_08                          ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_soundController8 ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1336,7 +1336,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_SOUND_CTRL_09                          ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_soundController9 ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1360,7 +1360,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_SOUND_CTRL_10                          ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_soundController10 ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1384,7 +1384,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_GENERAL_PURPOSE_01                     ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_generalPurpose01 ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1408,7 +1408,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_GENERAL_PURPOSE_02                     ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_generalPurpose02 ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1432,7 +1432,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_GENERAL_PURPOSE_03                     ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_generalPurpose03 ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1456,7 +1456,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_GENERAL_PURPOSE_04                     ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_generalPurpose04 ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1480,7 +1480,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_PORTAMENTO_CC_CTRL                     ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_portamento ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1504,7 +1504,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_EFFECT_1_DEPTH                         ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_effect1 ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1528,7 +1528,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_EFFECT_2_DEPTH                         ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_effect2 ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1552,7 +1552,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_EFFECT_3_DEPTH                         ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_effect3 ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1576,7 +1576,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_EFFECT_4_DEPTH                         ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_effect4 ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1600,7 +1600,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_EFFECT_5_DEPTH                         ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_effect5 ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1624,7 +1624,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_DATA_INCREMENT;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_dataIncrement ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1648,7 +1648,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_DATA_DECREMENT ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_dataDecrement ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1672,7 +1672,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_NRPN_LSB                               ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_nrpnLsb ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1696,7 +1696,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_NRPN_MSB                               ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_nrpnMsb ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1720,7 +1720,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_RPN_LSB                                ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_rpnLsb ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
@@ -1744,7 +1744,7 @@ public abstract class MetroMidi {
 			this.controlNumber = CC_RPN_MSB                                ;
 		}
 
-		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, int port, int channel, int value ) {
+		public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
 			receiver.cc_rpnMsb ( offset, port, channel, value );
 		}
 		public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
