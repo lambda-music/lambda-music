@@ -17,7 +17,7 @@ public interface ShutdownHook {
     		this.getShutdownHookList().add( runnable );
     	}
     }
-    default void removeShutdownHook(Runnable runnable) {
+    default void removeShutdownHook( Runnable runnable ) {
     	synchronized ( this.getShutdownHookList() ) {
     		this.getShutdownHookList().remove( runnable );
     	}

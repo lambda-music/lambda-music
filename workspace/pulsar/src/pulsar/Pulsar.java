@@ -192,58 +192,9 @@ public final class Pulsar extends Metro {
 	 * open a file to use the application.
 	 * @throws IOException 
 	 */
-	public Pulsar( boolean windowInterface, boolean httpInterface, int httpPort ) throws IOException {
+	public Pulsar( SchemeSecretary schemeSecretary ) throws IOException {
 		super();
-		
-//		>>> VERSION 1 
-//		this.schemeSecretary = new SchemeSecretary();
-//		this.schemeSecretary.setDirectMeeting( false );
-//		KawaPad.registerGlobalSchemeInitializer( schemeSecretary );
-//		this.schemeSecretary.newScheme();
-//
-//		Pulsar.registerLocalSchemeInitializers( schemeSecretary, this );
-//		Pulsar.invokeLocalSchemeInitializers( schemeSecretary, this );
-//		<<< VERSION 1
-
-		/*
-		 * Search INIT_02 inside the entire workspace to know the modification of the
-		 * order of Pulsar's initialization.
-		 */
-//		>>> VERSION INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
-		this.schemeSecretary = new SchemeSecretary();
-		this.schemeSecretary.setDirectMeeting( true );
-		
-		if ( windowInterface )
-			KawaPad.registerGlobalSchemeInitializer( schemeSecretary );
-		
-		Pulsar.registerLocalSchemeInitializers( schemeSecretary, this );
-//		<<< VERSION INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
-		
-		if ( windowInterface )
-			this.pulsarGui = new PulsarGui( this );
-		else
-			this.pulsarGui = null;
-		
-		if ( httpInterface )
-			this.schemeHttp = new SchemeHttp( this.getSchemeSecretary(), httpPort );
-		else
-			this.schemeHttp = null;
-		
-//		REMOVED >>> INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
-//		setting enableTime should be done only in newScheme(); 
-//		this.enabledTimer = true;
-//		REMOVED <<< INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
-		
-		this.newScheme();
-		
-		// INIT_03 : it appears that INIT_02 which is a initial correction of
-		// the initializing order of pulsar/kawapad is not sufficient.
-		// Initializing scheme objects and initializing frames should be separately
-		// initialized.
-		// 
-		// The method init() is called whenever the frame is created.
-		if ( this.pulsarGui != null )
-			this.pulsarGui.init();
+		this.schemeSecretary = schemeSecretary;
 	}
 
 	/**
@@ -253,7 +204,6 @@ public final class Pulsar extends Metro {
 	 * @throws IOException 
 	 */
 	static Pulsar parseArgsAndStartPulsar( String[] args ) throws IOException {
-		
 		boolean argHttp = true;
 		int     argHttpPort = 8192;
 		boolean argGui = true;
@@ -292,10 +242,64 @@ public final class Pulsar extends Metro {
 			return null;
 		}
 	}
-	public static Pulsar start(boolean guiEnabled, boolean httpEnabled, int httpPort, String filename) throws IOException {
-		Pulsar pulsar = new Pulsar( guiEnabled , httpEnabled, httpPort );
-		if ( filename != null && pulsar.pulsarGui != null )
-			pulsar.pulsarGui.openFile( new File( filename ) );
+	public static Pulsar start( boolean guiEnabled, boolean httpEnabled, int httpPort, String filename ) throws IOException {
+//		>>> VERSION 1 
+//		this.schemeSecretary = new SchemeSecretary();
+//		this.schemeSecretary.setDirectMeeting( false );
+//		KawaPad.registerGlobalSchemeInitializer( schemeSecretary );
+//		this.schemeSecretary.newScheme();
+//
+//		Pulsar.registerLocalSchemeInitializers( schemeSecretary, this );
+//		Pulsar.invokeLocalSchemeInitializers( schemeSecretary, this );
+//		<<< VERSION 1
+
+		/*
+		 * Search INIT_02 inside the entire workspace to know the modification of the
+		 * order of Pulsar's initialization.
+		 */
+//		>>> VERSION INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
+		SchemeSecretary schemeSecretary = new SchemeSecretary();
+		schemeSecretary.setDirectMeeting( true );
+
+		Pulsar pulsar = new Pulsar( schemeSecretary );
+
+		if ( guiEnabled )
+			KawaPad.registerGlobalSchemeInitializer( schemeSecretary );
+		
+		Pulsar.registerLocalSchemeInitializers( schemeSecretary, pulsar );
+//		<<< VERSION INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
+		
+		PulsarGui pulsarGui;
+		if ( httpEnabled )
+			pulsarGui = new PulsarGui( pulsar );
+		else
+			pulsarGui = null;
+		
+		@SuppressWarnings("unused")
+		SchemeHttp schemeHttp;
+		if ( httpEnabled )
+			schemeHttp = new SchemeHttp( schemeSecretary, httpPort );
+		else
+			schemeHttp = null;
+		
+//		REMOVED >>> INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
+//		setting enableTime should be done only in newScheme(); 
+//		this.enabledTimer = true;
+//		REMOVED <<< INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
+		
+		schemeSecretary.newScheme();
+		
+		// INIT_03 : it appears that INIT_02 which is a initial correction of
+		// the initializing order of pulsar/kawapad is not sufficient.
+		// Initializing scheme objects and initializing frames should be separately
+		// initialized.
+		// 
+		// The method init() is called whenever the frame is created.
+		if ( pulsarGui != null )
+			pulsarGui.init();
+
+		if ( filename != null && pulsarGui != null )
+			pulsarGui.openFile( new File( filename ) );
 		
 		return pulsar;
 	}
@@ -323,12 +327,8 @@ public final class Pulsar extends Metro {
 //		newScheme();
 //	}
 	
-	PulsarGui pulsarGui;
-	SchemeHttp schemeHttp;
-
-	boolean isGuiAvailable() {
-		return pulsarGui != null;
-	}
+//	PulsarGui pulsarGui;
+//	SchemeHttp schemeHttp;
 
 	boolean isQuitting = false;
 	
@@ -336,20 +336,8 @@ public final class Pulsar extends Metro {
 	 * Notify every interface to shutdown the application. Then shutdown. 
 	 */
 	public void quit() {
-//		if ( isQuitting )
-//			return;
-
 		isQuitting = true;
-		
-		if ( isGuiAvailable() ) {
-			this.pulsarGui.quit();
-		} else {
-			shutdown();
-		}
-		
-//		moved to the close hook facility (Thu, 08 Aug 2019 00:46:56 +0900)
-//		if ( timer != null )
-//			timer.stop();
+		shutdown();
 	}
 
     @Override
@@ -359,6 +347,7 @@ public final class Pulsar extends Metro {
     
     public void shutdown() {
 		close();
+		execCleanupHook();
     	getSchemeSecretary().executeShutdownHook();
     }
 
@@ -430,11 +419,8 @@ public final class Pulsar extends Metro {
 	public void reset() {
 		logInfo("===Pulsar.reset()");
 		newScheme();
-
-		this.execCleanupHook();
-		if ( isGuiAvailable() )
-			this.pulsarGui.guiClear();
-		this.close();
+		execCleanupHook();
+		close();
 	}
 	
 	

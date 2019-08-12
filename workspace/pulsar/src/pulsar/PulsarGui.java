@@ -95,6 +95,13 @@ class PulsarGui {
 	}
 
 	static final int PB_POSITION_MAX = 1024;
+	
+	Runnable shutdownProc01 = new Runnable() {
+		@Override
+		public void run() {
+			frame.setVisible( false );
+		}
+	};
 
 	public static void registerLocalSchemeInitializers( SchemeSecretary schemeSecretary, PulsarGui pulsarGui ) {
 		schemeSecretary.registerSchemeInitializer( pulsarGui, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
@@ -104,12 +111,16 @@ class PulsarGui {
 		        pulsarGui.initPulsarGui();
 			}
 		});
+		
+		schemeSecretary.addShutdownHook(pulsarGui.shutdownProc01);
 	}
+	
 	public static void invokeLocalSchemeInitializers( SchemeSecretary schemeSecretary, PulsarGui pulsarGui ) {
 		schemeSecretary.invokeSchemeInitializers( pulsarGui );
 	}
 	public static void unregisterLocalSchemeInitializers( SchemeSecretary schemeSecretary, PulsarGui pulsarGui ) {
 		schemeSecretary.unregisterSchemeInitializer( pulsarGui );
+		schemeSecretary.removeShutdownHook(pulsarGui.shutdownProc01);
 	}
 
 	public void openFile( File mainFile ) throws IOException {

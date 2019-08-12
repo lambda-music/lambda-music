@@ -46,7 +46,6 @@ import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JProgressBar;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
@@ -328,9 +327,7 @@ public abstract class SchemeNewFactory {
 //					String    type = 0 < argList.size() ? SchemeUtils.symbolToString( argList.remove(0) ) : "default";
 //					pulsar.gui.guiLayout( panel, type, argList.toArray() );
 //				}
-				if ( pulsar.isGuiAvailable() ) {
-					PulsarGuiUtils.guiLayout_auto( frame, args.toArray() );
-				}
+				PulsarGuiUtils.guiLayout_auto( frame, args.toArray() );
 
 				return frame;
 			}
@@ -521,69 +518,6 @@ public abstract class SchemeNewFactory {
 				}
 			}
 
-		});
-
-
-		register( "stimer", new SchemeNewFactory() {
-			final class ActionListenerImplementation implements ActionListener {
-				javax.swing.Timer timer;
-				Invokable invokable;
-				ActionListenerImplementation( Invokable invokable ) {
-					this.invokable = invokable;
-				}
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					Object result = invokable.invoke();					
-					if ( Boolean.FALSE.equals( result ) ) {
-						timer.stop();
-					}
-				}
-			}
-
-			@Override
-			Object create( Pulsar pulsar, List<Object> args ) {
-				if ( 2 <= args.size()  ) {
-					int interval = SchemeUtils.toInteger(args.get(0));
-					Procedure procedure = (Procedure)args.get(1);
-
-					ActionListenerImplementation listener = new ActionListenerImplementation( pulsar.createInvokable2( procedure ) );
-					javax.swing.Timer timer = new javax.swing.Timer( interval,  listener );
-					listener.timer = timer;
-					pulsar.addCleanupHook( new Runnable() {
-						@Override
-						public void run() {
-							timer.stop();
-						}
-					});
-					timer.start();
-					return new ProcedureN() {
-						public Object applyN(Object[] args) throws Throwable {
-							timer.stop();
-							return EmptyList.emptyList;
-						};
-					};
-				} else {
-					logInfo("WARNING : new 'timer was called but no argument was passed.");
-					return EmptyList.emptyList;
-				}
-
-			}
-		});
-
-		register( "progress", new SchemeNewFactory() {
-			@Override
-			Object create(Pulsar pulsar, List<Object> args) {
-				return new JProgressBar() {
-//					@Override
-//					public Dimension getPreferredSize() {
-//						return new Dimension(
-//								this.getParent().getSize().width,
-//								super.getPreferredSize().height
-//								);
-//						
-//					}
-				};
-			}
 		});
 
 		register( "newline", new SchemeNewFactory() {
