@@ -33,22 +33,18 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Dictionary;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
-import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -67,14 +63,12 @@ import javax.swing.JSlider;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.jaudiolibs.jnajack.JackException;
 
 import gnu.mapping.ProcedureN;
-import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import kawa.standard.Scheme;
 import kawapad.KawaPad;
@@ -100,7 +94,6 @@ class PulsarGui {
 		LOGGER.log(Level.WARNING, msg);
 	}
 
-	static final PanelOrientation DEFAULT_PANEL_ORIENTATION = PanelOrientation.BOTTOM;
 	static final int PB_POSITION_MAX = 1024;
 
 	public static void registerLocalSchemeInitializers( SchemeSecretary schemeSecretary, PulsarGui pulsarGui ) {
@@ -200,46 +193,6 @@ class PulsarGui {
 				}
 				{
 					putValue( Action2.NAME,  caption );
-					putValue( Action.MNEMONIC_KEY, (int)caption.charAt(0) );
-//					putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK) );
-				}
-			};
-		};
-	}
-	
-	enum PanelOrientation {
-		TOP   ( "Top",    JSplitPane.VERTICAL_SPLIT   ),
-		RIGHT ( "Right",  JSplitPane.HORIZONTAL_SPLIT ), 
-		BOTTOM( "Bottom", JSplitPane.VERTICAL_SPLIT   ),
-		LEFT  ( "Left",   JSplitPane.HORIZONTAL_SPLIT ), 
-		;
-		final String caption;
-		final int orientation;
-		private PanelOrientation( String caption, int orientation ) {
-			this.caption = caption;
-			this.orientation = orientation;
-		}
-		public final Action createSetPanelOrientationAction( PulsarGui gui ) {
-			return new AbstractAction() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					gui.guiSetPanelOrientation( PanelOrientation.this );
-				}
-				{
-					putValue( Action2.NAME, caption );
-					putValue( Action.MNEMONIC_KEY, (int)caption.charAt(0) );
-//					putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK) );
-				}
-			};
-		};
-		public final Action createSetScratchpadOrientationAction( PulsarGui gui ) {
-			return new AbstractAction() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					gui.frame.guiSetScratchpadOrientation( PanelOrientation.this );
-				}
-				{
-					putValue( Action2.NAME, caption );
 					putValue( Action.MNEMONIC_KEY, (int)caption.charAt(0) );
 //					putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK) );
 				}
@@ -403,31 +356,6 @@ class PulsarGui {
     		}
     	});
 
-    	SchemeUtils.defineVar( scheme, "gui-frame-orientation" , new ProcedureN("gui-frame-orientation") {
-    		PulsarGui.PanelOrientation sym2orientation( Object sym ) {
-    			String id = SchemeUtils.symbolToString( sym );
-    			return PanelOrientation.valueOf(id.toUpperCase() );
-    		}
-    		Symbol orientation2sym( PulsarGui.PanelOrientation orientation ) {
-    			return SchemeUtils.toSchemeSymbol( orientation.name().toLowerCase() );
-    		}
-    		
-			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-				ArrayList<Object> argList = new ArrayList<Object>( Arrays.asList( args ) );
-				if ( 0 == argList.size() ) {
-					return orientation2sym( currentPanelOrientation );
-				} else if ( 1 == argList.size() ) {
-					guiSetPanelOrientation( sym2orientation( argList.get(0) ) );
-					return argList.get(0);
-				} else {
-    				throw new RuntimeException( 
-    						"Invalid argument error\n"+
-    						"usage : (gui-panel-orientation! [pane])" );
-				}
-    		}
-    	});
-    	
     	SchemeUtils.defineVar( scheme, "gui-insert-text" , new ProcedureN("gui-insert-text") {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
@@ -471,108 +399,6 @@ class PulsarGui {
 	public void guiSetTempoRange( PulsarGui.TempoRange tempoRange ) {
 		this.sl_tempoSlider.setMaximum( tempoRange.max );
 		this.sl_tempoSlider.setMinimum( tempoRange.min );
-	}
-	
-	HashMap<PulsarGui.PanelOrientation,AbstractButton> orientaionMap = new HashMap<>();
-	PulsarGui.PanelOrientation currentPanelOrientation = PanelOrientation.BOTTOM;
-
-	public void guiSetPanelOrientation( PulsarGui.PanelOrientation panelOrientation ) {
-
-		if ( panelOrientation.equals(currentPanelOrientation ) )
-			return;
-		
-		Dimension staticPaneSize = this.staticPane.getSize();
-//			Dimension staticPaneSize = new Dimension( 600, 300 );
-		Dimension userPaneSize   = this.userPane.getSize();
-		 Dimension frameSize      = frame.getSize();
-		int dividerLocation;
-		Dimension newFrameSize = new Dimension( frameSize );
-		
-//			JSplitPane pulsarRootPane = (JSplitPane) this.rootPane;
-		
-		if ( rootPane instanceof JSplitPane )
-			((JSplitPane)rootPane).setOrientation( panelOrientation.orientation );
-		
-		JComponent topComponent;
-		JComponent bottomComponent;
-		String borderDirection;
-		
-		switch ( panelOrientation ) {
-			case TOP :
-				newFrameSize.width  = Math.max( staticPaneSize.width, userPaneSize.width); 
-				newFrameSize.height = staticPaneSize.height + userPaneSize.height; 
-				dividerLocation     = userPaneSize.height;
-				topComponent        = userPane;
-				bottomComponent     = staticPane;
-				borderDirection = BorderLayout.PAGE_END;
-				break;
-			case RIGHT :
-				newFrameSize.width  = staticPaneSize.width + userPaneSize.width;
-				newFrameSize.height = Math.max( staticPaneSize.height, userPaneSize.height);
-				dividerLocation     = staticPaneSize.width;
-				topComponent        = staticPane;
-				bottomComponent     = userPane;
-				borderDirection     = BorderLayout.LINE_START;
-				break;
-			case BOTTOM :
-				newFrameSize.width  = Math.max( staticPaneSize.width, userPaneSize.width); 
-				newFrameSize.height = staticPaneSize.height + userPaneSize.height; 
-				dividerLocation     = staticPaneSize.height;
-				topComponent        = staticPane;
-				bottomComponent     = userPane;
-				borderDirection = BorderLayout.PAGE_START;
-				break;
-			case LEFT :
-				newFrameSize.width  = staticPaneSize.width + userPaneSize.width;
-				newFrameSize.height = Math.max( staticPaneSize.height, userPaneSize.height);
-				dividerLocation     = userPaneSize.width;
-				topComponent        = userPane;
-				bottomComponent     = staticPane;
-				borderDirection     = BorderLayout.LINE_END;
-				break;
-			default :
-				throw new RuntimeException( "internal error" );
-		}
-
-		if ( rootPane instanceof JSplitPane ) {
-			JSplitPane rootPane = (JSplitPane) this.rootPane;
-			rootPane.setTopComponent(null);
-			rootPane.setBottomComponent(null);
-			rootPane.setTopComponent(topComponent);
-			rootPane.setBottomComponent(bottomComponent);
-		} else if ( rootPane instanceof JPanel ) {
-			rootPane.remove( userPaneOuter );
-			rootPane.add( userPaneOuter, BorderLayout.CENTER );
-			rootPane.remove( staticPaneOuter );
-			rootPane.add( staticPaneOuter, borderDirection );
-			rootPane.revalidate();
-		}
-	
-		newFrameSize.width += 20;
-		newFrameSize.height += 20;
-		frame.setSize( newFrameSize );
-		
-		if ( rootPane instanceof JSplitPane ) {
-			JSplitPane rootPane = (JSplitPane) this.rootPane;
-			rootPane.setDividerLocation(dividerLocation);
-		}
-		
-		rootPane.revalidate();
-		frame.revalidate();
-		rootPane.validate();
-		frame.validate();
-		
-		this.currentPanelOrientation = panelOrientation;
-
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				orientaionMap.get(panelOrientation ).setSelected(true);
-				if ( rootPane instanceof JSplitPane )
-				((JSplitPane) rootPane).setDividerLocation(dividerLocation);
-			}
-		});
-		
 	}
 	
 	public void newlineGui() {
@@ -736,22 +562,6 @@ class PulsarGui {
 					m.add( mm );
 				}
 
-				{
-					JMenu mm = new JMenu( "Panel Orientation" );
-					for ( PulsarGui.PanelOrientation r :  PanelOrientation.values() ) {
-						mm.add( new JMenuItem( r.createSetPanelOrientationAction( PulsarGui.this ) ) );
-					}
-					m.add( mm );
-				}
-				
-				{
-					JMenu mm = new JMenu( "Scratchpad Orientation" );
-					for ( PulsarGui.PanelOrientation r :  PanelOrientation.values() ) {
-						mm.add( new JMenuItem( r.createSetScratchpadOrientationAction( PulsarGui.this ) ) );
-					}
-					m.add( mm );
-				}
-
 				menuBar.add( m );
 			}
 			
@@ -798,45 +608,15 @@ class PulsarGui {
 			userPaneOuter.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER );
 			// SEE TAG_PACK_TWICE
 			
-			if ( false ) {
-				pulsarRootPane  = new JSplitPane( JSplitPane.VERTICAL_SPLIT, 
-						staticPane,
-						userPaneOuter
-						);
-				((JSplitPane)pulsarRootPane).setContinuousLayout( true );
-				((JSplitPane)pulsarRootPane).setDividerSize(5);
-				((JSplitPane)pulsarRootPane).setDividerLocation(500);
+			pulsarRootPane  = new JPanel( new BorderLayout() );
+			pulsarRootPane.add( staticPaneOuter, BorderLayout.PAGE_START);
+			pulsarRootPane.add( userPaneOuter, BorderLayout.CENTER );
+			pulsarRootPane.setMaximumSize( new Dimension( 500, 400 ));
 
-				// See : 
-				//   Detecting JSplitPane Divider Movement 
-				//   https://stackoverflow.com/questions/14468648/detecting-jsplitpane-divider-movement
-				pulsarRootPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, 
-						new PropertyChangeListener() {
-					@Override
-					public void propertyChange(PropertyChangeEvent pce) {
-						userPane.revalidate();
-						staticPane.revalidate();
-					}
-				});
-			} else {
-				pulsarRootPane  = new JPanel( new BorderLayout() );
-				pulsarRootPane.add( staticPaneOuter, BorderLayout.PAGE_START);
-				pulsarRootPane.add( userPaneOuter, BorderLayout.CENTER );
-				pulsarRootPane.setMaximumSize( new Dimension( 500, 400 ));
-				
-			}
-			
-			
-//				staticPane.setMaximumSize( new Dimension(0, 0 ));
-//				userPane.setMaximumSize( new Dimension(0, 0 ));
-			if ( false ) {
-				this.getContentPane().add ( pulsarRootPane );
-			} else {
-				this.scratchPadRoot.remove( this.scrollPane );
-				this.scratchPadRoot.add( this.scrollPane, BorderLayout.CENTER );
-				this.scratchPadRoot.add( this.pulsarRootPane, BorderLayout.PAGE_START );
-				this.scratchPadRoot.revalidate();
-			}
+			this.scratchPadRoot.remove( this.scrollPane );
+			this.scratchPadRoot.add( this.scrollPane, BorderLayout.CENTER );
+			this.scratchPadRoot.add( this.pulsarRootPane, BorderLayout.PAGE_START );
+			this.scratchPadRoot.revalidate();
 
 			// Tempo Button
 	        staticPane.add( new JPusarFilePanel(), BorderLayout.PAGE_START );
@@ -898,42 +678,6 @@ class PulsarGui {
 //				pb_position.setBorder( BorderFactory.createEmptyBorder(0,0,0,0) );
 			pb_position.setMaximum( PB_POSITION_MAX );
 			pb_position.setMinimum(0);
-		}
-
-		
-		public void guiSetScratchpadOrientation( PulsarGui.PanelOrientation panelOrientation ) {
-			switch ( panelOrientation ) {
-				case TOP :
-					this.scratchPadRoot.remove( this.scrollPane );
-					this.scratchPadRoot.remove( this.pulsarRootPane );
-					this.scratchPadRoot.add( this.scrollPane, BorderLayout.CENTER );
-					this.scratchPadRoot.add( this.pulsarRootPane, BorderLayout.PAGE_END );
-					this.scratchPadRoot.revalidate();
-					break;
-				case RIGHT :
-					this.scratchPadRoot.remove( this.scrollPane );
-					this.scratchPadRoot.remove( this.pulsarRootPane );
-					this.scratchPadRoot.add( this.scrollPane, BorderLayout.CENTER );
-					this.scratchPadRoot.add( this.pulsarRootPane, BorderLayout.LINE_START );
-					this.scratchPadRoot.revalidate();
-					break;
-				case BOTTOM :
-					this.scratchPadRoot.remove( this.scrollPane );
-					this.scratchPadRoot.remove( this.pulsarRootPane );
-					this.scratchPadRoot.add( this.scrollPane, BorderLayout.CENTER );
-					this.scratchPadRoot.add( this.pulsarRootPane, BorderLayout.PAGE_START );
-					this.scratchPadRoot.revalidate();
-					break;
-				case LEFT :
-					this.scratchPadRoot.remove( this.scrollPane );
-					this.scratchPadRoot.remove( this.pulsarRootPane );
-					this.scratchPadRoot.add( this.scrollPane, BorderLayout.CENTER );
-					this.scratchPadRoot.add( this.pulsarRootPane, BorderLayout.LINE_END );
-					this.scratchPadRoot.revalidate();
-					break;
-				default :
-					throw new RuntimeException( "internal error" );
-			}
 		}
 
 	}
