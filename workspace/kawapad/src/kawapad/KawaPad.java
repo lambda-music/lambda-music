@@ -184,8 +184,8 @@ public class KawaPad extends JFrame {
 	 * frames are disposed.
 	 */
 	public static void registerGlobalSchemeInitializer( SchemeSecretary schemeSecretary ) {
-		schemeSecretary.registerSchemeInitializer( null, staticInitializer01 );
-		schemeSecretary.registerSchemeFinalizer(null, new NoReturnNoThrow<Scheme>() {
+		schemeSecretary.registerSchemeInitializer( KawaPad.class, staticInitializer01 );
+		schemeSecretary.registerSchemeFinalizer( KawaPad.class, new NoReturnNoThrow<Scheme>() {
 			@Override
 			public void execute0(Scheme scheme, Object[] args) {
 				logInfo("finalizer() eventHandlers.clear()");
@@ -199,6 +199,11 @@ public class KawaPad extends JFrame {
 			staticInitScheme( scheme );				
 		}
 	};
+	// I added this for the sake of symmetricity, but this didn't use it.
+	// I left it for future use. (Mon, 12 Aug 2019 14:24:38 +0900)
+	public static void unregisterGlobalSchemeInitializer( SchemeSecretary schemeSecretary ) {
+		schemeSecretary.unregisterSchemeFinalizer( KawaPad.class );
+	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	

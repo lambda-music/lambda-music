@@ -1,10 +1,11 @@
 (load "./ats's-drumkit.scm" )
 (play)
 (close)
-(quit)
+(quit!)
 (list? (ls))
 (define f (car (lso)))
-(putt (newt 'hello (n port: f (melody '(do re mi sol end )))))
+(putt (newt 'hello (n port: 0 (melody '(do re mi sol end )))))
+(remt (gett 'hello) )
 
 (remt (gett 'hello1) 's)
 (putt (newt 'hello1 (n             chan: 1 port: 0 (melody '( do re mi sol end ) ) ) ) 'serial (gett 'main))  

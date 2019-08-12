@@ -1,4 +1,4 @@
-package pulsar;
+package pulsar.lib.scheme.http;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -46,7 +46,7 @@ import pulsar.lib.secretary.SecretaryMessage;
  * 
  */
 
-class PulsarHttp {
+public class SchemeHttp {
 	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
 	static void logError(String msg, Throwable e) {
 		LOGGER.log(Level.SEVERE, msg, e);
@@ -59,12 +59,12 @@ class PulsarHttp {
 	}
 
 
-	Pulsar pulsar;
+	SchemeSecretary schemeSecretary;
 	HttpServer httpServer;
 	Charset charset = Charset.forName( "UTF-8" );
-	public PulsarHttp( Pulsar pulsar, int port ) throws IOException {
+	public SchemeHttp( SchemeSecretary schemeSecretary, int port ) throws IOException {
 		super();
-		this.pulsar = pulsar;
+		this.schemeSecretary = schemeSecretary;
 		this.init( port );
 	}
 	private void init( int port ) throws IOException {
@@ -72,7 +72,7 @@ class PulsarHttp {
 		httpServer.createContext("/pulsar", new PulsarHttpHandler() );
 		httpServer.setExecutor(null); // creates a default executor
 		httpServer.start();
-		pulsar.addShutdownHook( new Runnable() {
+		schemeSecretary.addShutdownHook( new Runnable() {
 			@Override
 			public void run() {
 				stop();
@@ -146,7 +146,7 @@ class PulsarHttp {
 				String requestString = readInputStream( t.getRequestBody() ); 
 				logInfo( requestString );
 
-				String result = executeScheme( pulsar.getSchemeSecretary(), charset, requestString, requestResult );
+				String result = executeScheme( schemeSecretary, charset, requestString, requestResult );
 
 				String responseString;
 				if ( ! result.equals( "" ) ) {

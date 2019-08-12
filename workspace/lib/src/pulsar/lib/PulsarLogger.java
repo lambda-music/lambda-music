@@ -90,7 +90,7 @@ public class PulsarLogger {
 		SwingUtilities.invokeLater(() -> logInfo("Hello from the event dispatch thread"));
 	}
 	public static void init() {
-		getDefaultConsoleHandler().get(0).setFormatter(getMinimalFormatter() );
+		getDefaultConsoleHandler().get(0).setFormatter( getMinimalFormatter() );
 	}
 
 	static List<java.util.logging.Handler> getDefaultConsoleHandler() {

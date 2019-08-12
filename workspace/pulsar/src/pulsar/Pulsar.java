@@ -67,6 +67,7 @@ import metro.MetroTrack;
 import metro.MetroTrack.SyncType;
 import pulsar.lib.PulsarLogger;
 import pulsar.lib.scheme.SchemeUtils;
+import pulsar.lib.scheme.http.SchemeHttp;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.Invokable;
 import pulsar.lib.secretary.InvokablyRunnable;
@@ -216,7 +217,10 @@ public final class Pulsar extends Metro {
 //		>>> VERSION INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
 		this.schemeSecretary = new SchemeSecretary();
 		this.schemeSecretary.setDirectMeeting( true );
-		KawaPad.registerGlobalSchemeInitializer( schemeSecretary );
+		
+		if ( windowInterface )
+			KawaPad.registerGlobalSchemeInitializer( schemeSecretary );
+		
 		Pulsar.registerLocalSchemeInitializers( schemeSecretary, this );
 //		<<< VERSION INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
 		
@@ -226,9 +230,9 @@ public final class Pulsar extends Metro {
 			this.pulsarGui = null;
 		
 		if ( httpInterface )
-			this.pulsarHttp = new PulsarHttp( this, httpPort );
+			this.schemeHttp = new SchemeHttp( this.getSchemeSecretary(), httpPort );
 		else
-			this.pulsarHttp = null;
+			this.schemeHttp = null;
 		
 //		REMOVED >>> INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
 //		setting enableTime should be done only in newScheme(); 
@@ -253,7 +257,7 @@ public final class Pulsar extends Metro {
 	 * passed to the method, only the first argument is taken. 
 	 * @throws IOException 
 	 */
-	static Pulsar parseArgsAndCreatePulsar( String[] args ) throws IOException {
+	static Pulsar parseArgsAndStartPulsar( String[] args ) throws IOException {
 		
 		boolean argHttp = true;
 		int     argHttpPort = 8192;
@@ -287,22 +291,37 @@ public final class Pulsar extends Metro {
 		}
 
 		if ( argHttp || argGui ) {
-			Pulsar pulsar = new Pulsar( argGui , argHttp, argHttpPort );
-			if ( argFileName != null )
-				pulsar.openMainFile(null, new File( argFileName ));
-			
-			return pulsar;
+			return start(argGui, argHttp, argHttpPort, argFileName);
 		} else {
 			System.err.println( "hmm... you have to have at least one interface to control the system." );
 			return null;
 		}
+	}
+	public static Pulsar start(boolean guiEnabled, boolean httpEnabled, int httpPort, String filename) throws IOException {
+		Pulsar pulsar = new Pulsar( guiEnabled , httpEnabled, httpPort );
+		if ( filename != null )
+			pulsar.openMainFile(null, new File( filename ));
+		
+		return pulsar;
+	}
+	public static Pulsar start(boolean guiEnabled, boolean httpEnabled, int httpPort ) throws IOException {
+		return start(guiEnabled, httpEnabled, httpPort, null );
+	}
+	public static Pulsar start(boolean guiEnabled, boolean httpEnabled ) throws IOException {
+		return start(guiEnabled, httpEnabled, 8192, null );
+	}
+	public static Pulsar start(boolean guiEnabled ) throws IOException {
+		return start(guiEnabled, true, 8192, null );
+	}
+	public static Pulsar start() throws IOException {
+		return start(true, true, 8192, null );
 	}
 
 	transient boolean enabledTimer = false;
 
 	public static void main(String[] args) throws IOException {
 		PulsarLogger.init();
-		parseArgsAndCreatePulsar(args);
+		parseArgsAndStartPulsar(args);
 	}
 	
 //	@Override
@@ -312,7 +331,7 @@ public final class Pulsar extends Metro {
 //	}
 	
 	PulsarGui pulsarGui;
-	PulsarHttp pulsarHttp;
+	SchemeHttp schemeHttp;
 
 	boolean isGuiAvailable() {
 		return pulsarGui != null;
@@ -347,27 +366,8 @@ public final class Pulsar extends Metro {
     
     public void shutdown() {
 		close();
-    	executeShutdownHook();
+    	getSchemeSecretary().executeShutdownHook();
     }
-
-    final Collection<Runnable> shutdownHook = new LinkedList<>();
-    public void addShutdownHook( Runnable runnable ) {
-    	synchronized ( this.shutdownHook ) {
-    		this.shutdownHook.add( runnable );
-    	}
-    }
-    public void executeShutdownHook() {
-    	synchronized ( this.shutdownHook ) {
-    		for ( Runnable r : this.shutdownHook ) {
-    			try {
-    				r.run();
-    			} catch ( Throwable e ) {
-    				logError("", e);
-    			}
-    		}
-    	}
-    }
-    
 
 	
 	private final SchemeSecretary schemeSecretary;
@@ -958,7 +958,7 @@ public final class Pulsar extends Metro {
 			timer.setInitialDelay(250);
 			timer.start();
 
-			addShutdownHook( ()->{if ( timer != null ) timer.stop();} );
+			getSchemeSecretary().addShutdownHook( ()->{if ( timer != null ) timer.stop();} );
 		}
 	}
 

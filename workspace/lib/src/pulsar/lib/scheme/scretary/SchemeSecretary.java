@@ -2,6 +2,8 @@ package pulsar.lib.scheme.scretary;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,7 +19,7 @@ import pulsar.lib.secretary.SecretariallyInvokable;
 import pulsar.lib.secretary.Secretary;
 import pulsar.lib.secretary.SecretaryMessage;
 
-public class SchemeSecretary extends Secretary<Scheme> {
+public class SchemeSecretary extends Secretary<Scheme> implements ShutdownHook {
 	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
 	static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
 	static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -116,6 +118,11 @@ public class SchemeSecretary extends Secretary<Scheme> {
 //				( Environment.getCurrent() == env ) 
 //			);
 		}
+	}
+    private final Collection<Runnable> shutdownHookList = new LinkedList<>();
+    @Override
+	public Collection<Runnable> getShutdownHookList() {
+		return shutdownHookList;
 	}
 	
 	public final void initializeSchemeForCurrentThread() {
