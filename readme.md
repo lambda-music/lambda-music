@@ -28,7 +28,7 @@ and Linux distributions.
 - Includes Kawapad; Kawapad is an editor to edit Scheme program 
 	- Kawapad can prettify Lisp code.
 	- Execute a block of code on-the-fly.
-	- Kawapad is extensible by Kawa-Scheme.
+	- Kawapad can be extended by Kawa-Scheme.
 
 ### System Requirements ###
 Any operating systems that can run the following systems :
@@ -46,7 +46,7 @@ Pulser uses following libraries :
 - JNAJACK-1.3.0
 - KAWA-3.0
 
-These are statically linked to the main file `pulser.jar`.
+These are statically linked to the main file `pulsar.jar`.
 
 ### How to Install ###
 
