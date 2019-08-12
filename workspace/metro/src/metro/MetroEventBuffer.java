@@ -24,7 +24,6 @@ import static metro.Metro.*;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -47,30 +46,6 @@ public class MetroEventBuffer implements Iterable<MetroEvent>, MetroBufferedMidi
 
     private static final MetroMidiMessage MIDI_MESSAGE_GEN = MetroMidiMessage.getInstance();
 	
-	private double humanizeOffset_min = 0;
-	private double humanizeOffset_max = 0;
-	private double humanizeOffset_size = 0;
-	private double humanizeVelocity_min = 0;
-	private double humanizeVelocity_max = 0;
-	private double humanizeVelocity_size = 0;
-
-	public void setHumanizeOffset( double min, double max ) {
-		this.humanizeOffset_min = min;
-		this.humanizeOffset_max = max;
-		humanizeOffset_size = this.humanizeOffset_max - this.humanizeOffset_min;
-	}
-	public void setHumanizeVelocity( double min, double max ) {
-		this.humanizeVelocity_min = min;
-		this.humanizeVelocity_max = max;
-		this.humanizeVelocity_size = this.humanizeVelocity_max - this.humanizeVelocity_min;
-	}
-
-	
-	/*
-	 * NOT USED
-	 */
-	@Deprecated
-	private double offset;
 	private double length = 1.0d;
 	private boolean prepared = false;
 	private int barLengthInFrames=-1;
@@ -91,20 +66,6 @@ public class MetroEventBuffer implements Iterable<MetroEvent>, MetroBufferedMidi
 				max = e.barOffset;
 		
 		return max;
-	}
-	/*
-	 * NOT USED
-	 */
-	@Deprecated
-	public void setOffset(double offset) {
-		this.offset = offset;
-	}
-	/*
-	 * NOT USED
-	 */
-	@Deprecated
-	public double getOffset() {
-		return offset;
 	}
 	public int getBarLengthInFrames() {
 		if ( ! prepared )
@@ -160,35 +121,6 @@ public class MetroEventBuffer implements Iterable<MetroEvent>, MetroBufferedMidi
 		this.list.add(event);
 	}
 	
-	private void note( MetroPort outputPort, int midiEventValue, double offset, int channel, int note, double velocity) {
-		/*
-		 * DON'T CHECK MIN/MAX HERE
-		 * The offset may go beyond the minimum/maximum; now 
-		 * {@link MetroEventBuffer} can process the MIDI 
-		 * signals which are beyond the region of the buffer.   
-		 */
-		// if ( offset < 0 )  offset=0;
-		// if ( 127 < offset  ) offset=127;
-
-		if ( velocity < 0 )  velocity =0d;
-		if ( 1d < velocity ) velocity =1d;
-
-		// Create an event object.
-		MetroMidiEvent event = new MetroMidiEvent(
-			"note",
-			offset,
-			outputPort,
-			new byte[] {
-					(byte)( ( 0b11110000 & midiEventValue ) | ( 0b00001111 & channel ) ),
-					(byte) note,
-					(byte) (127d * velocity)
-			}
-		);
-		
-		// Add it to the list.
-		this.list.add(event);
-	}
-
 	public void noteHit( double offset, MetroPort outputPort, int channel, int note, double velocity ) {
 		noteHit( offset, outputPort, channel, note, velocity, -1 );
 	}
@@ -200,41 +132,12 @@ public class MetroEventBuffer implements Iterable<MetroEvent>, MetroBufferedMidi
 		noteOff( offset + duration, outputPort, channel, note, velocity );
 	}
 
-	MetroNoteInfoMap noteInfoMap = new MetroNoteInfoMap();
-	public void noteOnBak( double offset, MetroPort outputPort, int channel, int note, double velocity ) {
-		double humanizeOffset =  this.humanizeVelocity_min;
-		double humanizeVelocity =  this.humanizeVelocity_min;
-		if ( humanizeOffset_size != 0.0d ) {
-			humanizeOffset =+ ( Math.random() * this.humanizeOffset_size );
-		}
-		if ( this.humanizeVelocity_size != 0.0d ) {
-			humanizeVelocity =+ ( Math.random() *  this.humanizeVelocity_size );
-		}
-		
-		offset   += humanizeOffset;
-		velocity += humanizeVelocity;
-
-		noteInfoMap.put(outputPort, channel, note, humanizeOffset, humanizeVelocity);
-
-		note( outputPort, 0b10010000, offset, channel, note, velocity );
-	}
-
-	public void noteOffBak( double offset, MetroPort outputPort, int channel, int note, double velocity ) {
-		MetroNoteInfoMap.Value value = noteInfoMap.get( outputPort, channel, note );
-
-		note( outputPort, 0b10000000, offset + value.offset, channel, note, velocity + value.velocity );
-	}
-	
-	
 	public void exec( double offset, Runnable runnable ) {
 		MetroMessageEvent event = new MetroMessageEvent( "exec", offset, runnable );
 
 		this.list.add( event );
 	}
 
-//	public void length( double length ) {
-//		this.length = length;
-//	}
 	public void dump() {
 		logInfo( "length         : " + this.length        );
 		logInfo( "lengthInFrames : " + this.lengthInFrames);
@@ -471,63 +374,6 @@ public class MetroEventBuffer implements Iterable<MetroEvent>, MetroBufferedMidi
 	}
 }
 
-/**
- *  
- * TODO DELETE THIS CLASS! This class is obsoleted.
- */
-class MetroNoteInfoMap {
-	static final Value ZERO_VALUE = new Value(0, 0);
-	public static class Key {
-		final MetroPort port;
-		final int channel;
-		final int note;
-		public Key(MetroPort port, int channel, int note) {
-			super();
-			this.port = port;
-			this.channel = channel;
-			this.note = note;
-		}
-		@Override
-		public int hashCode() {
-			return ( 1 * channel * port.hashCode() * 256 + note * 65536 ) ;
-		}
-		@Override
-		public boolean equals(Object obj) {
-			if ( obj instanceof Key ) {
-				Key k = (Key)obj;
-				return 
-						( k.port == this.port ) &&
-						( k.channel == this.channel ) &&
-						( k.note == this.note );
-			} else {
-				return false;
-			}
-		}
-	}
-	public static class Value {
-		final double offset;
-		final double velocity;
-		public Value(double offset, double velocity) {
-			super();
-			this.offset = offset;
-			this.velocity = velocity;
-		}
-	}
-	
-	final HashMap<Key,Value> map = new HashMap<>();
-	public void put( MetroPort port, int channel, int note , double offset, double velocity ) {
-		map.put( new Key(port, channel, note), new Value(offset, velocity) );
-	}
-	public boolean containsKey( MetroPort port, int channel, int note ) {
-		return map.containsKey( new Key(port, channel, note) );
-	}
-	public MetroNoteInfoMap.Value get( MetroPort port, int channel, int note ) {
-		Value value = map.get( new Key(port, channel, note) );
-		return value == null  ? ZERO_VALUE : value;
-	}
-	public void clear() {
-		this.map.clear();
-	}
-}
+
 
 
