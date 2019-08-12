@@ -6,6 +6,26 @@
 
    ))
 
+(open "hello")
+(openi "foo")
+(openi '( bar ))
+
+
+(openo "a6" "a5" )
+
+
+(openo '( "aaa1" "aaa2") '( hello world)  )
+
+(lso)
+(lst)
+(closeo (lso))
+(list-ref '(1 2 3) 2 )
+(lsi)
+
+(apply closei (lsi))
+(openo 'foo 'bah)
+(closeo 'foo 'bah)
+
 ; (quit!)
 
 (n chan: 1 port: 1 (melody '(do re mi fi sol la end )) )

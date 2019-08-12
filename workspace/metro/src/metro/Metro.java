@@ -210,6 +210,8 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 	}
 	
 	private MetroPort createPort(Object portName, List<MetroPort> list, JackPortFlags flag) throws JackException {
+		if ( portName == null )
+			throw new NullPointerException();
 		checkState();
 		MetroPort port = new MetroPort( 
 			portName,
@@ -224,6 +226,8 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		return port;
 	}
 	private boolean destroyPort(MetroPort targetPort, JackPortFlags portFlag, ArrayList<MetroPort> list) throws JackException {
+		if ( targetPort == null )
+			throw new NullPointerException();
 		checkState();
 		if ( ! targetPort.jackPortFlag.equals( portFlag ) ) {
 			throw new IllegalArgumentException();

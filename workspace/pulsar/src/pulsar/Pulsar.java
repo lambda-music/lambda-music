@@ -44,6 +44,7 @@ import org.jaudiolibs.jnajack.JackException;
 
 import gnu.expr.Keyword;
 import gnu.lists.EmptyList;
+import gnu.lists.IString;
 import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
@@ -677,8 +678,8 @@ public final class Pulsar extends Metro {
 		// TAG SEARCH
 		if ( object instanceof Procedure ) {
 			return (Procedure) object;
-		} else if ( object instanceof Symbol ) {
-			return new TagSearchIsProcedure((Symbol) object );
+		} else if ( object instanceof Symbol || object instanceof IString ) {
+			return new TagSearchIsProcedure(object);
 		} else if ( object instanceof Pair ) {
 			// TODO DOCUMENT THIS
 			Object car = ((Pair)object).getCar();
@@ -701,15 +702,29 @@ public final class Pulsar extends Metro {
 			throw new IllegalArgumentException();
 		}
 	}
-	static List<MetroTrack> readParamTrack( Object object ) {
+	List<MetroTrack> readParamTrack( Object object ) {
 		if ( object instanceof Pair ) {
-			return (List)object;
+			if (((Pair)object).getCar() instanceof MetroTrack) {
+				return (List<MetroTrack>) object;
+			} else if ( NoteListParser.isNotationList(object) ) {
+				return Arrays.asList( createTrack( null, null, new TrackProcedure( (Pair) object ) ) );
+			} else {
+				/// XXX ??? (Tue, 13 Aug 2019 00:43:25 +0900)
+				return searchTrack( 
+					createInvokable( 
+						readParamTrackSearcher( object )));				
+//				throw new IllegalArgumentException( "The value '" + object + "' is not allowed here." );
+			}
 		} else if ( object instanceof MetroTrack ) {
 			return Arrays.<MetroTrack>asList((MetroTrack)object);
 		} else if ( object instanceof EmptyList ) {
 			return Collections.EMPTY_LIST;
 		} else {
-			throw new IllegalArgumentException( "The value '" + object + "' is not allowed here." );
+			return searchTrack( 
+				createInvokable( 
+					readParamTrackSearcher( object )));				
+
+//			throw new IllegalArgumentException( "The value '" + object + "' is not allowed here." );
 		}
 	}
 	static double readParamSyncOffset(Object object) {
@@ -735,8 +750,48 @@ public final class Pulsar extends Metro {
 		}
 	}
 
+	protected List<Object> readParamPortName( Object arg ) {
+		if ( arg instanceof Pair ) {
+			return ((Pair)arg);
+		} else {
+			return Arrays.asList( arg );
+		}
+	}
+	protected List<MetroPort> readParamPort( Object arg ) {
+		if ( arg instanceof Pair ) {
+			List<MetroPort> list = new ArrayList<>();
+			for ( Object o : ((Pair)arg) ) {
+				list.addAll( readParamPort( o ) );
+			}
+			return list;
+		} else if ( arg instanceof MetroPort ) {
+			return Arrays.asList( (MetroPort)arg );
+		} else if ( arg instanceof IString || arg instanceof Symbol ) {
+			MetroPort port = readParamNameToPort( getInputPorts(), arg );
+			if ( port == null ) {
+				logWarn( "unsupported type of a value (" + arg + ")" );
+				return Collections.EMPTY_LIST;
+			} else {
+				return Arrays.asList( port );
+			}
+		} else {
+			logWarn( "unsupported type of a value (" + arg + ")" );
+			return Collections.EMPTY_LIST;
+		}
+	}
 	
-
+	private MetroPort readParamNameToPort( List<MetroPort> portList, Object arg ) {
+		if ( arg instanceof MetroPort ) 
+			return (MetroPort)arg;
+		
+		for ( MetroPort p : portList ) {
+			if ( p.getName().equals( arg ) ) 
+				return p;
+		}
+		return null;
+	}
+	
+	
 	/**
 	 * Initializes an environment of scheme engine and defines API for the scripts.
 	 * 
@@ -765,27 +820,38 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		});
+
+		//////////////////////////////////////////////////////////
+
 		ProcedureN openOutput = new ProcedureN("open-output") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				ArrayList<MetroPort> list = new ArrayList<>();
 				for ( Object o : args ) {
-					list.add( createOutputPort( o ) );
+					for ( Object portName : readParamPortName( o ) ) {
+						list.add( createOutputPort(portName) );
+					}
 				}
+				Collections.reverse( list );
 				return LList.makeList( list );
 			}
 		};
 		SchemeUtils.defineVar( scheme, "output" ,      openOutput );
 		SchemeUtils.defineVar( scheme, "openo" ,       openOutput );
 		SchemeUtils.defineVar( scheme, "open-output" , openOutput );
-		
+
+		//////////////////////////////////////////////////////////
+
 		ProcedureN openInput = new ProcedureN("open-input") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				ArrayList<MetroPort> list = new ArrayList<>();
 				for ( Object o : args ) {
-					list.add( createInputPort( o ) );
+					for ( Object portName : readParamPortName( o ) ) {
+						list.add( createInputPort(portName) );
+					}
 				}
+				Collections.reverse( list );
 				return LList.makeList( list );
 			}
 		};
@@ -793,12 +859,15 @@ public final class Pulsar extends Metro {
 		SchemeUtils.defineVar( scheme, "open-input" , openInput );
 		SchemeUtils.defineVar( scheme, "openi" ,      openInput );
 
+		//////////////////////////////////////////////////////////
 		
 		ProcedureN closeOutput = new ProcedureN("close-output") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				for ( Object o : args ) {
-					destroyOutputPort((MetroPort) o );
+					for ( MetroPort p : readParamPort( o ) ) {
+						destroyOutputPort( p );
+					}
 				}
 				return Invokable.NO_RESULT;
 			}
@@ -806,11 +875,15 @@ public final class Pulsar extends Metro {
 		SchemeUtils.defineVar( scheme, "close-output", closeOutput );
 		SchemeUtils.defineVar( scheme, "closeo" ,      closeOutput );
 		
+		//////////////////////////////////////////////////////////
+		
 		ProcedureN closeInput = new ProcedureN("close-input") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				for ( Object o : args ) {
-					destroyInputPort((MetroPort) o );
+					for ( MetroPort p : readParamPort( o ) ) {
+						destroyInputPort( p );
+					}
 				}
 				return Invokable.NO_RESULT;
 			}
@@ -818,8 +891,9 @@ public final class Pulsar extends Metro {
 		SchemeUtils.defineVar( scheme, "close-input", closeInput );
 		SchemeUtils.defineVar( scheme, "closei" ,     closeInput );
 
+		//////////////////////////////////////////////////////////
 
-		ProcedureN outputInput = new ProcedureN("list-output") {
+		ProcedureN listOutput = new ProcedureN("list-output") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				List<MetroPort> list = getOutputPorts();
@@ -827,8 +901,8 @@ public final class Pulsar extends Metro {
 				return LList.makeList( list  );
 			}
 		};
-		SchemeUtils.defineVar( scheme, "list-output", outputInput );
-		SchemeUtils.defineVar( scheme, "lso" ,        outputInput );
+		SchemeUtils.defineVar( scheme, "list-output", listOutput );
+		SchemeUtils.defineVar( scheme, "lso" ,        listOutput );
 		
 		ProcedureN listInput = new ProcedureN("list-input") {
 			@Override
@@ -1012,6 +1086,8 @@ public final class Pulsar extends Metro {
 		};
 		SchemeUtils.defineVar( scheme, "simul" , simul );
 
+		/////////////////////////////////////////////////////////////////
+
 		ProcedureN getTrack = new ProcedureN( "get-track" ) {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
@@ -1027,6 +1103,8 @@ public final class Pulsar extends Metro {
 		};
 		SchemeUtils.defineVar( scheme, "gett" , getTrack );
 		SchemeUtils.defineVar( scheme, "get-track" , getTrack );
+
+		/////////////////////////////////////////////////////////////////
 
 		ProcedureN newTrack = new ProcedureN( "new-track" ) {
 			@Override
@@ -1058,6 +1136,8 @@ public final class Pulsar extends Metro {
 		};
 		SchemeUtils.defineVar( scheme, "newt" , newTrack );
 		SchemeUtils.defineVar( scheme, "new-track" , newTrack );
+		
+		/////////////////////////////////////////////////////////////////
 		
 		abstract class TrackManagementProcedure extends ProcedureN  {
 			TrackManagementProcedure( String name ) {
@@ -1114,6 +1194,8 @@ public final class Pulsar extends Metro {
 			}
 		}
 
+		/////////////////////////////////////////////////////////////////
+
 		ProcedureN putTrack = new TrackManagementProcedure( "put-track" ) {
 			@Override
 			void procTrack( List<MetroTrack> trackList, SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
@@ -1122,6 +1204,8 @@ public final class Pulsar extends Metro {
 		};
 		SchemeUtils.defineVar( scheme, "putt" ,      putTrack );
 		SchemeUtils.defineVar( scheme, "put-track" , putTrack );
+
+		/////////////////////////////////////////////////////////////////
 
 		ProcedureN removeTrack = new TrackManagementProcedure( "remove-track" ) {
 			@Override

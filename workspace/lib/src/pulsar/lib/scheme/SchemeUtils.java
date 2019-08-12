@@ -79,7 +79,7 @@ public class SchemeUtils {
 	
 				if ( e instanceof Pair ) {
 					Pair p = (Pair) e;
-					String key = p.getCar().toString();
+					String key =  p.getCar().toString(); // FIXME This should use SchemeUtils.toString()
 					Object value = p.getCdr();
 					map.put( key, value );
 					

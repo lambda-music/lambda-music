@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 
 import gnu.lists.AbstractSequence;
 import gnu.lists.Pair;
+import gnu.mapping.Symbol;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroEventBuffer;
@@ -57,6 +58,35 @@ public class NoteListParser {
 	}
 	static void logWarn(String msg) {
 		LOGGER.log(Level.WARNING, msg);
+	}
+	
+	public static boolean isNotation( Object o0 ) {
+		// o0 / p0 == the input value
+		// o1 / p1 == (car o0)
+		// o2 / p2 == (car (car o0))
+		if (o0 instanceof Pair) {
+			Pair p0 = (Pair)o0;
+			Object o1 = p0.getCar();
+			if ( o1 instanceof Pair ) {
+				Pair p1 = (Pair)o1;
+				Object o2 = p1.getCar();
+				if ( o2 instanceof Symbol ) {
+					Symbol s2 = (Symbol)o2;
+					if ( "type".equals( SchemeUtils.symbolToString(s2))) { 
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+	public static boolean isNotationList( Object o0 ) {
+		if ( o0 instanceof Pair ) {
+			Pair p0 = (Pair)o0;
+			Object o1 = p0.getCar();
+			return isNotation( o1 );
+		}
+		return false;
 	}
 
 	public static final String ID_TYPE      = "type";
