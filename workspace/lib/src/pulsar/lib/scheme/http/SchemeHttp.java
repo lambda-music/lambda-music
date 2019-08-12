@@ -21,6 +21,7 @@ import com.sun.net.httpserver.HttpServer;
 
 import gnu.kawa.io.InPort;
 import kawa.standard.Scheme;
+import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.SimpleSchemePrettifier;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.Invokable;
@@ -120,7 +121,7 @@ public class SchemeHttp {
 				if ( result == null ) {
 					bo.write( "#!null".getBytes() );
 				} else {
-					bo.write( SimpleSchemePrettifier.prettyPrint( result ).getBytes( charset ) );
+					bo.write( SchemeUtils.prettyPrint(result).getBytes( charset ) );
 					bo.write( '\n' );
 				}
 			} else {

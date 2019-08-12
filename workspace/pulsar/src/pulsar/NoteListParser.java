@@ -188,7 +188,7 @@ public class NoteListParser {
 			}
 		} catch ( RuntimeException e ) {
 			try {
-				logWarn( SimpleSchemePrettifier.prettyPrint( inputList ) );
+				logWarn( SchemeUtils.prettyPrint(inputList) );
 			} catch (Throwable e1) {
 				e1.printStackTrace();
 			}

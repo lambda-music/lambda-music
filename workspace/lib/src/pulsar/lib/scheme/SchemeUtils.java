@@ -308,6 +308,8 @@ public class SchemeUtils {
 			}
 		}
 	}
-
-
+	// TODO integrate all prettyPrint things.
+	public static String prettyPrint( Object resultObject ) throws Throwable {
+		return SimpleSchemePrettifier.prettyPrint(resultObject);
+	}
 }

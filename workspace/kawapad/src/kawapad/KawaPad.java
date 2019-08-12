@@ -557,7 +557,7 @@ public class KawaPad extends JFrame {
 //				System.out.println("==========================");
 //				System.out.println( resultObject.getClass() );
 //				System.out.println("==========================");
-				result = SchemeUtils.anyToString( SimpleSchemePrettifier.prettyPrint( resultObject ) );
+				result = SchemeUtils.anyToString( SchemeUtils.prettyPrint(resultObject) );
 
 			} catch (Throwable e1) {
 				errorOccured = true;
@@ -1031,7 +1031,7 @@ public class KawaPad extends JFrame {
 			SchemeUtils.defineVar(scheme, "pretty-print", new Procedure1() {
 				@Override
 				public Object apply1(Object arg1 ) throws Throwable {
-					return prettify( scheme, SchemeUtils.anyToString(SimpleSchemePrettifier.prettyPrint(arg1)));
+					return prettify( scheme, SchemeUtils.anyToString(SchemeUtils.prettyPrint(arg1)));
 				}
 			});
 			SchemeUtils.defineVar(scheme, "prettify", new Procedure1() {
