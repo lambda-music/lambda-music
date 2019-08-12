@@ -1627,7 +1627,7 @@ public class KawaPad extends JFrame {
 		editMenuItem.setMnemonic('e');
 		menuBar.add( editMenuItem );
 
-		JMenu schemeMenuItem = new JMenu( "Run" );
+		JMenu schemeMenuItem = new JMenu( "Scheme" );
 		schemeMenuItem.setMnemonic('r');
 		menuBar.add( schemeMenuItem );
 

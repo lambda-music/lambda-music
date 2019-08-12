@@ -529,25 +529,27 @@ class PulsarGui {
 			JMenuBar menuBar = getJMenuBar();
 			
 			{
-				JMenu m = new JMenu( "Sequencer" );
-				m.setMnemonic( 's' );
-
-//				m.add( new JMenuItem( NEW_SCRATCHPAD ) );
-//				m.add( new JMenuItem( SET_MAIN_FILE_ACTION ) );
-//				m.add( new JMenuItem( CLEAR_MAIN_FILE_ACTION ) );
-//				m.add( new JMenuItem( EDIT_SCRATCHPAD ) );
-				m.add( new JMenuItem( RESET_SEQUENCER ) );
+				JMenu m = menuBar.getMenu(0); // File
+				m.addSeparator();
 				m.add( new JMenuItem( QUIT_SEQUENCER ) );
-				menuBar.add( m,0 );
 			}
 			
 			{
-				JMenu m = new JMenu( "Play" );
-				m.setMnemonic( 'P' );
+				JMenu m = new JMenu( "Sequencer" );
+				m.setMnemonic( 's' );
 
 				m.add( new JMenuItem( TOGGLE_PLAYING_ACTION ) );
 				m.add( new JMenuItem( RESET_PLAYING_ACTION ) );
 				m.add( new JMenuItem( TAP_TEMPO_ACTION ) );
+				m.addSeparator();
+				m.add( new JMenuItem( RESET_SEQUENCER ) );
+
+				
+//				m.add( new JMenuItem( NEW_SCRATCHPAD ) );
+//				m.add( new JMenuItem( SET_MAIN_FILE_ACTION ) );
+//				m.add( new JMenuItem( CLEAR_MAIN_FILE_ACTION ) );
+//				m.add( new JMenuItem( EDIT_SCRATCHPAD ) );
+
 				menuBar.add( m );
 			}
 			{
