@@ -252,10 +252,6 @@
     (connect  "pulsar:out-counter"    "qsynth-counter:midi" )
     (connect  "pulsar:out-fluidsynth" "qsynth-fluidsynth:midi" )
 
-    (set-related-files '( "./pulsar-ex00.scm"
-                           "./test01.scm" 
-                           "./test02.scm" 
-                           "./test03.scm" ))
     (rewind)))
 
 

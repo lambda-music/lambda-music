@@ -44,7 +44,6 @@ import org.jaudiolibs.jnajack.JackException;
 
 import gnu.expr.Keyword;
 import gnu.lists.EmptyList;
-import gnu.lists.IString;
 import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
@@ -295,8 +294,8 @@ public final class Pulsar extends Metro {
 	}
 	public static Pulsar start(boolean guiEnabled, boolean httpEnabled, int httpPort, String filename) throws IOException {
 		Pulsar pulsar = new Pulsar( guiEnabled , httpEnabled, httpPort );
-		if ( filename != null )
-			pulsar.openMainFile(null, new File( filename ));
+		if ( filename != null && pulsar.pulsarGui != null )
+			pulsar.pulsarGui.openFile( new File( filename ) );
 		
 		return pulsar;
 	}
@@ -312,8 +311,6 @@ public final class Pulsar extends Metro {
 	public static Pulsar start() throws IOException {
 		return start(true, true, 8192, null );
 	}
-
-	transient boolean enabledTimer = false;
 
 	public static void main(String[] args) throws IOException {
 		PulsarLogger.init();
@@ -373,9 +370,7 @@ public final class Pulsar extends Metro {
 	
 	private void newScheme() {
 		logInfo("Pulsar#newScheme() "); 
-		this.enabledTimer = false; 
 		this.getSchemeSecretary().newScheme();
-		this.enabledTimer = true; 
 	}
 
 	public Invokable createInvokable( Procedure procedure ) {
@@ -427,93 +422,6 @@ public final class Pulsar extends Metro {
 		return mainProcedure;
 	}
 	
-    /**
-	 * This application is designed to implement Variable-Song-Length. Basically the
-	 * sequencer is always playing a specific region of a song repeatedly and
-	 * remains in the region and only when the user send a "cue" to the sequencer,
-	 * the sequencer goes to next region. When users call {@link Pulsar#cue() },
-	 * this invokable is invoked. 
-	 */
-	transient Invokable cueProcedure = null;
-	/**
-	 * Sets the cue-invokable object.
-	 * 
-	 * @see Pulsar#cueProcedure 
-	 */
-	public void setCueProcedure( Invokable cueProcedure ) {
-		this.cueProcedure = cueProcedure;
-	}
-	/**
-	 * Returns the cue-invokable object.
-	 * 
-	 * @see Pulsar#cueProcedure 
-	 */
-	public Invokable getCueProcedure() {
-		return cueProcedure;
-	}
-
-	
-	/**
-	 * Stores the path of the file which modified the related-file-list property.
-	 * This path is used to resolve a relative path by
-	 * {@link Pulsar#loadScheme(File) } method.
-	 */
-	transient File relatedFileParent=null;
-
-	/**
-	 * The "related-files" is a concept which could implement the "playlist"
-	 * function in Pulsar and maybe this could be use on other purposes,too.
-	 * 
-	 * The related-files is a place to stores a list of scheme script files and the
-	 * files are shown on the combobox on the main screen. Users can execute any
-	 * scheme script on the list anytime.
-	 */
-	final List<File> relatedFiles = new ArrayList<>();
-
-	/**
-	 * @see #relatedFiles
-	 */
-	public void clearRelatedFiles() {
-		relatedFiles.clear();
-	}
-
-	/**
-	 * @see #relatedFiles
-	 */
-	public List<File> getRelatedFiles() {
-		return Collections.unmodifiableList( relatedFiles );
-	}
-
-	/**
-	 * @see #relatedFiles
-	 */
-	public void setRelatedFiles( Collection<File> fileList ) {
-		this.relatedFiles.clear();
-		this.relatedFiles.addAll( fileList );
-		this.relatedFileParent = mainFile;
-
-		if ( isGuiAvailable() ) { 
-			if ( this.pulsarGui.cb_relatedFiles != null ) {
-				this.pulsarGui.cb_relatedFiles.removeAllItems();
-				for ( File f : this.relatedFiles ) {
-					this.pulsarGui.cb_relatedFiles.addItem(f.getPath());
-				}
-			}
-		}
-	}
-	
-	/**
-	 * This method is not used now. The developers should not use this method in
-	 * order to keep consistency.
-	 */
-	public void addRelatedFile( File f) {
-		this.relatedFiles.add( f );
-		if ( this.isGuiAvailable() ) {
-			if ( this.pulsarGui.cb_relatedFiles != null ) {
-				this.pulsarGui.cb_relatedFiles.addItem( f.getPath() );
-			}
-		}
-	}
 
 	/**
 	 * Reset the current state of the sequencer except the current opened script
@@ -521,19 +429,12 @@ public final class Pulsar extends Metro {
 	 */
 	public void reset() {
 		logInfo("===Pulsar.reset()");
-		try {
-			this.enabledTimer = false;
-			
-			newScheme();
-			
-			this.execCleanupHook();
-			if ( isGuiAvailable() )
-				this.pulsarGui.guiClear();
-			this.close();
-			this.lastModifiedOfMainFile = NOT_DEFINED;
-		} finally {
-			this.enabledTimer = true;
-		}
+		newScheme();
+
+		this.execCleanupHook();
+		if ( isGuiAvailable() )
+			this.pulsarGui.guiClear();
+		this.close();
 	}
 	
 	
@@ -550,16 +451,6 @@ public final class Pulsar extends Metro {
     		mainProcedure.invoke();
     }
 
-    /**
-     * Invokes cue-invokable. See {@link Pulsar#cueProcedure }
-     * This is no longer used. (Mon, 05 Aug 2019 14:47:22 +0900) 
-     */
-    public void cue() {
-    	logInfo( "===cue" );
-    	if ( cueProcedure != null )
-    		cueProcedure.invoke();
-    }
-    
     /**
      * This method clears main invokable and state.
      */
@@ -673,63 +564,8 @@ public final class Pulsar extends Metro {
 				}
 		}
 	}
-	private static final int NOT_DEFINED = -1;
-
 	final File configFile = getConfigFile();
-	long lastModifiedOfConfigFile=NOT_DEFINED;
-
-	/**
-	 * This stores the File object that point to the current opening scheme file.
-	 * Pulsar's process of opening file is depend on watchdog timer. The watchdog
-	 * timer frequently check the file that the {@link Pulsar#mainFile} points if
-	 * its timestamp value is modified. When it detect timestamp modification, the
-	 * watchdog timer invoke {@link Pulsar#loadScheme(File)} method to load the
-	 * script.
-	 */
-	File mainFile=null;
 	
-	/**
-	 * This path is used whenever a relative path is given to the
-	 * {@link Pulsar#loadScheme(File)} method.
-	 */
-	File parentFile=null;
-
-	/**
-	 * This field stores the last value of timestamp of the {@link Pulsar#mainFile }
-	 */
-	long lastModifiedOfMainFile=NOT_DEFINED;
-	
-	/**
-	 * @see #mainFile
-	 * @param parentFile
-	 * @param mainFile
-	 */
-	public void setMainFile( File parentFile, File mainFile ) {
-		this.mainFile   = mainFile;
-		this.parentFile = parentFile;
-		this.lastModifiedOfMainFile = NOT_DEFINED;
-	}
-	public File getMainFile() {
-		return mainFile;
-	}
-	
-	public void openMainFile( File parentFile, File mainFile ) throws IOException {
-		getSchemeSecretary().executeWithoutSecretarially( new SecretaryMessage.NoReturn<Scheme,IOException>() {
-			@Override
-			public void execute0(Scheme resource, Object[] args) throws IOException{
-				logInfo( "Pulsar#openMainFile()" );
-				if ( ! mainFile.isFile() )
-					throw new RuntimeException( "The specified file does not exist (" + mainFile.getPath() + ")" );
-				
-				if ( isGuiAvailable() ) {
-					pulsarGui.frame.openFile( mainFile );
-				} else {
-					// See the comment in the setMainFile().
-					setMainFile( null , mainFile );
-				}
-			}
-		}, Invokable.NOARG );
-	}
 	
 
 	public static Runnable createTimer( Pulsar pulsar, long delay, long interval, Invokable invokable ) {
@@ -924,7 +760,7 @@ public final class Pulsar extends Metro {
 			new SecretaryMessage.NoReturn<Scheme,FileNotFoundException>() {
 				@Override
 				public void execute0(Scheme scheme, Object[] args ) throws FileNotFoundException {
-					SchemeUtils.execSchemeFromFile( getMetroLock(),  scheme, parentFile, file );
+					SchemeUtils.execSchemeFromFile( getMetroLock(),  scheme, file );
 				}
 			});
 	}
@@ -1209,19 +1045,6 @@ public final class Pulsar extends Metro {
 				return getMainProcedure();
 			}
 		});
-		SchemeUtils.defineVar( scheme, "set-cue" , new ProcedureN("set-cue") {
-			@Override
-			public Object applyN(Object[] args) throws Throwable {
-				logInfo("set-cue");
-				if ( args.length == 1 ) {
-					Procedure procedure = (Procedure)args[0];
-					setCueProcedure( Pulsar.this.createInvokable( procedure ) );
-				} else {
-					throw new RuntimeException( "invalid argument length" );
-				}
-				return Invokable.NO_RESULT;
-			}
-		});
 		SchemeUtils.defineVar( scheme, "set-playing" , new ProcedureN("set-playing") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
@@ -1297,55 +1120,7 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		});
-		// TODO XXX
-		SchemeUtils.defineVar( scheme, "get-main-file" , new Procedure0("get-main-file") {
-			@Override
-			public Object apply0() throws Throwable {
-				return SchemeUtils.toSchemeString( getMainFile().getName() );
-			}
-		});
-		// TODO XXX
-		SchemeUtils.defineVar( scheme, "set-main-file" , new Procedure1("set-main-file") {
-			@Override
-			public Object apply1( Object arg ) throws Throwable {
-				// XXX
-				setMainFile( null, new File( SchemeUtils.toString( arg ) ) );
-				return Invokable.NO_RESULT;
-			}
-		});
-		SchemeUtils.defineVar( scheme, "set-related-files" , new ProcedureN("set-related-files") {
-			@Override
-			public Object applyN(Object[] args) throws Throwable {
-				if ( args.length == 1  ) {
-					Pair p = (Pair)args[0];
-					Collection<File> files= SchemeUtils.<Object,File>convertList( p, (v)->new File( SchemeUtils.anyToString(v) ) );
-					setRelatedFiles( files );
-				} else {
-					throw new RuntimeException( "invalid argument length" );
-				}
-				return Invokable.NO_RESULT;
-			}
-		});
-		SchemeUtils.defineVar( scheme, "get-related-files" , new ProcedureN("get-related-files") {
-			@Override
-			public Object applyN(Object[] args) throws Throwable {
-				Pair p = new Pair();
-				ArrayList<IString> ss = new ArrayList<>();
-				for ( File f : relatedFiles ) {
-					ss.add( IString.valueOf( f.getPath() ) );
-				}
-				p.addAll( ss );
-				return p;
-			}
-		});
-		SchemeUtils.defineVar( scheme, "cue" , new Procedure0( "cue" ) {
-			@Override
-			public Object apply0() throws Throwable {
-				cue();
-				return Invokable.NO_RESULT;
-			}
-		});
-		
+
 		/**
 		 * This function only reset the current scheme environment.
 		 * See {@link Pulsar#reset }

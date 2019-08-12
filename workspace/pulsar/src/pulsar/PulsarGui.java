@@ -57,7 +57,6 @@ import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -77,7 +76,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import javax.swing.filechooser.FileFilter;
 
 import org.jaudiolibs.jnajack.JackException;
 
@@ -128,6 +126,18 @@ class PulsarGui {
 		schemeSecretary.unregisterSchemeInitializer( pulsarGui );
 	}
 
+	public void openFile( File mainFile ) throws IOException {
+		pulsar.getSchemeSecretary().executeWithoutSecretarially( new SecretaryMessage.NoReturn<Scheme,IOException>() {
+			@Override
+			public void execute0(Scheme resource, Object[] args) throws IOException{
+				logInfo( "Pulsar#openMainFile()" );
+				if ( ! mainFile.isFile() )
+					throw new RuntimeException( "The specified file does not exist (" + mainFile.getPath() + ")" );
+				
+				frame.openFile( mainFile );
+			}
+		}, Invokable.NOARG );
+	}
 
 	Pulsar pulsar;
 	PulsarGui( Pulsar pulsar ) {
@@ -572,26 +582,6 @@ class PulsarGui {
 		
 	}
 	
-	public void updateFilename(File file) {
-		if ( tf_currentFile != null ) {
-			tf_currentFile.setText( file !=null ? file.getPath() : ""  );
-		}
-		
-		if ( cb_relatedFiles != null ) {
-			int i = pulsar.relatedFiles.indexOf( file );
-			if ( 0<=i ) {
-				if ( ! isComboBoxUpdating  ) {
-					try { 
-						isComboBoxUpdating = true;
-						this.cb_relatedFiles.setSelectedIndex( i );
-					} finally {
-						isComboBoxUpdating = false;
-					}
-				}
-			}
-		}
-	}
-	
 	public void newlineGui() {
 		// userPane.add( Box.createVerticalStrut(500 ) );
 	}
@@ -609,22 +599,6 @@ class PulsarGui {
 		}
 	};
 
-	public final Action EDIT_SCRATCHPAD = new AbstractAction() {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			KawaPad scratchPad = frame.createKawaPad();
-			try {
-				scratchPad.openFile( pulsar.getMainFile() );
-			} catch (IOException e1) {
-				logError("", e1);
-			}
-		}
-		{
-			putValue( Action2.NAME, "Edit Main File" );
-			putValue( Action.MNEMONIC_KEY, (int)'e' );
-			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK ) );
-		}
-	};
 
 	public final Action RESET_SEQUENCER = new AbstractAction() {
 		@Override
@@ -650,52 +624,6 @@ class PulsarGui {
 		}
 	};
 
-
-
-	public final Action SET_MAIN_FILE_ACTION = new AbstractAction() {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			JFileChooser fc = new JFileChooser();
-			fc.setFileFilter( new FileFilter() {
-				@Override
-				public String getDescription() {
-					return "*.scm (scheme)";
-				}
-				@Override
-				public boolean accept(File f) {
-					return ! f.isFile() || f.getName().endsWith( "scm" );
-				}
-			});
-			{
-				File mainFile = pulsar.getMainFile();
-				if ( mainFile != null ) {
-					fc.setSelectedFile( mainFile );
-				}
-			}
-			int result = fc.showOpenDialog( frame );
-			if ( result == JFileChooser.APPROVE_OPTION ) {
-				pulsar.close();
-				pulsar.setMainFile( null, fc.getSelectedFile() );
-			}
-		}
-		{
-			putValue( Action2.NAME, "Set Main File" );
-			putValue( Action.MNEMONIC_KEY, (int)'s' );
-			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK) );
-		}
-	};
-	public final Action CLEAR_MAIN_FILE_ACTION = new AbstractAction() {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			pulsar.close();
-			pulsar.setMainFile( null, null );
-		}
-		{
-			putValue( Action2.NAME, "Clear Main File" );
-			putValue( Action.MNEMONIC_KEY, (int)'c' );
-			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_W, ActionEvent.CTRL_MASK) );
-		}
-	};
 	public final Action TOGGLE_PLAYING_ACTION = new AbstractAction() {
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -786,8 +714,8 @@ class PulsarGui {
 				m.setMnemonic( 's' );
 
 //				m.add( new JMenuItem( NEW_SCRATCHPAD ) );
-				m.add( new JMenuItem( SET_MAIN_FILE_ACTION ) );
-				m.add( new JMenuItem( CLEAR_MAIN_FILE_ACTION ) );
+//				m.add( new JMenuItem( SET_MAIN_FILE_ACTION ) );
+//				m.add( new JMenuItem( CLEAR_MAIN_FILE_ACTION ) );
 //				m.add( new JMenuItem( EDIT_SCRATCHPAD ) );
 				m.add( new JMenuItem( RESET_SEQUENCER ) );
 				m.add( new JMenuItem( QUIT_SEQUENCER ) );
@@ -850,11 +778,10 @@ class PulsarGui {
 //			this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			setDefaultCloseOperation( JFrame.DO_NOTHING_ON_CLOSE );
 
-
 			staticPane = new JPanel() {
 				@Override
 				public Dimension getPreferredSize() {
-					return new Dimension(500,250);
+					return new Dimension(500,180);
 				}
 			};
 			
@@ -923,6 +850,8 @@ class PulsarGui {
 			staticPane.add( createStartStopButton(), BorderLayout.LINE_END );
 			staticPane.add( createTempoTapButton(), BorderLayout.CENTER );
 			staticPane.add( createRewindButton(), BorderLayout.LINE_START );
+			
+    		
 //			REMOVED >>> (Mon, 08 Jul 2019 22:06:16 +0900)
 //			staticPane.add( createCueButton(), BorderLayout.PAGE_END );
 //			REMOVED <<< (Mon, 08 Jul 2019 22:06:16 +0900)
@@ -936,7 +865,7 @@ class PulsarGui {
 
 			// frame.setMaximizedBounds(new Rectangle(0, 0, 400, 1000));
 			this.pack();
-			this.setSize( 700, 500 );
+			this.setSize( 750, 750 );
 			this.setVisible(true);
 			this.addComponentListener( new ComponentAdapter() {
 				@Override
@@ -1039,10 +968,12 @@ class PulsarGui {
      */
 
 
-    class JPusarFilePanel extends JPanel {
+	// XXX REMOVE THIS
+    private class JPusarFilePanel extends JPanel {
     	public JPusarFilePanel() {
     		super( PulsarGuiUtils.newLayout() );
     	}
+    	
     	JPanel panel_outer = new JPanelExtentionOuter();
     	{
     		add( panel_outer, BorderLayout.CENTER );
@@ -1073,11 +1004,7 @@ class PulsarGui {
     				execButton.addActionListener( new ActionListener() {
     					@Override
     					public void actionPerformed(ActionEvent e) {
-    						int i = cb_relatedFiles.getSelectedIndex();
-    						if ( 0<=i ) {
-    							File file = pulsar.relatedFiles.get(i);
-    							pulsar.setMainFile( pulsar.relatedFileParent, file );
-    						}
+    						// XXX
     					}
     				});
     				add( execButton , BorderLayout.LINE_START );
@@ -1118,7 +1045,7 @@ class PulsarGui {
 
     		JPanel panel_openFile = new JOpenFilePanel();
         	{
-        		add( panel_openFile, BorderLayout.CENTER );
+//        		add( panel_openFile, BorderLayout.CENTER );
         	}
         	class JOpenFilePanel extends JPanel {
 				JOpenFilePanel(){ super( PulsarGuiUtils.newLayout() ); }
@@ -1139,7 +1066,7 @@ class PulsarGui {
 						openMainFileButton.addActionListener( new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								SET_MAIN_FILE_ACTION.actionPerformed(e);
+								/// XXX SET_MAIN_FILE_ACTION.actionPerformed(e);
 							}
 						} );
 					}
@@ -1151,7 +1078,7 @@ class PulsarGui {
 						clearMainFileButton.addActionListener( new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								CLEAR_MAIN_FILE_ACTION.actionPerformed(e);
+								/// XXX CLEAR_MAIN_FILE_ACTION.actionPerformed(e);
 							}
 						} );
 					}
@@ -1170,15 +1097,18 @@ class PulsarGui {
     		public Dimension getPreferredSize() {
     			return new Dimension( 75,super.getPreferredSize().height + 20 );
     		}
+    		{
+    			this.addActionListener( new ActionListener() {
+    				@Override
+    				public void actionPerformed(ActionEvent e) {
+    					pulsar.reset();
+    				}
+    			});
+    		}
     	};
     	{
-    		add( resetButton , BorderLayout.LINE_END );
-    		resetButton.addActionListener( new ActionListener() {
-    			@Override
-    			public void actionPerformed(ActionEvent e) {
-    				pulsar.reset();
-    			}
-    		});
+    		// XXX REMOVE THIS
+//    		add( resetButton , BorderLayout.LINE_END );
     	}
 
     	
@@ -1198,7 +1128,8 @@ class PulsarGui {
 		
     	JSliderPanel panel_slider = new JSliderPanel();
     	{
-				add( panel_slider, BorderLayout.PAGE_END );
+//    		add( panel_slider, BorderLayout.PAGE_END );
+    		add( panel_slider, BorderLayout.CENTER );
     	}
     	class JSliderPanel extends JPanel {
     		public JSliderPanel() {
@@ -1365,23 +1296,6 @@ class PulsarGui {
     	});
     	return b;
     }
-
-    @SuppressWarnings("unused")
-	private JButton createCueButton() {
-    	JButton b = new JButton( "=== CUE ===" ) {
-    		@Override
-    		public Dimension getPreferredSize() {
-    			return new Dimension( super.getPreferredSize().width, 100 );
-    		}
-    	};
-    	b.addActionListener( new ActionListener() {
-    		@Override
-    		public void actionPerformed(ActionEvent e) {
-    			pulsar.cue();
-    		}
-		});
-		return b;
-	}
     
 	private JButton createTempoTapButton() {
     	JButton tempoTapButton = new JButton( "TEMPO" );

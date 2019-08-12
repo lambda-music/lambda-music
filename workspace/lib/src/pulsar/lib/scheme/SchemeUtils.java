@@ -252,19 +252,11 @@ public class SchemeUtils {
 	}
 	
 	
-	public static void execSchemeFromFile( Object lock, Scheme scheme, File parentFile, File file) throws FileNotFoundException {
+	public static void execSchemeFromFile( Object lock, Scheme scheme, File file) throws FileNotFoundException {
 		if ( ! file.isFile() ) {
 			throw new FileNotFoundException( file.getPath() );
 		}
-		
-		if ( ! file.isAbsolute() ) {
-			if ( parentFile == null )
-				file = new File( file.getPath() );
-//				throw new FileNotFoundException( "cannot resolve relative path because no parent file is known." );
-			else	
-				file = new File( parentFile.getParentFile(), file.getPath() );
-		}
-		
+			
 		InputStream in=null;
 		try {
 //			String text = new String(Files.readAllBytes( Paths.get( file.toURI() ) ), StandardCharsets.UTF_8);
