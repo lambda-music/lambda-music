@@ -20,8 +20,6 @@
 
 package pulsar;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -36,13 +34,11 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javax.swing.JComboBox;
-import javax.swing.Timer;
 
 import org.jaudiolibs.jnajack.JackException;
 
@@ -912,55 +908,6 @@ public final class Pulsar extends Metro {
 	}
 	final TempoTapper tempoTapper = new TempoTapper();
 
-	Timer timer =null;
-	// a watchdog Timer
-	{
-		if ( false ) {
-			this.timer = new Timer(1000, new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-
-					if ( false && enabledTimer ) {
-						lastModifiedOfConfigFile  = checkLastModified( configFile,  lastModifiedOfConfigFile , (file)->{}   );
-						lastModifiedOfMainFile    = checkLastModified( mainFile,    lastModifiedOfMainFile,    (file)->{if ( isGuiAvailable() ) pulsarGui.updateFilename(file);} );
-					}
-				}
-
-				long checkLastModified( File file, long lastModified, Consumer<File> updateProc ) {
-					if ( file == null ) {
-						updateProc.accept(null);
-						return NOT_DEFINED; // lastModified;
-					}
-
-					long newLastModified = file.lastModified();
-					if ( newLastModified != lastModified ) {
-						logInfo( "Detected that the file was modified." );
-
-						try {
-							//						// XXX THIS IS BOGUS
-							//						if ( getScheme() != null)
-							//							loadScheme( file );
-							// (Mon, 22 Jul 2019 17:22:39 +0900) 
-							// Therefore it is executed sequentially now,
-							// this getScheme() !=null check may not be necessary anymore.
-
-							loadScheme( file );
-							updateProc.accept( file );
-						} catch (FileNotFoundException e) {
-							logError( "" , e );
-						}
-
-
-					}
-					return newLastModified;
-				}
-			});
-			timer.setInitialDelay(250);
-			timer.start();
-
-			getSchemeSecretary().addShutdownHook( ()->{if ( timer != null ) timer.stop();} );
-		}
-	}
 
 	/**
 	 * Loads and executes the specified scheme script file.
