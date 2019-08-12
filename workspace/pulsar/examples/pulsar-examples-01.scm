@@ -3,7 +3,6 @@
    (load "./ats's-drumkit.scm" )
    (load "./pulsar-pattern-generator.scm" )
    (create-gui)
-
    ))
 
 (open "hello")

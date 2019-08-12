@@ -36,6 +36,7 @@ import metro.MetroBufferedMidiReceiver;
 import metro.MetroEventBuffer;
 import metro.MetroTrack;
 import pulsar.lib.scheme.SchemeUtils;
+import pulsar.lib.scheme.SimpleSchemePrettifier;
 
 /**
  * {@link NoteListParser} receives a cons cell of Scheme language which contains
@@ -170,19 +171,28 @@ public class NoteListParser {
 	 */
 	public boolean parse( Metro metro, MetroTrack track, AbstractSequence<Object> inputList, MetroBufferedMidiReceiver receiver, boolean result ) {
 		// boolean result = true;
-		if ( inputList != null ) {
-			for ( Iterator<Object> i = inputList.iterator(); i.hasNext(); ) {
- 				Object obj = i.next();
-				if ( obj instanceof Pair ) {
-					Pair record = (Pair)obj;
-					result = parseNote( metro, track, receiver, result, record );
-				} else if ( obj instanceof Boolean ) {
-					continue;
-				} else {
-					LOGGER.log( Level.WARNING, "Unsupported object type was found. We ignored it." + obj );
-				}
-					
-			} // end of the loop
+		try {
+			if ( inputList != null ) {
+				for ( Iterator<Object> i = inputList.iterator(); i.hasNext(); ) {
+					Object obj = i.next();
+					if ( obj instanceof Pair ) {
+						Pair record = (Pair)obj;
+						result = parseNote( metro, track, receiver, result, record );
+					} else if ( obj instanceof Boolean ) {
+						continue;
+					} else {
+						LOGGER.log( Level.WARNING, "Unsupported object type was found. We ignored it." + obj );
+					}
+
+				} // end of the loop
+			}
+		} catch ( RuntimeException e ) {
+			try {
+				logWarn( SimpleSchemePrettifier.prettyPrint( inputList ) );
+			} catch (Throwable e1) {
+				e1.printStackTrace();
+			}
+			throw e;
 		}
 		return result;
 	}

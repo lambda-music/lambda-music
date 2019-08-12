@@ -79,7 +79,8 @@ public class SchemeUtils {
 	
 				if ( e instanceof Pair ) {
 					Pair p = (Pair) e;
-					String key =  p.getCar().toString(); // FIXME This should use SchemeUtils.toString()
+					String key   = fromSymbol( p.getCar() );
+//					String key   = p.getCar().toString();   //XXX TODO
 					Object value = p.getCdr();
 					map.put( key, value );
 					
@@ -126,14 +127,14 @@ public class SchemeUtils {
 		// return toString( value );
 		if ( schemeVal == null ) {
 			return null;
-		} else if ( schemeVal instanceof Boolean ) {
-			return ((Boolean) schemeVal ).toString();
+		} else if ( schemeVal instanceof Symbol ) {
+			return fromSymbol(schemeVal);
 		} else if ( schemeVal instanceof IString ) {
 			return ((IString)schemeVal).toString();
-		} else if ( schemeVal instanceof Symbol ) {
-			return ((Symbol)schemeVal).getName();
 		} else if ( schemeVal instanceof String ) {
 			return (String) schemeVal;
+		} else if ( schemeVal instanceof Boolean ) {
+			return ((Boolean) schemeVal ).toString();
 		} else {
 			return toString( schemeVal );
 		}
@@ -163,7 +164,10 @@ public class SchemeUtils {
 		if ( schemeVal == null ) 
 			return null;
 		else
-			return ((Symbol)schemeVal).getName();
+			return fromSymbol(schemeVal);
+	}
+	public static String fromSymbol(Object schemeVal) {
+		return ((Symbol)schemeVal).getName();
 	}
 	public static double toDouble( Object schemeVal ) {
 		return ((Quantity) schemeVal).doubleValue();
