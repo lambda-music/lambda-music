@@ -582,7 +582,7 @@ public class KawaPad extends JFrame {
 			schemeSecretary.newScheme();
 		}
 		{
-			putValue( Action2.NAME, "Reset" );
+			putValue( Action2.NAME, "Reset the Environment" );
 			putValue( Action.MNEMONIC_KEY, (int)'s' );
 //			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK) );
 		}
@@ -1639,11 +1639,11 @@ public class KawaPad extends JFrame {
 		fileMenuItem.add( new JMenuItem( SAVE_FILE ) );
 		fileMenuItem.add( new JMenuItem( SAVE_FILE_AS ) );
 
-		schemeMenuItem.add( new JMenuItem( RESET_ACTION ) );
-		schemeMenuItem.addSeparator();
 		schemeMenuItem.add( new JMenuItem( EVALUATE_ACTION ) );
 		schemeMenuItem.add( new JMenuItem( RUN_ACTION ) );
 		schemeMenuItem.add( new JMenuItem( INTERRUPT_ACTION ) );
+		schemeMenuItem.addSeparator();
+		schemeMenuItem.add( new JMenuItem( RESET_ACTION ) );
 
 		editMenuItem.add( new JMenuItem( UNDO_ACTION ) );
 		editMenuItem.add( new JMenuItem( REDO_ACTION ) );

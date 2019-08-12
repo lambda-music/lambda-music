@@ -82,7 +82,7 @@ import pulsar.lib.swing.Action2;
 import pulsar.lib.swing.FlawLayout;
 import pulsar.lib.swing.JNamedPanel;
 
-class PulsarGui {
+public class PulsarGui {
 	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
 	static void logError(String msg, Throwable e) {
 		LOGGER.log(Level.SEVERE, msg, e);
@@ -92,6 +92,13 @@ class PulsarGui {
 	}
 	static void logWarn(String msg) {
 		LOGGER.log(Level.WARNING, msg);
+	}
+
+	public static PulsarGui start(Pulsar pulsar) {
+		return new PulsarGui( pulsar, false );
+	}
+	public static PulsarGui start(Pulsar pulsar, boolean shutdownWhenClose ) {
+		return new PulsarGui( pulsar, shutdownWhenClose );
 	}
 
 	static final int PB_POSITION_MAX = 1024;
@@ -135,10 +142,12 @@ class PulsarGui {
 			}
 		}, Invokable.NOARG );
 	}
+	boolean shutdownWhenClose;
 
 	Pulsar pulsar;
-	PulsarGui( Pulsar pulsar ) {
+	PulsarGui( Pulsar pulsar, boolean shutdownWhenClose ) {
 		this.pulsar = pulsar;
+		this.shutdownWhenClose = shutdownWhenClose;
 		
 	    // Create and set up the window.
         this.frame = new JPulsarFrame( pulsar.getSchemeSecretary(), "Pulsar" );
@@ -412,9 +421,6 @@ class PulsarGui {
 		this.sl_tempoSlider.setMinimum( tempoRange.min );
 	}
 	
-	public void newlineGui() {
-		// userPane.add( Box.createVerticalStrut(500 ) );
-	}
 	
 	public final Action NEW_SCRATCHPAD = new AbstractAction() {
 		@SuppressWarnings("unused")
@@ -433,7 +439,7 @@ class PulsarGui {
 	public final Action RESET_SEQUENCER = new AbstractAction() {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			pulsar.reset();
+			pulsar.close();
 		}
 		{
 			putValue( Action2.NAME, "Reset the Sequencer" );
@@ -529,7 +535,8 @@ class PulsarGui {
 		public void dispose() {
 			super.dispose();
 			PulsarGui.unregisterLocalSchemeInitializers( schemeSecretary, PulsarGui.this );
-			pulsar.shutdown();
+			if ( shutdownWhenClose )
+				pulsar.shutdown();
 		}
 		
 		{
