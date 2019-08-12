@@ -324,7 +324,7 @@
                                     ;else
                                     (if (null? prop-vals) 
                                       ;then
-                                      (cons notes 
+                                      (cons (car notes)
                                             (loop (cdr notes) prop-vals))
                                       ;else
                                       (let ((a-note     (car notes))
