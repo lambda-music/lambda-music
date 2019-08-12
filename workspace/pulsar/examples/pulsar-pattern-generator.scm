@@ -730,11 +730,8 @@
 (define create-gui
   (lambda()
     (gui-clear)
-    ;(gui-frame-divider-position 500 )
-    (gui-frame-orientation      'bottom)
     (gui-frame-width 800)
     (gui-frame-height 600)
-    (gui-frame-divider-position 800)
     (gui-repaint (gui-get-pane) )
 
     (set! main-frame  (gui-new 'frame ))
