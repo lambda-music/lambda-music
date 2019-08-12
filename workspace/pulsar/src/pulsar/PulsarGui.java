@@ -31,8 +31,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
@@ -53,7 +51,6 @@ import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -71,11 +68,8 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 
 import org.jaudiolibs.jnajack.JackException;
 
@@ -93,7 +87,6 @@ import pulsar.lib.secretary.SecretaryMessage;
 import pulsar.lib.swing.Action2;
 import pulsar.lib.swing.FlawLayout;
 import pulsar.lib.swing.JNamedPanel;
-import pulsar.lib.swing.JPulsarRadioButton;
 
 class PulsarGui {
 	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -973,159 +966,7 @@ class PulsarGui {
     	public JPusarFilePanel() {
     		super( PulsarGuiUtils.newLayout() );
     	}
-    	
-    	JPanel panel_outer = new JPanelExtentionOuter();
-    	{
-    		add( panel_outer, BorderLayout.CENTER );
-    	}
-
-    	class JPanelExtentionOuter extends JPanel {
-    		public JPanelExtentionOuter() {
-    			super( PulsarGuiUtils.newLayout() );
-    		}
-
-        	JPanel panel_exec = new JPanelExtentionExec();
-        	{
-//        		add( panel_exec, BorderLayout.CENTER );
-        	}
-    		class JPanelExtentionExec extends JPanel {
-    			public JPanelExtentionExec() {
-    				super( PulsarGuiUtils.newLayout() );
-    			}
-    			JButton execButton = new JButton( "EXEC" ) {
-    				@Override
-    				public Dimension getPreferredSize() {
-    					Dimension s = super.getPreferredSize();
-    					s.width = 75;
-    					return s;
-    				}
-    			};
-    			{
-    				execButton.addActionListener( new ActionListener() {
-    					@Override
-    					public void actionPerformed(ActionEvent e) {
-    						// XXX
-    					}
-    				});
-    				add( execButton , BorderLayout.LINE_START );
-    			}
-
-    			JComboBox<String> cb_relatedFiles = new JComboBox<String>() {
-    			};
-    			{
-    				PulsarGui.this.cb_relatedFiles = cb_relatedFiles;
-    				cb_relatedFiles.setEditable(false);
-    				cb_relatedFiles.addPopupMenuListener( new PopupMenuListener() {
-    					@Override
-    					public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-    						logInfo("popupMenuWillBecomeVisible()");
-    						// readHistoryFile(comboBox);
-    					}
-    					@Override
-    					public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-    						logInfo( "popupMenuWillBecomeInvisible()");
-    					}
-    					@Override
-    					public void popupMenuCanceled(PopupMenuEvent e) {
-    						logInfo(".popupMenuCanceled()");
-    					}
-    				});
-    				cb_relatedFiles.addItemListener( new ItemListener() {
-    					@Override
-    					public void itemStateChanged(ItemEvent e) {
-    						logInfo("Pulsar.createFilePanel().new ItemListener() {...}.itemStateChanged()");
-    						if ( e.getStateChange() == ItemEvent.SELECTED ) {
-    							// Do nothing.
-    						}
-    					}
-    				});
-    				add( cb_relatedFiles, BorderLayout.CENTER );
-    			}
-    		}
-
-    		JPanel panel_openFile = new JOpenFilePanel();
-        	{
-//        		add( panel_openFile, BorderLayout.CENTER );
-        	}
-        	class JOpenFilePanel extends JPanel {
-				JOpenFilePanel(){ super( PulsarGuiUtils.newLayout() ); }
-
-				JPanel panel_fileButtons = new JFileButtonsPanel();
-				{
-//					REMOVED >>> (Wed, 10 Jul 2019 01:34:10 +0900)
-//					add( panel_fileButtons, BorderLayout.LINE_START );
-//					REMOVED <<< (Wed, 10 Jul 2019 01:34:10 +0900)
-				}
-				class JFileButtonsPanel extends JPanel {
-					JFileButtonsPanel(){ super( new FlawLayout() ); }
-					JButton openMainFileButton = new JButton( "SET" );
-					{
-//						REMOVED >>> (Wed, 10 Jul 2019 01:34:10 +0900)
-//						add( openMainFileButton  );
-//						REMOVED <<< (Wed, 10 Jul 2019 01:34:10 +0900)
-						openMainFileButton.addActionListener( new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								/// XXX SET_MAIN_FILE_ACTION.actionPerformed(e);
-							}
-						} );
-					}
-					JButton clearMainFileButton = new JButton( "CLR" );
-					{
-//						REMOVED >>> (Wed, 10 Jul 2019 01:34:10 +0900)
-//						add( clearMainFileButton );
-//						REMOVED <<< (Wed, 10 Jul 2019 01:34:10 +0900)
-						clearMainFileButton.addActionListener( new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								/// XXX CLEAR_MAIN_FILE_ACTION.actionPerformed(e);
-							}
-						} );
-					}
-				}
-        		JTextField currentFile = new JTextField();
-        		{
-        			tf_currentFile = currentFile;
-        			this.add( currentFile, BorderLayout.CENTER );
-        			currentFile.setEditable(false);
-        			currentFile.setBorder( new TitledBorder( currentFile.getBorder(), "MAIN FILE" ) );
-        		}
-        	}
-    	}
-    	JButton resetButton = new JButton( "⟳" ) {
-    		@Override
-    		public Dimension getPreferredSize() {
-    			return new Dimension( 75,super.getPreferredSize().height + 20 );
-    		}
-    		{
-    			this.addActionListener( new ActionListener() {
-    				@Override
-    				public void actionPerformed(ActionEvent e) {
-    					pulsar.reset();
-    				}
-    			});
-    		}
-    	};
-    	{
-    		// XXX REMOVE THIS
-//    		add( resetButton , BorderLayout.LINE_END );
-    	}
-
-    	
-
-//	    	ImageIcon resetIcon;
-//	    	{
-//	    		resetIcon = loadIcon( "reset.png" );
-//	    	}
-//			public ImageIcon loadIcon( String path )  {
-//				try {
-//					return new ImageIcon( ImageIO.read(getClass().getResource( path )) );
-//				} catch (IOException e) {
-//					logError("", e);
-//					return null;
-//				}
-//			}
-		
+    	    	
     	JSliderPanel panel_slider = new JSliderPanel();
     	{
 //    		add( panel_slider, BorderLayout.PAGE_END );
@@ -1135,69 +976,7 @@ class PulsarGui {
     		public JSliderPanel() {
     			super( PulsarGuiUtils.newLayout() );
 			}
-    		// *** UNUSED *** (Tue, 09 Jul 2019 18:04:26 +0900)
-    		JTempoScalePanel panel_tempoScale = new JTempoScalePanel();
-    		{
-//    			add( panel_tempoScale, BorderLayout.CENTER );
-    		}
-    		class JTempoScalePanel extends JPanel {
-    			final class TempoRangeActionListener implements ActionListener {
-					private final PulsarGui.TempoRange tempoRange;
-					private TempoRangeActionListener(PulsarGui.TempoRange r) {
-						this.tempoRange = r;
-					}
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						guiSetTempoRange( tempoRange );
-					}
-				}
-				
-    			public JTempoScalePanel() {
-    				super( new FlawLayout( FlawLayout.LEFT ) );
-    				setBorder( BorderFactory.createTitledBorder("Tempo Range"));
-				}
-    			ButtonGroup group = new ButtonGroup();
-    			{
-    				 for ( PulsarGui.TempoRange r :  TempoRange.values() ) {
-//    					 JPulsarRadioButton b = new JPulsarRadioButton( r.caption );
-//    					 b.addActionListener( new TempoRangeActionListener(r));
-    					 JPulsarRadioButton b = new JPulsarRadioButton( r.createAction( PulsarGui.this ) );
-    					 Action2.processButton(b);
-    					 group.add( b );
-    					 add( b );
-    				 }
-    			}
-    		}
     		
-    		// *** UNUSED *** (Tue, 09 Jul 2019 18:04:26 +0900)
-    		JPanelOrientationPanel panelOrientationPanel = new JPanelOrientationPanel();
-    		{
-//    			add(  panelOrientationPanel, BorderLayout.LINE_END );
-    		}
-    		class JPanelOrientationPanel extends JPanel {
-				
-    			public JPanelOrientationPanel() {
-    				super( new FlawLayout( FlawLayout.LEFT ) );
-    				setBorder( BorderFactory.createTitledBorder( "Orientation" ) );
-				}
-    			ButtonGroup group = new ButtonGroup();
-    			{
-    				 for ( PulsarGui.PanelOrientation r :  PanelOrientation.values() ) {
-//    					 JPulsarRadioButton b = new JPulsarRadioButton( r.caption );
-//    					 b.addActionListener( new JPanelOrientationActionListener(r));
-    					 JPulsarRadioButton b = new JPulsarRadioButton( r.createSetPanelOrientationAction( PulsarGui.this ) );
-    					 Action2.processButton(b);
-//    					 b.addActionListener( new JPanelOrientationActionListener(r));
-    					 group.add( b );
-    					 add( b );
-    					 orientaionMap.put(r, b );
-    					 if ( DEFAULT_PANEL_ORIENTATION.equals( r )) {
-    						 b.setSelected(true);
-    					 }
-    				 }
-    			}
-    		}
-
     		JSlider sl_tempoSlider = new JSlider();
     		{
     			PulsarGui.this.sl_tempoSlider = sl_tempoSlider;
