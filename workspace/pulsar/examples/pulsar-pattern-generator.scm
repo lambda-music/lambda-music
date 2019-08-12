@@ -433,7 +433,7 @@
             #!optional 
             (in-instrument  'inst-Kick-Long )
             (in-pns-pattern 'pns-basic-one )
-            (in-velo-values "'( 2/4 2/4 2/4 3/4 )" )
+            (in-velo-values "(cl 2/4 2/4 2/4 3/4 )" )
             (in-beat-offset "(+ -0/4 -0/32)" )
             (in-beat-count 4 )
             (in-measure-count 1))
