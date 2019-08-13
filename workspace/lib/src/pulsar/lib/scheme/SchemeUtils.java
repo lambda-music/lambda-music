@@ -21,6 +21,7 @@
 package pulsar.lib.scheme;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -262,7 +263,8 @@ public class SchemeUtils {
 	}
 	
 	
-	public static void execSchemeFromFile( Object lock, Scheme scheme, File file) throws FileNotFoundException {
+	@Deprecated
+	public static void execSchemeFromFileOld( Object lock, Scheme scheme, File file) throws FileNotFoundException {
 		if ( ! file.isFile() ) {
 			throw new FileNotFoundException( file.getPath() );
 		}
@@ -291,29 +293,34 @@ public class SchemeUtils {
 			}
 		}
 	}
-	public static void execScheme( Class parentClass, Scheme scheme, String resourcePath) {
+	public static void execSchemeFromFile( Scheme scheme, File file) throws FileNotFoundException {
+		execScheme( scheme, new FileInputStream(file), file.getName() );
+	}
+	public static void execScheme( Class parentClass, Scheme scheme, String resourcePath ) {
 		try {
 			execScheme( scheme, parentClass.getResource( resourcePath ).openStream(), resourcePath );
 		} catch (IOException e) {
 			throw new RuntimeException(e); 
 		}
 	}
-
 	public static void execScheme( Scheme scheme, InputStream in, String resourcePathAlias ) {
-		try {
-			logInfo( "execScheme:" + resourcePathAlias );
-			scheme.eval( InPort.openFile( in, Path.valueOf( resourcePathAlias ) ) );
-		} catch (Throwable e) {
-			throw new RuntimeException( e );
-		} finally {
+		synchronized ( scheme ) {
 			try {
-				if ( in != null)
-					in.close();
-			} catch (IOException e) {
-				e.printStackTrace();
+				logInfo( "execScheme:" + resourcePathAlias );
+				scheme.eval( InPort.openFile( in, Path.valueOf( resourcePathAlias ) ) );
+			} catch (Throwable e) {
+				throw new RuntimeException( e );
+			} finally {
+				try {
+					if ( in != null)
+						in.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
+	@Deprecated
 	public static Object kawaExecuteScheme( Map<String,Object> variables, Scheme scheme, String script, String scriptNameURI ) throws Throwable {
 		synchronized ( scheme ) {
 			StringReader reader = new StringReader(script);
@@ -323,7 +330,7 @@ public class SchemeUtils {
 						putVar( scheme , e.getKey(), e.getValue() );
 //				putVar( scheme , "scheme", scheme  );
 //				putVar( scheme , "frame", kawaPad );
-				return scheme .eval( new InPort(reader,Path.valueOf( scriptNameURI )) ); 
+				return scheme .eval( new InPort( reader, Path.valueOf( scriptNameURI ))); 
 			} finally {
 				reader.close();
 				if ( variables != null )
@@ -351,55 +358,74 @@ public class SchemeUtils {
 			this.error = error;
 		}
 	}
-	
-	public static ExecuteSchemeResult executeScheme( SchemeSecretary schemeSecretary, Map<String,Object> variables, String schemeScript, String schemeScriptURI ) {
-		schemeSecretary.initializeSchemeForCurrentThread();
-	
+
+	public static ExecuteSchemeResult evaluateScheme( SchemeSecretary schemeSecretary, Map<String,Object> variables, String schemeScript, String schemeScriptURI ) {
+
 		return schemeSecretary.executeWithoutSecretarially( new SecretaryMessage.NoThrow<Scheme,ExecuteSchemeResult>() {
 			@Override
 			public ExecuteSchemeResult execute0(Scheme scheme, Object[] args) {
+//				schemeSecretary.initializeSchemeForCurrentThread();
 
-				if ( variables != null )
-					for ( Map.Entry<String, Object> e : variables.entrySet() )
-						putVar( scheme , e.getKey(), e.getValue() );
-
-				putVar( scheme , "scheme", scheme );
-
-				
-				StringReader in = new StringReader( schemeScript );
-				try {
-					Object result = scheme.eval( new InPort( in, Path.valueOf( schemeScriptURI ) ) );
-					if ( result == null ) {
-						return new ExecuteSchemeResult( "#!null", null );
-					} else {
-						return new ExecuteSchemeResult( prettyPrint(result) + "\n", null );
-					}
-				} catch (Throwable e) {
-					StringWriter sw = new StringWriter();
-					PrintWriter w = new PrintWriter( sw );
-					try {
-						e.printStackTrace( w );
-						w.flush();
-						sw.flush();
-						return new ExecuteSchemeResult( sw.toString(), e );
-					} finally {
-						try {
-							sw.close();
-						} catch (IOException e1) {
-							e1.printStackTrace();
-						}
-						w.close();
-					}
-				} finally {
-					putVar( scheme , "scheme", false );
-
+				synchronized ( scheme ) {
 					if ( variables != null )
 						for ( Map.Entry<String, Object> e : variables.entrySet() )
-							putVar( scheme , e.getKey(), false );
+							putVar( scheme , e.getKey(), e.getValue() );
 
-					in.close();
+					putVar( scheme , "scheme", scheme );
+
+					StringReader in = new StringReader( schemeScript );
+					try {
+						Object result = scheme.eval( new InPort( in, Path.valueOf( schemeScriptURI ) ) );
+						if ( result == null ) {
+							return new ExecuteSchemeResult( "#!null", null );
+						} else {
+							return new ExecuteSchemeResult( prettyPrint(result) + "\n", null );
+						}
+					} catch (Throwable e) {
+						StringWriter sw = new StringWriter();
+						PrintWriter w = new PrintWriter( sw );
+						try {
+							e.printStackTrace( w );
+							w.flush();
+							sw.flush();
+							return new ExecuteSchemeResult( sw.toString(), e );
+						} finally {
+							try {
+								sw.close();
+							} catch (IOException e1) {
+								e1.printStackTrace();
+							}
+							w.close();
+						}
+					} finally {
+						putVar( scheme , "scheme", false );
+
+						if ( variables != null )
+							for ( Map.Entry<String, Object> e : variables.entrySet() )
+								putVar( scheme , e.getKey(), false );
+
+						in.close();
+					}
 				}
 			}
 		}, Invokable.NOARG );
+	}
+	public static String endWithLineFeed(String s) {
+		if ( s == null )
+			return null;
+		else if ( s.equals( "" ) )
+			return "";
+		else if ( s.endsWith("\n" ) )
+			return s;
+		else
+			return s + "\n"; 
+	}
+	public static String formatResult( String s ) {
+		if ( s == null )
+			return null;
+		else if ( s.equals( "" ) )
+			return "";
+		else
+			return "#|\n" + endWithLineFeed( s ) + "|#\n";
 	}
 }

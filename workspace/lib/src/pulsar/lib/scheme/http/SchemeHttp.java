@@ -108,20 +108,10 @@ public class SchemeHttp {
 			if ( t.getRemoteAddress().getAddress().isLoopbackAddress() ) {
 				String requestString = readInputStream( t.getRequestBody() ); 
 				logInfo( requestString );
-
-				ExecuteSchemeResult result = SchemeUtils.executeScheme( schemeSecretary, null, requestString, "web-scratchpad" );
-				String resultString = result.result;
-				
+				ExecuteSchemeResult result = SchemeUtils.evaluateScheme( schemeSecretary, null, requestString, "web-scratchpad" );
 				String responseString;
-				if ( ! resultString.equals( "" ) ) {
-					if ( resultString.endsWith("\n") )
-						responseString = requestString + "\n#|\n" + resultString   + "|#\n";
-					else
-						responseString = requestString + "\n#|\n" + resultString + "\n|#\n";
-				} else {
-					responseString = requestString;
-				}
-
+				responseString = SchemeUtils.endWithLineFeed( requestString ) + SchemeUtils.formatResult( result.result );
+				logInfo( result.result );
 				t.sendResponseHeaders(200, responseString.length());
 				t.getResponseHeaders().put( "Content-Type",  Arrays.asList( "text/plain; charset=utf-8" ) );
 				OutputStream os = t.getResponseBody();
@@ -137,5 +127,6 @@ public class SchemeHttp {
 				os.close();
 			}
 		}
+
 	}
 }

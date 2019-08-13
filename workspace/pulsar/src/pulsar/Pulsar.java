@@ -602,12 +602,13 @@ public final class Pulsar extends Metro {
 	 * @param file
 	 * @throws FileNotFoundException
 	 */
+	@Deprecated
 	public void loadScheme( File file ) throws FileNotFoundException {
 		getSchemeSecretary().executeSecretarially(
 			new SecretaryMessage.NoReturn<Scheme,FileNotFoundException>() {
 				@Override
-				public void execute0(Scheme scheme, Object[] args ) throws FileNotFoundException {
-					SchemeUtils.execSchemeFromFile( getMetroLock(),  scheme, file );
+				public void execute0( Scheme scheme, Object[] args ) throws FileNotFoundException {
+					SchemeUtils.execSchemeFromFile( scheme, file );
 				}
 			});
 	}

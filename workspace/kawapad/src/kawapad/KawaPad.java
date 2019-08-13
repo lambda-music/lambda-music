@@ -34,11 +34,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -75,6 +73,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.DefaultEditorKit.DefaultKeyTypedAction;
@@ -99,10 +98,10 @@ import kawapad.lib.CompoundGroupedUndoManager;
 import kawapad.lib.GroupedUndoManager;
 import pulsar.lib.PulsarLogger;
 import pulsar.lib.scheme.SchemeUtils;
+import pulsar.lib.scheme.SchemeUtils.ExecuteSchemeResult;
 import pulsar.lib.scheme.SimpleSchemeIndentChanger;
 import pulsar.lib.scheme.SimpleSchemePrettifier;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
-import pulsar.lib.secretary.Invokable;
 import pulsar.lib.secretary.SecretaryMessage;
 import pulsar.lib.secretary.SecretaryMessage.NoReturnNoThrow;
 import pulsar.lib.swing.Action2;
@@ -386,7 +385,7 @@ public class KawaPad extends JFrame {
 						int selectionEnd = textPane.getSelectionEnd();
 						textPane.getDocument().insertString( selectionEnd, result, null);
 						textPane.setSelectionEnd( selectionEnd + result.length() );
-						textPane.setSelectionStart(selectionEnd + 1 );
+						textPane.setSelectionStart(selectionEnd  );
 					} finally {
 						undoManager.setSuspended(false);
 						undoManager.startGroup();
@@ -474,52 +473,36 @@ public class KawaPad extends JFrame {
 		KawaPadHighlighter.highlightMatchingParenthesis( textPane, textPane.getCaretPosition() );
 	}
 
-	
-	
-	
-//	public final AbstractAction EVALUATE_ACTION = new ExecuteAction();
-//	private final class ExecuteAction extends AbstractAction {
-//		@Override
-//		public void actionPerformed(ActionEvent e) {
-//			//	JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
-//			threadManager.startScratchPadThread( new Runnable() {
-//				@Override
-//				public void run() {
-//					boolean isThereSelection=true;
-//					Object resultObject=null;
-//					String result = null;
-//					try {
-//						String text = textPane.getSelectedText();
-//						if ( text == null ) {
-//							text = textPane.getText();
-//							isThereSelection = false;
-//						}
-//						resultObject = executeScheme(text);
-//						textPane.getActionMap();
-//
-//						result = prettyPrint( resultObject );
-//
-//					} catch (Throwable e1) {
-//						ByteArrayOutputStream out = new ByteArrayOutputStream();
-//						PrintStream pout = new PrintStream( out );
-//						e1.printStackTrace( pout );
-//						pout.flush();
-//						result = new String( out.toByteArray() );
-//					}
-//					result = "\n#|\n" + result + "\n|#\n"; 
-//					logInfo( result );
-//
-//					SwingUtilities.invokeLater( new InsertTextToTextPane(result, isThereSelection ) );
-//				}
-//
-//			});
-//		}
-//		{
-//			putValue( Action2.NAME, "Execute" );
-//			putValue( Action.MNEMONIC_KEY, (int)'e' );
-//			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK) );
-//		}
-//	}
+
+	/**
+	 * getSelectedText() which treats its endpoint as inclusive-like.
+	 * The endpoint of the current selection is to move one unit to the left.    
+	 * 
+	 * @param c
+	 * @return
+	 */
+    public static String getSelectedText( JTextComponent c ) {
+    	String s = c.getSelectedText();
+    	if ( s == null ) {
+    		return null;
+    	}
+    	if ( s.endsWith("\n" ) ) {
+    		return s;
+    	} else {
+            Caret caret = c.getCaret();
+            int dot = caret.getDot();
+            int mark = caret.getMark();
+            if ( dot < mark ) {
+            	caret.setDot( mark + 1 );
+            	caret.moveDot( dot );
+            	return c.getSelectedText();
+            } else {
+//            	caret.setDot( dot );
+            	caret.moveDot( dot + 1 );
+            	return c.getSelectedText();
+            }
+    	}
+    }
 
 	final class EvaluateRunnable implements Runnable {
 		boolean insertText;
@@ -529,49 +512,27 @@ public class KawaPad extends JFrame {
 		}
 		@Override
 		public void run() {
-			Object resultObject=null;
-			String result = null;
-			boolean errorOccured = false;
-			try {
-				String script;
-				{
-					String s = textPane.getSelectedText();
-					if ( s == null ) {
-						s = textPane.getText();
-					}
-					script = s;
+			String schemeScript;
+			{
+				schemeScript = getSelectedText( textPane );
+				if ( schemeScript == null ) {
+					schemeScript =  textPane.getText();
 				}
-				// xxx
-				resultObject =
-						schemeSecretary.executeWithoutSecretarially( new SecretaryMessage<Scheme, Object, Throwable>() {
-							@Override
-							public Object execute(Scheme scheme, Object[] args) throws Throwable {
-								Map<String, Object> variables = new HashMap<>();
-								variables.put( "scheme", scheme );
-								variables.put( "frame", KawaPad.this );
-								return SchemeUtils.kawaExecuteScheme( variables, scheme, script, "scratchpad" );
-							} 
-						}, Invokable.NOARG );
-
-				textPane.getActionMap();
-//				System.out.println("==========================");
-//				System.out.println( resultObject.getClass() );
-//				System.out.println("==========================");
-				result = SchemeUtils.anyToString( SchemeUtils.prettyPrint(resultObject));
-
-			} catch (Throwable e1) {
-				errorOccured = true;
-				ByteArrayOutputStream out = new ByteArrayOutputStream();
-				PrintStream pout = new PrintStream( out );
-				e1.printStackTrace( pout );
-				pout.flush();
-				result = new String( out.toByteArray() );
 			}
-			result = "\n#|\n" + result + "\n|#\n"; 
-			logInfo( result );
+			logInfo( schemeScript );
+			HashMap<String,Object> variables = new HashMap<>();
+			variables.put( "frame", KawaPad.this );
+			ExecuteSchemeResult result = SchemeUtils.evaluateScheme( schemeSecretary, variables, schemeScript, "scratchpad" );
+			
+			String resultString = SchemeUtils.formatResult( result.result ); 
+			// We want to make sure the result string ends with "\n" to avoid to get an extra line.
+			if ( ! schemeScript.endsWith( "\n" ) ) {
+				resultString = "\n" + SchemeUtils.formatResult( result.result ); 
+			}
+			logInfo( resultString );
 
-			if ( insertText || errorOccured )
-				SwingUtilities.invokeLater( new InsertTextToTextPane(result) );
+			if ( insertText || ! result.succeeded() )
+				SwingUtilities.invokeLater( new InsertTextToTextPane( resultString ) );
 		}
 	}
 
@@ -922,25 +883,30 @@ public class KawaPad extends JFrame {
 		}
 		public void invokeEventHandler( KawaPad kawaPad, String eventTypeID, Object ... args ) {
 //			logInfo( "eventHandlers.invokeEventHandler(outer)" );
-			kawaPad.schemeSecretary.executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+			kawaPad.schemeSecretary.executeWithoutSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
 				@Override
 				public void execute0( Scheme scheme, Object[] args ) {
-//					logInfo( "eventHandlers.invokeEventHandler(inner)" );
-					try {
-						SchemeUtils.putVar( scheme, "scheme", scheme );
-						SchemeUtils.putVar( scheme, "frame",  kawaPad );
+					kawaPad.schemeSecretary.initializeSchemeForCurrentThread();
 
-						for( Entry<Symbol,SchemeProcedure> e :  getEventType(eventTypeID).entrySet() ) {
-							try {
-								e.getValue().invoke( args );
-							} catch ( Throwable t ) {
-								logError("invoking event handlers : ", t);
+					synchronized ( scheme ) {
+//					logInfo( "eventHandlers.invokeEventHandler(inner)" );
+						try {
+							SchemeUtils.putVar( scheme, "scheme", scheme );
+							SchemeUtils.putVar( scheme, "frame",  kawaPad );
+
+							for( Entry<Symbol,SchemeProcedure> e :  getEventType(eventTypeID).entrySet() ) {
+								try {
+									e.getValue().invoke( args );
+								} catch ( Throwable t ) {
+									logError("invoking event handlers : ", t);
+								}
 							}
+
+						} finally {
+							SchemeUtils.putVar( scheme, "scheme", false );
+							SchemeUtils.putVar( scheme, "frame", false );
 						}
 
-					} finally {
-						SchemeUtils.putVar( scheme, "scheme", false );
-						SchemeUtils.putVar( scheme, "frame", false );
 					}
 				}
 			}, kawaPad );
@@ -1691,9 +1657,18 @@ public class KawaPad extends JFrame {
 	}
 	public static void main(String[] args) throws IOException {
 		PulsarLogger.init();
-		KawaPad kawaPad = createStaticInstance();
 		if ( 0 < args.length  ) {
-			kawaPad.openFile( new File( args[0] ) );
+			start( new File( args[0] ) );
+		} else {
+			start();		
 		}
+	}
+	public static void start(File f) throws IOException {
+		KawaPad kawaPad = createStaticInstance();
+		if ( f != null )
+			kawaPad.openFile( f );
+	}
+	public static void start() throws IOException {
+		start( null );
 	}
 }

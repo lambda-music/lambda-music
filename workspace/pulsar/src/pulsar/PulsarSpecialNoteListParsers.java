@@ -37,7 +37,6 @@ import gnu.lists.IString;
 import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
-import kawa.standard.Scheme;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroEventBuffer;
@@ -286,23 +285,6 @@ public class PulsarSpecialNoteListParsers {
 				});
 			}
 			return result;
-		}
-		
-		/*
-		 * DEPRECATED? (Tue, 23 Jul 2019 05:57:34 +0900)
-		 */
-		@Deprecated
-		public String createDefaultId(Scheme scheme) {
-			synchronized ( scheme ) {
-				String id;
-				try {
-					id = SchemeUtils.symbolToString( scheme.eval( "(make-default-id)" ) );
-				} catch (Throwable e) {
-					LOGGER.log(Level.WARNING, "put: Ignored an error. Default value was applied to the id.: ", e);
-					id = "seq-default";
-				}
-				return id;
-			}
 		}
 	}
 	
