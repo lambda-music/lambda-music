@@ -75,7 +75,7 @@ public class SimpleSchemeParenthesisChecker {
 	public static String swapEscapeSequence( String s ) {
 		return Pattern.compile( "(\\\\)(.)" ).matcher(s).replaceAll( "$2$1" );
 	}
-
+	
 	public static ParserState lookupParenthesis( String string, int index ) {
 		SimpleSchemeParser.ParserState parserState = null;
 		
@@ -105,7 +105,6 @@ public class SimpleSchemeParenthesisChecker {
 				parserState.getIterator().setString( original );
 				return parserState;
 			}
-			
 			default :
 				/*
 				 * If the current character is a character other than parentheses, do nothing.

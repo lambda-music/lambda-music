@@ -8,10 +8,19 @@
 (open "hello")
 (openi "foo")
 (openi '( bar ))
-
+(close)
 
 (openo "a6" "a5" )
+(putt (n chan: 11 port: 0 type: 'note 
+         velo: << (map / (iota 8 1 ) (cl 8))
+         pos: >> (map / (iota 8 0) (cl 8)) (len 1) ))
+(putt (n chan: 11 port: 0 type: 'note 
+         velo: 1
+         note: 80
+         pos: >> 0 ))
+(remt (lst))
 
+(set-tempo 160)
 
 (openo '( "aaa1" "aaa2") '( hello world)  )
 
@@ -21,13 +30,15 @@
 (list-ref '(1 2 3) 2 )
 (lsi)
 
+(remt (lst))
 (apply closei (lsi))
 (openo 'foo 'bah)
 (closeo 'foo 'bah)
 
 ; (quit!)
 
-(n chan: 1 port: 1 (melody '(do re mi fi sol la end )) )
+(putt (newt  (n chan: 1 port: 2 (melody '(ti do re mi fi sol la ti end )) )))
+
 
 
 

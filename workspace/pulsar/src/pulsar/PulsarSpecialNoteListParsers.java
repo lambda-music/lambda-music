@@ -73,8 +73,8 @@ public class PulsarSpecialNoteListParsers {
 			if ( o instanceof Number ) {
 				int i = ((Number)o).intValue();
 				List<MetroPort> list = metro.getOutputPorts();
-				if ( 0 < i ||  list.size() <= i )
-					throw new IllegalStateException();
+				if ( i<0  ||  list.size() <= i )
+					throw new IllegalStateException( i + " is not proper. list size=" + list.size() );
 				return list.get(i);
 			} else {
 				return (MetroPort)o;

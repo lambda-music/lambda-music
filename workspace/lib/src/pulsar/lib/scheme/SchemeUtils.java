@@ -379,7 +379,7 @@ public class SchemeUtils {
 						if ( result == null ) {
 							return new ExecuteSchemeResult( "#!null", null );
 						} else {
-							return new ExecuteSchemeResult( prettyPrint(result) + "\n", null );
+							return new ExecuteSchemeResult( prettyPrint(result), null );
 						}
 					} catch (Throwable e) {
 						StringWriter sw = new StringWriter();

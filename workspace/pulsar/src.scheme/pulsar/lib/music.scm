@@ -151,6 +151,7 @@
         ; This is very important because if you do not allow
         ; to set properties on the notations which have no type node,
         ; you just cannot set (type: 'note).
+        ; (Tue, 13 Aug 2019 16:29:53 +0900)
         (not t )
         (eq? type t)))))
 

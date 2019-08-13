@@ -110,7 +110,9 @@ public class SchemeHttp {
 				logInfo( requestString );
 				ExecuteSchemeResult result = SchemeUtils.evaluateScheme( schemeSecretary, null, requestString, "web-scratchpad" );
 				String responseString;
-				responseString = SchemeUtils.endWithLineFeed( requestString ) + SchemeUtils.formatResult( result.result );
+				responseString = 
+						SchemeUtils.endWithLineFeed( requestString ) + 
+						SchemeUtils.formatResult( result.result );
 				logInfo( result.result );
 				t.sendResponseHeaders(200, responseString.length());
 				t.getResponseHeaders().put( "Content-Type",  Arrays.asList( "text/plain; charset=utf-8" ) );
