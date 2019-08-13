@@ -828,28 +828,28 @@ public class KawaPad extends JFrame {
 
 	public final AbstractAction SIMPLE_PARENTHESIS_JUMP_LEFT_ACTION = new ParenthesisAction( "simple-parenthesis-jump-left", false, -1, STRATEGY_SIMPLE_PARENTHESIS_JUMP ) {
 		{
-			putValue( Action2.NAME, "Lookup the Corresponding Parenthesis to the Left" );
+			putValue( Action2.NAME, "Go to the Previous Parenthesis" );
 			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK ) );
 //			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
 	};
 	public final AbstractAction SIMPLE_PARENTHESIS_JUMP_RIGHT_ACTION = new ParenthesisAction( "simple-parenthesis-jump-right", false, +1, STRATEGY_SIMPLE_PARENTHESIS_JUMP  ) {
 		{
-			putValue( Action2.NAME, "Lookup the Corresponding Parenthesis to the Right" );
+			putValue( Action2.NAME, "Go to the Next Parenthesis" );
 			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK ) );
 //			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
 	};
 	public final AbstractAction SIMPLE_PARENTHESIS_SELECT_JUMP_LEFT_ACTION = new ParenthesisAction( "simple-parenthesis-select-jump-left", true, -1, STRATEGY_SIMPLE_PARENTHESIS_JUMP ) {
 		{
-			putValue( Action2.NAME, "Lookup the Corresponding Parenthesis to the Left" );
+			putValue( Action2.NAME, "Select the Previous Parenthesis" );
 			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK ) );
 //			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
 	};
 	public final AbstractAction SIMPLE_PARENTHESIS_SELECT_JUMP_RIGHT_ACTION = new ParenthesisAction( "simple-parenthesis-select-jump-right", true, +1, STRATEGY_SIMPLE_PARENTHESIS_JUMP  ) {
 		{
-			putValue( Action2.NAME, "Lookup the Corresponding Parenthesis to the Right" );
+			putValue( Action2.NAME, "Select the Next Parenthesis" );
 			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK ) );
 //			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
@@ -857,28 +857,28 @@ public class KawaPad extends JFrame {
 	
 	public final AbstractAction PARENTHESIS_JUMP_LEFT_ACTION = new ParenthesisAction( "parenthesis-jump-left", false, -1, STRATEGY_DYNAMIC ) {
 		{
-			putValue( Action2.NAME, "Lookup the Corresponding Parenthesis to the Left" );
+			putValue( Action2.NAME, "Lookup the Corresponding Parenthesis on the Left" );
 			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK ) );
 //			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
 	};
 	public final AbstractAction PARENTHESIS_JUMP_RIGHT_ACTION = new ParenthesisAction( "parenthesis-jump-right", false, +1, STRATEGY_DYNAMIC  ) {
 		{
-			putValue( Action2.NAME, "Lookup the Corresponding Parenthesis to the Right" );
+			putValue( Action2.NAME, "Lookup the Corresponding Parenthesis on the Right" );
 			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK ) );
 //			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
 	};
 	public final AbstractAction PARENTHESIS_SELECT_JUMP_LEFT_ACTION = new ParenthesisAction( "parenthesis-sel-jump-left", true, -1, STRATEGY_DYNAMIC  ) {
 		{
-			putValue( Action2.NAME, "Select the Corresponding Parenthesis to the Left" );
+			putValue( Action2.NAME, "Lookup and Select the Corresponding Parenthesis on the Left" );
 			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK ) );
 //			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
 	};
 	public final AbstractAction PARENTHESIS_SELECT_JUMP_RIGHT_ACTION = new ParenthesisAction( "parenthesis-sel-jump-right", true, +1, STRATEGY_DYNAMIC  ) {
 		{
-			putValue( Action2.NAME, "Select the Corresponding Parenthesis to the Right" );
+			putValue( Action2.NAME, "Lookup and Select the Corresponding Parenthesis to the Right" );
 			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK ) );
 //			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
@@ -2022,19 +2022,7 @@ public class KawaPad extends JFrame {
 		fileMenuItem.add( new JMenuItem( OPEN_FILE_NEW ) );
 		fileMenuItem.add( new JMenuItem( OPEN_FILE ) );
 		fileMenuItem.add( new JMenuItem( SAVE_FILE ) );
-		fileMenuItem.add( new JMenuItem( SAVE_FILE_AS ) );
-		
-		editMenuItem.add( new JMenuItem( SIMPLE_PARENTHESIS_JUMP_LEFT_ACTION ) );
-		editMenuItem.add( new JMenuItem( SIMPLE_PARENTHESIS_JUMP_RIGHT_ACTION ) );
-		editMenuItem.add( new JMenuItem( SIMPLE_PARENTHESIS_SELECT_JUMP_LEFT_ACTION ) );
-		editMenuItem.add( new JMenuItem( SIMPLE_PARENTHESIS_SELECT_JUMP_RIGHT_ACTION ) );
-		editMenuItem.add( new JMenuItem( PARENTHESIS_JUMP_LEFT_ACTION ) );
-		editMenuItem.add( new JMenuItem( PARENTHESIS_JUMP_RIGHT_ACTION ) );
-		editMenuItem.add( new JMenuItem( PARENTHESIS_SELECT_JUMP_LEFT_ACTION ) );
-		editMenuItem.add( new JMenuItem( PARENTHESIS_SELECT_JUMP_RIGHT_ACTION ) );
-		editMenuItem.add( new JMenuItem( PARENTHESIS_SELECT_ACTION ) );
-		editMenuItem.add( new JMenuItem( PARENTHESIS_DESELECT_ACTION ) );
- 
+		fileMenuItem.add( new JMenuItem( SAVE_FILE_AS ) ); 
 
 		schemeMenuItem.add( new JMenuItem( EVALUATE_REPLACE_ACTION ) );
 		schemeMenuItem.add( new JMenuItem( EVALUATE_ACTION ) );
@@ -2048,10 +2036,26 @@ public class KawaPad extends JFrame {
 		editMenuItem.add( new JMenuItem( DEBUG_ACTION ) );
 		editMenuItem.add( new JMenuItem( PASTE_ACTION ) );
 
+		editMenuItem.addSeparator();
+
 		editMenuItem.add( new JMenuItem( textPane.getActionMap().get( DefaultEditorKit.deletePrevCharAction )  ));
 		editMenuItem.add( new JMenuItem( INCREASE_INDENT_ACTION ) );
 		editMenuItem.add( new JMenuItem( DECREASE_INDENT_ACTION ) );
 		editMenuItem.add( new JMenuItem( PRETTIFY_ACTION ) );
+
+		editMenuItem.addSeparator();
+		
+		editMenuItem.add( new JMenuItem( SIMPLE_PARENTHESIS_JUMP_LEFT_ACTION ) );
+		editMenuItem.add( new JMenuItem( SIMPLE_PARENTHESIS_JUMP_RIGHT_ACTION ) );
+		editMenuItem.add( new JMenuItem( SIMPLE_PARENTHESIS_SELECT_JUMP_LEFT_ACTION ) );
+		editMenuItem.add( new JMenuItem( SIMPLE_PARENTHESIS_SELECT_JUMP_RIGHT_ACTION ) );
+		editMenuItem.add( new JMenuItem( PARENTHESIS_JUMP_LEFT_ACTION ) );
+		editMenuItem.add( new JMenuItem( PARENTHESIS_JUMP_RIGHT_ACTION ) );
+		editMenuItem.add( new JMenuItem( PARENTHESIS_SELECT_JUMP_LEFT_ACTION ) );
+		editMenuItem.add( new JMenuItem( PARENTHESIS_SELECT_JUMP_RIGHT_ACTION ) );
+		editMenuItem.add( new JMenuItem( PARENTHESIS_SELECT_ACTION ) );
+		editMenuItem.add( new JMenuItem( PARENTHESIS_DESELECT_ACTION ) );
+
 
 		Action2.processMenuBar( menuBar );
 	}
