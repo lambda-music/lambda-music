@@ -144,7 +144,18 @@
   (lambda (e) 
     (eq? type (get-notation-type e ))))
 
+(define (make-default-notation-type-checker type)
+  (lambda (e) 
+    (let ((t (get-notation-type e )))
+      (or
+        ; This is very important because if you do not allow
+        ; to set properties on the notations which have no type node,
+        ; you just cannot set (type: 'note).
+        (not t )
+        (eq? type t)))))
 
+
+(define default-note? (make-default-notation-type-checker 'note))
 (define note? (make-notation-type-checker 'note))
 (define len?  (make-notation-type-checker 'len))
 
@@ -178,7 +189,7 @@
                            (mapvals '())
                            (notes '())
                            (default-param-name #f)
-                           (target-notation? note?))
+                           (target-notation? default-note?))
                   (if debug-n-implementation (begin
                                                (display 'append-proc-args)
                                                (display args)
@@ -301,9 +312,7 @@
                                        ; duplicate each association. dont let it shared from multiple notes.
                                        ; (Wed, 31 Jul 2019 16:19:53 +0900)
                                        (ccons (reverse params))
-                                       note ))))
-                               )
-                             
+                                       note )))))
                              note)
                            notes))
 
