@@ -36,7 +36,6 @@ import metro.MetroBufferedMidiReceiver;
 import metro.MetroEventBuffer;
 import metro.MetroTrack;
 import pulsar.lib.scheme.SchemeUtils;
-import pulsar.lib.scheme.SimpleSchemePrettifier;
 
 /**
  * {@link NoteListParser} receives a cons cell of Scheme language which contains

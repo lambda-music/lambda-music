@@ -24,6 +24,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -46,6 +49,9 @@ import gnu.math.DFloNum;
 import gnu.math.IntNum;
 import gnu.math.Quantity;
 import kawa.standard.Scheme;
+import pulsar.lib.scheme.scretary.SchemeSecretary;
+import pulsar.lib.secretary.Invokable;
+import pulsar.lib.secretary.SecretaryMessage;
 
 public class SchemeUtils {
 	static final Logger LOGGER = Logger.getLogger(SchemeUtils.class.getName());
@@ -308,8 +314,92 @@ public class SchemeUtils {
 			}
 		}
 	}
+	public static Object kawaExecuteScheme( Map<String,Object> variables, Scheme scheme, String script, String scriptNameURI ) throws Throwable {
+		synchronized ( scheme ) {
+			StringReader reader = new StringReader(script);
+			try {
+				if ( variables != null )
+					for ( Map.Entry<String, Object> e : variables.entrySet() )
+						putVar( scheme , e.getKey(), e.getValue() );
+//				putVar( scheme , "scheme", scheme  );
+//				putVar( scheme , "frame", kawaPad );
+				return scheme .eval( new InPort(reader,Path.valueOf( scriptNameURI )) ); 
+			} finally {
+				reader.close();
+				if ( variables != null )
+					for ( Map.Entry<String, Object> e : variables.entrySet() )
+						putVar( scheme , e.getKey(), false );
+//				putVar( scheme , "scheme", false );
+//				putVar( scheme , "frame", false );
+			}
+		}
+	}
 	// TODO integrate all prettyPrint things.
 	public static String prettyPrint( Object resultObject ) throws Throwable {
 		return SimpleSchemePrettifier.prettyPrint(resultObject);
+	}
+
+	public static final class ExecuteSchemeResult {
+		public final String result;
+		public final Throwable error;
+		public final boolean succeeded() {
+			return error == null;
+		}
+		public ExecuteSchemeResult(String result, Throwable error) {
+			super();
+			this.result = result;
+			this.error = error;
+		}
+	}
+	
+	public static ExecuteSchemeResult executeScheme( SchemeSecretary schemeSecretary, Map<String,Object> variables, String schemeScript, String schemeScriptURI ) {
+		schemeSecretary.initializeSchemeForCurrentThread();
+	
+		return schemeSecretary.executeWithoutSecretarially( new SecretaryMessage.NoThrow<Scheme,ExecuteSchemeResult>() {
+			@Override
+			public ExecuteSchemeResult execute0(Scheme scheme, Object[] args) {
+
+				if ( variables != null )
+					for ( Map.Entry<String, Object> e : variables.entrySet() )
+						putVar( scheme , e.getKey(), e.getValue() );
+
+				putVar( scheme , "scheme", scheme );
+
+				
+				StringReader in = new StringReader( schemeScript );
+				try {
+					Object result = scheme.eval( new InPort( in, Path.valueOf( schemeScriptURI ) ) );
+					if ( result == null ) {
+						return new ExecuteSchemeResult( "#!null", null );
+					} else {
+						return new ExecuteSchemeResult( prettyPrint(result) + "\n", null );
+					}
+				} catch (Throwable e) {
+					StringWriter sw = new StringWriter();
+					PrintWriter w = new PrintWriter( sw );
+					try {
+						e.printStackTrace( w );
+						w.flush();
+						sw.flush();
+						return new ExecuteSchemeResult( sw.toString(), e );
+					} finally {
+						try {
+							sw.close();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+						w.close();
+					}
+				} finally {
+					putVar( scheme , "scheme", false );
+
+					if ( variables != null )
+						for ( Map.Entry<String, Object> e : variables.entrySet() )
+							putVar( scheme , e.getKey(), false );
+
+					in.close();
+				}
+			}
+		}, Invokable.NOARG );
 	}
 }

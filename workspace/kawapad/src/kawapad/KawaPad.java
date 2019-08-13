@@ -39,7 +39,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -85,7 +84,6 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
 import gnu.expr.Language;
-import gnu.kawa.io.InPort;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.Pair;
@@ -523,33 +521,35 @@ public class KawaPad extends JFrame {
 //		}
 //	}
 
-	final class ExecuteRunnable implements Runnable {
+	final class EvaluateRunnable implements Runnable {
 		boolean insertText;
-		public ExecuteRunnable(boolean insertText) {
+		public EvaluateRunnable(boolean insertText) {
 			super();
 			this.insertText = insertText;
 		}
-
 		@Override
 		public void run() {
 			Object resultObject=null;
 			String result = null;
 			boolean errorOccured = false;
 			try {
-				String text;
+				String script;
 				{
 					String s = textPane.getSelectedText();
 					if ( s == null ) {
 						s = textPane.getText();
 					}
-					text = s;
+					script = s;
 				}
 				// xxx
 				resultObject =
 						schemeSecretary.executeWithoutSecretarially( new SecretaryMessage<Scheme, Object, Throwable>() {
 							@Override
 							public Object execute(Scheme scheme, Object[] args) throws Throwable {
-								return executeScheme( scheme, KawaPad.this,  text );
+								Map<String, Object> variables = new HashMap<>();
+								variables.put( "scheme", scheme );
+								variables.put( "frame", KawaPad.this );
+								return SchemeUtils.kawaExecuteScheme( variables, scheme, script, "scratchpad" );
 							} 
 						}, Invokable.NOARG );
 
@@ -557,7 +557,7 @@ public class KawaPad extends JFrame {
 //				System.out.println("==========================");
 //				System.out.println( resultObject.getClass() );
 //				System.out.println("==========================");
-				result = SchemeUtils.anyToString( SchemeUtils.prettyPrint(resultObject) );
+				result = SchemeUtils.anyToString( SchemeUtils.prettyPrint(resultObject));
 
 			} catch (Throwable e1) {
 				errorOccured = true;
@@ -588,12 +588,12 @@ public class KawaPad extends JFrame {
 		}
 	}
 
-	public final AbstractAction EVALUATE_ACTION = new ExecuteAction();
-	private final class ExecuteAction extends AbstractAction {
+	public final AbstractAction EVALUATE_ACTION = new EvaluateAction();
+	private final class EvaluateAction extends AbstractAction {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			//	JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
-			threadManager.startScratchPadThread( new ExecuteRunnable( true ) );
+			threadManager.startScratchPadThread( new EvaluateRunnable( true ) );
 		}
 		{
 			putValue( Action2.NAME, "Evaluate" );
@@ -607,7 +607,7 @@ public class KawaPad extends JFrame {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			//	JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
-			threadManager.startScratchPadThread( new ExecuteRunnable( false ) );
+			threadManager.startScratchPadThread( new EvaluateRunnable( false ) );
 		}
 		{
 			putValue( Action2.NAME, "Run" );
@@ -793,27 +793,7 @@ public class KawaPad extends JFrame {
 		}
 	};
 
-	static Object executeScheme( Scheme scheme, KawaPad kawaPad, String text) throws Throwable {
-		synchronized ( scheme ) {
-			StringReader reader = new StringReader(text);
-			try {
-			
-				SchemeUtils.putVar( scheme , "scheme", scheme  );
-				SchemeUtils.putVar( scheme , "frame", kawaPad );
-				
-				return scheme .eval( new InPort(reader) ); 
-//				return scheme.eval( 
-//						"(let (( frame "+ frameName +"))\n" +						
-//								text +
-//								"\n)"
-//						);
-			} finally {
-				SchemeUtils.putVar( scheme , "scheme", false );
-				SchemeUtils.putVar( scheme , "frame", false );
-				reader.close();
-			}
-		}
-	}
+	
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 

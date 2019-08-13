@@ -1,12 +1,10 @@
 package pulsar.lib.scheme.http;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.invoke.MethodHandles;
 import java.net.InetSocketAddress;
@@ -19,13 +17,9 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
-import gnu.kawa.io.InPort;
-import kawa.standard.Scheme;
 import pulsar.lib.scheme.SchemeUtils;
-import pulsar.lib.scheme.SimpleSchemePrettifier;
+import pulsar.lib.scheme.SchemeUtils.ExecuteSchemeResult;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
-import pulsar.lib.secretary.Invokable;
-import pulsar.lib.secretary.SecretaryMessage;
 
 
 /**
@@ -105,39 +99,7 @@ public class SchemeHttp {
 		}
 	}
 
-	public static String executeScheme( SchemeSecretary schemeSecretary, Charset charset, String schemeScript, boolean requestResult ) throws IOException {
-		schemeSecretary.initializeSchemeForCurrentThread();
-
-		ByteArrayOutputStream bo = new ByteArrayOutputStream();
-		ByteArrayInputStream bi = new ByteArrayInputStream( schemeScript.getBytes( charset ));
-		try {
-			Object result = schemeSecretary.executeWithoutSecretarially( new SecretaryMessage<Scheme,Object,Throwable>(){
-				@Override
-				public Object execute(Scheme resource, Object[] args) throws Throwable {
-					return resource.eval( new InPort( bi ) );
-				}
-			}, Invokable.NOARG );
-			if ( requestResult ) {
-				if ( result == null ) {
-					bo.write( "#!null".getBytes() );
-				} else {
-					bo.write( SchemeUtils.prettyPrint(result).getBytes( charset ) );
-					bo.write( '\n' );
-				}
-			} else {
-			}
-		} catch (Throwable e) {
-			PrintWriter w = new PrintWriter( bo );
-			e.printStackTrace( w );
-			w.flush();
-		}
-		bo.flush();
-
-		return new String( bo.toByteArray(), charset );
-	}
-
 	class PulsarHttpHandler implements HttpHandler {
-		boolean requestResult = true; 
 		@Override
 		public void handle(HttpExchange t) throws IOException {
 			logInfo( "=========PulsarHttp========" );
@@ -147,14 +109,15 @@ public class SchemeHttp {
 				String requestString = readInputStream( t.getRequestBody() ); 
 				logInfo( requestString );
 
-				String result = executeScheme( schemeSecretary, charset, requestString, requestResult );
-
+				ExecuteSchemeResult result = SchemeUtils.executeScheme( schemeSecretary, null, requestString, "web-scratchpad" );
+				String resultString = result.result;
+				
 				String responseString;
-				if ( ! result.equals( "" ) ) {
-					if ( result.endsWith("\n") )
-						responseString = requestString + "\n#|\n" + result   + "|#\n";
+				if ( ! resultString.equals( "" ) ) {
+					if ( resultString.endsWith("\n") )
+						responseString = requestString + "\n#|\n" + resultString   + "|#\n";
 					else
-						responseString = requestString + "\n#|\n" + result + "\n|#\n";
+						responseString = requestString + "\n#|\n" + resultString + "\n|#\n";
 				} else {
 					responseString = requestString;
 				}

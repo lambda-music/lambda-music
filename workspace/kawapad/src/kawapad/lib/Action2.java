@@ -8,7 +8,7 @@ public class Action2 {
 	// can see.
 	// 2.
 	// Finally I realized that kawapad-extension cannot see the classes in other projects.
-	// I left this class to reminder the issue.
+	// I left this class as a reminder for the issue.
 	// (Wed, 07 Aug 2019 22:45:34 +0900)
 	
 	public static final String NAME = pulsar.lib.swing.Action2.NAME;
