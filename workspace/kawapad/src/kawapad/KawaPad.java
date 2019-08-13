@@ -543,22 +543,17 @@ public class KawaPad extends JFrame {
     }
 
 	final class EvaluateRunnable implements Runnable {
+		String schemeScript;
 		boolean insertText;
 		boolean replaceText;
-		public EvaluateRunnable(boolean insertText, boolean replaceText) {
+		public EvaluateRunnable(String schemeScript, boolean insertText, boolean replaceText) {
 			super();
+			this.schemeScript = schemeScript;
 			this.insertText = insertText;
 			this.replaceText = replaceText;
 		}
 		@Override
 		public void run() {
-			String schemeScript;
-			{
-				schemeScript = getSelectedText( textPane );
-				if ( schemeScript == null ) {
-					schemeScript =  textPane.getText();
-				}
-			}
 			logInfo( schemeScript );
 			HashMap<String,Object> variables = new HashMap<>();
 			variables.put( "frame", KawaPad.this );
@@ -593,13 +588,40 @@ public class KawaPad extends JFrame {
 //			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK) );
 		}
 	}
+	String getTextDefault() {
+		String schemeScript;
+		{
+			schemeScript = getSelectedText( textPane );
+			if ( schemeScript == null ) {
+				schemeScript =  textPane.getText();
+			}
+		}
+		return schemeScript;
+	}
 
 	public final AbstractAction EVALUATE_REPLACE_ACTION = new EvaluateReplaceAction();
 	private final class EvaluateReplaceAction extends AbstractAction {
 		@Override
-		public void actionPerformed(ActionEvent e) {
-			//	JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
-			threadManager.startScratchPadThread( new EvaluateRunnable( true, true ) );
+		public void actionPerformed(ActionEvent event) {
+			String schemeScript;
+			{
+				schemeScript = getSelectedText( textPane );
+				if ( schemeScript == null ) {
+					textPane.getActionMap().get( DefaultEditorKit.backwardAction ).actionPerformed( event );
+					PARENTHESIS_SELECT_ACTION.actionPerformed( event );
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							String schemeScript2 = getSelectedText( textPane );
+							threadManager.startScratchPadThread( new EvaluateRunnable( schemeScript2,  true, true ) );
+						}
+					});
+
+				} else {
+					threadManager.startScratchPadThread( new EvaluateRunnable( schemeScript,  true, true ) );
+				}
+			}
+
 		}
 		{
 			putValue( Action2.NAME, "Evaluate Replace" );
@@ -613,7 +635,7 @@ public class KawaPad extends JFrame {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			//	JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
-			threadManager.startScratchPadThread( new EvaluateRunnable( true, false ) );
+			threadManager.startScratchPadThread( new EvaluateRunnable( getTextDefault(), true, false ) );
 		}
 		{
 			putValue( Action2.NAME, "Evaluate" );
@@ -627,7 +649,7 @@ public class KawaPad extends JFrame {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			//	JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
-			threadManager.startScratchPadThread( new EvaluateRunnable( false, false ) );
+			threadManager.startScratchPadThread( new EvaluateRunnable( getTextDefault(), false, false ) );
 		}
 		{
 			putValue( Action2.NAME, "Run" );
