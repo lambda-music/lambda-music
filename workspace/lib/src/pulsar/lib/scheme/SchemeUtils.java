@@ -25,7 +25,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -49,6 +51,7 @@ import gnu.mapping.Symbol;
 import gnu.math.DFloNum;
 import gnu.math.IntNum;
 import gnu.math.Quantity;
+import kawa.Shell;
 import kawa.standard.Scheme;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.Invokable;
@@ -304,6 +307,10 @@ public class SchemeUtils {
 		}
 	}
 	public static void execScheme( Scheme scheme, InputStream in, String resourcePathAlias ) {
+		evaluateScheme( scheme, null, new InputStreamReader( in ), resourcePathAlias );
+	}
+
+	public static void execScheme1( Scheme scheme, InputStream in, String resourcePathAlias ) {
 		synchronized ( scheme ) {
 			try {
 				logInfo( "execScheme:" + resourcePathAlias );
@@ -341,6 +348,7 @@ public class SchemeUtils {
 			}
 		}
 	}
+	
 	// TODO integrate all prettyPrint things.
 	public static String prettyPrint( Object resultObject ) throws Throwable {
 		return SimpleSchemePrettifier.prettyPrint(resultObject);
@@ -359,57 +367,90 @@ public class SchemeUtils {
 		}
 	}
 
-	public static ExecuteSchemeResult evaluateScheme( SchemeSecretary schemeSecretary, Map<String,Object> variables, String schemeScript, String schemeScriptURI ) {
+	public static ExecuteSchemeResult evaluateScheme( 
+			Scheme scheme, Map<String, Object> variables, Reader schemeScript, String schemeScriptURI) 
+	{
+		//				schemeSecretary.initializeSchemeForCurrentThread();
+		synchronized ( scheme ) {
+			if ( variables != null )
+				for ( Map.Entry<String, Object> e : variables.entrySet() )
+					putVar( scheme , e.getKey(), e.getValue() );
+			
+			putVar( scheme , "scheme", scheme );
+			
+			
+			// Set current directory to the default load path.
+			// Note that <i>Shell.currentLoadPath</i> is not documented in the official documentation.
+			// The variable Shell.currentLoadPath is only referred in kawa.standard.load and 
+			// this is the only way to affect the //load//'s behavior.
+			
+			// FIXME
+			// Now I realized that currentLoadPath only affect to (load-relative) and
+			// it will by no means affect to (load) sigh. 
+			// This code effectively makes (load-relative) current directory aware.
+			// But I think it is cumbersome for users to use load-relative procedure.
+			// IMO load-relative supposed to be default. 
+			// I'm thinking about it.  (Thu, 15 Aug 2019 16:21:22 +0900)
+			Path savedPath = (Path) Shell.currentLoadPath.get();
+			try {
+				Shell.currentLoadPath.set( Path.valueOf( new File(".").getAbsoluteFile().getCanonicalFile() ) );
+				
+				 // {@link kawa.Shell#runFile(InputStream, Path, gnu.mapping.Environment, boolean, int) }
+				Object result = scheme.eval( new InPort( schemeScript, Path.valueOf( schemeScriptURI ) ) );
+				// Object result = Shell.run( schemeScript, schemeScriptURI, scheme.getEnvironment(), true, 0 ); 
 
+				if ( result == null ) {
+					return new ExecuteSchemeResult( "#!null", null );
+				} else {
+					return new ExecuteSchemeResult( prettyPrint(result), null );
+				}
+			} catch (Throwable e) {
+				StringWriter sw = new StringWriter();
+				PrintWriter w = new PrintWriter( sw );
+				try {
+					e.printStackTrace( w );
+					w.flush();
+					sw.flush();
+					return new ExecuteSchemeResult( sw.toString(), e );
+				} finally {
+					try {
+						sw.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+					w.close();
+				}
+			} finally {
+				putVar( scheme , "scheme", false );
+				
+				if ( variables != null )
+					for ( Map.Entry<String, Object> e : variables.entrySet() )
+						putVar( scheme , e.getKey(), false );
+				
+				try {
+					schemeScript.close();
+				} catch (IOException e1) {
+					logError( "failed to close the stream" , e1 );
+				}
+				
+				Shell.currentLoadPath.set( savedPath );
+			}
+		}
+	}
+		
+	public static ExecuteSchemeResult evaluateScheme( SchemeSecretary schemeSecretary, Map<String,Object> variables, String schemeScript, String schemeScriptURI ) {
+		return evaluateScheme( schemeSecretary, variables, new StringReader( schemeScript ),  schemeScriptURI );
+	}
+	public static ExecuteSchemeResult evaluateScheme( SchemeSecretary schemeSecretary, Map<String,Object> variables, Reader schemeScript, String schemeScriptURI ) {
 		return schemeSecretary.executeWithoutSecretarially( new SecretaryMessage.NoThrow<Scheme,ExecuteSchemeResult>() {
 			@Override
 			public ExecuteSchemeResult execute0(Scheme scheme, Object[] args) {
-//				schemeSecretary.initializeSchemeForCurrentThread();
-
-				synchronized ( scheme ) {
-					if ( variables != null )
-						for ( Map.Entry<String, Object> e : variables.entrySet() )
-							putVar( scheme , e.getKey(), e.getValue() );
-
-					putVar( scheme , "scheme", scheme );
-
-					StringReader in = new StringReader( schemeScript );
-					try {
-						Object result = scheme.eval( new InPort( in, Path.valueOf( schemeScriptURI ) ) );
-						if ( result == null ) {
-							return new ExecuteSchemeResult( "#!null", null );
-						} else {
-							return new ExecuteSchemeResult( prettyPrint(result), null );
-						}
-					} catch (Throwable e) {
-						StringWriter sw = new StringWriter();
-						PrintWriter w = new PrintWriter( sw );
-						try {
-							e.printStackTrace( w );
-							w.flush();
-							sw.flush();
-							return new ExecuteSchemeResult( sw.toString(), e );
-						} finally {
-							try {
-								sw.close();
-							} catch (IOException e1) {
-								e1.printStackTrace();
-							}
-							w.close();
-						}
-					} finally {
-						putVar( scheme , "scheme", false );
-
-						if ( variables != null )
-							for ( Map.Entry<String, Object> e : variables.entrySet() )
-								putVar( scheme , e.getKey(), false );
-
-						in.close();
-					}
-				}
+				return evaluateScheme(scheme, variables, schemeScript, schemeScriptURI);
 			}
 		}, Invokable.NOARG );
 	}
+
+	
 	public static String endWithLineFeed(String s) {
 		if ( s == null )
 			return null;

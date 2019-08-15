@@ -4,6 +4,16 @@
    (load "./pulsar-pattern-generator.scm" )
    (create-gui)
    ))
+((gnu.kawa.io.Path "."):absolute?)
+
+(java.io.File (java.net.URI "a"))
+
+(java.lang.System:setProperty "user.dir" "/home/ats/Documents/works/java/pulsar/workspace/pulsar/examples" )
+(java.lang.System:setProperty "user.dir" "/home/ats/Documents/" )
+(java.lang.System:getProperty "user.dir"  )
+
+(((java.io.File "." ):getAbsoluteFile):getCanonicalFile)
+((java.io.File "."):exists)
 
 (open "hello")
 (openi "foo")
