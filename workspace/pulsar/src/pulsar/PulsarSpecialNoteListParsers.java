@@ -112,6 +112,8 @@ public class PulsarSpecialNoteListParsers {
 	static abstract class SpecialNoteListParserElement extends NoteListParserElement {
 		String shortName;
 		String longName;
+		String shortDescription;
+		String longDescription;
 		@Override
 		public String getShortName() {
 			return shortName;
@@ -119,6 +121,14 @@ public class PulsarSpecialNoteListParsers {
 		@Override
 		public String getLongName() {
 			return longName;
+		}
+		@Override
+		public String getShortDescription() {
+			return shortDescription;
+		}
+		@Override
+		public String getLongDescription() {
+			return longDescription;
 		}
 	}
 

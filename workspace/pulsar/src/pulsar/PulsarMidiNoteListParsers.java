@@ -168,6 +168,14 @@ public class PulsarMidiNoteListParsers {
 		public String getLongName() {
 			return midi.getLongName();
 		}
+		@Override
+		public String getShortDescription() {
+			return midi.getShortDescription();
+		}
+		@Override
+		public String getLongDescription() {
+			return midi.getLongDescription();
+		}
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////

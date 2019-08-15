@@ -60,6 +60,9 @@ public abstract class NoteListParserElement {
 	 */
 	public abstract String getShortName();
 	
+	public abstract String getShortDescription();
+	public abstract String getLongDescription();
+	
 	/**
 	 * Parse the current note on the processing note list. For further information,
 	 * see
