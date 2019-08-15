@@ -1,0 +1,10 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2019-08-14T04:06:06+09:00
+
+====== Memo ======
+Created Wednesday 14 August 2019
+
+===== Ideas =====
+* Execute KawaPad.eventHandler in another thread to address the deadlock-issue
+* Write reference at first.
