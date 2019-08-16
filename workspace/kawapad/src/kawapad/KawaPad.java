@@ -1380,7 +1380,7 @@ public class KawaPad extends JFrame {
 
 			SchemeUtils.defineVar(scheme, 
 					Pair.makeList( (List)SchemeUtils.<String,IString>convertList( 
-							Arrays.asList( SimpleSchemePrettifier.LISP_WORDS ),
+							Arrays.asList( DEFAULT_LISP_WORDS ),
 							(o)->{
 								return SchemeUtils.toSchemeString( o );
 							}) 
@@ -1388,7 +1388,7 @@ public class KawaPad extends JFrame {
 					"lisp-words");
 
 			SchemeUtils.defineVar(scheme, Pair.makeList( (List)SchemeUtils.<String,IString>convertList( 
-							Arrays.asList( SimpleSchemePrettifier.LISP_WORDS ),
+							Arrays.asList( DEFAULT_LISP_WORDS ),
 							(o)->{
 								return SchemeUtils.toSchemeString( o );
 							}) 
@@ -2203,4 +2203,178 @@ public class KawaPad extends JFrame {
 	public static void start() throws IOException {
 		start( null );
 	}
+
+	public static final String[] DEFAULT_LISP_WORDS = {
+			// ??
+			"let", "letrec", "let*", "letrec*","set!",
+			"do","if", "cond", "else", "#t", "#f", "begin", "apply","define", 
+			"not","and","or",
+			
+			// https://www.gnu.org/software/kawa/Numerical-types.html
+			"number?",
+			"quantity?",
+			"complex?",
+			"real?",
+			"rational?",
+			"integer?",
+			"longv",
+			"int?",
+			"short?",
+			"byte?",
+			"ulong?",
+			"uint?",
+			"ushort?",
+			"ubyte?",
+			"double?",
+			"float?",
+			
+			// https://www.gnu.org/software/kawa/Standard-Types.html
+			"Object?",
+			"symbol?",
+			"keyword?",
+			"list?",
+			"pair?",
+			"string?",
+			"String?",
+			"character?",
+			"vector?",
+			"procedure?",
+			"input-port?",
+			"output-port?",
+			"parameter?",
+			"dynamic?",
+			// https://srfi.schemers.org/srfi-1/srfi-1.html
+			"cons", "list",
+			"xcons", "cons*", "make-list", "list-tabulate", 
+			"list-copy", "circular-list", "iota",
+
+			"pair?", "null?",
+			"proper-list?", "circular-list?", "dotted-list?", 
+			"not-pair?", "null-list?",
+			"list=",
+
+			"car", "cdr", "cddadr", "cddddr", "list-ref",
+			"first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth",
+			"car+cdr",
+			"take",       "drop",
+			"take-right", "drop-right",
+			"take!",      "drop-right!", 
+			"split-at",   "split-at!", 
+			"last", "last-pair",
+
+			"length", "length+",
+			"append",  "concatenate",  "reverse",
+			"append!", "concatenate!", "reverse!",
+			"append-reverse", "append-reverse!",
+			"zip", "unzip1", "unzip2", "unzip3", "unzip4", "unzip5",
+			"count",
+
+			"map", "for-each",
+			"fold",       "unfold",       "pair-fold",       "reduce", 
+			"fold-right", "unfold-right", "pair-fold-right", "reduce-right", 
+			"append-map", "append-map!",
+			"map!", "pair-for-each", "filter-map", "map-in-order",
+
+			"filter",  "partition",  "remove",
+			"filter!", "partition!", "remove!", 
+
+			"member", "memq", "memv",
+			"find", "find-tail", 
+			"any", "every",
+			"list-index",
+			"take-while", "drop-while", "take-while!",
+			"span", "break", "span!", "break!",
+
+			"delete",  "delete-duplicates", 
+			"delete!", "delete-duplicates!",
+
+			"assoc", "assq", "assv",
+			"alist-cons", "alist-copy",
+			"alist-delete", "alist-delete!",
+
+			"lset<=", "lset=", "lset-adjoin",
+			"lset-union",			"lset-union!",
+			"lset-intersection",		"lset-intersection!",
+			"lset-difference",		        "lset-difference!",
+			"lset-xor",			"lset-xor!",
+			"lset-diff+intersection",	        "lset-diff+intersection!",
+
+			"set-car!", "set-cdr!",
+
+			// kawa
+			"import",
+			"require",
+			"load",
+			"load-relative",
+			
+			};
+
+	public static final String[] DEFAULT_LISP_WORDS_OLD = {
+			"defun",
+			"define",
+			"defmacro",
+			"set!",
+			"lambda",
+			"lambda*",
+			"if",
+			"case",
+			"let",
+			"flet",
+			"let*",
+			"letrec",
+			"do",
+			"do*",
+			"define-syntax",
+			"let-syntax",
+			"letrec-syntax",
+			"destructuring-bind",
+			"defpackage",
+			"defparameter",
+			"defstruct",
+			"deftype",
+			"defvar",
+			"do-all-symbols",
+			"do-external-symbols",
+			"do-symbols",
+			"dolist",
+			"dotimes",
+			"ecase",
+			"etypecase",
+			"eval-when",
+			"labels",
+			"macrolet",
+			"multiple-value-bind",
+			"multiple-value-call",
+			"multiple-value-prog1",
+			"multiple-value-setq",
+			"prog1",
+			"progv",
+			"typecase",
+			"unless",
+			"unwind-protect",
+			"when",
+			"with-input-from-string",
+			"with-open-file",
+			"with-open-stream",
+			"with-output-to-string",
+			"with-package-iterator",
+			"define-condition",
+			"handler-bind",
+			"handler-case",
+			"restart-bind",
+			"restart-case",
+			"with-simple-restart",
+			"store-value",
+			"use-value",
+			"muffle-warning",
+			"abort",
+			"continue",
+			"with-slots",
+			"with-slots*",
+			"with-accessors",
+			"with-accessors*",
+			"defclass",
+			"defmethod",
+			"print-unreadable-object",};
+
 }

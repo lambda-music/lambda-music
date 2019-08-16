@@ -36,6 +36,7 @@ import javax.swing.text.StyledDocument;
 import kawapad.SimpleSchemeParser.ParserState;
 
 public class KawaPadHighlighter {
+	
 	public static String lispWordToPatternString(Collection<String> lispWordCollection) {
 		String[] lispWords = lispWordCollection.toArray( new String[ lispWordCollection.size() ] );
 		Arrays.sort( lispWords, new Comparator<String>() {

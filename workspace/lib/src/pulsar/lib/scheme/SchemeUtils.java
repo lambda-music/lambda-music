@@ -127,6 +127,12 @@ public class SchemeUtils {
 		return map;
 	}
 	
+	public static List<Symbol> javaStringListToSchemeSymbolList( List<String> stringList) { 
+		return SchemeUtils.<String,Symbol>convertList( stringList, (o)->{
+			return SchemeUtils.schemeSymbol( o );
+		});
+	}
+	
 	/*
 	 * We changed the policy the way to treat null here;
 	 * now we are ignoring null value. (Sun, 04 Aug 2019 22:01:39 +0900)
@@ -280,16 +286,25 @@ public class SchemeUtils {
 			defineDocument(e, symbols, (DescriptiveProcedure)value);
 		}
 	}
-	static void defineDocument( Environment e, Symbol[] symbols, DescriptiveProcedure proc) {
+	static void checkDocument(Environment e) {
 		if ( ! e.isBound( SYMBOL_ALL_PROCEDURES  ) ) {
 			e.define(SYMBOL_ALL_PROCEDURES, null, LList.makeList( Collections.EMPTY_LIST ) );
 		}
+	}
+	static void defineDocument( Environment e, Symbol[] symbols, DescriptiveProcedure proc) {
+		checkDocument(e);
 
 		Pair pair = Pair.make(
 			Pair.make( proc, LList.makeList( symbols, 0 )),  
 			(LList) e.get(SYMBOL_ALL_PROCEDURES));
 		e.put( SYMBOL_ALL_PROCEDURES, pair );
 	}
+	
+	public static Pair getDocumentList( Environment e ) {
+		checkDocument(e);
+		return (Pair)e.get( SYMBOL_ALL_PROCEDURES );
+	}
+	
 	public static final boolean isDefined( Scheme scheme, String name  ) {
 		return scheme.getEnvironment().isBound( SimpleSymbol.make( "", name ) );
 	}

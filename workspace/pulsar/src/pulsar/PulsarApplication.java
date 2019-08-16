@@ -82,6 +82,9 @@ public class PulsarApplication {
 			KawaPad.registerGlobalSchemeInitializer( schemeSecretary );
 		
 		Pulsar.registerLocalSchemeInitializers( schemeSecretary, pulsar );
+		Pulsar.registerFinalSchemeInitializers( schemeSecretary, pulsar );
+		
+		
 //		<<< VERSION INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
 		
 		PulsarGui pulsarGui;

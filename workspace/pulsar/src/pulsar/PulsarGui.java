@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,7 +69,12 @@ import javax.swing.event.ChangeListener;
 
 import org.jaudiolibs.jnajack.JackException;
 
+import gnu.kawa.slib.srfi1;
+import gnu.lists.LList;
+import gnu.lists.Pair;
+import gnu.mapping.Procedure;
 import gnu.mapping.ProcedureN;
+import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import kawa.standard.Scheme;
 import kawapad.KawaPad;
@@ -100,6 +106,7 @@ public class PulsarGui {
 	public static PulsarGui start(Pulsar pulsar, boolean shutdownWhenClose ) {
 		return new PulsarGui( pulsar, shutdownWhenClose );
 	}
+
 
 	static final int PB_POSITION_MAX = 1024;
 	
@@ -388,6 +395,8 @@ public class PulsarGui {
     		}
     	} , "gui-insert-text");
     }
+    
+    
 
 	
     //Create the "cards".
@@ -861,4 +870,39 @@ public class PulsarGui {
 
     	return tempoTapButton;
 	}
+
+	public static List<Symbol> getPulsarWords( Scheme scheme ) {
+		List result = new ArrayList<>();
+		try {
+			Pair p1 = SchemeUtils.getDocumentList( scheme.getEnvironment() );
+			for ( Object o2 : p1 ) {
+				Pair p2 = (Pair) o2;
+				result.addAll( (Pair) srfi1.drop.apply2( p2, 1 )); 
+			}
+			return (List<Symbol>)result;
+		} catch (Throwable e) {
+			throw new InternalError(e);
+		} 
+	}
+	public static void addLispWords( Scheme scheme, List<Symbol> additionalLispWords ) {
+		Pair lispWords = (Pair) SchemeUtils.getVar( scheme, "lisp-words" );
+		if ( lispWords != null) {
+			try {
+				
+				Object newLispWords = ((Procedure)srfi1.append.get()).apply2(
+					LList.makeList( additionalLispWords) , lispWords );
+				
+				SchemeUtils.putVar(scheme, "lisp-words", newLispWords );
+			} catch (Throwable e) {
+				logError( "" ,  e );
+			}
+		} else {
+			logWarn( "could not retrieve lisp-words." );
+		}
+	}
+
+	public static void addStringLispWords( Scheme scheme, List<String> PULSAR_WORDS ) {
+		addLispWords( scheme , SchemeUtils.javaStringListToSchemeSymbolList( PULSAR_WORDS ) );
+	}
+
 }
