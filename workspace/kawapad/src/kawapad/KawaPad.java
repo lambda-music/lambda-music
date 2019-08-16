@@ -53,6 +53,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -697,35 +698,20 @@ public class KawaPad extends JFrame {
 	
 	
 	
-	private static final int STRATEGY_DYNAMIC = -1024;
-	private static final int STRATEGY_SIMPLE_PARENTHESIS_JUMP = 1;
-	private static final int STRATEGY_CORRESPONDING_PARENTHESIS_JUMP = 2;
+	
 	static class ParenthesisAction extends TextAction {
-		boolean doSelect = false;
-		int direction = 0;
-		int constantStrategy; // <0 means dynamic strategy (Tue, 13 Aug 2019 21:59:23 +0900)
-		ParenthesisAction( String name, boolean doSelect, int direction, int constantStrategy ) {
-			super(name);
-			this.doSelect = doSelect;
-			this.direction = direction;
-			this.constantStrategy = constantStrategy;
-		}
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			JTextPane textPane = (JTextPane) getTextComponent(e);
-			String text = textPane.getText();
-			Caret caret = textPane.getCaret();
-
-			int totalOffset = 0;
-			int currDot = caret.getDot();
+		public static final int STRATEGY_DYNAMIC = -1024;
+		public static final int STRATEGY_SIMPLE_PARENTHESIS_JUMP = 1;
+		public static final int STRATEGY_CORRESPONDING_PARENTHESIS_JUMP = 2;
+		public static int lookupCorrespondingParenthesis2(String text, int currDot, int direction, int constantStrategy ) throws InternalError {
 			char currentChar = text.charAt( currDot );
+			int totalOffset = 0;
 			
 			// 0 : do nothing
 			// 1 : look for "(" or ")"
 			// 2 : look for the corresponding parenthesis.
 			int strategy;
-		
+			
 			// constantStrategy < 0 means dynamic strategy 
 			// (Tue, 13 Aug 2019 21:59:23 +0900)
 			if ( constantStrategy == STRATEGY_DYNAMIC ) {
@@ -776,38 +762,23 @@ public class KawaPad extends JFrame {
 				}
 			}
 			
+			int newDot=-1;
 			
 			switch ( strategy ) {
 				case 0 : 
 					// do nothing
-					if ( doSelect ) {
-						caret.moveDot(currDot + totalOffset );
-					} else {
-						caret.setDot( currDot + totalOffset );
-					}
+					newDot = currDot + totalOffset;
 					break;
 				case STRATEGY_SIMPLE_PARENTHESIS_JUMP : { 
 					// strategy 1 : no parenthesis is found under the cursor.
 					int pos = lookupParenthesis(text, currDot + totalOffset, direction );
 					if ( 0<=pos ) {
-						if ( doSelect ) {
-							caret.moveDot(pos);
-						} else {
-							caret.setDot(pos);
-						}
+						newDot = pos;
 					} else {
-						if ( doSelect ) {
-							if ( direction < 0 )
-								caret.moveDot(0);
-							else
-								caret.moveDot( text.length() );
-								
-						} else {
-							if ( direction < 0 )
-								caret.setDot( 0 );
-							else
-								caret.setDot( text.length() );
-						}
+						if ( direction < 0 )
+							newDot = 0;
+						else
+							newDot = text.length();
 					}
 					break;
 				}
@@ -815,49 +786,65 @@ public class KawaPad extends JFrame {
 					// strategy 0: a parenthesis is found under the cursor.
 					int pos = lookupCorrespondingParenthesis( text, currDot + totalOffset );
 					if ( 0<=pos ) {
-						if ( doSelect ) {
-							caret.moveDot(pos);
-						} else {
-							caret.setDot(pos);
-						}
+						newDot = pos;
 					} else {
-						if ( doSelect ) {
-							caret.moveDot(currDot + totalOffset);
-						} else {
-							caret.setDot(currDot + totalOffset);
-						}
+						newDot = currDot + totalOffset;
 					}
 					break;
 				}
 				default :
 					throw new InternalError();
 			}
-			
+			return newDot;
+		}
+
+		boolean doSelect = false;
+		int direction = 0;
+		int constantStrategy; // <0 means dynamic strategy (Tue, 13 Aug 2019 21:59:23 +0900)
+		ParenthesisAction( String name, boolean doSelect, int direction, int constantStrategy ) {
+			super(name);
+			this.doSelect = doSelect;
+			this.direction = direction;
+			this.constantStrategy = constantStrategy;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			JTextPane textPane = (JTextPane) getTextComponent(e);
+			String text = textPane.getText();
+			Caret caret = textPane.getCaret();
+			int currDot = caret.getDot();
+			int newDot = lookupCorrespondingParenthesis2(text, currDot, direction, constantStrategy );
+			if ( doSelect ) {
+				caret.moveDot( newDot );
+			} else {
+				caret.setDot( newDot );
+			}
 		}
 	}
 
-	public final AbstractAction SIMPLE_PARENTHESIS_JUMP_LEFT_ACTION = new ParenthesisAction( "simple-parenthesis-jump-left", false, -1, STRATEGY_SIMPLE_PARENTHESIS_JUMP ) {
+	public final AbstractAction SIMPLE_PARENTHESIS_JUMP_LEFT_ACTION = new ParenthesisAction( "simple-parenthesis-jump-left", false, -1, ParenthesisAction.STRATEGY_SIMPLE_PARENTHESIS_JUMP ) {
 		{
 			putValue( Action2.NAME, "Go to the Previous Parenthesis" );
 			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK ) );
 //			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
 	};
-	public final AbstractAction SIMPLE_PARENTHESIS_JUMP_RIGHT_ACTION = new ParenthesisAction( "simple-parenthesis-jump-right", false, +1, STRATEGY_SIMPLE_PARENTHESIS_JUMP  ) {
+	public final AbstractAction SIMPLE_PARENTHESIS_JUMP_RIGHT_ACTION = new ParenthesisAction( "simple-parenthesis-jump-right", false, +1, ParenthesisAction.STRATEGY_SIMPLE_PARENTHESIS_JUMP  ) {
 		{
 			putValue( Action2.NAME, "Go to the Next Parenthesis" );
 			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK ) );
 //			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
 	};
-	public final AbstractAction SIMPLE_PARENTHESIS_SELECT_JUMP_LEFT_ACTION = new ParenthesisAction( "simple-parenthesis-select-jump-left", true, -1, STRATEGY_SIMPLE_PARENTHESIS_JUMP ) {
+	public final AbstractAction SIMPLE_PARENTHESIS_SELECT_JUMP_LEFT_ACTION = new ParenthesisAction( "simple-parenthesis-select-jump-left", true, -1, ParenthesisAction.STRATEGY_SIMPLE_PARENTHESIS_JUMP ) {
 		{
 			putValue( Action2.NAME, "Select the Previous Parenthesis" );
 			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK |KeyEvent.SHIFT_MASK ) );
 //			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
 	};
-	public final AbstractAction SIMPLE_PARENTHESIS_SELECT_JUMP_RIGHT_ACTION = new ParenthesisAction( "simple-parenthesis-select-jump-right", true, +1, STRATEGY_SIMPLE_PARENTHESIS_JUMP  ) {
+	public final AbstractAction SIMPLE_PARENTHESIS_SELECT_JUMP_RIGHT_ACTION = new ParenthesisAction( "simple-parenthesis-select-jump-right", true, +1, ParenthesisAction.STRATEGY_SIMPLE_PARENTHESIS_JUMP  ) {
 		{
 			putValue( Action2.NAME, "Select the Next Parenthesis" );
 			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK ) );
@@ -865,28 +852,28 @@ public class KawaPad extends JFrame {
 		}
 	};
 	
-	public final AbstractAction PARENTHESIS_JUMP_LEFT_ACTION = new ParenthesisAction( "parenthesis-jump-left", false, -1, STRATEGY_DYNAMIC ) {
+	public final AbstractAction PARENTHESIS_JUMP_LEFT_ACTION = new ParenthesisAction( "parenthesis-jump-left", false, -1, ParenthesisAction.STRATEGY_DYNAMIC ) {
 		{
 			putValue( Action2.NAME, "Lookup the Corresponding Parenthesis on the Left" );
 			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK ) );
 //			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
 	};
-	public final AbstractAction PARENTHESIS_JUMP_RIGHT_ACTION = new ParenthesisAction( "parenthesis-jump-right", false, +1, STRATEGY_DYNAMIC  ) {
+	public final AbstractAction PARENTHESIS_JUMP_RIGHT_ACTION = new ParenthesisAction( "parenthesis-jump-right", false, +1, ParenthesisAction.STRATEGY_DYNAMIC  ) {
 		{
 			putValue( Action2.NAME, "Lookup the Corresponding Parenthesis on the Right" );
 			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK  ) );
 //			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
 	};
-	public final AbstractAction PARENTHESIS_SELECT_JUMP_LEFT_ACTION = new ParenthesisAction( "parenthesis-sel-jump-left", true, -1, STRATEGY_DYNAMIC  ) {
+	public final AbstractAction PARENTHESIS_SELECT_JUMP_LEFT_ACTION = new ParenthesisAction( "parenthesis-sel-jump-left", true, -1, ParenthesisAction.STRATEGY_DYNAMIC  ) {
 		{
 			putValue( Action2.NAME, "Lookup and Select the Corresponding Parenthesis on the Left" );
 			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK ) );
 //			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
 	};
-	public final AbstractAction PARENTHESIS_SELECT_JUMP_RIGHT_ACTION = new ParenthesisAction( "parenthesis-sel-jump-right", true, +1, STRATEGY_DYNAMIC  ) {
+	public final AbstractAction PARENTHESIS_SELECT_JUMP_RIGHT_ACTION = new ParenthesisAction( "parenthesis-sel-jump-right", true, +1, ParenthesisAction.STRATEGY_DYNAMIC  ) {
 		{
 			putValue( Action2.NAME, "Lookup and Select the Corresponding Parenthesis to the Right" );
 			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK ) );
@@ -918,7 +905,7 @@ public class KawaPad extends JFrame {
 		ParenthesisSelectAction(String name) {
 			super(name);
 		}
-
+		
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			JTextPane textPane = (JTextPane) getTextComponent(e);
@@ -944,8 +931,8 @@ public class KawaPad extends JFrame {
 				rightPos++;
 			}
 			
-			String left_leftString  = text.substring(0, leftPos);
-			String left_rightString = text.substring(leftPos);
+			String left_leftString   = text.substring(0, leftPos);
+			String left_rightString  = text.substring(leftPos);
 			String right_leftString  = text.substring(0, rightPos);
 			String right_rightString = text.substring(rightPos);
 			int posL;
@@ -982,7 +969,7 @@ public class KawaPad extends JFrame {
 			{
 				// the second search
 				diff = 2;
-				posL = lookupCorrespondingParenthesis( left_leftString + "(\"" + left_rightString, leftPos );
+				posL = lookupCorrespondingParenthesis( left_leftString + "(\"" + left_rightString, leftPos   );
 				posR = lookupCorrespondingParenthesis( right_leftString + "\")" + right_rightString, rightPos +1 );
 				if ( 0<=posL && 0<=posR ) {
 					synchronized ( parenthesisStack ) {
@@ -1000,10 +987,62 @@ public class KawaPad extends JFrame {
 			}
 		}
 	}
+	
 	public final AbstractAction PARENTHESIS_SELECT_ACTION = new ParenthesisSelectAction( "parenthesis-select" ) {
 		{
 			putValue( Action2.NAME, "Select Inside the Current Parentheses" );
 			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke( KeyEvent.VK_UP, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK ) );
+//			putValue( Action.MNEMONIC_KEY , (int) 'd' );
+		}
+	};
+	
+	class ParenthesisSelect2Action extends TextAction {
+		ParenthesisSelect2Action(String name) {
+			super(name);
+		}
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			JTextPane textPane = (JTextPane) getTextComponent(e);
+			String text  = textPane.getText();
+			Caret caret  = textPane.getCaret();
+			int currDot  = caret.getDot();
+			int currMark = caret.getMark();
+			int leftPos;
+			int rightPos;
+			if ( currDot < currMark ) {
+				leftPos = currDot;
+				rightPos = currMark;
+			} else {
+				leftPos = currMark;
+				rightPos = currDot;
+			}
+			
+			int posL;
+			int posR;
+			{
+				posL = WordJumpAction.lookup( leftPos,  text , -1 );
+				posR = WordJumpAction.lookup( rightPos, text ,  1 );
+				
+				if ( 0<=posL && 0<=posR ) {
+					synchronized ( parenthesisStack ) {
+						try {
+							parenthesisStackLocked = true;
+							caret.setDot(posL);
+							caret.moveDot(posR);
+							parenthesisStack.push(new ParenthesisStackElement(currMark, currDot));
+							return;
+						} finally {
+							parenthesisStackLocked = false;
+						}
+					}
+				}
+			}
+		}
+	}
+	public final AbstractAction PARENTHESIS_SELECT_2_ACTION = new ParenthesisSelect2Action("parenthesis-select-2-action") {
+		{
+			putValue( Action2.NAME, "Deselect Inside the Current Parentheses" );
+			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke( KeyEvent.VK_UP, KeyEvent.CTRL_MASK | KeyEvent.ALT_MASK ) );
 //			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
 	};
@@ -1015,15 +1054,22 @@ public class KawaPad extends JFrame {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			JTextPane textPane = (JTextPane) getTextComponent(e);
-			if ( textPane.getSelectedText() != null ) {
-				if ( ! parenthesisStack.isEmpty() ) {
-					ParenthesisStackElement elem = parenthesisStack.pop();
-					Caret caret = textPane.getCaret();
-					caret.setDot( elem.mark );
-					caret.moveDot( elem.dot );
+			synchronized ( parenthesisStack ) {
+				try {
+					parenthesisStackLocked = true;
+					if ( textPane.getSelectedText() != null ) {
+						if ( ! parenthesisStack.isEmpty() ) {
+							ParenthesisStackElement elem = parenthesisStack.pop();
+							Caret caret = textPane.getCaret();
+							caret.setDot( elem.mark );
+							caret.moveDot( elem.dot );
+						}
+					} else {
+						parenthesisStack.clear();
+					}
+				} finally {
+					parenthesisStackLocked = false;
 				}
-			} else {
-				parenthesisStack.clear();
 			}
 		}
 	}
@@ -1034,7 +1080,13 @@ public class KawaPad extends JFrame {
 //			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
 	};
-
+	public final AbstractAction PARENTHESIS_DESELECT_2_ACTION = new ParenthesisDeselectAction( "parenthesis-deselect-2" ) {
+		{
+			putValue( Action2.NAME, "Deselect Inside the Current Parentheses" );
+			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, KeyEvent.CTRL_MASK | KeyEvent.ALT_MASK ) );
+//			putValue( Action.MNEMONIC_KEY , (int) 'd' );
+		}
+	};
 
 	abstract class TextFilter {
 		abstract String process( String text );
@@ -2044,19 +2096,18 @@ public class KawaPad extends JFrame {
 		editMenuItem.add( new JMenuItem( DECREASE_INDENT_ACTION ) );
 		editMenuItem.add( new JMenuItem( PRETTIFY_ACTION ) );
 
-		editMenuItem.addSeparator();
-		
-		editMenuItem.add( new JMenuItem( SIMPLE_PARENTHESIS_JUMP_LEFT_ACTION ) );
-		editMenuItem.add( new JMenuItem( SIMPLE_PARENTHESIS_JUMP_RIGHT_ACTION ) );
-		editMenuItem.add( new JMenuItem( SIMPLE_PARENTHESIS_SELECT_JUMP_LEFT_ACTION ) );
-		editMenuItem.add( new JMenuItem( SIMPLE_PARENTHESIS_SELECT_JUMP_RIGHT_ACTION ) );
-		editMenuItem.add( new JMenuItem( PARENTHESIS_JUMP_LEFT_ACTION ) );
-		editMenuItem.add( new JMenuItem( PARENTHESIS_JUMP_RIGHT_ACTION ) );
-		editMenuItem.add( new JMenuItem( PARENTHESIS_SELECT_JUMP_LEFT_ACTION ) );
-		editMenuItem.add( new JMenuItem( PARENTHESIS_SELECT_JUMP_RIGHT_ACTION ) );
-		editMenuItem.add( new JMenuItem( PARENTHESIS_SELECT_ACTION ) );
-		editMenuItem.add( new JMenuItem( PARENTHESIS_DESELECT_ACTION ) );
-
+//		editMenuItem.addSeparator();
+//
+//		editMenuItem.add( new JMenuItem( SIMPLE_PARENTHESIS_JUMP_LEFT_ACTION ) );
+//		editMenuItem.add( new JMenuItem( SIMPLE_PARENTHESIS_JUMP_RIGHT_ACTION ) );
+//		editMenuItem.add( new JMenuItem( SIMPLE_PARENTHESIS_SELECT_JUMP_LEFT_ACTION ) );
+//		editMenuItem.add( new JMenuItem( SIMPLE_PARENTHESIS_SELECT_JUMP_RIGHT_ACTION ) );
+//		editMenuItem.add( new JMenuItem( PARENTHESIS_JUMP_LEFT_ACTION ) );
+//		editMenuItem.add( new JMenuItem( PARENTHESIS_JUMP_RIGHT_ACTION ) );
+//		editMenuItem.add( new JMenuItem( PARENTHESIS_SELECT_JUMP_LEFT_ACTION ) );
+//		editMenuItem.add( new JMenuItem( PARENTHESIS_SELECT_JUMP_RIGHT_ACTION ) );
+//		editMenuItem.add( new JMenuItem( PARENTHESIS_SELECT_ACTION ) );
+//		editMenuItem.add( new JMenuItem( PARENTHESIS_DESELECT_ACTION ) );
 
 		Action2.processMenuBar( menuBar );
 	}
@@ -2088,23 +2139,33 @@ public class KawaPad extends JFrame {
 		setVisible(true);
 	}
 	
-	private final class WordJumpAction extends AbstractAction {
+	private static final class WordJumpAction extends AbstractAction {
 		private int direction;
 		public WordJumpAction(int direction) {
 			this.direction = direction;
 		}
-		private boolean isExclusiveBoundary( char ch ) {
-			return Character.isWhitespace(ch); 
-		}
-		private boolean isInclusiveBoundary( char ch ) {
-			return ch == '"' || ch == ')' || ch == '('  ; 
-		}
-
 		public void actionPerformed(ActionEvent ae) {
 		    JTextComponent ta = (JTextComponent)ae.getSource();
 		    int p0 = ta.getCaretPosition();
 		    String text = ta.getText();
-		    int length = text.length();
+		    
+		    int p1 = lookup(p0, text, direction);
+		    
+		    // Then, jump to there.
+		    if ( p1 < 0 ) {
+		    	ta.setCaretPosition(0);
+		    } else {
+		    	ta.setCaretPosition(p1);
+		    }
+		}
+		private static boolean isExclusiveBoundary( char ch ) {
+			return Character.isWhitespace(ch); 
+		}
+		private static boolean isInclusiveBoundary( char ch ) {
+			return ch == '"' || ch == ')' || ch == '('  ; 
+		}
+		static int lookup(int p0, String text, int direction ) {
+			int length = text.length();
 		    if ( length <= p0 ) {
 		    	p0 = length-1;
 		    }
@@ -2148,19 +2209,33 @@ public class KawaPad extends JFrame {
 		    		}
 		    	}
 		    }
-		    
-		    // Then, jump to there.
-		    if ( p1 < 0 ) {
-		    	ta.setCaretPosition(0);
-		    } else {
-		    	ta.setCaretPosition(p1);
-		    }
+			return p1;
 		}
 	}
+	
+	private void addMap( JComponent component, Action action ) {
+		Object name = action.getValue( Action.NAME );
+		component.getInputMap().put( (KeyStroke) action.getValue( Action.ACCELERATOR_KEY ), name );
+		component.getActionMap().put( name, action );
+	}
 	{
+		ActionMap map = this.textPane.getActionMap();
 		
-		this.textPane.getActionMap().put(DefaultEditorKit.nextWordAction, new WordJumpAction(1));
-		this.textPane.getActionMap().put(DefaultEditorKit.previousWordAction, new WordJumpAction(-1));
+		addMap( this.textPane, SIMPLE_PARENTHESIS_JUMP_LEFT_ACTION );
+		addMap( this.textPane, SIMPLE_PARENTHESIS_JUMP_RIGHT_ACTION );
+		addMap( this.textPane, SIMPLE_PARENTHESIS_SELECT_JUMP_LEFT_ACTION );
+		addMap( this.textPane, SIMPLE_PARENTHESIS_SELECT_JUMP_RIGHT_ACTION );
+		addMap( this.textPane, PARENTHESIS_JUMP_LEFT_ACTION );
+		addMap( this.textPane, PARENTHESIS_JUMP_RIGHT_ACTION );
+		addMap( this.textPane, PARENTHESIS_SELECT_JUMP_LEFT_ACTION );
+		addMap( this.textPane, PARENTHESIS_SELECT_JUMP_RIGHT_ACTION );
+		addMap( this.textPane, PARENTHESIS_SELECT_ACTION );
+		addMap( this.textPane, PARENTHESIS_SELECT_2_ACTION );
+		addMap( this.textPane, PARENTHESIS_DESELECT_ACTION );
+		addMap( this.textPane, PARENTHESIS_DESELECT_2_ACTION );
+
+		map.put( DefaultEditorKit.nextWordAction, new WordJumpAction(1));
+		map.put( DefaultEditorKit.previousWordAction, new WordJumpAction(-1));
 	}
 	
 	protected void onCloseWindow() {
@@ -2208,7 +2283,7 @@ public class KawaPad extends JFrame {
 			// ??
 			"let", "letrec", "let*", "letrec*","set!",
 			"do","if", "cond", "else", "#t", "#f", "begin", "apply","define", 
-			"not","and","or",
+			"not", "and", "or",
 			
 			// https://www.gnu.org/software/kawa/Numerical-types.html
 			"number?",
