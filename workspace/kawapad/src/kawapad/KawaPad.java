@@ -30,7 +30,6 @@ import java.awt.HeadlessException;
 import java.awt.MenuBar;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -65,7 +64,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -459,7 +457,7 @@ public class KawaPad extends JFrame {
 			checkSelectionStack();
 //			System.err.println("PulsarScratchPadTextPaneController.caretUpdate()");
 			if ( ! undoManager.isSuspended() ) {
-				updateHighlightLater();
+				updateHighlightParenthesesLater();
 				eventHandlers.invokeEventHandler( KawaPad.this, EventHandlers.CARET,  KawaPad.this);
 				eventHandlers.invokeEventHandler( KawaPad.this, EventHandlers.CHANGE,  KawaPad.this);
 			}
@@ -497,11 +495,21 @@ public class KawaPad extends JFrame {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				updateHighlight();
+			}
+
+		});
+	}
+	public void updateHighlightParenthesesLater() {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				KawaPadHighlighter.forceClearHighlightedParenthesis();
 				highlightMatchningParentheses();
 			}
 
 		});
 	}
+	
+	
 	String getLispWordPatternString() {
 		return KawaPadHighlighter.lispWordToPatternString( getLispWords() ); 
 	}
@@ -1190,7 +1198,7 @@ public class KawaPad extends JFrame {
 	 * 
 	 */
 
-	private static List<String> FALLBACK_LISP_WORDS = Arrays.asList("let","lambda" );
+	private static List<String> FALLBACK_LISP_WORDS = Arrays.asList( "let", "lambda" );
 
 	public Collection<String> getLispWords() {
 		return schemeSecretary.executeSecretarially( new SecretaryMessage.NoThrow<Scheme, Collection<String>>() {
@@ -1718,22 +1726,8 @@ public class KawaPad extends JFrame {
                 	case ")" :
                 		int pos = textPane.getCaretPosition() -1;
                 		logInfo( "caret : " + pos );
-                		SwingUtilities.invokeLater(new Runnable() {
-							@Override
-							public void run() {
-								updateHighlight();
-								KawaPadHighlighter.highlightMatchingParenthesis( textPane, pos  ); 
-
-								Timer t = new Timer(300 , new ActionListener() {
-									@Override
-									public void actionPerformed(ActionEvent e) {
-										updateHighlight(); 
-									}
-								});
-								t.setRepeats(false);
-								t.start();
-							}
-						});
+                		KawaPadHighlighter.highlightMatchingParenthesis( textPane, pos ); 
+//						SwingUtilities.invokeLater(hilightRunnable);
                 		break;
                 		
                 	default :

@@ -21,6 +21,7 @@
 package kawapad;
 
 import java.awt.Color;
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -142,15 +143,73 @@ public class KawaPadHighlighter {
 	    }
 	}
 
+	static class ClearPosition {
+		StyledDocument document;
+		int open_pos;
+		int close_pos;
+		public ClearPosition(StyledDocument document, int open_pos, int close_pos) {
+			super();
+			this.document = document;
+			this.open_pos = open_pos;
+			this.close_pos = close_pos;
+		}
+		public void clear() {
+			document.setCharacterAttributes( open_pos,  1, new SimpleAttributeSet(), true );
+			document.setCharacterAttributes( close_pos, 1, new SimpleAttributeSet(), true );
+		}
+	}
 
-	public static void highlightParentheses(StyledDocument doc, int open_pos, int close_pos) {
+	static ArrayDeque<ClearPosition> clearQueue = new ArrayDeque<>();
+	static void addClearQueue(StyledDocument document, int open_pos, int close_pos) {
+		synchronized ( clearQueue ) {
+			ClearPosition cp = new ClearPosition( document, open_pos, close_pos);
+			clearQueue.push(cp);
+		}
+	}
+	static void eliminateClearQueue() {
+		synchronized ( clearQueue ) {
+			for ( ClearPosition cp : clearQueue ) {
+				cp.clear();
+			}
+			clearQueue.clear();
+		}
+	}
+	static void popClearQueue() {
+		synchronized ( clearQueue ) {
+			if ( ! clearQueue.isEmpty() ) {
+				clearQueue.pop().clear();
+			}
+		}
+	}
+	
+	static void highlightParentheses(StyledDocument document, int open_pos, int close_pos) {
 		SimpleAttributeSet attr = new SimpleAttributeSet();
 		StyleConstants.setBackground( attr, Color.GREEN );
-		doc.setCharacterAttributes(open_pos, 1, attr, true);
-		doc.setCharacterAttributes(close_pos, 1, attr, false);
-		attr = new SimpleAttributeSet();
-		//		StyleConstants.setBold(attr, true);
-		doc.setCharacterAttributes(open_pos, close_pos - open_pos + 1, attr, false);
+		
+		document.setCharacterAttributes( open_pos,  1, attr, true );
+		document.setCharacterAttributes( close_pos, 1, attr, true );
+		
+		addClearQueue(document, open_pos, close_pos);
+
+//		Element open_elem  = doc.getCharacterElement(open_pos );
+//		Element close_elem = doc.getCharacterElement(close_pos);
+		
+//		final Timer timer = new Timer( 500, new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				popClearQueue();
+////				System.err.println("parentheses::the attribute removed");
+//			}
+//		});
+//		timer.setRepeats(false);
+//		timer.start();
+	}
+
+	public static void forceClearHighlightedParenthesis() {
+		eliminateClearQueue();
+	}
+	public static void clearHighlightedParenthesis() {
+		popClearQueue();
 	}
 
 	public static void highlightMatchingParenthesis(JTextPane pane, int position) {
