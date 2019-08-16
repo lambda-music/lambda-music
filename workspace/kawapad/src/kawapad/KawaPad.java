@@ -139,6 +139,7 @@ public class KawaPad extends JFrame {
 
 	public static final Map<Object,Object> memoMap = new HashMap<Object,Object>();
 
+	private static final boolean DEBUG = false;
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	
 	/**
@@ -279,13 +280,15 @@ public class KawaPad extends JFrame {
 			@Override
 			public void run() {
 				try {
-					LOGGER.log( Level.INFO, "run");
+					if ( DEBUG )
+						logInfo( "ScratchPadThreadManager:run" );
 					// ==== WORKAROUND SEE acvpoeov === (Tue, 23 Jul 2019 11:37:32 +0900) //
 //					schemeSecretary.initializeSchemeForCurrentThread();
 					// ==== WORKAROUND SEE acvpoeov === (Tue, 23 Jul 2019 11:37:32 +0900) //
 					r.run();
 				} finally {
-					logInfo("end");
+					if ( DEBUG )
+						logInfo( "ScratchPadThreadManager:end" );
 					removeScratchPadThread( this );
 				}
 			}
@@ -558,7 +561,6 @@ public class KawaPad extends JFrame {
 			HashMap<String,Object> variables = new HashMap<>();
 			variables.put( "frame", KawaPad.this );
 			ExecuteSchemeResult result = SchemeUtils.evaluateScheme( schemeSecretary, variables, schemeScript, "scratchpad" );
-			
 
 			if ( insertText || ! result.succeeded() ) {
 				if ( replaceText ) {
@@ -829,28 +831,28 @@ public class KawaPad extends JFrame {
 	public final AbstractAction SIMPLE_PARENTHESIS_JUMP_LEFT_ACTION = new ParenthesisAction( "simple-parenthesis-jump-left", false, -1, STRATEGY_SIMPLE_PARENTHESIS_JUMP ) {
 		{
 			putValue( Action2.NAME, "Go to the Previous Parenthesis" );
-			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK ) );
+			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK ) );
 //			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
 	};
 	public final AbstractAction SIMPLE_PARENTHESIS_JUMP_RIGHT_ACTION = new ParenthesisAction( "simple-parenthesis-jump-right", false, +1, STRATEGY_SIMPLE_PARENTHESIS_JUMP  ) {
 		{
 			putValue( Action2.NAME, "Go to the Next Parenthesis" );
-			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK ) );
+			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK ) );
 //			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
 	};
 	public final AbstractAction SIMPLE_PARENTHESIS_SELECT_JUMP_LEFT_ACTION = new ParenthesisAction( "simple-parenthesis-select-jump-left", true, -1, STRATEGY_SIMPLE_PARENTHESIS_JUMP ) {
 		{
 			putValue( Action2.NAME, "Select the Previous Parenthesis" );
-			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK ) );
+			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK |KeyEvent.SHIFT_MASK ) );
 //			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
 	};
 	public final AbstractAction SIMPLE_PARENTHESIS_SELECT_JUMP_RIGHT_ACTION = new ParenthesisAction( "simple-parenthesis-select-jump-right", true, +1, STRATEGY_SIMPLE_PARENTHESIS_JUMP  ) {
 		{
 			putValue( Action2.NAME, "Select the Next Parenthesis" );
-			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK ) );
+			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK ) );
 //			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
 	};
@@ -858,28 +860,28 @@ public class KawaPad extends JFrame {
 	public final AbstractAction PARENTHESIS_JUMP_LEFT_ACTION = new ParenthesisAction( "parenthesis-jump-left", false, -1, STRATEGY_DYNAMIC ) {
 		{
 			putValue( Action2.NAME, "Lookup the Corresponding Parenthesis on the Left" );
-			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK ) );
+			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK ) );
 //			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
 	};
 	public final AbstractAction PARENTHESIS_JUMP_RIGHT_ACTION = new ParenthesisAction( "parenthesis-jump-right", false, +1, STRATEGY_DYNAMIC  ) {
 		{
 			putValue( Action2.NAME, "Lookup the Corresponding Parenthesis on the Right" );
-			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK ) );
+			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK  ) );
 //			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
 	};
 	public final AbstractAction PARENTHESIS_SELECT_JUMP_LEFT_ACTION = new ParenthesisAction( "parenthesis-sel-jump-left", true, -1, STRATEGY_DYNAMIC  ) {
 		{
 			putValue( Action2.NAME, "Lookup and Select the Corresponding Parenthesis on the Left" );
-			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK ) );
+			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK ) );
 //			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
 	};
 	public final AbstractAction PARENTHESIS_SELECT_JUMP_RIGHT_ACTION = new ParenthesisAction( "parenthesis-sel-jump-right", true, +1, STRATEGY_DYNAMIC  ) {
 		{
 			putValue( Action2.NAME, "Lookup and Select the Corresponding Parenthesis to the Right" );
-			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK ) );
+			putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK ) );
 //			putValue( Action.MNEMONIC_KEY , (int) 'd' );
 		}
 	};
@@ -1304,31 +1306,35 @@ public class KawaPad extends JFrame {
 		}
 		public void invokeEventHandler( KawaPad kawaPad, String eventTypeID, Object ... args ) {
 //			logInfo( "eventHandlers.invokeEventHandler(outer)" );
-			kawaPad.schemeSecretary.executeWithoutSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+			kawaPad.schemeSecretary.executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
 				@Override
 				public void execute0( Scheme scheme, Object[] args ) {
-					kawaPad.schemeSecretary.initializeSchemeForCurrentThread();
-
-					synchronized ( scheme ) {
-//					logInfo( "eventHandlers.invokeEventHandler(inner)" );
-						try {
-							SchemeUtils.putVar( scheme, "scheme", scheme );
-							SchemeUtils.putVar( scheme, "frame",  kawaPad );
-
-							for( Entry<Symbol,SchemeProcedure> e :  getEventType(eventTypeID).entrySet() ) {
+					kawaPad.threadManager.startScratchPadThread( new Runnable() {
+						@Override
+						public void run() {
+							kawaPad.schemeSecretary.initializeSchemeForCurrentThread();
+							synchronized ( scheme ) {
+								//	logInfo( "eventHandlers.invokeEventHandler(inner)" );
 								try {
-									e.getValue().invoke( args );
-								} catch ( Throwable t ) {
-									logError("invoking event handlers : ", t);
+									SchemeUtils.putVar( scheme, "scheme", scheme );
+									SchemeUtils.putVar( scheme, "frame",  kawaPad );
+									
+									for( Entry<Symbol,SchemeProcedure> e :  getEventType(eventTypeID).entrySet() ) {
+										try {
+											e.getValue().invoke( args );
+										} catch ( Throwable t ) {
+											logError("invoking event handlers : ", t);
+										}
+									}
+									
+								} finally {
+									SchemeUtils.putVar( scheme, "scheme", false );
+									SchemeUtils.putVar( scheme, "frame", false );
 								}
+								
 							}
-
-						} finally {
-							SchemeUtils.putVar( scheme, "scheme", false );
-							SchemeUtils.putVar( scheme, "frame", false );
 						}
-
-					}
+					});
 				}
 			}, kawaPad );
 		}
@@ -1352,61 +1358,62 @@ public class KawaPad extends JFrame {
 
 	protected void initScheme( Scheme scheme ) {
 		logInfo( "KawaPad#initScheme" );
-		SchemeUtils.defineVar( scheme, frameName, this );
+		SchemeUtils.defineVar( scheme, this, frameName );
 	}
 
 	public static Scheme staticInitScheme( Scheme scheme ) {
 		logInfo( "KawaPad#staticInitScheme" );
 
 		if ( ! SchemeUtils.isDefined(scheme, FLAG_DONE_INIT_PULSAR_SCRATCHPAD ) ) {
-			SchemeUtils.defineVar(scheme, FLAG_DONE_INIT_PULSAR_SCRATCHPAD, true );  
+			SchemeUtils.defineVar(scheme, true, FLAG_DONE_INIT_PULSAR_SCRATCHPAD );  
 
-			SchemeUtils.defineVar(scheme, "frame", false );
-			SchemeUtils.defineVar(scheme, "scheme", false );
+			SchemeUtils.defineVar(scheme, false, "frame"  );
+			SchemeUtils.defineVar(scheme, false, "scheme" );
 
-			SchemeUtils.defineVar(scheme, "lisp-words",
+			SchemeUtils.defineVar(scheme, 
 					Pair.makeList( (List)SchemeUtils.<String,IString>convertList( 
 							Arrays.asList( SimpleSchemePrettifier.LISP_WORDS ),
 							(o)->{
 								return SchemeUtils.toSchemeString( o );
 							}) 
-							)
-					);
-			SchemeUtils.defineVar(scheme, "default-lisp-words",
-					Pair.makeList( (List)SchemeUtils.<String,IString>convertList( 
+						),
+					"lisp-words");
+
+			SchemeUtils.defineVar(scheme, Pair.makeList( (List)SchemeUtils.<String,IString>convertList( 
 							Arrays.asList( SimpleSchemePrettifier.LISP_WORDS ),
 							(o)->{
 								return SchemeUtils.toSchemeString( o );
 							}) 
-							)
+						),
+					"default-lisp-words"
 					);
 			
-			SchemeUtils.defineVar(scheme, "register-event-handler", new Procedure3() {
+			SchemeUtils.defineVar(scheme, new Procedure3() {
 				@Override
 				public Object apply3(Object arg1, Object arg2, Object arg3) throws Throwable {
 					eventHandlers.register( (Symbol)arg1, (Symbol)arg2, (Procedure) arg3 );
 					return EmptyList.emptyList;
 				}
-			});
-			SchemeUtils.defineVar(scheme, "unregister-event-handler", new Procedure2() {
+			}, "register-event-handler");
+			SchemeUtils.defineVar(scheme, new Procedure2() {
 				@Override
 				public Object apply2(Object arg1, Object arg2 ) throws Throwable {
 					eventHandlers.unregister((Symbol)arg1,(Symbol)arg2 );
 					return EmptyList.emptyList;
 				}
-			});
-			SchemeUtils.defineVar(scheme, "pretty-print", new Procedure1() {
+			}, "unregister-event-handler");
+			SchemeUtils.defineVar(scheme, new Procedure1() {
 				@Override
 				public Object apply1(Object arg1 ) throws Throwable {
 					return prettify( scheme, SchemeUtils.anyToString(SchemeUtils.prettyPrint(arg1)));
 				}
-			});
-			SchemeUtils.defineVar(scheme, "prettify", new Procedure1() {
+			}, "pretty-print");
+			SchemeUtils.defineVar(scheme, new Procedure1() {
 				@Override
 				public Object apply1(Object arg1 ) throws Throwable {
 					return prettify( scheme, SchemeUtils.anyToString(arg1));
 				}
-			});
+			}, "prettify");
 
 			try {
 				logInfo( "Loading [KawaPad internal]/kawapad-extension.scm" );
@@ -2085,6 +2092,81 @@ public class KawaPad extends JFrame {
 		});
 		
 		setVisible(true);
+	}
+	
+	private final class WordJumpAction extends AbstractAction {
+		private int direction;
+		public WordJumpAction(int direction) {
+			this.direction = direction;
+		}
+		private boolean isExclusiveBoundary( char ch ) {
+			return Character.isWhitespace(ch); 
+		}
+		private boolean isInclusiveBoundary( char ch ) {
+			return ch == '"' || ch == ')' || ch == '('  ; 
+		}
+
+		public void actionPerformed(ActionEvent ae) {
+		    JTextComponent ta = (JTextComponent)ae.getSource();
+		    int p0 = ta.getCaretPosition();
+		    String text = ta.getText();
+		    int length = text.length();
+		    if ( length <= p0 ) {
+		    	p0 = length-1;
+		    }
+		    int p1;
+
+		    if ( isInclusiveBoundary( text.charAt( p0 ))) {
+		    	p1 = p0 + direction;
+		    } else if ( isExclusiveBoundary( text.charAt( p0 ) ) ) {
+	    		// Look up a non-space character.
+	    		// In case the character on the current position is a space-character,
+	    		// this loop immediately breaks and the next loop will start on
+	    		// the current position.
+	    		p1 = -1;
+	    		for ( int i=p0; 0<=i&&i<length; i+=direction ) {
+	    			char ch = text.charAt( i );
+	    			if ( ! isExclusiveBoundary(ch) ) {
+	    				p1 = i;
+	    				break;
+	    			}
+	    		}
+		    } else {
+		    	p0 += direction * 1;
+		    	if ( 
+		    			isExclusiveBoundary( text.charAt( p0 ) ) ||
+		    			isInclusiveBoundary( text.charAt( p0 ) ) )
+		    	{
+		    		p1 = p0;
+		    	} else {
+		    		// Look up the nearest space character.
+		    		p1 = -1;
+		    		for ( int i=p0; 0<=i&&0<length; i+=direction ) {
+		    			char ch = text.charAt( i );
+		    			if ( isExclusiveBoundary(ch) ) {
+		    				p1 = i - direction;
+		    				break;
+		    			}
+		    			if ( isInclusiveBoundary(ch) ) {
+		    				p1 = i  - direction;
+		    				break;
+		    			}
+		    		}
+		    	}
+		    }
+		    
+		    // Then, jump to there.
+		    if ( p1 < 0 ) {
+		    	ta.setCaretPosition(0);
+		    } else {
+		    	ta.setCaretPosition(p1);
+		    }
+		}
+	}
+	{
+		
+		this.textPane.getActionMap().put(DefaultEditorKit.nextWordAction, new WordJumpAction(1));
+		this.textPane.getActionMap().put(DefaultEditorKit.previousWordAction, new WordJumpAction(-1));
 	}
 	
 	protected void onCloseWindow() {

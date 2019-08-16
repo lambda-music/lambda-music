@@ -12,6 +12,15 @@
 (java.lang.System:setProperty "user.dir" "/home/ats/Documents/" )
 (java.lang.System:getProperty "user.dir"  )
 
+(define (y a b c) 
+  gnu.mapping.CallContext:instance:proc) 
+  )
+
+(define (x a b)
+  (y a b 3))
+
+(apply x (list 1 1))
+
 (((java.io.File "." ):getAbsoluteFile):getCanonicalFile)
 ((java.io.File "."):exists)
 

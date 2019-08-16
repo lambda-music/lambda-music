@@ -230,12 +230,12 @@
                                                      (list (len 1))))))))
 
 
-(define main (lambda () (list (len 4/4))))
+(define main-track-sequence (lambda () (list (len 4/4))))
 (set-main   (lambda()
                (display-warn "====set-main SET-MAIN ========\n" )
                (newline-warn)
                (put-track  (new-track 'main (lambda args
-                                              (apply main args ))))))
+                                              (apply main-track-sequence args ))))))
 
 
 

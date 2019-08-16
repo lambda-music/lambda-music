@@ -118,6 +118,9 @@ public class SchemeSecretary extends Secretary<Scheme> implements ShutdownHook {
 //				( Environment.getCurrent() == env ) 
 //			);
 		}
+		// !!! THIS IS VERY BOGUS !!!! (Thu, 15 Aug 2019 22:38:07 +0900)
+		// SEE gnu.mapping.RunnableClosure.run()
+//		CallContext.getInstance();
 	}
     private final Collection<Runnable> shutdownHookList = new LinkedList<>();
     @Override
@@ -196,6 +199,16 @@ public class SchemeSecretary extends Secretary<Scheme> implements ShutdownHook {
 				});
 			}
 		});
+		
+		registerSchemeInitializer( null, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+			@Override
+			public void execute0(Scheme scheme, Object[] args) {
+				initializeSchemeForCurrentThreadStatic( scheme );
+				//XXX This destroys the thread initialization for Environment().
+				// (Thu, 15 Aug 2019 23:07:01 +0900)
+//				SchemeUtils.defineVar( scheme, EmptyList.emptyList, "all-procedures" );
+			}
+		} );
 	}
 
 

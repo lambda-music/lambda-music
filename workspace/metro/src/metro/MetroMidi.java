@@ -145,7 +145,6 @@ public abstract class MetroMidi {
 	public String getLongDescription() {
 		return longDescription;
 	}
-	
 
 	static final Logger LOGGER = Logger.getLogger( MetroMidi.class.getName() );
 

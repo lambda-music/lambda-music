@@ -31,6 +31,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -40,12 +41,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import gnu.expr.Language;
 import gnu.kawa.io.InPort;
+import gnu.kawa.io.OutPort;
 import gnu.kawa.io.Path;
 import gnu.lists.AbstractSequence;
+import gnu.lists.Consumer;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
+import gnu.lists.LList;
 import gnu.lists.Pair;
+import gnu.mapping.CallContext;
+import gnu.mapping.Environment;
 import gnu.mapping.SimpleSymbol;
 import gnu.mapping.Symbol;
 import gnu.math.DFloNum;
@@ -125,7 +132,8 @@ public class SchemeUtils {
 	 * now we are ignoring null value. (Sun, 04 Aug 2019 22:01:39 +0900)
 	 */
 	public static Symbol schemeSymbol( String string ) {
-		return Symbol.valueOf( string );
+//		return Symbol.valueOf( string );
+		return SimpleSymbol.valueOf(string);	
 	}
 
 	// If it is allowed to return null (in case such return type is Object), then
@@ -252,8 +260,35 @@ public class SchemeUtils {
 		return Pair.make( toSchemeSymbol( key ) , value );
 	}
 
-	public static final void defineVar( Scheme scheme, String name, Object value ) {
-		scheme.getEnvironment().define( SimpleSymbol.make( "", name ), null, value );
+	public static final Symbol SYMBOL_ALL_PROCEDURES = Symbol.valueOf( "all-procedures" ); 
+	
+	public static final void defineVar( Scheme scheme, Object value, String ... names ) {
+		Environment e = scheme.getEnvironment();
+		Environment.setCurrent(e);
+		Language.setCurrentLanguage(scheme);
+
+		Symbol[] symbols = new Symbol[names.length];
+		for ( int i=0; i<names.length; i++ ) {
+			if ( names[i] != null ) {
+				Symbol symbol = schemeSymbol( names[i] );
+				symbols[i] = symbol;
+				e.define( symbol, null, value );
+			}
+		}
+		
+		if ( value instanceof DescriptiveProcedure ) {
+			defineDocument(e, symbols, (DescriptiveProcedure)value);
+		}
+	}
+	static void defineDocument( Environment e, Symbol[] symbols, DescriptiveProcedure proc) {
+		if ( ! e.isBound( SYMBOL_ALL_PROCEDURES  ) ) {
+			e.define(SYMBOL_ALL_PROCEDURES, null, LList.makeList( Collections.EMPTY_LIST ) );
+		}
+
+		Pair pair = Pair.make(
+			Pair.make( proc, LList.makeList( symbols, 0 )),  
+			(LList) e.get(SYMBOL_ALL_PROCEDURES));
+		e.put( SYMBOL_ALL_PROCEDURES, pair );
 	}
 	public static final boolean isDefined( Scheme scheme, String name  ) {
 		return scheme.getEnvironment().isBound( SimpleSymbol.make( "", name ) );
@@ -372,6 +407,8 @@ public class SchemeUtils {
 	{
 		//				schemeSecretary.initializeSchemeForCurrentThread();
 		synchronized ( scheme ) {
+			SchemeSecretary.initializeSchemeForCurrentThreadStatic( scheme );
+			
 			if ( variables != null )
 				for ( Map.Entry<String, Object> e : variables.entrySet() )
 					putVar( scheme , e.getKey(), e.getValue() );
@@ -394,6 +431,14 @@ public class SchemeUtils {
 			Path savedPath = (Path) Shell.currentLoadPath.get();
 			try {
 				Shell.currentLoadPath.set( Path.valueOf( new File(".").getAbsoluteFile().getCanonicalFile() ) );
+
+				CallContext ctx = CallContext.getInstance();
+				Consumer out = Shell.getOutputConsumer(OutPort.outDefault());
+				if (out != null)
+				{
+					ctx.consumer = out;
+				}
+				
 				
 				 // {@link kawa.Shell#runFile(InputStream, Path, gnu.mapping.Environment, boolean, int) }
 				Object result = scheme.eval( new InPort( schemeScript, Path.valueOf( schemeScriptURI ) ) );
@@ -442,7 +487,7 @@ public class SchemeUtils {
 		return evaluateScheme( schemeSecretary, variables, new StringReader( schemeScript ),  schemeScriptURI );
 	}
 	public static ExecuteSchemeResult evaluateScheme( SchemeSecretary schemeSecretary, Map<String,Object> variables, Reader schemeScript, String schemeScriptURI ) {
-		return schemeSecretary.executeWithoutSecretarially( new SecretaryMessage.NoThrow<Scheme,ExecuteSchemeResult>() {
+		return schemeSecretary.executeSecretarially( new SecretaryMessage.NoThrow<Scheme,ExecuteSchemeResult>() {
 			@Override
 			public ExecuteSchemeResult execute0(Scheme scheme, Object[] args) {
 				return evaluateScheme(scheme, variables, schemeScript, schemeScriptURI);

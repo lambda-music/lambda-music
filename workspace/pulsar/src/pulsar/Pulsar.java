@@ -48,18 +48,20 @@ import gnu.lists.IString;
 import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
-import gnu.mapping.Procedure0;
 import gnu.mapping.Procedure1;
-import gnu.mapping.Procedure3;
-import gnu.mapping.ProcedureN;
 import gnu.mapping.Symbol;
 import gnu.mapping.Values;
+import gnu.mapping.WrongArguments;
 import gnu.math.DFloNum;
 import kawa.standard.Scheme;
 import metro.Metro;
 import metro.MetroPort;
 import metro.MetroTrack;
 import metro.MetroTrack.SyncType;
+import pulsar.lib.scheme.DProcedure0;
+import pulsar.lib.scheme.DProcedure1;
+import pulsar.lib.scheme.DProcedure3;
+import pulsar.lib.scheme.DProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.Invokable;
@@ -448,7 +450,7 @@ public final class Pulsar extends Metro {
 		};
 	}
 
-	private static final class TagSearchUserProcedure extends Procedure1 {
+	private static final class TagSearchUserProcedure extends DProcedure1 {
 		private final Procedure proc;
 		private final Object p;
 		TagSearchUserProcedure(Object p, Procedure proc) {
@@ -460,7 +462,7 @@ public final class Pulsar extends Metro {
 			return proc.apply2( arg1, p );
 		}
 	}
-	private static final class TagSearchAndProcedure extends Procedure1 {
+	private static final class TagSearchAndProcedure extends DProcedure1 {
 		private final Pair p;
 		TagSearchAndProcedure(Pair p) {
 			this.p = p;
@@ -471,7 +473,7 @@ public final class Pulsar extends Metro {
 			return p2.containsAll( p );
 		}
 	}
-	private static final class TagSearchOrProcedure extends Procedure1 {
+	private static final class TagSearchOrProcedure extends DProcedure1 {
 		private final Pair p;
 		TagSearchOrProcedure(Pair p) {
 			this.p = p;
@@ -486,7 +488,7 @@ public final class Pulsar extends Metro {
 			return false;
 		}
 	}
-	private static final class TagSearchIsProcedure extends Procedure1 {
+	private static final class TagSearchIsProcedure extends DProcedure1 {
 		private final Object value;
 		TagSearchIsProcedure(Object value) {
 			this.value = value;
@@ -497,7 +499,7 @@ public final class Pulsar extends Metro {
 		}
 	}
 
-	final static class TrackProcedure extends Procedure0 {
+	final static class TrackProcedure extends DProcedure0 {
 		final Pair pair;
 		TrackProcedure( Pair pair ) {
 			this.pair = pair;
@@ -800,31 +802,31 @@ public final class Pulsar extends Metro {
 	 *            the scheme instance to initialize.
 	 */
 	public void initScheme( Scheme scheme ) {
-		SchemeUtils.defineVar( scheme, "pulsar" , this );
-		SchemeUtils.defineVar( scheme, "open?" , new ProcedureN( "open?" ) {
+		SchemeUtils.defineVar( scheme, this , "pulsar" );
+		SchemeUtils.defineVar( scheme, new DProcedureN( "open?" ) {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				return isOpened();
 			}
-		});
-		SchemeUtils.defineVar( scheme, "open" , new Procedure1("open") {
+		} , "open?");
+		SchemeUtils.defineVar( scheme, new DProcedure1("open") {
 			@Override
 			public Object apply1(Object arg0) throws Throwable {
 				open( SchemeUtils.toString( arg0 ) );
 				return Invokable.NO_RESULT;
 			}
-		});
-		SchemeUtils.defineVar( scheme, "close" , new ProcedureN("close") {
+		} , "open");
+		SchemeUtils.defineVar( scheme, new DProcedureN("close") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				close();
 				return Invokable.NO_RESULT;
 			}
-		});
+		} , "close");
 
 		//////////////////////////////////////////////////////////
 
-		ProcedureN openOutput = new ProcedureN("open-output") {
+		DProcedureN openOutput = new DProcedureN("open-output") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				ArrayList<MetroPort> list = new ArrayList<>();
@@ -837,13 +839,13 @@ public final class Pulsar extends Metro {
 				return LList.makeList( list );
 			}
 		};
-		SchemeUtils.defineVar( scheme, "output" ,      openOutput );
-		SchemeUtils.defineVar( scheme, "openo" ,       openOutput );
-		SchemeUtils.defineVar( scheme, "open-output" , openOutput );
+		SchemeUtils.defineVar( scheme, openOutput , "open-output"
+												  , "openo"
+												  , "output" );
 
 		//////////////////////////////////////////////////////////
 
-		ProcedureN openInput = new ProcedureN("open-input") {
+		DProcedureN openInput = new DProcedureN("open-input") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				ArrayList<MetroPort> list = new ArrayList<>();
@@ -856,13 +858,13 @@ public final class Pulsar extends Metro {
 				return LList.makeList( list );
 			}
 		};
-		SchemeUtils.defineVar( scheme, "input" ,      openInput );
-		SchemeUtils.defineVar( scheme, "open-input" , openInput );
-		SchemeUtils.defineVar( scheme, "openi" ,      openInput );
+		SchemeUtils.defineVar( scheme, openInput , "open-input"
+												 , "openi"
+												 , "input" );
 
 		//////////////////////////////////////////////////////////
 		
-		ProcedureN closeOutput = new ProcedureN("close-output") {
+		DProcedureN closeOutput = new DProcedureN("close-output") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				for ( Object o : args ) {
@@ -873,12 +875,12 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		};
-		SchemeUtils.defineVar( scheme, "close-output", closeOutput );
-		SchemeUtils.defineVar( scheme, "closeo" ,      closeOutput );
+		SchemeUtils.defineVar( scheme, closeOutput, "close-output"
+												  , "closeo" );
 		
 		//////////////////////////////////////////////////////////
 		
-		ProcedureN closeInput = new ProcedureN("close-input") {
+		DProcedureN closeInput = new DProcedureN("close-input") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				for ( Object o : args ) {
@@ -889,12 +891,11 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		};
-		SchemeUtils.defineVar( scheme, "close-input", closeInput );
-		SchemeUtils.defineVar( scheme, "closei" ,     closeInput );
+		SchemeUtils.defineVar( scheme, closeInput, "close-input","closei"  );
 
 		//////////////////////////////////////////////////////////
 
-		ProcedureN listOutput = new ProcedureN("list-output") {
+		DProcedureN listOutput = new DProcedureN("list-output") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				List<MetroPort> list = getOutputPorts();
@@ -902,10 +903,10 @@ public final class Pulsar extends Metro {
 				return LList.makeList( list  );
 			}
 		};
-		SchemeUtils.defineVar( scheme, "list-output", listOutput );
-		SchemeUtils.defineVar( scheme, "lso" ,        listOutput );
+		SchemeUtils.defineVar( scheme, listOutput, "list-output"
+												 , "lso" );
 		
-		ProcedureN listInput = new ProcedureN("list-input") {
+		DProcedureN listInput = new DProcedureN("list-input") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				List<MetroPort> list = getInputPorts();
@@ -913,42 +914,42 @@ public final class Pulsar extends Metro {
 				return LList.makeList( list  );
 			}
 		};
-		SchemeUtils.defineVar( scheme, "list-input", listInput );
-		SchemeUtils.defineVar( scheme, "lsi" ,       listInput );
+		SchemeUtils.defineVar( scheme, listInput, "list-input"
+												, "lsi" );
 
 
 		
-		SchemeUtils.defineVar( scheme, "connect" , new ProcedureN("connect") {
+		SchemeUtils.defineVar( scheme, new DProcedureN("connect") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				connectProc(Pulsar.this, args, ConnectProc.CONNECT );
 				return Invokable.NO_RESULT;
 			}
-		});
-		SchemeUtils.defineVar( scheme, "disconnect" , new ProcedureN("disconnect") {
+		} , "connect");
+		SchemeUtils.defineVar( scheme, new DProcedureN("disconnect") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				connectProc(Pulsar.this, args, ConnectProc.DISCONNECT );
 				return Invokable.NO_RESULT;
 			}
-		});
+		} , "disconnect");
 
-		SchemeUtils.defineVar( scheme, "get-all-input" , new ProcedureN("get-all-input") {
+		SchemeUtils.defineVar( scheme, new DProcedureN("get-all-input") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				return Pair.makeList( getAllInputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
 					.collect( Collectors.toList() ) );
 			}
-		});
-		SchemeUtils.defineVar( scheme, "get-all-output" , new ProcedureN("get-all-output") {
+		} , "get-all-input", "gai");
+		SchemeUtils.defineVar( scheme, new DProcedureN("get-all-output") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				return Pair.makeList( getAllOutputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
 					.collect( Collectors.toList() ) );
 			}
-		});
+		} , "get-all-output", "gao" );
 
-		SchemeUtils.defineVar( scheme, "set-main" , new ProcedureN("set-main") {
+		SchemeUtils.defineVar( scheme, new DProcedureN("set-main") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				logInfo("set-main");
@@ -960,14 +961,14 @@ public final class Pulsar extends Metro {
 				}
 				return Invokable.NO_RESULT;
 			}
-		});
-		SchemeUtils.defineVar( scheme, "get-main" , new Procedure0("get-main") {
+		} , "set-main");
+		SchemeUtils.defineVar( scheme, new DProcedure0("get-main") {
 			@Override
 			public Object apply0() throws Throwable {
 				return getMainProcedure();
 			}
-		});
-		SchemeUtils.defineVar( scheme, "set-playing" , new ProcedureN("set-playing") {
+		} , "get-main");
+		SchemeUtils.defineVar( scheme, new DProcedureN("set-playing") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				if ( args.length == 0 ) {
@@ -979,28 +980,28 @@ public final class Pulsar extends Metro {
 				}
 				return Invokable.NO_RESULT;
 			}
-		});
-		SchemeUtils.defineVar( scheme, "playing?" , new ProcedureN("playing?") {
+		} , "set-playing");
+		SchemeUtils.defineVar( scheme, new DProcedureN("playing?") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				return getPlaying();
 			}
-		});
-		SchemeUtils.defineVar( scheme, "play" , new ProcedureN("play") {
+		} , "playing?");
+		SchemeUtils.defineVar( scheme, new DProcedureN("play") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				setPlaying( true ); 
 				return Invokable.NO_RESULT;
 			}
-		});
-		SchemeUtils.defineVar( scheme, "stop" , new ProcedureN("stop") {
+		} , "play");
+		SchemeUtils.defineVar( scheme, new DProcedureN("stop") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				setPlaying( false ); 
 				return Invokable.NO_RESULT;
 			}
-		});
-		SchemeUtils.defineVar( scheme, "quit" , new ProcedureN("quit") {
+		} , "stop");
+		SchemeUtils.defineVar( scheme, new DProcedureN("quit") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				Thread t = new Thread() {
@@ -1023,15 +1024,20 @@ public final class Pulsar extends Metro {
 				
 				return "Now Pulsar will shutdown in " + shutdownWait + " milliseconds...";
 			}
-		});
-		SchemeUtils.defineVar( scheme, "tapt" , new ProcedureN("tapt") {
+			{
+				setShortDescription( "Quit the application." );
+				setLongDescription( "Quit the application." );
+			}
+		
+		} , "quit");
+		SchemeUtils.defineVar( scheme, new DProcedureN("tap-tempo") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				tempoTapper.tap(); 
 				return Invokable.NO_RESULT;
 			}
-		});
-		SchemeUtils.defineVar( scheme, "set-tempo" , new ProcedureN("set-tempo") {
+		} , "tap-tempo", "tapt");
+		SchemeUtils.defineVar( scheme, new DProcedureN("set-tempo") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				if ( 0 < args.length ) {
@@ -1041,29 +1047,29 @@ public final class Pulsar extends Metro {
 
 				return Invokable.NO_RESULT;
 			}
-		});
+		} , "set-tempo");
 
 		/**
 		 * This function only reset the current scheme environment.
 		 * See {@link Pulsar#reset }
 		 */
-		Procedure0 resetScheme = new Procedure0( "reset" ) {
+		DProcedure0 resetScheme = new DProcedure0( "reset" ) {
 			@Override
 			public Object apply0() throws Throwable {
 				reset();
 				return Invokable.NO_RESULT;
 			}
 		};
-		SchemeUtils.defineVar( scheme, "reset" , resetScheme );
-		SchemeUtils.defineVar( scheme, "rewind" , new Procedure0("rewind") {
+		SchemeUtils.defineVar( scheme, resetScheme , "reset" );
+		SchemeUtils.defineVar( scheme, new DProcedure0("rewind") {
 			@Override
 			public Object apply0() throws Throwable {
 				rewind();
 				return Invokable.NO_RESULT;
 			}
-		});
+		} , "rewind");
 		
-		ProcedureN simul = new ProcedureN( "simul" ) {
+		DProcedureN simul = new DProcedureN( "simultaneous" ) {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				synchronized ( getMetroLock() ) {
@@ -1085,11 +1091,11 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		};
-		SchemeUtils.defineVar( scheme, "simul" , simul );
+		SchemeUtils.defineVar( scheme, simul , "simultaneous", "simul" );
 
 		/////////////////////////////////////////////////////////////////
 
-		ProcedureN getTrack = new ProcedureN( "get-track" ) {
+		DProcedureN getTrack = new DProcedureN( "get-track" ) {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				ArrayList<MetroTrack> t = new ArrayList<>();
@@ -1102,12 +1108,12 @@ public final class Pulsar extends Metro {
 				return Pair.makeList( t );
 			}
 		};
-		SchemeUtils.defineVar( scheme, "gett" , getTrack );
-		SchemeUtils.defineVar( scheme, "get-track" , getTrack );
+		SchemeUtils.defineVar( scheme, getTrack, "get-track"
+											   , "gett" );
 
 		/////////////////////////////////////////////////////////////////
 
-		ProcedureN newTrack = new ProcedureN( "new-track" ) {
+		DProcedureN newTrack = new DProcedureN( "new-track" ) {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				Object name;
@@ -1135,12 +1141,12 @@ public final class Pulsar extends Metro {
 				return createTrack( name, tags, procedure );
 			}
 		};
-		SchemeUtils.defineVar( scheme, "newt" , newTrack );
-		SchemeUtils.defineVar( scheme, "new-track" , newTrack );
+		SchemeUtils.defineVar( scheme, newTrack , "new-track"
+											    , "newt" );
 		
 		/////////////////////////////////////////////////////////////////
 		
-		abstract class TrackManagementProcedure extends ProcedureN  {
+		abstract class TrackManagementProcedure extends DProcedureN  {
 			TrackManagementProcedure( String name ) {
 				super(name);
 			}
@@ -1197,38 +1203,38 @@ public final class Pulsar extends Metro {
 
 		/////////////////////////////////////////////////////////////////
 
-		ProcedureN putTrack = new TrackManagementProcedure( "put-track" ) {
+		DProcedureN putTrack = new TrackManagementProcedure( "put-track" ) {
 			@Override
 			void procTrack( List<MetroTrack> trackList, SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
 				putTrack(trackList, syncType, syncTrack, syncOffset);
 			}
 		};
-		SchemeUtils.defineVar( scheme, "putt" ,      putTrack );
-		SchemeUtils.defineVar( scheme, "put-track" , putTrack );
+		SchemeUtils.defineVar( scheme, putTrack , "put-track"
+												, "putt" );
 
 		/////////////////////////////////////////////////////////////////
 
-		ProcedureN removeTrack = new TrackManagementProcedure( "remove-track" ) {
+		DProcedureN removeTrack = new TrackManagementProcedure( "remove-track" ) {
 			@Override
 			void procTrack( List<MetroTrack> trackList, SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
 				removeTrack(trackList, syncType, syncTrack, syncOffset);
 			}
 		};
-		SchemeUtils.defineVar( scheme, "remt" ,         removeTrack );
-		SchemeUtils.defineVar( scheme, "remove-track" , removeTrack );
+		SchemeUtils.defineVar( scheme, removeTrack , "remove-track"
+												   , "remt" );
 		
 
-		Procedure notifyTrackChange = new Procedure0( "notify-track-change" ) {
+		Procedure notifyTrackChange = new DProcedure0( "notify-track-change" ) {
 			@Override
 			public Object apply0() throws Throwable {
 				notifyTrackChange();
 				return Invokable.NO_RESULT;
 			}
 		};
-		SchemeUtils.defineVar( scheme, "nott" ,         notifyTrackChange );
-		SchemeUtils.defineVar( scheme, "notify-track-change" , notifyTrackChange );
+		SchemeUtils.defineVar( scheme, notifyTrackChange , "notify-track-change", 
+														   "nott" );
 
-		SchemeUtils.defineVar( scheme, "lst" , new Procedure0("ls") {
+		SchemeUtils.defineVar( scheme, new DProcedure0("ls") {
 			@Override
 			public Object apply0() throws Throwable {
 				List<MetroTrack> tempAllTracks = replicateAllTracks(); 
@@ -1240,40 +1246,41 @@ public final class Pulsar extends Metro {
 				return Pair.makeList(list);
 
 			}
-		});
-		Procedure0 clr = new Procedure0("clear-tracks") {
+		} , "lst");
+
+		DProcedure0 clr = new DProcedure0("clear-tracks") {
 			@Override
 			public Object apply0() throws Throwable {
 				clearTracks();
 				return Invokable.NO_RESULT;
 			}
 		};
-		SchemeUtils.defineVar( scheme, "clet" , clr);
-		SchemeUtils.defineVar( scheme, "clear-tracks" , clr);
+		SchemeUtils.defineVar( scheme, clr , "clet"
+										   , "clear-tracks" );
 		
-		SchemeUtils.defineVar( scheme, "print-stack-trace" , new ProcedureN("print-stack-trace") {
+		SchemeUtils.defineVar( scheme, new DProcedureN("print-stack-trace") {
 			@Override
 			public Object apply1(Object arg) throws Throwable {
 				((Throwable)arg).printStackTrace();
 				return arg;
 			}
-		});
-		SchemeUtils.defineVar( scheme, "display-warn" , new ProcedureN("display-warn") {
+		} , "print-stack-trace");
+		SchemeUtils.defineVar( scheme, new DProcedureN("display-warn") {
 			@Override
 			public Object apply1(Object arg) throws Throwable {
 				System.err.print( arg );
 				return Values.empty;
 			}
-		});
-		SchemeUtils.defineVar( scheme, "newline-warn" , new Procedure0("newline-warn") {
+		} , "display-warn");
+		SchemeUtils.defineVar( scheme, new DProcedure0("newline-warn") {
 			@Override
 			public Object apply0() throws Throwable {
 				System.err.println();
 				return Values.empty;
 			}
-		});
+		} , "newline-warn");
 
-		SchemeUtils.defineVar( scheme, "list-seq" , new ProcedureN("list-seq") {
+		SchemeUtils.defineVar( scheme, new DProcedureN("list-seq") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				//					logInfo("list-seq");
@@ -1287,9 +1294,9 @@ public final class Pulsar extends Metro {
 					return LList.makeList(list);
 				}
 			}
-		});
+		}, "list-seq" );
 
-		SchemeUtils.defineVar( scheme, "typeof" , new ProcedureN("typeof") {
+		SchemeUtils.defineVar( scheme, new DProcedureN("typeof") {
 			public Object applyN(Object[] args) throws Throwable {
 				if ( 0 < args.length  ) {
 					return args[0].getClass().getName();
@@ -1297,9 +1304,9 @@ public final class Pulsar extends Metro {
 					return Invokable.NO_RESULT;
 				}
 			}
-		});
+		} , "typeof");
 
-		SchemeUtils.defineVar( scheme, "mktimer" , new Procedure3("mktimer") {
+		SchemeUtils.defineVar( scheme, new DProcedure3("mktimer") {
 			@Override
 			public Object apply3(Object arg0, Object arg1,Object arg2 ) throws Throwable {
 				Runnable runnable = createTimer( Pulsar.this, 
@@ -1307,16 +1314,16 @@ public final class Pulsar extends Metro {
 					SchemeUtils.toInteger( arg1 ), 
 					Pulsar.this.createInvokable2( (Procedure)arg2 ) );
 
-				return new Procedure0() {
+				return new DProcedure0() {
 					public Object apply0() throws Throwable {
 						runnable.run();
 						return Values.noArgs;
 					};
 				};
 			}
-		});
+		} , "mktimer");
 
-		SchemeUtils.defineVar( scheme, "rnd" , new ProcedureN("rnd") {
+		SchemeUtils.defineVar( scheme, new DProcedureN("rnd") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				switch ( args.length ) {
@@ -1336,9 +1343,9 @@ public final class Pulsar extends Metro {
 					}
 				}
 			}
-		});
+		} , "rnd");
 		
-		SchemeUtils.defineVar( scheme, "luck" , new ProcedureN("luck") {
+		SchemeUtils.defineVar( scheme, new DProcedureN("luck") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				double probability = args.length == 0 ? 0.5 : SchemeUtils.toDouble( args[0] );
@@ -1346,7 +1353,57 @@ public final class Pulsar extends Metro {
 				if ( 1.0<=probability  ) return true;
 				return random.nextBoolean( probability );
 			}
-		});
+		} , "luck");
+
+		SchemeUtils.defineVar( scheme, new DProcedureN("help!") {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				return "don't panic!";
+			}
+		} , "help!");
+
+		final class DProcedureHelp extends DProcedureN {
+			final Scheme scheme;
+			final int index;
+			final Procedure reverse = (Procedure)gnu.kawa.slib.srfi1.reverse.get();
+			final Procedure map = (Procedure)gnu.kawa.slib.srfi1.map.get();
+			private DProcedureHelp( Scheme scheme, String name, int index ) {
+				super(name);
+				this.scheme = scheme;
+				this.index = index;
+			}
+			
+			public Object apply0() throws Throwable {
+				return map.apply2( new Procedure1() {
+					@Override
+					public Object apply1(Object arg1) throws Throwable {
+						Pair pair = (Pair)arg1;
+						if ( index < pair.length() ) {
+							return pair.get(index);
+						} else if ( 1 < pair.length() ) {
+							return pair.get(1);
+						} else if ( 0 < pair.length() ) {
+							return Symbol.valueOf(((Procedure)pair.get(0)).getName());
+						} else {
+							return "";
+						}
+					}
+				}, reverse.apply1( scheme.getEnvironment().get( SchemeUtils.SYMBOL_ALL_PROCEDURES ) ) );
+			}; 
+
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				if ( args.length == 0 )
+					return apply0();
+				else if ( args.length == 1 )
+					return apply1(args[0]);
+				else
+				    throw new WrongArguments( this, args.length );
+
+			}
+		}
+		SchemeUtils.defineVar( scheme, new DProcedureHelp( scheme, "help", 1 ) , "help");
+		SchemeUtils.defineVar( scheme, new DProcedureHelp( scheme, "he",   2 ) , "he");
 
 		{
 			SchemeUtils.execScheme( Pulsar.class, scheme, "lib/init.scm"  );
