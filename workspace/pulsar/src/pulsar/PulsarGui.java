@@ -874,10 +874,10 @@ public class PulsarGui {
 	public static List<Symbol> getPulsarWords( Scheme scheme ) {
 		List result = new ArrayList<>();
 		try {
-			Pair p1 = SchemeUtils.getDocumentList( scheme.getEnvironment() );
+			LList p1 = SchemeUtils.getDocumentList( );
 			for ( Object o2 : p1 ) {
-				Pair p2 = (Pair) o2;
-				result.addAll( (Pair) srfi1.drop.apply2( p2, 1 )); 
+				LList p2 = (LList) o2;
+				result.addAll( (LList) srfi1.drop.apply2( p2, 1 )); 
 			}
 			return (List<Symbol>)result;
 		} catch (Throwable e) {

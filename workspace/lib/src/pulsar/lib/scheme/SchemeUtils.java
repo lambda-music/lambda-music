@@ -31,7 +31,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -53,6 +53,8 @@ import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.CallContext;
 import gnu.mapping.Environment;
+import gnu.mapping.Procedure;
+import gnu.mapping.Procedure0;
 import gnu.mapping.SimpleSymbol;
 import gnu.mapping.Symbol;
 import gnu.math.DFloNum;
@@ -126,7 +128,93 @@ public class SchemeUtils {
 		}
 		return map;
 	}
+
+	public static LList ls(Object... vals) {
+		LList result = LList.Empty;
+		for (int i = vals.length;  --i >= 0; ) {
+			if ( vals[i] instanceof Object[] ) {
+				result = ls((Object[])vals[i] );
+			} else if ( vals[i] instanceof Symbol ) {
+				result = new Pair( (Symbol)vals[i], result );
+			} else if ( vals[i] instanceof String ) {
+				result = new Pair( toSchemeSymbol((String)vals[i]), result );
+			} else {
+				result = new Pair( vals[i], result );
+			}
+		}
+		return result;
+	}
+
+	public static Object eval( LList llist ){
+		return eval( null, llist );
+	}
+	public static Object eval( Environment env, LList llist ){
+//		System.out.println(env);
+//		System.out.println(llist);
+		if ( env == null ) {
+			Scheme scheme = new Scheme();
+			Environment.setCurrent( scheme.getEnvironment() );
+			Language.setCurrentLanguage(scheme);
+			env = scheme.getEnvironment();
+		}
+		try {
+			return (kawa.lib.scheme.eval.eval).apply2(llist, env);
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
+		}
+	}
+	static void testEval1() throws Throwable {
+		Procedure evaler = 
+				(Procedure)eval(
+					ls("lambda", 
+						ls("script" ),
+						ls("let", 
+							ls(ls("hello","script") ),
+							ls("display", "hello"),
+							ls("newline") )));
+
+		evaler.apply1( "hello world!" );
+	}
 	
+	static Procedure evalString;
+	static {
+		evalString = (Procedure)eval(
+			ls("lambda", 
+				ls("env", "script"),
+				ls("call-with-input-string","script",
+					ls("lambda",ls("script-port"),
+						ls( "let",ls( ls("script-list", 
+									  ls("read", "script-port" ))),
+							ls("display", "script-list"),
+							ls("newline"),
+							ls("eval","script-list", "env" ))))));
+	}
+	public static Object eval( String scriptString ) {
+		return eval( null, scriptString );
+	}
+	public static Object eval( Environment env, String scriptString ) {
+		if ( env == null ) {
+			Scheme scheme = new Scheme();
+			Environment.setCurrent( scheme.getEnvironment() );
+			Language.setCurrentLanguage(scheme);
+			env = scheme.getEnvironment();
+		}
+		try {
+			return evalString.apply2( env, IString.valueOf( scriptString ) );
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
+		}
+	}
+	public static void testEval2() {
+		eval( "(display (+ 1 1 1 ) )(newline)" ); 
+	}
+	public static void main(String[] args) throws Throwable {
+		testEval2();
+	}
+	public static Pair symbols(String ... args) {
+		return (Pair)Pair.makeList( javaStringListToSchemeSymbolList(Arrays.asList(args)) );
+	}
+
 	public static List<Symbol> javaStringListToSchemeSymbolList( List<String> stringList) { 
 		return SchemeUtils.<String,Symbol>convertList( stringList, (o)->{
 			return SchemeUtils.schemeSymbol( o );
@@ -266,7 +354,9 @@ public class SchemeUtils {
 		return Pair.make( toSchemeSymbol( key ) , value );
 	}
 
-	public static final Symbol SYMBOL_ALL_PROCEDURES = Symbol.valueOf( "all-procedures" ); 
+	public static final String ALL_PROCEDURES = "all-procedures";
+	public static final Symbol ALL_PROCEDURES_SYMBOL = Symbol.valueOf( ALL_PROCEDURES ); 
+	public static final Pair ALL_PROCEDURES_ROOT = (Pair)LList.makeList(Arrays.asList( ALL_PROCEDURES_SYMBOL ));
 	
 	public static final void defineVar( Scheme scheme, Object value, String ... names ) {
 		Environment e = scheme.getEnvironment();
@@ -287,23 +377,34 @@ public class SchemeUtils {
 		}
 	}
 	static void checkDocument(Environment e) {
-		if ( ! e.isBound( SYMBOL_ALL_PROCEDURES  ) ) {
-			e.define(SYMBOL_ALL_PROCEDURES, null, LList.makeList( Collections.EMPTY_LIST ) );
+		synchronized ( ALL_PROCEDURES_ROOT ) {
+			if ( ! e.isBound( ALL_PROCEDURES_SYMBOL  ) ) {
+				e.define( ALL_PROCEDURES_SYMBOL, null, ALL_PROCEDURES_ROOT );
+			}
 		}
 	}
-	static void defineDocument( Environment e, Symbol[] symbols, DescriptiveProcedure proc) {
-		checkDocument(e);
+//	static Procedure proc_defineDocument = eval( lis( "lambda", lis("rt"),   ) );   
+	static void defineDocument( Environment e, Symbol[] symbols, DescriptiveProcedure proc ) {
+		synchronized ( ALL_PROCEDURES_ROOT ) {
+			checkDocument(e);
+			ALL_PROCEDURES_ROOT.setCdr( 
+				Pair.make(
+					Pair.make( proc, LList.makeList( symbols, 0 ) ),  
+					ALL_PROCEDURES_ROOT.getCdr()));
+		}
+	}
+	public static LList getDocumentList( ) {
+		synchronized ( ALL_PROCEDURES_ROOT ) {
+			return (LList) ALL_PROCEDURES_ROOT.getCdr();
+		}
+	}
+	public static Procedure get_document_list = new Procedure0() {
+		@Override
+		public Object apply0() throws Throwable {
+			return ALL_PROCEDURES_ROOT.getCdr();
+		}
+	};
 
-		Pair pair = Pair.make(
-			Pair.make( proc, LList.makeList( symbols, 0 )),  
-			(LList) e.get(SYMBOL_ALL_PROCEDURES));
-		e.put( SYMBOL_ALL_PROCEDURES, pair );
-	}
-	
-	public static Pair getDocumentList( Environment e ) {
-		checkDocument(e);
-		return (Pair)e.get( SYMBOL_ALL_PROCEDURES );
-	}
 	
 	public static final boolean isDefined( Scheme scheme, String name  ) {
 		return scheme.getEnvironment().isBound( SimpleSymbol.make( "", name ) );

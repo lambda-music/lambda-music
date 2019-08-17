@@ -136,6 +136,15 @@ public class KawaPad extends JFrame {
 	private static final String FLAG_DONE_INIT_PULSAR_SCRATCHPAD = "flag-done-init-pulsar-scratchpad";
 	private static final boolean DEBUG_UNDO_BUFFER = false;
 
+	/**
+	 * This is a map for debugging or something. This map is intended to be used for
+	 * keeping values from Scheme.
+	 * 
+	 * The current environment is frequently scrapped and replaced in KawaPad/Pulsar
+	 * system. In Scheme, you cannot keep the same value between those multiple
+	 * environments. This map is intended to be used as a place to keep values
+	 * without environments. (Sat, 17 Aug 2019 13:10:44 +0900)
+	 */
 	public static final Map<Object,Object> memoMap = new HashMap<Object,Object>();
 
 	private static final boolean DEBUG = false;

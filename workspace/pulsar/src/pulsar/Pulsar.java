@@ -62,6 +62,7 @@ import pulsar.lib.scheme.DProcedure0;
 import pulsar.lib.scheme.DProcedure1;
 import pulsar.lib.scheme.DProcedure3;
 import pulsar.lib.scheme.DProcedureN;
+import pulsar.lib.scheme.DescriptiveProcedure;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.Invokable;
@@ -1368,23 +1369,22 @@ public final class Pulsar extends Metro {
 		SchemeUtils.defineVar( scheme, new DProcedureN("help!") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
-				return "don't panic!";
+				return "Calm down!";
 			}
 		} , "help!");
 
 		final class DProcedureHelp extends DProcedureN {
-			final Scheme scheme;
 			final int index;
 			final Procedure reverse = (Procedure)gnu.kawa.slib.srfi1.reverse.get();
 			final Procedure map = (Procedure)gnu.kawa.slib.srfi1.map.get();
-			private DProcedureHelp( Scheme scheme, String name, int index ) {
+			
+			private DProcedureHelp( String name, int index ) {
 				super(name);
-				this.scheme = scheme;
 				this.index = index;
 			}
 			
 			public Object apply0() throws Throwable {
-				return map.apply2( new Procedure1() {
+				Procedure1 proc1 = new Procedure1() {
 					@Override
 					public Object apply1(Object arg1) throws Throwable {
 						Pair pair = (Pair)arg1;
@@ -1398,8 +1398,24 @@ public final class Pulsar extends Metro {
 							return "";
 						}
 					}
-				}, reverse.apply1( scheme.getEnvironment().get( SchemeUtils.SYMBOL_ALL_PROCEDURES ) ) );
+				};
+				return map.apply2( proc1, 
+					reverse.apply1( 
+						SchemeUtils.getDocumentList()));
 			}; 
+			
+			String MSG_NO_DOCUMENTATION = "No documentation is available.";
+			public Object apply1(Object arg1) throws Throwable {
+				if ( arg1 instanceof DescriptiveProcedure ) {
+					String msg = ((DescriptiveProcedure)arg1).getLongDescription();
+					if ( "".equals( msg ) )
+						msg = MSG_NO_DOCUMENTATION;
+					return SchemeUtils.toSchemeString(msg);
+				} else {
+					return SchemeUtils.toSchemeString( MSG_NO_DOCUMENTATION );
+				}
+			};
+
 
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
@@ -1411,9 +1427,12 @@ public final class Pulsar extends Metro {
 				    throw new WrongArguments( this, args.length );
 
 			}
+			{
+				setLongDescription( "Shows all available commands. Shows the description of the passed procedure." );
+			}
 		}
-		SchemeUtils.defineVar( scheme, new DProcedureHelp( scheme, "help", 1 ) , "help");
-		SchemeUtils.defineVar( scheme, new DProcedureHelp( scheme, "he",   2 ) , "he");
+		SchemeUtils.defineVar( scheme, new DProcedureHelp( "help", 1 ) , "help");
+		SchemeUtils.defineVar( scheme, new DProcedureHelp( "he",   2 ) , "he");
 
 		{
 			SchemeUtils.execScheme( Pulsar.class, scheme, "lib/init.scm"  );
