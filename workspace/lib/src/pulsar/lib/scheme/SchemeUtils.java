@@ -30,6 +30,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -39,6 +40,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import gnu.expr.Language;
@@ -48,6 +51,7 @@ import gnu.kawa.io.Path;
 import gnu.lists.AbstractSequence;
 import gnu.lists.Consumer;
 import gnu.lists.EmptyList;
+import gnu.lists.FString;
 import gnu.lists.IString;
 import gnu.lists.LList;
 import gnu.lists.Pair;
@@ -208,9 +212,9 @@ public class SchemeUtils {
 	public static void testEval2() {
 		eval( "(display (+ 1 1 1 ) )(newline)" ); 
 	}
-	public static void main(String[] args) throws Throwable {
-		testEval2();
-	}
+//	public static void main(String[] args) throws Throwable {
+//		testEval2();
+//	}
 	public static Pair symbols(String ... args) {
 		return (Pair)Pair.makeList( javaStringListToSchemeSymbolList(Arrays.asList(args)) );
 	}
@@ -306,7 +310,7 @@ public class SchemeUtils {
 		return list.stream().map(f).collect(Collectors.toList());
 	}
 	
-	public static List<String> symbolListToStringList(Pair p) {
+	public static List<String> symbolListToStringList(List p) {
 		return SchemeUtils.<Object,String>convertList((List<Object>)p, (v)->SchemeUtils.symbolToString(v) );
 	}
 	
@@ -391,6 +395,9 @@ public class SchemeUtils {
 				Pair.make(
 					Pair.make( proc, LList.makeList( symbols, 0 ) ),  
 					ALL_PROCEDURES_ROOT.getCdr()));
+			
+			List<Symbol> list = Arrays.asList(symbols);
+			proc.setNameList( list );
 		}
 	}
 	public static LList getDocumentList( ) {
@@ -500,11 +507,106 @@ public class SchemeUtils {
 		}
 	}
 	
-	// TODO integrate all prettyPrint things.
-	public static String prettyPrint( Object resultObject ) throws Throwable {
-		return SimpleSchemePrettifier.prettyPrint(resultObject);
+	public static Object prettyPrintReconstruction( Object o ) {
+		return prettyPrintReconstruction0( new ArrayDeque<>(), o );
 	}
-
+	private static Object prettyPrintReconstruction0(ArrayDeque stack, Object o) {
+		if ( stack.contains(o) ) {
+			return o;
+		}
+		try {
+			stack.push( o );
+			if ( o instanceof EmptyList ) {
+				return o;
+			} else if ( o instanceof Pair ) {
+				Pair p = (Pair)o;
+				return Pair.make(
+					prettyPrintReconstruction0( stack, p.getCar()),
+					prettyPrintReconstruction0( stack, p.getCdr()));
+			} else if ( o instanceof Symbol ) {
+				return toSchemeString( "'" + symbolToString( (Symbol)o ) );
+			} else if ( o instanceof IString || o instanceof FString ) {
+				return toSchemeString( "\"" + anyToString( o ) + "\"" );
+			} else {
+				return o;
+			}
+		} finally {
+			stack.pop();
+		}
+	}
+	
+	/*
+	 * moved from KawaPad.java (Mon, 29 Jul 2019 19:31:42 +0900)
+	 */
+	// TODO integrate all prettyPrint things.
+	public static String prettyPrint(Object resultObject) throws Throwable {
+		return prettyPrint0( prettyPrintReconstruction( resultObject ));
+	}
+	private static String prettyPrint0(Object resultObject) throws Throwable {
+		StringWriter out = new StringWriter();
+		try {
+			OutPort outPort = new OutPort( out, true, true );
+			SchemeUtils.toString( kawa.lib.kawa.pprint.pprint.apply2( resultObject, outPort ) );
+//			SchemeUtils.toString( kawa.lib.ports.write.apply2( resultObject, outPort ) );
+			outPort.flush();
+			return out.toString();
+		} finally {
+			out.close();
+		}
+	}
+	public static String wrapMultiLine( String s, int width ) {
+		StringBuilder sb = new StringBuilder();
+//		String[] a = s.split("\\r\\n\\r\\n|\\n\\r\\n\\r|\\n\\n|\\r\\r" );
+		String[] a = s.split( "\n\n" );
+		for ( int i=0; i<a.length; i++ ) {
+			 sb.append( wrap(a[i],width).trim() ).append( "\n\n" );
+		}
+		return sb.toString();
+	}
+	
+	public static String wrap( String s, int width ) {
+		Matcher m = Pattern.compile( "\\s+" ).matcher(s);
+		StringBuilder sb = new StringBuilder();
+		int head=0;
+		int last=head;
+		while ( m.find() ) {
+			int curr = m.start();
+			String stringToAdd = s.substring(last,curr);
+			if ( ( curr-head ) < width ) {
+				sb.append(' ');
+				sb.append( stringToAdd );
+				last = curr + m.group().length();
+			} else {
+				sb.append('\n');
+				sb.append( stringToAdd );
+				last = curr + m.group().length();
+				head = last;
+			}
+		}
+		{
+			String stringToAdd = s.substring(last,s.length());
+			sb.append(' ');
+			sb.append( stringToAdd );
+			sb.append('\n');
+		}
+		return sb.toString();
+	}
+	public static void main(String[] args) {
+		Matcher m = Pattern.compile("\\s+").matcher("sasdfasad ffsaddfsa\n\nssadfsd fa");
+		System.out.println( m.find() );
+		System.out.println( m.start() );
+		System.out.println( m.find() );
+		System.out.println( m.start() );
+		System.out.println( m.find() );
+		System.out.println( m.start() );
+		
+	}
+//	public static void main(String[] args) {
+//		System.out.println( wrap( "hello world foo bar bum sasdfa s                       sdfsadf sdfasafsadfr", 6 ) );
+//	}
+	
+	
+	
 	public static final class ExecuteSchemeResult {
 		public final String result;
 		public final Throwable error;

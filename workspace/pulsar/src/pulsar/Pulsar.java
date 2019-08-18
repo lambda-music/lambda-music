@@ -819,12 +819,28 @@ public final class Pulsar extends Metro {
 			public Object applyN(Object[] args) throws Throwable {
 				return isOpened();
 			}
+			{
+				setParameterDescription( "" );
+				setReturnValueDescription( "::boolean" );
+				setShortDescription( "returns the current open state. " );
+				setLongDescription( "This procedure returns #t iff the current sequencer state is open; "
+					+ "otherwise returns #f. " );
+			}			
 		} , "open?");
 		SchemeUtils.defineVar( scheme, new DProcedure1("open") {
 			@Override
 			public Object apply1(Object arg0) throws Throwable {
 				open( SchemeUtils.toString( arg0 ) );
 				return Invokable.NO_RESULT;
+			}
+			{
+				setParameterDescription( "[string]" );
+				setReturnValueDescription( "::void" );
+				setShortDescription( "starts a new connection between JACK Audio Connection Kit." );
+				setLongDescription( "This procedure opens a new connection to the installed JACK Audio Connection Kit with"
+						+ "the specified port name. "
+						+ "When it failed to open a connection, this throws an exception. "
+						+ "This procedure alters the current sequencer system's state. " );
 			}
 		} , "open");
 		SchemeUtils.defineVar( scheme, new DProcedureN("close") {
@@ -833,6 +849,17 @@ public final class Pulsar extends Metro {
 				close();
 				return Invokable.NO_RESULT;
 			}
+			{
+				setParameterDescription( "" );
+				setReturnValueDescription( "::void" );
+				setShortDescription( "ends the current connection between JACK Audio Connection Kit." );
+				setLongDescription( "This procedure closes the current connection to the JACK Audio Connection Kit. "
+						+ "When it failed to close the connection, this throws an exception. "
+						+ "In case the current sequencer system has not established any connection to the JACK, "
+						+ "it throws an exception. "
+						+ "This procedure alters the current sequencer system's state. " );
+			}
+			
 		} , "close");
 
 		//////////////////////////////////////////////////////////
@@ -848,6 +875,16 @@ public final class Pulsar extends Metro {
 				}
 				Collections.reverse( list );
 				return LList.makeList( list );
+			}
+			{
+				setParameterDescription( "" );
+				setReturnValueDescription( "::void" );
+				setShortDescription( "ends the current connection between JACK Audio Connection Kit." );
+				setLongDescription( "This procedure closes the current connection to the JACK Audio Connection Kit. "
+						+ "When it failed to close the connection, this throws an exception. "
+						+ "In case the current sequencer system has not established any connection to the JACK, "
+						+ "it throws an exception. "
+						+ "This procedure alters the current sequencer system's state. " );
 			}
 		};
 		SchemeUtils.defineVar( scheme, openOutput , "open-output"
@@ -1364,12 +1401,33 @@ public final class Pulsar extends Metro {
 				if ( 1.0<=probability  ) return true;
 				return random.nextBoolean( probability );
 			}
+			{
+				setParameterDescription( "[numeric]" );
+				setReturnValueDescription( "::boolean" );
+				setShortDescription( "is a procedure that returns a random bool value. " );
+				setLongDescription( "The first argument is the value of probability "
+						+ "where the larger value causes the more probability of returning #t. "
+						+ "When the specified value is equals or less than zero, the returning value is always #f. "
+						+ "When the specified value is equals or larger than one the returning value is always #t. "
+						+ "The only parameter can be omitted and in that case the default value one is applied. " );
+			}
+
 		} , "luck");
 
 		SchemeUtils.defineVar( scheme, new DProcedureN("help!") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				return "Calm down!";
+			}
+			{
+				setParameterDescription( "" );
+				setReturnValueDescription( "::string" );
+				setShortDescription(  "is a procedure to execute when the user needs something that possibly calms you down." );
+				setLongDescription( 
+					"When this procedure is called, this procedure will return a message which "
+					+ "tries to calm the user down. Any argument specified to this procedure will be silently ignored."
+					+ "This procedure is intended to be defined as a joke and has by no means effect to the current system state "
+					+ "nor any other related elements." );
 			}
 		} , "help!");
 
@@ -1406,14 +1464,53 @@ public final class Pulsar extends Metro {
 			
 			String MSG_NO_DOCUMENTATION = "No documentation is available.";
 			public Object apply1(Object arg1) throws Throwable {
+
+				String message ="\n[PULSAR REFERENCE]\n\n";
+				
 				if ( arg1 instanceof DescriptiveProcedure ) {
-					String msg = ((DescriptiveProcedure)arg1).getLongDescription();
-					if ( "".equals( msg ) )
-						msg = MSG_NO_DOCUMENTATION;
-					return SchemeUtils.toSchemeString(msg);
+					DescriptiveProcedure proc = (DescriptiveProcedure)arg1;
+					
+					{
+						String syn = proc.getParameterDescription();
+						String rv = proc.getReturnValueDescription();
+						message = message +
+								"SYNOPSIS: (" +
+								String.join( "|", 
+									SchemeUtils.symbolListToStringList( proc.getNameList())) +
+								(syn.equals("") ? "" : " ") +
+								syn +
+								")" + rv;
+						
+						message += "\n\n";
+					}
+
+					String msg1;
+					{
+						msg1 = proc.getShortDescription();
+						if ( "".equals( msg1 ) ) {
+						} else {
+							List<Symbol> l = proc.getNameList();
+							if ( false && l != null && ! l.isEmpty() ) {
+								msg1 = "(" + SchemeUtils.symbolToString( l.get(0) ) + ")" + " " + msg1;
+							} else {
+								msg1 = "This " + msg1;
+							}
+						}
+					}
+
+					String msg2;
+					{
+						msg2 = proc.getLongDescription();
+					}
+					message += SchemeUtils.wrapMultiLine(
+						"DESCRIPTION: " + 
+						(msg1 + " " + msg2).trim() , 80 ).trim();
+					
+					
 				} else {
-					return SchemeUtils.toSchemeString( MSG_NO_DOCUMENTATION );
+					message = MSG_NO_DOCUMENTATION;
 				}
+				return SchemeUtils.toSchemeString(message.trim() );
 			};
 
 
@@ -1428,11 +1525,17 @@ public final class Pulsar extends Metro {
 
 			}
 			{
-				setLongDescription( "Shows all available commands. Shows the description of the passed procedure." );
+				setParameterDescription( "[procedure]" );
+				setReturnValueDescription( "::string|list" );
+				setShortDescription( "is a procedure to show the description of a specified procedure." ); 
+				setLongDescription( 
+						"When a procedure reference is passed, it returns a string value that contains "
+						+ "the description of the the procedure. \n\n"
+						+ "If no procedure is specified, it returns a list that contains all procedures which "
+						+ "description is available." );
 			}
 		}
-		SchemeUtils.defineVar( scheme, new DProcedureHelp( "help", 1 ) , "help");
-		SchemeUtils.defineVar( scheme, new DProcedureHelp( "he",   2 ) , "he");
+		SchemeUtils.defineVar( scheme, new DProcedureHelp( "help", 1 ) , "help", "he" );
 
 		{
 			SchemeUtils.execScheme( Pulsar.class, scheme, "lib/init.scm"  );

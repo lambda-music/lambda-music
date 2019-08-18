@@ -19,14 +19,11 @@
  */
 package pulsar.lib.scheme;
 
-import java.io.StringWriter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-
-import gnu.kawa.io.OutPort;
 
 /**
  * October 3, 2018 at 9:52:28 PM
@@ -312,17 +309,5 @@ public class SimpleSchemePrettifier {
 		System.out.println( prettify( lispWords, "(\n(\n(\n(\n(\n)\n)\n)\n)\n)\n" ) );
 		System.out.println( prettify( lispWords, "(\n(\n(\n(\n(\n)\n)\n)\n)\n)\n         )\n         )\n(\n(\n" ) );
 
-	}
-
-	/*
-	 * moved from KawaPas.java (Mon, 29 Jul 2019 19:31:42 +0900)
-	 */
-	public static String prettyPrint(Object resultObject) throws Throwable {
-		StringWriter out = new StringWriter();
-		OutPort outPort = new OutPort( out, true, true );
-//		SchemeUtils.toString( kawa.lib.kawa.pprint.pprint.apply2( resultObject, outPort ) );
-		SchemeUtils.toString( kawa.lib.ports.write.apply2( resultObject, outPort ) );
-		outPort.flush();
-		return out.toString();
 	}
 }
