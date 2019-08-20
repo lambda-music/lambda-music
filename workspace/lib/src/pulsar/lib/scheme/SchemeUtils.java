@@ -30,6 +30,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,13 +72,15 @@ import pulsar.lib.secretary.Invokable;
 import pulsar.lib.secretary.SecretaryMessage;
 
 public class SchemeUtils {
-	static final Logger LOGGER = Logger.getLogger(SchemeUtils.class.getName());
-	static void logError( String msg, Throwable e ) {
+	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+	static void logError(String msg, Throwable e) {
 		LOGGER.log(Level.SEVERE, msg, e);
 	}
-	static void logInfo( String msg ) {
-//        Logger.getLogger(Pulsar.class.getName()).log(Level.INFO, msg);
-		System.err.println( msg );
+	static void logInfo(String msg) {
+		LOGGER.log(Level.INFO, msg);
+	}
+	static void logWarn(String msg) {
+		LOGGER.log(Level.WARNING, msg);
 	}
 
 
@@ -400,6 +403,21 @@ public class SchemeUtils {
 			proc.setNameList( list );
 		}
 	}
+	public static void setDocumentInitializer( Scheme scheme, DescriptiveInitializerA a, String ... names) {
+		setDocumentInitializer( scheme, a, new DescriptiveInitializerB(),  names );
+	}
+	public static void setDocumentInitializer( Scheme scheme, DescriptiveInitializerA a, DescriptiveInitializerB b, String ... names) {
+		for ( String name : names ) { 
+			DescriptiveProcedure proc = getVar(scheme, name, null );
+			if ( proc != null ) {
+				proc.setInitializerA(a);
+				proc.setInitializerB(b);
+			} else {
+				logWarn( "setDocumentInitializer: " + name + " was not found." );
+			}
+			proc.init();
+		}
+	}
 	public static LList getDocumentList( ) {
 		synchronized ( ALL_PROCEDURES_ROOT ) {
 			return (LList) ALL_PROCEDURES_ROOT.getCdr();
@@ -422,7 +440,10 @@ public class SchemeUtils {
 	public static final Object getVar( Scheme scheme, String name  ) {
 		return scheme.getEnvironment().get( SimpleSymbol.make( "", name ) );
 	}
-	
+	// TODO This version is newer. Every getVar() thing should be diverted to this. (Mon, 19 Aug 2019 18:55:39 +0900) 
+	public static final <T> T getVar( Scheme scheme, String name, Object defaultValue ) {
+		return (T)scheme.getEnvironment().get( Symbol.valueOf( name ), defaultValue );
+	}
 	
 	@Deprecated
 	public static void execSchemeFromFileOld( Object lock, Scheme scheme, File file) throws FileNotFoundException {

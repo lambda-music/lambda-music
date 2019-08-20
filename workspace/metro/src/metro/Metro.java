@@ -104,7 +104,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		return beatsPerMinute;
 	}
 	public void setBeatsPerMinute(double beatsPerMinute) throws JackException {
-		beatsPerMinute = beatsPerMinute < 0 ? 0 : beatsPerMinute;
+		beatsPerMinute = beatsPerMinute < 1 ? 1 : beatsPerMinute;
 		this.beatsPerMinute = beatsPerMinute;
 		reprepareTrack( beatsPerMinute, this.beatsPerMinute );
 	}

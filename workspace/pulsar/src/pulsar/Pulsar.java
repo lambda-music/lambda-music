@@ -62,6 +62,8 @@ import pulsar.lib.scheme.DProcedure0;
 import pulsar.lib.scheme.DProcedure1;
 import pulsar.lib.scheme.DProcedure3;
 import pulsar.lib.scheme.DProcedureN;
+import pulsar.lib.scheme.DescriptiveInitializerA;
+import pulsar.lib.scheme.DescriptiveInitializerB;
 import pulsar.lib.scheme.DescriptiveProcedure;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
@@ -827,21 +829,29 @@ public final class Pulsar extends Metro {
 			public Object applyN(Object[] args) throws Throwable {
 				return isOpened();
 			}
-			{
-				setParameterDescription( "" );
-				setReturnValueDescription( "::boolean" );
-				setShortDescription( "returns the current open state. " );
-				setLongDescription( "This procedure returns #t iff the current sequencer state is open; "
-					+ "otherwise returns #f. " );
-			}			
 		} , "open?");
+		
+		SchemeUtils.setDocumentInitializer( scheme,  
+			new DescriptiveInitializerA() {{
+				setParameterDescription(   "" );
+				setReturnValueDescription( "::boolean" );
+				setShortDescription(       "returns the current open state. " );
+				setLongDescription(        "This procedure returns #t iff the current sequencer state is open; "
+						                 + "otherwise returns #f. " );
+			}},
+			new DescriptiveInitializerB(),
+			"open?" );
+		
 		SchemeUtils.defineVar( scheme, new DProcedure1("open") {
 			@Override
 			public Object apply1(Object arg0) throws Throwable {
 				open( SchemeUtils.toString( arg0 ) );
 				return Invokable.NO_RESULT;
 			}
-			{
+		} , "open");
+		
+		SchemeUtils.setDocumentInitializer( scheme,  
+			new DescriptiveInitializerA() {{
 				setParameterDescription( "[string]" );
 				setReturnValueDescription( "::void" );
 				setShortDescription( "starts a new connection between JACK Audio Connection Kit." );
@@ -850,15 +860,21 @@ public final class Pulsar extends Metro {
 						+ "the specified port name. "
 						+ "When it failed to open a connection, this throws an exception. "
 						+ ALTERS_THE_CURRENT_STATE );
-			}
-		} , "open");
+			}},
+			new DescriptiveInitializerB(),
+			"open" );
+
+		
 		SchemeUtils.defineVar( scheme, new DProcedureN("close") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				close();
 				return Invokable.NO_RESULT;
 			}
-			{
+		} , "close" );
+
+		SchemeUtils.setDocumentInitializer( scheme,  
+			new DescriptiveInitializerA() {{
 				setParameterDescription( "" );
 				setReturnValueDescription( "::void" );
 				setShortDescription( "ends the current connection between JACK Audio Connection Kit." );
@@ -866,29 +882,48 @@ public final class Pulsar extends Metro {
 						+ "When it failed to close the connection, this throws an exception. "
 						+ THROWS_AN_ERROR_IF_NOT_OPEN
 						+ ALTERS_THE_CURRENT_STATE );
-			}
-			
-		} , "close");
+			}},
+			"close" );
 
 		//////////////////////////////////////////////////////////
 
-		class InitDocOpenPorts {
-			void init( DescriptiveProcedure p, String outputOrInput, String k1 ) {
-				p.setParameterDescription( "[ANY|(ANY...)  ... ]" );
-				p.setReturnValueDescription( "::MetroPort" );
-				p.setShortDescription( String.format(
-					"opens %s ports on the current JACK connection. ", outputOrInput ));
-
-				p.setLongDescription( "Each argument is the name of a port to create. "
+		class InitDocOpenPorts extends DescriptiveInitializerA {
+			@Override
+			public String getParameterDescription() {
+				return "[ANY|(ANY...)  ... ]";
+			}
+			@Override
+			public String getReturnValueDescription() {
+				return "::MetroPort";
+			}
+			@Override
+			public String getShortDescription() {
+				return "opens %s ports on the current JACK connection. ";
+			}
+			@Override
+			public String getLongDescription() {
+				return ""
+						+"Each argument is the name of a port to create. "
 						+ "The value can be a value of any type; thought, it is usually a value "
 						+ "which is easy to be distinguished such as a symbol value or a string value. "
 						+ "The value is applied as the identifier of the created port. "
 						+ "A duplicated port name on the current JACK connection causes an exception to be thrown. "
 						+ THROWS_AN_ERROR_IF_NOT_OPEN
-						+ ALTERS_THE_CURRENT_STATE );
+						+ ALTERS_THE_CURRENT_STATE;
 			};  
 		}
-		InitDocOpenPorts initDocOpenPorts = new InitDocOpenPorts();		
+		InitDocOpenPorts initDocOpenPorts = new InitDocOpenPorts() {{
+				setParameterDescription( "[ANY|(ANY...)  ... ]" );
+				setReturnValueDescription( "::MetroPort" );
+				setShortDescription( "opens %s ports on the current JACK connection. " );
+				setLongDescription( "" + "Each argument is the name of a port to create. "
+				        + "The value can be a value of any type; thought, it is usually a value "
+				        + "which is easy to be distinguished such as a symbol value or a string value. "
+				        + "The value is applied as the identifier of the created port. "
+				        + "A duplicated port name on the current JACK connection causes an exception to be thrown. "
+				        + THROWS_AN_ERROR_IF_NOT_OPEN + ALTERS_THE_CURRENT_STATE
+			);
+		}};		
 		
 		DProcedureN openOutput = new DProcedureN("open-output") {
 			@Override
@@ -902,14 +937,16 @@ public final class Pulsar extends Metro {
 				Collections.reverse( list );
 				return LList.makeList( list );
 			}
-			{
-				initDocOpenPorts.init(this, "output", "");
-			}
 		};
 		SchemeUtils.defineVar( scheme, openOutput , "open-output"
 												  , "openo"
 												  , "output" );
 
+		SchemeUtils.setDocumentInitializer( scheme, 
+			initDocOpenPorts, 
+			new DescriptiveInitializerB( "output" ),
+		    "open-output" );
+		
 		//////////////////////////////////////////////////////////
 
 		DProcedureN openInput = new DProcedureN("open-input") {
@@ -924,33 +961,34 @@ public final class Pulsar extends Metro {
 				Collections.reverse( list );
 				return LList.makeList( list );
 			}
-			{
-				initDocOpenPorts.init(this, "input", "");
-			}
 		};
 		SchemeUtils.defineVar( scheme, openInput , "open-input"
 												 , "openi"
 												 , "input" );
 
-		class InitDocClosePorts {
-			void init( DescriptiveProcedure p, String outputOrInput, String k1 ) {
-				p.setParameterDescription( "[MetroPort|symbol|string|(MetroPort|symbol|string ...) ... ]" );
-				p.setReturnValueDescription( "::void" );
-				p.setShortDescription( String.format ( "closes the specified %s ports on the current JACK connection. ", outputOrInput ) );
-				p.setLongDescription( String.format( 
-					  				  "Each argument is a reference to a MetroPort object to close. "
-									+ "A value which is other than a reference to a MetroPort object is treated "
-									+ "as an identifier of a MetroPort object and automatically "
-									+ "replaced with a reference value to the corresponding MetroPort object. "
-									+ "The value is applied as the identifier of the created port. "
-									+ "A duplicated port name on the current JACK connection causes an exception to be thrown. "
-									+ THROWS_AN_ERROR_IF_NOT_OPEN
-									+ ALTERS_THE_CURRENT_STATE ));
-			};  
-		}
-		InitDocClosePorts initDocClosePorts = new InitDocClosePorts();
+		SchemeUtils.setDocumentInitializer( scheme, 
+			initDocOpenPorts, 
+			new DescriptiveInitializerB( "input" ),
+		    "open-input" );
+
 		
 		//////////////////////////////////////////////////////////
+		
+		class InitDocClosePorts extends DescriptiveInitializerA {{
+			setParameterDescription( "[MetroPort|symbol|string|(MetroPort|symbol|string ...) ... ]" );
+			setReturnValueDescription( "::void" );
+			setShortDescription( "closes the specified %s ports on the current JACK connection. " );
+			setLongDescription(  
+				"Each argument is a reference to a MetroPort object to close. "
+						+ "A value which is other than a reference to a MetroPort object is treated "
+						+ "as an identifier of a MetroPort object and automatically "
+						+ "replaced with a reference value to the corresponding MetroPort object. "
+						+ "The value is applied as the identifier of the created port. "
+						+ "A duplicated port name on the current JACK connection causes an exception to be thrown. "
+						+ THROWS_AN_ERROR_IF_NOT_OPEN
+						+ ALTERS_THE_CURRENT_STATE );
+		}}
+		InitDocClosePorts initDocClosePorts = new InitDocClosePorts();
 		
 		DProcedureN closeOutput = new DProcedureN("close-output") {
 			@Override
@@ -962,13 +1000,14 @@ public final class Pulsar extends Metro {
 				}
 				return Invokable.NO_RESULT;
 			}
-			{
-			    initDocClosePorts.init(this, "output", "" );
-			}
 		};
 		SchemeUtils.defineVar( scheme, closeOutput, "close-output"
 												  , "closeo" );
-		
+		SchemeUtils.setDocumentInitializer( scheme, 
+			initDocClosePorts, 
+			new DescriptiveInitializerB( "output" ),
+				"close-output" );
+
 		//////////////////////////////////////////////////////////
 		
 		DProcedureN closeInput = new DProcedureN("close-input") {
@@ -981,29 +1020,28 @@ public final class Pulsar extends Metro {
 				}
 				return Invokable.NO_RESULT;
 			}
-			{
-			    initDocClosePorts.init(this, "input", "" );
-			}
 		};
 		SchemeUtils.defineVar( scheme, closeInput, "close-input","closei"  );
+		
+		SchemeUtils.setDocumentInitializer( scheme, 
+			initDocClosePorts, 
+			new DescriptiveInitializerB( "input" ),
+			"close-input" );
 
 		//////////////////////////////////////////////////////////
 
-		class InitDocListPorts {
-			void init( DescriptiveProcedure p, String outputOrInput ) {
-				p.setParameterDescription( "" );
-				p.setReturnValueDescription( "::(MetroPort ...)" );
-				p.setShortDescription( String.format ( "returns a list which contains all %s ports on the current JACK connection. ", outputOrInput ) );
-				p.setLongDescription( String.format( "" 
+		class InitDocListPorts extends DescriptiveInitializerA {{
+				setParameterDescription( "" );
+				setReturnValueDescription( "::(MetroPort ...)" );
+				setShortDescription( "returns a list which contains all %s ports on the current JACK connection. " );
+				setLongDescription( ""
 									+ "Each element on the list is a reference to a MetroPort object. "
 									+ "The values in the list are sorted from newest to oldest. "
 									+ THROWS_AN_ERROR_IF_NOT_OPEN
-									));
-			};  
-		}
+									);
+		}}
 		InitDocListPorts initDocListPorts = new InitDocListPorts();
  
-		
 		DProcedureN listOutput = new DProcedureN("list-output") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
@@ -1011,13 +1049,17 @@ public final class Pulsar extends Metro {
 				Collections.reverse( list );
 				return LList.makeList( list  );
 			}
-			{
-				initDocListPorts.init( this, "output" );
-			}
 		};
 		SchemeUtils.defineVar( scheme, listOutput, "list-output"
 												 , "lso" );
+		SchemeUtils.setDocumentInitializer( scheme, 
+			initDocListPorts, 
+			new DescriptiveInitializerB( "output" ),
+			"list-output" );
 		
+		
+		//////////////////////////////////////////////////////////
+
 		DProcedureN listInput = new DProcedureN("list-input") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
@@ -1025,27 +1067,27 @@ public final class Pulsar extends Metro {
 				Collections.reverse( list );
 				return LList.makeList( list  );
 			}
-			{
-				initDocListPorts.init( this, "output" );
-			}
 		};
 		SchemeUtils.defineVar( scheme, listInput, "list-input"
 												, "lsi" );
+		SchemeUtils.setDocumentInitializer( scheme, 
+			initDocListPorts, 
+			new DescriptiveInitializerB( "input" ),
+			"list-input" );
 
-		class InitDocConnection {
-			void init( DescriptiveProcedure p, String connectOrDisconnect ) {
-				p.setParameterDescription( "[ANY ...]" );
-				p.setReturnValueDescription( "::void" );
-				p.setShortDescription( String.format ( "%s specified two ports on the current JACK connection. ", connectOrDisconnect ) );
-				p.setLongDescription( String.format( ""
+		//////////////////////////////////////////////////////////
+
+		class InitDocConnection extends DescriptiveInitializerA {{
+				setParameterDescription( "[ANY ...]" );
+				setReturnValueDescription( "::void" );
+				setShortDescription( "%s specified two ports on the current JACK connection. " );
+				setLongDescription( ""
 									+ "This procedure %s "
 									+ "the port which is specified in the first arguments to "
 									+ "the port which is specified in the second arguments. "
 									+ "The rest arguments are also processed in the same mannar. "
-									+ THROWS_AN_ERROR_IF_NOT_OPEN
-									, connectOrDisconnect ));
-			};  
-		}
+									+ THROWS_AN_ERROR_IF_NOT_OPEN );
+		}}
 		InitDocConnection initDocConnection = new InitDocConnection();
 		
 		SchemeUtils.defineVar( scheme, new DProcedureN("connect") {
@@ -1054,29 +1096,41 @@ public final class Pulsar extends Metro {
 				connectProc(Pulsar.this, args, ConnectProc.CONNECT );
 				return Invokable.NO_RESULT;
 			}
-			{
-				initDocConnection.init( this, "connects" );
-			}
-
 		} , "connect");
+		
+		SchemeUtils.setDocumentInitializer( scheme, 
+			initDocConnection, 
+			new DescriptiveInitializerB( "connects" ),
+			"connect" );
+		
+		//////////////////////////////////////////////////////////
+		
 		SchemeUtils.defineVar( scheme, new DProcedureN("disconnect") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				connectProc(Pulsar.this, args, ConnectProc.DISCONNECT );
 				return Invokable.NO_RESULT;
 			}
-			{
-				initDocConnection.init( this, "disconnects" );
-			}
 		} , "disconnect");
+		SchemeUtils.setDocumentInitializer( scheme, 
+			initDocConnection, 
+			new DescriptiveInitializerB( "disconnects" ),
+			"disconnect" );
 
-		SchemeUtils.defineVar( scheme, new DProcedureN("get-all-input") {
-			@Override
-			public Object applyN(Object[] args) throws Throwable {
-				return Pair.makeList( getAllInputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
-					.collect( Collectors.toList() ) );
-			}
-		} , "get-all-input", "gai");
+		//////////////////////////////////////////////////////////
+		
+		class InitDocAllConnection extends DescriptiveInitializerA {{
+				setParameterDescription( "" );
+				setReturnValueDescription( "::list<string>" );
+				setShortDescription( "retrieves IDs of all %s connections in the current session of JACK Audio Connection Kit. " );
+				setLongDescription( ""
+									+ "Each ID contains two parts which are separated by a separator character \":\"; "
+									+ "the former part is the server name part and the latter part is the port name part."
+									+ "The passed arguments are silently discarded. "
+									+ THROWS_AN_ERROR_IF_NOT_OPEN
+									);
+		}}
+		InitDocAllConnection initDocAllConnection = new InitDocAllConnection();	
 		SchemeUtils.defineVar( scheme, new DProcedureN("get-all-output") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
@@ -1084,6 +1138,39 @@ public final class Pulsar extends Metro {
 					.collect( Collectors.toList() ) );
 			}
 		} , "get-all-output", "gao" );
+		SchemeUtils.setDocumentInitializer( scheme, 
+			initDocAllConnection, 
+			new DescriptiveInitializerB( "output" ),
+			"get-all-output" );
+
+		//////////////////////////////////////////////////////////
+		
+		SchemeUtils.defineVar( scheme, new DProcedureN("get-all-input") {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				return Pair.makeList( getAllInputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
+					.collect( Collectors.toList() ) );
+			}
+		} , "get-all-input", "gai");
+		
+		SchemeUtils.setDocumentInitializer( scheme, 
+			initDocAllConnection, 
+			new DescriptiveInitializerB( "input" ),
+			"get-all-input" );
+
+		//////////////////////////////////////////////////////////
+		
+		class InitDocSetGetMain extends DescriptiveInitializerA {{
+				setParameterDescription( "[procedure]" );
+				setReturnValueDescription( "::void" );
+				setShortDescription( "%s the main procedure. " );
+				setLongDescription( ""
+									+ "The main procedure is a procedure which is called "
+									+ "when (rewind) procedure is called in order to reset the sequencer's state. "
+									+ "Usually, the main procedure is a procedure to boot up the current song system. "
+									 );
+			}}
+		InitDocSetGetMain initDocMain= new InitDocSetGetMain();		 
 
 		SchemeUtils.defineVar( scheme, new DProcedureN("set-main") {
 			@Override
@@ -1098,12 +1185,25 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		} , "set-main");
-		SchemeUtils.defineVar( scheme, new DProcedure0("get-main") {
+		SchemeUtils.setDocumentInitializer( scheme, initDocMain,
+			new DescriptiveInitializerB( "sets" ),
+			"set-main" );
+
+		//////////////////////////////////////////////////////////
+
+		SchemeUtils.defineVar( scheme, new DProcedure0( "get-main" ) {
 			@Override
 			public Object apply0() throws Throwable {
 				return getMainProcedure();
 			}
 		} , "get-main");
+		SchemeUtils.setDocumentInitializer( scheme,
+			initDocMain, 
+			new DescriptiveInitializerB( "retrieves" ), 
+			"get-main" );
+
+		//////////////////////////////////////////////////////////
+		
 		SchemeUtils.defineVar( scheme, new DProcedureN("set-playing") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
@@ -1117,12 +1217,37 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		} , "set-playing");
+		SchemeUtils.setDocumentInitializer( scheme,
+			new DescriptiveInitializerA(){{
+				setParameterDescription( "[boolean]" );
+				setReturnValueDescription( "::void" );
+				setShortDescription( "sets the current playing state." );
+				setLongDescription( ""
+									+ "When #f is passed to this procedure, the sequencer stops playing.  "
+									+ "When #t is passed to this procedure ,the sequencer resumes playing. "
+									+ THROWS_AN_ERROR_IF_NOT_OPEN
+									 );
+			}}, 
+			"set-playing" );
+
 		SchemeUtils.defineVar( scheme, new DProcedureN("playing?") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				return getPlaying();
 			}
 		} , "playing?");
+		SchemeUtils.setDocumentInitializer( scheme,
+			new DescriptiveInitializerA(){{
+				setParameterDescription( "" );
+				setReturnValueDescription( "::boolean" );
+				setShortDescription( "retrieves the current playing state." );
+				setLongDescription( ""
+									+ "When the sequencer is playing, it returns #t; otherwise it returns #f. "
+									+ THROWS_AN_ERROR_IF_NOT_OPEN
+									 );
+			}}, 
+			"playing?" );
+		
 		SchemeUtils.defineVar( scheme, new DProcedureN("play") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
@@ -1130,6 +1255,18 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		} , "play");
+		
+		SchemeUtils.setDocumentInitializer( scheme,
+			new DescriptiveInitializerA(){{
+				setParameterDescription( "" );
+				setReturnValueDescription( "::boolean" );
+				setShortDescription( "causes the sequencer to start playing." );
+				setLongDescription( ""
+									+ THROWS_AN_ERROR_IF_NOT_OPEN
+									 );
+			}}, 
+			"play" );
+
 		SchemeUtils.defineVar( scheme, new DProcedureN("stop") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
@@ -1137,6 +1274,17 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		} , "stop");
+		SchemeUtils.setDocumentInitializer( scheme,
+			new DescriptiveInitializerA(){{
+				setParameterDescription( "" );
+				setReturnValueDescription( "::boolean" );
+				setShortDescription( "causes the sequencer to stop playing." );
+				setLongDescription( ""
+									+ THROWS_AN_ERROR_IF_NOT_OPEN
+									 );
+			}}, 
+			"stop" );
+
 		SchemeUtils.defineVar( scheme, new DProcedureN("quit") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
@@ -1166,6 +1314,19 @@ public final class Pulsar extends Metro {
 			}
 		
 		} , "quit");
+		
+		SchemeUtils.setDocumentInitializer( scheme,
+			new DescriptiveInitializerA(){{
+				setParameterDescription( "" );
+				setReturnValueDescription( "::void" );
+				setShortDescription( "makes the sequencer to stop playing "
+					               	+ "and shutdowns the application in " + shutdownWait + " milliseconds. " );
+				setLongDescription( ""
+									+ "Currently the time to shutdown is hard-coded and cannot be changed. "
+									+ THROWS_AN_ERROR_IF_NOT_OPEN );
+			}}, 
+			"stop" );
+		
 		SchemeUtils.defineVar( scheme, new DProcedureN("tap-tempo") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
@@ -1173,6 +1334,24 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		} , "tap-tempo", "tapt");
+		
+		SchemeUtils.setDocumentInitializer( scheme,
+			new DescriptiveInitializerA(){{
+				setParameterDescription( "" );
+				setReturnValueDescription( "::void" );
+				setShortDescription( "has the same effect with pressing the tap-tempo button on the main screen. "
+					               	);
+				setLongDescription( ""
+									+ "The tap-tempo button is a button to change the current tempo. "
+									+ "The button is supposed to be pressed repeatedly to tell the system  "
+									+ "how fast the sequencer should play the current music. "
+									+ "The sequencer calculates the average of durations between the pressing the button, "
+									+ "and apply the value as the current tempo on the sequencer system. "
+									+ "See (help set-tempo)."
+									+ THROWS_AN_ERROR_IF_NOT_OPEN );
+			}}, 
+			"tap-tempo" );
+
 		SchemeUtils.defineVar( scheme, new DProcedureN("set-tempo") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
@@ -1183,7 +1362,26 @@ public final class Pulsar extends Metro {
 
 				return Invokable.NO_RESULT;
 			}
-		} , "set-tempo");
+		} , "set-tempo" );
+		
+		SchemeUtils.setDocumentInitializer( scheme,
+			new DescriptiveInitializerA(){{
+				setParameterDescription( "[number]" );
+				setReturnValueDescription( "::void" );
+				setShortDescription( "sets the current tempo. "
+					               	);
+				setLongDescription( ""
+									+ "This procedure takes an argument as a beat-per-minutes. "
+									+ "A value less than one is treated as one. "
+									+ "There is no maximum value for the argument. "
+									+ "thought, the result of passing extreme values to the procedure "
+									+ "is not defined. "
+									+ "See (help tap-tempo)."
+									+ THROWS_AN_ERROR_IF_NOT_OPEN );
+			}}, 
+			"set-tempo" );
+		
+		//////////////////////////////////////////////////////////
 
 		/**
 		 * This function only reset the current scheme environment.
@@ -1197,6 +1395,23 @@ public final class Pulsar extends Metro {
 			}
 		};
 		SchemeUtils.defineVar( scheme, resetScheme , "reset" );
+		SchemeUtils.setDocumentInitializer( scheme,
+			new DescriptiveInitializerA(){{
+				setParameterDescription( "" );
+				setReturnValueDescription( "::void" );
+				setShortDescription( "resets the environment object of Scheme interpreter, and close the current JACK connection. " );
+				setLongDescription( ""
+									+ "This procedure is supposed to be called interactively and "
+									+ "is not supposed to be called from other procedures; a procedure which "
+									+ "called the (reset) procedure will be deleted from the current environment object as well "
+									+ "as other procedures and as a result, "
+									+ "the procedure cannot call other procedures which are necessary to continue "
+									+ "the process. "
+									+ "" );
+			}}, 
+			"reset" );
+		
+		
 		SchemeUtils.defineVar( scheme, new DProcedure0("rewind") {
 			@Override
 			public Object apply0() throws Throwable {
@@ -1204,6 +1419,18 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		} , "rewind");
+		
+		SchemeUtils.setDocumentInitializer( scheme,
+			new DescriptiveInitializerA(){{
+				setParameterDescription( "" );
+				setReturnValueDescription( "::void" );
+				setShortDescription( "causes the music sequencer to go to the head of the song. " );
+				setLongDescription( ""
+									+ "This procedure usually causes the music sequencer to call the main-procedure. "
+									+ "See (help set-main). "
+									+ THROWS_AN_ERROR_IF_NOT_OPEN );
+			}}, 
+			"rewind" );
 		
 		DProcedureN simul = new DProcedureN( "simultaneous" ) {
 			@Override
@@ -1228,7 +1455,21 @@ public final class Pulsar extends Metro {
 			}
 		};
 		SchemeUtils.defineVar( scheme, simul , "simultaneous", "simul" );
-
+		SchemeUtils.setDocumentInitializer( scheme,
+			new DescriptiveInitializerA(){{
+				setParameterDescription( "[procedure ...]" );
+				setReturnValueDescription( "::void" );
+				setShortDescription( "executes passed the procedures \"simultaneously\". " );
+				setLongDescription( ""
+									+ "This procedure is designed to add multiple tracks to the sequencer and and let the tracks start "
+									+ "to play simultaneously. While the interpreter is executing this procedure, the thread "
+									+ "that is processing tracks in order to generate the music data is blocked. "
+									+ "Therefore, it is guaranteed that the sequencer starts to process the added tracks simultaneously. "
+									+ "" 
+									+ THROWS_AN_ERROR_IF_NOT_OPEN );
+			}}, 
+			"simultaneous" );
+		
 		/////////////////////////////////////////////////////////////////
 
 		DProcedureN getTrack = new DProcedureN( "get-track" ) {
