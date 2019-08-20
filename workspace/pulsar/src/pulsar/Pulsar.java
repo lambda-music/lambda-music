@@ -699,7 +699,7 @@ public final class Pulsar extends Metro {
 		} else if ( object instanceof Pair ) {
 			// TODO DOCUMENT THIS
 			Object car = ((Pair)object).getCar();
-			Object cdr = ((Pair)object).getCar();
+			Object cdr = ((Pair)object).getCdr(); // <<< FIXED (Tue, 20 Aug 2019 22:27:46 +0900)
 			if ( car instanceof Procedure ) {
 				return new TagSearchUserProcedure(cdr, (Procedure) car ); 
 			} else if ( car instanceof Keyword ) {
@@ -1487,7 +1487,19 @@ public final class Pulsar extends Metro {
 		};
 		SchemeUtils.defineVar( scheme, getTrack, "get-track"
 											   , "gett" );
-
+		
+		SchemeUtils.setDocumentInitializer( scheme,
+			new DescriptiveInitializerA(){{
+				setParameterDescription( "[track-spec ...]" );
+				setReturnValueDescription( "::void" );
+				setShortDescription( "retrieves the specified track reference. " );
+				setLongDescription( ""
+									+ "This procedure can also accept multiple track-specs. "
+									+ "The track-spec is a specification of a track. The any of following values are "
+									+ "valid as a track-spec : procedure, symbol, string, and pair." 
+									+ THROWS_AN_ERROR_IF_NOT_OPEN );
+			}}, 
+			"get-track" );
 		/////////////////////////////////////////////////////////////////
 
 		DProcedureN newTrack = new DProcedureN( "new-track" ) {
