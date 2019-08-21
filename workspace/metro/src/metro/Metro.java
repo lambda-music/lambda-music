@@ -338,7 +338,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 
 		for ( Iterator<MetroTrack> i=tempAllTracks.iterator(); i.hasNext(); ) {
 			MetroTrack track = i.next();
-			if ( Boolean.FALSE.equals( invokable.invoke( track.name ) ) ) {
+			if ( Boolean.FALSE.equals( invokable.invoke( track.name, track.tags ) ) ) {
 				continue;
 			} else {
 				resultAllTracks.add( track );

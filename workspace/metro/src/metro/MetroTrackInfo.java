@@ -20,11 +20,12 @@
 
 package metro;
 
-import java.util.Set;
+import java.util.Collection;
 
+@Deprecated
 public interface MetroTrackInfo {
 	public Object getTrackName();
-	public Set<Object> getTrackTags();
+	public Collection<Object> getTrackTags();
 	public boolean isTrackEnabled();
 	public void setTrackEnabled(boolean enabled);
 	public void removeGracefully();

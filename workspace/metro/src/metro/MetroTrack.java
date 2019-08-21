@@ -22,10 +22,9 @@ package metro;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
@@ -104,7 +103,7 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 	 * Note that the String object which is stored in name field must be interned.  
 	 */
 	protected final Object name;
-	protected final Set<Object> tags;
+	protected final Collection<Object> tags;
 	protected final MetroSequence sequence;
 
 	protected transient boolean prepared = false;
@@ -160,9 +159,9 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 		
 		
 		if ( tags == null )
-			this.tags = new HashSet<>();
+			this.tags = Collections.EMPTY_LIST;
 		else
-			this.tags = (new HashSet<>( tags ));
+			this.tags = tags;
 
 		this.metro = metro;
 		this.sequence = sequence;
@@ -203,7 +202,7 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 		return name;
 	}
 	@Override
-	public Set<Object> getTrackTags() {
+	public Collection<Object> getTrackTags() {
 		return tags;
 	}
 	

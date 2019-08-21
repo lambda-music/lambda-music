@@ -1473,14 +1473,42 @@ public final class Pulsar extends Metro {
 		/////////////////////////////////////////////////////////////////
 
 		DProcedureN getTrack = new DProcedureN( "get-track" ) {
+			Invokable searchTrackFilter( Invokable i ) {
+				return new Invokable() {
+					@Override
+					public Object invoke(Object... args) {
+						if ( 0 < args.length ) {
+							args[1] = filterArg( args[1] );
+						}
+						return i.invoke( args );
+					}
+					Object filterArg(Object arg1) {
+						if ( arg1 == null ) {
+							return EmptyList.emptyList;
+						} else if ( arg1 instanceof LList ) {
+							return arg1;
+						} else if ( arg1 instanceof Collection ) {
+							if (((Collection)arg1).isEmpty()) {
+								return EmptyList.emptyList;
+							} else {
+								return Pair.makeList( Arrays.asList(((Collection)arg1).toArray()));
+							}
+						} else {
+							return arg1;
+						}
+					}
+				};
+			}
+			
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				ArrayList<MetroTrack> t = new ArrayList<>();
 				for ( int i=0; i<args.length; i++ ) {
 					t.addAll( 
-						searchTrack( 
-							createInvokable( 
-								readParamTrackSearcher( args[i] ))) ) ;
+						searchTrack(
+							searchTrackFilter(
+								createInvokable( 
+									readParamTrackSearcher( args[i] ))))) ;
 				}
 				return Pair.makeList( t );
 			}
@@ -1492,11 +1520,19 @@ public final class Pulsar extends Metro {
 			new DescriptiveInitializerA(){{
 				setParameterDescription( "[track-spec ...]" );
 				setReturnValueDescription( "::void" );
-				setShortDescription( "retrieves the specified track reference. " );
+				setShortDescription( "retrieves multiple tracks which are specified as track-spec arguments and returns them as a list." );
 				setLongDescription( ""
-									+ "This procedure can also accept multiple track-specs. "
-									+ "The track-spec is a specification of a track. The any of following values are "
-									+ "valid as a track-spec : procedure, symbol, string, and pair." 
+									+ "The track-spec is a specification of a track to retrieve. "
+									+ "Any of following values are valid as a track-spec : "
+									+ "procedure, symbol and string. \n\n"
+									+ "track-spec=procedure: The system enumerates all tracks in the current sequencer, "
+									+ "and call the given procedure for each track. The procedure should have two parameters : "
+									+ "(lambda ( name tags ) ... ). If a track with the name and the tags is not what you want, "
+									+ "the procedure should return #f; otherwise the track is added to the result. \n\n"
+									+ "track-spec=symbol/string: the value is compared with the name value "
+									+ "of each track, and the track is added to the result when it equals to the value. "
+									+ "It uses the equals() method of java.lang.Object class to compare the values. \n\n"
+									+ "" 
 									+ THROWS_AN_ERROR_IF_NOT_OPEN );
 			}}, 
 			"get-track" );
@@ -1533,6 +1569,26 @@ public final class Pulsar extends Metro {
 		SchemeUtils.defineVar( scheme, newTrack , "new-track"
 											    , "newt" );
 		
+		SchemeUtils.setDocumentInitializer( scheme,
+			new DescriptiveInitializerA(){{
+				setParameterDescription( "[track-spec ...]" );
+				setReturnValueDescription( "::void" );
+				setShortDescription( "retrieves multiple tracks which are specified as track-spec arguments and returns them as a list." );
+				setLongDescription( ""
+									+ "The track-spec is a specification of a track to retrieve. "
+									+ "Any of following values are valid as a track-spec : "
+									+ "procedure, symbol and string. \n\n"
+									+ "track-spec=procedure: The system enumerates all tracks in the current sequencer, "
+									+ "and call the given procedure for each track. The procedure should have two parameters : "
+									+ "(lambda ( name tags ) ... ). If a track with the name and the tags is not what you want, "
+									+ "the procedure should return #f; otherwise the track is added to the result. \n\n"
+									+ "track-spec=symbol/string: the value is compared with the name value "
+									+ "of each track, and the track is added to the result when it equals to the value. "
+									+ "It uses the equals() method of java.lang.Object class to compare the values. \n\n"
+									+ "" 
+									+ THROWS_AN_ERROR_IF_NOT_OPEN );
+			}}, 
+			"get-track" );
 		/////////////////////////////////////////////////////////////////
 		
 		abstract class TrackManagementProcedure extends DProcedureN  {
@@ -1836,8 +1892,8 @@ public final class Pulsar extends Metro {
 						if ( "".equals( msg1 ) ) {
 						} else {
 							List<Symbol> l = proc.getNameList();
-							if ( false && l != null && ! l.isEmpty() ) {
-								msg1 = "(" + SchemeUtils.symbolToString( l.get(0) ) + ")" + " " + msg1;
+							if ( l != null && ! l.isEmpty() ) {
+								msg1 = "||" + SchemeUtils.symbolToString( l.get(0) ) + "||" + " " + msg1;
 							} else {
 								msg1 = "This " + msg1;
 							}

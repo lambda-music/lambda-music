@@ -20,8 +20,8 @@
 
 package metro;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
  
 /**
  * {@link MetroSequence} is a base class of all tracks which are played by the Metro track.
@@ -52,7 +52,7 @@ public abstract class MetroSequence implements MetroTrackInfo {
 		return trackInfo.getTrackName();
 	}
 	@Override
-	public Set<Object> getTrackTags() {
+	public Collection<Object> getTrackTags() {
 		check();
 		return trackInfo.getTrackTags();
 	}
