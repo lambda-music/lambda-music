@@ -118,6 +118,8 @@ public class PulsarApplication {
 
 		if ( filename != null && pulsarGui != null )
 			pulsarGui.openFile( new File( filename ) );
+		else
+			pulsarGui.openIntro();
 		
 		return pulsar;
 	}

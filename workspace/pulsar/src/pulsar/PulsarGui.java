@@ -35,6 +35,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -149,6 +150,23 @@ public class PulsarGui {
 			}
 		}, Invokable.NOARG );
 	}
+	
+	public void openIntro() {
+		InputStream in = null;
+		try {
+			try {
+				in = PulsarGui.class.getResourceAsStream( "lib/intro.scm" );
+				String s = new String( SchemeUtils.readAll( in ), "UTF-8" );
+				frame.setNewText( s );
+			} finally {
+				if ( in != null )
+					in.close();
+			}	
+		} catch ( IOException e ) {
+			throw new Error( "Internal Error" , e );
+		}
+	}
+	
 	boolean shutdownWhenClose;
 
 	Pulsar pulsar;
@@ -687,6 +705,7 @@ public class PulsarGui {
 	        PulsarGui.this.userPane = userPane;
 	        PulsarGui.this.staticPaneOuter = staticPaneOuter;
 	        PulsarGui.this.userPaneOuter = userPaneOuter;
+	        
 			
 		}
 		

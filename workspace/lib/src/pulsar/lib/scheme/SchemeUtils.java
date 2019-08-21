@@ -20,6 +20,7 @@
 
 package pulsar.lib.scheme;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -556,18 +557,24 @@ public class SchemeUtils {
 		}
 	}
 	
+	public static String normalPrint(Object resultObject) throws Throwable {
+		return printProc( kawa.lib.ports.display, resultObject );
+	}
+
 	/*
 	 * moved from KawaPad.java (Mon, 29 Jul 2019 19:31:42 +0900)
 	 */
 	// TODO integrate all prettyPrint things.
 	public static String prettyPrint(Object resultObject) throws Throwable {
-		return prettyPrint0( prettyPrintReconstruction( resultObject ));
+		return printProc(
+			kawa.lib.kawa.pprint.pprint,
+			prettyPrintReconstruction( resultObject ));
 	}
-	private static String prettyPrint0(Object resultObject) throws Throwable {
+	private static String printProc(Procedure print, Object resultObject) throws Throwable {
 		StringWriter out = new StringWriter();
 		try {
 			OutPort outPort = new OutPort( out, true, true );
-			SchemeUtils.toString( kawa.lib.kawa.pprint.pprint.apply2( resultObject, outPort ) );
+			SchemeUtils.toString( print.apply2( resultObject, outPort ) );
 //			SchemeUtils.toString( kawa.lib.ports.write.apply2( resultObject, outPort ) );
 			outPort.flush();
 			return out.toString();
@@ -629,17 +636,21 @@ public class SchemeUtils {
 	
 	
 	public static final class ExecuteSchemeResult {
+		public final boolean isDocument;
 		public final String result;
 		public final Throwable error;
 		public final boolean succeeded() {
 			return error == null;
 		}
-		public ExecuteSchemeResult(String result, Throwable error) {
+		public ExecuteSchemeResult(boolean isDocument, String result, Throwable error) {
 			super();
+			this.isDocument = isDocument;
 			this.result = result;
 			this.error = error;
 		}
 	}
+	public static final String EXECUTE_SCHEME_DOCTAG_STRING = "**doc**".intern();
+	public static final Symbol EXECUTE_SCHEME_DOCTAG = Symbol.valueOf( EXECUTE_SCHEME_DOCTAG_STRING );
 
 	public static ExecuteSchemeResult evaluateScheme( 
 			Scheme scheme, Map<String, Object> variables, Reader schemeScript, String schemeScriptURI) 
@@ -664,8 +675,8 @@ public class SchemeUtils {
 			// Now I realized that currentLoadPath only affect to (load-relative) and
 			// it will by no means affect to (load) sigh. 
 			// This code effectively makes (load-relative) current directory aware.
-			// But I think it is cumbersome for users to use load-relative procedure.
-			// IMO load-relative supposed to be default. 
+			// But I think it is cumbersome to ask users to use load-relative procedure in
+			// every situation. IMO load-relative supposed to be default.
 			// I'm thinking about it.  (Thu, 15 Aug 2019 16:21:22 +0900)
 			Path savedPath = (Path) Shell.currentLoadPath.get();
 			try {
@@ -684,9 +695,15 @@ public class SchemeUtils {
 				// Object result = Shell.run( schemeScript, schemeScriptURI, scheme.getEnvironment(), true, 0 ); 
 
 				if ( result == null ) {
-					return new ExecuteSchemeResult( "#!null", null );
+					return new ExecuteSchemeResult( false, "#!null", null );
 				} else {
-					return new ExecuteSchemeResult( prettyPrint(result), null );
+					if ( result instanceof Pair &&
+							EXECUTE_SCHEME_DOCTAG.equals( ((Pair) result).getCar() ) ) 
+					{
+						return new ExecuteSchemeResult( true, normalPrint(((Pair) result).getCdr()), null );
+					} else {
+						return new ExecuteSchemeResult( false, prettyPrint(result), null );
+					}
 				}
 			} catch (Throwable e) {
 				StringWriter sw = new StringWriter();
@@ -695,7 +712,7 @@ public class SchemeUtils {
 					e.printStackTrace( w );
 					w.flush();
 					sw.flush();
-					return new ExecuteSchemeResult( sw.toString(), e );
+					return new ExecuteSchemeResult( false, sw.toString(), e );
 				} finally {
 					try {
 						sw.close();
@@ -753,4 +770,15 @@ public class SchemeUtils {
 		else
 			return "#|\n" + endWithLineFeed( s ) + "|#\n";
 	}
+	
+	public static byte[] readAll( InputStream in ) throws IOException {
+		ByteArrayOutputStream result = new ByteArrayOutputStream();
+		byte[] buf = new byte[1024];
+		int length;
+		while ((length = in.read(buf)) != -1) {
+		    result.write(buf, 0, length);
+		}
+		return result.toByteArray();
+	}
+	
 }

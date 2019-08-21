@@ -146,10 +146,15 @@ public class KawaPad extends JFrame {
 	 * without environments. (Sat, 17 Aug 2019 13:10:44 +0900)
 	 */
 	public static final Map<Object,Object> memoMap = new HashMap<Object,Object>();
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////
 
 	private static final boolean DEBUG = false;
+
 	///////////////////////////////////////////////////////////////////////////////////////////////
+
 	
+
 	/**
 	 * Initialize variables which is necessary to set whenever the environment is created.
 	 * One of such variables is a reference to the frame object. This reference must be
@@ -381,6 +386,19 @@ public class KawaPad extends JFrame {
 //			}
 //		}
 //	}
+	private final class SetTextToTextPane implements Runnable {
+		private final File file;
+		private final String text;
+		private SetTextToTextPane( File file, String text ) {
+			this.file = file;
+			this.text = text;
+		}
+		@Override
+		public void run() {
+			setTextProc( file, text );
+		}
+	}
+
 	private final class InsertTextToTextPane implements Runnable {
 		private final String result;
 		private InsertTextToTextPane( String result ) {
@@ -420,9 +438,9 @@ public class KawaPad extends JFrame {
 		}
 	}
 	
-	private final class ReplaceTextToTextPane implements Runnable {
+	private final class ReplaceTextOnTextPane implements Runnable {
 		private final String result;
-		private ReplaceTextToTextPane( String result ) {
+		private ReplaceTextOnTextPane( String result ) {
 			this.result = result;
 		}
 		
@@ -456,6 +474,62 @@ public class KawaPad extends JFrame {
 		}
 	}
 	
+	private final class ReplaceTextWithEntireBlockOnTextPane implements Runnable {
+		private final String result;
+		private ReplaceTextWithEntireBlockOnTextPane( String result ) {
+			this.result = result;
+		}
+		
+		@Override
+		public void run() {
+			try {
+				if ( textPane.getSelectedText() != null ) {
+					try {
+						undoManager.startGroup();
+						undoManager.setSuspended(true);
+
+						// In order to avoid entering an infinite loop,
+						// we use /for/ loop instead of /while/ loop;
+						for ( int i=0; i<100; i++ ) {
+							if ( expandSelectedParentheses( textPane ) ) {
+								break;
+							}
+						}
+//						Caret caret = textPane.getCaret();
+//						if ( caret.getDot() < caret.getMark() ) {
+//							int dot = caret.getDot();
+//							int mark = caret.getMark();
+//							caret.setDot( dot );
+//							caret.moveDot( mark + 1);
+//						} else {
+//							int dot = caret.getDot();
+//							int mark = caret.getMark();
+//							caret.setDot( dot +1 );
+//							caret.moveDot( mark );
+//						}
+						
+						textPane.replaceSelection( result );
+					} finally {
+						undoManager.setSuspended(false);
+						undoManager.startGroup();
+					}
+				} else {
+					try {
+						undoManager.startGroup();
+						undoManager.setSuspended(true);
+						int dot = textPane.getCaret().getDot();
+						textPane.getDocument().insertString( dot, result, null);
+						textPane.getCaret().moveDot(dot);
+					} finally {
+						undoManager.setSuspended(false);
+						undoManager.startGroup();
+					}
+				}
+			} catch (BadLocationException e1) {
+				e1.printStackTrace();
+			}
+		}
+	}
 	public class PulsarScratchPadListener implements CaretListener, DocumentListener  {
 		public PulsarScratchPadListener() {
 			super();
@@ -541,23 +615,53 @@ public class KawaPad extends JFrame {
 	 * @return
 	 */
     public static String getSelectedText( JTextComponent c ) {
-    	String s = c.getSelectedText();
-    	if ( s == null ) {
+    	Caret caret = c.getCaret();
+    	
+    	String text = c.getText();
+    	int dot = caret.getDot();
+		int mark = caret.getMark();
+
+		if ( dot == mark )
     		return null;
+
+		int pos;
+		int len;
+		if ( dot < mark ){
+    		pos = dot;
+    		len = mark - pos ;
+    	} else {
+    		pos = mark;
+    		len = dot - pos ;
     	}
-    	if ( s.endsWith("\n" ) ) {
+
+		if ( pos < 0 )
+			pos=0;
+		if ( text.length() < pos )
+			pos = text.length();
+		if ( len < 0 )
+			len=0;
+		if ( text.length() < pos + len )
+			len  = text.length() - pos;
+		
+    	String s;
+		try {
+			s = c.getText( pos,len );
+		} catch (BadLocationException e) {
+			s= "";
+		}
+    	
+    	if (s.endsWith("\n")) {
+//        	caret.setDot( mark );
+//        	caret.moveDot( dot );
     		return s;
     	} else {
-            Caret caret = c.getCaret();
-            int dot = caret.getDot();
-            int mark = caret.getMark();
             if ( dot < mark ) {
-            	caret.setDot( mark + 1 );
-            	caret.moveDot( dot );
+//            	caret.setDot( mark + 1 );
+//            	caret.moveDot( dot );
             	return c.getSelectedText();
             } else {
-//            	caret.setDot( dot );
-            	caret.moveDot( dot + 1 );
+////            	caret.setDot( dot );
+//            	caret.moveDot( dot + 1 );
             	return c.getSelectedText();
             }
     	}
@@ -567,7 +671,7 @@ public class KawaPad extends JFrame {
 		String schemeScript;
 		boolean insertText;
 		boolean replaceText;
-		public EvaluateRunnable(String schemeScript, boolean insertText, boolean replaceText) {
+		public EvaluateRunnable(String schemeScript, boolean insertText, boolean replaceText ) {
 			super();
 			this.schemeScript = schemeScript;
 			this.insertText = insertText;
@@ -581,8 +685,13 @@ public class KawaPad extends JFrame {
 			ExecuteSchemeResult result = SchemeUtils.evaluateScheme( schemeSecretary, variables, schemeScript, "scratchpad" );
 
 			if ( insertText || ! result.succeeded() ) {
-				if ( replaceText ) {
-					SwingUtilities.invokeLater( new ReplaceTextToTextPane( result.result ) );
+				if ( replaceText && result.succeeded() ) {
+					if ( result.isDocument )  {
+						logWarn( "**KAWAPAD_PAGE**" );
+						SwingUtilities.invokeLater( new ReplaceTextWithEntireBlockOnTextPane( "(" + result.result +")" ) );
+					} else {
+						SwingUtilities.invokeLater( new ReplaceTextOnTextPane( result.result ) );
+					}
 				} else {
 					String resultString = SchemeUtils.formatResult( result.result ); 
 					// We want to make sure the result string ends with "\n" to avoid to get an extra line.
@@ -629,7 +738,7 @@ public class KawaPad extends JFrame {
 				if ( schemeScript == null ) {
 					textPane.getActionMap().get( DefaultEditorKit.backwardAction ).actionPerformed( event );
 					PARENTHESIS_SELECT_ACTION.actionPerformed( event );
-					SwingUtilities.invokeLater(new Runnable() {
+					SwingUtilities.invokeLater( new Runnable() {
 						@Override
 						public void run() {
 							String schemeScript2 = getSelectedText( textPane );
@@ -690,6 +799,12 @@ public class KawaPad extends JFrame {
 //		// ??? IS THIS NECESSARY?
 //		textPane.getActionMap();
 		SwingUtilities.invokeLater( new InsertTextToTextPane(t) );
+	}
+	public void setNewText( String t ) throws IOException {
+		if ( ! confirmSave( ConfirmType.OPEN_FILE ) ) {
+			return;
+		}
+		SwingUtilities.invokeLater( new SetTextToTextPane(null, t) );
 	}
 
 	public final AbstractAction INTERRUPT_ACTION = new InterruptAction();
@@ -918,85 +1033,98 @@ public class KawaPad extends JFrame {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			JTextPane textPane = (JTextPane) getTextComponent(e);
-			String text  = textPane.getText();
-			Caret caret  = textPane.getCaret();
-			int currDot  = caret.getDot();
-			int currMark = caret.getMark();
-			int leftPos;
-			int rightPos;
-			if ( currDot < currMark ) {
-				leftPos = currDot;
-				rightPos = currMark;
-			} else {
-				leftPos = currMark;
-				rightPos = currDot;
-			}
+			expandSelectedParentheses( textPane );
+		}
+	}
+	public static final int THE_FINAL_CORRECTION = 1;
+	boolean expandSelectedParentheses(JTextPane textPane) {
+		String text  = textPane.getText();
+		Caret caret  = textPane.getCaret();
+		int currDot  = caret.getDot();
+		int currMark = caret.getMark();
+		int leftPos;
+		int rightPos;
+		if ( currDot < currMark ) {
+			leftPos = currDot;
+			rightPos = currMark - THE_FINAL_CORRECTION;
+		} else {
+			leftPos = currMark;
+			rightPos = currDot - THE_FINAL_CORRECTION;
+		}
+		
+		// if there is a selection area now, it is to expand one on the left side.
+		if ( leftPos != rightPos )
+			rightPos ++;
+		else if ( text.charAt(leftPos) == '(') {
+			leftPos ++;
+			rightPos++;
+		}
+		
+		if ( leftPos < 0 )
+			leftPos = 0;
+		else if ( text.length() < leftPos )
+			leftPos = text.length();
+		if ( rightPos < 0 )
+			rightPos = 0;
+		else if ( text.length() < rightPos )
+			rightPos = text.length();
+		
+		String left_leftString   = text.substring(0, leftPos);
+		String left_rightString  = text.substring(leftPos);
+		String right_leftString  = text.substring(0, rightPos);
+		String right_rightString = text.substring(rightPos);
+		int posL;
+		int posR;
+		int diff; // the length in char of the inserted text in the middle of the argument string.
+		
+		/*
+		 * We will search twice :
+		 *  - once for simply looking for the corresponding parenthesis.
+		 *   - once we presume that we are in a block of quotations. We well try to close it before searching
+		 *     the corresponding parenthesis; otherwise, we will search for the next half quotation which
+		 *     is not what we want.
+		 */
+		{
+			// the first search
+			diff = 1;
+			posL = lookupCorrespondingParenthesis( left_leftString + ")" + left_rightString, leftPos );
+			posR = lookupCorrespondingParenthesis( right_leftString + "(" + right_rightString, rightPos );
 			
-			// if there is a selection area now, it is to expand one on the left side.
-			if ( leftPos != rightPos )
-				rightPos ++;
-			else if ( text.charAt(leftPos) == '(') {
-				leftPos ++;
-				rightPos++;
-			}
-			
-			String left_leftString   = text.substring(0, leftPos);
-			String left_rightString  = text.substring(leftPos);
-			String right_leftString  = text.substring(0, rightPos);
-			String right_rightString = text.substring(rightPos);
-			int posL;
-			int posR;
-			int diff; // the length in char of the inserted text in the middle of the argument string.
-			
-			/*
-			 * We will search twice :
-			 *  - once for simply looking for the corresponding parenthesis.
-			 *   - once we presume that we are in a block of quotations. We well try to close it before searching
-			 *     the corresponding parenthesis; otherwise, we will search for the next half quotation which
-			 *     is not what we want.
-			 */
-			{
-				// the first search
-				diff = 1;
-				posL = lookupCorrespondingParenthesis( left_leftString + ")" + left_rightString, leftPos );
-				posR = lookupCorrespondingParenthesis( right_leftString + "(" + right_rightString, rightPos );
-				
-				if ( 0<=posL && 0<=posR ) {
-					synchronized ( parenthesisStack ) {
-						try {
-							parenthesisStackLocked = true;
-							caret.setDot(posL);
-							caret.moveDot(posR-diff);
-							parenthesisStack.push(new ParenthesisStackElement(currMark, currDot));
-							return;
-						} finally {
-							parenthesisStackLocked = false;
-						}
-					}
-				}
-			}
-			{
-				// the second search
-				diff = 2;
-				posL = lookupCorrespondingParenthesis( left_leftString + "(\"" + left_rightString, leftPos   );
-				posR = lookupCorrespondingParenthesis( right_leftString + "\")" + right_rightString, rightPos +1 );
-				if ( 0<=posL && 0<=posR ) {
-					synchronized ( parenthesisStack ) {
-						try {
-							parenthesisStackLocked = true;
-							caret.setDot(posL-diff);
-							caret.moveDot(posR);
-							parenthesisStack.push(new ParenthesisStackElement(currMark, currDot));
-							return;
-						} finally {
-							parenthesisStackLocked = false;
-						}
+			if ( 0<=posL && 0<=posR ) {
+				synchronized ( parenthesisStack ) {
+					try {
+						parenthesisStackLocked = true;
+						caret.setDot(posL);
+						caret.moveDot(posR-diff + THE_FINAL_CORRECTION);
+						parenthesisStack.push(new ParenthesisStackElement(currMark, currDot));
+						return true;
+					} finally {
+						parenthesisStackLocked = false;
 					}
 				}
 			}
 		}
-	}
-	
+		{
+			// the second search
+			diff = 2;
+			posL = lookupCorrespondingParenthesis( left_leftString + "(\"" + left_rightString, leftPos   );
+			posR = lookupCorrespondingParenthesis( right_leftString + "\")" + right_rightString, rightPos +1 );
+			if ( 0<=posL && 0<=posR ) {
+				synchronized ( parenthesisStack ) {
+					try {
+						parenthesisStackLocked = true;
+						caret.setDot(posL-diff);
+						caret.moveDot(posR + THE_FINAL_CORRECTION);
+						parenthesisStack.push(new ParenthesisStackElement(currMark, currDot));
+						return true;
+					} finally {
+						parenthesisStackLocked = false;
+					}
+				}
+			}
+			return false;
+		}
+	}	
 	public final AbstractAction PARENTHESIS_SELECT_ACTION = new ParenthesisSelectAction( "parenthesis-select" ) {
 		{
 			putValue( Action2.NAME, "Select Inside the Current Parentheses" );
@@ -1882,9 +2010,19 @@ public class KawaPad extends JFrame {
 		}
 		openNewProc();
 	}
+
 	private void openFileProc(File filePath) throws IOException {
 		String s = new String( Files.readAllBytes( filePath.toPath() ),  Charset.defaultCharset() );
-		
+		setTextProc( filePath, s );
+	}
+	/**
+	 *  
+	 * @param filePath
+	 *     null when it opens a newly created document.
+	 * @param s
+	 *     the text to show on the editor.
+	 */
+	private void setTextProc(File filePath, String s) {
 //		this.undoManager.discardAllEdits();
 		this.textPane.setText( s );
 		this.filePath = filePath;
@@ -2045,6 +2183,8 @@ public class KawaPad extends JFrame {
 			putValue( Action.MNEMONIC_KEY , (int) 'o' );
 		}
 	};
+	
+	
 	
 	{
 		if ( false ) {
@@ -2292,7 +2432,7 @@ public class KawaPad extends JFrame {
 			// ??
 			"let", "letrec", "let*", "letrec*","set!",
 			"do","if", "cond", "else", "#t", "#f", "begin", "apply","define", 
-			"not", "and", "or",
+			"not", "and", "or","lambda", "eval",
 			
 			// https://www.gnu.org/software/kawa/Numerical-types.html
 			"number?",

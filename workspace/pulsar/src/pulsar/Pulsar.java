@@ -137,7 +137,6 @@ public final class Pulsar extends Metro {
 	}
 	
 	long shutdownWait = 1024;
-
 	public static void registerLocalSchemeInitializers( SchemeSecretary schemeSecretary, Pulsar pulsar ) {
 		schemeSecretary.registerSchemeInitializer( pulsar, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
 			@Override
@@ -190,6 +189,11 @@ public final class Pulsar extends Metro {
 			}
 		});
 	}
+
+	private static Object wrapPage( Object o ) {
+		return Pair.make( SchemeUtils.EXECUTE_SCHEME_DOCTAG, o );
+	}
+	
 
 
 	@Override
@@ -1819,12 +1823,12 @@ public final class Pulsar extends Metro {
 			{
 				setParameterDescription( "" );
 				setReturnValueDescription( "::string" );
-				setShortDescription(  "is a procedure to execute when the user needs something that possibly calms you down." );
+				setShortDescription(  "is a procedure to execute when the user needs something which calms you down." );
 				setLongDescription( 
 					"When this procedure is called, this procedure will return a message which "
 					+ "tries to calm the user down. Any argument specified to this procedure will be silently ignored."
-					+ "This procedure is intended to be defined as a joke and has by no means effect to the current system state "
-					+ "nor any other related elements." );
+					+ "This procedure is deliberately defined as a joke and has by no means effect to the current system state "
+					+ "nor any other related elements. See (help help)." );
 			}
 		} , "help!");
 
@@ -1912,7 +1916,7 @@ public final class Pulsar extends Metro {
 				} else {
 					message = MSG_NO_DOCUMENTATION;
 				}
-				return SchemeUtils.toSchemeString(message );
+				return wrapPage( SchemeUtils.toSchemeString( message ) );
 			};
 
 
