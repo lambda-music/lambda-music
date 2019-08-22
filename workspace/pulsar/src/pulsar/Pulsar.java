@@ -20,10 +20,8 @@
 
 package pulsar;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayDeque;
@@ -399,41 +397,6 @@ public final class Pulsar extends Metro {
 		return historyFile;
 	}
 
-    /**
-     * Currently this method is not used. 
-     * @param comboBox
-     */
-	public void readHistoryFile(JComboBox<String> comboBox) {
-		comboBox.removeAllItems();
-
-		BufferedReader in = null;
-		try {
-			in = new BufferedReader( new FileReader( getHistoryFile() ) );
-			String s = null;
-			for (;;) {
-				s = in.readLine();
-				if ( s == null ) break;
-				// if ( new File(s).isFile() ) {
-					comboBox.addItem( s );
-				// }
-			}
-		} catch (FileNotFoundException e1) {
-			logError( "" , e1 );
-		} catch (IOException e1) {
-			logError( "" , e1 );
-		} finally {
-			if ( in != null )
-				try {
-					in.close();
-				} catch (IOException e1) {
-					logError( "" , e1 );
-				}
-		}
-	}
-	final File configFile = getConfigFile();
-	
-	
-
 	public static Runnable createTimer( Pulsar pulsar, long delay, long interval, Invokable invokable ) {
 		java.util.Timer timer = new java.util.Timer( true );
 		timer.scheduleAtFixedRate( new java.util.TimerTask() {
@@ -465,48 +428,6 @@ public final class Pulsar extends Metro {
 				timer.cancel();
 			}
 		};
-	}
-
-	@Deprecated
-	static final class TagSearchUserProcedure extends DProcedure2 {
-		private final Procedure proc;
-		private final Object p;
-		TagSearchUserProcedure(Object p, Procedure proc) {
-			this.p = p;
-			this.proc = proc;
-		}
-		@Override
-		public Object apply2(Object arg1,Object arg2) throws Throwable {
-			return proc.apply3( arg1, arg2, p );
-		}
-	}
-	@Deprecated
-	private static final class TagSearchAndProcedure extends DProcedure2 {
-		private final Pair p;
-		TagSearchAndProcedure(Pair p) {
-			this.p = p;
-		}
-		@Override
-		public Object apply2(Object arg1,Object arg2) throws Throwable {
-			Collection p2 = (Collection)arg1;
-			return p2.containsAll( p );
-		}
-	}
-	@Deprecated
-	private static final class TagSearchOrProcedure extends DProcedure2 {
-		private final Pair p;
-		TagSearchOrProcedure(Pair p) {
-			this.p = p;
-		}
-		@Override
-		public Object apply2(Object arg1,Object arg2) throws Throwable {
-			Collection p2 = (Collection)arg1;
-			for ( Object o : p ) {
-				if ( p2.contains(o) ) 
-					return true;
-			}
-			return false;
-		}
 	}
 	private static final class TagSearchIsProcedure extends DProcedure2 {
 		private final Object value;
