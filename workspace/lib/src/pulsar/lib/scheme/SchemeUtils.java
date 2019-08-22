@@ -60,7 +60,6 @@ import gnu.lists.Pair;
 import gnu.mapping.CallContext;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
-import gnu.mapping.Procedure0;
 import gnu.mapping.SimpleSymbol;
 import gnu.mapping.Symbol;
 import gnu.math.DFloNum;
@@ -364,8 +363,18 @@ public class SchemeUtils {
 
 	public static final String ALL_PROCEDURES = "all-procedures";
 	public static final Symbol ALL_PROCEDURES_SYMBOL = Symbol.valueOf( ALL_PROCEDURES ); 
-	public static final Pair ALL_PROCEDURES_ROOT = (Pair)LList.makeList(Arrays.asList( ALL_PROCEDURES_SYMBOL ));
-	
+	public static Pair getRootOfAllProcedure(Environment e) {
+		synchronized ( e ) {
+			if ( ! e.isBound( ALL_PROCEDURES_SYMBOL ) ) {
+				Pair root = (Pair)LList.makeList(Arrays.asList( ALL_PROCEDURES_SYMBOL ));
+				e.define( ALL_PROCEDURES_SYMBOL, null, root);
+				return root;
+			} else {
+				return (Pair) e.get( ALL_PROCEDURES_SYMBOL );
+			}
+		}
+	}
+
 	public static final void defineVar( Scheme scheme, Object value, String ... names ) {
 		Environment e = scheme.getEnvironment();
 		Environment.setCurrent(e);
@@ -384,28 +393,40 @@ public class SchemeUtils {
 			defineDocument(e, symbols, (DescriptiveProcedure)value);
 		}
 	}
-	static void checkDocument(Environment e) {
-		synchronized ( ALL_PROCEDURES_ROOT ) {
-			if ( ! e.isBound( ALL_PROCEDURES_SYMBOL  ) ) {
-				e.define( ALL_PROCEDURES_SYMBOL, null, ALL_PROCEDURES_ROOT );
-			}
+	public static void defineDocument( Environment e, String[] stringSymbols, DescriptiveProcedure proc ) {
+		Symbol[] symbols = new Symbol[ stringSymbols.length ];
+		for ( int i=0; i<stringSymbols.length; i++ ) {
+			symbols[i] = toSchemeSymbol( stringSymbols[i] );
 		}
+		defineDocument( e, symbols, proc );
 	}
+
 //	static Procedure proc_defineDocument = eval( lis( "lambda", lis("rt"),   ) );   
-	static void defineDocument( Environment e, Symbol[] symbols, DescriptiveProcedure proc ) {
-		synchronized ( ALL_PROCEDURES_ROOT ) {
-			checkDocument(e);
-			ALL_PROCEDURES_ROOT.setCdr( 
+	public static void defineDocument( Environment e, Symbol[] symbols, DescriptiveProcedure proc ) {
+		synchronized ( e ) {
+			Pair root = getRootOfAllProcedure(e);
+			root.setCdr( 
 				Pair.make(
 					Pair.make( proc, LList.makeList( symbols, 0 ) ),  
-					ALL_PROCEDURES_ROOT.getCdr()));
+					root.getCdr()));
 			
-			List<Symbol> list = Arrays.asList(symbols);
-			proc.setNameList( list );
+			proc.setNameList( Arrays.asList(symbols) );
+		}
+	}
+	public static DescriptiveProcedure getDocument( Environment e, Symbol name )  {
+		synchronized ( e ) {
+			Pair root = getRootOfAllProcedure(e);
+			for ( Object o : root ) {
+				if (((Pair)
+						((Pair)o).getCdr()).contains( name )) {
+					return (DescriptiveProcedure)((Pair)o).getCar();
+				}
+			}
+			return null;
 		}
 	}
 	public static void setDocumentInitializer( Scheme scheme, DescriptiveInitializerA a, String ... names) {
-		setDocumentInitializer( scheme, a, new DescriptiveInitializerB(),  names );
+		setDocumentInitializer( scheme, a, DescriptiveInitializerB.EMPTY,  names );
 	}
 	public static void setDocumentInitializer( Scheme scheme, DescriptiveInitializerA a, DescriptiveInitializerB b, String ... names) {
 		for ( String name : names ) { 
@@ -419,17 +440,11 @@ public class SchemeUtils {
 			proc.init();
 		}
 	}
-	public static LList getDocumentList( ) {
-		synchronized ( ALL_PROCEDURES_ROOT ) {
-			return (LList) ALL_PROCEDURES_ROOT.getCdr();
+	public static LList getDocumentList( Environment e ) {
+		synchronized ( getRootOfAllProcedure(e) ) {
+			return (LList) getRootOfAllProcedure(e).getCdr();
 		}
 	}
-	public static Procedure get_document_list = new Procedure0() {
-		@Override
-		public Object apply0() throws Throwable {
-			return ALL_PROCEDURES_ROOT.getCdr();
-		}
-	};
 
 	
 	public static final boolean isDefined( Scheme scheme, String name  ) {
@@ -592,6 +607,15 @@ public class SchemeUtils {
 		return sb.toString();
 	}
 	
+	public static String prefixMultiLine( String s, String prefix ) {
+		StringBuilder sb = new StringBuilder();
+		String[] a = s.split( "\n" );
+		for ( int i=0; i<a.length; i++ ) {
+			 sb.append(prefix).append( a[i] ).append( "\n" );
+		}
+		return sb.toString();
+	}
+	
 	public static String wrap( String s, int width ) {
 		Matcher m = Pattern.compile( "\\s+" ).matcher(s);
 		StringBuilder sb = new StringBuilder();
@@ -651,6 +675,9 @@ public class SchemeUtils {
 	}
 	public static final String EXECUTE_SCHEME_DOCTAG_STRING = "**doc**".intern();
 	public static final Symbol EXECUTE_SCHEME_DOCTAG = Symbol.valueOf( EXECUTE_SCHEME_DOCTAG_STRING );
+	public static Object executeSchemePageWrapper( Object o ) {
+		return Pair.make( EXECUTE_SCHEME_DOCTAG, o );
+	}
 
 	public static ExecuteSchemeResult evaluateScheme( 
 			Scheme scheme, Map<String, Object> variables, Reader schemeScript, String schemeScriptURI) 
@@ -780,5 +807,4 @@ public class SchemeUtils {
 		}
 		return result.toByteArray();
 	}
-	
 }

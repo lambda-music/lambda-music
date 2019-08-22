@@ -1,3 +1,4 @@
+(about-notation)
 (if (not (open?))
   (begin
    (load "./ats's-drumkit.scm" )

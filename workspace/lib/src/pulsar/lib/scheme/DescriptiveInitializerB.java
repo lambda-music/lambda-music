@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class DescriptiveInitializerB {
+	public static final DescriptiveInitializerB EMPTY = new DescriptiveInitializerB( Arrays.asList() );
 	List<Object> arguments;
 	public DescriptiveInitializerB( Object ... arguments ) {
 		this.arguments = Arrays.asList(arguments);

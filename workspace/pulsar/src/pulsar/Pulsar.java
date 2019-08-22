@@ -44,6 +44,7 @@ import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.LList;
 import gnu.lists.Pair;
+import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Procedure1;
 import gnu.mapping.Symbol;
@@ -55,6 +56,7 @@ import metro.Metro;
 import metro.MetroPort;
 import metro.MetroTrack;
 import metro.MetroTrack.SyncType;
+import pulsar.lib.scheme.DHelp;
 import pulsar.lib.scheme.DProcedure0;
 import pulsar.lib.scheme.DProcedure1;
 import pulsar.lib.scheme.DProcedure2;
@@ -189,7 +191,7 @@ public final class Pulsar extends Metro {
 	}
 
 	private static Object wrapPage( Object o ) {
-		return Pair.make( SchemeUtils.EXECUTE_SCHEME_DOCTAG, o );
+		return SchemeUtils.executeSchemePageWrapper( o );
 	}
 	
 
@@ -593,6 +595,11 @@ public final class Pulsar extends Metro {
 	public MetroTrack createTrack( Object name, Collection<Object> tags, Procedure procedure ) {
 		return createTrack( name, tags, new SchemeSequence( createInvokable( procedure ) ) );
 	}
+
+	/**
+	 * 
+	 */
+	int helpTextWidth = 60;
 
 	/**
 	 *  
@@ -1495,7 +1502,7 @@ public final class Pulsar extends Metro {
 		
 		SchemeUtils.setDocumentInitializer( scheme,
 			new DescriptiveInitializerA(){{
-				setParameterDescription( "[procedure/notes ...]" );
+				setParameterDescription( "[procedure/[notation...] ...]" );
 				setReturnValueDescription( "::void" );
 				setShortDescription( "retrieves multiple tracks which are specified as track-spec arguments and returns them as a list." );
 				setLongDescription( ""
@@ -1513,6 +1520,28 @@ public final class Pulsar extends Metro {
 									+ THROWS_AN_ERROR_IF_NOT_OPEN );
 			}}, 
 			"get-track" );
+		
+		/////////////////////////////////////////////////////////////////
+
+		DHelp aboutNotation = new DHelp( "about-notation" );
+		SchemeUtils.defineVar( scheme, aboutNotation , "about-notation" );
+		
+		SchemeUtils.setDocumentInitializer( scheme,
+			new DescriptiveInitializerA(){{
+				setParameterDescription( "" );
+				setReturnValueDescription( "" );
+				setShortDescription( "A notation is a midi note data of Pulsar music sequencer. " );
+				setLongDescription( ""
+									+ "A notation is formed by a Scheme association list. There are number of types that the notation can be "
+									+ "such as pitch, rest or other MIDI control changes. In case the note is a pitch data, the notation object "
+									+ "have four properties : velocity, length, position and pitch. "
+									+ " "
+									+ "" 
+									+ THROWS_AN_ERROR_IF_NOT_OPEN );
+			}}, 
+			"about-notation" );
+		
+		
 		/////////////////////////////////////////////////////////////////
 		
 		abstract class TrackManagementProcedure extends DProcedureN  {
@@ -1725,7 +1754,7 @@ public final class Pulsar extends Metro {
 			{
 				setParameterDescription( "[numeric]" );
 				setReturnValueDescription( "::boolean" );
-				setShortDescription( "is a procedure that returns a random bool value. " );
+				setShortDescription( "//<procedure-name/>// is a procedure that returns a random bool value. " );
 				setLongDescription( "The first argument is the value of probability "
 						+ "where the larger value causes the more probability of returning #t. "
 						+ "When the specified value is equals or less than zero, the returning value is always #f. "
@@ -1753,12 +1782,14 @@ public final class Pulsar extends Metro {
 		} , "help!");
 
 		final class DProcedureHelp extends DProcedureN {
+			final Environment environment;
 			final int index;
 			final Procedure reverse = (Procedure)gnu.kawa.slib.srfi1.reverse.get();
 			final Procedure map = (Procedure)gnu.kawa.slib.srfi1.map.get();
 			
-			private DProcedureHelp( String name, int index ) {
+			private DProcedureHelp(Environment environment, String name, int index ) {
 				super(name);
+				this.environment=environment ;
 				this.index = index;
 			}
 			
@@ -1780,7 +1811,7 @@ public final class Pulsar extends Metro {
 				};
 				return map.apply2( proc1, 
 					reverse.apply1( 
-						SchemeUtils.getDocumentList()));
+						SchemeUtils.getDocumentList(this.environment)));
 			}; 
 			
 			String MSG_NO_DOCUMENTATION = "No documentation is available.";
@@ -1792,7 +1823,7 @@ public final class Pulsar extends Metro {
 					DescriptiveProcedure proc = (DescriptiveProcedure)arg1;
 					List<String> names = SchemeUtils.symbolListToStringList( proc.getNameList());
 					
-					message += "=== THE MANUAL OF PULSAR LISP SCHEME MUSIC SEQUENCER ===\n\n";
+					message += "============ THE MANUAL OF PULSAR LISP SCHEME MUSIC SEQUENCER ===========\n\n";
 					message += "NAME: ";
 					message += names.isEmpty() ? "PULSAR" :  names.get(0).toUpperCase() ;
 					message += "\n\n";
@@ -1817,9 +1848,10 @@ public final class Pulsar extends Metro {
 						} else {
 							List<Symbol> l = proc.getNameList();
 							if ( l != null && ! l.isEmpty() ) {
-								msg1 = "||" + SchemeUtils.symbolToString( l.get(0) ) + "||" + " " + msg1;
+								msg1 = msg1.replaceAll( "<procedure-name/>",  SchemeUtils.symbolToString( l.get(0) ) );
+								// msg1 = "||" + SchemeUtils.symbolToString( l.get(0) ) + "||" + " " + msg1;
 							} else {
-								msg1 = "This " + msg1;
+//								msg1 = "This " + msg1;
 							}
 						}
 					}
@@ -1828,14 +1860,24 @@ public final class Pulsar extends Metro {
 					{
 						msg2 = proc.getLongDescription();
 					}
-					message += SchemeUtils.wrapMultiLine(
-						"DESCRIPTION: " + 
-						(msg1 + " " + msg2).trim() , 80 ).trim();
-					
-					message += "\n\n";
+					message +=
+								SchemeUtils.wrapMultiLine(
+									"DESCRIPTION: " + 
+										(msg1 + " " + msg2).trim() , helpTextWidth ).trim();
+					message += "\n";
+					message += "==========================================================================";
+					message += "";
 				} else {
 					message = MSG_NO_DOCUMENTATION;
 				}
+				message = 
+						"#"+
+						SchemeUtils.prefixMultiLine( message, "  | " ).replaceFirst( "^\\s+","" )+
+						"  |#";
+						
+						
+						
+
 				return wrapPage( SchemeUtils.toSchemeString( message ) );
 			};
 
@@ -1861,7 +1903,7 @@ public final class Pulsar extends Metro {
 						+ "description is available." );
 			}
 		}
-		SchemeUtils.defineVar( scheme, new DProcedureHelp( "help", 1 ) , "help", "he" );
+		SchemeUtils.defineVar( scheme, new DProcedureHelp( scheme.getEnvironment(), "help", 1 ) , "help", "he" );
 
 		{
 			SchemeUtils.execScheme( Pulsar.class, scheme, "lib/init.scm"  );

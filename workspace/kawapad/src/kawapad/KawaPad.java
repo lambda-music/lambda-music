@@ -688,7 +688,7 @@ public class KawaPad extends JFrame {
 				if ( replaceText && result.succeeded() ) {
 					if ( result.isDocument )  {
 						logWarn( "**KAWAPAD_PAGE**" );
-						SwingUtilities.invokeLater( new ReplaceTextWithEntireBlockOnTextPane( "(" + result.result +")" ) );
+						SwingUtilities.invokeLater( new ReplaceTextWithEntireBlockOnTextPane( "(" + result.result.replaceFirst( "\n$", "" ) +" )" ) );
 					} else {
 						SwingUtilities.invokeLater( new ReplaceTextOnTextPane( result.result ) );
 					}

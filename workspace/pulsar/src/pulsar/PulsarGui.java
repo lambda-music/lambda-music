@@ -893,7 +893,7 @@ public class PulsarGui {
 	public static List<Symbol> getPulsarWords( Scheme scheme ) {
 		List result = new ArrayList<>();
 		try {
-			LList p1 = SchemeUtils.getDocumentList( );
+			LList p1 = SchemeUtils.getDocumentList( scheme.getEnvironment() );
 			for ( Object o2 : p1 ) {
 				LList p2 = (LList) o2;
 				result.addAll( (LList) srfi1.drop.apply2( p2, 1 )); 
