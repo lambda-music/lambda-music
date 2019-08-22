@@ -92,7 +92,6 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
     private final ArrayList<MetroTrack> registeredTracks = new ArrayList<MetroTrack>();
     private final ArrayList<MetroTrack> unregisteredTracks = new ArrayList<MetroTrack>();
 	private final ArrayList<Runnable>  messageQueue = new ArrayList<Runnable>();
-	private MetroLogicList logicList = new MetroLogicList(tracks);
 	
     private ArrayList<MetroAbstractMidiEvent> inputMidiEventList = new ArrayList<MetroAbstractMidiEvent>();
     private ArrayList<MetroAbstractMidiEvent> outputMidiEventList = new ArrayList<MetroAbstractMidiEvent>();
@@ -153,13 +152,6 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 		return this.playing ; 
 	}
 
-	/*
-	 * may be unused (Sat, 03 Aug 2019 14:12:17 +0900)
-	 */
-	public MetroLogicList getLogicList() {
-		return logicList;
-	}
-	
 	/**
 	 * This is a utility method to create a Metro instance with a single sequence.
 	 * 

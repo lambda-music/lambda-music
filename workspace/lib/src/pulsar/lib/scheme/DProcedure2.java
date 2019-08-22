@@ -1,8 +1,8 @@
 package pulsar.lib.scheme;
 
-import gnu.mapping.Procedure1or2;
+import gnu.mapping.Procedure2;
 
-public abstract class DProcedure2 extends Procedure1or2 implements DescriptiveProcedure {
+public abstract class DProcedure2 extends Procedure2 implements DescriptiveProcedure {
 	public DProcedure2() {
 		super();
 	}

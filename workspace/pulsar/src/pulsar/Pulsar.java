@@ -60,6 +60,7 @@ import metro.MetroTrack;
 import metro.MetroTrack.SyncType;
 import pulsar.lib.scheme.DProcedure0;
 import pulsar.lib.scheme.DProcedure1;
+import pulsar.lib.scheme.DProcedure2;
 import pulsar.lib.scheme.DProcedure3;
 import pulsar.lib.scheme.DProcedureN;
 import pulsar.lib.scheme.DescriptiveInitializerA;
@@ -467,7 +468,7 @@ public final class Pulsar extends Metro {
 		};
 	}
 
-	private static final class TagSearchUserProcedure extends DProcedure1 {
+	private static final class TagSearchUserProcedure extends DProcedure2 {
 		private final Procedure proc;
 		private final Object p;
 		TagSearchUserProcedure(Object p, Procedure proc) {
@@ -475,28 +476,28 @@ public final class Pulsar extends Metro {
 			this.proc = proc;
 		}
 		@Override
-		public Object apply1(Object arg1) throws Throwable {
-			return proc.apply2( arg1, p );
+		public Object apply2(Object arg1,Object arg2) throws Throwable {
+			return proc.apply3( arg1, arg2, p );
 		}
 	}
-	private static final class TagSearchAndProcedure extends DProcedure1 {
+	private static final class TagSearchAndProcedure extends DProcedure2 {
 		private final Pair p;
 		TagSearchAndProcedure(Pair p) {
 			this.p = p;
 		}
 		@Override
-		public Object apply1(Object arg1) throws Throwable {
+		public Object apply2(Object arg1,Object arg2) throws Throwable {
 			Collection p2 = (Collection)arg1;
 			return p2.containsAll( p );
 		}
 	}
-	private static final class TagSearchOrProcedure extends DProcedure1 {
+	private static final class TagSearchOrProcedure extends DProcedure2 {
 		private final Pair p;
 		TagSearchOrProcedure(Pair p) {
 			this.p = p;
 		}
 		@Override
-		public Object apply1(Object arg1) throws Throwable {
+		public Object apply2(Object arg1,Object arg2) throws Throwable {
 			Collection p2 = (Collection)arg1;
 			for ( Object o : p ) {
 				if ( p2.contains(o) ) 
@@ -505,13 +506,13 @@ public final class Pulsar extends Metro {
 			return false;
 		}
 	}
-	private static final class TagSearchIsProcedure extends DProcedure1 {
+	private static final class TagSearchIsProcedure extends DProcedure2 {
 		private final Object value;
 		TagSearchIsProcedure(Object value) {
 			this.value = value;
 		}
 		@Override
-		public Object apply1(Object arg1) throws Throwable {
+		public Object apply2( Object arg1, Object arg2 ) throws Throwable {
 			return value.equals( arg1 );
 		}
 	}
@@ -722,6 +723,53 @@ public final class Pulsar extends Metro {
 			throw new IllegalArgumentException();
 		}
 	}
+	
+	/**
+	 * Wrap another invokable object in order to filter the undesirable arguments for
+	 * readParamTrackSearcher().
+	 * 
+	 * The tags property of MetroTrack accepts descendants of Collection class. In
+	 * the general use case of MetroTrack in Pulsar, it presumes that tags are LList
+	 * objects. The list object in //tags// property is passed to clients directly.
+	 * But since the MetroTrack accepts all types of Collection class descendants,
+	 * MetroTrack forces Pulsar to support tags objects which is other than LList.
+	 * 
+	 * Avoid unnecessary duplication of passed lists, we check the type of each list.
+	 * And let is pass through when it is an LList list, and convert it to LList when
+	 * it is a general Collection list. (Thu, 22 Aug 2019 12:18:27 +0900) 
+	 * 
+	 * @param i
+	 *     
+	 * @return
+	 */
+	Invokable readParamSearchTrackFilter( Invokable i ) {
+		return new Invokable() {
+			@Override
+			public Object invoke(Object... args) {
+				if ( 0 < args.length ) {
+					args[1] = filterArg( args[1] );
+				}
+				return i.invoke( args );
+			}
+			Object filterArg(Object arg1) {
+				if ( arg1 == null ) {
+					return EmptyList.emptyList;
+				} else if ( arg1 instanceof LList ) {
+					return arg1;
+				} else if ( arg1 instanceof Collection ) {
+					if (((Collection)arg1).isEmpty()) {
+						return EmptyList.emptyList;
+					} else {
+						return Pair.makeList( Arrays.asList(((Collection)arg1).toArray()));
+					}
+				} else {
+					return arg1;
+				}
+			}
+		};
+	}
+	
+	// XXX
 	List<MetroTrack> readParamTrack( Object object ) {
 		if ( object instanceof Pair ) {
 			if (((Pair)object).getCar() instanceof MetroTrack) {
@@ -1477,40 +1525,13 @@ public final class Pulsar extends Metro {
 		/////////////////////////////////////////////////////////////////
 
 		DProcedureN getTrack = new DProcedureN( "get-track" ) {
-			Invokable searchTrackFilter( Invokable i ) {
-				return new Invokable() {
-					@Override
-					public Object invoke(Object... args) {
-						if ( 0 < args.length ) {
-							args[1] = filterArg( args[1] );
-						}
-						return i.invoke( args );
-					}
-					Object filterArg(Object arg1) {
-						if ( arg1 == null ) {
-							return EmptyList.emptyList;
-						} else if ( arg1 instanceof LList ) {
-							return arg1;
-						} else if ( arg1 instanceof Collection ) {
-							if (((Collection)arg1).isEmpty()) {
-								return EmptyList.emptyList;
-							} else {
-								return Pair.makeList( Arrays.asList(((Collection)arg1).toArray()));
-							}
-						} else {
-							return arg1;
-						}
-					}
-				};
-			}
-			
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				ArrayList<MetroTrack> t = new ArrayList<>();
 				for ( int i=0; i<args.length; i++ ) {
 					t.addAll( 
 						searchTrack(
-							searchTrackFilter(
+							readParamSearchTrackFilter(
 								createInvokable( 
 									readParamTrackSearcher( args[i] ))))) ;
 				}
@@ -1729,21 +1750,21 @@ public final class Pulsar extends Metro {
 			}
 		} , "newline-warn");
 
-		SchemeUtils.defineVar( scheme, new DProcedureN("list-seq") {
-			@Override
-			public Object applyN(Object[] args) throws Throwable {
-				//					logInfo("list-seq");
-				List<MetroTrack> tempAllTracks = replicateAllTracks();
-				synchronized ( getMetroLock() ) {
-					ArrayList<LList> list = new ArrayList<>( tempAllTracks.size() );
-					for ( MetroTrack track :  tempAllTracks ) {
-						SchemeSequence sequence = (SchemeSequence)track.getSequence();
-						list.add( Pair.make( sequence.getTrackName(), sequence.asociationList ));
-					}
-					return LList.makeList(list);
-				}
-			}
-		}, "list-seq" );
+//		SchemeUtils.defineVar( scheme, new DProcedureN("list-seq") {
+//			@Override
+//			public Object applyN(Object[] args) throws Throwable {
+//				//					logInfo("list-seq");
+//				List<MetroTrack> tempAllTracks = replicateAllTracks();
+//				synchronized ( getMetroLock() ) {
+//					ArrayList<LList> list = new ArrayList<>( tempAllTracks.size() );
+//					for ( MetroTrack track :  tempAllTracks ) {
+//						SchemeSequence sequence = (SchemeSequence)track.getSequence();
+//						list.add( Pair.make( sequence.getTrackName(), sequence.asociationList ));
+//					}
+//					return LList.makeList(list);
+//				}
+//			}
+//		}, "list-seq" );
 
 		SchemeUtils.defineVar( scheme, new DProcedureN("typeof") {
 			public Object applyN(Object[] args) throws Throwable {

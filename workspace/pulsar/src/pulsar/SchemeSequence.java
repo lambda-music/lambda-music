@@ -22,24 +22,17 @@ package pulsar;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import gnu.lists.AbstractSequence;
-import gnu.lists.ImmutablePair;
-import gnu.lists.LList;
 import gnu.lists.Pair;
-import gnu.mapping.ProcedureN;
-import gnu.mapping.Symbol;
 import metro.Metro;
 import metro.MetroAbstractMidiEvent;
 import metro.MetroEventBuffer;
 import metro.MetroSequence;
 import metro.MetroTrack;
-import metro.MetroTrackInfo;
-import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.Invokable;
 
 public class SchemeSequence extends MetroSequence {
@@ -111,86 +104,5 @@ public class SchemeSequence extends MetroSequence {
 //		return SchemeNoteParser1.parse(metro, scheme, pattern, buf, true );
 //		return PulsarNoteParser2.parse(metro, track, pattern, buf, true );
 		return PARSER.parse( metro, track, pattern, buf, true );
-	}
-
-	LList asociationList = createPairs( this );
-	public LList getAsociationList() {
-		return asociationList;
-	}
-
-
-	@Deprecated
-	public static LList createPairs( MetroTrackInfo player ) {
-		Pair[] pairs = {
-				new ImmutablePair() {
-					@Override
-					public Object getCar() {
-						return SchemeUtils.schemeSymbol("name");
-					}
-					@Override
-					public Object getCdr() {
-						return player.getTrackName();
-					}
-				},
-				new ImmutablePair() {
-					@Override
-					public Object getCar() {
-						return SchemeUtils.schemeSymbol("tags");
-					}
-					@Override
-					public Object getCdr() {
-						return LList.makeList((List)
-								SchemeUtils.<String,Symbol>convertList(
-										new ArrayList( player.getTrackTags() ) , (v)->SchemeUtils.toSchemeSymbol(v) ) );
-					}
-				},
-				new ImmutablePair() {
-					@Override
-					public Object getCar() {
-						return SchemeUtils.schemeSymbol("playing");
-					}
-					@Override
-					public Object getCdr() {
-						return new ProcedureN() {
-							public Object applyN(Object[] args) throws Throwable {
-								if ( 0 < args.length ) {
-									player.setTrackEnabled((Boolean)args[0]);
-								}
-								return player.isTrackEnabled();
-							};
-						};
-					}
-				},
-				new ImmutablePair() {
-					@Override
-					public Object getCar() {
-						return SchemeUtils.schemeSymbol( "remove" );
-					}
-					@Override
-					public Object getCdr() {
-						return new ProcedureN() {
-							public Object applyN(Object[] args) throws Throwable {
-								// XXX
-								throw new UnsupportedOperationException();
-							};
-						};
-					}
-				},
-				new ImmutablePair() {
-					@Override
-					public Object getCar() {
-						return SchemeUtils.schemeSymbol( "position" );
-					}
-					@Override
-					public Object getCdr() {
-						return new ProcedureN() {
-							public Object applyN(Object[] args) throws Throwable {
-								return SchemeUtils.toSchemeNumber( player.getTrackPosition() );
-							};
-						};
-					}
-				},
-		};
-		return LList.makeList( Arrays.asList( pairs ) );
 	}
 }

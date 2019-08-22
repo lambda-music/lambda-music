@@ -45,7 +45,7 @@ import org.jaudiolibs.jnajack.JackPosition;
  * @author Ats Oka
  *
  */
-public class MetroTrack implements MetroTrackInfo, MetroLock {
+public class MetroTrack implements MetroLock {
 	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
 	static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
 	static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -169,8 +169,6 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 		this.syncType = SyncType.IMMEDIATE;
 		this.syncTrack = null;
 		this.syncOffset = 0.0d;
-		
-		sequence.setTrackInfo( this );
 	}
 	
 	private static Object uniqueTrackNameLock = new Object();
@@ -197,24 +195,19 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 	public MetroSequence getSequence() {
 		return this.sequence;
 	}
-	@Override
 	public Object getTrackName() {
 		return name;
 	}
-	@Override
 	public Collection<Object> getTrackTags() {
 		return tags;
 	}
 	
-	@Override
 	public boolean isTrackEnabled() {
 		return enabled;
 	}
-	@Override
 	public void setTrackEnabled(boolean enabled) {
 		this.enabled = enabled;
 	}
-	@Override
 	public void removeGracefully() {
 		if ( this.ending ) {
 			logWarn( "removeGracefully was called; but the track is already removed." );
@@ -223,7 +216,6 @@ public class MetroTrack implements MetroTrackInfo, MetroLock {
 			this.ending = true;
 		}
 	}
-	@Override
 	public double getTrackPosition() {
 		if ( lastLengthInFrames < 0 || cursor < 0) {
 			return 0;
