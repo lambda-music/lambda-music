@@ -42,7 +42,6 @@ import javax.swing.JComboBox;
 
 import org.jaudiolibs.jnajack.JackException;
 
-import gnu.expr.Keyword;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.LList;
@@ -468,7 +467,8 @@ public final class Pulsar extends Metro {
 		};
 	}
 
-	private static final class TagSearchUserProcedure extends DProcedure2 {
+	@Deprecated
+	static final class TagSearchUserProcedure extends DProcedure2 {
 		private final Procedure proc;
 		private final Object p;
 		TagSearchUserProcedure(Object p, Procedure proc) {
@@ -480,6 +480,7 @@ public final class Pulsar extends Metro {
 			return proc.apply3( arg1, arg2, p );
 		}
 	}
+	@Deprecated
 	private static final class TagSearchAndProcedure extends DProcedure2 {
 		private final Pair p;
 		TagSearchAndProcedure(Pair p) {
@@ -491,6 +492,7 @@ public final class Pulsar extends Metro {
 			return p2.containsAll( p );
 		}
 	}
+	@Deprecated
 	private static final class TagSearchOrProcedure extends DProcedure2 {
 		private final Pair p;
 		TagSearchOrProcedure(Pair p) {
@@ -695,30 +697,11 @@ public final class Pulsar extends Metro {
 	 */
 	static Procedure readParamTrackSearcher( Object object ) { 
 		object = SchemeUtils.schemeNullCheck( object );
-		
 		// TAG SEARCH
 		if ( object instanceof Procedure ) {
 			return (Procedure) object;
 		} else if ( object instanceof Symbol || object instanceof IString ) {
 			return new TagSearchIsProcedure(object);
-		} else if ( object instanceof Pair ) {
-			// TODO DOCUMENT THIS
-			Object car = ((Pair)object).getCar();
-			Object cdr = ((Pair)object).getCdr(); // <<< FIXED (Tue, 20 Aug 2019 22:27:46 +0900)
-			if ( car instanceof Procedure ) {
-				return new TagSearchUserProcedure(cdr, (Procedure) car ); 
-			} else if ( car instanceof Keyword ) {
-				switch ( ((Keyword)car).getName() ) {
-					case "and" :
-						return new TagSearchAndProcedure((Pair) object );
-					case "or" :
-						return new TagSearchOrProcedure((Pair) object );
-					default : 
-						throw new IllegalArgumentException( "The keyword " + car + " is not allowed here." );
-				}
-			} else {
-				return new TagSearchAndProcedure((Pair) object );
-			}
 		} else {
 			throw new IllegalArgumentException();
 		}
@@ -742,7 +725,7 @@ public final class Pulsar extends Metro {
 	 *     
 	 * @return
 	 */
-	Invokable readParamSearchTrackFilter( Invokable i ) {
+	static Invokable readParamSearchTrackFilter( Invokable i ) {
 		return new Invokable() {
 			@Override
 			public Object invoke(Object... args) {
@@ -769,30 +752,29 @@ public final class Pulsar extends Metro {
 		};
 	}
 	
-	// XXX
+	List<MetroTrack> searchTrackCombo(Object arg) {
+		return 
+				searchTrack(
+					readParamSearchTrackFilter(
+						createInvokable( 
+							readParamTrackSearcher( arg ))));
+	}
+
 	List<MetroTrack> readParamTrack( Object object ) {
-		if ( object instanceof Pair ) {
+		if ( object instanceof MetroTrack ) {
+			return Arrays.<MetroTrack>asList((MetroTrack)object);
+		} else if ( object instanceof Procedure ) {
+			return Arrays.asList( createTrack( null, null, (Procedure)object ));
+		} else if ( object instanceof Pair ) {
 			if (((Pair)object).getCar() instanceof MetroTrack) {
 				return (List<MetroTrack>) object;
 			} else if ( NoteListParser.isNotationList(object) ) {
 				return Arrays.asList( createTrack( null, null, new TrackProcedure( (Pair) object ) ) );
 			} else {
-				/// XXX ??? (Tue, 13 Aug 2019 00:43:25 +0900)
-				return searchTrack( 
-					createInvokable( 
-						readParamTrackSearcher( object )));				
-//				throw new IllegalArgumentException( "The value '" + object + "' is not allowed here." );
+				return searchTrackCombo( object );
 			}
-		} else if ( object instanceof MetroTrack ) {
-			return Arrays.<MetroTrack>asList((MetroTrack)object);
-		} else if ( object instanceof EmptyList ) {
-			return Collections.EMPTY_LIST;
 		} else {
-			return searchTrack( 
-				createInvokable( 
-					readParamTrackSearcher( object )));				
-
-//			throw new IllegalArgumentException( "The value '" + object + "' is not allowed here." );
+			return searchTrackCombo( object );
 		}
 	}
 	static double readParamSyncOffset(Object object) {
@@ -1529,11 +1511,8 @@ public final class Pulsar extends Metro {
 			public Object applyN(Object[] args) throws Throwable {
 				ArrayList<MetroTrack> t = new ArrayList<>();
 				for ( int i=0; i<args.length; i++ ) {
-					t.addAll( 
-						searchTrack(
-							readParamSearchTrackFilter(
-								createInvokable( 
-									readParamTrackSearcher( args[i] ))))) ;
+					Object arg = args[i];
+					t.addAll( searchTrackCombo( arg ) );
 				}
 				return Pair.makeList( t );
 			}
@@ -1547,16 +1526,15 @@ public final class Pulsar extends Metro {
 				setReturnValueDescription( "::void" );
 				setShortDescription( "retrieves multiple tracks which are specified as track-spec arguments and returns them as a list." );
 				setLongDescription( ""
-									+ "The track-spec is a specification of a track to retrieve. "
-									+ "Any of following values are valid as a track-spec : "
-									+ "procedure, symbol and string. \n\n"
-									+ "track-spec=procedure: The system enumerates all tracks in the current sequencer, "
-									+ "and call the given procedure for each track. The procedure should have two parameters : "
-									+ "(lambda ( name tags ) ... ). If a track with the name and the tags is not what you want, "
-									+ "the procedure should return #f; otherwise the track is added to the result. \n\n"
-									+ "track-spec=symbol/string: the value is compared with the name value "
+									+ "The track-spec denotes a specification of a track to retrieve. "
+									+ "Only symbol, string and procedure are valid as a track-spec.\n\n "
+									+ "When track-spec is a symbol/a string, the value is compared with the name value "
 									+ "of each track, and the track is added to the result when it equals to the value. "
-									+ "It uses the equals() method of java.lang.Object class to compare the values. \n\n"
+									+ "It uses the equals() method of java.lang.Object class to check the equality of the two values. \n\n"
+									+ "When track-spec is a procedure: The system enumerates all tracks in the current sequencer, "
+									+ "and call the specified procedure for each track. The procedure should have two parameters : "
+									+ "(lambda ( name tags ) ... ). If a track identified by the name and the tags is not to retrieve, "
+									+ "the procedure should return #f; otherwise the track is added to the result. \n\n"
 									+ "" 
 									+ THROWS_AN_ERROR_IF_NOT_OPEN );
 			}}, 
@@ -1596,7 +1574,7 @@ public final class Pulsar extends Metro {
 		
 		SchemeUtils.setDocumentInitializer( scheme,
 			new DescriptiveInitializerA(){{
-				setParameterDescription( "[track-spec ...]" );
+				setParameterDescription( "[procedure/notes ...]" );
 				setReturnValueDescription( "::void" );
 				setShortDescription( "retrieves multiple tracks which are specified as track-spec arguments and returns them as a list." );
 				setLongDescription( ""
