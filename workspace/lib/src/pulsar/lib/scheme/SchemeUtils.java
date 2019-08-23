@@ -431,12 +431,15 @@ public class SchemeUtils {
 	public static void setDocumentInitializer( Scheme scheme, DescriptiveInitializerA a, DescriptiveInitializerB b, String ... names) {
 		for ( String name : names ) { 
 			DescriptiveProcedure proc = getVar(scheme, name, null );
-			if ( proc != null ) {
-				proc.setInitializerA(a);
-				proc.setInitializerB(b);
-			} else {
+			if ( proc == null ) {
 				logWarn( "setDocumentInitializer: " + name + " was not found." );
+				if ( names.length < 1 )
+					throw new IllegalArgumentException( "\"names\" parameter must have at least one value." );
+				proc = new DHelp( names[0] );
+				defineVar( scheme, proc, names );
 			}
+			proc.setInitializerA(a);
+			proc.setInitializerB(b);
 			proc.init();
 		}
 	}

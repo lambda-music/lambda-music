@@ -56,7 +56,6 @@ import metro.Metro;
 import metro.MetroPort;
 import metro.MetroTrack;
 import metro.MetroTrack.SyncType;
-import pulsar.lib.scheme.DHelp;
 import pulsar.lib.scheme.DProcedure0;
 import pulsar.lib.scheme.DProcedure1;
 import pulsar.lib.scheme.DProcedure2;
@@ -1504,14 +1503,15 @@ public final class Pulsar extends Metro {
 			new DescriptiveInitializerA(){{
 				setParameterDescription( "[procedure/[notation...] ...]" );
 				setReturnValueDescription( "::void" );
-				setShortDescription( "retrieves multiple tracks which are specified as track-spec arguments and returns them as a list." );
+				setShortDescription( "<procedure-name/> retrieves multiple tracks which are specified as track-spec arguments and returns them as a list." );
 				setLongDescription( ""
 									+ "The track-spec is a specification of a track to retrieve. "
 									+ "Any of following values are valid as a track-spec : "
 									+ "procedure, symbol and string. \n\n"
-									+ "track-spec=procedure: The system enumerates all tracks in the current sequencer, "
-									+ "and call the given procedure for each track. The procedure should have two parameters : "
-									+ "(lambda ( name tags ) ... ). If a track with the name and the tags is not what you want, "
+									+ "When a procedure is specified as the track-spec, the system enumerates all tracks in the current sequencer, "
+									+ "and call the given procedure for each track. The procedure should have "
+									+ "two parameters \"name\" and \"tags\". "
+									+ "as (lambda ( name tags ) ... ).  If a track with the name and the tags is not what you want, "
 									+ "the procedure should return #f; otherwise the track is added to the result. \n\n"
 									+ "track-spec=symbol/string: the value is compared with the name value "
 									+ "of each track, and the track is added to the result when it equals to the value. "
@@ -1523,25 +1523,40 @@ public final class Pulsar extends Metro {
 		
 		/////////////////////////////////////////////////////////////////
 
-		DHelp aboutNotation = new DHelp( "about-notation" );
-		SchemeUtils.defineVar( scheme, aboutNotation , "about-notation" );
-		
 		SchemeUtils.setDocumentInitializer( scheme,
 			new DescriptiveInitializerA(){{
 				setParameterDescription( "" );
 				setReturnValueDescription( "" );
-				setShortDescription( "A notation is a midi note data of Pulsar music sequencer. " );
+				setShortDescription( "A notation is a MIDI note data of Pulsar music sequencer. " );
 				setLongDescription( ""
-									+ "A notation is formed by a Scheme association list. There are number of types that the notation can be "
-									+ "such as pitch, rest or other MIDI control changes. In case the note is a pitch data, the notation object "
-									+ "have four properties : velocity, length, position and pitch. "
-									+ " "
+									+ "A notation is made of a Scheme association list. There are several types of a notation "
+									+ "such as pitch, rest, MIDI control changes and others. For example, if the note is a pitch data, "
+									+ "the notation object have four properties : velocity, length, position and pitch. "
 									+ "" 
 									+ THROWS_AN_ERROR_IF_NOT_OPEN );
 			}}, 
 			"about-notation" );
 		
-		
+
+		SchemeUtils.setDocumentInitializer( scheme,
+			new DescriptiveInitializerA(){{
+				setParameterDescription( "" );
+				setReturnValueDescription( "" );
+				setShortDescription( "Welcome to Pulsar music sequencer!" );
+				setLongDescription( ""
+									+ "Pulsar music sequencer is a music sequencer which collaboratively works with "
+									+ "a powerful computer language Lisp Scheme. "
+									+ "And this frame itself is a powerful Lisp Scheme editor which is called KawaPad. "
+									+ "In Lisp, all commands are surrounded with a pair of parentheses. You can easily execute "
+									+ "one of those command by moving your cursor within the pair of parentheses and pressing CTRL+ENTER. \n\n"
+									+ "To show this help, execute (help about-intro). \n"
+									+ "To show all available procedures, execute (help) . \n"
+									+ "To show help of a procedure, execute (help [procedure-name] ) . \n"
+									+ "" 
+								 );
+			}}, 
+			"about-intro" );
+
 		/////////////////////////////////////////////////////////////////
 		
 		abstract class TrackManagementProcedure extends DProcedureN  {
@@ -1777,7 +1792,7 @@ public final class Pulsar extends Metro {
 					"When this procedure is called, this procedure will return a message which "
 					+ "tries to calm the user down. Any argument specified to this procedure will be silently ignored."
 					+ "This procedure is deliberately defined as a joke and has by no means effect to the current system state "
-					+ "nor any other related elements. See (help help)." );
+					+ "nor any other related elements. See (help about-main)." );
 			}
 		} , "help!");
 
@@ -1870,11 +1885,15 @@ public final class Pulsar extends Metro {
 				} else {
 					message = MSG_NO_DOCUMENTATION;
 				}
-				message = 
-						"#"+
-						SchemeUtils.prefixMultiLine( message, "  | " ).replaceFirst( "^\\s+","" )+
-						"  |#";
+//				message = 
+//						"#"+
+//						SchemeUtils.prefixMultiLine( message, "  | " ).replaceFirst( "^\\s+","" )+
+//						"  |#";
 						
+				message = 
+						"#|\n"+
+						SchemeUtils.prefixMultiLine( message, "   " )+
+						"  |# help about-intro";
 						
 						
 
