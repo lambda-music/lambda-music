@@ -18,7 +18,7 @@
  * along with Kawapad.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package pulsar.lib.scheme;
+package kawapad;
 
 public class SimpleSchemeIndentChanger {
 	/**

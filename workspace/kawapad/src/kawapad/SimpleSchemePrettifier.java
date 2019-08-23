@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Kawapad.  If not, see <https://www.gnu.org/licenses/>.
  */
-package pulsar.lib.scheme;
+package kawapad;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;

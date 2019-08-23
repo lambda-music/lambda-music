@@ -98,8 +98,6 @@ import kawapad.lib.GroupedUndoManager;
 import pulsar.lib.PulsarLogger;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.SchemeUtils.ExecuteSchemeResult;
-import pulsar.lib.scheme.SimpleSchemeIndentChanger;
-import pulsar.lib.scheme.SimpleSchemePrettifier;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.SecretaryMessage;
 import pulsar.lib.secretary.SecretaryMessage.NoReturnNoThrow;

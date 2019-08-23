@@ -23,8 +23,6 @@ package kawapad;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 
-import pulsar.lib.scheme.SimpleSchemeIndentChanger;
-
 public class SimpleSchemeParser {
 	public static enum ParseDirection { FORWARD,BACKWARD }
 	public static enum ModeType { PARENTHESIS, STRING, ESCAPESEQUENCE }

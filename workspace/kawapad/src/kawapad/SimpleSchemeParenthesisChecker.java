@@ -27,7 +27,6 @@ import kawapad.SimpleSchemeParser.ModeFactory;
 import kawapad.SimpleSchemeParser.ModeType;
 import kawapad.SimpleSchemeParser.ParseDirection;
 import kawapad.SimpleSchemeParser.ParserState;
-import pulsar.lib.scheme.SimpleSchemeIndentChanger;
 
 /**
  *  October 3, 2018 at 9:52:22 PM
