@@ -316,7 +316,15 @@ public class SchemeUtils {
 	public static List<String> symbolListToStringList(List p) {
 		return SchemeUtils.<Object,String>convertList((List<Object>)p, (v)->SchemeUtils.symbolToString(v) );
 	}
-	
+
+	public static Symbol[] stringListToSymbolList(String ... stringSymbols ) {
+		Symbol[] symbols = new Symbol[ stringSymbols.length ];
+		for ( int i=0; i<stringSymbols.length; i++ ) {
+			symbols[i] = toSchemeSymbol( stringSymbols[i] );
+		}
+		return symbols;
+	}
+	                                                                
 	public static IString toSchemeString( String value ) {
 		return IString.valueOf( value );
 	}
@@ -361,20 +369,6 @@ public class SchemeUtils {
 		return Pair.make( toSchemeSymbol( key ) , value );
 	}
 
-	public static final String ALL_PROCEDURES = "all-procedures";
-	public static final Symbol ALL_PROCEDURES_SYMBOL = Symbol.valueOf( ALL_PROCEDURES ); 
-	public static Pair getRootOfAllProcedure(Environment e) {
-		synchronized ( e ) {
-			if ( ! e.isBound( ALL_PROCEDURES_SYMBOL ) ) {
-				Pair root = (Pair)LList.makeList(Arrays.asList( ALL_PROCEDURES_SYMBOL ));
-				e.define( ALL_PROCEDURES_SYMBOL, null, root);
-				return root;
-			} else {
-				return (Pair) e.get( ALL_PROCEDURES_SYMBOL );
-			}
-		}
-	}
-
 	public static final void defineVar( Scheme scheme, Object value, String ... names ) {
 		Environment e = scheme.getEnvironment();
 		Environment.setCurrent(e);
@@ -389,58 +383,28 @@ public class SchemeUtils {
 			}
 		}
 		
-		if ( value instanceof DescriptiveProcedure ) {
-			defineDocument(e, symbols, (DescriptiveProcedure)value);
+		if ( value instanceof Descriptive) {
+			addDocumentList(e, symbols, (Descriptive)value);
 		}
-	}
-	public static void defineDocument( Environment e, String[] stringSymbols, DescriptiveProcedure proc ) {
-		Symbol[] symbols = new Symbol[ stringSymbols.length ];
-		for ( int i=0; i<stringSymbols.length; i++ ) {
-			symbols[i] = toSchemeSymbol( stringSymbols[i] );
-		}
-		defineDocument( e, symbols, proc );
 	}
 
-//	static Procedure proc_defineDocument = eval( lis( "lambda", lis("rt"),   ) );   
-	public static void defineDocument( Environment e, Symbol[] symbols, DescriptiveProcedure proc ) {
+//	public static void setDocumentInitializer( Scheme scheme, DescriptiveInitializerBean bean, DescriptiveInitializerBeanParam beanParam, String ... names ) {
+//		if ( names.length < 1 )
+//			throw new IllegalArgumentException( "the 'names' parameter must be longer than 1." );
+//		setDocument( scheme, names[0], bean.process( beanParam ).format() );
+//	}
+
+	public static final String ALL_PROCEDURES = "all-procedures";
+	public static final Symbol ALL_PROCEDURES_SYMBOL = Symbol.valueOf( ALL_PROCEDURES ); 
+	public static Pair getRootOfAllProcedure(Environment e) {
 		synchronized ( e ) {
-			Pair root = getRootOfAllProcedure(e);
-			root.setCdr( 
-				Pair.make(
-					Pair.make( proc, LList.makeList( symbols, 0 ) ),  
-					root.getCdr()));
-			
-			proc.setNameList( Arrays.asList(symbols) );
-		}
-	}
-	public static DescriptiveProcedure getDocument( Environment e, Symbol name )  {
-		synchronized ( e ) {
-			Pair root = getRootOfAllProcedure(e);
-			for ( Object o : root ) {
-				if (((Pair)
-						((Pair)o).getCdr()).contains( name )) {
-					return (DescriptiveProcedure)((Pair)o).getCar();
-				}
+			if ( ! e.isBound( ALL_PROCEDURES_SYMBOL ) ) {
+				Pair root = (Pair)LList.makeList(Arrays.asList( ALL_PROCEDURES_SYMBOL ));
+				e.define( ALL_PROCEDURES_SYMBOL, null, root);
+				return root;
+			} else {
+				return (Pair) e.get( ALL_PROCEDURES_SYMBOL );
 			}
-			return null;
-		}
-	}
-	public static void setDocumentInitializer( Scheme scheme, DescriptiveInitializerA a, String ... names) {
-		setDocumentInitializer( scheme, a, DescriptiveInitializerB.EMPTY,  names );
-	}
-	public static void setDocumentInitializer( Scheme scheme, DescriptiveInitializerA a, DescriptiveInitializerB b, String ... names) {
-		for ( String name : names ) { 
-			DescriptiveProcedure proc = getVar(scheme, name, null );
-			if ( proc == null ) {
-				logWarn( "setDocumentInitializer: " + name + " was not found." );
-				if ( names.length < 1 )
-					throw new IllegalArgumentException( "\"names\" parameter must have at least one value." );
-				proc = new DHelp( names[0] );
-				defineVar( scheme, proc, names );
-			}
-			proc.setInitializerA(a);
-			proc.setInitializerB(b);
-			proc.init();
 		}
 	}
 	public static LList getDocumentList( Environment e ) {
@@ -448,7 +412,57 @@ public class SchemeUtils {
 			return (LList) getRootOfAllProcedure(e).getCdr();
 		}
 	}
+	public static void addDocumentList( Environment e, Symbol[] symbols, Descriptive descriptive ) {
+		synchronized ( e ) {
+			Pair root = getRootOfAllProcedure(e);
+			root.setCdr( 
+				Pair.make(
+					Pair.make( descriptive, LList.makeList( symbols, 0 ) ),  
+					root.getCdr()));
+			
+//			proc.setNameList( Arrays.asList(symbols) );
+		}
+	}
 
+//	public static void defineDocument( Environment e, String[] stringSymbols, DescriptiveProcedure proc ) {
+//		Symbol[] symbols = new Symbol[ stringSymbols.length ];
+//		for ( int i=0; i<stringSymbols.length; i++ ) {
+//			symbols[i] = toSchemeSymbol( stringSymbols[i] );
+//		}
+//		defineDocument( e, symbols, proc );
+//	}
+//
+//	public static DescriptiveProcedure getDocument( Environment e, Symbol name )  {
+//	synchronized ( e ) {
+//		Pair root = getRootOfAllProcedure(e);
+//		for ( Object o : root ) {
+//			if (((Pair)
+//					((Pair)o).getCdr()).contains( name )) {
+//				return (DescriptiveProcedure)((Pair)o).getCar();
+//			}
+//		}
+//		return null;
+//	}
+//}
+	public static void defineDoc( Scheme scheme, DescriptiveInitializerBean bean, String ... names ) {
+		if ( names.length < 1 )
+			throw new IllegalArgumentException( "the 'names' parameter must be longer than 1." );
+		bean.setNameList( names ); 
+		defineDoc0( scheme, names[0], bean.format() );
+	}
+
+//	static Procedure proc_defineDocument = eval( lis( "lambda", lis("rt"),   ) );   
+	static void defineDoc0( Scheme scheme, String name, String description )  {
+		synchronized ( scheme ) {
+			DescriptiveProcedure proc = getVar( scheme, name, null );
+			if ( proc == null ) {
+				logWarn( "setDocumentInitializer: " + name + " was not found." );
+				proc = new DHelp( name );
+				defineVar( scheme, proc, name );
+			}
+			proc.setDescription( description );
+		}
+	}
 	
 	public static final boolean isDefined( Scheme scheme, String name  ) {
 		return scheme.getEnvironment().isBound( SimpleSymbol.make( "", name ) );
@@ -810,4 +824,17 @@ public class SchemeUtils {
 		}
 		return result.toByteArray();
 	}
+	public static Object makePage( Object o ) {
+		return executeSchemePageWrapper( o );
+	}
+	public static Object makePage( String message, int textWidth ) {
+		message = SchemeUtils.wrapMultiLine( message, textWidth ).trim() + "\n";
+		message = 
+				"#|\n"+
+				SchemeUtils.prefixMultiLine( message, "   " )+
+				"  |# help about-intro";
+		return SchemeUtils.makePage( SchemeUtils.toSchemeString( message ) );
+	};
+
+	
 }

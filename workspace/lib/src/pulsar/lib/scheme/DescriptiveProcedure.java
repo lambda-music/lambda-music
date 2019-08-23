@@ -6,7 +6,7 @@ import gnu.mapping.Procedure;
 import gnu.mapping.SimpleSymbol;
 import gnu.mapping.Symbol;
 
-public interface DescriptiveProcedure {
+public interface DescriptiveProcedure extends Descriptive {
 	default Procedure getProcedure() {
 		return (Procedure)this;
 	}
@@ -50,28 +50,16 @@ public interface DescriptiveProcedure {
 	SimpleSymbol PULSAR_INITIALIZER_A = Symbol.valueOf( "pulsar-initializer-a" );
 	SimpleSymbol PULSAR_INITIALIZER_B = Symbol.valueOf( "pulsar-initializer-b" );
 
-	default DescriptiveInitializerA getInitializerA() {
-		return (DescriptiveInitializerA)getProcedure().getProperty( PULSAR_INITIALIZER_A, null );
+	default DescriptiveInitializerBean getInitializerA() {
+		return (DescriptiveInitializerBean)getProcedure().getProperty( PULSAR_INITIALIZER_A, null );
 	}
-	default DescriptiveInitializerB getInitializerB() {
-		return (DescriptiveInitializerB)getProcedure().getProperty( PULSAR_INITIALIZER_B, null );
+//	default DescriptiveInitializerBeanParam getInitializerB() {
+//		return (DescriptiveInitializerBeanParam)getProcedure().getProperty( PULSAR_INITIALIZER_B, null );
+//	}
+	default void setInitializerA(DescriptiveInitializerBean bean) {
+		getProcedure().setProperty( PULSAR_INITIALIZER_A, bean );
 	}
-	default void setInitializerA(DescriptiveInitializerA initializerA) {
-		getProcedure().setProperty( PULSAR_INITIALIZER_A, initializerA );
-	}
-	default void setInitializerB(DescriptiveInitializerB initializerB) {
-		getProcedure().setProperty( PULSAR_INITIALIZER_B, initializerB );
-	}
-
-	default void init() {
-		DescriptiveProcedure procedure = this;
-		DescriptiveInitializerA a = getInitializerA();
-		DescriptiveInitializerB b = getInitializerB();
-		Object[] args = b.arguments.toArray();
-		procedure.setParameterDescription( String.format( a.getParameterDescription(), args ));
-		procedure.setReturnValueDescription( String.format( a.getReturnValueDescription(), args )) ;
-		procedure.setShortDescription( String.format ( a.getShortDescription(), args ));
-		procedure.setLongDescription( String.format( a.getLongDescription(), args ));
-	}
-
+//	default void setInitializerB(DescriptiveInitializerBeanParam beanParam) {
+//		getProcedure().setProperty( PULSAR_INITIALIZER_B, beanParam );
+//	}
 }

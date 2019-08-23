@@ -9,7 +9,7 @@ public class DHelp extends DProcedure0 {
 		String name = this.getName();
 		String s = String.format( 
 			       "#| (%1$s) is a documentation procedure.\n "
-				 + " | Execute this expression to see (help %1$s)\n"
+				 + " | Execute (help %1$s) for further information. \n"
 				 + "  |# help %1$s \n",  name );
 		return SchemeUtils.executeSchemePageWrapper( SchemeUtils.toSchemeString( s ));
 	}
