@@ -1591,29 +1591,34 @@ public final class Pulsar extends Metro {
 		SchemeUtils.defineVar( scheme, putTrack , "put-track"
 												, "putt" );
 
+		DescriptiveInitializerBean trackInitializer = new DescriptiveInitializerBean(){{
+			setParameterDescription( "track [sync-type] [sync-track] [sync-offset]" );
+			setReturnValueDescription( "" );
+			setShortDescription( "%1$s the passed track on the sequencer. " );
+			setLongDescription( ""
+								+ "%2$s\n\n"
+								+ "The track parameter is the reference to the track which is to play. \n\n"
+								+ "The sync-type parameter can be one of //immediate//, //parallel// and //serial//. \n\n"
+								+ "When sync-type is //immediate//, the sequencer starts to play the track "
+								+ "as soon as possible after returning from the procedure call. "
+								+ "When sync-type is //parallel//, the sequencer starts to play the track "
+								+ "at the same position with the track which is specified as //sync-track// parameter. \n\n"
+								+ "When sync-type is //serial//, the sequencer starts to play the track right after the " 
+								+ "track which is specified in the //sync-track// finished to play. \n\n"
+								+ "The sync-track parameter is the reference to the track which is to synchronize with. \n\n"
+								+ "The sync-offset parameter is the time offset from the time that "
+								+ "track is supposed to start playing. "
+								+ "The number must be a real number. It denotes the offset length which unit is a measure-length. "
+								+ ""
+							 );
+		}};
 		SchemeUtils.defineDoc( scheme,
-			new DescriptiveInitializerBean(){{
-				setParameterDescription( "track [sync-type] [sync-track] [sync-offset]" );
-				setReturnValueDescription( "" );
-				setShortDescription( "adds the passed track to the sequencer. " );
-				setLongDescription( ""
-									+ "The sequencer starts to play the added track and it gives the user some controls on "
-									+ "how it starts playing the track. \n\n"
-									+ "The track parameter is the reference to the track which is to play. \n\n"
-									+ "The sync-type parameter can be one of //immediate//, //parallel// and //serial//. \n\n"
-									+ "When sync-type is //immediate//, the sequencer starts to play the track "
-									+ "as soon as possible after returning from the procedure call. "
-									+ "When sync-type is //parallel//, the sequencer starts to play the track "
-									+ "at the same position with the track which is specified as //sync-track// parameter. \n\n"
-									+ "When sync-type is //serial//, the sequencer starts to play the track right after the " 
-									+ "track which is specified in the //sync-track// finished to play. \n\n"
-									+ "The sync-track parameter is the reference to the track which is to synchronize with. \n\n"
-									+ "The sync-offset parameter is the time offset from the time that "
-									+ "track is supposed to start playing. "
-									+ "The number must be a real number. It denotes the offset length which unit is a measure-length. "
-									+ ""
-								 );
-			}}, 
+			trackInitializer.process( 
+				"put",
+				""
+					+ "The sequencer starts to play the added track and it gives the user some controls on "
+					+ "how it starts playing the track."	
+				), 
 			"put-track" );
 
 		/////////////////////////////////////////////////////////////////
@@ -1626,7 +1631,16 @@ public final class Pulsar extends Metro {
 		};
 		SchemeUtils.defineVar( scheme, removeTrack , "remove-track"
 												   , "remt" );
-		
+		SchemeUtils.defineDoc( scheme,
+			trackInitializer.process( 
+				"removes",
+				""
+					+ "The sequencer remove the specified track. Eventually the track stops playing. "
+					+ "And it gives the user some controls on "
+					+ "how it stops playing the track. "	
+				), 
+			"remove-track" );
+
 
 		Procedure notifyTrackChange = new Procedure0( "notify-track-change" ) {
 			@Override
@@ -1637,7 +1651,24 @@ public final class Pulsar extends Metro {
 		};
 		SchemeUtils.defineVar( scheme, notifyTrackChange , "notify-track-change", 
 														   "nott" );
-
+		
+		SchemeUtils.defineDoc( scheme,
+			new DescriptiveInitializerBean(){{
+				setParameterDescription( "" );
+				setReturnValueDescription( "::void" );
+				setShortDescription( "notifies the sequencer that the track was added/deleted." );
+				setLongDescription( ""
+									+ "When any tracks are added/deleted on the sequencer, the "
+									+ "modification is not immediately reflects to the current state of "
+									+ "the sequencer. After a series of adding/deleting tracks is performed by a user,"
+									+ "the the user is mandated to call this procedure. "
+									+ "This procedure notifies the sequencer that "
+									+ "some tracks. And calling this procedure guarantees the tracks added/deleted "
+									+ "on the sequencer are properly processed immediately. " 
+								 );
+			}}, 
+			"notify-track-change" );
+		
 		SchemeUtils.defineVar( scheme, new Procedure0("ls") {
 			@Override
 			public Object apply0() throws Throwable {
@@ -1652,6 +1683,25 @@ public final class Pulsar extends Metro {
 			}
 		} , "lst");
 
+		SchemeUtils.defineDoc( scheme,
+			new DescriptiveInitializerBean(){{
+				setParameterDescription( "" );
+				setReturnValueDescription( "" );
+				setShortDescription( "Welcome to Pulsar music sequencer!" );
+				setLongDescription( ""
+									+ "Pulsar music sequencer is a music sequencer which collaboratively works with "
+									+ "a powerful computer language Lisp Scheme. "
+									+ "And this frame itself is a powerful Lisp Scheme editor which is called KawaPad. "
+									+ "In Lisp, all commands are surrounded with a pair of parentheses. You can easily execute "
+									+ "one of those command by moving your cursor within the pair of parentheses and pressing CTRL+ENTER. \n\n"
+									+ "To show this help, execute (help about-intro). \n"
+									+ "To show all available procedures, execute (help) . \n"
+									+ "To show help of a procedure, execute (help [procedure-name] ) . \n"
+									+ "" 
+								 );
+			}}, 
+			"about-intro" );		
+		
 		Procedure0 clr = new Procedure0("clear-tracks") {
 			@Override
 			public Object apply0() throws Throwable {
