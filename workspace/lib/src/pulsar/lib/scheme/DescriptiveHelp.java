@@ -1,7 +1,9 @@
 package pulsar.lib.scheme;
 
-public class DHelp extends DProcedure0 {
-	public DHelp(String name) {
+import gnu.mapping.Procedure0;
+
+public class DescriptiveHelp extends Procedure0 {
+	public DescriptiveHelp(String name) {
 		super(name);
 	}
 	@Override

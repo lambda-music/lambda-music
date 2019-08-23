@@ -382,10 +382,6 @@ public class SchemeUtils {
 				e.define( symbol, null, value );
 			}
 		}
-		
-		if ( value instanceof Descriptive) {
-			addDocumentList(e, symbols, (Descriptive)value);
-		}
 	}
 
 //	public static void setDocumentInitializer( Scheme scheme, DescriptiveInitializerBean bean, DescriptiveInitializerBeanParam beanParam, String ... names ) {
@@ -412,7 +408,7 @@ public class SchemeUtils {
 			return (LList) getRootOfAllProcedure(e).getCdr();
 		}
 	}
-	public static void addDocumentList( Environment e, Symbol[] symbols, Descriptive descriptive ) {
+	public static void addDocumentList( Environment e, Symbol[] symbols, Object descriptive ) {
 		synchronized ( e ) {
 			Pair root = getRootOfAllProcedure(e);
 			root.setCdr( 
@@ -448,19 +444,27 @@ public class SchemeUtils {
 		if ( names.length < 1 )
 			throw new IllegalArgumentException( "the 'names' parameter must be longer than 1." );
 		bean.setNameList( names ); 
-		defineDoc0( scheme, names[0], bean.format() );
+		Object proc = defineDoc0( scheme, names, bean.format() );
+		
+		addDocumentList( 
+			scheme.getEnvironment(), 
+			SchemeUtils.stringListToSymbolList( names ), 
+			proc );
+		
 	}
 
 //	static Procedure proc_defineDocument = eval( lis( "lambda", lis("rt"),   ) );   
-	static void defineDoc0( Scheme scheme, String name, String description )  {
+	static Object defineDoc0( Scheme scheme, String[] names, String description )  {
+		String name = names[0];
 		synchronized ( scheme ) {
-			DescriptiveProcedure proc = getVar( scheme, name, null );
+			Object proc = getVar( scheme, name, null );
 			if ( proc == null ) {
 				logWarn( "setDocumentInitializer: " + name + " was not found." );
-				proc = new DHelp( name );
+				proc = new DescriptiveHelp( name );
 				defineVar( scheme, proc, name );
 			}
-			proc.setDescription( description );
+			SchemeUtils.setDescription( proc, description );
+			return proc;
 		}
 	}
 	
@@ -834,7 +838,27 @@ public class SchemeUtils {
 				SchemeUtils.prefixMultiLine( message, "   " )+
 				"  |# help about-intro";
 		return SchemeUtils.makePage( SchemeUtils.toSchemeString( message ) );
-	};
+	}
+
+	
+	public static final SimpleSymbol DESCRIPTION  = Symbol.valueOf( "pulsar-description" );
+	public static String getDescription( Object o ) {
+		if ( o instanceof Procedure ) {
+			Object value = ((Procedure)o).getProperty( SchemeUtils.DESCRIPTION, null );
+			return value==null?null:value.toString();
+		} else {
+			logWarn( "Descriptive#getDescription(): WARNING:" + o + " is not procedure" );
+			return null;
+		}
+	}
+	public static void setDescription( Object o, String description ) {
+		if ( o instanceof Procedure ) {
+			((Procedure)o).setProperty( SchemeUtils.DESCRIPTION, toSchemeString( description ) );
+		} else {
+			logWarn( "Descriptive#setDescription(): WARNING:" + o + " is not procedure" );
+		}
+	}
+
 
 	
 }
