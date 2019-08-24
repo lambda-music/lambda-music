@@ -106,6 +106,44 @@ public class KawaPadHighlighter {
 	    }
 	}
 	
+	public static void highlightSyntax_1( JTextPane textPane, Collection<String> keywordList ) {
+		StyledDocument document = textPane.getStyledDocument();
+		String text = textPane.getText();
+		{
+	    	SimpleAttributeSet bold = new SimpleAttributeSet();
+	    	bold.addAttribute(StyleConstants.CharacterConstants.Bold, Boolean.TRUE );
+
+	    	for ( String keyword : keywordList ) {
+	    		String patternString = "(^|\\s|[\\(])(" + Pattern.quote( keyword ) + ")($|\\s|[\\)])";
+	    		
+	    		Pattern pattern = Pattern.compile( patternString );
+	    		Matcher matcher = pattern.matcher( text );
+	    		while ( matcher.find() ) {
+//	    			 System.err.println(  matcher.start() + ":" + matcher.end() );
+	    			document.setCharacterAttributes(
+	    					matcher.start(2),
+	    					matcher.end(2) - matcher.start(2),
+	    					bold, true);
+	    		}
+	    	}
+	    }
+
+	    {
+	    	SimpleAttributeSet gray = new SimpleAttributeSet();
+	    	gray.addAttribute(StyleConstants.ColorConstants.Foreground, Color.gray );
+
+	    	Pattern pattern = Pattern.compile( ";.*$|\\#\\|[\\w\\W]*?\\|\\#", Pattern.MULTILINE );
+	    	Matcher matcher = pattern.matcher( text );
+	    	while ( matcher.find() ) {
+	    		// System.err.println( matcher.start() + ":" + matcher.end() );
+	    		document.setCharacterAttributes(
+	    				matcher.start(),
+	    				matcher.end() - matcher.start(),
+	    				gray, true);
+	    	}
+	    }
+	}
+	
 	public static void highlightSyntax( JTextPane textPane, Collection<String> keywordList ) {
 		StyledDocument document = textPane.getStyledDocument();
 		String text = textPane.getText();

@@ -1597,7 +1597,7 @@ public final class Pulsar extends Metro {
 			setShortDescription( "%1$s the passed track on the sequencer. " );
 			setLongDescription( ""
 								+ "%2$s\n\n"
-								+ "The track parameter is the reference to the track which is to play. \n\n"
+								+ "The //track// parameter is the reference to the track which is to play. \n\n"
 								+ "The sync-type parameter can be one of //immediate//, //parallel// and //serial//. \n\n"
 								+ "When sync-type is //immediate//, the sequencer starts to play the track "
 								+ "as soon as possible after returning from the procedure call. "

@@ -430,6 +430,8 @@ public class KawaPad extends JFrame {
 						undoManager.startGroup();
 					}
 				}
+				logInfo( "InsertTextToTextPane() done" );
+				updateHighlightLater();
 			} catch (BadLocationException e1) {
 				e1.printStackTrace();
 			}
@@ -466,6 +468,8 @@ public class KawaPad extends JFrame {
 						undoManager.startGroup();
 					}
 				}
+				logInfo( "ReplaceTextOnTextPane() done" );
+				updateHighlightLater();
 			} catch (BadLocationException e1) {
 				e1.printStackTrace();
 			}
@@ -493,19 +497,6 @@ public class KawaPad extends JFrame {
 								break;
 							}
 						}
-//						Caret caret = textPane.getCaret();
-//						if ( caret.getDot() < caret.getMark() ) {
-//							int dot = caret.getDot();
-//							int mark = caret.getMark();
-//							caret.setDot( dot );
-//							caret.moveDot( mark + 1);
-//						} else {
-//							int dot = caret.getDot();
-//							int mark = caret.getMark();
-//							caret.setDot( dot +1 );
-//							caret.moveDot( mark );
-//						}
-						
 						textPane.replaceSelection( result );
 					} finally {
 						undoManager.setSuspended(false);
@@ -523,6 +514,8 @@ public class KawaPad extends JFrame {
 						undoManager.startGroup();
 					}
 				}
+				logInfo( "ReplaceTextWithEntireBlockOnTextPane() done" );
+				updateHighlightLater();
 			} catch (BadLocationException e1) {
 				e1.printStackTrace();
 			}
@@ -578,7 +571,6 @@ public class KawaPad extends JFrame {
 			public void run() {
 				updateHighlight();
 			}
-
 		});
 	}
 	public void updateHighlightParenthesesLater() {
