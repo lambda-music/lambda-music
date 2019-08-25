@@ -878,6 +878,16 @@ public class SchemeUtils {
 		procedureSet( proc, SchemeUtils.DESCRIPTION_BEAN, bean );
 	}
 
-	
+
+	public static String createMarkdownHelp( Scheme scheme ) {
+		StringBuilder sb = new StringBuilder();
+		for ( Object o : SchemeUtils.getDocumentList( scheme.getEnvironment() ) ) {
+			System.out.println( o );
+			sb.append( DescriptiveInitializerBean.formatForMarkdown( (Procedure)((Pair)o).getCar() ) );
+			sb.append( "\n\n" );
+		}
+		return sb.toString();
+	}
+
 	
 }

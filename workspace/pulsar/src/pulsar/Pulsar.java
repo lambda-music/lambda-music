@@ -1876,7 +1876,7 @@ public final class Pulsar extends Metro {
 		SchemeUtils.defineDoc( scheme,
 			new DescriptiveInitializerBean(){{
 				setParameterDescription( "[range::number]" );
-				setReturnValueDescription( ":;number" );
+				setReturnValueDescription( "::number" );
 				setShortDescription( "||<procedure-name/>|| generates a random number. " );
 				setLongDescription( ""
 						+ "This procedure adopts Mersenne Twister a random number generating algorithm. "
@@ -2061,10 +2061,35 @@ public final class Pulsar extends Metro {
 						"When a procedure reference is passed, it returns a string value that contains "
 						+ "the description of the the procedure. \n\n"
 						+ "If no procedure is specified, it returns a list that contains all procedures which "
-						+ "description is available." );
+						+ "description is available. "
+						+ "Pass a special keyword 'all-available to get "
+						+ "a symbol list of all procedures which are available for this command. " );
 			}}, 
 			"help" );
 		
+		
+		SchemeUtils.defineVar( scheme, new ProcedureN("help-markdown") {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				System.out.println( SchemeUtils.createMarkdownHelp( scheme ) );
+//				SchemeUtils.toSchemeSymbol( sb.toString() );
+				return Values.empty;
+			}
+
+		} , "help-markdown");
+		
+		SchemeUtils.defineDoc( scheme,
+			new DescriptiveInitializerBean(){{
+				setParameterDescription( "" );
+				setReturnValueDescription( "::string" );
+				setShortDescription(  "is a procedure to execute when the user needs something which calms you down." );
+				setLongDescription( 
+					"When this procedure is called, this procedure will return a message which "
+					+ "tries to calm the user down. Any argument specified to this procedure will be silently ignored."
+					+ "This procedure is deliberately defined as a joke and has by no means effect to the current system state "
+					+ "nor any other related elements. See (help about-main)." );
+			}}, 
+			"help-markdown" );
 		{
 			SchemeUtils.execScheme( Pulsar.class, scheme, "lib/init.scm"  );
 			SchemeUtils.execScheme( Pulsar.class, scheme, "lib/basic-notes.scm"  );

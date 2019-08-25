@@ -3,6 +3,7 @@ package pulsar.lib.scheme;
 import java.util.Arrays;
 import java.util.List;
 
+import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 
 public class DescriptiveInitializerBean {
@@ -78,21 +79,26 @@ public class DescriptiveInitializerBean {
 		
 		return out;
 	}
-	
-	static String formatForMarkdown( DescriptiveInitializerBean bean ) {
+
+	public static String formatForMarkdown( Procedure p ) {
+		return formatForMarkdown( SchemeUtils.getDescriptionBean( p ) );
+	}
+
+	public static String formatForMarkdown( DescriptiveInitializerBean bean ) {
 		StringBuilder message = new StringBuilder();
 		List<String> names = SchemeUtils.symbolListToStringList( bean.getNameList());
 		
 		String name = names.isEmpty() ? "PULSAR" :  names.get(0).toUpperCase();
 
-		message.append( "========== THE MANUAL OF PULSAR LISP SCHEME MUSIC SEQUENCER =========\n\n" );
-		message.append( "### " + name + " ### " );
+//		message.append( "========== THE MANUAL OF PULSAR LISP SCHEME MUSIC SEQUENCER =========\n\n" );
+		message.append( "" + name + "\n" );
+		message.append( "====================" );
 		message.append( "\n\n" );
 		{
 			String syn = bean.getParameterDescription();
 			String rv = bean.getReturnValueDescription();
 			message.append( 
-					"#### SYNOPSIS ####\n\n" );
+					"#### SYNOPSIS ####\n" );
 			message.append( "(" +
 					String.join( "|", 
 						names) +
@@ -123,10 +129,8 @@ public class DescriptiveInitializerBean {
 			msg2 = bean.getLongDescription();
 		}
 		
-		message.append( "### DESCRIPTION ###" );
-		message.append(  msg1  );
-		message.append( " " );
-		message.append(  msg2  );
+		message.append( "### DESCRIPTION ###\n" );
+		message.append( SchemeUtils.wrapMultiLine( msg1 + " " + msg2 , 80 ) );
 		message.append( "\n\n" );
 		message.append( "--------------------------------------------------------" );
 		message.append( "" );
@@ -134,7 +138,7 @@ public class DescriptiveInitializerBean {
 		return message.toString();	
 	}
 
-	static String formatForKawaPad( DescriptiveInitializerBean bean ) {
+	public static String formatForKawaPad( DescriptiveInitializerBean bean ) {
 		StringBuilder message = new StringBuilder();
 		List<String> names = SchemeUtils.symbolListToStringList( bean.getNameList());
 		
