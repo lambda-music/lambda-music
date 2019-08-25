@@ -440,21 +440,21 @@ public class SchemeUtils {
 //		return null;
 //	}
 //}
-	public static void defineDoc( Scheme scheme, DescriptiveInitializerBean bean, String ... names ) {
+	public static Object defineDoc( Scheme scheme, DescriptiveInitializerBean bean, String ... names ) {
 		if ( names.length < 1 )
 			throw new IllegalArgumentException( "the 'names' parameter must be longer than 1." );
-		bean.setNameList( names ); 
-		Object proc = defineDoc0( scheme, names, bean.format() );
 		
-		addDocumentList( 
-			scheme.getEnvironment(), 
-			SchemeUtils.stringListToSymbolList( names ), 
-			proc );
+		// this is a helper. 
+		bean.setNameList( names );
+		
+		Object proc = defineDoc0( scheme, bean.format(), names );
+		setDescriptionBean( proc, bean );
+		return proc;
 		
 	}
 
 //	static Procedure proc_defineDocument = eval( lis( "lambda", lis("rt"),   ) );   
-	static Object defineDoc0( Scheme scheme, String[] names, String description )  {
+	public static Object defineDoc0( Scheme scheme, String description, String ... names )  {
 		String name = names[0];
 		synchronized ( scheme ) {
 			Object proc = getVar( scheme, name, null );
@@ -464,6 +464,11 @@ public class SchemeUtils {
 				defineVar( scheme, proc, name );
 			}
 			SchemeUtils.setDescription( proc, description );
+			addDocumentList( 
+				scheme.getEnvironment(), 
+				SchemeUtils.stringListToSymbolList( names ), 
+				proc );
+			
 			return proc;
 		}
 	}
@@ -840,25 +845,39 @@ public class SchemeUtils {
 		return SchemeUtils.makePage( SchemeUtils.toSchemeString( message ) );
 	}
 
-	
-	public static final SimpleSymbol DESCRIPTION  = Symbol.valueOf( "pulsar-description" );
-	public static String getDescription( Object o ) {
-		if ( o instanceof Procedure ) {
-			Object value = ((Procedure)o).getProperty( SchemeUtils.DESCRIPTION, null );
-			return value==null?null:value.toString();
+	public static <T> T procedureGet( Object proc, Object key, Object defaultValue ) {
+		if ( proc instanceof Procedure ) {
+			return (T)((Procedure)proc).getProperty( key, defaultValue );
 		} else {
-			logWarn( "Descriptive#getDescription(): WARNING:" + o + " is not procedure" );
+			logWarn( "procedureGet(): WARNING:" + proc + " is not procedure" );
 			return null;
 		}
 	}
-	public static void setDescription( Object o, String description ) {
-		if ( o instanceof Procedure ) {
-			((Procedure)o).setProperty( SchemeUtils.DESCRIPTION, toSchemeString( description ) );
+	public static void procedureSet( Object proc, SimpleSymbol key, Object value ) {
+		if ( proc instanceof Procedure ) {
+			((Procedure)proc).setProperty( key, value );
 		} else {
-			logWarn( "Descriptive#setDescription(): WARNING:" + o + " is not procedure" );
+			logWarn( "procedureSet(): WARNING:" + proc + " is not procedure" );
 		}
 	}
 
+	
+	public static final SimpleSymbol DESCRIPTION  = Symbol.valueOf( "pulsar-description" );
+	public static String getDescription( Object proc ) {
+		return (String)procedureGet( proc, SchemeUtils.DESCRIPTION, null );
+	}
+	public static void setDescription( Object proc, String description ) {
+		procedureSet( proc, SchemeUtils.DESCRIPTION, description );
+	}
+	
+	public static final SimpleSymbol DESCRIPTION_BEAN  = Symbol.valueOf( "pulsar-description-bean" );
+	public static DescriptiveInitializerBean getDescriptionBean( Object proc ) {
+		return procedureGet( proc, SchemeUtils.DESCRIPTION_BEAN, null );
+	}
+	public static void setDescriptionBean( Object proc, DescriptiveInitializerBean bean ) {
+		procedureSet( proc, SchemeUtils.DESCRIPTION_BEAN, bean );
+	}
 
+	
 	
 }

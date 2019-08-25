@@ -65,7 +65,7 @@ public class DescriptiveInitializerBean {
 	}
 	
 	public String format() {
-		return format( this );
+		return formatForKawaPad( this );
 	}
 
 	static DescriptiveInitializerBean process( DescriptiveInitializerBean in, Object ... args ) {
@@ -78,7 +78,63 @@ public class DescriptiveInitializerBean {
 		
 		return out;
 	}
-	static String format( DescriptiveInitializerBean bean ) {
+	
+	static String formatForMarkdown( DescriptiveInitializerBean bean ) {
+		StringBuilder message = new StringBuilder();
+		List<String> names = SchemeUtils.symbolListToStringList( bean.getNameList());
+		
+		String name = names.isEmpty() ? "PULSAR" :  names.get(0).toUpperCase();
+
+		message.append( "========== THE MANUAL OF PULSAR LISP SCHEME MUSIC SEQUENCER =========\n\n" );
+		message.append( "### " + name + " ### " );
+		message.append( "\n\n" );
+		{
+			String syn = bean.getParameterDescription();
+			String rv = bean.getReturnValueDescription();
+			message.append( 
+					"#### SYNOPSIS ####\n\n" );
+			message.append( "(" +
+					String.join( "|", 
+						names) +
+					(syn.equals("") ? "" : " ") +
+					syn +
+					")" + rv);
+			
+			message.append( "\n\n" );
+		}
+
+		String msg1;
+		{
+			msg1 = bean.getShortDescription();
+			if ( "".equals( msg1 ) ) {
+			} else {
+				List<Symbol> l = bean.getNameList();
+				if ( l != null && ! l.isEmpty() ) {
+					msg1 = msg1.replaceAll( "<procedure-name/>",  SchemeUtils.symbolToString( l.get(0) ) );
+					// msg1 = "||" + SchemeUtils.symbolToString( l.get(0) ) + "||" + " " + msg1;
+				} else {
+//					msg1 = "This " + msg1;
+				}
+			}
+		}
+
+		String msg2;
+		{
+			msg2 = bean.getLongDescription();
+		}
+		
+		message.append( "### DESCRIPTION ###" );
+		message.append(  msg1  );
+		message.append( " " );
+		message.append(  msg2  );
+		message.append( "\n\n" );
+		message.append( "--------------------------------------------------------" );
+		message.append( "" );
+
+		return message.toString();	
+	}
+
+	static String formatForKawaPad( DescriptiveInitializerBean bean ) {
 		StringBuilder message = new StringBuilder();
 		List<String> names = SchemeUtils.symbolListToStringList( bean.getNameList());
 		

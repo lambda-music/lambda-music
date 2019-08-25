@@ -55,11 +55,13 @@ import gnu.mapping.Procedure1;
 import gnu.mapping.Procedure2;
 import gnu.mapping.Procedure3;
 import gnu.mapping.ProcedureN;
+import gnu.mapping.SimpleSymbol;
 import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import gnu.mapping.WrongArguments;
 import gnu.math.DFloNum;
 import kawa.standard.Scheme;
+import kawa.standard.append;
 import metro.Metro;
 import metro.MetroPort;
 import metro.MetroTrack;
@@ -1954,6 +1956,7 @@ public final class Pulsar extends Metro {
 				return "Calm down!";
 			}
 		} , "help!");
+		
 		SchemeUtils.defineDoc( scheme,
 			new DescriptiveInitializerBean(){{
 				setParameterDescription( "" );
@@ -1965,7 +1968,7 @@ public final class Pulsar extends Metro {
 					+ "This procedure is deliberately defined as a joke and has by no means effect to the current system state "
 					+ "nor any other related elements. See (help about-main)." );
 			}}, 
-			"make-page" );
+			"help!" );
 		
 		final class ProcedureHelp extends ProcedureN {
 			final Environment environment;
@@ -1979,34 +1982,62 @@ public final class Pulsar extends Metro {
 				this.index = index;
 			}
 			
-			public Object apply0() throws Throwable {
+			public Object availableProcedures() throws Throwable {
 				Procedure1 proc1 = new Procedure1() {
 					@Override
 					public Object apply1(Object arg1) throws Throwable {
 						Pair pair = (Pair)arg1;
+						Object result;
 						if ( index < pair.length() ) {
-							return pair.get(index);
+							result = pair.get(index);
 						} else if ( 1 < pair.length() ) {
-							return pair.get(1);
+							result =  pair.get(1);
 						} else if ( 0 < pair.length() ) {
-							return Symbol.valueOf(((Procedure)pair.get(0)).getName());
+							result =  Symbol.valueOf(((Procedure)pair.get(0)).getName());
 						} else {
-							return "";
+							result =  "";
 						}
+						
+						return result;
 					}
 				};
 				return map.apply2( proc1, 
 					reverse.apply1( 
 						SchemeUtils.getDocumentList(this.environment)));
+			}
+			public Object apply0() throws Throwable {
+				Procedure1 proc1 = new Procedure1() {
+					@Override
+					public Object apply1(Object arg1) throws Throwable {
+						return SchemeUtils.toSchemeString( "(help " + SchemeUtils.symbolToString( arg1 ) + ")" );
+					}
+				};
+				
+				Object result = append.append.apply2(
+									Pair.make( 
+										SchemeUtils.toSchemeString( "#| === The list of all available procedures ===\n\n" ), 
+										map.apply2( proc1, availableProcedures())),
+									Pair.make( SchemeUtils.toSchemeString( "|#" ), EmptyList.emptyList ));
+
+				return SchemeUtils.makePage( result );
+ 
+//				result = String.join( " ", (List)result ); 
+//				return SchemeUtils.makePage(  result.toString(), helpTextWidth );
 			}; 
 			
 			String MSG_NO_DOCUMENTATION = "No documentation is available.";
+			SimpleSymbol ALL_AVAILABLE = Symbol.valueOf( "all-available" );
+
 			public Object apply1(Object arg1) throws Throwable {
-				String message = SchemeUtils.getDescription( arg1 );
-				if ( message == null ) {
-					message = MSG_NO_DOCUMENTATION;
+				if ( ALL_AVAILABLE.equals( arg1 ) ) {
+					return availableProcedures();
+				} else {
+					String message = SchemeUtils.getDescription( arg1 );
+					if ( message == null ) {
+						message = MSG_NO_DOCUMENTATION;
+					}
+					return SchemeUtils.makePage( message, helpTextWidth );
 				}
-				return SchemeUtils.makePage( message, helpTextWidth );
 			}
 
 			@Override
