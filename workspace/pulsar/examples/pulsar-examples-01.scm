@@ -1,4 +1,18 @@
-(about-notation)
+(#|
+   ========== THE MANUAL OF PULSAR LISP SCHEME MUSIC SEQUENCER =========
+   
+   NAME: GET-TRACK
+   
+   SYNOPSIS: (get-track [track-spec]...)::void
+   
+   DESCRIPTION: ||get-track|| retrieves multiple tracks which
+   are specified as track-spec arguments. The tracks are stored
+   in a linked list. See (help about-track-spec). In case the
+   current sequencer system has not established any connection to the
+   JACK, it throws an exception.
+   ======================================================================
+  |# help about-intro )
+
 (if (not (open?))
   (begin
    (load "./ats's-drumkit.scm" )

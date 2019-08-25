@@ -21,10 +21,13 @@
 package kawapad;
 
 import java.awt.Color;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,6 +39,10 @@ import javax.swing.text.StyledDocument;
 import kawapad.SimpleSchemeParser.ParserState;
 
 public class KawaPadHighlighter {
+	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+	static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+	static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
+	static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 	
 	public static String lispWordToPatternString(Collection<String> lispWordCollection) {
 		String[] lispWords = lispWordCollection.toArray( new String[ lispWordCollection.size() ] );
@@ -144,40 +151,117 @@ public class KawaPadHighlighter {
 	    }
 	}
 	
+	static SimpleAttributeSet commentGray = new SimpleAttributeSet();
+	static {
+		commentGray.addAttribute(StyleConstants.ColorConstants.Foreground, Color.gray );
+	}
+	
+	static  SimpleAttributeSet commentLightGray = new SimpleAttributeSet();
+	static {
+		commentLightGray.addAttribute(StyleConstants.ColorConstants.Foreground, new Color( 0,0,0,16 ));
+	}
+	
+	static SimpleAttributeSet commentItalic = new SimpleAttributeSet();
+	static {
+		commentItalic.addAttribute( StyleConstants.Italic, true );
+		commentItalic.addAttribute(StyleConstants.ColorConstants.Foreground, Color.gray );
+	}
+	
+	static SimpleAttributeSet commentBold = new SimpleAttributeSet();
+	static {
+		commentBold.addAttribute(StyleConstants.CharacterConstants.Bold, Boolean.TRUE );
+		commentBold.addAttribute(StyleConstants.ColorConstants.Foreground, Color.gray );
+	}
+	
+	static SimpleAttributeSet commentUnderline = new SimpleAttributeSet();
+	static {
+		commentUnderline.addAttribute(StyleConstants.Underline , Boolean.TRUE );
+		commentUnderline.addAttribute(StyleConstants.ColorConstants.Foreground, Color.gray );
+	}
+	
+	static Pattern patternComment  = Pattern.compile( ";.*$|\\#\\|[\\S\\s]*?\\|\\#", Pattern.MULTILINE );
+	static Pattern patternCommentItalic = Pattern.compile( "//(\\S*?)//", Pattern.MULTILINE );
+	static Pattern patternCommentBold = Pattern.compile( "\\|\\|(\\S*?)\\|\\|", Pattern.MULTILINE );
+	static Pattern patternCommentUnderline = Pattern.compile( "__(\\S*?)__", Pattern.MULTILINE );
+
 	public static void highlightSyntax( JTextPane textPane, Collection<String> keywordList ) {
+		logInfo("highlightSyntax()");
 		StyledDocument document = textPane.getStyledDocument();
 		String text = textPane.getText();
 		{
 	    	SimpleAttributeSet bold = new SimpleAttributeSet();
 	    	bold.addAttribute(StyleConstants.CharacterConstants.Bold, Boolean.TRUE );
 
-	    	for ( String keyword : keywordList ) {
-	    		String patternString = "(^|\\s|[\\(])(" + Pattern.quote( keyword ) + ")($|\\s|[\\)])";
+	    	{
+	    		String patternString = lispWordToPatternString( keywordList );
 	    		
 	    		Pattern pattern = Pattern.compile( patternString );
 	    		Matcher matcher = pattern.matcher( text );
 	    		while ( matcher.find() ) {
 //	    			 System.err.println(  matcher.start() + ":" + matcher.end() );
 	    			document.setCharacterAttributes(
-	    					matcher.start(2),
-	    					matcher.end(2) - matcher.start(2),
+	    					matcher.start(),
+	    					matcher.end() - matcher.start(),
 	    					bold, true);
 	    		}
 	    	}
 	    }
 
 	    {
-	    	SimpleAttributeSet gray = new SimpleAttributeSet();
-	    	gray.addAttribute(StyleConstants.ColorConstants.Foreground, Color.gray );
-
-	    	Pattern pattern = Pattern.compile( ";.*$|\\#\\|[\\w\\W]*?\\|\\#", Pattern.MULTILINE );
-	    	Matcher matcher = pattern.matcher( text );
+			Matcher matcher = patternComment.matcher( text );
 	    	while ( matcher.find() ) {
 	    		// System.err.println( matcher.start() + ":" + matcher.end() );
 	    		document.setCharacterAttributes(
 	    				matcher.start(),
 	    				matcher.end() - matcher.start(),
-	    				gray, true);
+	    				commentGray, true);
+	    		
+	    		{
+	    			String substring = text.substring( 
+	    				matcher.start(),
+	    				matcher.end() );
+
+	    			Matcher matcher2 = patternCommentItalic.matcher( substring );
+	    			while ( matcher2.find() ) {
+	    				// System.err.println( matcher.start() + ":" + matcher.end() );
+	    				document.setCharacterAttributes(
+	    					matcher.start()+ matcher2.start(),
+	    					matcher2.end() - matcher2.start() + 1,
+	    					commentLightGray, true);
+	    				
+	    				document.setCharacterAttributes(
+	    					matcher.start()+matcher2.start(1),
+	    					matcher2.end(1) - matcher2.start(1),
+	    					commentItalic, true);
+	    			}
+	    			
+	    			Matcher matcher3 = patternCommentBold.matcher( substring );
+	    			while ( matcher3.find() ) {
+	    				// System.err.println( matcher.start() + ":" + matcher.end() );
+	    				document.setCharacterAttributes(
+	    					matcher.start()+matcher3.start(),
+	    					matcher3.end() - matcher3.start() + 1,
+	    					commentLightGray, true);
+	    				
+	    				document.setCharacterAttributes(
+	    					matcher.start()+matcher3.start(1),
+	    					matcher3.end(1) - matcher3.start(1),
+	    					commentBold, true);
+	    			}
+	    			Matcher matcher4 = patternCommentUnderline.matcher( substring );
+	    			while ( matcher4.find() ) {
+	    				// System.err.println( matcher.start() + ":" + matcher.end() );
+	    				document.setCharacterAttributes(
+	    					matcher.start()+matcher4.start(),
+	    					matcher4.end() - matcher4.start() + 1,
+	    					commentLightGray, true);
+	    				
+	    				document.setCharacterAttributes(
+	    					matcher.start()+matcher4.start(1),
+	    					matcher4.end(1) - matcher4.start(1),
+	    					commentUnderline, true);
+	    			}
+	    		}
 	    	}
 	    }
 	}

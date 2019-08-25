@@ -20,10 +20,13 @@
 
 package pulsar;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.lang.invoke.MethodHandles;
+import java.nio.charset.Charset;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +37,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.swing.JComboBox;
@@ -1486,7 +1490,7 @@ public final class Pulsar extends Metro {
 			"new-track" );
 		
 		/////////////////////////////////////////////////////////////////
-
+		// ( canonical )
 		SchemeUtils.defineDoc( scheme,
 			new DescriptiveInitializerBean(){{
 				setParameterDescription( "" );
@@ -1503,7 +1507,7 @@ public final class Pulsar extends Metro {
 			}}, 
 			"about-notation" );
 		
-
+		// ( canonical )
 		SchemeUtils.defineDoc( scheme,
 			new DescriptiveInitializerBean(){{
 				setParameterDescription( "" );
@@ -1669,7 +1673,7 @@ public final class Pulsar extends Metro {
 			}}, 
 			"notify-track-change" );
 		
-		SchemeUtils.defineVar( scheme, new Procedure0("ls") {
+		SchemeUtils.defineVar( scheme, new Procedure0("list-tracks") {
 			@Override
 			public Object apply0() throws Throwable {
 				List<MetroTrack> tempAllTracks = replicateAllTracks(); 
@@ -1681,26 +1685,20 @@ public final class Pulsar extends Metro {
 				return Pair.makeList(list);
 
 			}
-		} , "lst");
+		} , "list-tracks", "lstt" );
 
 		SchemeUtils.defineDoc( scheme,
 			new DescriptiveInitializerBean(){{
 				setParameterDescription( "" );
-				setReturnValueDescription( "" );
-				setShortDescription( "Welcome to Pulsar music sequencer!" );
+				setReturnValueDescription( ":;(list track ...)" );
+				setShortDescription( "||<procedure-name/>|| retrieves all tracks on the current sequencer. " );
 				setLongDescription( ""
-									+ "Pulsar music sequencer is a music sequencer which collaboratively works with "
-									+ "a powerful computer language Lisp Scheme. "
-									+ "And this frame itself is a powerful Lisp Scheme editor which is called KawaPad. "
-									+ "In Lisp, all commands are surrounded with a pair of parentheses. You can easily execute "
-									+ "one of those command by moving your cursor within the pair of parentheses and pressing CTRL+ENTER. \n\n"
-									+ "To show this help, execute (help about-intro). \n"
-									+ "To show all available procedures, execute (help) . \n"
-									+ "To show help of a procedure, execute (help [procedure-name] ) . \n"
+									+ "The order of the tracks in the result of this procedure follows the first-in-last-out manner. "
+									+ "That is, (car (<procedure-name/>)) always returns the last added track. "
 									+ "" 
 								 );
 			}}, 
-			"about-intro" );		
+			"list-tracks" );		
 		
 		Procedure0 clr = new Procedure0("clear-tracks") {
 			@Override
@@ -1709,16 +1707,54 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		};
-		SchemeUtils.defineVar( scheme, clr , "clet"
-										   , "clear-tracks" );
+		SchemeUtils.defineVar( scheme, clr , "clear-tracks",
+											 "clet" );
 		
-		SchemeUtils.defineVar( scheme, new ProcedureN("print-stack-trace") {
+		SchemeUtils.defineDoc( scheme,
+			new DescriptiveInitializerBean(){{
+				setParameterDescription( "" );
+				setReturnValueDescription( ":;void" );
+				setShortDescription( "||<procedure-name/>|| removes all tracks on the current sequencer immediately. " );
+				setLongDescription( ""
+									+ "" 
+								 );
+			}}, 
+			"clear-tracks" );	
+		
+		SchemeUtils.defineVar( scheme, new Procedure0("print-stack-trace") {
 			@Override
-			public Object apply1(Object arg) throws Throwable {
-				((Throwable)arg).printStackTrace();
-				return arg;
+			public Object apply0() throws Throwable {
+				PrintStream out = null;
+				ByteArrayOutputStream bout = null;
+				try {
+					bout = new ByteArrayOutputStream();
+					out = new PrintStream( bout );
+					new Throwable().printStackTrace( out );
+					out.flush();
+					String value = new String( bout.toByteArray(), Charset.defaultCharset() );
+					value = Pattern.compile( "^\\s+", Pattern.MULTILINE ).matcher( value ).replaceAll( "" );
+					return SchemeUtils.toSchemeString( value ) ;
+				} finally {
+					if ( bout != null )
+						bout.close();
+					if ( out != null )
+						out.close();
+				}
 			}
 		} , "print-stack-trace");
+		
+		SchemeUtils.defineDoc( scheme,
+			new DescriptiveInitializerBean(){{
+				setParameterDescription( "" );
+				setReturnValueDescription( ":;void" );
+				setShortDescription( "||<procedure-name/>|| returns the current stack trace as a string. " );
+				setLongDescription( ""
+									+ "" 
+								 );
+			}}, 
+			"print-stack-trace" );	
+
+		
 		SchemeUtils.defineVar( scheme, new ProcedureN("display-warn") {
 			@Override
 			public Object apply1(Object arg) throws Throwable {
@@ -1726,6 +1762,17 @@ public final class Pulsar extends Metro {
 				return Values.empty;
 			}
 		} , "display-warn");
+		SchemeUtils.defineDoc( scheme,
+			new DescriptiveInitializerBean(){{
+				setParameterDescription( "ANY" );
+				setReturnValueDescription( ":;void" );
+				setShortDescription( "||<procedure-name/>|| output the specified value to the standard error stream. " );
+				setLongDescription( ""
+									+ "" 
+								 );
+			}}, 
+			"display-warn" );
+		
 		SchemeUtils.defineVar( scheme, new Procedure0("newline-warn") {
 			@Override
 			public Object apply0() throws Throwable {
@@ -1734,33 +1781,43 @@ public final class Pulsar extends Metro {
 			}
 		} , "newline-warn");
 
-//		SchemeUtils.defineVar( scheme, new ProcedureN("list-seq") {
-//			@Override
-//			public Object applyN(Object[] args) throws Throwable {
-//				//					logInfo("list-seq");
-//				List<MetroTrack> tempAllTracks = replicateAllTracks();
-//				synchronized ( getMetroLock() ) {
-//					ArrayList<LList> list = new ArrayList<>( tempAllTracks.size() );
-//					for ( MetroTrack track :  tempAllTracks ) {
-//						SchemeSequence sequence = (SchemeSequence)track.getSequence();
-//						list.add( Pair.make( sequence.getTrackName(), sequence.asociationList ));
-//					}
-//					return LList.makeList(list);
-//				}
-//			}
-//		}, "list-seq" );
-
+		SchemeUtils.defineDoc( scheme,
+			new DescriptiveInitializerBean(){{
+				setParameterDescription( "void" );
+				setReturnValueDescription( ":;void" );
+				setShortDescription( "||<procedure-name/>|| output a line terminator to the standard error stream. " );
+				setLongDescription( ""
+									+ "" 
+								 );
+			}}, 
+			"newline-warn" );
+		
 		SchemeUtils.defineVar( scheme, new ProcedureN("typeof") {
 			public Object applyN(Object[] args) throws Throwable {
 				if ( 0 < args.length  ) {
-					return args[0].getClass().getName();
+					if ( args[0] == null ) 
+						return SchemeUtils.toSchemeString( "null" );
+					else
+						return SchemeUtils.toSchemeString( args[0].getClass().getName() );
 				} else {
 					return Invokable.NO_RESULT;
 				}
 			}
 		} , "typeof");
+		
+		SchemeUtils.defineDoc( scheme,
+			new DescriptiveInitializerBean(){{
+				setParameterDescription( "ANY" );
+				setReturnValueDescription( ":;string" );
+				setShortDescription( "||<procedure-name/>|| returns a Java class name of the specified value. " );
+				setLongDescription( "In case the specified value is a ||null|| of Java, this procedure returns \"null\" as a string value. "
+									+ "" 
+								 );
+			}}, 
+			"typeof" );
+		
 
-		SchemeUtils.defineVar( scheme, new Procedure3("mktimer") {
+		SchemeUtils.defineVar( scheme, new Procedure3("make-timer") {
 			@Override
 			public Object apply3(Object arg0, Object arg1,Object arg2 ) throws Throwable {
 				Runnable runnable = createTimer( Pulsar.this, 
@@ -1775,9 +1832,24 @@ public final class Pulsar extends Metro {
 					};
 				};
 			}
-		} , "mktimer");
+		} , "make-timer");
 
-		SchemeUtils.defineVar( scheme, new ProcedureN("rnd") {
+		SchemeUtils.defineDoc( scheme,
+			new DescriptiveInitializerBean(){{
+				setParameterDescription( "delay interval procedure" );
+				setReturnValueDescription( ":;procedure" );
+				setShortDescription( "||<procedure-name/>|| creates a new timer object. " );
+				setLongDescription( ""
+						+ "This procedure registers the specified procedure as a callback procedure of the timer; "
+						+ "the procedure will be called with the specified period and with the specified delay. "
+						+ "The return value is a cancel procedure. When the cancel procedure is called, the timer stops calling the "
+						+ "callback procedure. "
+						+ "" 
+				);
+			}}, 
+			"make-timer" );
+
+		SchemeUtils.defineVar( scheme, new ProcedureN("random") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				switch ( args.length ) {
@@ -1797,7 +1869,21 @@ public final class Pulsar extends Metro {
 					}
 				}
 			}
-		} , "rnd");
+		} , "random", "rnd");
+		
+		SchemeUtils.defineDoc( scheme,
+			new DescriptiveInitializerBean(){{
+				setParameterDescription( "[range::number]" );
+				setReturnValueDescription( ":;number" );
+				setShortDescription( "||<procedure-name/>|| generates a random number. " );
+				setLongDescription( ""
+						+ "This procedure adopts Mersenne Twister a random number generating algorithm. "
+						+ "If an argument [range] is specified, the return value will be within 0<= x <[range]. "
+						+ "If the argument is omitted, the range value defaults to 1. "
+						+ "" 
+				);
+			}}, 
+			"random" );
 		
 		SchemeUtils.defineVar( scheme, new ProcedureN("luck") {
 			@Override
@@ -1808,7 +1894,21 @@ public final class Pulsar extends Metro {
 				return random.nextBoolean( probability );
 			}
 
-		} , "luck");
+		} , "luck" );
+		
+		SchemeUtils.defineDoc( scheme,
+			new DescriptiveInitializerBean(){{
+				setParameterDescription( "[probability::number]" );
+				setReturnValueDescription( "::bool" );
+				setShortDescription( "||<procedure-name/>|| returns a boolean value randomly. " );
+				setLongDescription( ""
+						+ "The only parameter is the probability. If it is zero, the result is always #f. "
+						+ "And if the argument is one, the result is always #t. "
+						+ "" 
+				);
+			}}, 
+			"luck" );
+
 
 		SchemeUtils.defineDoc( scheme,
 			new DescriptiveInitializerBean(){{
