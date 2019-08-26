@@ -19,6 +19,7 @@ public class PulsarApplication {
 	 * @throws IOException 
 	 */
 	static Pulsar parseArgsAndStartPulsar( String[] args ) throws IOException {
+		boolean argSpecialOutputReference1 = false; 
 		boolean argHttp = true;
 		int     argHttpPort = 8192;
 		boolean argGui = true;
@@ -44,13 +45,44 @@ public class PulsarApplication {
 			} else if ( s.equals( "--no-gui" ) ) { 
 				argGui = false;
 				break;
+			} else if ( s.equals( "--output-reference" ) ) { 
+				argSpecialOutputReference1 = true;
+				break;
 			} else {
 				if ( argFileName == null )
 					argFileName = s;
 			}
 		}
 
-		if ( argHttp || argGui ) {
+		if ( argSpecialOutputReference1 ) {
+			Pulsar pulsar = start(argGui, argHttp, argHttpPort, argFileName );
+//			try {
+//				Thread.sleep( 1024 );
+//			} catch (InterruptedException e) {
+//				System.err.println( e.getMessage() );
+//			}
+			System.out.println( pulsar.outputMarkdownReference() );		
+
+			// Pause for the safe shutdown; at this moment, other initializers are still
+			// working and they somehow remain on the AWT-eventqueue and prevent JVM to
+			// shutdown. (Mon, 26 Aug 2019 14:11:31 +0900)
+			try {
+				Thread.sleep( 2048 );
+			} catch (InterruptedException e) {
+				System.err.println( e.getMessage() );
+			}
+			pulsar.invokeLater( new Runnable() {
+				@Override
+				public void run() {
+					pulsar.quit();
+				}
+			});
+			// This is possibly not necessary. But it might help to flush the AWT-eventqueue.
+			// See https://stackoverflow.com/questions/6309407/remove-top-level-container-on-runtime
+			System.gc();
+			
+			return pulsar;
+		} else if ( argHttp || argGui ) {
 			return start(argGui, argHttp, argHttpPort, argFileName);
 		} else {
 			System.err.println( "hmm... you have better to have at least one interface to control the system." );

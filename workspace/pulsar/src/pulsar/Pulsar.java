@@ -326,6 +326,28 @@ public final class Pulsar extends Metro {
     		mainProcedure.invoke();
     }
 
+
+	public String outputMarkdownReference() {
+		return this.getSchemeSecretary().executeSecretarially( new SecretaryMessage.NoThrow<Scheme,String>() {
+			@Override
+			public String execute0( Scheme scheme, Object[] args ) {
+				logInfo( "Pulsar#outputReference()" );
+				return SchemeUtils.createMarkdownHelp( scheme.getEnvironment() );
+			}
+		}, Invokable.NOARG );
+	}
+
+	public void invokeLater( Runnable r ) {
+		 this.getSchemeSecretary().executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+			@Override
+			public void execute0( Scheme scheme, Object[] args ) {
+				logInfo( "Pulsar#invokeLater()" + r );
+				r.run();
+			}
+		}, Invokable.NOARG );
+	}
+	
+    
     /**
      * This hook objects will be invoked whenever reset() method is called.
      */
@@ -1692,7 +1714,7 @@ public final class Pulsar extends Metro {
 		SchemeUtils.defineDoc( scheme,
 			new DescriptiveInitializerBean(){{
 				setParameterDescription( "" );
-				setReturnValueDescription( ":;(list track ...)" );
+				setReturnValueDescription( "::(list track ...)" );
 				setShortDescription( "||<procedure-name/>|| retrieves all tracks on the current sequencer. " );
 				setLongDescription( ""
 									+ "The order of the tracks in the result of this procedure follows the first-in-last-out manner. "
@@ -1715,7 +1737,7 @@ public final class Pulsar extends Metro {
 		SchemeUtils.defineDoc( scheme,
 			new DescriptiveInitializerBean(){{
 				setParameterDescription( "" );
-				setReturnValueDescription( ":;void" );
+				setReturnValueDescription( "::void" );
 				setShortDescription( "||<procedure-name/>|| removes all tracks on the current sequencer immediately. " );
 				setLongDescription( ""
 									+ "" 
@@ -1748,7 +1770,7 @@ public final class Pulsar extends Metro {
 		SchemeUtils.defineDoc( scheme,
 			new DescriptiveInitializerBean(){{
 				setParameterDescription( "" );
-				setReturnValueDescription( ":;void" );
+				setReturnValueDescription( "::void" );
 				setShortDescription( "||<procedure-name/>|| returns the current stack trace as a string. " );
 				setLongDescription( ""
 									+ "" 
@@ -1767,7 +1789,7 @@ public final class Pulsar extends Metro {
 		SchemeUtils.defineDoc( scheme,
 			new DescriptiveInitializerBean(){{
 				setParameterDescription( "ANY" );
-				setReturnValueDescription( ":;void" );
+				setReturnValueDescription( "::void" );
 				setShortDescription( "||<procedure-name/>|| output the specified value to the standard error stream. " );
 				setLongDescription( ""
 									+ "" 
@@ -1786,7 +1808,7 @@ public final class Pulsar extends Metro {
 		SchemeUtils.defineDoc( scheme,
 			new DescriptiveInitializerBean(){{
 				setParameterDescription( "void" );
-				setReturnValueDescription( ":;void" );
+				setReturnValueDescription( "::void" );
 				setShortDescription( "||<procedure-name/>|| output a line terminator to the standard error stream. " );
 				setLongDescription( ""
 									+ "" 
@@ -1810,7 +1832,7 @@ public final class Pulsar extends Metro {
 		SchemeUtils.defineDoc( scheme,
 			new DescriptiveInitializerBean(){{
 				setParameterDescription( "ANY" );
-				setReturnValueDescription( ":;string" );
+				setReturnValueDescription( "::string" );
 				setShortDescription( "||<procedure-name/>|| returns a Java class name of the specified value. " );
 				setLongDescription( "In case the specified value is a ||null|| of Java, this procedure returns \"null\" as a string value. "
 									+ "" 
@@ -1839,7 +1861,7 @@ public final class Pulsar extends Metro {
 		SchemeUtils.defineDoc( scheme,
 			new DescriptiveInitializerBean(){{
 				setParameterDescription( "delay interval procedure" );
-				setReturnValueDescription( ":;procedure" );
+				setReturnValueDescription( "::procedure" );
 				setShortDescription( "||<procedure-name/>|| creates a new timer object. " );
 				setLongDescription( ""
 						+ "This procedure registers the specified procedure as a callback procedure of the timer; "
@@ -1982,7 +2004,7 @@ public final class Pulsar extends Metro {
 				this.index = index;
 			}
 			
-			public Object availableProcedures() throws Throwable {
+			public LList availableProcedures() throws Throwable {
 				Procedure1 proc1 = new Procedure1() {
 					@Override
 					public Object apply1(Object arg1) throws Throwable {
@@ -2001,9 +2023,9 @@ public final class Pulsar extends Metro {
 						return result;
 					}
 				};
-				return map.apply2( proc1, 
-					reverse.apply1( 
-						SchemeUtils.getDocumentList(this.environment)));
+				return (LList)map.apply2( proc1, 
+								reverse.apply1( 
+									SchemeUtils.getDocumentList(this.environment)));
 			}
 			public Object apply0() throws Throwable {
 				Procedure1 proc1 = new Procedure1() {
@@ -2071,7 +2093,7 @@ public final class Pulsar extends Metro {
 		SchemeUtils.defineVar( scheme, new ProcedureN("help-markdown") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
-				System.out.println( SchemeUtils.createMarkdownHelp( scheme ) );
+				System.out.println( outputMarkdownReference() );
 //				SchemeUtils.toSchemeSymbol( sb.toString() );
 				return Values.empty;
 			}

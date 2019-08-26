@@ -1,5 +1,5 @@
-(display "Welcome to pulsar a drum machine!")
-(newline)
+(display-warn "Welcome to pulsar a drum machine!")
+(newline-warn)
 
 ; Add the .kawapad configuration directory to import path.  The configuration
 ; directory should be on the user's home directory.

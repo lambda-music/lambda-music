@@ -259,6 +259,11 @@ public class KawaPad extends JFrame {
 	}
 //	ADDED <<< (Tue, 06 Aug 2019 09:29:54 +0900)
 
+	
+	public void quit() {
+		this.dispatchEvent( new WindowEvent(this, WindowEvent.WINDOW_CLOSING) );
+	}
+	
 	@Override
 	public void dispose() {
 		unregisterLocalSchemeInitializers( this.schemeSecretary, this );

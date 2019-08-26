@@ -2,6 +2,7 @@ package pulsar.lib.scheme;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
@@ -84,6 +85,7 @@ public class DescriptiveInitializerBean {
 		return formatForMarkdown( SchemeUtils.getDescriptionBean( p ) );
 	}
 
+	static Pattern p1 = Pattern.compile( "([\\(\\)\\[\\]])" );
 	public static String formatForMarkdown( DescriptiveInitializerBean bean ) {
 		StringBuilder message = new StringBuilder();
 		List<String> names = SchemeUtils.symbolListToStringList( bean.getNameList());
@@ -94,17 +96,18 @@ public class DescriptiveInitializerBean {
 		message.append( "" + name + "\n" );
 		message.append( "====================" );
 		message.append( "\n\n" );
+		
 		{
-			String syn = bean.getParameterDescription();
+			String syn = p1.matcher( bean.getParameterDescription() ).replaceAll( "\\\\$1" );
 			String rv = bean.getReturnValueDescription();
 			message.append( 
 					"#### SYNOPSIS ####\n" );
-			message.append( "(" +
-					String.join( "|", 
+			message.append( "    \\(" +
+					String.join( "\\|", 
 						names) +
 					(syn.equals("") ? "" : " ") +
 					syn +
-					")" + rv);
+					")\\" + rv);
 			
 			message.append( "\n\n" );
 		}

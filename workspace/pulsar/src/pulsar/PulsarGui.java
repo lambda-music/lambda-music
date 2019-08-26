@@ -32,7 +32,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -114,7 +113,8 @@ public class PulsarGui {
 	Runnable shutdownProc01 = new Runnable() {
 		@Override
 		public void run() {
-			frame.setVisible( false );
+//			frame.setVisible( false );
+			frame.quit();
 		}
 	};
 
@@ -432,7 +432,7 @@ public class PulsarGui {
 	JSlider sl_tempoSlider;
 	
 	public void quit() {
-		frame.dispatchEvent( new WindowEvent(frame, WindowEvent.WINDOW_CLOSING) );
+		frame.quit();
 	}
 
 	public void guiClear() {

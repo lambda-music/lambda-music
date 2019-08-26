@@ -35,6 +35,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -60,6 +61,7 @@ import gnu.lists.Pair;
 import gnu.mapping.CallContext;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
+import gnu.mapping.Procedure1;
 import gnu.mapping.SimpleSymbol;
 import gnu.mapping.Symbol;
 import gnu.math.DFloNum;
@@ -879,15 +881,43 @@ public class SchemeUtils {
 	}
 
 
-	public static String createMarkdownHelp( Scheme scheme ) {
+	public static String createMarkdownHelp( Environment env ) {
 		StringBuilder sb = new StringBuilder();
-		for ( Object o : SchemeUtils.getDocumentList( scheme.getEnvironment() ) ) {
-			System.out.println( o );
+		List lst = new ArrayList( SchemeUtils.getDocumentList( env ) );
+		Collections.reverse( lst );
+		for ( Object o : lst ) {
+//			System.out.println( o );
 			sb.append( DescriptiveInitializerBean.formatForMarkdown( (Procedure)((Pair)o).getCar() ) );
 			sb.append( "\n\n" );
 		}
 		return sb.toString();
 	}
+	
+	final Procedure reverse = (Procedure)gnu.kawa.slib.srfi1.reverse.get();
+	final Procedure map = (Procedure)gnu.kawa.slib.srfi1.map.get();
 
+	public LList availableProcedures( Environment environment, int index ) throws Throwable {
+		Procedure1 proc1 = new Procedure1() {
+			@Override
+			public Object apply1(Object arg1) throws Throwable {
+				Pair pair = (Pair)arg1;
+				Object result;
+				if ( index < pair.length() ) {
+					result = pair.get(index);
+				} else if ( 1 < pair.length() ) {
+					result =  pair.get(1);
+				} else if ( 0 < pair.length() ) {
+					result =  Symbol.valueOf(((Procedure)pair.get(0)).getName());
+				} else {
+					result =  "";
+				}
+				
+				return result;
+			}
+		};
+		return (LList)map.apply2( proc1, 
+						reverse.apply1( 
+							SchemeUtils.getDocumentList(environment)));
+	}
 	
 }
