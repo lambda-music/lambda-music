@@ -2,7 +2,7 @@ OPEN?
 ====================
 
 #### SYNOPSIS ####
-    \(open?)\::boolean
+    (open?)::boolean
 
 ### DESCRIPTION ###
 returns the current open state. This procedure returns #t iff the current
@@ -16,7 +16,7 @@ OPEN
 ====================
 
 #### SYNOPSIS ####
-    \(open \[string\])\::void
+    (open [string])::void
 
 ### DESCRIPTION ###
 starts a new connection between JACK Audio Connection Kit. This procedure opens
@@ -32,7 +32,7 @@ CLOSE
 ====================
 
 #### SYNOPSIS ####
-    \(close)\::void
+    (close)::void
 
 ### DESCRIPTION ###
 ends the current connection between JACK Audio Connection Kit. This procedure
@@ -49,7 +49,7 @@ OPEN-OUTPUT
 ====================
 
 #### SYNOPSIS ####
-    \(open-output \[ANY|\(list ANY...\)  \]...)\::MetroPort
+    (open-output [ANY|(list ANY...)  ]...)::MetroPort
 
 ### DESCRIPTION ###
 opens output ports on the current JACK connection. Each argument is the name
@@ -68,7 +68,7 @@ OPEN-INPUT
 ====================
 
 #### SYNOPSIS ####
-    \(open-input \[ANY|\(list ANY...\)  \]...)\::MetroPort
+    (open-input [ANY|(list ANY...)  ]...)::MetroPort
 
 ### DESCRIPTION ###
 opens input ports on the current JACK connection. Each argument is the name of
@@ -87,7 +87,7 @@ CLOSE-OUTPUT
 ====================
 
 #### SYNOPSIS ####
-    \(close-output \[MetroPort|symbol|string|\(list MetroPort|symbol|string ...\) \]...)\::void
+    (close-output [MetroPort|symbol|string|(list MetroPort|symbol|string ...) ]...)::void
 
 ### DESCRIPTION ###
 closes the specified output ports on the current JACK connection. Each
@@ -107,7 +107,7 @@ CLOSE-INPUT
 ====================
 
 #### SYNOPSIS ####
-    \(close-input \[MetroPort|symbol|string|\(list MetroPort|symbol|string ...\) \]...)\::void
+    (close-input [MetroPort|symbol|string|(list MetroPort|symbol|string ...) ]...)::void
 
 ### DESCRIPTION ###
 closes the specified input ports on the current JACK connection. Each argument
@@ -127,7 +127,7 @@ LIST-OUTPUT
 ====================
 
 #### SYNOPSIS ####
-    \(list-output)\::(list MetroPort ...)
+    (list-output)::(list MetroPort ...)
 
 ### DESCRIPTION ###
 returns a list which contains all output ports on the current JACK connection.
@@ -143,7 +143,7 @@ LIST-INPUT
 ====================
 
 #### SYNOPSIS ####
-    \(list-input)\::(list MetroPort ...)
+    (list-input)::(list MetroPort ...)
 
 ### DESCRIPTION ###
 returns a list which contains all input ports on the current JACK connection.
@@ -159,7 +159,7 @@ CONNECT
 ====================
 
 #### SYNOPSIS ####
-    \(connect \[ANY\] ...)\::void
+    (connect [ANY] ...)::void
 
 ### DESCRIPTION ###
 connects specified two ports on the current JACK connection. This procedure
@@ -176,7 +176,7 @@ DISCONNECT
 ====================
 
 #### SYNOPSIS ####
-    \(disconnect \[ANY\] ...)\::void
+    (disconnect [ANY] ...)::void
 
 ### DESCRIPTION ###
 disconnects specified two ports on the current JACK connection. This procedure
@@ -193,7 +193,7 @@ GET-ALL-OUTPUT
 ====================
 
 #### SYNOPSIS ####
-    \(get-all-output)\::list<string>
+    (get-all-output)::list<string>
 
 ### DESCRIPTION ###
 retrieves IDs of all output connections in the current session of JACK Audio
@@ -210,7 +210,7 @@ GET-ALL-INPUT
 ====================
 
 #### SYNOPSIS ####
-    \(get-all-input)\::list<string>
+    (get-all-input)::list<string>
 
 ### DESCRIPTION ###
 retrieves IDs of all input connections in the current session of JACK Audio
@@ -227,7 +227,7 @@ SET-MAIN
 ====================
 
 #### SYNOPSIS ####
-    \(set-main \[procedure\])\::void
+    (set-main [procedure])::void
 
 ### DESCRIPTION ###
 sets the main procedure. The main procedure is a procedure which is called
@@ -242,7 +242,7 @@ GET-MAIN
 ====================
 
 #### SYNOPSIS ####
-    \(get-main \[procedure\])\::void
+    (get-main [procedure])::void
 
 ### DESCRIPTION ###
 retrieves the main procedure. The main procedure is a procedure which is
@@ -257,7 +257,7 @@ SET-PLAYING
 ====================
 
 #### SYNOPSIS ####
-    \(set-playing \[boolean\])\::void
+    (set-playing [boolean])::void
 
 ### DESCRIPTION ###
 sets the current playing state. When #f is passed to this procedure, the
@@ -273,7 +273,7 @@ PLAYING?
 ====================
 
 #### SYNOPSIS ####
-    \(playing?)\::boolean
+    (playing?)::boolean
 
 ### DESCRIPTION ###
 retrieves the current playing state. When the sequencer is playing, it returns
@@ -288,7 +288,7 @@ PLAY
 ====================
 
 #### SYNOPSIS ####
-    \(play)\::boolean
+    (play)::boolean
 
 ### DESCRIPTION ###
 causes the sequencer to start playing. In case the current sequencer system has
@@ -302,7 +302,7 @@ STOP
 ====================
 
 #### SYNOPSIS ####
-    \(stop)\::boolean
+    (stop)::boolean
 
 ### DESCRIPTION ###
 causes the sequencer to stop playing. In case the current sequencer system has
@@ -316,7 +316,7 @@ QUIT
 ====================
 
 #### SYNOPSIS ####
-    \(quit)\::void
+    (quit)::void
 
 ### DESCRIPTION ###
 quits the application. makes the sequencer to stop playing and shutdowns the
@@ -332,7 +332,7 @@ TAP-TEMPO
 ====================
 
 #### SYNOPSIS ####
-    \(tap-tempo)\::void
+    (tap-tempo)::void
 
 ### DESCRIPTION ###
 has the same effect with pressing the tap-tempo button on the main screen. The
@@ -351,7 +351,7 @@ SET-TEMPO
 ====================
 
 #### SYNOPSIS ####
-    \(set-tempo \[number\])\::void
+    (set-tempo [number])::void
 
 ### DESCRIPTION ###
 sets the current tempo. This procedure takes an argument as a
@@ -368,7 +368,7 @@ RESET
 ====================
 
 #### SYNOPSIS ####
-    \(reset)\::void
+    (reset)::void
 
 ### DESCRIPTION ###
 resets the environment object of Scheme interpreter, and close the current JACK
@@ -386,7 +386,7 @@ REWIND
 ====================
 
 #### SYNOPSIS ####
-    \(rewind)\::void
+    (rewind)::void
 
 ### DESCRIPTION ###
 causes the music sequencer to go to the head of the song. This procedure
@@ -402,7 +402,7 @@ SIMULTANEOUS
 ====================
 
 #### SYNOPSIS ####
-    \(simultaneous \[procedure\]...)\::void
+    (simultaneous [procedure]...)::void
 
 ### DESCRIPTION ###
 executes passed the procedures "simultaneously". This procedure is designed to
@@ -421,7 +421,7 @@ GET-TRACK
 ====================
 
 #### SYNOPSIS ####
-    \(get-track \[track-spec\]...)\::void
+    (get-track [track-spec]...)::void
 
 ### DESCRIPTION ###
 //get-track// retrieves multiple tracks which are specified as track-spec
@@ -437,7 +437,7 @@ ABOUT-TRACK-SPEC
 ====================
 
 #### SYNOPSIS ####
-    \(about-track-spec)\
+    (about-track-spec)
 
 ### DESCRIPTION ###
 The track-spec denotes a specification of a track to retrieve. Only symbol,
@@ -465,7 +465,7 @@ NEW-TRACK
 ====================
 
 #### SYNOPSIS ####
-    \(new-track \[procedure/\(list notation\)\]...)\::MetroTrack
+    (new-track [procedure/(list notation)]...)::MetroTrack
 
 ### DESCRIPTION ###
 new-track creates a new track. A track is a basic unit of music in Pulsar music
@@ -487,7 +487,7 @@ ABOUT-NOTATION
 ====================
 
 #### SYNOPSIS ####
-    \(about-notation)\
+    (about-notation)
 
 ### DESCRIPTION ###
 A notation is a MIDI data which Pulsar music sequencer can play. In Pulsar, a
@@ -505,7 +505,7 @@ ABOUT-INTRO
 ====================
 
 #### SYNOPSIS ####
-    \(about-intro)\
+    (about-intro)
 
 ### DESCRIPTION ###
 Welcome to Pulsar music sequencer! Pulsar music sequencer is a music sequencer
@@ -526,7 +526,7 @@ PUT-TRACK
 ====================
 
 #### SYNOPSIS ####
-    \(put-track track \[sync-type\] \[sync-track\] \[sync-offset\])\
+    (put-track track [sync-type] [sync-track] [sync-offset])
 
 ### DESCRIPTION ###
 put the passed track on the sequencer. The sequencer starts to play the added
@@ -560,7 +560,7 @@ REMOVE-TRACK
 ====================
 
 #### SYNOPSIS ####
-    \(remove-track track \[sync-type\] \[sync-track\] \[sync-offset\])\
+    (remove-track track [sync-type] [sync-track] [sync-offset])
 
 ### DESCRIPTION ###
 removes the passed track on the sequencer. The sequencer remove the specified
@@ -595,7 +595,7 @@ NOTIFY-TRACK-CHANGE
 ====================
 
 #### SYNOPSIS ####
-    \(notify-track-change)\::void
+    (notify-track-change)::void
 
 ### DESCRIPTION ###
 notifies the sequencer that the track was added/deleted. When any tracks are
@@ -613,7 +613,7 @@ LIST-TRACKS
 ====================
 
 #### SYNOPSIS ####
-    \(list-tracks)\::(list track ...)
+    (list-tracks)::(list track ...)
 
 ### DESCRIPTION ###
 ||list-tracks|| retrieves all tracks on the current sequencer. The order of
@@ -628,7 +628,7 @@ CLEAR-TRACKS
 ====================
 
 #### SYNOPSIS ####
-    \(clear-tracks)\::void
+    (clear-tracks)::void
 
 ### DESCRIPTION ###
 ||clear-tracks|| removes all tracks on the current sequencer immediately.
@@ -641,7 +641,7 @@ PRINT-STACK-TRACE
 ====================
 
 #### SYNOPSIS ####
-    \(print-stack-trace)\::void
+    (print-stack-trace)::void
 
 ### DESCRIPTION ###
 ||print-stack-trace|| returns the current stack trace as a string.
@@ -654,7 +654,7 @@ DISPLAY-WARN
 ====================
 
 #### SYNOPSIS ####
-    \(display-warn ANY)\::void
+    (display-warn ANY)::void
 
 ### DESCRIPTION ###
 ||display-warn|| output the specified value to the standard error stream.
@@ -667,7 +667,7 @@ NEWLINE-WARN
 ====================
 
 #### SYNOPSIS ####
-    \(newline-warn void)\::void
+    (newline-warn void)::void
 
 ### DESCRIPTION ###
 ||newline-warn|| output a line terminator to the standard error stream.
@@ -680,7 +680,7 @@ TYPEOF
 ====================
 
 #### SYNOPSIS ####
-    \(typeof ANY)\::string
+    (typeof ANY)::string
 
 ### DESCRIPTION ###
 ||typeof|| returns a Java class name of the specified value. In case the
@@ -694,7 +694,7 @@ MAKE-TIMER
 ====================
 
 #### SYNOPSIS ####
-    \(make-timer delay interval procedure)\::procedure
+    (make-timer delay interval procedure)::procedure
 
 ### DESCRIPTION ###
 ||make-timer|| creates a new timer object. This procedure registers the
@@ -711,7 +711,7 @@ RANDOM
 ====================
 
 #### SYNOPSIS ####
-    \(random \[range::number\])\::number
+    (random [range::number])::number
 
 ### DESCRIPTION ###
 ||random|| generates a random number. This procedure adopts Mersenne Twister a
@@ -727,7 +727,7 @@ LUCK
 ====================
 
 #### SYNOPSIS ####
-    \(luck \[numeric\])\::boolean
+    (luck [numeric])::boolean
 
 ### DESCRIPTION ###
 //luck// is a procedure that returns a random bool value. The first argument
@@ -745,7 +745,7 @@ LUCK
 ====================
 
 #### SYNOPSIS ####
-    \(luck \[numeric\])\::boolean
+    (luck [numeric])::boolean
 
 ### DESCRIPTION ###
 //luck// is a procedure that returns a random bool value. The first argument
@@ -763,7 +763,7 @@ MAKE-PAGE
 ====================
 
 #### SYNOPSIS ####
-    \(make-page \[string\])\::kawapad-page
+    (make-page [string])::kawapad-page
 
 ### DESCRIPTION ###
 make-page makes the passed value into //kawapad-page// object. When an
@@ -787,7 +787,7 @@ HELP!
 ====================
 
 #### SYNOPSIS ####
-    \(help!)\::string
+    (help!)::string
 
 ### DESCRIPTION ###
 is a procedure to execute when the user needs something which calms you down.
@@ -804,7 +804,7 @@ HELP
 ====================
 
 #### SYNOPSIS ####
-    \(help \[procedure\])\::string|list
+    (help [procedure])::string|list
 
 ### DESCRIPTION ###
 is a procedure to show the description of a specified procedure. When a
@@ -823,7 +823,7 @@ HELP-MARKDOWN
 ====================
 
 #### SYNOPSIS ####
-    \(help-markdown)\::string
+    (help-markdown)::string
 
 ### DESCRIPTION ###
 is a procedure to execute when the user needs something which calms you down.

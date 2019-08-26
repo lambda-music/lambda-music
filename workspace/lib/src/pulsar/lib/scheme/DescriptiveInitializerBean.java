@@ -98,16 +98,16 @@ public class DescriptiveInitializerBean {
 		message.append( "\n\n" );
 		
 		{
-			String syn = p1.matcher( bean.getParameterDescription() ).replaceAll( "\\\\$1" );
+			String syn = bean.getParameterDescription();
 			String rv = bean.getReturnValueDescription();
 			message.append( 
 					"#### SYNOPSIS ####\n" );
-			message.append( "    \\(" +
-					String.join( "\\|", 
+			message.append( "    (" +
+					String.join( "|", 
 						names) +
 					(syn.equals("") ? "" : " ") +
 					syn +
-					")\\" + rv);
+					")" + rv);
 			
 			message.append( "\n\n" );
 		}
