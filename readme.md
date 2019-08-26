@@ -23,10 +23,10 @@ and Linux distributions.
 
 ### Index ###
 
-[Pulsar](blob/master/workspace/pulsar/readme-api.md)
-[Pulsar API Reference](blob/master/workspace/pulsar/readme-api.md)
-[KawaPad](blob/master/workspace/kawapad/readme.md)
-[KawaPad API Reference](blob/master/workspace/kawapad/readme-api.md)
+- [Pulsar](workspace/pulsar/readme-api.md)
+- [Pulsar API Reference](workspace/pulsar/readme-api.md)
+- [KawaPad](workspace/kawapad/readme.md)
+- [KawaPad API Reference](workspace/kawapad/readme-api.md)
 
 
 ### Feature ###
