@@ -25,6 +25,8 @@ and Linux distributions.
 
 - [Pulsar](workspace/pulsar/readme.md)
 - [Pulsar API Reference](workspace/pulsar/readme-api.md)
+- [Metro](workspace/metro/readme.md)
+- [JavaDoc of Metro](workspace/metro/doc/index.html)
 - [KawaPad](workspace/kawapad/readme.md)
 - [KawaPad API Reference](workspace/kawapad/readme-api.md)
 
