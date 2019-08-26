@@ -114,6 +114,7 @@ public class PulsarSpecialNoteListParsers {
 		String longName;
 		String shortDescription;
 		String longDescription;
+		List<NoteListParserElementParameter> parameters;
 		@Override
 		public String getShortName() {
 			return shortName;
@@ -129,6 +130,13 @@ public class PulsarSpecialNoteListParsers {
 		@Override
 		public String getLongDescription() {
 			return longDescription;
+		}
+		@Override
+		public List<NoteListParserElementParameter> getParameters() {
+			return parameters;
+		}
+		public void setParameters( NoteListParserElementParameter ... params ) {
+			this.parameters = new ArrayList<>( Arrays.asList( params ) );
 		}
 	}
 
@@ -147,12 +155,59 @@ public class PulsarSpecialNoteListParsers {
 		}
 	}
 	
+	static String code( String s ) {
+		return "`" + s + "`";
+	}
+	
 	public static final NoteEventParser PARSER_NOTE = new NoteEventParser();
 	static { register( PARSER_NOTE ); }
 	public static class NoteEventParser extends SpecialNoteListParserElement {
 		{
 			this.shortName = "note";
 			this.longName  = "note-on-off";
+			this.shortDescription = "This denotes a musical note. ";
+			this.longDescription = "This denotes a musical note. ";
+			this.setParameters(
+				new NoteListParserElementParameter.Default( 
+					ID_PORT,
+					ID_LONG,
+					"string|number",
+					"Specifies the port name to output the current notation object."
+					),
+				new NoteListParserElementParameter.Default( 
+					ID_CHANNEL,
+					ID_LONG,
+					"number",
+					ID_CHANNEL + " specifies the MIDI channel of the current notation object."
+					),
+				new NoteListParserElementParameter.Default( 
+					ID_OFFSET,
+					ID_LONG,
+					"number",
+					code( ID_OFFSET ) + " specifies the location of the current notation object. "
+					+ "The number should be a real number which denotes a measure length. "
+					+ "Specify 0.0 to the head of the measure and 1.0 to the head of the next measure. "
+					),
+				new NoteListParserElementParameter.Default( 
+					ID_NOTE,
+					ID_LONG,
+					"number",
+					code( ID_NOTE ) + " specifies the pitch of the current notation object. "
+							+ "The number should be a integral number which conforms MIDI note number system. "
+							+ "That is, specifying 60 results getting C4. "
+							+ "In Pulsar, it is available to use predefined identifiers which span from A0 to G9. "
+					),
+				new NoteListParserElementParameter.Default( 
+					ID_VELOCITY,
+					ID_LONG,
+					"number",
+					code( ID_VELOCITY ) + " specifies the MIDI velocity value of the current notation object. "
+							+ "The number should be a integral number which conforms MIDI note number system. "
+							+ "That is, specifying 60 results getting C4. "
+							+ "In Pulsar, it is available to use predefined identifiers which span from A0 to G9. "
+					)
+				);
+
 		}
 		@Override
 		public

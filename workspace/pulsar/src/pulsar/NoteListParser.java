@@ -21,9 +21,11 @@
 package pulsar;
 
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -92,10 +94,11 @@ public class NoteListParser {
 	public static final String ID_TYPE      = "type";
 	private static final boolean DEBUG = false;
 	
+	private ArrayList<NoteListParserElement> allElements = new ArrayList<>();
 	private HashMap<String,NoteListParserElement> shortNameMap = new HashMap<String,NoteListParserElement>();
 	private HashMap<String,NoteListParserElement> longNameMap = new HashMap<String,NoteListParserElement>();
 
-	private void addProc(HashMap<String, NoteListParserElement> map, String key, NoteListParserElement value ) {
+	private void putProc(HashMap<String, NoteListParserElement> map, String key, NoteListParserElement value ) {
 		if (DEBUG)
 			logInfo( shortNameMap.size() + " : putParser( " + key + " )" );
 		if ( key == null || key.equals( "" ) ) {
@@ -113,8 +116,9 @@ public class NoteListParser {
 	 *    A parser element object to add.
 	 */
 	public void put( NoteListParserElement e ) {
-		addProc( shortNameMap, e.getShortName(), e );
-		addProc( longNameMap, e.getLongName(), e );
+		putProc( shortNameMap, e.getShortName(), e );
+		putProc( longNameMap, e.getLongName(), e );
+		allElements.add( e );
 	}
 	/**
 	 * Add all of parser elements in the given collection object.
@@ -140,6 +144,10 @@ public class NoteListParser {
 	 */
 	public NoteListParserElement get( String name ) {
 		return shortNameMap.containsKey( name ) ? shortNameMap.get(name) : longNameMap.get(name); 
+	}
+	
+	public List<NoteListParserElement> getAllElements() {
+		return new ArrayList<>( this.allElements );
 	}
 	
 	/**

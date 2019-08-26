@@ -20,6 +20,7 @@
 
 package pulsar;
 
+import java.util.List;
 import java.util.Map;
 
 import metro.Metro;
@@ -62,6 +63,7 @@ public abstract class NoteListParserElement {
 	
 	public abstract String getShortDescription();
 	public abstract String getLongDescription();
+	public abstract List<NoteListParserElementParameter> getParameters();
 	
 	/**
 	 * Parse the current note on the processing note list. For further information,

@@ -22,8 +22,10 @@ package pulsar;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -138,6 +140,7 @@ public class PulsarMidiNoteListParsers {
 	public static final String ID_PORT      = "port";
 	public static final String ID_PROCEDURE = "proc";
 //	public static final String ID_ID        = "id";
+	public static final String ID_LONG      = "XXX"; // TODO
 	
 	/*
 	 * TODO 
@@ -175,6 +178,10 @@ public class PulsarMidiNoteListParsers {
 		@Override
 		public String getLongDescription() {
 			return midi.getLongDescription();
+		}
+		@Override
+		public List<NoteListParserElementParameter> getParameters() {
+			return Arrays.asList(); // XXX
 		}
 	}
 
