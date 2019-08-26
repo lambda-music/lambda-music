@@ -21,9 +21,9 @@ Pulsar runs on most major platforms which can run Java such as Windows, Mac-OSX
 and Linux distributions. 
 
 
-### Index ###
+### Documentation ###
 
-- [Pulsar](workspace/pulsar/readme-api.md)
+- [Pulsar](workspace/pulsar/readme.md)
 - [Pulsar API Reference](workspace/pulsar/readme-api.md)
 - [KawaPad](workspace/kawapad/readme.md)
 - [KawaPad API Reference](workspace/kawapad/readme-api.md)

@@ -24,7 +24,7 @@
             <fileset dir="${dir.jarfile}/bin.scheme" />
         </jar>
     </target>
-    <target name="create_api_reference">
+    <target name="create_api_reference" depends="create_run_jar" >
         <java jar="pulsar.jar"  fork="true" output="readme-api.md" error="readme-api.log" >
             <arg value="--output-reference" />
         </java>
