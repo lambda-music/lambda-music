@@ -319,6 +319,10 @@ public class SchemeUtils {
 		return SchemeUtils.<Object,String>convertList((List<Object>)p, (v)->SchemeUtils.symbolToString(v) );
 	}
 
+	public static Symbol[] stringListToSymbolList( List<String> stringSymbols ) {
+		return stringListToSymbolList( stringSymbols.toArray( new String[ stringSymbols.size()]));
+	}
+
 	public static Symbol[] stringListToSymbolList(String ... stringSymbols ) {
 		Symbol[] symbols = new Symbol[ stringSymbols.length ];
 		for ( int i=0; i<stringSymbols.length; i++ ) {
@@ -376,13 +380,8 @@ public class SchemeUtils {
 		Environment.setCurrent(e);
 		Language.setCurrentLanguage(scheme);
 
-		Symbol[] symbols = new Symbol[names.length];
-		for ( int i=0; i<names.length; i++ ) {
-			if ( names[i] != null ) {
-				Symbol symbol = schemeSymbol( names[i] );
-				symbols[i] = symbol;
-				e.define( symbol, null, value );
-			}
+		for ( String name : names ) {
+			e.define( schemeSymbol( name ), null, value );
 		}
 	}
 
@@ -442,27 +441,20 @@ public class SchemeUtils {
 //		return null;
 //	}
 //}
-	public static Object defineDoc( Scheme scheme, DescriptiveInitializerBean bean, String ... names ) {
-		if ( names.length < 1 )
-			throw new IllegalArgumentException( "the 'names' parameter must be longer than 1." );
-		
-		// this is a helper. 
-		bean.setNameList( names );
-		
-		Object proc = defineDoc0( scheme, bean.format(), names );
+	public static Object defineDoc( Scheme scheme, DescriptiveBean bean ) {
+		Object proc = defineDoc0( scheme, bean.format(), bean.getName(), bean.getNames() );
 		setDescriptionBean( proc, bean );
 		return proc;
 		
 	}
 
 //	static Procedure proc_defineDocument = eval( lis( "lambda", lis("rt"),   ) );   
-	public static Object defineDoc0( Scheme scheme, String description, String ... names )  {
-		String name = names[0];
+	public static Object defineDoc0( Scheme scheme, String description, String name, List<String> names )  {
 		synchronized ( scheme ) {
 			Object proc = getVar( scheme, name, null );
 			if ( proc == null ) {
 				logWarn( "setDocumentInitializer: " + name + " was not found." );
-				proc = new DescriptiveHelp( name );
+				proc = new DescriptiveHelpProcedure( name );
 				defineVar( scheme, proc, name );
 			}
 			SchemeUtils.setDescription( proc, description );
@@ -873,10 +865,10 @@ public class SchemeUtils {
 	}
 	
 	public static final SimpleSymbol DESCRIPTION_BEAN  = Symbol.valueOf( "pulsar-description-bean" );
-	public static DescriptiveInitializerBean getDescriptionBean( Object proc ) {
+	public static DescriptiveBean getDescriptionBean( Object proc ) {
 		return procedureGet( proc, SchemeUtils.DESCRIPTION_BEAN, null );
 	}
-	public static void setDescriptionBean( Object proc, DescriptiveInitializerBean bean ) {
+	public static void setDescriptionBean( Object proc, DescriptiveBean bean ) {
 		procedureSet( proc, SchemeUtils.DESCRIPTION_BEAN, bean );
 	}
 
@@ -887,7 +879,7 @@ public class SchemeUtils {
 		Collections.reverse( lst );
 		for ( Object o : lst ) {
 //			System.out.println( o );
-			sb.append( DescriptiveInitializerBean.formatForMarkdown( (Procedure)((Pair)o).getCar() ) );
+			sb.append( DescriptiveBean.formatForMarkdown( (Procedure)((Pair)o).getCar() ) );
 			sb.append( "\n\n" );
 		}
 		return sb.toString();

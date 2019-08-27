@@ -114,7 +114,7 @@ public class PulsarSpecialNoteListParsers {
 		String longName;
 		String shortDescription;
 		String longDescription;
-		List<NoteListParserElementParameter> parameters;
+		List<NoteListParserElementParameter> parameters = Collections.EMPTY_LIST;
 		@Override
 		public String getShortName() {
 			return shortName;
