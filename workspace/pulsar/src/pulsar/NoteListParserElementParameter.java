@@ -4,20 +4,23 @@ public abstract class NoteListParserElementParameter {
 	public abstract String getShortName();
 	public abstract String getLongName();
 	public abstract String getType();
+	public abstract String getDefaultValue();
 	public abstract String getDescription();
 
 	public static class Default extends NoteListParserElementParameter{
 		private String shortName;
 		private String longName;
 		private String type;
+		private String defaultValue;
 		private String description;
 		public Default() {
 		}
-		public Default(String shortName, String longName, String type, String description) {
+		public Default(String shortName, String longName, String type, String defaultValue, String description) {
 			super();
 			this.shortName = shortName;
 			this.longName = longName;
 			this.type = type;
+			this.defaultValue = defaultValue;
 			this.description = description;
 		}
 		@Override
@@ -54,6 +57,13 @@ public abstract class NoteListParserElementParameter {
 
 		public void setDescription(String description) {
 			this.description = description;
+		}
+		@Override
+		public String getDefaultValue() {
+			return defaultValue;
+		}
+		public void setDefaultValue(String defaultValue) {
+			this.defaultValue = defaultValue;
 		}
 	}
 }

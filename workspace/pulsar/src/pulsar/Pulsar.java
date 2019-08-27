@@ -2112,12 +2112,18 @@ public final class Pulsar extends Metro {
 					+ "nor any other related elements. See (help about-main)." );
 			}}, 
 			"help-markdown" );
+		
+		PulsarDocuments.defineDoc( scheme, PulsarNoteListParser.getInstance() );
+
 		{
 			SchemeUtils.execScheme( Pulsar.class, scheme, "lib/init.scm"  );
 			SchemeUtils.execScheme( Pulsar.class, scheme, "lib/basic-notes.scm"  );
 			SchemeUtils.execScheme( Pulsar.class, scheme, "lib/music.scm"  );
 			SchemeUtils.execScheme( Pulsar.class, scheme, "lib/xnoop.scm" );
 		}
+		
+		
+		
 	}
 }
 	

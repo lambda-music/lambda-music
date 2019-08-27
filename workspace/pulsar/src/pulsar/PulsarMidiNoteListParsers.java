@@ -142,6 +142,8 @@ public class PulsarMidiNoteListParsers {
 //	public static final String ID_ID        = "id";
 	public static final String ID_LONG      = "XXX"; // TODO
 	
+	public static final double DEFAULT_NOTE_LENGTH = 0.0025d;
+
 	/*
 	 * TODO 
 	 * ID_LENGTH should be renamed to a name which is not misleading.  
