@@ -7,8 +7,8 @@ import java.util.regex.Pattern;
 
 import gnu.mapping.Procedure;
 
-public class DescriptiveBean {
-	public static class Param {
+public abstract class DescriptiveBean implements DescriptiveBeanSynopsisFormatter, Cloneable {
+	public static class Param implements Cloneable {
 		List<String> names;
 		String type;
 		String defaultValue;
@@ -21,12 +21,6 @@ public class DescriptiveBean {
 			this.defaultValue = defaultValue;
 			this.variable = variable;
 			this.description = description;
-		}
-		public String joinNames() {
-//			if ( getNames().isEmpty() )
-//				throw new IllegalArgumentException();
-//			return getNames().get( 0 );
-			return String.join( "|" , this.getNames() );
 		}
 		public String getName() {
 			if ( getNames().isEmpty() )
@@ -64,21 +58,6 @@ public class DescriptiveBean {
 		public void setDescription(String description) {
 			this.description = description;
 		}
-		@Override
-		public String toString() {
-			String result = joinNames() + "::" + getType();
-			if ( defaultValue != null ) {
-				result =  "[" + result + "=" + defaultValue +  "]";
-				if ( this.variable ) {
-					result =  result + "...";
-				}
-			} else {
-				if ( this.variable ) {
-					result =  "[" + result + "]...";
-				}
-			}
-			return result;
-		}
 		public Param process(Object[] args) {
 			Param out = new Param(
 				this.getNames(),
@@ -88,6 +67,17 @@ public class DescriptiveBean {
 				String.format( 
 					this.getDescription(), args ));
 			return out;
+		}
+		@Override
+		public Param clone() {
+			// TODO Auto-generated method stub
+			try {
+				Param result = (Param) super.clone();
+				result.names = new ArrayList<>( this.names );
+				return result;
+			} catch (CloneNotSupportedException e) {
+				throw new InternalError( e );
+			}
 		}
 	}
 	
@@ -108,6 +98,25 @@ public class DescriptiveBean {
 		this.returnValueDescription = returnValueDescription;
 		this.shortDescription = shortDescription;
 		this.longDescription = longDescription;
+	}
+	
+	@Override
+	public DescriptiveBean clone() {
+		try {
+			/*
+			 * At this point, it is unknown that what class this object is going to be;
+			 * though, Object#clone() supports duplicating unknown class.
+			 */
+			DescriptiveBean result = (DescriptiveBean)super.clone();
+			result.names = this.names == null ? null : new ArrayList<>( this.names );
+			result.parameterList = new ArrayList<>();
+			for ( Param p : this.parameterList ) {
+				result.parameterList.add( p.clone() );
+			}
+			return result;
+		} catch (CloneNotSupportedException e) {
+			throw new InternalError(e);
+		}
 	}
 	
 	private List<String> names;
@@ -137,20 +146,10 @@ public class DescriptiveBean {
 		return this;
 	}
 
-	/* (non-Javadoc)
-	 * @see pulsar.lib.scheme.Descriptive#getParameterDescription2()
-	 */
-	public String getParameterDescription2() {
-		List<String> stringList = new ArrayList<>();
-		for ( Param param : this.parameterList ) {
-			stringList.add( param.toString() );
-		}
-		return String.join( " ", stringList );
-	}
+	public abstract String formatParameter( Param param );
 
-	/* (non-Javadoc)
-	 * @see pulsar.lib.scheme.Descriptive#getParameterDescription()
-	 */
+	public abstract String formatParameterDescription();
+
 	public String getParameterDescription() {
 		return parameterDescription;
 	}
@@ -166,15 +165,9 @@ public class DescriptiveBean {
 	public void addParameter( List<String> names, String type, String defaultValue, boolean isVariable, String description ){
 		this.addParameter( new Param( names, type, defaultValue, isVariable, description ) );
 	}
-	/* (non-Javadoc)
-	 * @see pulsar.lib.scheme.Descriptive#getParameterList()
-	 */
 	public List<Param> getParameterList() {
 		return parameterList;
 	}
-	/* (non-Javadoc)
-	 * @see pulsar.lib.scheme.Descriptive#getReturnValueDescription()
-	 */
 	public String getReturnValueDescription() {
 		return returnValueDescription;
 	}
@@ -187,9 +180,6 @@ public class DescriptiveBean {
 	public void setShortDescription(String shortDescription) {
 		this.shortDescription = shortDescription;
 	}
-	/* (non-Javadoc)
-	 * @see pulsar.lib.scheme.Descriptive#getLongDescription()
-	 */
 	public String getLongDescription() {
 		return longDescription;
 	}
@@ -202,11 +192,15 @@ public class DescriptiveBean {
 	}
 	
 	public String format() {
-		return formatForKawaPad( this );
-	}
+		return KawaPadDescriptive.formatForKawaPad( this );
+	};
+	
+//	@Override
+//	public abstract String formatSynopsis();
 
 	static DescriptiveBean process( DescriptiveBean in, Object ... args ) {
-		DescriptiveBean out = new DescriptiveBean();
+		// See comment in DescriptiveBean#clone() 
+		DescriptiveBean out = in.clone();
 		
 		out.setParameterDescription( String.format( in.getParameterDescription(), args ));
 		for ( Param in_param : in.getParameterList() ) {
@@ -236,17 +230,10 @@ public class DescriptiveBean {
 		message.append( "\n\n" );
 		
 		{
-			String syn = bean.getParameterDescription2();
-			String rv = bean.getReturnValueDescription();
-			
 			message.append( 
 					"#### SYNOPSIS ####\n" );
-			message.append( "    (" +
-					String.join( "|", bean.getNames()) +
-					(syn.equals("") ? "" : " ") +
-					syn +
-					")" + rv);
-			
+			message.append( "    " );
+			message.append( bean.formatSynopsis());
 			message.append( "\n\n" );
 		}
 
@@ -271,53 +258,12 @@ public class DescriptiveBean {
 		return message.toString();	
 	}
 
+
 	String interporlate( String msg ) {
 		return msg.replaceAll( "<name/>",  this.getName() );
 	}
 	
-	public static String formatForKawaPad( DescriptiveBean bean ) {
-		StringBuilder message = new StringBuilder();
-		
-		message.append( "========== THE MANUAL OF PULSAR LISP SCHEME MUSIC SEQUENCER =========\n\n" );
-		message.append( "NAME: " );
-		message.append( bean.getName().toUpperCase()  );
-		message.append( "\n\n" );
-		{
-			String syn = bean.getParameterDescription2();
-			String rv = bean.getReturnValueDescription();
-			message.append( 
-					"SYNOPSIS: (" +
-					String.join( "|", 
-						bean.getNames()) +
-					(syn.equals("") ? "" : " ") +
-					syn +
-					")" + rv);
-			
-			message.append( "\n\n" );
-		}
 
-		String msg1;
-		{
-			msg1 = bean.getShortDescription();
-			msg1 = bean.interporlate( msg1 );
-		}
 
-		String msg2;
-		{
-			msg2 = bean.getLongDescription();
-			msg2 = bean.interporlate( msg2 );
-		}
-		
-		
-		message.append( "DESCRIPTION: " );
-		message.append(  msg1  );
-		message.append( " " );
-		message.append(  msg2  );
-		message.append( "\n\n" );
-		message.append( "======================================================================" );
-		message.append( "" );
-
-		return message.toString();
-	}
 
 }

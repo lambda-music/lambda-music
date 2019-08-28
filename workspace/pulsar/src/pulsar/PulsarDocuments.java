@@ -21,7 +21,7 @@ public class PulsarDocuments {
 			return s;
 	}
 	public static void defineDoc(Scheme scheme, NoteListParserElement element ) {
-		DescriptiveBean bean = new DescriptiveBean();
+		DescriptiveBean bean = new PulsarNoteListDescriptiveBean(); 
 		if ( element.getLongName() == null ) {
 			if ( element.getShortName() ==null ) {
 				bean.setNames( "no-name" );
