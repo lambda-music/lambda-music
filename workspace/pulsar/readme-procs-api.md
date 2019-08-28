@@ -1,3 +1,7 @@
+Pulsar API Reference
+======================
+
+
 OPEN?
 ====================
 
@@ -463,10 +467,7 @@ ABOUT-TRACK-SPEC
 The track-spec denotes a specification of a track to retrieve. Only symbol,
 string and procedure are valid as a track-spec.
 
-When track-spec is a symbol/a string, the value is compared with the name
-value of each track, and the track is added to the result when it equals to the
-value. It uses the equals() method of java.lang.Object class to check the equality of
-the two values.
+ When track-spec is a symbol/a string, the value is compared with the name value of each track, and the track is added to the result when it equals to the value. It uses the equals() method of java.lang.Object class to check the equality of the two values. 
 
 When track-spec is a procedure: The system enumerates all tracks in the current
 sequencer, and call the specified procedure for each track. The procedure should have two
@@ -816,6 +817,31 @@ If no procedure is specified, it returns a list that contains all procedures
 which description is available. Pass a special keyword 'all to get a symbol list of
 all procedures which are available for this command. Pass 'procs to get all
 available procedures. Pass 'notes to get all available notation types.
+
+
+
+--------------------------------------------------------
+
+MAKE-HELP
+====================
+
+#### SYNOPSIS ####
+    (make-help content::(list cons ...))::string
+
+### DESCRIPTION ###
+registers a reference manual for a procedure on the Pulsar documentation
+system. The ||content|| argument is the content of the reference manual. The value is
+an association list contains various data.
+
+    '((name "foo-bar" "fb") 
+      (params
+         ("param-name" "param-type" "default-value" "#t if variable-length" "description") 
+            ...
+       )
+      (returns "return-type" )
+      (short-description "description" )
+      (long-description  "description" )
+    )
 
 
 

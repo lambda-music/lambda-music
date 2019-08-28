@@ -2106,6 +2106,7 @@ public final class Pulsar extends Metro {
 						if ( message == null ) {
 							message = MSG_NO_DOCUMENTATION;
 						}
+						System.err.println( message );
 						return SchemeUtils.makePage( message, helpTextWidth );
 					}
 				}
@@ -2144,7 +2145,92 @@ public final class Pulsar extends Metro {
 						+ "Pass 'notes to get all available notation types. " 
 						);
 			}});
+
 		
+		SchemeUtils.defineVar( scheme, new Procedure1("make-help") {
+			Symbol names = Symbol.valueOf( "names" );
+			Symbol params = Symbol.valueOf( "params" );
+			Symbol returns = Symbol.valueOf( "returns" );
+			Symbol shortDescription = Symbol.valueOf( "short-description" );
+			Symbol longDescription = Symbol.valueOf( "long-description" );
+			@Override
+			public Object apply1(Object arg1) throws Throwable {
+				LList list = (LList) arg1;
+				PulsarProceduralDescriptiveBean bean = new PulsarProceduralDescriptiveBean();
+				for ( Object e : list ) {
+					Pair ep = (Pair) e;
+					Object car = ep.getCar();
+					Object cdr = ep.getCdr();
+					if ( names.equals( car ) ) {
+						
+						bean.setNames((List<String>)
+							new ArrayList((LList)cdr)
+								.stream()
+								.map((e2)->SchemeUtils.toString(e2))
+								.collect(Collectors.toList())
+								);
+						
+					} else if ( params.equals( car ) ) {
+						for (Object o3: ((LList)cdr)) {
+							LList l3=(LList)o3;
+							if ( l3.size() != 5 ) {
+								throw new IllegalArgumentException("an element in 'params' parameter must be a list which size is 5. ");
+							}
+							bean.addParameter( 
+								SchemeUtils.toString(l3.get( 0 )) , // names
+								SchemeUtils.toString(l3.get( 1 )), // type, 
+								SchemeUtils.toString(l3.get( 2 )), // defaultValue,
+								SchemeUtils.toBoolean( l3.get(3 )), // isVariable,
+								SchemeUtils.toString(l3.get( 4 )) //description );
+								);
+						}
+					} else if ( returns.equals( car ) ) {
+						bean.setReturnValueDescription( SchemeUtils.toString( ((Pair)cdr).getCar() ));
+					} else if ( shortDescription.equals( car ) ) {
+						bean.setShortDescription( SchemeUtils.toString( ((Pair)cdr).getCar() ));
+					} else if ( longDescription.equals( car ) ) {
+						bean.setLongDescription( SchemeUtils.toString( ((Pair)cdr).getCar() ));
+					} else {
+						throw new IllegalArgumentException( "unknown field name " + car );
+					}
+				}
+				DescriptiveDocumentType.PROCS.defineDoc( scheme, bean );
+				return Values.noArgs;
+			}
+		} , "make-help");
+		
+		DescriptiveDocumentType.defineProcDoc( scheme,
+			new PulsarProceduralDescriptiveBean(){{
+				setNames( "make-help" );
+				setParameterDescription( "" );
+				addParameter( "content", "(list cons ...)" , null, false, "See the description " );
+				setReturnValueDescription( "::void" );
+				setShortDescription(  "||<name/>|| registers a reference manual for a procedure on the Pulsar documentation system. " );
+				setLongDescription( 
+					" "
+					+ "The ||content|| argument is the content of the reference manual. The value is "
+					+ "an association list contains various data. \n\n"
+					+ "    '((name \"foo-bar\" \"fb\") \n"
+					+ "      (params\n"
+					+ "         (\"param-name\" \"param-type\" \"default-value\" \"#t if variable-length\" \"description\") \n"
+					+ "            ...\n"
+					+ "       )\n"
+					+ "      (returns \"return-type\" )\n"
+					+ "      (short-description \"description\" )\n"
+					+ "      (long-description  \"description\" )\n"
+					+ "    )\n\n"
+					+ "The ||name|| field contains names of the procedure. "
+					+ "In Pulsar, the most procedures have multiple names. "
+					+ "The first element of this list is its 'long name' which should be the canonical name for the procedure. "
+					+ "And the others are its aliases. If the procedure have no alias, then the list will have only one element. "
+					+ "The list must have at least one element. \n\n"
+					+ "The ||params|| field contains information of parameters. "
+					+ "The field contains a list per a parameter. \n\n"
+					+ "The ||short-description|| field contains a string value of its short description. "
+					+ "The ||long-description|| field contains a string value of its long description. "
+					+ "" );
+			}});
+
 		
 		SchemeUtils.defineVar( scheme, new Procedure1("help-markdown") {
 			@Override

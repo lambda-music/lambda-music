@@ -1,7 +1,10 @@
 package pulsar.lib.scheme;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import gnu.lists.LList;
 import gnu.lists.Pair;
@@ -14,6 +17,10 @@ public enum DescriptiveDocumentType {
 	PROCS( Symbol.valueOf( "all-procedures" )),
 	NOTES( Symbol.valueOf( "all-notation-types" )),
 	;
+	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+	static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }
+	static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }
+	static void logWarn (String msg             ) { LOGGER.log(Level.WARNING,  msg      ); }
 
 //	public static void defineDocument( Environment e, String[] stringSymbols, DescriptiveProcedure proc ) {
 //		Symbol[] symbols = new Symbol[ stringSymbols.length ];
@@ -104,6 +111,9 @@ public enum DescriptiveDocumentType {
 			//			proc.setNameList( Arrays.asList(symbols) );
 		}
 	}
+	public Object defineDoc( Scheme scheme, DescriptiveBean bean ) {
+		return defineDoc( scheme, bean, this );
+	}
 	public static Object defineProcDoc( Scheme scheme, DescriptiveBean bean ) {
 		return defineDoc( scheme, bean, DescriptiveDocumentType.PROCS );
 	}
@@ -118,6 +128,7 @@ public enum DescriptiveDocumentType {
 	
 	//		static Procedure proc_defineDocument = eval( lis( "lambda", lis("rt"),   ) );   
 	public static Object defineDoc0( Scheme scheme, DescriptiveDocumentType documentType, String description, String name, List<String> names )  {
+		logInfo( "DescriptiveDocumentType.defineDoc0()" + name );
 		synchronized ( scheme ) {
 			Object proc = SchemeUtils.getVar( scheme, name, null );
 			if ( proc == null ) {
@@ -125,6 +136,8 @@ public enum DescriptiveDocumentType {
 				proc = new DescriptiveHelpProcedure( name );
 				SchemeUtils.defineVar( scheme, proc, name );
 			}
+			logInfo( "description" );
+			logInfo( description );
 			SchemeUtils.setDescription( proc, description );
 			addDocumentList( 
 				scheme.getEnvironment(),

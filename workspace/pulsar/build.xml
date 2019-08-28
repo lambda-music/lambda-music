@@ -25,11 +25,22 @@
         </jar>
     </target>
     <target name="create_api_reference" depends="create_run_jar" >
-        <java jar="pulsar.jar"  fork="true" output="readme-procs-api.md" error="readme-procs-api.log" >
+        <java jar="pulsar.jar"  fork="true" output="generated-readme-procs-api.md" error="generated-readme-procs-api.log" >
             <arg value="--output-reference-procs" />
         </java>
-        <java jar="pulsar.jar"  fork="true" output="readme-notes-api.md" error="readme-notes-api.log" >
+        <java jar="pulsar.jar"  fork="true" output="generated-readme-notes-api.md" error="generated-readme-notes-api.log" >
             <arg value="--output-reference-notes" />
         </java>
     </target>
+    <target name="concat_api_reference" depends="create_api_reference" >
+        <concat destfile="readme-procs-api.md"  >
+            <file file="manual-readme-procs-api.md" />
+            <file file="generated-readme-procs-api.md" />
+        </concat>
+        <concat destfile="readme-notes-api.md"  >
+            <file file="manual-readme-notes-api.md" />
+            <file file="generated-readme-notes-api.md" />
+        </concat>
+    </target>
+
 </project>

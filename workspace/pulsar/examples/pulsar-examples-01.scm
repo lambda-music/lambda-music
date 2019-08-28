@@ -1,6 +1,63 @@
 (#|
    ========== THE MANUAL OF PULSAR LISP SCHEME MUSIC SEQUENCER =========
    
+   NAME: MAKE-HELP
+   
+   SYNOPSIS: (make-help content::(list cons ...))::void
+   
+   DESCRIPTION: ||make-help|| registers a reference manual for
+   a procedure on the Pulsar documentation system. The
+   ||content|| argument is the content of the reference manual. The value
+   is an association list contains various data.
+   
+       '((name "foo-bar" "fb") 
+         (params
+            ("param-name" "param-type" "default-value" "#t if variable-length" "description") 
+               ...
+          )
+         (returns "return-type" )
+         (short-description "description" )
+         (long-description  "description" )
+       )
+   
+   The ||name|| field contains names of the procedure. In
+   Pulsar, the most procedures have multiple names. The first element
+   of this list is its 'long name' which should be the canonical
+   name for the procedure. And the others are its aliases. If the
+   procedure have no alias, then the list will have only one element.
+   The list must have at least one element.
+   
+   The ||params|| field contains information of parameters.
+   The field contains a list per a parameter.
+   
+   The ||short-description|| field contains a string value of
+   its short description. The ||long-description|| field contains
+   a string value of its long description.
+   
+   ======================================================================
+  |# help about-intro )
+
+(define (hello)
+  'hello-world)
+
+(hello)
+
+(make-help
+ '((names ("hello" "hel" ))
+   (params
+    )
+   (returns "::void")
+   (short-description "foo" )
+   (long-description "bar")))
+
+(help hello)
+                     
+
+
+
+(#|
+   ========== THE MANUAL OF PULSAR LISP SCHEME MUSIC SEQUENCER =========
+   
    NAME: GET-TRACK
    
    SYNOPSIS: (get-track [track-spec]...)::void

@@ -1,3 +1,7 @@
+Pulsar Notation API Reference
+======================
+
+
 NO-OPERATION
 ====================
 
@@ -5,7 +9,7 @@ NO-OPERATION
     (n type: '[no-operation|nop])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -60,7 +64,7 @@ ADD-TRACK
     (n type: '[add-track|add])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -73,7 +77,7 @@ KILL-TRACK
     (n type: '[kill-track|kil])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -86,7 +90,7 @@ DELETE-TRACK
     (n type: '[delete-track|del])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -99,7 +103,7 @@ END-TRACK
     (n type: '[end-track|end])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -112,7 +116,7 @@ NOTE ON
     (n type: '[note on|non])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -125,7 +129,7 @@ NOTE OFF
     (n type: '[note off|noff])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -138,7 +142,7 @@ KEY-PRESSURE
     (n type: '[key-pressure|kp])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -151,7 +155,7 @@ CONTROL-CHANGE
     (n type: '[control-change|cc])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -164,7 +168,7 @@ PROGRAM
     (n type: '[program|pc])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -177,7 +181,7 @@ CHANNEL-PRESSURE
     (n type: '[channel-pressure|cp])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -190,7 +194,7 @@ PITCH-BEND
     (n type: '[pitch-bend|pb])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -203,7 +207,7 @@ ALL-SOUND-OFF
     (n type: '[all-sound-off|aso])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -216,7 +220,7 @@ RESET-ALL-CONTROLLERS
     (n type: '[reset-all-controllers|rac])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -229,7 +233,7 @@ LOCAL-CONTROLS
     (n type: '[local-controls|lc])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -242,7 +246,7 @@ ALL-NOTE-OFF
     (n type: '[all-note-off|anf])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -255,7 +259,7 @@ OMNI-MODE-OFF
     (n type: '[omni-mode-off|omff])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -268,7 +272,7 @@ OMNI-MODE-ON
     (n type: '[omni-mode-on|omon])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -281,7 +285,7 @@ MONO-MODE-ON
     (n type: '[mono-mode-on|mono])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -294,7 +298,7 @@ POLY-MODE-ON
     (n type: '[poly-mode-on|poly])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -307,7 +311,7 @@ SYS-SONG-POSITION-POINTER
     (n type: '[sys-song-position-pointer|spp])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -320,7 +324,7 @@ SYS-SONG-SELECT
     (n type: '[sys-song-select|ss])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -333,7 +337,7 @@ SYS-END-OF-EXCLUSIVE
     (n type: '[sys-end-of-exclusive|eoe])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -346,7 +350,7 @@ SYS-CLOCK
     (n type: '[sys-clock|clock])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -359,7 +363,7 @@ SYS-START
     (n type: '[sys-start|start])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -372,7 +376,7 @@ SYS-CONTINUE
     (n type: '[sys-continue|cont])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -385,7 +389,7 @@ SYS-STOP
     (n type: '[sys-stop|stop])
 
 ### DESCRIPTION ###
-
+ 
 
 
 
@@ -398,7 +402,7 @@ SYS-RESET
     (n type: '[sys-reset|reset])
 
 ### DESCRIPTION ###
-
+ 
 
 
 

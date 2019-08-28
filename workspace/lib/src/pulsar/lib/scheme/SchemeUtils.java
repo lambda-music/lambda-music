@@ -535,12 +535,21 @@ public class SchemeUtils {
 			out.close();
 		}
 	}
+	static Pattern IS_INDENTED= Pattern.compile( "^\\s+" );
 	public static String wrapMultiLine( String s, int width ) {
 		StringBuilder sb = new StringBuilder();
 //		String[] a = s.split("\\r\\n\\r\\n|\\n\\r\\n\\r|\\n\\n|\\r\\r" );
 		String[] a = s.split( "\n\n" );
 		for ( int i=0; i<a.length; i++ ) {
-			 sb.append( wrap(a[i],width).trim() ).append( "\n\n" );
+			// if the line starts with blank characters (that is, the line is indented),
+			// then leave it as it is; otherwise, wrap it with the specified length.
+			// (Thu, 29 Aug 2019 05:58:14 +0900)
+			if ( IS_INDENTED.matcher( a[i] ).find()) {
+				sb.append(      a[i]               ).append( "\n\n" );
+			} else {
+				System.err.println( "SDDDD" );
+				sb.append( wrap(a[i],width).trim() ).append( "\n\n" );
+			}
 		}
 		return sb.toString();
 	}
