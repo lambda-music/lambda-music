@@ -1,6 +1,7 @@
 package pulsar;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import kawa.standard.Scheme;
@@ -10,7 +11,10 @@ import pulsar.lib.scheme.SchemeUtils;
 public class PulsarDocuments {
 	private PulsarDocuments() {}
 	public static void defineDoc(Scheme scheme, NoteListParser parser ) {
-		for ( NoteListParserElement element : parser.getAllElements() ) {
+		List<NoteListParserElement> allElements = parser.getAllElements();
+//		Collections.reverse( allElements );
+		
+		for ( NoteListParserElement element : allElements ) {
 			defineDoc( scheme, element );
 		}
 	}
