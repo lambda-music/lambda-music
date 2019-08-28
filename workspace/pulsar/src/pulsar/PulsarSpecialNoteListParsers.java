@@ -147,6 +147,12 @@ public class PulsarSpecialNoteListParsers {
 			// RENAMED (Thu, 01 Aug 2019 13:09:08 +0900)
 			this.shortName = "nop";
 			this.longName = "no-operation";
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//						"") 
+				);
+
 		}
 		@Override
 		public
@@ -167,6 +173,11 @@ public class PulsarSpecialNoteListParsers {
 		{
 			this.shortName = "note";
 			this.longName  = "note-on-off";
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//						"") 
+				);
 			this.shortDescription = "This denotes a musical note. ";
 			this.longDescription = "This notation object causes the sequencer to automatically send "
 					+ "both Note On MIDI event and Note Off MIDI event. ";
@@ -256,6 +267,11 @@ public class PulsarSpecialNoteListParsers {
 		{
 			this.shortName = "len";
 			this.longName  = "length";
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//						"") 
+				);
 			this.shortDescription = "<name/> specifies the measure length. ";
 			this.longDescription = "This notation object specifies the total measure length of the current notation object set. ";
 			
@@ -292,6 +308,11 @@ public class PulsarSpecialNoteListParsers {
 		{
 			this.shortName = "exec";
 			this.longName = "execute";
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//						"") 
+				);
 			this.shortDescription = "<name/> invokes the specific procedure. ";
 			this.longDescription = "This notation object specifies the total measure length of the current notation object set. ";
 			
@@ -335,6 +356,11 @@ public class PulsarSpecialNoteListParsers {
 			// RENAMED (Thu, 01 Aug 2019 13:09:08 +0900)
 			this.shortName = "add";
 			this.longName  = "add-track";
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//						"") 
+				);
 //			this.longName = "add a new track";
 		}
 		@Override
@@ -462,6 +488,11 @@ public class PulsarSpecialNoteListParsers {
 			// RENAMED (Thu, 01 Aug 2019 13:09:08 +0900)
 			this.shortName = "kil";
 			this.longName  = "kill-track";
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//						"") 
+				);
 //			this.longName = "Remove the specified track";
 		}
 		@Override
@@ -482,6 +513,11 @@ public class PulsarSpecialNoteListParsers {
 		{
 			this.shortName = "del";
 			this.longName = "delete-track";
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//						"") 
+				);
 		}
 		@Override
 		void removeTrackProc(Metro metro, MetroTrack track) {
@@ -495,6 +531,11 @@ public class PulsarSpecialNoteListParsers {
 		{
 			this.shortName = "end";
 			this.longName  = "end-track";
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//						"") 
+				);
 		}
 		@Override
 		public

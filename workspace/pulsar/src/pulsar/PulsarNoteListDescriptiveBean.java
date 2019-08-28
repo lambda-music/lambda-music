@@ -16,7 +16,9 @@ public class PulsarNoteListDescriptiveBean extends DescriptiveBean {
 	}
 	@Override
 	public String formatParameter(Param param) {
-		String result = "[" + String.join( "|", param.getNames() ) + "]: " + param.getType() + "=" + param.getDefaultValue() ;
+		String result = "[" + String.join( "|", param.getNames() ) + "]: " + param.getType() ;
+		if ( param.getDefaultValue() != null )
+			result += "=" + param.getDefaultValue(); 
 		return result;
 	}
 	@Override

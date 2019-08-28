@@ -35,7 +35,6 @@ import java.lang.invoke.MethodHandles;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -385,87 +384,6 @@ public class SchemeUtils {
 		}
 	}
 
-//	public static void setDocumentInitializer( Scheme scheme, DescriptiveInitializerBean bean, DescriptiveInitializerBeanParam beanParam, String ... names ) {
-//		if ( names.length < 1 )
-//			throw new IllegalArgumentException( "the 'names' parameter must be longer than 1." );
-//		setDocument( scheme, names[0], bean.process( beanParam ).format() );
-//	}
-
-	public static final String ALL_PROCEDURES = "all-procedures";
-	public static final Symbol ALL_PROCEDURES_SYMBOL = Symbol.valueOf( ALL_PROCEDURES ); 
-	public static Pair getRootOfAllProcedure(Environment e) {
-		synchronized ( e ) {
-			if ( ! e.isBound( ALL_PROCEDURES_SYMBOL ) ) {
-				Pair root = (Pair)LList.makeList(Arrays.asList( ALL_PROCEDURES_SYMBOL ));
-				e.define( ALL_PROCEDURES_SYMBOL, null, root);
-				return root;
-			} else {
-				return (Pair) e.get( ALL_PROCEDURES_SYMBOL );
-			}
-		}
-	}
-	public static LList getDocumentList( Environment e ) {
-		synchronized ( getRootOfAllProcedure(e) ) {
-			return (LList) getRootOfAllProcedure(e).getCdr();
-		}
-	}
-	public static void addDocumentList( Environment e, Symbol[] symbols, Object descriptive ) {
-		synchronized ( e ) {
-			Pair root = getRootOfAllProcedure(e);
-			root.setCdr( 
-				Pair.make(
-					Pair.make( descriptive, LList.makeList( symbols, 0 ) ),  
-					root.getCdr()));
-			
-//			proc.setNameList( Arrays.asList(symbols) );
-		}
-	}
-
-//	public static void defineDocument( Environment e, String[] stringSymbols, DescriptiveProcedure proc ) {
-//		Symbol[] symbols = new Symbol[ stringSymbols.length ];
-//		for ( int i=0; i<stringSymbols.length; i++ ) {
-//			symbols[i] = toSchemeSymbol( stringSymbols[i] );
-//		}
-//		defineDocument( e, symbols, proc );
-//	}
-//
-//	public static DescriptiveProcedure getDocument( Environment e, Symbol name )  {
-//	synchronized ( e ) {
-//		Pair root = getRootOfAllProcedure(e);
-//		for ( Object o : root ) {
-//			if (((Pair)
-//					((Pair)o).getCdr()).contains( name )) {
-//				return (DescriptiveProcedure)((Pair)o).getCar();
-//			}
-//		}
-//		return null;
-//	}
-//}
-	public static Object defineDoc( Scheme scheme, DescriptiveBean bean ) {
-		Object proc = defineDoc0( scheme, bean.format(), bean.getName(), bean.getNames() );
-		setDescriptionBean( proc, bean );
-		return proc;
-		
-	}
-
-//	static Procedure proc_defineDocument = eval( lis( "lambda", lis("rt"),   ) );   
-	public static Object defineDoc0( Scheme scheme, String description, String name, List<String> names )  {
-		synchronized ( scheme ) {
-			Object proc = getVar( scheme, name, null );
-			if ( proc == null ) {
-				logWarn( "setDocumentInitializer: " + name + " was not found." );
-				proc = new DescriptiveHelpProcedure( name );
-				defineVar( scheme, proc, name );
-			}
-			SchemeUtils.setDescription( proc, description );
-			addDocumentList( 
-				scheme.getEnvironment(), 
-				SchemeUtils.stringListToSymbolList( names ), 
-				proc );
-			
-			return proc;
-		}
-	}
 	
 	public static final boolean isDefined( Scheme scheme, String name  ) {
 		return scheme.getEnvironment().isBound( SimpleSymbol.make( "", name ) );
@@ -873,18 +791,6 @@ public class SchemeUtils {
 	}
 
 
-	public static String createMarkdownHelp( Environment env ) {
-		StringBuilder sb = new StringBuilder();
-		List lst = new ArrayList( SchemeUtils.getDocumentList( env ) );
-		Collections.reverse( lst );
-		for ( Object o : lst ) {
-//			System.out.println( o );
-			sb.append( DescriptiveBean.formatForMarkdown( (Procedure)((Pair)o).getCar() ) );
-			sb.append( "\n\n" );
-		}
-		return sb.toString();
-	}
-	
 	final Procedure reverse = (Procedure)gnu.kawa.slib.srfi1.reverse.get();
 	final Procedure map = (Procedure)gnu.kawa.slib.srfi1.map.get();
 
@@ -909,7 +815,7 @@ public class SchemeUtils {
 		};
 		return (LList)map.apply2( proc1, 
 						reverse.apply1( 
-							SchemeUtils.getDocumentList(environment)));
+							DescriptiveDocumentType.PROCS.getDocumentList(environment)));
 	}
 	
 }

@@ -1,10 +1,13 @@
 package pulsar;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 import kawapad.KawaPad;
 import pulsar.lib.PulsarLogger;
+import pulsar.lib.scheme.DescriptiveDocumentType;
 import pulsar.lib.scheme.http.SchemeHttp;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 
@@ -19,12 +22,13 @@ public class PulsarApplication {
 	 * @throws IOException 
 	 */
 	static Pulsar parseArgsAndStartPulsar( String[] args ) throws IOException {
+		boolean argSpecialOutputReference0 = false; 
 		boolean argSpecialOutputReference1 = false; 
+		boolean argSpecialOutputReference2 = false; 
 		boolean argHttp = true;
 		int     argHttpPort = 8192;
 		boolean argGui = true;
 		String  argFileName = null;
-		
 		for ( int i=0; i<args.length; i++ ) {
 			String s = args[i];
 
@@ -46,7 +50,13 @@ public class PulsarApplication {
 				argGui = false;
 				break;
 			} else if ( s.equals( "--output-reference" ) ) { 
+				argSpecialOutputReference0 = true;
+				break;
+			} else if ( s.equals( "--output-reference-procs" ) ) { 
 				argSpecialOutputReference1 = true;
+				break;
+			} else if ( s.equals( "--output-reference-notes" ) ) { 
+				argSpecialOutputReference2 = true;
 				break;
 			} else {
 				if ( argFileName == null )
@@ -54,40 +64,63 @@ public class PulsarApplication {
 			}
 		}
 
-		if ( argSpecialOutputReference1 ) {
-			Pulsar pulsar = start(argGui, argHttp, argHttpPort, argFileName );
-//			try {
-//				Thread.sleep( 1024 );
-//			} catch (InterruptedException e) {
-//				System.err.println( e.getMessage() );
-//			}
-			System.out.println( pulsar.outputMarkdownReference() );		
-
-			// Pause for the safe shutdown; at this moment, other initializers are still
-			// working and they somehow remain on the AWT-eventqueue and prevent JVM to
-			// shutdown. (Mon, 26 Aug 2019 14:11:31 +0900)
-			try {
-				Thread.sleep( 2048 );
-			} catch (InterruptedException e) {
-				System.err.println( e.getMessage() );
-			}
-			pulsar.invokeLater( new Runnable() {
-				@Override
-				public void run() {
-					pulsar.quit();
-				}
-			});
-			// This is possibly not necessary. But it might help to flush the AWT-eventqueue.
-			// See https://stackoverflow.com/questions/6309407/remove-top-level-container-on-runtime
-			System.gc();
-			
-			return pulsar;
+		if ( false ) {
+			// dummy
+			return null; 
+		} else if ( argSpecialOutputReference0 ) {
+			return outputReference( argFileName, DescriptiveDocumentType.PROCS );
+		} else if ( argSpecialOutputReference1 ) {
+			return outputReference( argFileName, DescriptiveDocumentType.PROCS );
+		} else if ( argSpecialOutputReference2 ) {
+			return outputReference( argFileName, DescriptiveDocumentType.NOTES );
 		} else if ( argHttp || argGui ) {
 			return start(argGui, argHttp, argHttpPort, argFileName);
 		} else {
 			System.err.println( "hmm... you have better to have at least one interface to control the system." );
 			return start(argGui, argHttp, argHttpPort, argFileName);
 		}
+	}
+	static Pulsar outputReference( String outputFile, DescriptiveDocumentType type ) throws IOException {
+		Pulsar pulsar = start(true,true,8193);
+//			try {
+//				Thread.sleep( 1024 );
+//			} catch (InterruptedException e) {
+//				System.err.println( e.getMessage() );
+//			}
+		String str = pulsar.outputMarkdownReference( type );
+		if ( outputFile == null /* || "-".equals( outputFile ) */ ) {
+			System.out.println( str );		
+		} else {
+			FileOutputStream fo = null;
+			try {
+				fo = new FileOutputStream( new File( outputFile ) );
+				fo.write( str.getBytes( Charset.forName( "utf-8" ) ) );
+				System.err.println( str );		
+				fo.flush();
+			} finally {
+				if ( fo != null )
+					fo.close();
+			}
+		}
+
+		// Pause for the safe shutdown; at this moment, other initializers are still
+		// working and they somehow remain on the AWT-eventqueue and prevent JVM to
+		// shutdown. (Mon, 26 Aug 2019 14:11:31 +0900)
+		try {
+			Thread.sleep( 2048 );
+		} catch (InterruptedException e) {
+			System.err.println( e.getMessage() );
+		}
+		pulsar.invokeLater( new Runnable() {
+			@Override
+			public void run() {
+				pulsar.quit();
+			}
+		});
+		// This is possibly not necessary. But it might help to flush the AWT-eventqueue.
+		// See https://stackoverflow.com/questions/6309407/remove-top-level-container-on-runtime
+		System.gc();
+		return pulsar;
 	}
 	public static Pulsar start( boolean guiEnabled, boolean httpEnabled, int httpPort, String filename ) throws IOException {
 //		>>> VERSION 1 

@@ -1,0 +1,96 @@
+2019-08-29 04:06:05 INFO:SecretaryMessageQueu SchemeSe || SchemeSecretary#newScheme()
+2019-08-29 04:06:05 INFO:SecretaryMessageQueu SchemeSe || SchemeSecretary#newScheme()
+2019-08-29 04:06:05 INFO:SecretaryMessageQueu KawaPad  || KawaPad#staticInitScheme
+2019-08-29 04:06:05 INFO:SecretaryMessageQueu KawaPad  || Loading [KawaPad internal]/kawapad-extension.scm
+2019-08-29 04:06:05 INFO:SecretaryMessageQueu KawaPad  || Loading kawapad-extension.scm
+2019-08-29 04:06:05 INFO:SecretaryMessageQueu KawaPad  || The user configuration file "/home/ats/.pulsar/kawapad-extension.scm" does not exist. Ignored.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu Pulsar   || registerLocalSchemeInitializers_POSTMESSAGE IGNORED
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: about-track-spec was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: about-notation was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: about-intro was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: no-operation was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: note-on-off was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: execute was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: add-track was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: kill-track was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: delete-track was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: end-track was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: note on was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: note off was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: key-pressure was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: control-change was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: program was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: channel-pressure was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: pitch-bend was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: all-sound-off was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: reset-all-controllers was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: local-controls was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: all-note-off was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: omni-mode-off was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: omni-mode-on was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: mono-mode-on was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: poly-mode-on was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: sys-song-position-pointer was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: sys-song-select was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: sys-end-of-exclusive was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: sys-clock was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: sys-start was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: sys-continue was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: sys-stop was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: sys-reset was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: bank-select was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: modulation was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: breath-controller was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: foot-controller was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: portamento-time was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: data-entry-msb was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: volume was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: balance was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: pan was not found.
+2019-08-29 04:06:05 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: expression was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: effect-controller-1 was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: effect-controller-2 was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: sustain-pedal was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: portamento-switch was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: sostenuto-switch was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: soft-pedal-switch was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: legato-switch was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: hold-2 was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: sound-controller-1 was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: sound-controller-2 was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: sound-controller-3 was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: sound-controller-4 was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: sound-controller-5 was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: sound-controller-6 was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: sound-controller-7 was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: sound-controller-8 was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: sound-controller-9 was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: sound-controller-10 was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: general-purpose-cc-01 was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: general-purpose-cc-02 was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: general-purpose-cc-03 was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: general-purpose-cc-04 was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: portamento was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: effect-1 was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: effect-2 was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: effect-3 was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: effect-4 was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: effect-5 was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: data-increment was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: data-decrement was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: nrpn-lsb was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: nrpn-msb was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: rpn-lsb was not found.
+2019-08-29 04:06:06 WARN:SecretaryMessageQueu SchemeUt || setDocumentInitializer: rpn-msb was not found.
+2019-08-29 04:06:06 INFO:SecretaryMessageQueu PulsarGu || PulsarGui#initStaticScheme=======================================
+2019-08-29 04:06:06 INFO:SecretaryMessageQueu KawaPad  || KawaPad#staticInitScheme
+2019-08-29 04:06:06 INFO:SecretaryMessageQueu KawaPad  || KawaPad#initScheme
+2019-08-29 04:06:06 INFO:SecretaryMessageQueu PulsarGu || PulsarGui#initScheme=======================================
+==================create-proc==================
+2019-08-29 04:06:06 INFO:SecretaryMessageQueu Pulsar   || Pulsar#outputReference()
+frame:text-pane:addMouseListener
+2019-08-29 04:06:06 INFO:AWT-EventQueue-0     KawaPadH || highlightSyntax()
+2019-08-29 04:06:08 INFO:SecretaryMessageQueu Pulsar   || Pulsar#invokeLater()pulsar.PulsarApplication$1@32733fce
+2019-08-29 04:06:08 INFO:SecretaryMessageQueu Metro    || ===close() isOpened=false
+2019-08-29 04:06:08 INFO:SecretaryMessageQueu Metro    || ===close() isOpened=false
+2019-08-29 04:06:08 INFO:SecretaryMessageQueu Metro    || ===close() isOpened=false

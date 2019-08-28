@@ -25,8 +25,11 @@
         </jar>
     </target>
     <target name="create_api_reference" depends="create_run_jar" >
-        <java jar="pulsar.jar"  fork="true" output="readme-api.md" error="readme-api.log" >
-            <arg value="--output-reference" />
+        <java jar="pulsar.jar"  fork="true" output="readme-procs-api.md" error="readme-procs-api.log" >
+            <arg value="--output-reference-procs" />
+        </java>
+        <java jar="pulsar.jar"  fork="true" output="readme-notes-api.md" error="readme-notes-api.log" >
+            <arg value="--output-reference-notes" />
         </java>
     </target>
 </project>

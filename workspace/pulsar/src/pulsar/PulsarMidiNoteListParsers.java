@@ -164,6 +164,8 @@ public class PulsarMidiNoteListParsers {
 	
 	static abstract class MidiNoteListParserElement<MIDI extends MetroMidi> extends NoteListParserElement {
 		protected MIDI midi;
+		protected List<NoteListParserElementParameter> parameters;
+		
 		public abstract boolean parseEvent( Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String,Object> map, boolean result );
 		@Override
 		public String getShortName() {
@@ -183,7 +185,10 @@ public class PulsarMidiNoteListParsers {
 		}
 		@Override
 		public List<NoteListParserElementParameter> getParameters() {
-			return Arrays.asList(); // XXX
+			return parameters;
+		}
+		public void setParameters(List<NoteListParserElementParameter> parameters) {
+			this.parameters = parameters;
 		}
 	}
 
@@ -193,6 +198,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserNoteOn extends MidiNoteListParserElement<MetroMidiNoteOn> {
 		{
 			this.midi = MetroMidi.MIDI_NOTE_ON;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -218,6 +228,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserNoteOff extends MidiNoteListParserElement<MetroMidiNoteOff> {
 		{
 			this.midi = MetroMidi.MIDI_NOTE_OFF;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -243,6 +258,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserKeyPressure extends MidiNoteListParserElement<MetroMidiKeyPressure> {
 		{
 			this.midi = MetroMidi.MIDI_KEY_PRESSURE;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -264,6 +284,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlChange extends MidiNoteListParserElement<MetroMidiControlChange>		{
 		{
 			this.midi = MetroMidi.MIDI_CONTROL_CHANGE;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -285,6 +310,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserProgramChange extends MidiNoteListParserElement<MetroMidiProgramChange>		{
 		{
 			this.midi = MetroMidi.MIDI_PROGRAM_CHANGE;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -305,6 +335,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserChannelPressure extends MidiNoteListParserElement<MetroMidiChannelPressure>		{
 		{
 			this.midi = MetroMidi.MIDI_CHANNEL_PRESSURE;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -325,6 +360,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserPitchBend extends MidiNoteListParserElement<MetroMidiPitchBend>		{
 		{
 			this.midi = MetroMidi.MIDI_PITCH_BEND;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -348,6 +388,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserAllSoundOff extends MidiNoteListParserElement<MetroMidiAllSoundOff>		{
 		{
 			this.midi = MetroMidi.MIDI_ALL_SOUND_OFF;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -367,6 +412,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserResetAllController extends MidiNoteListParserElement<MetroMidiResetAllControllers>		{
 		{
 			this.midi = MetroMidi.MIDI_RESET_ALL_CONTROLLERS;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -386,6 +436,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserLocalControls extends MidiNoteListParserElement<MetroMidiLocalControls> {
 		{
 			this.midi = MetroMidi.MIDI_LOCAL_CONTROLS;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -406,6 +461,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserAllNoteOff extends MidiNoteListParserElement<MetroMidiAllNoteOff> {
 		{
 			this.midi = MetroMidi.MIDI_ALL_NOTE_OFF;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -425,6 +485,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserOmniModeOff extends MidiNoteListParserElement<MetroMidiOmniModeOff> {
 		{
 			this.midi = MetroMidi.MIDI_OMNI_MODE_OFF;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -444,6 +509,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserOmniModeOn extends MidiNoteListParserElement<MetroMidiOmniModeOn> {
 		{
 			this.midi = MetroMidi.MIDI_OMNI_MODE_ON;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -464,6 +534,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserMonoModeOn extends MidiNoteListParserElement<MetroMidiMonoModeOn> {
 		{
 			this.midi = MetroMidi.MIDI_MONO_MODE_ON;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -483,6 +558,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserPolyModeOn extends MidiNoteListParserElement<MetroMidiPolyModeOn> {
 		{
 			this.midi = MetroMidi.MIDI_POLY_MODE_ON;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -504,6 +584,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserSongPositionPointer extends MidiNoteListParserElement<MetroMidiSongPositionPointer> {
 		{
 			this.midi = MetroMidi.MIDI_SONG_POSITION_POINTER;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -525,6 +610,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserSongSelect extends MidiNoteListParserElement<MetroMidiSongSelect> {
 		{
 			this.midi = MetroMidi.MIDI_SONG_SELECT;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -545,6 +635,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserEndOfExclusive extends MidiNoteListParserElement<MetroMidiEndOfExclusive> {
 		{
 			this.midi = MetroMidi.MIDI_END_OF_EXCLUSIVE;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -564,6 +659,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserClock extends MidiNoteListParserElement<MetroMidiClock> {
 		{
 			this.midi = MetroMidi.MIDI_CLOCK;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -584,6 +684,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserStart extends MidiNoteListParserElement<MetroMidiStart> {
 		{
 			this.midi = MetroMidi.MIDI_START;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -603,6 +708,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserContinue extends MidiNoteListParserElement<MetroMidiContinue> {
 		{
 			this.midi = MetroMidi.MIDI_CONTINUE;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -622,6 +732,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserStop extends MidiNoteListParserElement<MetroMidiStop> {
 		{
 			this.midi = MetroMidi.MIDI_STOP;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -641,6 +756,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserReset extends MidiNoteListParserElement<MetroMidiReset> {
 		{
 			this.midi = MetroMidi.MIDI_RESET;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -660,6 +780,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlBankSelect extends MidiNoteListParserElement<MetroMidiControlBankSelect> {
 		{
 			this.midi = MetroMidi.MIDI_BANK_SELECT;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -680,6 +805,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlModulation extends MidiNoteListParserElement<MetroMidiControlModulation> {
 		{
 			this.midi = MetroMidi.MIDI_MODULATION;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -700,6 +830,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlBreathController extends MidiNoteListParserElement<MetroMidiControlBreathController> {
 		{
 			this.midi = MetroMidi.MIDI_BREATH_CTRL;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -720,6 +855,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlFootController extends MidiNoteListParserElement<MetroMidiControlFootController> {
 		{
 			this.midi = MetroMidi.MIDI_FOOT_CTRL;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -740,6 +880,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlPortamentoTime extends MidiNoteListParserElement<MetroMidiControlPortamentoTime> {
 		{
 			this.midi = MetroMidi.MIDI_PORTAMENTO_TIME;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -760,6 +905,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlDataEntryMsb extends MidiNoteListParserElement<MetroMidiControlDataEntryMsb> {
 		{
 			this.midi = MetroMidi.MIDI_DATA_ENTRY_MSB;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -780,6 +930,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlVolume extends MidiNoteListParserElement<MetroMidiControlVolume> {
 		{
 			this.midi = MetroMidi.MIDI_VOLUME;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -800,6 +955,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlBalance extends MidiNoteListParserElement<MetroMidiControlBalance> {
 		{
 			this.midi = MetroMidi.MIDI_BALANCE;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -820,6 +980,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlPan extends MidiNoteListParserElement<MetroMidiControlPan> {
 		{
 			this.midi = MetroMidi.MIDI_PAN;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -840,6 +1005,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlExpression extends MidiNoteListParserElement<MetroMidiControlExpression> {
 		{
 			this.midi = MetroMidi.MIDI_EXPRESSION;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -860,6 +1030,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlEffectController1 extends MidiNoteListParserElement<MetroMidiControlEffectController1> {
 		{
 			this.midi = MetroMidi.MIDI_EFFECT_CTRL_1;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -880,6 +1055,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlEffectController2 extends MidiNoteListParserElement<MetroMidiControlEffectController2> {
 		{
 			this.midi = MetroMidi.MIDI_EFFECT_CTRL_2;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -900,6 +1080,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlSustainPedal extends MidiNoteListParserElement<MetroMidiControlSustainPedal> {
 		{
 			this.midi = MetroMidi.MIDI_SUSTAIN_PEDAL;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -920,6 +1105,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlPortamentoSwitch extends MidiNoteListParserElement<MetroMidiControlPortamentoSwitch> {
 		{
 			this.midi = MetroMidi.MIDI_PORTAMENTO_SWITCH;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -940,6 +1130,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlSostenutoSwitch extends MidiNoteListParserElement<MetroMidiControlSostenutoSwitch> {
 		{
 			this.midi = MetroMidi.MIDI_SOSTENUTO_SWITCH;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -960,6 +1155,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlPedalSwitch extends MidiNoteListParserElement<MetroMidiControlPedalSwitch> {
 		{
 			this.midi = MetroMidi.MIDI_SOFT_PEDAL_SWITCH;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -980,6 +1180,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlLegatoSwitch extends MidiNoteListParserElement<MetroMidiControlLegatoSwitch> {
 		{
 			this.midi = MetroMidi.MIDI_LEGATO_FOOTSWITCH;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1000,6 +1205,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlHold2 extends MidiNoteListParserElement<MetroMidiControlHold2> {
 		{
 			this.midi = MetroMidi.MIDI_HOLD_2;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1020,6 +1230,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlSoundController1 extends MidiNoteListParserElement<MetroMidiControlSoundController1> {
 		{
 			this.midi = MetroMidi.MIDI_SOUND_CTRL_01;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1040,6 +1255,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlSoundController2 extends MidiNoteListParserElement<MetroMidiControlSoundController2> {
 		{
 			this.midi = MetroMidi.MIDI_SOUND_CTRL_02;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1060,6 +1280,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlSoundController3 extends MidiNoteListParserElement<MetroMidiControlSoundController3> {
 		{
 			this.midi = MetroMidi.MIDI_SOUND_CTRL_03;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1080,6 +1305,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlSoundController4 extends MidiNoteListParserElement<MetroMidiControlSoundController4> {
 		{
 			this.midi = MetroMidi.MIDI_SOUND_CTRL_04;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1100,6 +1330,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlSoundController5 extends MidiNoteListParserElement<MetroMidiControlSoundController5> {
 		{
 			this.midi = MetroMidi.MIDI_SOUND_CTRL_05;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1120,6 +1355,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlSoundController6 extends MidiNoteListParserElement<MetroMidiControlSoundController6> {
 		{
 			this.midi = MetroMidi.MIDI_SOUND_CTRL_06;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1140,6 +1380,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlSoundController7 extends MidiNoteListParserElement<MetroMidiControlSoundController7> {
 		{
 			this.midi = MetroMidi.MIDI_SOUND_CTRL_07;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1160,6 +1405,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlSoundController8 extends MidiNoteListParserElement<MetroMidiControlSoundController8> {
 		{
 			this.midi = MetroMidi.MIDI_SOUND_CTRL_08;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1180,6 +1430,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlSoundController9 extends MidiNoteListParserElement<MetroMidiControlSoundController9> {
 		{
 			this.midi = MetroMidi.MIDI_SOUND_CTRL_09;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1200,6 +1455,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlSoundController10 extends MidiNoteListParserElement<MetroMidiControlSoundController10> {
 		{
 			this.midi = MetroMidi.MIDI_SOUND_CTRL_10;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1220,6 +1480,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlGeneralPurpose01 extends MidiNoteListParserElement<MetroMidiControlGeneralPurpose01> {
 		{
 			this.midi = MetroMidi.MIDI_GENERAL_PURPOSE_01;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1240,6 +1505,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlGeneralPurpose02 extends MidiNoteListParserElement<MetroMidiControlGeneralPurpose02> {
 		{
 			this.midi = MetroMidi.MIDI_GENERAL_PURPOSE_02;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1260,6 +1530,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlGeneralPurpose03 extends MidiNoteListParserElement<MetroMidiControlGeneralPurpose03> {
 		{
 			this.midi = MetroMidi.MIDI_GENERAL_PURPOSE_03;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1280,6 +1555,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlGeneralPurpose04 extends MidiNoteListParserElement<MetroMidiControlGeneralPurpose04> {
 		{
 			this.midi = MetroMidi.MIDI_GENERAL_PURPOSE_04;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1300,6 +1580,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlPortamento extends MidiNoteListParserElement<MetroMidiControlPortamento> {
 		{
 			this.midi = MetroMidi.MIDI_PORTAMENTO_CC_CTRL;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1320,6 +1605,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlEffect1 extends MidiNoteListParserElement<MetroMidiControlEffect1> {
 		{
 			this.midi = MetroMidi.MIDI_EFFECT_1_DEPTH;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1340,6 +1630,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlEffect2 extends MidiNoteListParserElement<MetroMidiControlEffect2> {
 		{
 			this.midi = MetroMidi.MIDI_EFFECT_2_DEPTH;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1360,6 +1655,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlEffect3 extends MidiNoteListParserElement<MetroMidiControlEffect3> {
 		{
 			this.midi = MetroMidi.MIDI_EFFECT_3_DEPTH;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1380,6 +1680,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlEffect4 extends MidiNoteListParserElement<MetroMidiControlEffect4> {
 		{
 			this.midi = MetroMidi.MIDI_EFFECT_4_DEPTH;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1400,6 +1705,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlEffect5 extends MidiNoteListParserElement<MetroMidiControlEffect5> {
 		{
 			this.midi = MetroMidi.MIDI_EFFECT_5_DEPTH;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1420,6 +1730,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlDataIncrement extends MidiNoteListParserElement<MetroMidiControlDataIncrement> {
 		{
 			this.midi = MetroMidi.MIDI_DATA_INCREMENT;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1440,6 +1755,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlDataDecrement extends MidiNoteListParserElement<MetroMidiControlDataDecrement> {
 		{
 			this.midi = MetroMidi.MIDI_DATA_DECREMENT;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1460,6 +1780,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlNrpnLsb extends MidiNoteListParserElement<MetroMidiControlNrpnLsb> {
 		{
 			this.midi = MetroMidi.MIDI_NRPN_LSB;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1480,6 +1805,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlNrpnMsb extends MidiNoteListParserElement<MetroMidiControlNrpnMsb> {
 		{
 			this.midi = MetroMidi.MIDI_NRPN_MSB;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1500,6 +1830,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlRpnLsb extends MidiNoteListParserElement<MetroMidiControlRpnLsb> {
 		{
 			this.midi = MetroMidi.MIDI_RPN_LSB;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public
@@ -1521,6 +1856,11 @@ public class PulsarMidiNoteListParsers {
 	public static final class MetroNoteParserControlRpnMsb extends MidiNoteListParserElement<MetroMidiControlRpnMsb> {
 		{
 			this.midi = MetroMidi.MIDI_RPN_MSB;
+			this.parameters = Arrays.asList(
+//				new NoteListParserElementParameter.Default(
+//					"","","","",
+//					"" )
+				);
 		}
 		@Override
 		public

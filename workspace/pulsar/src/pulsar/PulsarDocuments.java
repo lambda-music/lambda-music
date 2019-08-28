@@ -1,12 +1,11 @@
 package pulsar;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import kawa.standard.Scheme;
 import pulsar.lib.scheme.DescriptiveBean;
-import pulsar.lib.scheme.SchemeUtils;
+import pulsar.lib.scheme.DescriptiveDocumentType;
 
 public class PulsarDocuments {
 	private PulsarDocuments() {}
@@ -66,6 +65,6 @@ public class PulsarDocuments {
 		bean.setShortDescription( nullCheck( element.getShortDescription() ) );
 		bean.setLongDescription( nullCheck( element.getLongDescription() ) );
 		
-		SchemeUtils.defineDoc( scheme, bean );
+		DescriptiveDocumentType.defineNoteDoc( scheme, bean );
 	}
 }

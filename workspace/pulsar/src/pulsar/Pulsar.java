@@ -65,6 +65,8 @@ import metro.Metro;
 import metro.MetroPort;
 import metro.MetroTrack;
 import metro.MetroTrack.SyncType;
+import pulsar.lib.scheme.DescriptiveDocumentType;
+import pulsar.lib.scheme.MarkdownDescriptive;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.Invokable;
@@ -325,12 +327,20 @@ public final class Pulsar extends Metro {
     }
 
 
-	public String outputMarkdownReference() {
+	public String outputMarkdownReference( DescriptiveDocumentType type ) {
+		if ( type == null )
+			throw new IllegalArgumentException( "'type' argument cannot be null." );
+		
 		return this.getSchemeSecretary().executeSecretarially( new SecretaryMessage.NoThrow<Scheme,String>() {
 			@Override
 			public String execute0( Scheme scheme, Object[] args ) {
 				logInfo( "Pulsar#outputReference()" );
-				return SchemeUtils.createMarkdownHelp( scheme.getEnvironment() );
+				
+				List list = new ArrayList();
+				list.addAll( type.getDocumentList(
+						scheme.getEnvironment()));
+
+				return MarkdownDescriptive.createMarkdownHelp( list );
 			}
 		}, Invokable.NOARG );
 	}
@@ -810,7 +820,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "open?" );
 		
-		SchemeUtils.defineDoc( scheme,  
+		DescriptiveDocumentType.defineProcDoc( scheme,  
 			new PulsarProceduralDescriptiveBean() {{
 				setNames( "open?" );
 				setParameterDescription(   "" );
@@ -829,7 +839,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "open");
 		
-		SchemeUtils.defineDoc( scheme,  
+		DescriptiveDocumentType.defineProcDoc( scheme,  
 			new PulsarProceduralDescriptiveBean() {{
 				setNames( "open" );
 				setParameterDescription( "[string]" );
@@ -852,7 +862,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "close" );
 
-		SchemeUtils.defineDoc( scheme,  
+		DescriptiveDocumentType.defineProcDoc( scheme,  
 			new PulsarProceduralDescriptiveBean() {{
 				setNames( "close" );
 				setParameterDescription( "" );
@@ -897,7 +907,7 @@ public final class Pulsar extends Metro {
 		SchemeUtils.defineVar( scheme, openOutput , "open-output" , 
 													"openo" );
 
-		SchemeUtils.defineDoc( scheme, 
+		DescriptiveDocumentType.defineProcDoc( scheme, 
 			initDocOpenPorts.process( "output" ).setNames( "open-output", "openo" ));
 		
 		//////////////////////////////////////////////////////////
@@ -919,7 +929,7 @@ public final class Pulsar extends Metro {
 												 , "openi"
 												 );
 
-		SchemeUtils.defineDoc( scheme, 
+		DescriptiveDocumentType.defineProcDoc( scheme, 
 			initDocOpenPorts.process( "input" ).setNames( "open-input" , "openi" ) 
 		     );
 
@@ -955,7 +965,7 @@ public final class Pulsar extends Metro {
 			}
 		};
 		SchemeUtils.defineVar( scheme, closeOutput, "close-output" , "closeo" );
-		SchemeUtils.defineDoc( scheme, 
+		DescriptiveDocumentType.defineProcDoc( scheme, 
 			initDocClosePorts.process( "output" ).setNames( "close-output" , "closeo" ));
 
 		//////////////////////////////////////////////////////////
@@ -973,7 +983,7 @@ public final class Pulsar extends Metro {
 		};
 		SchemeUtils.defineVar( scheme, closeInput, "close-input", "closei" );
 		
-		SchemeUtils.defineDoc( scheme, 
+		DescriptiveDocumentType.defineProcDoc( scheme, 
 				initDocClosePorts.process( "input" ).setNames( "close-input", "closei" ) );
 
 		//////////////////////////////////////////////////////////
@@ -999,7 +1009,7 @@ public final class Pulsar extends Metro {
 			}
 		};
 		SchemeUtils.defineVar( scheme, listOutput, "list-output" , "lso" );
-		SchemeUtils.defineDoc( scheme, 
+		DescriptiveDocumentType.defineProcDoc( scheme, 
 			initDocListPorts.process( "output" ).setNames("list-output" , "lso" ));
 		
 		
@@ -1014,7 +1024,7 @@ public final class Pulsar extends Metro {
 			}
 		};
 		SchemeUtils.defineVar( scheme, listInput, "list-input" , "lsi" );
-		SchemeUtils.defineDoc( scheme, 
+		DescriptiveDocumentType.defineProcDoc( scheme, 
 			initDocListPorts.process( "input" ).setNames("list-input" , "lsi") );
 
 		//////////////////////////////////////////////////////////
@@ -1049,7 +1059,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "connect" );
 		
-		SchemeUtils.defineDoc( scheme, 
+		DescriptiveDocumentType.defineProcDoc( scheme, 
 			initDocConnection.process( "connects" ).setNames( "connect" ) );
 		
 		//////////////////////////////////////////////////////////
@@ -1062,7 +1072,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "disconnect");
 
-		SchemeUtils.defineDoc( scheme, 
+		DescriptiveDocumentType.defineProcDoc( scheme, 
 			initDocConnection.process( "disconnects" ).setNames( "disconnect" ));
 
 		//////////////////////////////////////////////////////////
@@ -1087,7 +1097,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "get-all-output", "gao" );
 
-		SchemeUtils.defineDoc( scheme, 
+		DescriptiveDocumentType.defineProcDoc( scheme, 
 			initDocAllConnection.process( "output" ).setNames("get-all-output", "gao"));
 
 		//////////////////////////////////////////////////////////
@@ -1100,7 +1110,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "get-all-input", "gai" );
 		
-		SchemeUtils.defineDoc( scheme, 
+		DescriptiveDocumentType.defineProcDoc( scheme, 
 			initDocAllConnection.process( "input" ).setNames("get-all-input", "gai"));
 
 		//////////////////////////////////////////////////////////
@@ -1120,7 +1130,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "set-main");
 
-		SchemeUtils.defineDoc( scheme, 
+		DescriptiveDocumentType.defineProcDoc( scheme, 
 			new PulsarProceduralDescriptiveBean() {{
 				setNames( "set-main" );
 				setParameterDescription( "[procedure]" );
@@ -1143,7 +1153,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "get-main");
 		
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean() {{
 				setNames( "get-main" );
 				setParameterDescription( "" );
@@ -1169,7 +1179,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "set-playing" );
 
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames("set-playing" );
 				setParameterDescription( "[boolean]" );
@@ -1190,7 +1200,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "playing?");
 
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "playing?" );
 				setParameterDescription( "" );
@@ -1211,7 +1221,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "play");
 		
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "play" );
 				setParameterDescription( "" );
@@ -1230,7 +1240,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "stop");
 
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "stop"  );
 				setParameterDescription( "" );
@@ -1266,7 +1276,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "quit" );
 		
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "quit"  );
 				setParameterDescription( "" );
@@ -1287,7 +1297,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "tap-tempo", "tapt" );
 		
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "tap-tempo", "tapt" );
 				setParameterDescription( "" );
@@ -1316,7 +1326,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "set-tempo" );
 		
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "set-tempo" );
 				setParameterDescription( "number" );
@@ -1347,7 +1357,7 @@ public final class Pulsar extends Metro {
 			}
 		};
 		SchemeUtils.defineVar( scheme, resetScheme , "reset" );
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames("reset" );
 				setParameterDescription( "" );
@@ -1372,7 +1382,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "rewind");
 		
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "rewind" );
 				setParameterDescription( "" );
@@ -1407,7 +1417,7 @@ public final class Pulsar extends Metro {
 			}
 		};
 		SchemeUtils.defineVar( scheme, simul , "simultaneous", "simul" );
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "simultaneous", "simul" );
 				setParameterDescription( "[procedure]..." );
@@ -1437,7 +1447,7 @@ public final class Pulsar extends Metro {
 			}
 		};
 		SchemeUtils.defineVar( scheme, getTrack, "get-track" , "gett" );
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "get-track", "gett" );
 				setParameterDescription( "[track-spec]..." );
@@ -1454,7 +1464,7 @@ public final class Pulsar extends Metro {
 		
 		/////////////////////////////////////////////////////////////////
 
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "about-track-spec" );
 				setParameterDescription( "" );
@@ -1505,7 +1515,7 @@ public final class Pulsar extends Metro {
 			}
 		};
 		SchemeUtils.defineVar( scheme, newTrack , "new-track" , "newt" );
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "new-track" , "newt" );
 				setParameterDescription( "[procedure/(list notation)]..." );
@@ -1529,7 +1539,7 @@ public final class Pulsar extends Metro {
 		
 		/////////////////////////////////////////////////////////////////
 		// ( canonical )
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "about-notation" );
 				setParameterDescription( "" );
@@ -1546,7 +1556,7 @@ public final class Pulsar extends Metro {
 			}});
 		
 		// ( canonical )
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "about-intro"  );
 				setParameterDescription( "" );
@@ -1656,7 +1666,7 @@ public final class Pulsar extends Metro {
 								+ ""
 							 );
 		}};
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			trackInitializer.process( 
 				"put",
 				""
@@ -1674,7 +1684,7 @@ public final class Pulsar extends Metro {
 			}
 		};
 		SchemeUtils.defineVar( scheme, removeTrack , "remove-track" , "remt" );
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			trackInitializer.process( 
 				"removes",
 				""
@@ -1692,7 +1702,7 @@ public final class Pulsar extends Metro {
 			}
 		};
 		SchemeUtils.defineVar( scheme, notifyTrackChange , "notify-track-change", "nott" );
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "notify-track-change", "nott" );
 				setParameterDescription( "" );
@@ -1723,7 +1733,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "list-tracks", "lstt" );
 
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "list-tracks", "lstt" );
 				setParameterDescription( "" );
@@ -1746,7 +1756,7 @@ public final class Pulsar extends Metro {
 		SchemeUtils.defineVar( scheme, clr , "clear-tracks",
 											 "clet" );
 		
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "clear-tracks", "clet" );
 				setParameterDescription( "" );
@@ -1779,7 +1789,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "print-stack-trace");
 		
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "print-stack-trace" );
 				setParameterDescription( "" );
@@ -1799,7 +1809,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "display-warn");
 
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "display-warn" );
 				setParameterDescription( "any" );
@@ -1819,7 +1829,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "newline-warn");
 
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "newline-warn" );
 				setParameterDescription( "" );
@@ -1843,7 +1853,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "typeof");
 		
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "typeof" );
 				setParameterDescription( "any" );
@@ -1873,7 +1883,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "make-timer" );
 
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames("make-timer" );
 				setParameterDescription( "delay interval proc" );
@@ -1914,7 +1924,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "random", "rnd");
 		
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "random", "rnd" );
 				setParameterDescription( "[range::number]" );
@@ -1956,7 +1966,7 @@ public final class Pulsar extends Metro {
 //			"luck" );
 
 
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "luck" );
 				setParameterDescription( "[numeric]" );
@@ -1977,7 +1987,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "make-page");
 		
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "make-page" );
 				setParameterDescription( "[string]" );
@@ -2003,7 +2013,7 @@ public final class Pulsar extends Metro {
 			}
 		} , "help!");
 		
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "help!" );
 				setParameterDescription( "" );
@@ -2028,7 +2038,7 @@ public final class Pulsar extends Metro {
 				this.index = index;
 			}
 			
-			public LList availableProcedures() throws Throwable {
+			public LList availableProcedures( DescriptiveDocumentType type ) throws Throwable {
 				Procedure1 proc1 = new Procedure1() {
 					@Override
 					public Object apply1(Object arg1) throws Throwable {
@@ -2049,9 +2059,23 @@ public final class Pulsar extends Metro {
 				};
 				return (LList)map.apply2( proc1, 
 								reverse.apply1( 
-									SchemeUtils.getDocumentList(this.environment)));
+									type.getDocumentList( this.environment )));
 			}
+			LList allAvailable() throws Throwable {
+				ArrayList list = new ArrayList();
+				list.addAll( availableProcedures( DescriptiveDocumentType.PROCS ));
+				list.addAll( availableProcedures( DescriptiveDocumentType.NOTES ));
+				return LList.makeList( list );
+			}
+
 			public Object apply0() throws Throwable {
+				return SchemeUtils.makePage( helpList( allAvailable() ) );
+ 
+//				result = String.join( " ", (List)result ); 
+//				return SchemeUtils.makePage(  result.toString(), helpTextWidth );
+			}
+
+			Object helpList( LList list ) throws Throwable {
 				Procedure1 proc1 = new Procedure1() {
 					@Override
 					public Object apply1(Object arg1) throws Throwable {
@@ -2062,29 +2086,31 @@ public final class Pulsar extends Metro {
 				Object result = kawa.standard.append.append.apply2(
 									Pair.make( 
 										SchemeUtils.toSchemeString( "#| === The list of all available procedures ===\n\n" ), 
-										map.apply2( proc1, availableProcedures())),
+										map.apply2( proc1, list )),
 									Pair.make( SchemeUtils.toSchemeString( "|#" ), EmptyList.emptyList ));
-
-				return SchemeUtils.makePage( result );
- 
-//				result = String.join( " ", (List)result ); 
-//				return SchemeUtils.makePage(  result.toString(), helpTextWidth );
+				return result;
 			}; 
 			
 			String MSG_NO_DOCUMENTATION = "No documentation is available.";
-			SimpleSymbol ALL_AVAILABLE = Symbol.valueOf( "all-available" );
-
+			SimpleSymbol ALL_AVAILABLE = Symbol.valueOf( "all" );
 			public Object apply1(Object arg1) throws Throwable {
 				if ( ALL_AVAILABLE.equals( arg1 ) ) {
-					return availableProcedures();
-				} else {
-					String message = SchemeUtils.getDescription( arg1 );
-					if ( message == null ) {
-						message = MSG_NO_DOCUMENTATION;
+					return allAvailable();
+				} else  {
+					if ( arg1 instanceof Symbol ) {
+						DescriptiveDocumentType t = 
+								DescriptiveDocumentType.valueOf( SchemeUtils.anyToString( arg1 ).toUpperCase() );
+						return SchemeUtils.makePage( helpList( availableProcedures( t ) ) );
+					} else {
+						String message = SchemeUtils.getDescription( arg1 );
+						if ( message == null ) {
+							message = MSG_NO_DOCUMENTATION;
+						}
+						return SchemeUtils.makePage( message, helpTextWidth );
 					}
-					return SchemeUtils.makePage( message, helpTextWidth );
 				}
 			}
+
 
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
@@ -2098,36 +2124,50 @@ public final class Pulsar extends Metro {
 			}
 		}
 		SchemeUtils.defineVar( scheme, new ProcedureHelp( scheme.getEnvironment(), "help", 1 ) , "help", "he" );
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "help", "he" );
-				setParameterDescription( "[procedure]" );
+				setParameterDescription( "[symbol|procedure]" );
+				addParameter(
+					"query" , "'procs|'notes|'all|procedure", "'all", false, "" );
+				
 				setReturnValueDescription( "::string|list" );
 				setShortDescription( "is a procedure to show the description of a specified procedure." ); 
 				setLongDescription( 
-						"When a procedure reference is passed, it returns a string value that contains "
+						"When a reference to a procedure is passed, ||<name/>|| returns "
 						+ "the description of the the procedure. \n\n"
 						+ "If no procedure is specified, it returns a list that contains all procedures which "
 						+ "description is available. "
-						+ "Pass a special keyword 'all-available to get "
-						+ "a symbol list of all procedures which are available for this command. " );
+						+ "Pass a special keyword 'all to get "
+						+ "a symbol list of all procedures which are available for this command. "
+						+ "Pass 'procs to get all available procedures. "
+						+ "Pass 'notes to get all available notation types. " 
+						);
 			}});
 		
 		
-		SchemeUtils.defineVar( scheme, new ProcedureN("help-markdown") {
+		SchemeUtils.defineVar( scheme, new Procedure1("help-markdown") {
 			@Override
-			public Object applyN(Object[] args) throws Throwable {
-				System.out.println( outputMarkdownReference() );
+			public Object apply0() throws Throwable {
+				return this.apply1( DescriptiveDocumentType.PROCS.toSymbol() );
+			}
+			@Override
+			public Object apply1(Object arg1) throws Throwable {
+				System.out.println(
+					outputMarkdownReference(
+						DescriptiveDocumentType.valueOf(
+							(Symbol)arg1)));
 //				SchemeUtils.toSchemeSymbol( sb.toString() );
 				return Values.empty;
 			}
 
-		} , "help-markdown");
+		} , "help-markdown" );
 		
-		SchemeUtils.defineDoc( scheme,
+		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames("help-markdown");
 				setParameterDescription( "" );
+				addParameter( "type", "string", "'procs", false,  "either 'procs or 'notes " );
 				setReturnValueDescription( "::string" );
 				setShortDescription(  "is a procedure to execute when the user needs something which calms you down." );
 				setLongDescription( 
