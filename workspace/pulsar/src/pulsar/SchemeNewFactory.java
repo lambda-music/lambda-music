@@ -57,9 +57,9 @@ import gnu.lists.IString;
 import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
-import gnu.mapping.ProcedureN;
 import gnu.mapping.Symbol;
 import gnu.math.IntNum;
+import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.Invokable;
 import pulsar.lib.swing.FlawLayout;
@@ -487,8 +487,8 @@ public abstract class SchemeNewFactory {
 
 
 		register( "timer", new SchemeNewFactory() {
-			private ProcedureN wrapRunnable( Runnable runnable ) {
-				return new ProcedureN() {
+			private Procedure wrapRunnable( Runnable runnable ) {
+				return new SafeProcedureN() {
 					public Object applyN(Object[] args) throws Throwable {
 						runnable.run();
 						return EmptyList.emptyList;

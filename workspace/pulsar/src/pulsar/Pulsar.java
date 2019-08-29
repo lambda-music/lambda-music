@@ -54,7 +54,6 @@ import gnu.mapping.Procedure0;
 import gnu.mapping.Procedure1;
 import gnu.mapping.Procedure2;
 import gnu.mapping.Procedure3;
-import gnu.mapping.ProcedureN;
 import gnu.mapping.SimpleSymbol;
 import gnu.mapping.Symbol;
 import gnu.mapping.Values;
@@ -67,6 +66,7 @@ import metro.MetroTrack;
 import metro.MetroTrack.SyncType;
 import pulsar.lib.scheme.DescriptiveDocumentType;
 import pulsar.lib.scheme.MarkdownDescriptive;
+import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.Invokable;
@@ -813,26 +813,26 @@ public final class Pulsar extends Metro {
 	 *            the scheme instance to initialize.
 	 */
 	public void initScheme( Scheme scheme ) {
-		SchemeUtils.defineVar( this, "pulsar" );
-		SchemeUtils.defineVar( new ProcedureN( "open?" ) {
+		Environment env = scheme.getEnvironment();
+
+		SchemeUtils.defineVar( env, this, "pulsar" );
+		SchemeUtils.defineVar( env, new SafeProcedureN( "open?" ) {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				return isOpened();
 			}
 		}, "open?" );
 		
-		DescriptiveDocumentType.defineProcDoc( scheme,  
-			new PulsarProceduralDescriptiveBean() {{
-				setNames( "open?" );
-				setParameterDescription(   "" );
-				setReturnValueDescription( "::boolean" );
-				setShortDescription(       "returns the current open state. " );
-				setLongDescription(        "This procedure returns #t iff the current sequencer state is open; "
-						                 + "otherwise returns #f. " );
-			}}
-		);
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean() {{
+			setNames( "open?" );
+			setParameterDescription(   "" );
+			setReturnValueDescription( "::boolean" );
+			setShortDescription(       "returns the current open state. " );
+			setLongDescription(        "This procedure returns #t iff the current sequencer state is open; "
+					                 + "otherwise returns #f. " );
+		}} );
 		
-		SchemeUtils.defineVar( new Procedure1("open") {
+		SchemeUtils.defineVar( env, new Procedure1("open") {
 			@Override
 			public Object apply1(Object arg0) throws Throwable {
 				open( SchemeUtils.toString( arg0 ) );
@@ -840,22 +840,20 @@ public final class Pulsar extends Metro {
 			}
 		}, "open");
 		
-		DescriptiveDocumentType.defineProcDoc( scheme,  
-			new PulsarProceduralDescriptiveBean() {{
-				setNames( "open" );
-				setParameterDescription( "[string]" );
-				addParameter( "client-name", "string", null , false, "The client name in the current Jack session. " );
-				setReturnValueDescription( "::void" );
-				setShortDescription( "starts a new connection between JACK Audio Connection Kit." );
-				setLongDescription( 
-						  "This procedure opens a new connection to the installed JACK Audio Connection Kit with"
-						+ "the specified client name. "
-						+ "When it failed to open a connection, this throws an exception. "
-						+ ALTERS_THE_CURRENT_STATE );
-			}}
-			);
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean() {{
+			setNames( "open" );
+			setParameterDescription( "[string]" );
+			addParameter( "client-name", "string", null , false, "The client name in the current Jack session. " );
+			setReturnValueDescription( "::void" );
+			setShortDescription( "starts a new connection between JACK Audio Connection Kit." );
+			setLongDescription( 
+					  "This procedure opens a new connection to the installed JACK Audio Connection Kit with"
+					+ "the specified client name. "
+					+ "When it failed to open a connection, this throws an exception. "
+					+ ALTERS_THE_CURRENT_STATE );
+		}} );
 		
-		SchemeUtils.defineVar( new ProcedureN("close") {
+		SchemeUtils.defineVar( env, new SafeProcedureN("close") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				close();
@@ -863,17 +861,16 @@ public final class Pulsar extends Metro {
 			}
 		}, "close" );
 
-		DescriptiveDocumentType.defineProcDoc( scheme,  
-			new PulsarProceduralDescriptiveBean() {{
-				setNames( "close" );
-				setParameterDescription( "" );
-				setReturnValueDescription( "::void" );
-				setShortDescription( "ends the current connection between JACK Audio Connection Kit." );
-				setLongDescription( "This procedure closes the current connection to the JACK Audio Connection Kit. "
-						+ "When it failed to close the connection, this throws an exception. "
-						+ THROWS_AN_ERROR_IF_NOT_OPEN
-						+ ALTERS_THE_CURRENT_STATE );
-			}});
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean() {{
+			setNames( "close" );
+			setParameterDescription( "" );
+			setReturnValueDescription( "::void" );
+			setShortDescription( "ends the current connection between JACK Audio Connection Kit." );
+			setLongDescription( "This procedure closes the current connection to the JACK Audio Connection Kit. "
+					+ "When it failed to close the connection, this throws an exception. "
+					+ THROWS_AN_ERROR_IF_NOT_OPEN
+					+ ALTERS_THE_CURRENT_STATE );
+		}} );
 
 		//////////////////////////////////////////////////////////
 
@@ -892,7 +889,7 @@ public final class Pulsar extends Metro {
 			);
 		}};		
 		
-		ProcedureN openOutput = new ProcedureN("open-output") {
+		Procedure openOutput = new SafeProcedureN("open-output") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				ArrayList<MetroPort> list = new ArrayList<>();
@@ -905,14 +902,13 @@ public final class Pulsar extends Metro {
 				return LList.makeList( list );
 			}
 		};
-		SchemeUtils.defineVar( openOutput, "open-output" , "openo" );
+		SchemeUtils.defineVar( env, openOutput , "open-output", "openo" );
 
-		DescriptiveDocumentType.defineProcDoc( scheme, 
-			initDocOpenPorts.process( "output" ).setNames( "open-output", "openo" ));
+		DescriptiveDocumentType.PROCS.defineDoc( env, initDocOpenPorts.process( "output" ).setNames( "open-output", "openo" ) );
 		
 		//////////////////////////////////////////////////////////
 
-		ProcedureN openInput = new ProcedureN("open-input") {
+		Procedure openInput = new SafeProcedureN("open-input") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				ArrayList<MetroPort> list = new ArrayList<>();
@@ -925,12 +921,10 @@ public final class Pulsar extends Metro {
 				return LList.makeList( list );
 			}
 		};
-		SchemeUtils.defineVar( openInput, "open-input" , "openi"
+		SchemeUtils.defineVar( env, openInput , "open-input", "openi"
 												 );
 
-		DescriptiveDocumentType.defineProcDoc( scheme, 
-			initDocOpenPorts.process( "input" ).setNames( "open-input" , "openi" ) 
-		     );
+		DescriptiveDocumentType.PROCS.defineDoc( env, initDocOpenPorts.process( "input" ).setNames( "open-input" , "openi" ) );
 
 		
 		//////////////////////////////////////////////////////////
@@ -952,7 +946,7 @@ public final class Pulsar extends Metro {
 		}}
 		InitDocClosePorts initDocClosePorts = new InitDocClosePorts();
 		
-		ProcedureN closeOutput = new ProcedureN("close-output") {
+		Procedure closeOutput = new SafeProcedureN("close-output") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				for ( Object o : args ) {
@@ -963,13 +957,12 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		};
-		SchemeUtils.defineVar( closeOutput, "close-output", "closeo" );
-		DescriptiveDocumentType.defineProcDoc( scheme, 
-			initDocClosePorts.process( "output" ).setNames( "close-output" , "closeo" ));
+		SchemeUtils.defineVar( env, closeOutput, "close-output", "closeo" );
+		DescriptiveDocumentType.PROCS.defineDoc( env, initDocClosePorts.process( "output" ).setNames( "close-output" , "closeo" ) );
 
 		//////////////////////////////////////////////////////////
 		
-		ProcedureN closeInput = new ProcedureN("close-input") {
+		Procedure closeInput = new SafeProcedureN("close-input") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				for ( Object o : args ) {
@@ -980,10 +973,9 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		};
-		SchemeUtils.defineVar( closeInput, "close-input", "closei" );
+		SchemeUtils.defineVar( env, closeInput, "close-input", "closei" );
 		
-		DescriptiveDocumentType.defineProcDoc( scheme, 
-				initDocClosePorts.process( "input" ).setNames( "close-input", "closei" ) );
+		DescriptiveDocumentType.PROCS.defineDoc( env, initDocClosePorts.process( "input" ).setNames( "close-input", "closei" ) );
 
 		//////////////////////////////////////////////////////////
 
@@ -999,7 +991,7 @@ public final class Pulsar extends Metro {
 		}}
 		InitDocListPorts initDocListPorts = new InitDocListPorts();
  
-		ProcedureN listOutput = new ProcedureN("list-output") {
+		Procedure listOutput = new SafeProcedureN("list-output") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				List<MetroPort> list = getOutputPorts();
@@ -1007,14 +999,13 @@ public final class Pulsar extends Metro {
 				return LList.makeList( list  );
 			}
 		};
-		SchemeUtils.defineVar( listOutput, "list-output", "lso" );
-		DescriptiveDocumentType.defineProcDoc( scheme, 
-			initDocListPorts.process( "output" ).setNames("list-output" , "lso" ));
+		SchemeUtils.defineVar( env, listOutput, "list-output", "lso" );
+		DescriptiveDocumentType.PROCS.defineDoc( env, initDocListPorts.process( "output" ).setNames("list-output" , "lso" ) );
 		
 		
 		//////////////////////////////////////////////////////////
 
-		ProcedureN listInput = new ProcedureN("list-input") {
+		Procedure listInput = new SafeProcedureN("list-input") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				List<MetroPort> list = getInputPorts();
@@ -1022,9 +1013,8 @@ public final class Pulsar extends Metro {
 				return LList.makeList( list  );
 			}
 		};
-		SchemeUtils.defineVar( listInput, "list-input", "lsi" );
-		DescriptiveDocumentType.defineProcDoc( scheme, 
-			initDocListPorts.process( "input" ).setNames("list-input" , "lsi") );
+		SchemeUtils.defineVar( env, listInput, "list-input", "lsi" );
+		DescriptiveDocumentType.PROCS.defineDoc( env, initDocListPorts.process( "input" ).setNames("list-input" , "lsi") );
 
 		//////////////////////////////////////////////////////////
 
@@ -1050,7 +1040,7 @@ public final class Pulsar extends Metro {
 		}}
 		InitDocConnection initDocConnection = new InitDocConnection();
 		
-		SchemeUtils.defineVar( new ProcedureN("connect") {
+		SchemeUtils.defineVar( env, new SafeProcedureN("connect") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				connectProc(Pulsar.this, args, ConnectProc.CONNECT );
@@ -1058,12 +1048,11 @@ public final class Pulsar extends Metro {
 			}
 		}, "connect" );
 		
-		DescriptiveDocumentType.defineProcDoc( scheme, 
-			initDocConnection.process( "connects" ).setNames( "connect" ) );
+		DescriptiveDocumentType.PROCS.defineDoc( env, initDocConnection.process( "connects" ).setNames( "connect" ) );
 		
 		//////////////////////////////////////////////////////////
 		
-		SchemeUtils.defineVar( new ProcedureN("disconnect") {
+		SchemeUtils.defineVar( env, new SafeProcedureN("disconnect") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				connectProc(Pulsar.this, args, ConnectProc.DISCONNECT );
@@ -1071,8 +1060,7 @@ public final class Pulsar extends Metro {
 			}
 		}, "disconnect");
 
-		DescriptiveDocumentType.defineProcDoc( scheme, 
-			initDocConnection.process( "disconnects" ).setNames( "disconnect" ));
+		DescriptiveDocumentType.PROCS.defineDoc( env, initDocConnection.process( "disconnects" ).setNames( "disconnect" ) );
 
 		//////////////////////////////////////////////////////////
 		
@@ -1088,34 +1076,32 @@ public final class Pulsar extends Metro {
 									);
 		}}
 		InitDocAllConnection initDocAllConnection = new InitDocAllConnection();	
-		SchemeUtils.defineVar( new ProcedureN("get-all-output") {
+		SchemeUtils.defineVar( env, new SafeProcedureN("get-all-output") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				return Pair.makeList( getAllOutputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
 					.collect( Collectors.toList() ) );
 			}
-		}, "get-all-output" , "gao" );
+		} , "get-all-output", "gao" );
 
-		DescriptiveDocumentType.defineProcDoc( scheme, 
-			initDocAllConnection.process( "output" ).setNames("get-all-output", "gao"));
+		DescriptiveDocumentType.PROCS.defineDoc( env, initDocAllConnection.process( "output" ).setNames("get-all-output", "gao") );
 
 		//////////////////////////////////////////////////////////
 		
-		SchemeUtils.defineVar( new ProcedureN("get-all-input") {
+		SchemeUtils.defineVar( env, new SafeProcedureN("get-all-input") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				return Pair.makeList( getAllInputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
 					.collect( Collectors.toList() ) );
 			}
-		}, "get-all-input" , "gai" );
+		} , "get-all-input", "gai" );
 		
-		DescriptiveDocumentType.defineProcDoc( scheme, 
-			initDocAllConnection.process( "input" ).setNames("get-all-input", "gai"));
+		DescriptiveDocumentType.PROCS.defineDoc( env, initDocAllConnection.process( "input" ).setNames("get-all-input", "gai") );
 
 		//////////////////////////////////////////////////////////
 		
 		
-		SchemeUtils.defineVar( new ProcedureN("set-main") {
+		SchemeUtils.defineVar( env, new SafeProcedureN("set-main") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				logInfo("set-main");
@@ -1129,42 +1115,40 @@ public final class Pulsar extends Metro {
 			}
 		}, "set-main");
 
-		DescriptiveDocumentType.defineProcDoc( scheme, 
-			new PulsarProceduralDescriptiveBean() {{
-				setNames( "set-main" );
-				setParameterDescription( "[procedure]" );
-				addParameter( "main-procedure", "procedure", null , false, "a procedure to set as the main procedure. " );
-				setReturnValueDescription( "::void" );
-				setShortDescription( "sets the main procedure. " );
-				setLongDescription( ""
-									+ "The main procedure is a procedure which is called "
-									+ "when (rewind) procedure is called in order to reset the sequencer's state. "
-									+ "Usually, the main procedure is a procedure to boot up the current song system. "
-								);
-			}});
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean() {{
+			setNames( "set-main" );
+			setParameterDescription( "[procedure]" );
+			addParameter( "main-procedure", "procedure", null , false, "a procedure to set as the main procedure. " );
+			setReturnValueDescription( "::void" );
+			setShortDescription( "sets the main procedure. " );
+			setLongDescription( ""
+								+ "The main procedure is a procedure which is called "
+								+ "when (rewind) procedure is called in order to reset the sequencer's state. "
+								+ "Usually, the main procedure is a procedure to boot up the current song system. "
+							);
+		}} );
 
 		//////////////////////////////////////////////////////////
 
-		SchemeUtils.defineVar( new Procedure0( "get-main" ) {
+		SchemeUtils.defineVar( env, new Procedure0( "get-main" ) {
 			@Override
 			public Object apply0() throws Throwable {
 				return getMainProcedure();
 			}
 		}, "get-main");
 		
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean() {{
-				setNames( "get-main" );
-				setParameterDescription( "" );
-				setReturnValueDescription( "::procedure" );
-				setShortDescription( "retrieves the main procedure. " );
-				setLongDescription( ""
-						+ "See (help set-main) for further information. " );
-			}});
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean() {{
+			setNames( "get-main" );
+			setParameterDescription( "" );
+			setReturnValueDescription( "::procedure" );
+			setShortDescription( "retrieves the main procedure. " );
+			setLongDescription( ""
+					+ "See (help set-main) for further information. " );
+		}} );
 
 		//////////////////////////////////////////////////////////
 		
-		SchemeUtils.defineVar( new ProcedureN("set-playing") {
+		SchemeUtils.defineVar( env, new SafeProcedureN("set-playing") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				if ( args.length == 0 ) {
@@ -1178,41 +1162,39 @@ public final class Pulsar extends Metro {
 			}
 		}, "set-playing" );
 
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames("set-playing" );
-				setParameterDescription( "[boolean]" );
-				addParameter( "playing","boolean",  null, false, "the status to set. " );
-				setReturnValueDescription( "::void" );
-				setShortDescription( "sets the current playing state." );
-				setLongDescription( ""
-									+ "When #f is passed to this procedure, the sequencer stops playing.  "
-									+ "When #t is passed to this procedure ,the sequencer resumes playing. "
-									+ THROWS_AN_ERROR_IF_NOT_OPEN
-									 );
-			}});
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames("set-playing" );
+			setParameterDescription( "[boolean]" );
+			addParameter( "playing","boolean",  null, false, "the status to set. " );
+			setReturnValueDescription( "::void" );
+			setShortDescription( "sets the current playing state." );
+			setLongDescription( ""
+								+ "When #f is passed to this procedure, the sequencer stops playing.  "
+								+ "When #t is passed to this procedure ,the sequencer resumes playing. "
+								+ THROWS_AN_ERROR_IF_NOT_OPEN
+								 );
+		}} );
 
-		SchemeUtils.defineVar( new ProcedureN("playing?") {
+		SchemeUtils.defineVar( env, new SafeProcedureN("playing?") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				return getPlaying();
 			}
 		}, "playing?");
 
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "playing?" );
-				setParameterDescription( "" );
-				setReturnValueDescription( "::boolean" );
-				setShortDescription( "retrieves the current playing state." );
-				setLongDescription( ""
-									+ "When the sequencer is playing, it returns #t; otherwise it returns #f. "
-									+ "See (help set-playing) for further information. "
-									+ THROWS_AN_ERROR_IF_NOT_OPEN
-									 );
-			}});
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "playing?" );
+			setParameterDescription( "" );
+			setReturnValueDescription( "::boolean" );
+			setShortDescription( "retrieves the current playing state." );
+			setLongDescription( ""
+								+ "When the sequencer is playing, it returns #t; otherwise it returns #f. "
+								+ "See (help set-playing) for further information. "
+								+ THROWS_AN_ERROR_IF_NOT_OPEN
+								 );
+		}} );
 		
-		SchemeUtils.defineVar( new ProcedureN("play") {
+		SchemeUtils.defineVar( env, new SafeProcedureN("play") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				setPlaying( true ); 
@@ -1220,18 +1202,17 @@ public final class Pulsar extends Metro {
 			}
 		}, "play");
 		
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "play" );
-				setParameterDescription( "" );
-				setReturnValueDescription( "::void" );
-				setShortDescription( "causes the sequencer to start playing." );
-				setLongDescription( "See (help set-play) for further information."
-									+ THROWS_AN_ERROR_IF_NOT_OPEN
-									 );
-			}});
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "play" );
+			setParameterDescription( "" );
+			setReturnValueDescription( "::void" );
+			setShortDescription( "causes the sequencer to start playing." );
+			setLongDescription( "See (help set-play) for further information."
+								+ THROWS_AN_ERROR_IF_NOT_OPEN
+								 );
+		}} );
 
-		SchemeUtils.defineVar( new ProcedureN("stop") {
+		SchemeUtils.defineVar( env, new SafeProcedureN("stop") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				setPlaying( false ); 
@@ -1239,18 +1220,17 @@ public final class Pulsar extends Metro {
 			}
 		}, "stop");
 
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "stop"  );
-				setParameterDescription( "" );
-				setReturnValueDescription( "::void" );
-				setShortDescription( "causes the sequencer to stop playing." );
-				setLongDescription( 
-					"See (help set-play) for further information."
-						+ THROWS_AN_ERROR_IF_NOT_OPEN );
-			}});
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "stop"  );
+			setParameterDescription( "" );
+			setReturnValueDescription( "::void" );
+			setShortDescription( "causes the sequencer to stop playing." );
+			setLongDescription( 
+				"See (help set-play) for further information."
+					+ THROWS_AN_ERROR_IF_NOT_OPEN );
+		}} );
 
-		SchemeUtils.defineVar( new ProcedureN("quit") {
+		SchemeUtils.defineVar( env, new SafeProcedureN("quit") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				Thread t = new Thread() {
@@ -1275,45 +1255,43 @@ public final class Pulsar extends Metro {
 			}
 		}, "quit" );
 		
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "quit"  );
-				setParameterDescription( "" );
-				setReturnValueDescription( "::void" );
-				setShortDescription( "quits the application. " );
-				setLongDescription( ""
-									+ "makes the sequencer to stop playing "
-									+ "and shutdowns the application in " + shutdownWait + " milliseconds. "
-									+ "Currently the time to shutdown is hard-coded and cannot be changed. "
-									+ THROWS_AN_ERROR_IF_NOT_OPEN );
-			}});
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "quit"  );
+			setParameterDescription( "" );
+			setReturnValueDescription( "::void" );
+			setShortDescription( "quits the application. " );
+			setLongDescription( ""
+								+ "makes the sequencer to stop playing "
+								+ "and shutdowns the application in " + shutdownWait + " milliseconds. "
+								+ "Currently the time to shutdown is hard-coded and cannot be changed. "
+								+ THROWS_AN_ERROR_IF_NOT_OPEN );
+		}} );
 		
-		SchemeUtils.defineVar( new ProcedureN("tap-tempo") {
+		SchemeUtils.defineVar( env, new SafeProcedureN("tap-tempo") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				tempoTapper.tap(); 
 				return Invokable.NO_RESULT;
 			}
-		}, "tap-tempo" , "tapt" );
+		} , "tap-tempo", "tapt" );
 		
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "tap-tempo", "tapt" );
-				setParameterDescription( "" );
-				setReturnValueDescription( "::void" );
-				setShortDescription( "has the same effect with pressing the tap-tempo button on the main screen. "
-					               	);
-				setLongDescription( ""
-									+ "The tap-tempo button is a button to change the current tempo. "
-									+ "The button is supposed to be pressed repeatedly to tell the system  "
-									+ "how fast the sequencer should play the current music. "
-									+ "The sequencer calculates the average of durations between the pressing the button, "
-									+ "and apply the value as the current tempo on the sequencer system. "
-									+ "See (help set-tempo)."
-									+ THROWS_AN_ERROR_IF_NOT_OPEN );
-			}});
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "tap-tempo", "tapt" );
+			setParameterDescription( "" );
+			setReturnValueDescription( "::void" );
+			setShortDescription( "has the same effect with pressing the tap-tempo button on the main screen. "
+				               	);
+			setLongDescription( ""
+								+ "The tap-tempo button is a button to change the current tempo. "
+								+ "The button is supposed to be pressed repeatedly to tell the system  "
+								+ "how fast the sequencer should play the current music. "
+								+ "The sequencer calculates the average of durations between the pressing the button, "
+								+ "and apply the value as the current tempo on the sequencer system. "
+								+ "See (help set-tempo)."
+								+ THROWS_AN_ERROR_IF_NOT_OPEN );
+		}} );
 
-		SchemeUtils.defineVar( new ProcedureN("set-tempo") {
+		SchemeUtils.defineVar( env, new SafeProcedureN("set-tempo") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				if ( 0 < args.length ) {
@@ -1325,22 +1303,21 @@ public final class Pulsar extends Metro {
 			}
 		}, "set-tempo" );
 		
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "set-tempo" );
-				setParameterDescription( "number" );
-				addParameter( "tempo", "number", null, false, "the tempo to set." ); 
-				setReturnValueDescription( "::void" );
-				setShortDescription( "sets the current tempo. " );
-				setLongDescription( ""
-									+ "This procedure takes an argument as a beat-per-minutes. "
-									+ "A value less than one is treated as one. "
-									+ "There is no maximum value for the argument. "
-									+ "thought, the result of passing extreme values to the procedure "
-									+ "is not defined. \n\n"
-									+ "See (help tap-tempo) for further information."
-									+ THROWS_AN_ERROR_IF_NOT_OPEN );
-			}});
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "set-tempo" );
+			setParameterDescription( "number" );
+			addParameter( "tempo", "number", null, false, "the tempo to set." ); 
+			setReturnValueDescription( "::void" );
+			setShortDescription( "sets the current tempo. " );
+			setLongDescription( ""
+								+ "This procedure takes an argument as a beat-per-minutes. "
+								+ "A value less than one is treated as one. "
+								+ "There is no maximum value for the argument. "
+								+ "thought, the result of passing extreme values to the procedure "
+								+ "is not defined. \n\n"
+								+ "See (help tap-tempo) for further information."
+								+ THROWS_AN_ERROR_IF_NOT_OPEN );
+		}} );
 		
 		//////////////////////////////////////////////////////////
 
@@ -1355,25 +1332,24 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		};
-		SchemeUtils.defineVar( resetScheme, "reset" );
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames("reset" );
-				setParameterDescription( "" );
-				setReturnValueDescription( "::void" );
-				setShortDescription( "resets the environment object of Scheme interpreter, and close the current JACK connection. " );
-				setLongDescription( ""
-									+ "This procedure is supposed to be called interactively and "
-									+ "is not supposed to be called from other procedures; a procedure which "
-									+ "called the (reset) procedure will be deleted from the current environment object as well "
-									+ "as other procedures and as a result, "
-									+ "the procedure cannot call other procedures which are necessary to continue "
-									+ "the process. "
-									+ "" );
-			}});
+		SchemeUtils.defineVar( env, resetScheme, "reset" );
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames("reset" );
+			setParameterDescription( "" );
+			setReturnValueDescription( "::void" );
+			setShortDescription( "resets the environment object of Scheme interpreter, and close the current JACK connection. " );
+			setLongDescription( ""
+								+ "This procedure is supposed to be called interactively and "
+								+ "is not supposed to be called from other procedures; a procedure which "
+								+ "called the (reset) procedure will be deleted from the current environment object as well "
+								+ "as other procedures and as a result, "
+								+ "the procedure cannot call other procedures which are necessary to continue "
+								+ "the process. "
+								+ "" );
+		}} );
 		
 		
-		SchemeUtils.defineVar( new Procedure0("rewind") {
+		SchemeUtils.defineVar( env, new Procedure0("rewind") {
 			@Override
 			public Object apply0() throws Throwable {
 				rewind();
@@ -1381,19 +1357,18 @@ public final class Pulsar extends Metro {
 			}
 		}, "rewind");
 		
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "rewind" );
-				setParameterDescription( "" );
-				setReturnValueDescription( "::void" );
-				setShortDescription( "causes the music sequencer to go to the head of the song. " );
-				setLongDescription( ""
-									+ "This procedure usually causes the music sequencer to call the main-procedure. "
-									+ "See (help set-main). "
-									+ THROWS_AN_ERROR_IF_NOT_OPEN );
-			}});
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "rewind" );
+			setParameterDescription( "" );
+			setReturnValueDescription( "::void" );
+			setShortDescription( "causes the music sequencer to go to the head of the song. " );
+			setLongDescription( ""
+								+ "This procedure usually causes the music sequencer to call the main-procedure. "
+								+ "See (help set-main). "
+								+ THROWS_AN_ERROR_IF_NOT_OPEN );
+		}} );
 		
-		ProcedureN simul = new ProcedureN( "simultaneous" ) {
+		Procedure simul = new SafeProcedureN( "simultaneous" ) {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				synchronized ( getMetroLock() ) {
@@ -1415,26 +1390,25 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		};
-		SchemeUtils.defineVar( simul, "simultaneous" , "simul" );
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "simultaneous", "simul" );
-				setParameterDescription( "[procedure]..." );
-				addParameter( "subproc", "procedure", null, true, "a subprocedure to execute by this procedure. " ); 
-				setReturnValueDescription( "::void" );
-				setShortDescription( "executes passed the procedures \"simultaneously\". " );
-				setLongDescription( ""
-									+ "This procedure is designed to add multiple tracks to the sequencer and and let the tracks start "
-									+ "to play simultaneously. While the interpreter is executing this procedure, the thread "
-									+ "that is processing tracks in order to generate the music data is blocked. "
-									+ "Therefore, it is guaranteed that the sequencer starts to process the added tracks simultaneously. "
-									+ "" 
-									+ THROWS_AN_ERROR_IF_NOT_OPEN );
-			}});
+		SchemeUtils.defineVar( env, simul , "simultaneous", "simul" );
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "simultaneous", "simul" );
+			setParameterDescription( "[procedure]..." );
+			addParameter( "subproc", "procedure", null, true, "a subprocedure to execute by this procedure. " ); 
+			setReturnValueDescription( "::void" );
+			setShortDescription( "executes passed the procedures \"simultaneously\". " );
+			setLongDescription( ""
+								+ "This procedure is designed to add multiple tracks to the sequencer and and let the tracks start "
+								+ "to play simultaneously. While the interpreter is executing this procedure, the thread "
+								+ "that is processing tracks in order to generate the music data is blocked. "
+								+ "Therefore, it is guaranteed that the sequencer starts to process the added tracks simultaneously. "
+								+ "" 
+								+ THROWS_AN_ERROR_IF_NOT_OPEN );
+		}} );
 		
 		/////////////////////////////////////////////////////////////////
 
-		ProcedureN getTrack = new ProcedureN( "get-track" ) {
+		Procedure getTrack = new SafeProcedureN( "get-track" ) {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				ArrayList<MetroTrack> t = new ArrayList<>();
@@ -1445,47 +1419,45 @@ public final class Pulsar extends Metro {
 				return Pair.makeList( t );
 			}
 		};
-		SchemeUtils.defineVar( getTrack, "get-track", "gett" );
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "get-track", "gett" );
-				setParameterDescription( "[track-spec]..." );
-				addParameter( "track-spec", "any", null, true, "a subprocedure to execute by this procedure. See (help about-track-spec). " ); 
-
-				setReturnValueDescription( "::void" );
-				setShortDescription( "||<name/>|| retrieves multiple tracks which are specified as track-spec arguments. " );
-				setLongDescription( ""
-									+ "The tracks are stored in a linked list. "
-									+ "See (help about-track-spec). "
-									+ "" 
-									+ THROWS_AN_ERROR_IF_NOT_OPEN );
-			}});
+		SchemeUtils.defineVar( env, getTrack, "get-track", "gett" );
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "get-track", "gett" );
+			setParameterDescription( "[track-spec]..." );
+			addParameter( "track-spec", "any", null, true, "a subprocedure to execute by this procedure. See (help about-track-spec). " ); 
+		
+			setReturnValueDescription( "::void" );
+			setShortDescription( "||<name/>|| retrieves multiple tracks which are specified as track-spec arguments. " );
+			setLongDescription( ""
+								+ "The tracks are stored in a linked list. "
+								+ "See (help about-track-spec). "
+								+ "" 
+								+ THROWS_AN_ERROR_IF_NOT_OPEN );
+		}} );
 		
 		/////////////////////////////////////////////////////////////////
 
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "about-track-spec" );
-				setParameterDescription( "" );
-				setReturnValueDescription( "" );
-				setShortDescription( "The track-spec denotes a specification of a track to retrieve. " );
-				setLongDescription( ""
-									+ "Only symbol, string and procedure are valid as a track-spec.\n\n "
-									+ "When track-spec is a symbol/a string, the value is compared with the name value "
-									+ "of each track, and the track is added to the result when it equals to the value. "
-									+ "It uses the equals() method of java.lang.Object class to check the equality of the two values. \n\n"
-									+ "When track-spec is a procedure: The system enumerates all tracks in the current sequencer, "
-									+ "and call the specified procedure for each track. The procedure should have two parameters : "
-									+ "(lambda ( name tags ) ... ). If a track identified by the name and the tags is not to retrieve, "
-									+ "the procedure should return #f; otherwise the track is selected to the result. \n\n"
-									+ "" 
-									+ THROWS_AN_ERROR_IF_NOT_OPEN );
-			}});
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "about-track-spec" );
+			setParameterDescription( "" );
+			setReturnValueDescription( "" );
+			setShortDescription( "The track-spec denotes a specification of a track to retrieve. " );
+			setLongDescription( ""
+								+ "Only symbol, string and procedure are valid as a track-spec.\n\n "
+								+ "When track-spec is a symbol/a string, the value is compared with the name value "
+								+ "of each track, and the track is added to the result when it equals to the value. "
+								+ "It uses the equals() method of java.lang.Object class to check the equality of the two values. \n\n"
+								+ "When track-spec is a procedure: The system enumerates all tracks in the current sequencer, "
+								+ "and call the specified procedure for each track. The procedure should have two parameters : "
+								+ "(lambda ( name tags ) ... ). If a track identified by the name and the tags is not to retrieve, "
+								+ "the procedure should return #f; otherwise the track is selected to the result. \n\n"
+								+ "" 
+								+ THROWS_AN_ERROR_IF_NOT_OPEN );
+		}} );
 		
 		/////////////////////////////////////////////////////////////////
 		
 		
-		ProcedureN newTrack = new ProcedureN( "new-track" ) {
+		Procedure newTrack = new SafeProcedureN( "new-track" ) {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				Object name;
@@ -1513,70 +1485,67 @@ public final class Pulsar extends Metro {
 				return createTrack( name, tags, procedure );
 			}
 		};
-		SchemeUtils.defineVar( newTrack, "new-track" , "newt" );
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "new-track" , "newt" );
-				setParameterDescription( "[procedure/(list notation)]..." );
-				addParameter( "notations", "procedure/(list notation)", null, true, "The contents of the track. " );
-				setReturnValueDescription( "::MetroTrack" );
-				setShortDescription( "<name/> creates a new track." );
-				setLongDescription( ""
-									+ "A track is a basic unit of music in Pulsar music sequencer. "
-									+ "A track contains a procedure to create a notation list. "
-									+ "When a user added a track to the sequencer, "
-									+ "the sequencer asks what to play next to the track. "
-									+ "The sequencer plays it and asks to the track again when it finished to play the notation list. "
-									+ "The length of a notation list which a track creates is usually one measure; "
-									+ "but it can be any length. "
-									+ "The sequencer can have multiple tracks. There is no limit on maximum number of tracks. "
-									+ "It is necessary to add the track which is created by <name/> procedure to the "
-									+ "sequencer by (put-track) procedure. See (help put-track) for further information. "
-									+ "" 
-									+ THROWS_AN_ERROR_IF_NOT_OPEN );
-			}});
+		SchemeUtils.defineVar( env, newTrack , "new-track", "newt" );
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "new-track" , "newt" );
+			setParameterDescription( "[procedure/(list notation)]..." );
+			addParameter( "notations", "procedure/(list notation)", null, true, "The contents of the track. " );
+			setReturnValueDescription( "::MetroTrack" );
+			setShortDescription( "<name/> creates a new track." );
+			setLongDescription( ""
+								+ "A track is a basic unit of music in Pulsar music sequencer. "
+								+ "A track contains a procedure to create a notation list. "
+								+ "When a user added a track to the sequencer, "
+								+ "the sequencer asks what to play next to the track. "
+								+ "The sequencer plays it and asks to the track again when it finished to play the notation list. "
+								+ "The length of a notation list which a track creates is usually one measure; "
+								+ "but it can be any length. "
+								+ "The sequencer can have multiple tracks. There is no limit on maximum number of tracks. "
+								+ "It is necessary to add the track which is created by <name/> procedure to the "
+								+ "sequencer by (put-track) procedure. See (help put-track) for further information. "
+								+ "" 
+								+ THROWS_AN_ERROR_IF_NOT_OPEN );
+		}} );
 		
 		/////////////////////////////////////////////////////////////////
 		// ( canonical )
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "about-notation" );
-				setParameterDescription( "" );
-				setReturnValueDescription( "::void" );
-				setShortDescription( "A notation is a MIDI data which Pulsar music sequencer can play. " );
-				setLongDescription( ""
-									+ "In Pulsar, a notation is made of a Scheme association list. There are several types of a notation "
-									+ "such as notes, rests, MIDI control changes and others. "
-									+ "The contents of a notation depend on its type; "
-									+ "for example, if a notation is a note data, "
-									+ "the notation object have four properties : velocity, length, position and pitch. "
-									+ "" // TODO 
-									+ THROWS_AN_ERROR_IF_NOT_OPEN );
-			}});
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "about-notation" );
+			setParameterDescription( "" );
+			setReturnValueDescription( "::void" );
+			setShortDescription( "A notation is a MIDI data which Pulsar music sequencer can play. " );
+			setLongDescription( ""
+								+ "In Pulsar, a notation is made of a Scheme association list. There are several types of a notation "
+								+ "such as notes, rests, MIDI control changes and others. "
+								+ "The contents of a notation depend on its type; "
+								+ "for example, if a notation is a note data, "
+								+ "the notation object have four properties : velocity, length, position and pitch. "
+								+ "" // TODO 
+								+ THROWS_AN_ERROR_IF_NOT_OPEN );
+		}} );
 		
 		// ( canonical )
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "about-intro"  );
-				setParameterDescription( "" );
-				setReturnValueDescription( "" );
-				setShortDescription( "Welcome to Pulsar music sequencer!" );
-				setLongDescription( ""
-									+ "Pulsar music sequencer is a music sequencer which collaboratively works with "
-									+ "a powerful computer language Lisp Scheme. "
-									+ "And this frame itself is a powerful Lisp Scheme editor which is called KawaPad. "
-									+ "In Lisp, all commands are surrounded with a pair of parentheses. You can easily execute "
-									+ "one of those command by moving your cursor within the pair of parentheses and pressing CTRL+ENTER. \n\n"
-									+ "To show this help, execute (help about-intro). \n"
-									+ "To show all available procedures, execute (help) . \n"
-									+ "To show help of a procedure, execute (help [procedure-name] ) . \n"
-									+ "" 
-								 );
-			}});
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "about-intro"  );
+			setParameterDescription( "" );
+			setReturnValueDescription( "" );
+			setShortDescription( "Welcome to Pulsar music sequencer!" );
+			setLongDescription( ""
+								+ "Pulsar music sequencer is a music sequencer which collaboratively works with "
+								+ "a powerful computer language Lisp Scheme. "
+								+ "And this frame itself is a powerful Lisp Scheme editor which is called KawaPad. "
+								+ "In Lisp, all commands are surrounded with a pair of parentheses. You can easily execute "
+								+ "one of those command by moving your cursor within the pair of parentheses and pressing CTRL+ENTER. \n\n"
+								+ "To show this help, execute (help about-intro). \n"
+								+ "To show all available procedures, execute (help) . \n"
+								+ "To show help of a procedure, execute (help [procedure-name] ) . \n"
+								+ "" 
+							 );
+		}} );
 
 		/////////////////////////////////////////////////////////////////
 		
-		abstract class TrackManagementProcedure extends ProcedureN  {
+		abstract class TrackManagementProcedure extends SafeProcedureN  {
 			TrackManagementProcedure( String name ) {
 				super(name);
 			}
@@ -1633,13 +1602,13 @@ public final class Pulsar extends Metro {
 
 		/////////////////////////////////////////////////////////////////
 
-		ProcedureN putTrack = new TrackManagementProcedure( "put-track" ) {
+		Procedure putTrack = new TrackManagementProcedure( "put-track" ) {
 			@Override
 			void procTrack( List<MetroTrack> trackList, SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
 				putTrack(trackList, syncType, syncTrack, syncOffset);
 			}
 		};
-		SchemeUtils.defineVar( putTrack, "put-track" , "putt" );
+		SchemeUtils.defineVar( env, putTrack , "put-track", "putt" );
 
 		PulsarProceduralDescriptiveBean trackInitializer = new PulsarProceduralDescriptiveBean(){{
 			setParameterDescription( "track [sync-type] [sync-track] [sync-offset]" );
@@ -1665,32 +1634,29 @@ public final class Pulsar extends Metro {
 								+ ""
 							 );
 		}};
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			trackInitializer.process( 
-				"put",
-				""
-					+ "The sequencer starts to play the added track and it gives the user some controls on "
-					+ "how it starts playing the track."	
-				).setNames( "put-track", "putt" )
-			);
+		DescriptiveDocumentType.PROCS.defineDoc( env, trackInitializer.process( 
+		"put",
+		""
+			+ "The sequencer starts to play the added track and it gives the user some controls on "
+			+ "how it starts playing the track."	
+		).setNames( "put-track", "putt" ) );
 
 		/////////////////////////////////////////////////////////////////
 
-		ProcedureN removeTrack = new TrackManagementProcedure( "remove-track" ) {
+		Procedure removeTrack = new TrackManagementProcedure( "remove-track" ) {
 			@Override
 			void procTrack( List<MetroTrack> trackList, SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
 				removeTrack(trackList, syncType, syncTrack, syncOffset);
 			}
 		};
-		SchemeUtils.defineVar( removeTrack, "remove-track" , "remt" );
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			trackInitializer.process( 
-				"removes",
-				""
-					+ "The sequencer remove the specified track. Eventually the track stops playing. "
-					+ "And it gives the user some controls on "
-					+ "how it stops playing the track. "	
-				).setNames( "remove-track", "remt" ) );
+		SchemeUtils.defineVar( env, removeTrack , "remove-track", "remt" );
+		DescriptiveDocumentType.PROCS.defineDoc( env, trackInitializer.process( 
+		"removes",
+		""
+			+ "The sequencer remove the specified track. Eventually the track stops playing. "
+			+ "And it gives the user some controls on "
+			+ "how it stops playing the track. "	
+		).setNames( "remove-track", "remt" ) );
 
 
 		Procedure notifyTrackChange = new Procedure0( "notify-track-change" ) {
@@ -1700,25 +1666,24 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		};
-		SchemeUtils.defineVar( notifyTrackChange, "notify-track-change" , "nott" );
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "notify-track-change", "nott" );
-				setParameterDescription( "" );
-				setReturnValueDescription( "::void" );
-				setShortDescription( "notifies the sequencer that the track was added/deleted." );
-				setLongDescription( ""
-									+ "When any tracks are added/deleted on the sequencer, the "
-									+ "modification is not immediately reflects to the current state of "
-									+ "the sequencer. After a series of adding/deleting tracks is performed by a user,"
-									+ "the the user is mandated to call this procedure. "
-									+ "This procedure notifies the sequencer that "
-									+ "some tracks. And calling this procedure guarantees the tracks added/deleted "
-									+ "on the sequencer are properly processed immediately. " 
-								 );
-			}});
+		SchemeUtils.defineVar( env, notifyTrackChange , "notify-track-change", "nott" );
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "notify-track-change", "nott" );
+			setParameterDescription( "" );
+			setReturnValueDescription( "::void" );
+			setShortDescription( "notifies the sequencer that the track was added/deleted." );
+			setLongDescription( ""
+								+ "When any tracks are added/deleted on the sequencer, the "
+								+ "modification is not immediately reflects to the current state of "
+								+ "the sequencer. After a series of adding/deleting tracks is performed by a user,"
+								+ "the the user is mandated to call this procedure. "
+								+ "This procedure notifies the sequencer that "
+								+ "some tracks. And calling this procedure guarantees the tracks added/deleted "
+								+ "on the sequencer are properly processed immediately. " 
+							 );
+		}} );
 		
-		SchemeUtils.defineVar( new Procedure0("list-tracks") {
+		SchemeUtils.defineVar( env, new Procedure0("list-tracks") {
 			@Override
 			public Object apply0() throws Throwable {
 				List<MetroTrack> tempAllTracks = replicateAllTracks(); 
@@ -1730,20 +1695,19 @@ public final class Pulsar extends Metro {
 				return Pair.makeList(list);
 
 			}
-		}, "list-tracks" , "lstt" );
+		} , "list-tracks", "lstt" );
 
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "list-tracks", "lstt" );
-				setParameterDescription( "" );
-				setReturnValueDescription( "::(list track ...)" );
-				setShortDescription( "||<name/>|| retrieves all tracks on the current sequencer. " );
-				setLongDescription( ""
-									+ "The order of the tracks in the result of this procedure follows the first-in-last-out manner. "
-									+ "That is, (car (<name/>)) always returns the last added track. "
-									+ "" 
-								 );
-			}});		
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "list-tracks", "lstt" );
+			setParameterDescription( "" );
+			setReturnValueDescription( "::(list track ...)" );
+			setShortDescription( "||<name/>|| retrieves all tracks on the current sequencer. " );
+			setLongDescription( ""
+								+ "The order of the tracks in the result of this procedure follows the first-in-last-out manner. "
+								+ "That is, (car (<name/>)) always returns the last added track. "
+								+ "" 
+							 );
+		}} );		
 		
 		Procedure0 clr = new Procedure0("clear-tracks") {
 			@Override
@@ -1752,20 +1716,19 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		};
-		SchemeUtils.defineVar( clr, "clear-tracks" , "clet" );
+		SchemeUtils.defineVar( env, clr , "clear-tracks", "clet" );
 		
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "clear-tracks", "clet" );
-				setParameterDescription( "" );
-				setReturnValueDescription( "::void" );
-				setShortDescription( "||<name/>|| removes all tracks on the current sequencer immediately. " );
-				setLongDescription( ""
-									+ "" 
-								 );
-			}});	
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "clear-tracks", "clet" );
+			setParameterDescription( "" );
+			setReturnValueDescription( "::void" );
+			setShortDescription( "||<name/>|| removes all tracks on the current sequencer immediately. " );
+			setLongDescription( ""
+								+ "" 
+							 );
+		}} );	
 		
-		SchemeUtils.defineVar( new Procedure0("print-stack-trace") {
+		SchemeUtils.defineVar( env, new Procedure0("print-stack-trace") {
 			@Override
 			public Object apply0() throws Throwable {
 				PrintStream out = null;
@@ -1787,39 +1750,37 @@ public final class Pulsar extends Metro {
 			}
 		}, "print-stack-trace");
 		
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "print-stack-trace" );
-				setParameterDescription( "" );
-				setReturnValueDescription( "::void" );
-				setShortDescription( "||<name/>|| returns the current stack trace as a string. " );
-				setLongDescription( ""
-									+ "" 
-								 );
-			}});	
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "print-stack-trace" );
+			setParameterDescription( "" );
+			setReturnValueDescription( "::void" );
+			setShortDescription( "||<name/>|| returns the current stack trace as a string. " );
+			setLongDescription( ""
+								+ "" 
+							 );
+		}} );	
 
 		
-		SchemeUtils.defineVar( new ProcedureN("display-warn") {
+		SchemeUtils.defineVar( env, new Procedure1("display-warn") {
 			@Override
-			public Object apply1(Object arg) throws Throwable {
-				System.err.print( arg );
+			public Object apply1(Object arg1) throws Throwable {
+				System.err.print( arg1 );
 				return Values.empty;
 			}
 		}, "display-warn");
 
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "display-warn" );
-				setParameterDescription( "any" );
-				addParameter("value", "any", null, false , "" );
-				setReturnValueDescription( "::void" );
-				setShortDescription( "||<name/>|| output the specified value to the standard error stream. " );
-				setLongDescription( ""
-									+ "" 
-								 );
-			}});
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "display-warn" );
+			setParameterDescription( "any" );
+			addParameter("value", "any", null, false , "" );
+			setReturnValueDescription( "::void" );
+			setShortDescription( "||<name/>|| output the specified value to the standard error stream. " );
+			setLongDescription( ""
+								+ "" 
+							 );
+		}} );
 		
-		SchemeUtils.defineVar( new Procedure0("newline-warn") {
+		SchemeUtils.defineVar( env, new Procedure0("newline-warn") {
 			@Override
 			public Object apply0() throws Throwable {
 				System.err.println();
@@ -1827,18 +1788,17 @@ public final class Pulsar extends Metro {
 			}
 		}, "newline-warn");
 
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "newline-warn" );
-				setParameterDescription( "" );
-				setReturnValueDescription( "::void" );
-				setShortDescription( "||<name/>|| output a line terminator to the standard error stream. " );
-				setLongDescription( ""
-									+ "" 
-								 );
-			}});
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "newline-warn" );
+			setParameterDescription( "" );
+			setReturnValueDescription( "::void" );
+			setShortDescription( "||<name/>|| output a line terminator to the standard error stream. " );
+			setLongDescription( ""
+								+ "" 
+							 );
+		}} );
 		
-		SchemeUtils.defineVar( new ProcedureN("typeof") {
+		SchemeUtils.defineVar( env, new SafeProcedureN("typeof") {
 			public Object applyN(Object[] args) throws Throwable {
 				if ( 0 < args.length  ) {
 					if ( args[0] == null ) 
@@ -1851,20 +1811,19 @@ public final class Pulsar extends Metro {
 			}
 		}, "typeof");
 		
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "typeof" );
-				setParameterDescription( "any" );
-				addParameter("value", "any", null, false , "" );
-				setReturnValueDescription( "::string" );
-				setShortDescription( "||<name/>|| returns a Java class name of the specified value. " );
-				setLongDescription( "In case the specified value is a ||null|| of Java, this procedure returns \"null\" as a string value. "
-									+ "" 
-								 );
-			}});
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "typeof" );
+			setParameterDescription( "any" );
+			addParameter("value", "any", null, false , "" );
+			setReturnValueDescription( "::string" );
+			setShortDescription( "||<name/>|| returns a Java class name of the specified value. " );
+			setLongDescription( "In case the specified value is a ||null|| of Java, this procedure returns \"null\" as a string value. "
+								+ "" 
+							 );
+		}} );
 		
 
-		SchemeUtils.defineVar( new Procedure3("make-timer") {
+		SchemeUtils.defineVar( env, new Procedure3("make-timer") {
 			@Override
 			public Object apply3(Object arg0, Object arg1,Object arg2 ) throws Throwable {
 				Runnable runnable = createTimer( Pulsar.this, 
@@ -1881,26 +1840,25 @@ public final class Pulsar extends Metro {
 			}
 		}, "make-timer" );
 
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames("make-timer" );
-				setParameterDescription( "delay interval proc" );
-				addParameter("delay",     "number",    null, false , "" );
-				addParameter("interval",  "number",    null, false , "" );
-				addParameter("callback",  "procedure", null, false , "" );
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames("make-timer" );
+			setParameterDescription( "delay interval proc" );
+			addParameter("delay",     "number",    null, false , "" );
+			addParameter("interval",  "number",    null, false , "" );
+			addParameter("callback",  "procedure", null, false , "" );
+		
+			setReturnValueDescription( "::procedure" );
+			setShortDescription( "||<name/>|| creates a new timer object. " );
+			setLongDescription( ""
+					+ "This procedure registers the specified procedure as a callback procedure of the timer; "
+					+ "the procedure will be called with the specified period and with the specified delay. "
+					+ "The return value is a cancel procedure. When the cancel procedure is called, the timer stops calling the "
+					+ "callback procedure. "
+					+ "" 
+			);
+		}} );
 
-				setReturnValueDescription( "::procedure" );
-				setShortDescription( "||<name/>|| creates a new timer object. " );
-				setLongDescription( ""
-						+ "This procedure registers the specified procedure as a callback procedure of the timer; "
-						+ "the procedure will be called with the specified period and with the specified delay. "
-						+ "The return value is a cancel procedure. When the cancel procedure is called, the timer stops calling the "
-						+ "callback procedure. "
-						+ "" 
-				);
-			}});
-
-		SchemeUtils.defineVar( new ProcedureN("random") {
+		SchemeUtils.defineVar( env, new SafeProcedureN("random") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				switch ( args.length ) {
@@ -1920,24 +1878,23 @@ public final class Pulsar extends Metro {
 					}
 				}
 			}
-		}, "random" , "rnd");
+		} , "random", "rnd");
 		
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "random", "rnd" );
-				setParameterDescription( "[range::number]" );
-				addParameter("range",     "number",  "1",  false , "" );
-				setReturnValueDescription( "::number" );
-				setShortDescription( "||<name/>|| generates a random number. " );
-				setLongDescription( ""
-						+ "This procedure adopts Mersenne Twister a random number generating algorithm. "
-						+ "If an argument [range] is specified, the return value will be within 0<= x <[range]. "
-						+ "If the argument is omitted, the range value defaults to 1. "
-						+ "" 
-				);
-			}});
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "random", "rnd" );
+			setParameterDescription( "[range::number]" );
+			addParameter("range",     "number",  "1",  false , "" );
+			setReturnValueDescription( "::number" );
+			setShortDescription( "||<name/>|| generates a random number. " );
+			setLongDescription( ""
+					+ "This procedure adopts Mersenne Twister a random number generating algorithm. "
+					+ "If an argument [range] is specified, the return value will be within 0<= x <[range]. "
+					+ "If the argument is omitted, the range value defaults to 1. "
+					+ "" 
+			);
+		}} );
 		
-		SchemeUtils.defineVar( new ProcedureN("luck") {
+		SchemeUtils.defineVar( env, new SafeProcedureN("luck") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				double probability = args.length == 0 ? 0.5 : SchemeUtils.toDouble( args[0] );
@@ -1964,67 +1921,64 @@ public final class Pulsar extends Metro {
 //			"luck" );
 
 
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "luck" );
-				setParameterDescription( "[numeric]" );
-				addParameter("probability",   "number",  "0.5",  false, "the probability to return #t." );
-				setReturnValueDescription( "::boolean" );
-				setShortDescription( "||<name/>|| is a procedure that returns a random boolean value. " );
-				setLongDescription( "The first argument is the value of probability "
-						+ "where the larger value causes the more probability of returning #t. "
-						+ "When the specified value is equals or less than zero, the returning value is always #f. "
-						+ "When the specified value is equals or larger than one the returning value is always #t. "
-						+ "The only parameter can be omitted and in that case the default value one is applied. " );
-			}});
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "luck" );
+			setParameterDescription( "[numeric]" );
+			addParameter("probability",   "number",  "0.5",  false, "the probability to return #t." );
+			setReturnValueDescription( "::boolean" );
+			setShortDescription( "||<name/>|| is a procedure that returns a random boolean value. " );
+			setLongDescription( "The first argument is the value of probability "
+					+ "where the larger value causes the more probability of returning #t. "
+					+ "When the specified value is equals or less than zero, the returning value is always #f. "
+					+ "When the specified value is equals or larger than one the returning value is always #t. "
+					+ "The only parameter can be omitted and in that case the default value one is applied. " );
+		}} );
 		
-		SchemeUtils.defineVar( new Procedure1("make-page") {
+		SchemeUtils.defineVar( env, new Procedure1("make-page") {
 			@Override
 			public Object apply1(Object arg1) throws Throwable {
 				return SchemeUtils.makePage( SchemeUtils.anyToString(arg1), helpTextWidth ); 
 			}
 		}, "make-page");
 		
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "make-page" );
-				setParameterDescription( "[string]" );
-				addParameter("content",   "string",  null,  false, "the content to convert to a ||kawapad-page||. " );
-				setReturnValueDescription( "::kawapad-page" );
-				setShortDescription( "<name/> makes the passed value into ||kawapad-page|| object. " );
-				setLongDescription( ""
-									+ "When an expression is evaluated in KawaPad, the result value is displayed on the current editor. "
-									+ "When the result value is a ||kawapad-page|| object, the value is displayed in a special way; "
-									+ "when the KawaPad system detect the result value is a ||kawapad-page||, the editor expands the current "
-									+ "selection to the outer-most parentheses and replace the region with the result value. "
-									+ "This enables it to use KawaPad as a dynamic Hypertext editor. \n\n"
-									+ "The <name/> procedure convert the passed value into the kawapad-page object in order to "
-									+ "activate the special display function of KawaPad. "
-									+ "" 
-									+ THROWS_AN_ERROR_IF_NOT_OPEN );
-			}});
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "make-page" );
+			setParameterDescription( "[string]" );
+			addParameter("content",   "string",  null,  false, "the content to convert to a ||kawapad-page||. " );
+			setReturnValueDescription( "::kawapad-page" );
+			setShortDescription( "<name/> makes the passed value into ||kawapad-page|| object. " );
+			setLongDescription( ""
+								+ "When an expression is evaluated in KawaPad, the result value is displayed on the current editor. "
+								+ "When the result value is a ||kawapad-page|| object, the value is displayed in a special way; "
+								+ "when the KawaPad system detect the result value is a ||kawapad-page||, the editor expands the current "
+								+ "selection to the outer-most parentheses and replace the region with the result value. "
+								+ "This enables it to use KawaPad as a dynamic Hypertext editor. \n\n"
+								+ "The <name/> procedure convert the passed value into the kawapad-page object in order to "
+								+ "activate the special display function of KawaPad. "
+								+ "" 
+								+ THROWS_AN_ERROR_IF_NOT_OPEN );
+		}} );
 		
-		SchemeUtils.defineVar( new ProcedureN("help!") {
+		SchemeUtils.defineVar( env, new SafeProcedureN("help!") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				return "Calm down!";
 			}
 		}, "help!");
 		
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "help!" );
-				setParameterDescription( "" );
-				setReturnValueDescription( "::string" );
-				setShortDescription(  "is a procedure to execute when the user needs something which calms you down." );
-				setLongDescription( 
-					"When this procedure is called, this procedure will return a message which "
-					+ "tries to calm the user down. Any argument specified to this procedure will be silently ignored."
-					+ "This procedure is deliberately defined as a joke and has by no means effect to the current system state "
-					+ "nor any other related elements. See (help about-main)." );
-			}});
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "help!" );
+			setParameterDescription( "" );
+			setReturnValueDescription( "::string" );
+			setShortDescription(  "is a procedure to execute when the user needs something which calms you down." );
+			setLongDescription( 
+				"When this procedure is called, this procedure will return a message which "
+				+ "tries to calm the user down. Any argument specified to this procedure will be silently ignored."
+				+ "This procedure is deliberately defined as a joke and has by no means effect to the current system state "
+				+ "nor any other related elements. See (help about-main)." );
+		}} );
 		
-		final class ProcedureHelp extends ProcedureN {
+		final class ProcedureHelp extends SafeProcedureN {
 			final Environment environment;
 			final int index;
 			final Procedure reverse = (Procedure)gnu.kawa.slib.srfi1.reverse.get();
@@ -2122,38 +2076,37 @@ public final class Pulsar extends Metro {
 
 			}
 		}
-		SchemeUtils.defineVar( new ProcedureHelp( scheme.getEnvironment(), "help", 1 ), "help" , "he" );
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "help", "he" );
-				setParameterDescription( "[symbol|procedure]" );
-				addParameter(
-					"query" , "'procs|'notes|'all|procedure", "'all", false, "" );
-				
-				setReturnValueDescription( "::string|list" );
-				setShortDescription( "is a procedure to show the description of a specified procedure." ); 
-				setLongDescription( 
-						"When a reference to a procedure is passed, ||<name/>|| returns "
-						+ "the description of the the procedure. \n\n"
-						+ "If no procedure is specified, it returns a list that contains all procedures which "
-						+ "description is available. "
-						+ "Pass a special keyword 'all to get "
-						+ "a symbol list of all procedures which are available for this command. "
-						+ "Pass 'procs to get all available procedures. "
-						+ "Pass 'notes to get all available notation types. " 
-						);
-			}});
+		SchemeUtils.defineVar( env, new ProcedureHelp( env, "help", 1 ) , "help", "he" );
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "help", "he" );
+			setParameterDescription( "[symbol|procedure]" );
+			addParameter(
+				"query" , "'procs|'notes|'all|procedure", "'all", false, "" );
+			
+			setReturnValueDescription( "::string|list" );
+			setShortDescription( "is a procedure to show the description of a specified procedure." ); 
+			setLongDescription( 
+					"When a reference to a procedure is passed, ||<name/>|| returns "
+					+ "the description of the the procedure. \n\n"
+					+ "If no procedure is specified, it returns a list that contains all procedures which "
+					+ "description is available. "
+					+ "Pass a special keyword 'all to get "
+					+ "a symbol list of all procedures which are available for this command. "
+					+ "Pass 'procs to get all available procedures. "
+					+ "Pass 'notes to get all available notation types. " 
+					);
+		}} );
 
 		
-		SchemeUtils.defineVar( new Procedure1("make-help") {
+		SchemeUtils.defineVar( env, new Procedure2("make-help") {
 			Symbol names = Symbol.valueOf( "names" );
 			Symbol params = Symbol.valueOf( "params" );
 			Symbol returns = Symbol.valueOf( "returns" );
 			Symbol shortDescription = Symbol.valueOf( "short-description" );
 			Symbol longDescription = Symbol.valueOf( "long-description" );
 			@Override
-			public Object apply1(Object arg1) throws Throwable {
-				LList list = (LList) arg1;
+			public Object apply2(Object arg1,Object arg2) throws Throwable {
+				LList list = (LList) arg2;
 				PulsarProceduralDescriptiveBean bean = new PulsarProceduralDescriptiveBean();
 				for ( Object e : list ) {
 					Pair ep = (Pair) e;
@@ -2194,45 +2147,47 @@ public final class Pulsar extends Metro {
 						throw new IllegalArgumentException( "unknown field name " + car );
 					}
 				}
-				DescriptiveDocumentType.PROCS.defineDoc( scheme.getEnvironment(), bean );
+				DescriptiveDocumentType.PROCS.defineDoc( env, arg1, bean );
 				return Values.noArgs;
 			}
 		}, "make-help");
 		
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames( "make-help" );
-				setParameterDescription( "" );
-				addParameter( "content", "(list cons ...)" , null, false, "See the description " );
-				setReturnValueDescription( "::void" );
-				setShortDescription(  "||<name/>|| registers a reference manual for a procedure on the Pulsar documentation system. " );
-				setLongDescription( 
-					" "
-					+ "The ||content|| argument is the content of the reference manual. The value is "
-					+ "an association list contains various data. \n\n"
-					+ "    '((names \"foo-bar\" \"fb\") \n"
-					+ "      (params\n"
-					+ "         (\"param-name\" \"param-type\" \"default-value or #f if no-default\" \"#t if variable-length\" \"description\") \n"
-					+ "            ...\n"
-					+ "       )\n"
-					+ "      (returns \"return-type\" )\n"
-					+ "      (short-description \"description\" )\n"
-					+ "      (long-description  \"description\" )\n"
-					+ "    )\n\n"
-					+ "The ||name|| field contains names of the procedure. "
-					+ "In Pulsar, the most procedures have multiple names. "
-					+ "The first element of this list is its 'long name' which should be the canonical name for the procedure. "
-					+ "And the others are its aliases. If the procedure have no alias, then the list will have only one element. "
-					+ "The list must have at least one element. \n\n"
-					+ "The ||params|| field contains information of parameters. "
-					+ "The field contains a list per a parameter. \n\n"
-					+ "The ||short-description|| field contains a string value of its short description. "
-					+ "The ||long-description|| field contains a string value of its long description. "
-					+ "" );
-			}});
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames( "make-help" );
+			setParameterDescription( "" );
+			addParameter( "target", "procedure" , null, false, "The reference to the target procedure. See the description. " );
+			addParameter( "content", "(list cons ...)" , null, false, "See the description. " );
+			setReturnValueDescription( "::void" );
+			setShortDescription(  "||<name/>|| registers a reference manual for a procedure on the Pulsar documentation system. " );
+			setLongDescription( 
+				" "
+				+ "The ||target|| argument is the reference of the target procedure."
+				+ "The ||content|| argument is the content of the reference manual. The value is "
+				+ "an association list contains various data. \n\n"
+				+ "    (<name/>   target-proc"
+				+ "               '((names \"foo-bar\" \"fb\") \n"
+				+ "               (params\n"
+				+ "                 (\"param-name\" \"param-type\" \"default-value or #f if no-default\" \"#t if variable-length\" \"description\") \n"
+				+ "                    ...\n"
+				+ "                 )\n"
+				+ "                (returns \"return-type\" )\n"
+				+ "                (short-description \"description\" )\n"
+				+ "                (long-description  \"description\" )\n"
+				+ "              )\n\n"
+				+ "The ||name|| field contains names of the procedure. "
+				+ "In Pulsar, the most procedures have multiple names. "
+				+ "The first element of this list is its 'long name' which should be the canonical name for the procedure. "
+				+ "And the others are its aliases. If the procedure have no alias, then the list will have only one element. "
+				+ "The list must have at least one element. \n\n"
+				+ "The ||params|| field contains information of parameters. "
+				+ "The field contains a list per a parameter. \n\n"
+				+ "The ||short-description|| field contains a string value of its short description. "
+				+ "The ||long-description|| field contains a string value of its long description. "
+				+ "" );
+		}} );
 
 		
-		SchemeUtils.defineVar( new Procedure1("help-markdown") {
+		SchemeUtils.defineVar( env, new Procedure1("help-markdown") {
 			@Override
 			public Object apply0() throws Throwable {
 				return this.apply1( DescriptiveDocumentType.PROCS.toSymbol() );
@@ -2249,19 +2204,18 @@ public final class Pulsar extends Metro {
 
 		}, "help-markdown" );
 		
-		DescriptiveDocumentType.defineProcDoc( scheme,
-			new PulsarProceduralDescriptiveBean(){{
-				setNames("help-markdown");
-				setParameterDescription( "" );
-				addParameter( "type", "string", "'procs", false,  "either 'procs or 'notes " );
-				setReturnValueDescription( "::string" );
-				setShortDescription(  "is a procedure to execute when the user needs something which calms you down." );
-				setLongDescription( 
-					"When this procedure is called, this procedure will return a message which "
-					+ "tries to calm the user down. Any argument specified to this procedure will be silently ignored."
-					+ "This procedure is deliberately defined as a joke and has by no means effect to the current system state "
-					+ "nor any other related elements. See (help about-main)." );
-			}});
+		DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+			setNames("help-markdown");
+			setParameterDescription( "" );
+			addParameter( "type", "string", "'procs", false,  "either 'procs or 'notes " );
+			setReturnValueDescription( "::string" );
+			setShortDescription(  "is a procedure to execute when the user needs something which calms you down." );
+			setLongDescription( 
+				"When this procedure is called, this procedure will return a message which "
+				+ "tries to calm the user down. Any argument specified to this procedure will be silently ignored."
+				+ "This procedure is deliberately defined as a joke and has by no means effect to the current system state "
+				+ "nor any other related elements. See (help about-main)." );
+		}} );
 		
 		PulsarDocuments.defineDoc( scheme, PulsarNoteListParser.getInstance() );
 

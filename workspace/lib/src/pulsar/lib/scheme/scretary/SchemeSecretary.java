@@ -101,8 +101,9 @@ public class SchemeSecretary extends Secretary<Scheme> implements ShutdownHook {
 	 */
 
 	public static final void initializeSchemeForCurrentThreadStatic( Scheme scheme ) {
-		Environment.setCurrent( scheme.getEnvironment() );
 		Language.setCurrentLanguage( scheme );
+		Environment.setCurrent( scheme.getEnvironment() );
+//		logInfo( "initializeSchemeForCurrentThreadStatic:" +  Environment.getCurrent().getName() );
 		if ( false ) {
 			String threadName = Thread.currentThread().getName();
 			logInfo( threadName +

@@ -374,28 +374,43 @@ public class SchemeUtils {
 		return Pair.make( toSchemeSymbol( key ) , value );
 	}
 
-	public static final void defineVar( Object value, String ... names ) {
+	private static final boolean DEBUG_ENV = false;
+	public static final void defineVar( Environment env, Object value, String ... names ) {
+		// env = Environment.getCurrent();
+		if ( DEBUG_ENV )
+			logInfo( "defineVar:" + env.getName() + ":" + Arrays.asList( names ) );
 		for ( String name : names ) {
-			Environment.getCurrent().define( schemeSymbol( name ), null, value );
+			env.define( schemeSymbol( name ), null, value );
 		}
 	}
-	public static final boolean isDefined( String name  ) {
+	public static final boolean isDefined( Environment env, String name  ) {
+		// env = Environment.getCurrent();
+		if ( DEBUG_ENV )
+			logInfo( "isDefined:" + env.getName() + ":" + name );
 		synchronized ( Language.getDefaultLanguage() ) {
-			return Environment.getCurrent().isBound( Symbol.valueOf( name ) );
+			return env.isBound( Symbol.valueOf( name ) );
 		}
 	}
-	public static final void putVar( String name, Object value ) {
+	public static final void putVar( Environment env, String name, Object value ) {
+		// env = Environment.getCurrent();
+		if ( DEBUG_ENV )
+			logInfo( "putVar:" + env.getName() + ":" + name );
 		synchronized ( Language.getDefaultLanguage() ) {
-			Environment.getCurrent().put( Symbol.valueOf( name ), null, value );
+			env.put( Symbol.valueOf( name ), null, value );
 		}
 	}
-	public static final Object getVar( String name  ) {
+	public static final Object getVar( Environment env, String name  ) {
+		// Environment env = Environment.getCurrent();
+		if ( DEBUG_ENV )
+			logInfo( "getVar:" + env.getName() + ":" + name );
 		synchronized ( Language.getDefaultLanguage() ) {
-			return Environment.getCurrent().get( Symbol.valueOf( name ) );
+			return env.get( Symbol.valueOf( name ) );
 		}
 	}
 	// TODO This version is newer. Every getVar() thing should be diverted to this. (Mon, 19 Aug 2019 18:55:39 +0900) 
 	public static final <T> T getVar( String name, Object defaultValue ) {
+		if ( DEBUG_ENV )
+			logInfo( "getVar2:" + Environment.getCurrent().getName() + ":" + name );
 		synchronized ( Language.getDefaultLanguage() ) {
 			return (T)Environment.getCurrent().get( Symbol.valueOf( name ), defaultValue );
 		}
@@ -412,7 +427,7 @@ public class SchemeUtils {
 		}
 	}
 	public static void execScheme( Scheme scheme, InputStream in, String resourcePathAlias ) {
-		evaluateScheme( scheme, null, new InputStreamReader( in ), resourcePathAlias );
+		evaluateScheme( scheme, null, new InputStreamReader( in ), resourcePathAlias ).throwIfError();
 	}
 	
 	public static Object prettyPrintReconstruction( Object o ) {
@@ -552,6 +567,11 @@ public class SchemeUtils {
 			this.result = result;
 			this.error = error;
 		}
+		public void throwIfError() {
+			if ( ! succeeded() ) {
+				throw new RuntimeException( this.error );
+			}
+		}
 	}
 	public static final String EXECUTE_SCHEME_DOCTAG_STRING = "**doc**".intern();
 	public static final Symbol EXECUTE_SCHEME_DOCTAG = Symbol.valueOf( EXECUTE_SCHEME_DOCTAG_STRING );
@@ -565,11 +585,13 @@ public class SchemeUtils {
 		//				schemeSecretary.initializeSchemeForCurrentThread();
 		SchemeSecretary.initializeSchemeForCurrentThreadStatic( scheme );
 		synchronized ( scheme ) {
+			Environment env = scheme.getEnvironment();
+			
 			if ( variables != null )
 				for ( Map.Entry<String, Object> e : variables.entrySet() )
-					putVar( e.getKey() , e.getValue() );
+					putVar( env , e.getKey(), e.getValue() );
 			
-			putVar( "scheme" , scheme );
+			putVar( env , "scheme", scheme );
 			
 			// Set current directory to the default load path.
 			// Note that <i>Shell.currentLoadPath</i> is not documented in the official documentation.
@@ -627,11 +649,11 @@ public class SchemeUtils {
 					w.close();
 				}
 			} finally {
-				putVar( "scheme" , false );
+				putVar( env , "scheme", false );
 				
 				if ( variables != null )
 					for ( Map.Entry<String, Object> e : variables.entrySet() )
-						putVar( e.getKey() , false );
+						putVar( env , e.getKey(), false );
 				
 				try {
 					schemeScript.close();

@@ -11,7 +11,6 @@ import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Symbol;
-import kawa.standard.Scheme;
 
 
 public enum DescriptiveDocumentType {
@@ -113,40 +112,47 @@ public enum DescriptiveDocumentType {
 		}
 	}
 
-	public static Object defineProcDoc( Scheme scheme, DescriptiveBean bean ) {
-		return DescriptiveDocumentType.PROCS.defineDoc( scheme.getEnvironment(), bean );
-	}
-	public static Object defineNoteDoc( Scheme scheme, DescriptiveBean bean ) {
-		return DescriptiveDocumentType.NOTES.defineDoc( scheme.getEnvironment(), bean );
-	}
 	public Object defineDoc( Environment env, DescriptiveBean bean ) {
+		return defineDoc0( env, this, null, bean );
+	}
+	public Object defineDoc( Environment env, Object target, DescriptiveBean bean ) {
+		return defineDoc0( env, this, target, bean );
+	}
+	
+	public static Object defineDoc0(Environment env, DescriptiveDocumentType type, Object target, DescriptiveBean bean) {
 		synchronized ( Language.getDefaultLanguage() ) {
-			Object proc = defineDoc0( env, this, bean.format(), bean.getName(), bean.getNames() );
-			SchemeUtils.setDescriptionBean( proc, bean );
-			return proc;
+			Object actualTarget = defineDoc0( env, type, target, bean.format(), bean.getName(), bean.getNames() );
+			SchemeUtils.setDescriptionBean( actualTarget, bean );
+			return target;
 		}
 	}
 
 	//		static Procedure proc_defineDocument = eval( lis( "lambda", lis("rt"),   ) );   
-	public static Object defineDoc0( Environment env, DescriptiveDocumentType documentType, String description, String name, List<String> names )  {
+	public static Object defineDoc0( Environment env, DescriptiveDocumentType type, final Object target, String description, String name, List<String> names )  {
 		logInfo( "DescriptiveDocumentType.defineDoc0()" + name );
-		Object proc = SchemeUtils.getVar( name, null );
-		if ( proc == null ) {
-			SchemeUtils.logWarn( "setDocumentInitializer: " + name + " was not found." );
-			proc = new DescriptiveHelpProcedure( name );
-			SchemeUtils.defineVar( proc, name );
+		Object actualTarget;
+		if ( target != null ) {
+			actualTarget = target;
+		} else {
+			actualTarget = SchemeUtils.getVar( name, null );
+			if ( actualTarget == null ) {
+				SchemeUtils.logWarn( "setDocumentInitializer: " + name + " was not found." );
+				actualTarget = new DescriptiveHelpProcedure( name );
+				SchemeUtils.defineVar( env, actualTarget, name );
+			}
 		}
-		logInfo( "setting description on '" + name + "'" + " " + proc.toString() );
+			
+		logInfo( "setting description on '" + name + "'" + " " + actualTarget.toString() );
 		//			logInfo( "description" );
 		//			logInfo( description );
-		SchemeUtils.setDescription( proc, description );
+		SchemeUtils.setDescription( actualTarget, description );
 		addDocumentList(
 			env,
-			documentType,
+			type,
 			SchemeUtils.stringListToSymbolList( names ), 
-			proc );
+			actualTarget );
 		
-		return proc;
+		return actualTarget;
 	}
 	
 }

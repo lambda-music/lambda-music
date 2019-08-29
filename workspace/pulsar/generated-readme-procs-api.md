@@ -822,22 +822,35 @@ MAKE-HELP
 ====================
 
 #### SYNOPSIS ####
-    (make-help content::(list cons ...))::string
+    (make-help target::procedure content::(list cons ...))::void
 
 ### DESCRIPTION ###
-registers a reference manual for a procedure on the Pulsar documentation
-system. The ||content|| argument is the content of the reference manual. The value is
-an association list contains various data.
+||make-help|| registers a reference manual for a procedure on the Pulsar
+documentation system. The ||target|| argument is the reference of the target procedure.The
+||content|| argument is the content of the reference manual. The value is an association
+list contains various data.
 
-    '((name "foo-bar" "fb") 
-      (params
-         ("param-name" "param-type" "default-value" "#t if variable-length" "description") 
-            ...
-       )
-      (returns "return-type" )
-      (short-description "description" )
-      (long-description  "description" )
-    )
+    (make-help   target-proc               '((names "foo-bar" "fb") 
+               (params
+                 ("param-name" "param-type" "default-value or #f if no-default" "#t if variable-length" "description") 
+                    ...
+                 )
+                (returns "return-type" )
+                (short-description "description" )
+                (long-description  "description" )
+              )
+
+The ||name|| field contains names of the procedure. In Pulsar, the most
+procedures have multiple names. The first element of this list is its 'long name' which
+should be the canonical name for the procedure. And the others are its aliases. If the
+procedure have no alias, then the list will have only one element. The list must have at
+least one element.
+
+The ||params|| field contains information of parameters. The field contains a
+list per a parameter.
+
+The ||short-description|| field contains a string value of its short
+description. The ||long-description|| field contains a string value of its long description.
 
 
 
@@ -855,6 +868,19 @@ When this procedure is called, this procedure will return a message which tries 
 calm the user down. Any argument specified to this procedure will be silently
 ignored.This procedure is deliberately defined as a joke and has by no means effect to the
 current system state nor any other related elements. See (help about-main).
+
+
+
+--------------------------------------------------------
+
+NOTATION
+====================
+
+#### SYNOPSIS ####
+    (notation|n [arg::any]...)::notation
+
+### DESCRIPTION ###
+notation creates a notation or a list of notations. TODO description
 
 
 

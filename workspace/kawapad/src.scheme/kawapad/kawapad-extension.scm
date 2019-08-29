@@ -56,19 +56,23 @@
                                    (if (eq? p #!null) "" (string-append p "/" )))
                                  ".kawapad"))
 
+(define **display-warn (lambda args 
+                       (values)))
+(define **newline-warn (lambda args 
+                       (values)))
 
 
 (define get-variables (lambda (this-object)
-                    ;(display-warn this-object)
-                    ;(newline-warn)
-                    ;(display-warn this-object:class)
-                    ;(newline-warn)
+                    ;(**display-warn this-object)
+                    ;(**newline-warn)
+                    ;(**display-warn this-object:class)
+                    ;(**newline-warn)
                     (let loop ((i 0)
                                ( methods (java.lang.Class:getMethods this-object:class) ))
                       (if (and (< i methods:length ) (not (eq? (methods i) #!null )))     
                         (let ((name (invoke (methods i) 'getName  )))
-                          (display-warn name)
-                          (newline-warn)
+                          (**display-warn name)
+                          (**newline-warn)
                           (cons name (loop (+ i 1) methods)))
                         '()
                         )
@@ -88,10 +92,10 @@
 ;               (text-area:request-focus)
 ;               )
 ;              ((popupMenuWillBecomeInvisible e)
-;               (newline-warn)
+;               (**newline-warn)
 ;               )
 ;              ((popupMenuCanceled e)
-;               (newline-warn)
+;               (**newline-warn)
 ;               )))
 ; 
 ;     (jlist:setListData (apply object[]  (get-variables frame ) )  )
@@ -113,11 +117,11 @@
 #|
 (define-class class-show-completion (javax.swing.AbstractAction) 
               ((actionPerformed e)
-               (display-warn 'hello)
-               (newline-warn)
+               (**display-warn 'hello)
+               (**newline-warn)
                )
               (init: (begin
-                       (display-warn 'hello-init)
+                       (**display-warn 'hello-init)
                        ))
               )
 
@@ -153,10 +157,10 @@
 ; create-proc is called whenever a FRAME object is created.
 ; ========================================================
 (define create-proc (lambda (frame)
-                      (display-warn "==================")
-                      (display-warn 'create-proc)
-                      (display-warn "==================")
-                      (newline-warn)
+                      (**display-warn "==================")
+                      (**display-warn 'create-proc)
+                      (**display-warn "==================")
+                      (**newline-warn)
                       ; ========================================================
                       ; Note : all procedures that register event handlers should be executed in (create-proc).
                       ; (Tue, 06 Aug 2019 17:36:50 +0900)
@@ -177,8 +181,8 @@
                       ;                            (this-frame:addMouseListener
                       ;                              (object (java.awt.event.MouseAdapter) 
                       ;                                      ((mousePressed e)
-                      ;                                       ; (display-warn 'hello)
-                      ;                                       ; (newline-warn)
+                      ;                                       ; (**display-warn 'hello)
+                      ;                                       ; (**newline-warn)
                       ;                                       (if (e:isPopupTrigger)
                       ;                                         (show-completion e:component e )
                       ;                                         #f
@@ -205,17 +209,17 @@
 
                                     ;((*init*) #!void)
                                     ((actionPerformed e)
-                                     ; (display-warn (this))
-                                     ; (newline-warn)
+                                     ; (**display-warn (this))
+                                     ; (**newline-warn)
                                      (let* ((text-pane ((this):getTextComponent e ))
                                             (pos
                                               (kawapad.KawaPad:lookupCorrespondingParenthesis 
                                                 text-pane:text 
                                                 text-pane:caret:dot )
                                               ))
-                                       (display-warn "Parenthesis Jump:" )
-                                       (display-warn pos)
-                                       (newline-warn)
+                                       (**display-warn "Parenthesis Jump:" )
+                                       (**display-warn pos)
+                                       (**newline-warn)
                                        (if (<= 0 pos)
                                          (begin
                                            (if with-select 
@@ -234,13 +238,13 @@
                       ((frame:j-menu-bar:get-menu 1):add (javax.swing.JMenuItem (jump-to-corresponding-parenthesis-action "hello1" #t)))
                       ((frame:j-menu-bar:get-menu 1):add (javax.swing.JMenuItem (jump-to-corresponding-parenthesis-action "hello2" #f)))
 
-                      (display-warn 'frame:text-pane:addMouseListener )
-                      (newline-warn)
+                      (**display-warn 'frame:text-pane:addMouseListener )
+                      (**newline-warn)
                       (frame:text-pane:addMouseListener
                         (object (java.awt.event.MouseAdapter) 
                                 ((mousePressed e)
-                                 (display-warn "hello-hello")
-                                 (newline-warn)
+                                 (**display-warn "hello-hello")
+                                 (**newline-warn)
                                  (if (e:isPopupTrigger)
                                    (let ((popup (javax.swing.JPopupMenu))
                                          (jlist (javax.swing.JList) )
@@ -252,10 +256,10 @@
                                                 (text-area:request-focus)
                                                 )
                                                ((popupMenuWillBecomeInvisible e)
-                                                (newline-warn)
+                                                (**newline-warn)
                                                 )
                                                ((popupMenuCanceled e)
-                                                (newline-warn)
+                                                (**newline-warn)
                                                 )))
 
                                      (jlist:setListData (apply object[]  get-variables frame ))
@@ -281,15 +285,15 @@
 ;                                                   
 ;                      ;((*init*) #!void)
 ;                      ((actionPerformed e)
-;                       (newline-warn)
+;                       (**newline-warn)
 ;                       )        
 ;                      )
 
 
 ;(aa:actionPerformed #!null)
 ;(aa:getValue javax.swing.Action:ACCELERATOR_KEY)
-; (display-warn ((this):getValue javax.swing.Action:MNEMONIC_KEY ))
-; (newline-warn)
+; (**display-warn ((this):getValue javax.swing.Action:MNEMONIC_KEY ))
+; (**newline-warn)
 
 ; (frame:j-menu-bar:add
 ; (javax.swing.JMenu "HELLO"))

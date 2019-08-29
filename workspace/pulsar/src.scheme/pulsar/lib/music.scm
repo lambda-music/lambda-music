@@ -414,15 +414,18 @@
 ; (Wed, 07 Aug 2019 00:09:17 +0900)
 
 
-(make-help  '((names "notation" "n" ) 
+; (display make-help )
+; (newline)
+; (raise 'hello)
+(make-help  notation '((names "notation" "n" ) 
               (params
                 ("arg" "any" #f #t "see description "))
               (returns "::notation" )
               (short-description "<name/> creates a notation or a list of notations. " )
               (long-description  "TODO description" )))
 
-(display (help notation))
-(newline)
+; (display (help notation))
+; (newline)
 
 
 ; The name of the function "ap" stands for arithmetic progression.

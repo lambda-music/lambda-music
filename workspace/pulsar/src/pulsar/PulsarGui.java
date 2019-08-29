@@ -72,8 +72,8 @@ import org.jaudiolibs.jnajack.JackException;
 import gnu.kawa.slib.srfi1;
 import gnu.lists.LList;
 import gnu.lists.Pair;
+import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
-import gnu.mapping.ProcedureN;
 import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import kawa.standard.Scheme;
@@ -81,6 +81,7 @@ import kawapad.KawaPad;
 import metro.MetroTrack;
 import pulsar.Pulsar.TempoTapperTempoNotifier;
 import pulsar.lib.scheme.DescriptiveDocumentType;
+import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.Invokable;
@@ -249,7 +250,9 @@ public class PulsarGui {
     void initScheme(Scheme scheme) {
     	logInfo("PulsarGui#initScheme=======================================");
     	//////////////////////////////////////////////////////
-    	SchemeUtils.defineVar( new ProcedureN("gui-get-pane") {
+		Environment env = scheme.getEnvironment();
+		
+    	SchemeUtils.defineVar( env, new SafeProcedureN("gui-get-pane") {
 			// TODO ???
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
@@ -257,7 +260,7 @@ public class PulsarGui {
     			return userPane;
     		}
     	}, "gui-get-pane");
-    	SchemeUtils.defineVar( new ProcedureN("gui-get-frame") {
+    	SchemeUtils.defineVar( env, new SafeProcedureN("gui-get-frame") {
 			// TODO ???
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
@@ -265,7 +268,7 @@ public class PulsarGui {
     			return frame;
     		}
     	}, "gui-get-frame");
-		SchemeUtils.defineVar( new ProcedureN("gui-set-progress-pos") {
+		SchemeUtils.defineVar( env, new SafeProcedureN("gui-set-progress-pos") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				if ( 0 < args.length ) {
@@ -275,14 +278,14 @@ public class PulsarGui {
 				return Invokable.NO_RESULT;
 			}
 		}, "gui-set-progress-pos");
-    	SchemeUtils.defineVar( new ProcedureN("gui-clear") {
+    	SchemeUtils.defineVar( env, new SafeProcedureN("gui-clear") {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				guiClear();
     			return Invokable.NO_RESULT;
     		}
     	}, "gui-clear");
-    	SchemeUtils.defineVar( new ProcedureN("gui-divider-location") {
+    	SchemeUtils.defineVar( env, new SafeProcedureN("gui-divider-location") {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				ArrayList<Object> argList = new ArrayList<Object>( Arrays.asList( args ) );
@@ -314,7 +317,7 @@ public class PulsarGui {
     		}
     	}, "gui-divider-location");
 
-    	SchemeUtils.defineVar( new ProcedureN("gui-frame-height") {
+    	SchemeUtils.defineVar( env, new SafeProcedureN("gui-frame-height") {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				Dimension size = frame.getSize();
@@ -329,7 +332,7 @@ public class PulsarGui {
 			}
     		
     	}, "gui-frame-height");
-    	SchemeUtils.defineVar( new ProcedureN("gui-frame-width") {
+    	SchemeUtils.defineVar( env, new SafeProcedureN("gui-frame-width") {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				Dimension size = frame.getSize();
@@ -344,7 +347,7 @@ public class PulsarGui {
 			}
     		
     	}, "gui-frame-width");
-    	SchemeUtils.defineVar( new ProcedureN("gui-frame-left") {
+    	SchemeUtils.defineVar( env, new SafeProcedureN("gui-frame-left") {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				Point pos = frame.getLocation();
@@ -358,7 +361,7 @@ public class PulsarGui {
 			}
     		
     	}, "gui-frame-left");
-    	SchemeUtils.defineVar( new ProcedureN("gui-frame-top") {
+    	SchemeUtils.defineVar( env, new SafeProcedureN("gui-frame-top") {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				Point pos = frame.getLocation();
@@ -373,7 +376,7 @@ public class PulsarGui {
     		
     	}, "gui-frame-top");
 
-    	SchemeUtils.defineVar( new ProcedureN("gui-frame-divider-position") {
+    	SchemeUtils.defineVar( env, new SafeProcedureN("gui-frame-divider-position") {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				ArrayList<Object> argList = new ArrayList<Object>( Arrays.asList( args ) );
@@ -402,7 +405,7 @@ public class PulsarGui {
     		}
     	}, "gui-frame-divider-position");
 
-    	SchemeUtils.defineVar( new ProcedureN("gui-insert-text") {
+    	SchemeUtils.defineVar( env, new SafeProcedureN("gui-insert-text") {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				StringBuilder sb = new StringBuilder();
@@ -905,14 +908,15 @@ public class PulsarGui {
 		} 
 	}
 	public static void addLispWords( Scheme scheme, List<Symbol> additionalLispWords ) {
-		Pair lispWords = (Pair) SchemeUtils.getVar( "lisp-words" );
+		Environment env = scheme.getEnvironment();
+		Pair lispWords = (Pair) SchemeUtils.getVar( env, "lisp-words" );
 		if ( lispWords != null) {
 			try {
 				
 				Object newLispWords = ((Procedure)srfi1.append.get()).apply2(
 					LList.makeList( additionalLispWords) , lispWords );
 				
-				SchemeUtils.putVar("lisp-words", newLispWords );
+				SchemeUtils.putVar(env, "lisp-words", newLispWords );
 			} catch (Throwable e) {
 				logError( "" ,  e );
 			}

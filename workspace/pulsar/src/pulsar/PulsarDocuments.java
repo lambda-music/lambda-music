@@ -65,6 +65,6 @@ public class PulsarDocuments {
 		bean.setShortDescription( nullCheck( element.getShortDescription() ) );
 		bean.setLongDescription( nullCheck( element.getLongDescription() ) );
 		
-		DescriptiveDocumentType.defineNoteDoc( scheme, bean );
+		DescriptiveDocumentType.NOTES.defineDoc( scheme.getEnvironment(), bean );
 	}
 }
