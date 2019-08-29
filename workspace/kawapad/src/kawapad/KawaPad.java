@@ -1508,8 +1508,8 @@ public class KawaPad extends JFrame {
 							synchronized ( scheme ) {
 								//	logInfo( "eventHandlers.invokeEventHandler(inner)" );
 								try {
-									SchemeUtils.putVar( scheme, "scheme", scheme );
-									SchemeUtils.putVar( scheme, "frame",  kawaPad );
+									SchemeUtils.putVar( "scheme", scheme );
+									SchemeUtils.putVar( "frame", kawaPad );
 									
 									for( Entry<Symbol,SchemeProcedure> e :  getEventType(eventTypeID).entrySet() ) {
 										try {
@@ -1520,8 +1520,8 @@ public class KawaPad extends JFrame {
 									}
 									
 								} finally {
-									SchemeUtils.putVar( scheme, "scheme", false );
-									SchemeUtils.putVar( scheme, "frame", false );
+									SchemeUtils.putVar( "scheme", false );
+									SchemeUtils.putVar( "frame", false );
 								}
 								
 							}
@@ -1550,57 +1550,55 @@ public class KawaPad extends JFrame {
 
 	protected void initScheme( Scheme scheme ) {
 		logInfo( "KawaPad#initScheme" );
-		SchemeUtils.defineVar( scheme, this, frameName );
+		SchemeUtils.defineVar( this, frameName );
 	}
 
 	public static Scheme staticInitScheme( Scheme scheme ) {
 		logInfo( "KawaPad#staticInitScheme" );
 
-		if ( ! SchemeUtils.isDefined(scheme, FLAG_DONE_INIT_PULSAR_SCRATCHPAD ) ) {
-			SchemeUtils.defineVar(scheme, true, FLAG_DONE_INIT_PULSAR_SCRATCHPAD );  
+		if ( ! SchemeUtils.isDefined(FLAG_DONE_INIT_PULSAR_SCRATCHPAD ) ) {
+			SchemeUtils.defineVar(true, FLAG_DONE_INIT_PULSAR_SCRATCHPAD );  
 
-			SchemeUtils.defineVar(scheme, false, "frame"  );
-			SchemeUtils.defineVar(scheme, false, "scheme" );
+			SchemeUtils.defineVar(false, "frame"  );
+			SchemeUtils.defineVar(false, "scheme" );
 
-			SchemeUtils.defineVar(scheme, 
-					Pair.makeList( (List)SchemeUtils.<String,IString>convertList( 
-							Arrays.asList( DEFAULT_LISP_WORDS ),
-							(o)->{
-								return SchemeUtils.toSchemeString( o );
-							}) 
-						),
+			SchemeUtils.defineVar(Pair.makeList( (List)SchemeUtils.<String,IString>convertList( 
+					Arrays.asList( DEFAULT_LISP_WORDS ),
+					(o)->{
+						return SchemeUtils.toSchemeString( o );
+					}) 
+				), 
 					"lisp-words");
 
-			SchemeUtils.defineVar(scheme, Pair.makeList( (List)SchemeUtils.<String,IString>convertList( 
+			SchemeUtils.defineVar(Pair.makeList( (List)SchemeUtils.<String,IString>convertList( 
 							Arrays.asList( DEFAULT_LISP_WORDS ),
 							(o)->{
 								return SchemeUtils.toSchemeString( o );
 							}) 
-						),
-					"default-lisp-words"
+						), "default-lisp-words"
 					);
 			
-			SchemeUtils.defineVar(scheme, new Procedure3() {
+			SchemeUtils.defineVar(new Procedure3() {
 				@Override
 				public Object apply3(Object arg1, Object arg2, Object arg3) throws Throwable {
 					eventHandlers.register( (Symbol)arg1, (Symbol)arg2, (Procedure) arg3 );
 					return EmptyList.emptyList;
 				}
 			}, "register-event-handler");
-			SchemeUtils.defineVar(scheme, new Procedure2() {
+			SchemeUtils.defineVar(new Procedure2() {
 				@Override
 				public Object apply2(Object arg1, Object arg2 ) throws Throwable {
 					eventHandlers.unregister((Symbol)arg1,(Symbol)arg2 );
 					return EmptyList.emptyList;
 				}
 			}, "unregister-event-handler");
-			SchemeUtils.defineVar(scheme, new Procedure1() {
+			SchemeUtils.defineVar(new Procedure1() {
 				@Override
 				public Object apply1(Object arg1 ) throws Throwable {
 					return prettify( scheme, SchemeUtils.anyToString(SchemeUtils.prettyPrint(arg1)));
 				}
 			}, "pretty-print");
-			SchemeUtils.defineVar(scheme, new Procedure1() {
+			SchemeUtils.defineVar(new Procedure1() {
 				@Override
 				public Object apply1(Object arg1 ) throws Throwable {
 					return prettify( scheme, SchemeUtils.anyToString(arg1));

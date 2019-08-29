@@ -374,61 +374,33 @@ public class SchemeUtils {
 		return Pair.make( toSchemeSymbol( key ) , value );
 	}
 
-	public static final void defineVar( Scheme scheme, Object value, String ... names ) {
-		Environment e = scheme.getEnvironment();
-		Environment.setCurrent(e);
-		Language.setCurrentLanguage(scheme);
-
+	public static final void defineVar( Object value, String ... names ) {
 		for ( String name : names ) {
-			e.define( schemeSymbol( name ), null, value );
+			Environment.getCurrent().define( schemeSymbol( name ), null, value );
 		}
 	}
-
-	
-	public static final boolean isDefined( Scheme scheme, String name  ) {
-		return scheme.getEnvironment().isBound( SimpleSymbol.make( "", name ) );
+	public static final boolean isDefined( String name  ) {
+		synchronized ( Language.getDefaultLanguage() ) {
+			return Environment.getCurrent().isBound( Symbol.valueOf( name ) );
+		}
 	}
-	public static final void putVar( Scheme scheme, String name, Object value ) {
-		scheme.getEnvironment().put( SimpleSymbol.make( "", name ), null, value );
+	public static final void putVar( String name, Object value ) {
+		synchronized ( Language.getDefaultLanguage() ) {
+			Environment.getCurrent().put( Symbol.valueOf( name ), null, value );
+		}
 	}
-	public static final Object getVar( Scheme scheme, String name  ) {
-		return scheme.getEnvironment().get( SimpleSymbol.make( "", name ) );
+	public static final Object getVar( String name  ) {
+		synchronized ( Language.getDefaultLanguage() ) {
+			return Environment.getCurrent().get( Symbol.valueOf( name ) );
+		}
 	}
 	// TODO This version is newer. Every getVar() thing should be diverted to this. (Mon, 19 Aug 2019 18:55:39 +0900) 
-	public static final <T> T getVar( Scheme scheme, String name, Object defaultValue ) {
-		return (T)scheme.getEnvironment().get( Symbol.valueOf( name ), defaultValue );
+	public static final <T> T getVar( String name, Object defaultValue ) {
+		synchronized ( Language.getDefaultLanguage() ) {
+			return (T)Environment.getCurrent().get( Symbol.valueOf( name ), defaultValue );
+		}
 	}
 	
-	@Deprecated
-	public static void execSchemeFromFileOld( Object lock, Scheme scheme, File file) throws FileNotFoundException {
-		if ( ! file.isFile() ) {
-			throw new FileNotFoundException( file.getPath() );
-		}
-			
-		InputStream in=null;
-		try {
-//			String text = new String(Files.readAllBytes( Paths.get( file.toURI() ) ), StandardCharsets.UTF_8);
-//			synchronized ( scheme ) {
-//				scheme.eval( text );
-//			}
-			Path path = Path.valueOf(file);
-			in = path.openInputStream();
-			synchronized ( lock ) {
-				scheme.eval( InPort.openFile( in , path ) );
-			}
-		} catch (IOException e) {
-			logError("", e);
-		} catch (Throwable e) {
-			logError("", e);
-		} finally {
-			try {
-				if ( in != null )
-					in.close();
-			} catch (IOException e) {
-				logError("", e);
-			}
-		}
-	}
 	public static void execSchemeFromFile( Scheme scheme, File file) throws FileNotFoundException {
 		execScheme( scheme, new FileInputStream(file), file.getName() );
 	}
@@ -441,45 +413,6 @@ public class SchemeUtils {
 	}
 	public static void execScheme( Scheme scheme, InputStream in, String resourcePathAlias ) {
 		evaluateScheme( scheme, null, new InputStreamReader( in ), resourcePathAlias );
-	}
-
-	public static void execScheme1( Scheme scheme, InputStream in, String resourcePathAlias ) {
-		synchronized ( scheme ) {
-			try {
-				logInfo( "execScheme:" + resourcePathAlias );
-				scheme.eval( InPort.openFile( in, Path.valueOf( resourcePathAlias ) ) );
-			} catch (Throwable e) {
-				throw new RuntimeException( e );
-			} finally {
-				try {
-					if ( in != null)
-						in.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-	@Deprecated
-	public static Object kawaExecuteScheme( Map<String,Object> variables, Scheme scheme, String script, String scriptNameURI ) throws Throwable {
-		synchronized ( scheme ) {
-			StringReader reader = new StringReader(script);
-			try {
-				if ( variables != null )
-					for ( Map.Entry<String, Object> e : variables.entrySet() )
-						putVar( scheme , e.getKey(), e.getValue() );
-//				putVar( scheme , "scheme", scheme  );
-//				putVar( scheme , "frame", kawaPad );
-				return scheme .eval( new InPort( reader, Path.valueOf( scriptNameURI ))); 
-			} finally {
-				reader.close();
-				if ( variables != null )
-					for ( Map.Entry<String, Object> e : variables.entrySet() )
-						putVar( scheme , e.getKey(), false );
-//				putVar( scheme , "scheme", false );
-//				putVar( scheme , "frame", false );
-			}
-		}
 	}
 	
 	public static Object prettyPrintReconstruction( Object o ) {
@@ -547,7 +480,7 @@ public class SchemeUtils {
 			if ( IS_INDENTED.matcher( a[i] ).find()) {
 				sb.append(      a[i]               ).append( "\n\n" );
 			} else {
-				System.err.println( "SDDDD" );
+//				System.err.println( "SDDDD" );
 				sb.append( wrap(a[i],width).trim() ).append( "\n\n" );
 			}
 		}
@@ -630,15 +563,13 @@ public class SchemeUtils {
 			Scheme scheme, Map<String, Object> variables, Reader schemeScript, String schemeScriptURI) 
 	{
 		//				schemeSecretary.initializeSchemeForCurrentThread();
+		SchemeSecretary.initializeSchemeForCurrentThreadStatic( scheme );
 		synchronized ( scheme ) {
-			SchemeSecretary.initializeSchemeForCurrentThreadStatic( scheme );
-			
 			if ( variables != null )
 				for ( Map.Entry<String, Object> e : variables.entrySet() )
-					putVar( scheme , e.getKey(), e.getValue() );
+					putVar( e.getKey() , e.getValue() );
 			
-			putVar( scheme , "scheme", scheme );
-			
+			putVar( "scheme" , scheme );
 			
 			// Set current directory to the default load path.
 			// Note that <i>Shell.currentLoadPath</i> is not documented in the official documentation.
@@ -696,11 +627,11 @@ public class SchemeUtils {
 					w.close();
 				}
 			} finally {
-				putVar( scheme , "scheme", false );
+				putVar( "scheme" , false );
 				
 				if ( variables != null )
 					for ( Map.Entry<String, Object> e : variables.entrySet() )
-						putVar( scheme , e.getKey(), false );
+						putVar( e.getKey() , false );
 				
 				try {
 					schemeScript.close();

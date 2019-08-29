@@ -249,23 +249,23 @@ public class PulsarGui {
     void initScheme(Scheme scheme) {
     	logInfo("PulsarGui#initScheme=======================================");
     	//////////////////////////////////////////////////////
-    	SchemeUtils.defineVar( scheme, new ProcedureN("gui-get-pane") {
+    	SchemeUtils.defineVar( new ProcedureN("gui-get-pane") {
 			// TODO ???
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				logInfo("gui-get-pane");
     			return userPane;
     		}
-    	} , "gui-get-pane");
-    	SchemeUtils.defineVar( scheme, new ProcedureN("gui-get-frame") {
+    	}, "gui-get-pane");
+    	SchemeUtils.defineVar( new ProcedureN("gui-get-frame") {
 			// TODO ???
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				logInfo("gui-get-frame");
     			return frame;
     		}
-    	} , "gui-get-frame");
-		SchemeUtils.defineVar( scheme, new ProcedureN("gui-set-progress-pos") {
+    	}, "gui-get-frame");
+		SchemeUtils.defineVar( new ProcedureN("gui-set-progress-pos") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				if ( 0 < args.length ) {
@@ -274,15 +274,15 @@ public class PulsarGui {
 				}
 				return Invokable.NO_RESULT;
 			}
-		} , "gui-set-progress-pos");
-    	SchemeUtils.defineVar( scheme, new ProcedureN("gui-clear") {
+		}, "gui-set-progress-pos");
+    	SchemeUtils.defineVar( new ProcedureN("gui-clear") {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				guiClear();
     			return Invokable.NO_RESULT;
     		}
-    	} , "gui-clear");
-    	SchemeUtils.defineVar( scheme, new ProcedureN("gui-divider-location") {
+    	}, "gui-clear");
+    	SchemeUtils.defineVar( new ProcedureN("gui-divider-location") {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				ArrayList<Object> argList = new ArrayList<Object>( Arrays.asList( args ) );
@@ -312,9 +312,9 @@ public class PulsarGui {
     						"usage : (gui-divider-location! [pane])" );
 				}
     		}
-    	} , "gui-divider-location");
+    	}, "gui-divider-location");
 
-    	SchemeUtils.defineVar( scheme, new ProcedureN("gui-frame-height") {
+    	SchemeUtils.defineVar( new ProcedureN("gui-frame-height") {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				Dimension size = frame.getSize();
@@ -328,8 +328,8 @@ public class PulsarGui {
 				return SchemeUtils.toSchemeNumber( size.height );
 			}
     		
-    	} , "gui-frame-height");
-    	SchemeUtils.defineVar( scheme, new ProcedureN("gui-frame-width") {
+    	}, "gui-frame-height");
+    	SchemeUtils.defineVar( new ProcedureN("gui-frame-width") {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				Dimension size = frame.getSize();
@@ -343,8 +343,8 @@ public class PulsarGui {
 				return SchemeUtils.toSchemeNumber( size.width );
 			}
     		
-    	} , "gui-frame-width");
-    	SchemeUtils.defineVar( scheme, new ProcedureN("gui-frame-left") {
+    	}, "gui-frame-width");
+    	SchemeUtils.defineVar( new ProcedureN("gui-frame-left") {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				Point pos = frame.getLocation();
@@ -357,8 +357,8 @@ public class PulsarGui {
 				return SchemeUtils.toSchemeNumber( pos.x );
 			}
     		
-    	} , "gui-frame-left");
-    	SchemeUtils.defineVar( scheme, new ProcedureN("gui-frame-top") {
+    	}, "gui-frame-left");
+    	SchemeUtils.defineVar( new ProcedureN("gui-frame-top") {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				Point pos = frame.getLocation();
@@ -371,9 +371,9 @@ public class PulsarGui {
 				return SchemeUtils.toSchemeNumber( pos.y );
 			}
     		
-    	} , "gui-frame-top");
+    	}, "gui-frame-top");
 
-    	SchemeUtils.defineVar( scheme, new ProcedureN("gui-frame-divider-position") {
+    	SchemeUtils.defineVar( new ProcedureN("gui-frame-divider-position") {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				ArrayList<Object> argList = new ArrayList<Object>( Arrays.asList( args ) );
@@ -400,9 +400,9 @@ public class PulsarGui {
     						"usage : (gui-panel-divider-position! [pane])" );
 				}
     		}
-    	} , "gui-frame-divider-position");
+    	}, "gui-frame-divider-position");
 
-    	SchemeUtils.defineVar( scheme, new ProcedureN("gui-insert-text") {
+    	SchemeUtils.defineVar( new ProcedureN("gui-insert-text") {
 			@Override
     		public Object applyN(Object[] args) throws Throwable {
 				StringBuilder sb = new StringBuilder();
@@ -412,7 +412,7 @@ public class PulsarGui {
 				frame.insertText( sb.toString().trim() );
     			return Invokable.NO_RESULT;
     		}
-    	} , "gui-insert-text");
+    	}, "gui-insert-text");
     }
     
     
@@ -905,14 +905,14 @@ public class PulsarGui {
 		} 
 	}
 	public static void addLispWords( Scheme scheme, List<Symbol> additionalLispWords ) {
-		Pair lispWords = (Pair) SchemeUtils.getVar( scheme, "lisp-words" );
+		Pair lispWords = (Pair) SchemeUtils.getVar( "lisp-words" );
 		if ( lispWords != null) {
 			try {
 				
 				Object newLispWords = ((Procedure)srfi1.append.get()).apply2(
 					LList.makeList( additionalLispWords) , lispWords );
 				
-				SchemeUtils.putVar(scheme, "lisp-words", newLispWords );
+				SchemeUtils.putVar("lisp-words", newLispWords );
 			} catch (Throwable e) {
 				logError( "" ,  e );
 			}

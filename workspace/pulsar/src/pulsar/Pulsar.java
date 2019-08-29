@@ -812,13 +812,13 @@ public final class Pulsar extends Metro {
 	 *            the scheme instance to initialize.
 	 */
 	public void initScheme( Scheme scheme ) {
-		SchemeUtils.defineVar( scheme, this , "pulsar" );
-		SchemeUtils.defineVar( scheme, new ProcedureN( "open?" ) {
+		SchemeUtils.defineVar( this, "pulsar" );
+		SchemeUtils.defineVar( new ProcedureN( "open?" ) {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				return isOpened();
 			}
-		} , "open?" );
+		}, "open?" );
 		
 		DescriptiveDocumentType.defineProcDoc( scheme,  
 			new PulsarProceduralDescriptiveBean() {{
@@ -831,13 +831,13 @@ public final class Pulsar extends Metro {
 			}}
 		);
 		
-		SchemeUtils.defineVar( scheme, new Procedure1("open") {
+		SchemeUtils.defineVar( new Procedure1("open") {
 			@Override
 			public Object apply1(Object arg0) throws Throwable {
 				open( SchemeUtils.toString( arg0 ) );
 				return Invokable.NO_RESULT;
 			}
-		} , "open");
+		}, "open");
 		
 		DescriptiveDocumentType.defineProcDoc( scheme,  
 			new PulsarProceduralDescriptiveBean() {{
@@ -854,13 +854,13 @@ public final class Pulsar extends Metro {
 			}}
 			);
 		
-		SchemeUtils.defineVar( scheme, new ProcedureN("close") {
+		SchemeUtils.defineVar( new ProcedureN("close") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				close();
 				return Invokable.NO_RESULT;
 			}
-		} , "close" );
+		}, "close" );
 
 		DescriptiveDocumentType.defineProcDoc( scheme,  
 			new PulsarProceduralDescriptiveBean() {{
@@ -904,8 +904,7 @@ public final class Pulsar extends Metro {
 				return LList.makeList( list );
 			}
 		};
-		SchemeUtils.defineVar( scheme, openOutput , "open-output" , 
-													"openo" );
+		SchemeUtils.defineVar( openOutput, "open-output" , "openo" );
 
 		DescriptiveDocumentType.defineProcDoc( scheme, 
 			initDocOpenPorts.process( "output" ).setNames( "open-output", "openo" ));
@@ -925,8 +924,7 @@ public final class Pulsar extends Metro {
 				return LList.makeList( list );
 			}
 		};
-		SchemeUtils.defineVar( scheme, openInput , "open-input"
-												 , "openi"
+		SchemeUtils.defineVar( openInput, "open-input" , "openi"
 												 );
 
 		DescriptiveDocumentType.defineProcDoc( scheme, 
@@ -964,7 +962,7 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		};
-		SchemeUtils.defineVar( scheme, closeOutput, "close-output" , "closeo" );
+		SchemeUtils.defineVar( closeOutput, "close-output", "closeo" );
 		DescriptiveDocumentType.defineProcDoc( scheme, 
 			initDocClosePorts.process( "output" ).setNames( "close-output" , "closeo" ));
 
@@ -981,7 +979,7 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		};
-		SchemeUtils.defineVar( scheme, closeInput, "close-input", "closei" );
+		SchemeUtils.defineVar( closeInput, "close-input", "closei" );
 		
 		DescriptiveDocumentType.defineProcDoc( scheme, 
 				initDocClosePorts.process( "input" ).setNames( "close-input", "closei" ) );
@@ -1008,7 +1006,7 @@ public final class Pulsar extends Metro {
 				return LList.makeList( list  );
 			}
 		};
-		SchemeUtils.defineVar( scheme, listOutput, "list-output" , "lso" );
+		SchemeUtils.defineVar( listOutput, "list-output", "lso" );
 		DescriptiveDocumentType.defineProcDoc( scheme, 
 			initDocListPorts.process( "output" ).setNames("list-output" , "lso" ));
 		
@@ -1023,7 +1021,7 @@ public final class Pulsar extends Metro {
 				return LList.makeList( list  );
 			}
 		};
-		SchemeUtils.defineVar( scheme, listInput, "list-input" , "lsi" );
+		SchemeUtils.defineVar( listInput, "list-input", "lsi" );
 		DescriptiveDocumentType.defineProcDoc( scheme, 
 			initDocListPorts.process( "input" ).setNames("list-input" , "lsi") );
 
@@ -1051,26 +1049,26 @@ public final class Pulsar extends Metro {
 		}}
 		InitDocConnection initDocConnection = new InitDocConnection();
 		
-		SchemeUtils.defineVar( scheme, new ProcedureN("connect") {
+		SchemeUtils.defineVar( new ProcedureN("connect") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				connectProc(Pulsar.this, args, ConnectProc.CONNECT );
 				return Invokable.NO_RESULT;
 			}
-		} , "connect" );
+		}, "connect" );
 		
 		DescriptiveDocumentType.defineProcDoc( scheme, 
 			initDocConnection.process( "connects" ).setNames( "connect" ) );
 		
 		//////////////////////////////////////////////////////////
 		
-		SchemeUtils.defineVar( scheme, new ProcedureN("disconnect") {
+		SchemeUtils.defineVar( new ProcedureN("disconnect") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				connectProc(Pulsar.this, args, ConnectProc.DISCONNECT );
 				return Invokable.NO_RESULT;
 			}
-		} , "disconnect");
+		}, "disconnect");
 
 		DescriptiveDocumentType.defineProcDoc( scheme, 
 			initDocConnection.process( "disconnects" ).setNames( "disconnect" ));
@@ -1089,26 +1087,26 @@ public final class Pulsar extends Metro {
 									);
 		}}
 		InitDocAllConnection initDocAllConnection = new InitDocAllConnection();	
-		SchemeUtils.defineVar( scheme, new ProcedureN("get-all-output") {
+		SchemeUtils.defineVar( new ProcedureN("get-all-output") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				return Pair.makeList( getAllOutputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
 					.collect( Collectors.toList() ) );
 			}
-		} , "get-all-output", "gao" );
+		}, "get-all-output" , "gao" );
 
 		DescriptiveDocumentType.defineProcDoc( scheme, 
 			initDocAllConnection.process( "output" ).setNames("get-all-output", "gao"));
 
 		//////////////////////////////////////////////////////////
 		
-		SchemeUtils.defineVar( scheme, new ProcedureN("get-all-input") {
+		SchemeUtils.defineVar( new ProcedureN("get-all-input") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				return Pair.makeList( getAllInputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
 					.collect( Collectors.toList() ) );
 			}
-		} , "get-all-input", "gai" );
+		}, "get-all-input" , "gai" );
 		
 		DescriptiveDocumentType.defineProcDoc( scheme, 
 			initDocAllConnection.process( "input" ).setNames("get-all-input", "gai"));
@@ -1116,7 +1114,7 @@ public final class Pulsar extends Metro {
 		//////////////////////////////////////////////////////////
 		
 		
-		SchemeUtils.defineVar( scheme, new ProcedureN("set-main") {
+		SchemeUtils.defineVar( new ProcedureN("set-main") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				logInfo("set-main");
@@ -1128,7 +1126,7 @@ public final class Pulsar extends Metro {
 				}
 				return Invokable.NO_RESULT;
 			}
-		} , "set-main");
+		}, "set-main");
 
 		DescriptiveDocumentType.defineProcDoc( scheme, 
 			new PulsarProceduralDescriptiveBean() {{
@@ -1146,12 +1144,12 @@ public final class Pulsar extends Metro {
 
 		//////////////////////////////////////////////////////////
 
-		SchemeUtils.defineVar( scheme, new Procedure0( "get-main" ) {
+		SchemeUtils.defineVar( new Procedure0( "get-main" ) {
 			@Override
 			public Object apply0() throws Throwable {
 				return getMainProcedure();
 			}
-		} , "get-main");
+		}, "get-main");
 		
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean() {{
@@ -1165,7 +1163,7 @@ public final class Pulsar extends Metro {
 
 		//////////////////////////////////////////////////////////
 		
-		SchemeUtils.defineVar( scheme, new ProcedureN("set-playing") {
+		SchemeUtils.defineVar( new ProcedureN("set-playing") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				if ( args.length == 0 ) {
@@ -1177,7 +1175,7 @@ public final class Pulsar extends Metro {
 				}
 				return Invokable.NO_RESULT;
 			}
-		} , "set-playing" );
+		}, "set-playing" );
 
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
@@ -1193,12 +1191,12 @@ public final class Pulsar extends Metro {
 									 );
 			}});
 
-		SchemeUtils.defineVar( scheme, new ProcedureN("playing?") {
+		SchemeUtils.defineVar( new ProcedureN("playing?") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				return getPlaying();
 			}
-		} , "playing?");
+		}, "playing?");
 
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
@@ -1213,13 +1211,13 @@ public final class Pulsar extends Metro {
 									 );
 			}});
 		
-		SchemeUtils.defineVar( scheme, new ProcedureN("play") {
+		SchemeUtils.defineVar( new ProcedureN("play") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				setPlaying( true ); 
 				return Invokable.NO_RESULT;
 			}
-		} , "play");
+		}, "play");
 		
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
@@ -1232,13 +1230,13 @@ public final class Pulsar extends Metro {
 									 );
 			}});
 
-		SchemeUtils.defineVar( scheme, new ProcedureN("stop") {
+		SchemeUtils.defineVar( new ProcedureN("stop") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				setPlaying( false ); 
 				return Invokable.NO_RESULT;
 			}
-		} , "stop");
+		}, "stop");
 
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
@@ -1251,7 +1249,7 @@ public final class Pulsar extends Metro {
 						+ THROWS_AN_ERROR_IF_NOT_OPEN );
 			}});
 
-		SchemeUtils.defineVar( scheme, new ProcedureN("quit") {
+		SchemeUtils.defineVar( new ProcedureN("quit") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				Thread t = new Thread() {
@@ -1274,7 +1272,7 @@ public final class Pulsar extends Metro {
 				
 				return "Now Pulsar will shutdown in " + shutdownWait + " milliseconds...";
 			}
-		} , "quit" );
+		}, "quit" );
 		
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
@@ -1289,13 +1287,13 @@ public final class Pulsar extends Metro {
 									+ THROWS_AN_ERROR_IF_NOT_OPEN );
 			}});
 		
-		SchemeUtils.defineVar( scheme, new ProcedureN("tap-tempo") {
+		SchemeUtils.defineVar( new ProcedureN("tap-tempo") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				tempoTapper.tap(); 
 				return Invokable.NO_RESULT;
 			}
-		} , "tap-tempo", "tapt" );
+		}, "tap-tempo" , "tapt" );
 		
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
@@ -1314,7 +1312,7 @@ public final class Pulsar extends Metro {
 									+ THROWS_AN_ERROR_IF_NOT_OPEN );
 			}});
 
-		SchemeUtils.defineVar( scheme, new ProcedureN("set-tempo") {
+		SchemeUtils.defineVar( new ProcedureN("set-tempo") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				if ( 0 < args.length ) {
@@ -1324,7 +1322,7 @@ public final class Pulsar extends Metro {
 
 				return Invokable.NO_RESULT;
 			}
-		} , "set-tempo" );
+		}, "set-tempo" );
 		
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
@@ -1356,7 +1354,7 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		};
-		SchemeUtils.defineVar( scheme, resetScheme , "reset" );
+		SchemeUtils.defineVar( resetScheme, "reset" );
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames("reset" );
@@ -1374,13 +1372,13 @@ public final class Pulsar extends Metro {
 			}});
 		
 		
-		SchemeUtils.defineVar( scheme, new Procedure0("rewind") {
+		SchemeUtils.defineVar( new Procedure0("rewind") {
 			@Override
 			public Object apply0() throws Throwable {
 				rewind();
 				return Invokable.NO_RESULT;
 			}
-		} , "rewind");
+		}, "rewind");
 		
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
@@ -1416,7 +1414,7 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		};
-		SchemeUtils.defineVar( scheme, simul , "simultaneous", "simul" );
+		SchemeUtils.defineVar( simul, "simultaneous" , "simul" );
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "simultaneous", "simul" );
@@ -1446,7 +1444,7 @@ public final class Pulsar extends Metro {
 				return Pair.makeList( t );
 			}
 		};
-		SchemeUtils.defineVar( scheme, getTrack, "get-track" , "gett" );
+		SchemeUtils.defineVar( getTrack, "get-track", "gett" );
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "get-track", "gett" );
@@ -1514,7 +1512,7 @@ public final class Pulsar extends Metro {
 				return createTrack( name, tags, procedure );
 			}
 		};
-		SchemeUtils.defineVar( scheme, newTrack , "new-track" , "newt" );
+		SchemeUtils.defineVar( newTrack, "new-track" , "newt" );
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "new-track" , "newt" );
@@ -1640,7 +1638,7 @@ public final class Pulsar extends Metro {
 				putTrack(trackList, syncType, syncTrack, syncOffset);
 			}
 		};
-		SchemeUtils.defineVar( scheme, putTrack , "put-track" , "putt" );
+		SchemeUtils.defineVar( putTrack, "put-track" , "putt" );
 
 		PulsarProceduralDescriptiveBean trackInitializer = new PulsarProceduralDescriptiveBean(){{
 			setParameterDescription( "track [sync-type] [sync-track] [sync-offset]" );
@@ -1683,7 +1681,7 @@ public final class Pulsar extends Metro {
 				removeTrack(trackList, syncType, syncTrack, syncOffset);
 			}
 		};
-		SchemeUtils.defineVar( scheme, removeTrack , "remove-track" , "remt" );
+		SchemeUtils.defineVar( removeTrack, "remove-track" , "remt" );
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			trackInitializer.process( 
 				"removes",
@@ -1701,7 +1699,7 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		};
-		SchemeUtils.defineVar( scheme, notifyTrackChange , "notify-track-change", "nott" );
+		SchemeUtils.defineVar( notifyTrackChange, "notify-track-change" , "nott" );
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "notify-track-change", "nott" );
@@ -1719,7 +1717,7 @@ public final class Pulsar extends Metro {
 								 );
 			}});
 		
-		SchemeUtils.defineVar( scheme, new Procedure0("list-tracks") {
+		SchemeUtils.defineVar( new Procedure0("list-tracks") {
 			@Override
 			public Object apply0() throws Throwable {
 				List<MetroTrack> tempAllTracks = replicateAllTracks(); 
@@ -1731,7 +1729,7 @@ public final class Pulsar extends Metro {
 				return Pair.makeList(list);
 
 			}
-		} , "list-tracks", "lstt" );
+		}, "list-tracks" , "lstt" );
 
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
@@ -1753,8 +1751,7 @@ public final class Pulsar extends Metro {
 				return Invokable.NO_RESULT;
 			}
 		};
-		SchemeUtils.defineVar( scheme, clr , "clear-tracks",
-											 "clet" );
+		SchemeUtils.defineVar( clr, "clear-tracks" , "clet" );
 		
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
@@ -1767,7 +1764,7 @@ public final class Pulsar extends Metro {
 								 );
 			}});	
 		
-		SchemeUtils.defineVar( scheme, new Procedure0("print-stack-trace") {
+		SchemeUtils.defineVar( new Procedure0("print-stack-trace") {
 			@Override
 			public Object apply0() throws Throwable {
 				PrintStream out = null;
@@ -1787,7 +1784,7 @@ public final class Pulsar extends Metro {
 						out.close();
 				}
 			}
-		} , "print-stack-trace");
+		}, "print-stack-trace");
 		
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
@@ -1801,13 +1798,13 @@ public final class Pulsar extends Metro {
 			}});	
 
 		
-		SchemeUtils.defineVar( scheme, new ProcedureN("display-warn") {
+		SchemeUtils.defineVar( new ProcedureN("display-warn") {
 			@Override
 			public Object apply1(Object arg) throws Throwable {
 				System.err.print( arg );
 				return Values.empty;
 			}
-		} , "display-warn");
+		}, "display-warn");
 
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
@@ -1821,13 +1818,13 @@ public final class Pulsar extends Metro {
 								 );
 			}});
 		
-		SchemeUtils.defineVar( scheme, new Procedure0("newline-warn") {
+		SchemeUtils.defineVar( new Procedure0("newline-warn") {
 			@Override
 			public Object apply0() throws Throwable {
 				System.err.println();
 				return Values.empty;
 			}
-		} , "newline-warn");
+		}, "newline-warn");
 
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
@@ -1840,7 +1837,7 @@ public final class Pulsar extends Metro {
 								 );
 			}});
 		
-		SchemeUtils.defineVar( scheme, new ProcedureN("typeof") {
+		SchemeUtils.defineVar( new ProcedureN("typeof") {
 			public Object applyN(Object[] args) throws Throwable {
 				if ( 0 < args.length  ) {
 					if ( args[0] == null ) 
@@ -1851,7 +1848,7 @@ public final class Pulsar extends Metro {
 					return Invokable.NO_RESULT;
 				}
 			}
-		} , "typeof");
+		}, "typeof");
 		
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
@@ -1866,7 +1863,7 @@ public final class Pulsar extends Metro {
 			}});
 		
 
-		SchemeUtils.defineVar( scheme, new Procedure3("make-timer") {
+		SchemeUtils.defineVar( new Procedure3("make-timer") {
 			@Override
 			public Object apply3(Object arg0, Object arg1,Object arg2 ) throws Throwable {
 				Runnable runnable = createTimer( Pulsar.this, 
@@ -1881,7 +1878,7 @@ public final class Pulsar extends Metro {
 					};
 				};
 			}
-		} , "make-timer" );
+		}, "make-timer" );
 
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
@@ -1902,7 +1899,7 @@ public final class Pulsar extends Metro {
 				);
 			}});
 
-		SchemeUtils.defineVar( scheme, new ProcedureN("random") {
+		SchemeUtils.defineVar( new ProcedureN("random") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				switch ( args.length ) {
@@ -1922,7 +1919,7 @@ public final class Pulsar extends Metro {
 					}
 				}
 			}
-		} , "random", "rnd");
+		}, "random" , "rnd");
 		
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
@@ -1939,7 +1936,7 @@ public final class Pulsar extends Metro {
 				);
 			}});
 		
-		SchemeUtils.defineVar( scheme, new ProcedureN("luck") {
+		SchemeUtils.defineVar( new ProcedureN("luck") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				double probability = args.length == 0 ? 0.5 : SchemeUtils.toDouble( args[0] );
@@ -1948,7 +1945,7 @@ public final class Pulsar extends Metro {
 				return random.nextBoolean( probability );
 			}
 
-		} , "luck" );
+		}, "luck" );
 		
 		// ???
 //		SchemeUtils.defineDoc( scheme,
@@ -1980,12 +1977,12 @@ public final class Pulsar extends Metro {
 						+ "The only parameter can be omitted and in that case the default value one is applied. " );
 			}});
 		
-		SchemeUtils.defineVar( scheme, new Procedure1("make-page") {
+		SchemeUtils.defineVar( new Procedure1("make-page") {
 			@Override
 			public Object apply1(Object arg1) throws Throwable {
 				return SchemeUtils.makePage( SchemeUtils.anyToString(arg1), helpTextWidth ); 
 			}
-		} , "make-page");
+		}, "make-page");
 		
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
@@ -2006,12 +2003,12 @@ public final class Pulsar extends Metro {
 									+ THROWS_AN_ERROR_IF_NOT_OPEN );
 			}});
 		
-		SchemeUtils.defineVar( scheme, new ProcedureN("help!") {
+		SchemeUtils.defineVar( new ProcedureN("help!") {
 			@Override
 			public Object applyN(Object[] args) throws Throwable {
 				return "Calm down!";
 			}
-		} , "help!");
+		}, "help!");
 		
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
@@ -2124,7 +2121,7 @@ public final class Pulsar extends Metro {
 
 			}
 		}
-		SchemeUtils.defineVar( scheme, new ProcedureHelp( scheme.getEnvironment(), "help", 1 ) , "help", "he" );
+		SchemeUtils.defineVar( new ProcedureHelp( scheme.getEnvironment(), "help", 1 ), "help" , "he" );
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
 				setNames( "help", "he" );
@@ -2147,7 +2144,7 @@ public final class Pulsar extends Metro {
 			}});
 
 		
-		SchemeUtils.defineVar( scheme, new Procedure1("make-help") {
+		SchemeUtils.defineVar( new Procedure1("make-help") {
 			Symbol names = Symbol.valueOf( "names" );
 			Symbol params = Symbol.valueOf( "params" );
 			Symbol returns = Symbol.valueOf( "returns" );
@@ -2199,7 +2196,7 @@ public final class Pulsar extends Metro {
 				DescriptiveDocumentType.PROCS.defineDoc( scheme, bean );
 				return Values.noArgs;
 			}
-		} , "make-help");
+		}, "make-help");
 		
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{
@@ -2234,7 +2231,7 @@ public final class Pulsar extends Metro {
 			}});
 
 		
-		SchemeUtils.defineVar( scheme, new Procedure1("help-markdown") {
+		SchemeUtils.defineVar( new Procedure1("help-markdown") {
 			@Override
 			public Object apply0() throws Throwable {
 				return this.apply1( DescriptiveDocumentType.PROCS.toSymbol() );
@@ -2249,7 +2246,7 @@ public final class Pulsar extends Metro {
 				return Values.empty;
 			}
 
-		} , "help-markdown" );
+		}, "help-markdown" );
 		
 		DescriptiveDocumentType.defineProcDoc( scheme,
 			new PulsarProceduralDescriptiveBean(){{

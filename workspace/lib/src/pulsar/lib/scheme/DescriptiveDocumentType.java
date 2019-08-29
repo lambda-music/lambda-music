@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import gnu.expr.Language;
 import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Environment;
@@ -69,14 +70,14 @@ public enum DescriptiveDocumentType {
 		str = str.toUpperCase();
 		return DescriptiveDocumentType.valueOf( str ); 
 	}
-	static Pair getRootCons(Environment e, Symbol symbol) {
-		synchronized ( e ) {
-			if ( ! e.isBound( symbol ) ) {
+	static Pair getRootCons( Environment env, Symbol symbol) {
+		synchronized ( Language.getDefaultLanguage() ) {
+			if ( ! env.isBound( symbol ) ) {
 				Pair rootCons = (Pair)LList.makeList(Arrays.asList( symbol ));
-				e.define( symbol, null, rootCons );
+				env.define( symbol, null, rootCons );
 				return rootCons;
 			} else {
-				return (Pair) e.get( symbol );
+				return (Pair)env.get( symbol );
 			}
 		}
 	}
@@ -87,22 +88,22 @@ public enum DescriptiveDocumentType {
 	public Symbol getSymbol() {
 		return symbol;
 	}
-	public LList getDocumentList( Environment e ) {
-		return getDocumentList( e, this );
+	public LList getDocumentList( Environment env ) {
+		return getDocumentList( env, this );
 	}
-	private static LList getDocumentList( Environment e, DescriptiveDocumentType type ) {
-		synchronized ( e ) {
-			Pair rootCons = getRootCons( e, type.getSymbol() );
+	private static LList getDocumentList( Environment env, DescriptiveDocumentType type ) {
+		synchronized ( env ) {
+			Pair rootCons = getRootCons( env, type.getSymbol() );
 			return (LList) rootCons.getCdr();
 		}
 	}
 
-	public void addDocumentList( Environment e, Symbol[] symbols, Object descriptive ) {
-		addDocumentList( e, this, symbols, descriptive );
+	public void addDocumentList( Environment env, Symbol[] symbols, Object descriptive ) {
+		addDocumentList( env, this, symbols, descriptive );
 	}
-	private static void addDocumentList( Environment e, DescriptiveDocumentType type, Symbol[] symbols, Object descriptive ) {
-		synchronized ( e ) {
-			Pair rootCons = getRootCons( e, type.getSymbol() );
+	private static void addDocumentList( Environment env, DescriptiveDocumentType type, Symbol[] symbols, Object descriptive ) {
+		synchronized ( Language.getDefaultLanguage() ) {
+			Pair rootCons = getRootCons( env, type.getSymbol() );
 			rootCons.setCdr( 
 				Pair.make(
 					Pair.make( descriptive, LList.makeList( symbols, 0 ) ),  
@@ -111,43 +112,47 @@ public enum DescriptiveDocumentType {
 			//			proc.setNameList( Arrays.asList(symbols) );
 		}
 	}
+
 	public Object defineDoc( Scheme scheme, DescriptiveBean bean ) {
-		return defineDoc( scheme, bean, this );
+		return defineDoc( scheme.getEnvironment(), bean, this );
 	}
 	public static Object defineProcDoc( Scheme scheme, DescriptiveBean bean ) {
-		return defineDoc( scheme, bean, DescriptiveDocumentType.PROCS );
+		return defineDoc( scheme.getEnvironment(), bean, DescriptiveDocumentType.PROCS );
 	}
 	public static Object defineNoteDoc( Scheme scheme, DescriptiveBean bean ) {
-		return defineDoc( scheme, bean, DescriptiveDocumentType.NOTES );
+		return defineDoc( scheme.getEnvironment(), bean, DescriptiveDocumentType.NOTES );
 	}
-	static Object defineDoc(Scheme scheme, DescriptiveBean bean, DescriptiveDocumentType documentType) {
-		Object proc = defineDoc0( scheme, documentType, bean.format(), bean.getName(), bean.getNames() );
-		SchemeUtils.setDescriptionBean( proc, bean );
-		return proc;
+	static Object defineDoc(Environment env, DescriptiveBean bean, DescriptiveDocumentType documentType) {
+		return documentType.defineDoc( env, bean );
 	}
-	
-	//		static Procedure proc_defineDocument = eval( lis( "lambda", lis("rt"),   ) );   
-	public static Object defineDoc0( Scheme scheme, DescriptiveDocumentType documentType, String description, String name, List<String> names )  {
-		logInfo( "DescriptiveDocumentType.defineDoc0()" + name );
-		synchronized ( scheme ) {
-			Object proc = SchemeUtils.getVar( scheme, name, null );
-			if ( proc == null ) {
-				SchemeUtils.logWarn( "setDocumentInitializer: " + name + " was not found." );
-				proc = new DescriptiveHelpProcedure( name );
-				SchemeUtils.defineVar( scheme, proc, name );
-			}
-			logInfo( "setting description on '" + name + "'" + " " + proc.toString() );
-//			logInfo( "description" );
-//			logInfo( description );
-			SchemeUtils.setDescription( proc, description );
-			addDocumentList( 
-				scheme.getEnvironment(),
-				documentType,
-				SchemeUtils.stringListToSymbolList( names ), 
-				proc );
-			
+	public Object defineDoc( Environment env, DescriptiveBean bean ) {
+		synchronized ( Language.getDefaultLanguage() ) {
+			Object proc = defineDoc0( env, this, bean.format(), bean.getName(), bean.getNames() );
+			SchemeUtils.setDescriptionBean( proc, bean );
 			return proc;
 		}
+	}
+
+	//		static Procedure proc_defineDocument = eval( lis( "lambda", lis("rt"),   ) );   
+	public static Object defineDoc0( Environment env, DescriptiveDocumentType documentType, String description, String name, List<String> names )  {
+		logInfo( "DescriptiveDocumentType.defineDoc0()" + name );
+		Object proc = SchemeUtils.getVar( name, null );
+		if ( proc == null ) {
+			SchemeUtils.logWarn( "setDocumentInitializer: " + name + " was not found." );
+			proc = new DescriptiveHelpProcedure( name );
+			SchemeUtils.defineVar( proc, name );
+		}
+		logInfo( "setting description on '" + name + "'" + " " + proc.toString() );
+		//			logInfo( "description" );
+		//			logInfo( description );
+		SchemeUtils.setDescription( proc, description );
+		addDocumentList(
+			env,
+			documentType,
+			SchemeUtils.stringListToSymbolList( names ), 
+			proc );
+		
+		return proc;
 	}
 	
 }
