@@ -1349,14 +1349,14 @@ public class KawaPad extends JFrame {
 	public static final String prettify( Collection<String> lispWords, String text  ) {
 		return SimpleSchemePrettifier.prettify( lispWords, text );
 	}
-	public static final String prettify( Scheme scheme, String text ) {
-		return prettify( getLispWords0( scheme ), text );
+	public static final String prettify( Environment env, String text ) {
+		return prettify( getLispWords0( env ), text );
 	}
 	public final String prettify( String text ) {
 		return schemeSecretary.executeSecretarially( new SecretaryMessage.NoThrow<Scheme, String>() {
 			@Override
 			public String execute0( Scheme scheme, Object[] args ) {
-				return prettify( scheme, text );
+				return prettify( scheme.getEnvironment(), text );
 			}
 		}, text );
 	}
@@ -1388,15 +1388,15 @@ public class KawaPad extends JFrame {
 		return schemeSecretary.executeSecretarially( new SecretaryMessage.NoThrow<Scheme, Collection<String>>() {
 			@Override
 			public Collection<String> execute0(Scheme scheme, Object[] args) {
-				return getLispWords0( scheme );
+				return getLispWords0( scheme.getEnvironment() );
 			}
 		});
 	}
 
-	public static Collection<String> getLispWords0( Scheme scheme ) {
+	public static Collection<String> getLispWords0( Environment env ) {
 		Collection<String> lispWords = FALLBACK_LISP_WORDS;
 		try {
-			Object object = scheme.getEnvironment().get( Symbol.valueOf("lisp-words") );
+			Object object = env.get( Symbol.valueOf("lisp-words") );
 			if ( object instanceof Pair ) {
 				Pair p = (Pair) object;
 				lispWords = SchemeUtils.<Object,String>convertList( p, (o)->{
@@ -1595,13 +1595,13 @@ public class KawaPad extends JFrame {
 			SchemeUtils.defineVar(new Procedure1() {
 				@Override
 				public Object apply1(Object arg1 ) throws Throwable {
-					return prettify( scheme, SchemeUtils.anyToString(SchemeUtils.prettyPrint(arg1)));
+					return prettify( scheme.getEnvironment(), SchemeUtils.anyToString(SchemeUtils.prettyPrint(arg1)));
 				}
 			}, "pretty-print");
 			SchemeUtils.defineVar(new Procedure1() {
 				@Override
 				public Object apply1(Object arg1 ) throws Throwable {
-					return prettify( scheme, SchemeUtils.anyToString(arg1));
+					return prettify( scheme.getEnvironment(), SchemeUtils.anyToString(arg1));
 				}
 			}, "prettify");
 

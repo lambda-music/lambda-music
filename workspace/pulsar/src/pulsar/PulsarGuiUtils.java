@@ -736,7 +736,7 @@ public class PulsarGuiUtils {
 					return pulsar.getSchemeSecretary().executeSecretarially( new SecretaryMessage.NoThrow<Scheme, String>() {
 						@Override
 						public String execute0(Scheme scheme, Object[] args) {
-							return KawaPad.prettify( scheme, userText );
+							return KawaPad.prettify( scheme.getEnvironment(), userText );
 						}
 					},Invokable.NOARG) ;
 

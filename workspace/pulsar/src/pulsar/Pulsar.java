@@ -350,6 +350,7 @@ public final class Pulsar extends Metro {
 			@Override
 			public void execute0( Scheme scheme, Object[] args ) {
 				logInfo( "Pulsar#invokeLater()" + r );
+				SchemeSecretary.initializeSchemeForCurrentThreadStatic( scheme );
 				r.run();
 			}
 		}, Invokable.NOARG );
