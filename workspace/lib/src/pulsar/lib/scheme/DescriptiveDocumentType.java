@@ -92,7 +92,7 @@ public enum DescriptiveDocumentType {
 		return getDocumentList( env, this );
 	}
 	private static LList getDocumentList( Environment env, DescriptiveDocumentType type ) {
-		synchronized ( env ) {
+		synchronized ( Language.getDefaultLanguage() ) {
 			Pair rootCons = getRootCons( env, type.getSymbol() );
 			return (LList) rootCons.getCdr();
 		}
