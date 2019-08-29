@@ -1,3 +1,12 @@
+(help notation)
+
+(make-help  '((names "notation" "n" ) 
+              (params
+                ("arg" "any" #f #t "see description "))
+              (returns "::notation" )
+              (short-description "<name/> creates a notation or a list of notations. " )
+              (long-description  "TODO description" )))
+
 (#|
    ========== THE MANUAL OF PULSAR LISP SCHEME MUSIC SEQUENCER =========
    

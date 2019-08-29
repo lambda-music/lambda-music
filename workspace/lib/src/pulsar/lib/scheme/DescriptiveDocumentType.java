@@ -136,8 +136,9 @@ public enum DescriptiveDocumentType {
 				proc = new DescriptiveHelpProcedure( name );
 				SchemeUtils.defineVar( scheme, proc, name );
 			}
-			logInfo( "description" );
-			logInfo( description );
+			logInfo( "setting description on '" + name + "'" + " " + proc.toString() );
+//			logInfo( "description" );
+//			logInfo( description );
 			SchemeUtils.setDescription( proc, description );
 			addDocumentList( 
 				scheme.getEnvironment(),

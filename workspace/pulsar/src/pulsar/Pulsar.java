@@ -2179,7 +2179,9 @@ public final class Pulsar extends Metro {
 							bean.addParameter( 
 								SchemeUtils.toString(l3.get( 0 )) , // names
 								SchemeUtils.toString(l3.get( 1 )), // type, 
-								SchemeUtils.toString(l3.get( 2 )), // defaultValue,
+								Boolean.FALSE.equals( l3.get( 2 ) ) ?
+											null :
+											SchemeUtils.toString(l3.get( 2 )), // defaultValue,
 								SchemeUtils.toBoolean( l3.get(3 )), // isVariable,
 								SchemeUtils.toString(l3.get( 4 )) //description );
 								);
@@ -2210,9 +2212,9 @@ public final class Pulsar extends Metro {
 					" "
 					+ "The ||content|| argument is the content of the reference manual. The value is "
 					+ "an association list contains various data. \n\n"
-					+ "    '((name \"foo-bar\" \"fb\") \n"
+					+ "    '((names \"foo-bar\" \"fb\") \n"
 					+ "      (params\n"
-					+ "         (\"param-name\" \"param-type\" \"default-value\" \"#t if variable-length\" \"description\") \n"
+					+ "         (\"param-name\" \"param-type\" \"default-value or #f if no-default\" \"#t if variable-length\" \"description\") \n"
 					+ "            ...\n"
 					+ "       )\n"
 					+ "      (returns \"return-type\" )\n"
