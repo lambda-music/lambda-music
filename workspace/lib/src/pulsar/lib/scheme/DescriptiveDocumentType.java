@@ -113,17 +113,14 @@ public enum DescriptiveDocumentType {
 		}
 	}
 
-	public Object defineDoc( Scheme scheme, DescriptiveBean bean ) {
-		return defineDoc( scheme.getEnvironment(), bean, this );
-	}
 	public static Object defineProcDoc( Scheme scheme, DescriptiveBean bean ) {
-		return defineDoc( scheme.getEnvironment(), bean, DescriptiveDocumentType.PROCS );
+		return DescriptiveDocumentType.PROCS.defineDoc( scheme, bean );
 	}
 	public static Object defineNoteDoc( Scheme scheme, DescriptiveBean bean ) {
-		return defineDoc( scheme.getEnvironment(), bean, DescriptiveDocumentType.NOTES );
+		return DescriptiveDocumentType.NOTES.defineDoc( scheme, bean );
 	}
-	static Object defineDoc(Environment env, DescriptiveBean bean, DescriptiveDocumentType documentType) {
-		return documentType.defineDoc( env, bean );
+	public Object defineDoc( Scheme scheme, DescriptiveBean bean ) {
+		return this.defineDoc( scheme.getEnvironment(), bean );
 	}
 	public Object defineDoc( Environment env, DescriptiveBean bean ) {
 		synchronized ( Language.getDefaultLanguage() ) {

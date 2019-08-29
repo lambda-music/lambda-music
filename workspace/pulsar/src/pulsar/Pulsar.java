@@ -2193,7 +2193,7 @@ public final class Pulsar extends Metro {
 						throw new IllegalArgumentException( "unknown field name " + car );
 					}
 				}
-				DescriptiveDocumentType.PROCS.defineDoc( scheme, bean );
+				DescriptiveDocumentType.PROCS.defineDoc( scheme.getEnvironment(), bean );
 				return Values.noArgs;
 			}
 		}, "make-help");
