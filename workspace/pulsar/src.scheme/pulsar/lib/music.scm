@@ -422,7 +422,9 @@
                 ("arg" "any" #f #t "see description "))
               (returns "::notation" )
               (short-description "<name/> creates a notation or a list of notations. " )
-              (long-description  "TODO description" )))
+              (long-description  "This procedure is a tool which is designed to ease the process of building notation lists.  "
+                                 ""
+                                 )))
 
 ; (display (help notation))
 ; (newline)
@@ -1587,6 +1589,9 @@
                      v)
                    notes)
               notes))
+
+(define tra! (lambda (sca mov notes)
+               (sca! sca (mov! mov notes))))
 
 (define cpy (lambda args
                (if (= (length args) 0 )

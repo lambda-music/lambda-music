@@ -1,4 +1,20 @@
-(help notation)
+(mov! 10 (sca! 1/1
+      (notation velo: << (cl 0.5 ) pos: >> (iota 10) ))))
+
+
+(#|
+   ========== THE MANUAL OF PULSAR LISP SCHEME MUSIC SEQUENCER =========
+   
+   NAME: NOTATION
+   
+   SYNOPSIS: (notation|n [arg::any]...)::notation
+   
+   DESCRIPTION: notation creates a notation or a list of
+   notations. TODO description
+   
+   ======================================================================
+  |# help about-intro )
+
 
 (make-help  '((names "notation" "n" ) 
               (params

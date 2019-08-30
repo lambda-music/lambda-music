@@ -2140,9 +2140,15 @@ public final class Pulsar extends Metro {
 					} else if ( returns.equals( car ) ) {
 						bean.setReturnValueDescription( SchemeUtils.toString( ((Pair)cdr).getCar() ));
 					} else if ( shortDescription.equals( car ) ) {
-						bean.setShortDescription( SchemeUtils.toString( ((Pair)cdr).getCar() ));
+						bean.setShortDescription( SchemeUtils.toString(
+							String.join( "", 
+								SchemeUtils.anySchemeValueListToStringList(
+									((Pair)cdr)))));
 					} else if ( longDescription.equals( car ) ) {
-						bean.setLongDescription( SchemeUtils.toString( ((Pair)cdr).getCar() ));
+						bean.setLongDescription( SchemeUtils.toString( 
+							String.join( "", 
+								SchemeUtils.anySchemeValueListToStringList(
+									((Pair)cdr)))));
 					} else {
 						throw new IllegalArgumentException( "unknown field name " + car );
 					}

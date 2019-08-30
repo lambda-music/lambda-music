@@ -317,6 +317,9 @@ public class SchemeUtils {
 	public static List<String> symbolListToStringList(List p) {
 		return SchemeUtils.<Object,String>convertList((List<Object>)p, (v)->SchemeUtils.symbolToString(v) );
 	}
+	public static List<String> anySchemeValueListToStringList(List p) {
+		return SchemeUtils.<Object,String>convertList((List<Object>)p, (v)->SchemeUtils.anyToString(v) );
+	}
 
 	public static Symbol[] stringListToSymbolList( List<String> stringSymbols ) {
 		return stringListToSymbolList( stringSymbols.toArray( new String[ stringSymbols.size()]));
