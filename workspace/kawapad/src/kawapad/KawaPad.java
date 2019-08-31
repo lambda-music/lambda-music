@@ -274,10 +274,12 @@ public class KawaPad extends JFrame {
 		super.dispose();
 	}
 
-	
-	public class KawaPadTextPane extends JTextPane {
+	public static final KawaPane getKawaPane( ActionEvent e ) {
+		return ((KawaPane)e.getSource());
+	}
+	public class KawaPane extends JTextPane {
 		private KawaPad kawaPad;
-		public KawaPadTextPane( KawaPad kawaPad ) {
+		public KawaPane( KawaPad kawaPad ) {
 			super();
 			this.kawaPad = kawaPad;
 		}
@@ -417,9 +419,11 @@ public class KawaPad extends JFrame {
 		}
 	}
 
-	private final class InsertTextToTextPane implements Runnable {
+	private static final class InsertTextToTextPane implements Runnable {
+		private KawaPane textPane;
 		private final String result;
-		private InsertTextToTextPane( String result ) {
+		private InsertTextToTextPane( KawaPane textPane, String result ) {
+			this.textPane = textPane;
 			this.result = result;
 		}
 		
@@ -428,39 +432,41 @@ public class KawaPad extends JFrame {
 			try {
 				if ( textPane.getSelectedText() != null ) {
 					try {
-						getUndoManager().startGroup();
-						getUndoManager().setSuspended(true);
+//						getUndoManager().startGroup();
+//						getUndoManager().setSuspended(true);
 						int selectionEnd = textPane.getSelectionEnd();
 						textPane.getDocument().insertString( selectionEnd, result, null);
 						textPane.setSelectionEnd( selectionEnd + result.length() );
 						textPane.setSelectionStart(selectionEnd  );
 					} finally {
-						getUndoManager().setSuspended(false);
-						getUndoManager().startGroup();
+//						getUndoManager().setSuspended(false);
+//						getUndoManager().startGroup();
 					}
 				} else {
 					try {
-						getUndoManager().startGroup();
-						getUndoManager().setSuspended(true);
+						textPane.getKawaPad().getUndoManager().startGroup();
+						textPane.getKawaPad().getUndoManager().setSuspended(true);
 						int dot = textPane.getCaret().getDot();
 						textPane.getDocument().insertString( dot, result, null);
 						textPane.getCaret().moveDot(dot);
 					} finally {
-						getUndoManager().setSuspended(false);
-						getUndoManager().startGroup();
+						textPane.getKawaPad().getUndoManager().setSuspended(false);
+						textPane.getKawaPad().getUndoManager().startGroup();
 					}
 				}
 				logInfo( "InsertTextToTextPane() done" );
-				updateHighlightLater();
+				textPane.getKawaPad().updateHighlightLater();
 			} catch (BadLocationException e1) {
 				e1.printStackTrace();
 			}
 		}
 	}
 	
-	private final class ReplaceTextOnTextPane implements Runnable {
+	private static final class ReplaceTextOnTextPane implements Runnable {
+		private KawaPane textPane;
 		private final String result;
-		private ReplaceTextOnTextPane( String result ) {
+		private ReplaceTextOnTextPane( KawaPane textPane, String result ) {
+			this.textPane = textPane;
 			this.result = result;
 		}
 		
@@ -469,36 +475,38 @@ public class KawaPad extends JFrame {
 			try {
 				if ( textPane.getSelectedText() != null ) {
 					try {
-						getUndoManager().startGroup();
-						getUndoManager().setSuspended(true);
+//						getUndoManager().startGroup();
+						textPane.getKawaPad().getUndoManager().setSuspended(true);
 						textPane.replaceSelection( result );
 					} finally {
-						getUndoManager().setSuspended(false);
-						getUndoManager().startGroup();
+						textPane.getKawaPad().getUndoManager().setSuspended(false);
+						textPane.getKawaPad().getUndoManager().startGroup();
 					}
 				} else {
 					try {
-						getUndoManager().startGroup();
-						getUndoManager().setSuspended(true);
+//						textPane.getKawaPad().getUndoManager().startGroup();
+						textPane.getKawaPad().getUndoManager().setSuspended(true);
 						int dot = textPane.getCaret().getDot();
 						textPane.getDocument().insertString( dot, result, null);
 						textPane.getCaret().moveDot(dot);
 					} finally {
-						getUndoManager().setSuspended(false);
-						getUndoManager().startGroup();
+						textPane.getKawaPad().getUndoManager().setSuspended(false);
+						textPane.getKawaPad().getUndoManager().startGroup();
 					}
 				}
 				logInfo( "ReplaceTextOnTextPane() done" );
-				updateHighlightLater();
+				textPane.getKawaPad().updateHighlightLater();
 			} catch (BadLocationException e1) {
 				e1.printStackTrace();
 			}
 		}
 	}
 	
-	private final class ReplaceTextWithEntireBlockOnTextPane implements Runnable {
+	private static final class ReplaceTextWithEntireBlockOnTextPane implements Runnable {
+		private KawaPane textPane;
 		private final String result;
-		private ReplaceTextWithEntireBlockOnTextPane( String result ) {
+		private ReplaceTextWithEntireBlockOnTextPane( KawaPane textPane, String result ) {
+			this.textPane = textPane;
 			this.result = result;
 		}
 		
@@ -507,35 +515,35 @@ public class KawaPad extends JFrame {
 			try {
 				if ( textPane.getSelectedText() != null ) {
 					try {
-						getUndoManager().startGroup();
-						getUndoManager().setSuspended(true);
+//						textPane.getKawaPad().getUndoManager().startGroup();
+//						textPane.getKawaPad().getUndoManager().setSuspended(true);
 
 						// In order to avoid entering an infinite loop,
 						// we use /for/ loop instead of /while/ loop;
 						for ( int i=0; i<100; i++ ) {
-							if ( expandSelectedParentheses( textPane ) ) {
+							if ( textPane.getKawaPad().expandSelectedParentheses( textPane ) ) {
 								break;
 							}
 						}
 						textPane.replaceSelection( result );
 					} finally {
-						getUndoManager().setSuspended(false);
-						getUndoManager().startGroup();
+						textPane.getKawaPad().getUndoManager().setSuspended(false);
+						textPane.getKawaPad().getUndoManager().startGroup();
 					}
 				} else {
 					try {
-						getUndoManager().startGroup();
-						getUndoManager().setSuspended(true);
+//						textPane.getKawaPad().getUndoManager().startGroup();
+						textPane.getKawaPad().getUndoManager().setSuspended(true);
 						int dot = textPane.getCaret().getDot();
 						textPane.getDocument().insertString( dot, result, null);
 						textPane.getCaret().moveDot(dot);
 					} finally {
-						getUndoManager().setSuspended(false);
-						getUndoManager().startGroup();
+						textPane.getKawaPad().getUndoManager().setSuspended(false);
+						textPane.getKawaPad().getUndoManager().startGroup();
 					}
 				}
 				logInfo( "ReplaceTextWithEntireBlockOnTextPane() done" );
-				updateHighlightLater();
+				textPane.getKawaPad().updateHighlightLater();
 			} catch (BadLocationException e1) {
 				e1.printStackTrace();
 			}
@@ -549,7 +557,7 @@ public class KawaPad extends JFrame {
 		}
 		// CaretListener
 		public void caretUpdate(CaretEvent e) {
-			checkSelectionStack();
+			getParenthesisStack().checkSelectionStack();
 //			System.err.println("PulsarScratchPadTextPaneController.caretUpdate()");
 			if ( ! getUndoManager().isSuspended() ) {
 				updateHighlightParenthesesLater();
@@ -608,9 +616,14 @@ public class KawaPad extends JFrame {
 		return KawaPadHighlighter.lispWordToPatternString( getLispWords() ); 
 	}
 	public void updateHighlight() {
-		KawaPadHighlighter.resetStyles( textPane );
+		try {
+			getUndoManager().setSuspended( true );
+			KawaPadHighlighter.resetStyles( textPane );
 //		KawaPadHighlighter.highlightSyntax( textPane, getLispWordPatternString() );
-		KawaPadHighlighter.highlightSyntax( textPane, getLispWords() );
+			KawaPadHighlighter.highlightSyntax( textPane, getLispWords() );
+		} finally { 
+			getUndoManager().setSuspended( false );
+		}
 	}
 	public void highlightMatchningParentheses() {
 		KawaPadHighlighter.highlightMatchingParenthesis( textPane, textPane.getCaretPosition() );
@@ -677,12 +690,14 @@ public class KawaPad extends JFrame {
     	}
     }
 
-	final class EvaluateRunnable implements Runnable {
+	static final class EvaluateRunnable implements Runnable {
+		KawaPane textPane;
 		String schemeScript;
 		boolean insertText;
 		boolean replaceText;
-		public EvaluateRunnable(String schemeScript, boolean insertText, boolean replaceText ) {
+		public EvaluateRunnable(KawaPane textPane, String schemeScript, boolean insertText, boolean replaceText ) {
 			super();
+			this.textPane = textPane;
 			this.schemeScript = schemeScript;
 			this.insertText = insertText;
 			this.replaceText = replaceText;
@@ -691,16 +706,20 @@ public class KawaPad extends JFrame {
 		public void run() {
 			logInfo( schemeScript );
 			HashMap<String,Object> variables = new HashMap<>();
-			variables.put( "frame", KawaPad.this );
-			ExecuteSchemeResult result = SchemeUtils.evaluateScheme( schemeSecretary, variables, schemeScript, "scratchpad" );
+			variables.put( "frame", textPane.getKawaPad() );
+			ExecuteSchemeResult result = SchemeUtils.evaluateScheme( textPane.getKawaPad().schemeSecretary, variables, schemeScript, "scratchpad" );
 
 			if ( insertText || ! result.succeeded() ) {
 				if ( replaceText && result.succeeded() ) {
 					if ( result.isDocument )  {
 						logWarn( "**KAWAPAD_PAGE**" );
-						SwingUtilities.invokeLater( new ReplaceTextWithEntireBlockOnTextPane( "(" + result.result.replaceFirst( "\n$", "" ) +" )" ) );
+						SwingUtilities.invokeLater( new ReplaceTextWithEntireBlockOnTextPane(
+							textPane,
+							"(" + result.result.replaceFirst( "\n$", "" ) +" )" ) );
 					} else {
-						SwingUtilities.invokeLater( new ReplaceTextOnTextPane( result.result ) );
+						SwingUtilities.invokeLater( new ReplaceTextOnTextPane(
+							textPane,
+							result.result ) );
 					}
 				} else {
 					String resultString = SchemeUtils.formatResult( result.result ); 
@@ -709,7 +728,7 @@ public class KawaPad extends JFrame {
 						resultString = "\n" + SchemeUtils.formatResult( result.result ); 
 					}
 					logInfo( resultString );
-					SwingUtilities.invokeLater( new InsertTextToTextPane( resultString ) );
+					SwingUtilities.invokeLater( new InsertTextToTextPane( textPane, resultString ) );
 				}
 			}
 		}
@@ -752,12 +771,16 @@ public class KawaPad extends JFrame {
 						@Override
 						public void run() {
 							String schemeScript2 = getSelectedText( textPane );
-							threadManager.startScratchPadThread( new EvaluateRunnable( schemeScript2,  true, true ) );
+							threadManager.startScratchPadThread(
+								new EvaluateRunnable(
+									getKawaPane( event ), schemeScript2,  true, true ) );
 						}
 					});
 
 				} else {
-					threadManager.startScratchPadThread( new EvaluateRunnable( schemeScript,  true, true ) );
+					threadManager.startScratchPadThread( 
+						new EvaluateRunnable( getKawaPane( event ),
+							schemeScript,  true, true ) );
 				}
 			}
 
@@ -774,7 +797,9 @@ public class KawaPad extends JFrame {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			//	JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
-			threadManager.startScratchPadThread( new EvaluateRunnable( getTextDefault(), true, false ) );
+			threadManager.startScratchPadThread( new EvaluateRunnable(
+				getKawaPane(e),
+				getTextDefault(), true, false ) );
 		}
 		{
 			putValue( Action2.NAME, "Evaluate" );
@@ -788,7 +813,7 @@ public class KawaPad extends JFrame {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			//	JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
-			threadManager.startScratchPadThread( new EvaluateRunnable( getTextDefault(), false, false ) );
+			threadManager.startScratchPadThread( new EvaluateRunnable( getKawaPane( e ), getTextDefault(), false, false ) );
 		}
 		{
 			putValue( Action2.NAME, "Run" );
@@ -808,7 +833,7 @@ public class KawaPad extends JFrame {
 //		
 //		// ??? IS THIS NECESSARY?
 //		textPane.getActionMap();
-		SwingUtilities.invokeLater( new InsertTextToTextPane(t) );
+		SwingUtilities.invokeLater( new InsertTextToTextPane( textPane, t ) );
 	}
 	public void setNewText( String t ) throws IOException {
 		if ( ! confirmSave( ConfirmType.OPEN_FILE ) ) {
@@ -1015,39 +1040,22 @@ public class KawaPad extends JFrame {
 		}
 	};
 	
-	class ParenthesisStackElement {
-		int mark;
-		int dot;
-		public ParenthesisStackElement(int mark, int dot) {
-			super();
-			this.mark = mark;
-			this.dot = dot;
-		}
+	private final KawaPadParenthesisStack parenthesisStack = new KawaPadParenthesisStack();
+	public KawaPadParenthesisStack getParenthesisStack() {
+		return parenthesisStack;
 	}
 	
-	transient boolean parenthesisStackLocked = false;
-	ArrayDeque<ParenthesisStackElement> parenthesisStack = new ArrayDeque<>();
-	void checkSelectionStack() {
-		synchronized ( parenthesisStack ) {
-			if ( ! parenthesisStackLocked ) {
-				parenthesisStack.clear();
-			}
-		}
-	}
-
 	class ParenthesisSelectAction extends TextAction {
 		ParenthesisSelectAction(String name) {
 			super(name);
 		}
-		
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			JTextPane textPane = (JTextPane) getTextComponent(e);
-			expandSelectedParentheses( textPane );
+			expandSelectedParentheses( getKawaPane(e) );
 		}
 	}
 	public static final int THE_FINAL_CORRECTION = 1;
-	boolean expandSelectedParentheses(JTextPane textPane) {
+	boolean expandSelectedParentheses(KawaPane textPane) {
 		String text  = textPane.getText();
 		Caret caret  = textPane.getCaret();
 		int currDot  = caret.getDot();
@@ -1101,15 +1109,15 @@ public class KawaPad extends JFrame {
 			posR = lookupCorrespondingParenthesis( right_leftString + "(" + right_rightString, rightPos );
 			
 			if ( 0<=posL && 0<=posR ) {
-				synchronized ( parenthesisStack ) {
+				synchronized ( getParenthesisStack() ) {
 					try {
-						parenthesisStackLocked = true;
+						getParenthesisStack().setLocked( true );
 						caret.setDot(posL);
 						caret.moveDot(posR-diff + THE_FINAL_CORRECTION);
-						parenthesisStack.push(new ParenthesisStackElement(currMark, currDot));
+						getParenthesisStack().push( currMark, currDot );
 						return true;
 					} finally {
-						parenthesisStackLocked = false;
+						getParenthesisStack().setLocked( false );
 					}
 				}
 			}
@@ -1120,15 +1128,15 @@ public class KawaPad extends JFrame {
 			posL = lookupCorrespondingParenthesis( left_leftString + "(\"" + left_rightString, leftPos   );
 			posR = lookupCorrespondingParenthesis( right_leftString + "\")" + right_rightString, rightPos +1 );
 			if ( 0<=posL && 0<=posR ) {
-				synchronized ( parenthesisStack ) {
+				synchronized ( getParenthesisStack() ) {
 					try {
-						parenthesisStackLocked = true;
+						getParenthesisStack().setLocked( true );
 						caret.setDot(posL-diff);
 						caret.moveDot(posR + THE_FINAL_CORRECTION);
-						parenthesisStack.push(new ParenthesisStackElement(currMark, currDot));
+						getParenthesisStack().push( currMark, currDot );
 						return true;
 					} finally {
-						parenthesisStackLocked = false;
+						getParenthesisStack().setLocked( false );
 					}
 				}
 			}
@@ -1171,15 +1179,15 @@ public class KawaPad extends JFrame {
 				posR = WordJumpAction.lookup( rightPos, text ,  1 );
 				
 				if ( 0<=posL && 0<=posR ) {
-					synchronized ( parenthesisStack ) {
+					synchronized ( getParenthesisStack() ) {
 						try {
-							parenthesisStackLocked = true;
+							getParenthesisStack().setLocked( true );
 							caret.setDot(posL);
 							caret.moveDot(posR);
-							parenthesisStack.push(new ParenthesisStackElement(currMark, currDot));
+							getParenthesisStack().push(currMark, currDot);
 							return;
 						} finally {
-							parenthesisStackLocked = false;
+							getParenthesisStack().setLocked( false );
 						}
 					}
 				}
@@ -1201,21 +1209,21 @@ public class KawaPad extends JFrame {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			JTextPane textPane = (JTextPane) getTextComponent(e);
-			synchronized ( parenthesisStack ) {
+			synchronized ( getParenthesisStack() ) {
 				try {
-					parenthesisStackLocked = true;
+					getParenthesisStack().setLocked( true );
 					if ( textPane.getSelectedText() != null ) {
-						if ( ! parenthesisStack.isEmpty() ) {
-							ParenthesisStackElement elem = parenthesisStack.pop();
+						if ( ! getParenthesisStack().isEmpty() ) {
+							KawaPadParenthesisStack.Element elem = getParenthesisStack().pop();
 							Caret caret = textPane.getCaret();
 							caret.setDot( elem.mark );
 							caret.moveDot( elem.dot );
 						}
 					} else {
-						parenthesisStack.clear();
+						getParenthesisStack().clear();
 					}
 				} finally {
-					parenthesisStackLocked = false;
+					getParenthesisStack().setLocked( false );
 				}
 			}
 		}
@@ -1669,7 +1677,7 @@ public class KawaPad extends JFrame {
 	}
 	
 	protected Container scratchPadRoot;
-	protected JTextPane textPane;
+	protected KawaPane textPane;
 	protected PulsarScratchPadListener textPaneController;
 	protected JScrollPane scrollPane; 
 	protected JMenuBar menuBar;
@@ -1687,7 +1695,7 @@ public class KawaPad extends JFrame {
 	}
 	
 	{
-		textPane = new KawaPadTextPane( this ) {
+		textPane = new KawaPane( this ) {
 			// Special thanks go to tips4java
 			// https://tips4java.wordpress.com/2009/01/25/no-wrap-text-pane/
 			public boolean getScrollableTracksViewportWidth() {
@@ -1795,10 +1803,10 @@ public class KawaPad extends JFrame {
 	{
 		// https://stackoverflow.com/questions/2547404/using-undo-and-redo-for-jtextarea
 //		undoManager = new InsignificantUndoManager();
-//		undoManager = new LazyGroupedUndoManager();
-//		undoManager = new SimpleCompoundUndoManager();
+//		this.undoManager = new LazyGroupedUndoManager();
+//		this.undoManager = new SimpleCompoundUndoManager();
 		this.undoManager = new CompoundGroupedUndoManager();
-//		undoManager = new OriginalCompoundUndoManager( textPane );
+//		this.undoManager = new OriginalCompoundUndoManager( textPane );
 	}
 	public GroupedUndoManager getUndoManager() {
 		return undoManager;
@@ -2170,7 +2178,7 @@ public class KawaPad extends JFrame {
 				if ( foundSubstr == null ) {
 					Matcher m = NUMBER_PATTERN.matcher( targetStr );
 					if ( m.find() ) {
-						Scheme scheme = ((KawaPadTextPane)target).getKawaPad().schemeSecretary.getExecutive();
+						Scheme scheme = ((KawaPane)target).getKawaPad().schemeSecretary.getExecutive();
 						
 						synchronized ( scheme ) {
 							try {
@@ -2216,7 +2224,7 @@ public class KawaPad extends JFrame {
 				}
 			}
 			
-			KawaPad kawaPad = ((KawaPadTextPane)target).getKawaPad();
+			KawaPad kawaPad = ((KawaPane)target).getKawaPad();
 			
 			if ( foundSubstr != null ) {
 				kawaPad.getUndoManager().startGroup();
@@ -2279,7 +2287,7 @@ public class KawaPad extends JFrame {
 				if ( foundSubstr == null ) {
 					Matcher m = NUMBER_PATTERN.matcher( targetStr );
 					if ( m.find() ) {
-						Scheme scheme = ((KawaPadTextPane)target).getKawaPad().schemeSecretary.getExecutive();
+						Scheme scheme = ((KawaPane)target).getKawaPad().schemeSecretary.getExecutive();
 						
 						synchronized ( scheme ) {
 							try {
@@ -2341,7 +2349,7 @@ public class KawaPad extends JFrame {
 				}
 			}
 			
-			KawaPad kawaPad = ((KawaPadTextPane)target).getKawaPad();
+			KawaPad kawaPad = ((KawaPane)target).getKawaPad();
 			
 			if ( foundSubstr != null ) {
 				kawaPad.getUndoManager().startGroup();
@@ -2488,7 +2496,7 @@ public class KawaPad extends JFrame {
 	 * @param s
 	 *     the text to show on the editor.
 	 */
-	private void setTextProc(File filePath, String s) {
+	void setTextProc( File filePath, String s ) {
 //		this.undoManager.discardAllEdits();
 		this.textPane.setText( s );
 		this.filePath = filePath;
