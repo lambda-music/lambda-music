@@ -213,7 +213,7 @@ public class PulsarGui {
 						pb_position.revalidate();
 					}
 				}
-				return Values.noArgs;
+				return Values.empty;
 			}
 		});
 	}

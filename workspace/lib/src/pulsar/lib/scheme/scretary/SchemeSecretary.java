@@ -212,6 +212,11 @@ public class SchemeSecretary extends Secretary<Scheme> implements ShutdownHook {
 		} );
 	}
 
+	@Override
+	public Scheme getExecutive() {
+		// TODO Auto-generated method stub
+		return super.getExecutive();
+	}
 
 	static class FinalizerEntry {
 		Object parent;

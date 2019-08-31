@@ -880,7 +880,8 @@ NOTATION
     (notation|n [arg::any]...)::notation
 
 ### DESCRIPTION ###
-notation creates a notation or a list of notations. TODO description
+notation creates a notation or a list of notations. This procedure is a tool
+which is designed to ease the process of building notation lists.
 
 
 

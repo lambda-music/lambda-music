@@ -1,5 +1,10 @@
 (mov! 10 (sca! 1/1
-      (notation velo: << (cl 0.5 ) pos: >> (iota 10) ))))
+      (notation velo: << (cl 0.6 ) pos: >> (iota 16) ))))
+
+(add-incremental-keyword "hedd" "bars" )
+  hedd
+
+    
 
 
 (#|
@@ -68,14 +73,20 @@
 (hello)
 
 (make-help
- '((names ("hello" "hel" ))
+ hello
+ '((names "hello" "hel" )
    (params
+    ("par0" "number" "1" #f "great description")
     )
    (returns "::void")
    (short-description "foo" )
    (long-description "bar")))
 
+
+
 (help hello)
+
+
                      
 
 

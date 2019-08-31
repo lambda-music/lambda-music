@@ -1834,7 +1834,7 @@ public final class Pulsar extends Metro {
 				return new Procedure0() {
 					public Object apply0() throws Throwable {
 						runnable.run();
-						return Values.noArgs;
+						return Values.empty;
 					};
 				};
 			}
@@ -2154,7 +2154,7 @@ public final class Pulsar extends Metro {
 					}
 				}
 				DescriptiveDocumentType.PROCS.defineDoc( env, arg1, bean );
-				return Values.noArgs;
+				return Values.empty;
 			}
 		}, "make-help");
 		

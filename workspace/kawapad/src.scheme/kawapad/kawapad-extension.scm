@@ -200,11 +200,12 @@
                                      (invoke-special javax.swing.text.TextAction (this) '*init* name)
                                      (set! with-select with-select-0)
                                      ((this):putValue javax.swing.Action:ACCELERATOR_KEY (javax.swing.KeyStroke:getKeyStroke 
-                                                                                           java.awt.event.KeyEvent:VK_D ; modified (Tue, 13 Aug 2019 16:36:55 +0900)
+                                                                                           java.awt.event.KeyEvent:VK_J ; modified (Tue, 13 Aug 2019 16:36:55 +0900)
                                                                                            (if (not with-select)        ; modified (Tue, 13 Aug 2019 16:36:55 +0900)
                                                                                              (+ java.awt.event.KeyEvent:CTRL_MASK
                                                                                                 java.awt.event.KeyEvent:SHIFT_MASK )
                                                                                              java.awt.event.KeyEvent:CTRL_MASK ))))
+                                                                                           ; modified VK_D -> VK_J on (Sat, 31 Aug 2019 01:48:46 +0900)
                                     (with-select ::boolean 5)
 
                                     ;((*init*) #!void)

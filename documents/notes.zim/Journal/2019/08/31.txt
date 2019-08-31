@@ -1,0 +1,18 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2019-08-31T05:50:57+09:00
+
+====== Saturday 31 Aug 2019 ======
+
+1. change kawapad's ctrl-d to ctrl-j.
+2. ctrl-d to decrement / ctrl-g   to increment.
+	a. ctrl-f is reserved to find string
+	b. TextualIncrementAction
+		3. Split JTextArea and JFrame on KawaPad.
+		4. Remove the dependency between the kawaPad instance and the actions.
+		5. Categorize these functions and pack them into modules.
+	c. Remove SchemeSecretary
+		1. Separate the message queue part and the initializer part.
+		2. remove the messate queue part.
+3. alt-left/right to jump-select / when it is selected, corresponding parenthesis jump and jump-select
+4. alt-down to shrink the selection

@@ -44,11 +44,14 @@ import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -91,6 +94,7 @@ import gnu.mapping.Procedure1;
 import gnu.mapping.Procedure2;
 import gnu.mapping.Procedure3;
 import gnu.mapping.Symbol;
+import gnu.mapping.Values;
 import kawa.standard.Scheme;
 import kawapad.SimpleSchemeParser.ParserState;
 import kawapad.lib.CompoundGroupedUndoManager;
@@ -271,7 +275,18 @@ public class KawaPad extends JFrame {
 	}
 
 	
+	public class KawaPadTextPane extends JTextPane {
+		private KawaPad kawaPad;
+		public KawaPadTextPane( KawaPad kawaPad ) {
+			super();
+			this.kawaPad = kawaPad;
+		}
+		public KawaPad getKawaPad() {
+			return kawaPad;
+		}
+	}
 
+	
 	public final AbstractAction NEW_SCRATCHPAD_ACTION = new AbstractAction() {
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -413,26 +428,26 @@ public class KawaPad extends JFrame {
 			try {
 				if ( textPane.getSelectedText() != null ) {
 					try {
-						undoManager.startGroup();
-						undoManager.setSuspended(true);
+						getUndoManager().startGroup();
+						getUndoManager().setSuspended(true);
 						int selectionEnd = textPane.getSelectionEnd();
 						textPane.getDocument().insertString( selectionEnd, result, null);
 						textPane.setSelectionEnd( selectionEnd + result.length() );
 						textPane.setSelectionStart(selectionEnd  );
 					} finally {
-						undoManager.setSuspended(false);
-						undoManager.startGroup();
+						getUndoManager().setSuspended(false);
+						getUndoManager().startGroup();
 					}
 				} else {
 					try {
-						undoManager.startGroup();
-						undoManager.setSuspended(true);
+						getUndoManager().startGroup();
+						getUndoManager().setSuspended(true);
 						int dot = textPane.getCaret().getDot();
 						textPane.getDocument().insertString( dot, result, null);
 						textPane.getCaret().moveDot(dot);
 					} finally {
-						undoManager.setSuspended(false);
-						undoManager.startGroup();
+						getUndoManager().setSuspended(false);
+						getUndoManager().startGroup();
 					}
 				}
 				logInfo( "InsertTextToTextPane() done" );
@@ -454,23 +469,23 @@ public class KawaPad extends JFrame {
 			try {
 				if ( textPane.getSelectedText() != null ) {
 					try {
-						undoManager.startGroup();
-						undoManager.setSuspended(true);
+						getUndoManager().startGroup();
+						getUndoManager().setSuspended(true);
 						textPane.replaceSelection( result );
 					} finally {
-						undoManager.setSuspended(false);
-						undoManager.startGroup();
+						getUndoManager().setSuspended(false);
+						getUndoManager().startGroup();
 					}
 				} else {
 					try {
-						undoManager.startGroup();
-						undoManager.setSuspended(true);
+						getUndoManager().startGroup();
+						getUndoManager().setSuspended(true);
 						int dot = textPane.getCaret().getDot();
 						textPane.getDocument().insertString( dot, result, null);
 						textPane.getCaret().moveDot(dot);
 					} finally {
-						undoManager.setSuspended(false);
-						undoManager.startGroup();
+						getUndoManager().setSuspended(false);
+						getUndoManager().startGroup();
 					}
 				}
 				logInfo( "ReplaceTextOnTextPane() done" );
@@ -492,8 +507,8 @@ public class KawaPad extends JFrame {
 			try {
 				if ( textPane.getSelectedText() != null ) {
 					try {
-						undoManager.startGroup();
-						undoManager.setSuspended(true);
+						getUndoManager().startGroup();
+						getUndoManager().setSuspended(true);
 
 						// In order to avoid entering an infinite loop,
 						// we use /for/ loop instead of /while/ loop;
@@ -504,19 +519,19 @@ public class KawaPad extends JFrame {
 						}
 						textPane.replaceSelection( result );
 					} finally {
-						undoManager.setSuspended(false);
-						undoManager.startGroup();
+						getUndoManager().setSuspended(false);
+						getUndoManager().startGroup();
 					}
 				} else {
 					try {
-						undoManager.startGroup();
-						undoManager.setSuspended(true);
+						getUndoManager().startGroup();
+						getUndoManager().setSuspended(true);
 						int dot = textPane.getCaret().getDot();
 						textPane.getDocument().insertString( dot, result, null);
 						textPane.getCaret().moveDot(dot);
 					} finally {
-						undoManager.setSuspended(false);
-						undoManager.startGroup();
+						getUndoManager().setSuspended(false);
+						getUndoManager().startGroup();
 					}
 				}
 				logInfo( "ReplaceTextWithEntireBlockOnTextPane() done" );
@@ -536,7 +551,7 @@ public class KawaPad extends JFrame {
 		public void caretUpdate(CaretEvent e) {
 			checkSelectionStack();
 //			System.err.println("PulsarScratchPadTextPaneController.caretUpdate()");
-			if ( ! undoManager.isSuspended() ) {
+			if ( ! getUndoManager().isSuspended() ) {
 				updateHighlightParenthesesLater();
 				eventHandlers.invokeEventHandler( KawaPad.this, EventHandlers.CARET,  KawaPad.this);
 				eventHandlers.invokeEventHandler( KawaPad.this, EventHandlers.CHANGE,  KawaPad.this);
@@ -546,7 +561,7 @@ public class KawaPad extends JFrame {
 		public void insertUpdate(DocumentEvent e) {
 			fileModified = true;
 //			System.err.println("PulsarScratchPadTextPaneController.insertUpdate()");
-			if ( ! undoManager.isSuspended() ) {
+			if ( ! getUndoManager().isSuspended() ) {
 				updateHighlightLater();
 				eventHandlers.invokeEventHandler( KawaPad.this, EventHandlers.INSERT,  KawaPad.this);
 				eventHandlers.invokeEventHandler( KawaPad.this, EventHandlers.CHANGE,  KawaPad.this);
@@ -555,7 +570,7 @@ public class KawaPad extends JFrame {
 		public void removeUpdate(DocumentEvent e) {
 			fileModified = true;
 //			System.err.println("PulsarScratchPadTextPaneController.removeUpdate()");
-			if ( ! undoManager.isSuspended() ) {
+			if ( ! getUndoManager().isSuspended() ) {
 				updateHighlightLater();
 				eventHandlers.invokeEventHandler( KawaPad.this, EventHandlers.REMOVE,  KawaPad.this);
 				eventHandlers.invokeEventHandler( KawaPad.this, EventHandlers.CHANGE,  KawaPad.this);
@@ -564,7 +579,7 @@ public class KawaPad extends JFrame {
 		public void changedUpdate(DocumentEvent e) {
 //			fileModified = true;
 //			System.err.println("PulsarScratchPadTextPaneController.changedUpdate() : ignored");
-			if ( ! undoManager.isSuspended() ) {
+			if ( ! getUndoManager().isSuspended() ) {
 				eventHandlers.invokeEventHandler( KawaPad.this, EventHandlers.ATTRIBUTE,  KawaPad.this);
 				eventHandlers.invokeEventHandler( KawaPad.this, EventHandlers.CHANGE,  KawaPad.this);
 			}
@@ -1292,8 +1307,8 @@ public class KawaPad extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			//	JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
 			try {
-				undoManager.startGroup();
-				undoManager.setSuspended(true);
+				getUndoManager().startGroup();
+				getUndoManager().setSuspended(true);
 				formatProc( textPane, new TextFilter() {
 					@Override
 					String process(String text) {
@@ -1301,8 +1316,8 @@ public class KawaPad extends JFrame {
 					}
 				});
 			} finally {
-				undoManager.setSuspended(false);
-				undoManager.startGroup();
+				getUndoManager().setSuspended(false);
+				getUndoManager().startGroup();
 
 				/*
 				 * (Fri, 05 Oct 2018 02:20:49 +0900)
@@ -1409,6 +1424,9 @@ public class KawaPad extends JFrame {
 		return lispWords;
 	}
 
+	
+	////////////////////////////////////////////////////////////////////////////
+
 	static final class SchemeProcedure {
 		/*
 		 *  The variable environment and language are not necessary anymore
@@ -1439,10 +1457,8 @@ public class KawaPad extends JFrame {
 			}
 		}
 	}
-	public String getTitleString() {
-		return "HELLO";
-		
-	}
+
+	
 	public static class EventHandlers {
 		private static final String INIT      = "init";   // occurs when initializing scheme objects. (Tue, 06 Aug 2019 08:37:12 +0900)
 		private static final String CREATE    = "create"; // occurs when creating form objects.       (Tue, 06 Aug 2019 08:37:12 +0900)
@@ -1553,6 +1569,8 @@ public class KawaPad extends JFrame {
 		logInfo( "KawaPad#initScheme" );
 		Environment env = scheme.getEnvironment();
 		SchemeUtils.defineVar( env, this, frameName );
+
+		textualIncrementalAddon.initScheme( env );
 	}
 
 	public static Scheme staticInitScheme( Scheme scheme ) {
@@ -1669,12 +1687,12 @@ public class KawaPad extends JFrame {
 	}
 	
 	{
-		textPane = new JTextPane() {
+		textPane = new KawaPadTextPane( this ) {
 			// Special thanks go to tips4java
 			// https://tips4java.wordpress.com/2009/01/25/no-wrap-text-pane/
 			public boolean getScrollableTracksViewportWidth() {
-//				return getUI().getPreferredSize(this).width 
-//						<= getParent().getSize().width;
+				// return getUI().getPreferredSize(this).width 
+				//      <= getParent().getSize().width;
 				return getUI().getPreferredSize(this).width 
 						< getParent().getSize().width;
 			}
@@ -1685,7 +1703,7 @@ public class KawaPad extends JFrame {
 		getContentPane().add(scratchPadRoot );
 		
 		scratchPadRoot.add( scrollPane, BorderLayout.CENTER );
-        textPane.setFont(new Font("monospaced", Font.PLAIN, 12));
+        textPane.setFont( new Font("monospaced", Font.PLAIN, 12));
         
         /*
 		 * (Sun, 07 Oct 2018 23:50:37 +0900) CREATING_KEYMAP
@@ -1730,7 +1748,6 @@ public class KawaPad extends JFrame {
 		textPane.setCaret( dc );
 
 
-
 		// This action intercepts our customization so delete it.
 		purgeKeyFromActionMap( textPane.getActionMap(), DefaultEditorKit.insertTabAction );
 		
@@ -1749,16 +1766,16 @@ public class KawaPad extends JFrame {
 		                
 		                
 		                try {
-		                	undoManager.startGroup();
-		                	undoManager.setSuspended(true);
+		                	getUndoManager().startGroup();
+		                	getUndoManager().setSuspended(true);
 
 		                	String text = target.getText();
 		                	int pos = target.getCaretPosition();
 		                	String indentString = calculateIndentSize(text, pos, getLispWords());
 		                	target.replaceSelection( "\n" + indentString );
 		                } finally {
-		                	undoManager.setSuspended(false);
-		                	undoManager.startGroup();
+		                	getUndoManager().setSuspended(false);
+		                	getUndoManager().startGroup();
 		                }
 		            }
 				}
@@ -1774,16 +1791,19 @@ public class KawaPad extends JFrame {
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////
-	GroupedUndoManager undoManager;
+	private final GroupedUndoManager undoManager;
 	{
 		// https://stackoverflow.com/questions/2547404/using-undo-and-redo-for-jtextarea
 //		undoManager = new InsignificantUndoManager();
 //		undoManager = new LazyGroupedUndoManager();
 //		undoManager = new SimpleCompoundUndoManager();
-		undoManager = new CompoundGroupedUndoManager();
+		this.undoManager = new CompoundGroupedUndoManager();
 //		undoManager = new OriginalCompoundUndoManager( textPane );
 	}
-
+	public GroupedUndoManager getUndoManager() {
+		return undoManager;
+	}
+	
 	private abstract static class UndoRedoAction extends AbstractAction {
 		protected final GroupedUndoManager undoManager;
 		protected UndoRedoAction( String name,  GroupedUndoManager undoManager ) {
@@ -1792,7 +1812,7 @@ public class KawaPad extends JFrame {
 		}
 	}
 
-	public final Action UNDO_ACTION = new UndoAction( "Undo", undoManager );
+	public final Action UNDO_ACTION = new UndoAction( "Undo", getUndoManager() );
 	static class UndoAction extends UndoRedoAction {
 		public UndoAction(String name, GroupedUndoManager manager ) {
 			super(name,manager);
@@ -1817,7 +1837,7 @@ public class KawaPad extends JFrame {
 		}
 	}
 
-	public final Action REDO_ACTION = new RedoAction( "Redo", undoManager );
+	public final Action REDO_ACTION = new RedoAction( "Redo", getUndoManager() );
 	static class RedoAction extends UndoRedoAction {
 		public RedoAction(String name, GroupedUndoManager manager) {
 			super(name,manager);
@@ -1848,7 +1868,7 @@ public class KawaPad extends JFrame {
 		}
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			undoManager.dump();
+			getUndoManager().dump();
 		}
 		{
 			putValue( Action2.NAME, "Debug" );
@@ -1875,12 +1895,12 @@ public class KawaPad extends JFrame {
             JTextComponent target = getTextComponent(e);
             if (target != null) {
             	try {
-            		undoManager.startGroup();
-            		undoManager.setSuspended(true);
+            		getUndoManager().startGroup();
+            		getUndoManager().setSuspended(true);
             		target.paste();
             	} finally {
-            		undoManager.setSuspended(false);
-            		undoManager.startGroup();
+            		getUndoManager().setSuspended(false);
+            		getUndoManager().startGroup();
             	}
             }
         }
@@ -1905,7 +1925,7 @@ public class KawaPad extends JFrame {
 //                logInfo( "typed : " + content );
                 switch ( content ) {
                 	case " " :
-                		undoManager.startGroup();
+                		getUndoManager().startGroup();
                 		break;
                 		
                 	case "(" :
@@ -1954,6 +1974,455 @@ public class KawaPad extends JFrame {
 	
 	}
 	
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	// TextualIncrement ( TEXTUAL_INCREMENT )
+	//
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	static class TextualIncrementalAddon {
+		public void initGui( JMenu file, JMenu edit, JMenu view, JMenu scheme ) {
+			edit.add( TEXTUAL_INCREMENT_ACTION );
+			edit.add( TEXTUAL_DECREMENT_ACTION );
+		}
+		
+		public void initScheme(Environment env) {
+			SchemeUtils.defineVar( env, new Procedure2() {
+				@Override
+				public Object apply2(Object arg1, Object arg2) throws Throwable {
+					addIncrementalSymbol( 
+						SchemeUtils.anyToString( arg1 ),
+						SchemeUtils.anyToString( arg2 ));
+					return Values.empty;
+				}
+			}, "add-incremental-keyword" );
+			SchemeUtils.defineVar( env, new Procedure1() {
+				@Override
+				public Object apply1(Object arg1) throws Throwable {
+					deleteIncrementalSymbol( 
+						SchemeUtils.anyToString( arg1 ));
+					return Values.empty;
+				}
+			}, "delete-incremental-keyword" );
+		}
+
+		public static final String TEXTUAL_INCREMENT = "textual-increment-action";
+		public static final String TEXTUAL_DECREMENT = "textual-decrement-action";
+		static class IncrementalSymbol {
+			final String from;
+			final String to;
+			final Pattern fromPattern;
+			final Pattern toPattern;
+			IncrementalSymbol(String from, String to) {
+				super();
+				if ( from == null  )
+					throw new NullPointerException( "from is null" );
+				if ( to == null  )
+					throw new NullPointerException( "to is null");
+				
+				this.from = from;
+				this.to = to;
+				
+				this.fromPattern = Pattern.compile( "\\b" + from + "\\b" );
+				this.toPattern   = Pattern.compile( "\\b" + to   + "\\b" );
+			}
+			@Override
+			public boolean equals(Object obj) {
+				if ( obj instanceof IncrementalSymbol )
+					return this.from.equals( ((IncrementalSymbol)obj).from );
+				else
+					return false;
+			}
+			@Override
+			public int hashCode() {
+				return from.hashCode();
+			}
+			@Override
+			public String toString() {
+				return this.getClass().getName() + "(" + this.from + "->" + this.to + ")";
+			}
+		}
+		LinkedList<IncrementalSymbol> incrementalSymbols = new LinkedList<>();
+		
+		void addIncrementalSymbol0( String from, String to ) {
+			incrementalSymbols.add( new IncrementalSymbol( from, to ) );
+		}
+		void deleteIncrementalSymbol0( String from ) {
+			incrementalSymbols.remove( new IncrementalSymbol( from, null ) );
+		}
+
+		public void addIncrementalSymbol( String from, String to ) {
+			addIncrementalSymbol0( from, to );
+		}
+		public void deleteIncrementalSymbol( String from ) {
+			deleteIncrementalSymbol0( from );
+		}
+		static Pattern NUMBER_PATTERN = Pattern.compile( "[0-9\\/\\.\\-\\+]+" );
+
+		String zeroPad( String s, int len ) {
+			StringBuilder sb = new StringBuilder();
+			int slen = s.length();
+			for ( int i=0; i<len-slen; i++ ) {
+				sb.append( '0' );
+			}
+			sb.append(s);
+			return sb.toString();
+		}
+		
+		String fixedFloatAdd( String s, int n, boolean doZeroPad ) {
+			String wnp; // whole-number part 
+			String fp;  // fraction part
+			int fpLen = -1;
+			{
+				int tmpPos = s.indexOf( '.' );
+				if ( tmpPos < 0 ) {
+					wnp = s;
+					fp ="";
+					fpLen = 0;
+				} else {
+					wnp = s.substring( 0,tmpPos );
+					fp =  s.substring( tmpPos+1 );
+					fpLen = s.length() - tmpPos - 1;
+				}
+			}
+			int totalLen = wnp.length() + fp.length();
+			int inValue  = Integer.parseInt( wnp+fp );
+			int outValue = inValue + n;
+			if ( ( inValue < 0 ) && !( outValue < 0 ) ) {
+				totalLen --;
+			} else if ( ( 0 <= inValue ) && !( 0 <= outValue ) ) {
+				totalLen ++;
+			}
+			
+			String resultString = String.valueOf( outValue );
+			if ( doZeroPad && fp.length() !=0 ) {
+				resultString = zeroPad( resultString, totalLen );
+				{
+					int minusPos = resultString.indexOf( '-' );
+					if ( 0<minusPos ) {
+						resultString = 
+								"-" + 
+										resultString.substring( 0, minusPos ) + 
+										resultString.substring( minusPos+1, resultString.length() );
+					}
+				}
+			}
+			
+			if ( fp.length() == 0 ) {
+				return resultString;
+			} else {
+				return  ""
+						+ resultString.substring( 0, resultString.length() - fpLen ) 
+						+ "." 
+						+ resultString.substring(    resultString.length() - fpLen ); 
+			}
+			
+			
+		}
+		String fractionAdd(String numStr, int n) {
+			String[] ss = numStr.split( "\\/" );
+			ss[0] = String.valueOf( fixedFloatAdd( ss[0], n, !(1<ss.length) ) ); 
+			return String.join( "/", ss );
+		}
+
+		void replace(JTextComponent target, int direction ) {
+			String str = target.getText();
+			Caret caret = target.getCaret();
+			
+			int pos = caret.getDot();
+			if ( str.length() < pos )
+				pos = str.length();
+			
+			int beginPos = -1;
+			{
+				for ( int i=pos; 0<=i; i-- ) {
+					if ( Character.isWhitespace( str.charAt( i ) ) ) {
+						beginPos = i;
+						break;
+					}
+				}
+				if ( beginPos == -1 )
+					beginPos = 0;
+			}
+			int endPos = -1;
+			{
+				Matcher m = Pattern.compile("$", Pattern.MULTILINE ).matcher( str +"\n" );
+				if ( m.find( pos ) ) {
+					endPos = m.start();
+				}
+				
+				if ( endPos == -1 )
+					endPos = str.length();
+			}
+			
+			if ( endPos <= beginPos )
+				return;
+			
+			logInfo( "TextualIncrementAction:" + beginPos + ":" + endPos );
+			String targetStr = str.substring( beginPos , endPos );
+
+			String foundSubstr=null;
+			int foundBeginPos=Integer.MAX_VALUE;
+			int foundEndPos =Integer.MAX_VALUE;
+
+			{
+				if ( foundSubstr == null ) {
+					Matcher m = NUMBER_PATTERN.matcher( targetStr );
+					if ( m.find() ) {
+						Scheme scheme = ((KawaPadTextPane)target).getKawaPad().schemeSecretary.getExecutive();
+						
+						synchronized ( scheme ) {
+							try {
+								String numStr = targetStr.substring( m.start(), m.end());
+								String strResult = fractionAdd( numStr, direction );
+								
+								if ( strResult != null ) {
+									foundSubstr = strResult.toString();
+									foundBeginPos = m.start() + beginPos;
+									foundEndPos   = m.end()   + beginPos;
+								}
+							} catch (Throwable e) {
+								logError( "failed to increment the number", e );
+							}
+						}
+						 
+					}
+				}
+				if ( foundSubstr == null ) {
+					for ( IncrementalSymbol s : incrementalSymbols ) {
+						Pattern pattern;
+						String substr;
+						if ( 0 <= direction ) {
+							pattern = s.fromPattern;
+							substr = s.to;
+						} else {
+							pattern = s.toPattern;
+							substr = s.from;
+						}
+						
+						Matcher m = pattern.matcher( targetStr );
+						if ( m.find() ) {
+							int tempBeginPos = m.start() + beginPos;
+							int tempEndPos   = m.end()   + beginPos;
+							
+							if ( tempBeginPos < foundBeginPos ) {
+								foundBeginPos = tempBeginPos;
+								foundEndPos   = tempEndPos;
+								foundSubstr   = substr;
+							}
+						}
+					}
+				}
+			}
+			
+			KawaPad kawaPad = ((KawaPadTextPane)target).getKawaPad();
+			
+			if ( foundSubstr != null ) {
+				kawaPad.getUndoManager().startGroup();
+				kawaPad.getUndoManager().setSuspended( true );
+				try {
+					caret.setDot( foundBeginPos );
+					caret.moveDot( foundEndPos );
+					target.replaceSelection( foundSubstr );
+					caret.setDot( foundBeginPos + foundSubstr.length() );
+					caret.moveDot( foundBeginPos );
+				} finally {
+					kawaPad.getUndoManager().setSuspended( false );
+					kawaPad.getUndoManager().startGroup();
+				}
+			}
+		}
+
+		@Deprecated
+		void replace2(JTextComponent target, int direction ) {
+			String str = target.getText();
+			Caret caret = target.getCaret();
+			
+			int pos = caret.getDot();
+			if ( str.length() < pos )
+				pos = str.length();
+			
+			int beginPos = -1;
+			{
+				for ( int i=pos; 0<=i; i-- ) {
+					if ( Character.isWhitespace( str.charAt( i ) ) ) {
+						beginPos = i;
+						break;
+					}
+				}
+				if ( beginPos == -1 )
+					beginPos = 0;
+			}
+			int endPos = -1;
+			{
+				Matcher m = Pattern.compile("$", Pattern.MULTILINE ).matcher( str +"\n" );
+				if ( m.find( pos ) ) {
+					endPos = m.start();
+				}
+				
+				if ( endPos == -1 )
+					endPos = str.length();
+			}
+			
+			if ( endPos <= beginPos )
+				return;
+			
+			logInfo( "TextualIncrementAction:" + beginPos + ":" + endPos );
+			String targetStr = str.substring( beginPos , endPos );
+
+			String foundSubstr=null;
+			int foundBeginPos=Integer.MAX_VALUE;
+			int foundEndPos =Integer.MAX_VALUE;
+
+			{
+				if ( foundSubstr == null ) {
+					Matcher m = NUMBER_PATTERN.matcher( targetStr );
+					if ( m.find() ) {
+						Scheme scheme = ((KawaPadTextPane)target).getKawaPad().schemeSecretary.getExecutive();
+						
+						synchronized ( scheme ) {
+							try {
+								String numStr = targetStr.substring( m.start(), m.end());
+								String strResult = null;
+								{
+									String[] ss = numStr.split( "\\/" );
+									{
+										String[] sss = ss[0].split( "\\." );
+										{
+											int lastPos = sss.length-1;
+											if ( direction < 0 ) {
+												sss[lastPos] = String.valueOf( Integer.valueOf( sss[lastPos] ) - 1 ); 
+											} else {
+												sss[lastPos] = String.valueOf( Integer.valueOf( sss[lastPos] ) + 1 ); 
+											}
+										}
+										ss[0] = String.join( ".", sss );
+									}
+									strResult = String.join( "/", ss );
+								}
+								
+								if ( strResult != null ) {
+									foundSubstr = strResult.toString();
+									foundBeginPos = m.start() + beginPos;
+									foundEndPos   = m.end()   + beginPos;
+								}
+							} catch (Throwable e) {
+								logError( "failed to increment the number", e );
+							}
+						}
+						 
+					}
+				}
+				if ( foundSubstr == null ) {
+					for ( IncrementalSymbol s : incrementalSymbols ) {
+						Pattern pattern;
+						String substr;
+						if ( direction < 0 ) {
+							pattern = s.fromPattern;
+							substr = s.to;
+						} else {
+							pattern = s.toPattern;
+							substr = s.from;
+						}
+						
+						Matcher m = pattern.matcher( targetStr );
+						if ( m.find() ) {
+							int tempBeginPos = m.start() + beginPos;
+							int tempEndPos   = m.end()   + beginPos;
+							
+							if ( tempBeginPos < foundBeginPos ) {
+								foundBeginPos = tempBeginPos;
+								foundEndPos   = tempEndPos;
+								foundSubstr   = substr;
+							}
+						}
+					}
+				}
+			}
+			
+			KawaPad kawaPad = ((KawaPadTextPane)target).getKawaPad();
+			
+			if ( foundSubstr != null ) {
+				kawaPad.getUndoManager().startGroup();
+				kawaPad.getUndoManager().setSuspended( true );
+				try {
+					caret.setDot( foundBeginPos );
+					caret.moveDot( foundEndPos );
+					target.replaceSelection( foundSubstr );
+					caret.setDot( foundBeginPos + foundSubstr.length() );
+					caret.moveDot( foundBeginPos );
+				} finally {
+					kawaPad.getUndoManager().setSuspended( false );
+					kawaPad.getUndoManager().startGroup();
+				}
+			}
+		}		
+		class TextualIncrementAction extends TextAction {
+			
+			/** Create this object with the appropriate identifier. */
+	        public TextualIncrementAction() {
+	            super(TEXTUAL_INCREMENT);
+	        }
+
+	        /**
+	         * The operation to perform when this action is triggered.
+	         *
+	         * @param e the action event
+	         */
+	        public void actionPerformed(ActionEvent e) {
+	        	logInfo("TextualIncrementAction.actionPerformed()");
+	            JTextComponent target = getTextComponent(e);
+	            if (target != null) {
+	            	replace( target, 1);
+	            }
+	        }
+
+			{
+				putValue( Action2.NAME, "Increment the Nearest Number" );
+				putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_G , KeyEvent.CTRL_MASK ));
+				putValue( Action.MNEMONIC_KEY , (int) 'i' );
+			}
+	    }
+		{
+			addIncrementalSymbol( "foo", "bar" );
+			addIncrementalSymbol( "bar", "baz" );
+			addIncrementalSymbol( "baz", "foo" );
+		}
+		class TextualDecrementAction extends TextAction {
+			/** Create this object with the appropriate identifier. */
+	        public TextualDecrementAction( ) {
+	            super(TEXTUAL_DECREMENT);
+	        }
+
+	        public void actionPerformed(ActionEvent e) {
+	        	logInfo("TextualDecrementAction.actionPerformed()");
+	            JTextComponent target = getTextComponent(e);
+	            if (target != null) {
+	            	replace( target, -1);
+	            }
+	        }
+			{
+				putValue( Action2.NAME, "Decrement the Nearest Number" );
+				putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_D , KeyEvent.CTRL_MASK ));
+				putValue( Action.MNEMONIC_KEY , (int) 'd' );
+			}
+	    }
+		
+		final TextualIncrementAction TEXTUAL_INCREMENT_ACTION = new TextualIncrementAction();
+		final TextualDecrementAction TEXTUAL_DECREMENT_ACTION = new TextualDecrementAction();
+	}
+	TextualIncrementalAddon textualIncrementalAddon = new TextualIncrementalAddon(); 
+	
+
+	
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//  CREATING_KEYMAP
+	//
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	{
 		
 		
@@ -1978,7 +2447,7 @@ public class KawaPad extends JFrame {
 //		textPane.getActionMap().put("REDO", REDO_ACTION );
 
 //		undoManager.addEdit(anEdit)
-		textPane.getDocument().addUndoableEditListener( undoManager );
+		textPane.getDocument().addUndoableEditListener( getUndoManager() );
 	}
 	
 	boolean fileModified = false;
@@ -1997,7 +2466,7 @@ public class KawaPad extends JFrame {
 	public void openNewProc() {
 		fileModified = false;
 		filePath = null;
-		undoManager.discardAllEdits();
+		getUndoManager().discardAllEdits();
 		textPane.setText("");
 //		JOptionPane.showMessageDialog( this, "OPEN NEW" );
 	}
@@ -2029,7 +2498,7 @@ public class KawaPad extends JFrame {
 		 * Discard edits after set text or CTRL-Z to clear all text 
 		 * which is not supposed to be. (Tue, 09 Oct 2018 03:04:23 +0900)
 		 */
-		this.undoManager.discardAllEdits();
+		this.getUndoManager().discardAllEdits();
 //		JOptionPane.showMessageDialog(this, "OPEN FILE PROC" + file );
 	}
 	public void openFile( File filePath ) throws IOException {
@@ -2211,6 +2680,10 @@ public class KawaPad extends JFrame {
 		editMenuItem.setMnemonic('e');
 		menuBar.add( editMenuItem );
 
+		JMenu viewMenuItem = new JMenu( "View" );
+		viewMenuItem.setMnemonic('v');
+//		menuBar.add( viewMenuItem );
+
 		JMenu schemeMenuItem = new JMenu( "Scheme" );
 		schemeMenuItem.setMnemonic('r');
 		menuBar.add( schemeMenuItem );
@@ -2242,6 +2715,12 @@ public class KawaPad extends JFrame {
 		editMenuItem.add( new JMenuItem( DECREASE_INDENT_ACTION ) );
 		editMenuItem.add( new JMenuItem( PRETTIFY_ACTION ) );
 
+
+		// TEXTUAL_INCREMENT
+		{
+			textualIncrementalAddon.initGui( fileMenuItem, editMenuItem, viewMenuItem, schemeMenuItem );
+		}
+		
 //		editMenuItem.addSeparator();
 //
 //		editMenuItem.add( new JMenuItem( SIMPLE_PARENTHESIS_JUMP_LEFT_ACTION ) );
@@ -2258,6 +2737,7 @@ public class KawaPad extends JFrame {
 		Action2.processMenuBar( menuBar );
 	}
 
+	
 	{
 		setSize( new Dimension( 500, 500 ) );
 		setDefaultCloseOperation( JFrame.DO_NOTHING_ON_CLOSE );
@@ -2359,7 +2839,7 @@ public class KawaPad extends JFrame {
 		}
 	}
 	
-	private void addMap( JComponent component, Action action ) {
+	public void addKeyStroke( JComponent component, Action action ) {
 		Object name = action.getValue( Action.NAME );
 		component.getInputMap().put( (KeyStroke) action.getValue( Action.ACCELERATOR_KEY ), name );
 		component.getActionMap().put( name, action );
@@ -2367,18 +2847,18 @@ public class KawaPad extends JFrame {
 	{
 		ActionMap map = this.textPane.getActionMap();
 		
-		addMap( this.textPane, SIMPLE_PARENTHESIS_JUMP_LEFT_ACTION );
-		addMap( this.textPane, SIMPLE_PARENTHESIS_JUMP_RIGHT_ACTION );
-		addMap( this.textPane, SIMPLE_PARENTHESIS_SELECT_JUMP_LEFT_ACTION );
-		addMap( this.textPane, SIMPLE_PARENTHESIS_SELECT_JUMP_RIGHT_ACTION );
-		addMap( this.textPane, PARENTHESIS_JUMP_LEFT_ACTION );
-		addMap( this.textPane, PARENTHESIS_JUMP_RIGHT_ACTION );
-		addMap( this.textPane, PARENTHESIS_SELECT_JUMP_LEFT_ACTION );
-		addMap( this.textPane, PARENTHESIS_SELECT_JUMP_RIGHT_ACTION );
-		addMap( this.textPane, PARENTHESIS_SELECT_ACTION );
-		addMap( this.textPane, PARENTHESIS_SELECT_2_ACTION );
-		addMap( this.textPane, PARENTHESIS_DESELECT_ACTION );
-		addMap( this.textPane, PARENTHESIS_DESELECT_2_ACTION );
+		addKeyStroke( this.textPane, SIMPLE_PARENTHESIS_JUMP_LEFT_ACTION );
+		addKeyStroke( this.textPane, SIMPLE_PARENTHESIS_JUMP_RIGHT_ACTION );
+		addKeyStroke( this.textPane, SIMPLE_PARENTHESIS_SELECT_JUMP_LEFT_ACTION );
+		addKeyStroke( this.textPane, SIMPLE_PARENTHESIS_SELECT_JUMP_RIGHT_ACTION );
+		addKeyStroke( this.textPane, PARENTHESIS_JUMP_LEFT_ACTION );
+		addKeyStroke( this.textPane, PARENTHESIS_JUMP_RIGHT_ACTION );
+		addKeyStroke( this.textPane, PARENTHESIS_SELECT_JUMP_LEFT_ACTION );
+		addKeyStroke( this.textPane, PARENTHESIS_SELECT_JUMP_RIGHT_ACTION );
+		addKeyStroke( this.textPane, PARENTHESIS_SELECT_ACTION );
+		addKeyStroke( this.textPane, PARENTHESIS_SELECT_2_ACTION );
+		addKeyStroke( this.textPane, PARENTHESIS_DESELECT_ACTION );
+		addKeyStroke( this.textPane, PARENTHESIS_DESELECT_2_ACTION );
 
 		map.put( DefaultEditorKit.nextWordAction, new WordJumpAction(1));
 		map.put( DefaultEditorKit.previousWordAction, new WordJumpAction(-1));
@@ -2399,6 +2879,14 @@ public class KawaPad extends JFrame {
 		actionMap.get( DefaultEditorKit.deletePrevCharAction ).putValue(Action2.NAME, "Backspace");
 //		actionMap.get( DefaultEditorKit.copyAction ).putValue(Action2.NAME, "Backspace");
 	}
+
+	
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	// factory
+	//
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	public static KawaPad createStaticInstance() {
 		SchemeSecretary schemeSecretary = new SchemeSecretary();
