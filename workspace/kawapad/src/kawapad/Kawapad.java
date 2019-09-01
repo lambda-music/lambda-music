@@ -127,8 +127,8 @@ public class Kawapad extends JTextArea {
 	private static final boolean DEBUG_UNDO_BUFFER = false;
 	private static final boolean DEBUG = false;
 	private static final boolean ENABLED_HIGHLIGHT = false;
-	private static final boolean ENABLED_PARENTHESIS_HIGHLIGHT = false;
-	static final boolean ENABLED_SHOW_CORRESPONDING_PARENTHESES = false;
+	private static final boolean ENABLED_PARENTHESIS_HIGHLIGHT = true;
+	static final boolean ENABLED_SHOW_CORRESPONDING_PARENTHESES = true;
 
 	////////////////////////////////////////////////////////////////////////////
 
@@ -2617,17 +2617,21 @@ public class Kawapad extends JTextArea {
 			});
 	}
 	
-	private static void highlightMatchningParentheses( Kawapad kawaPane, int pos ) {
+	private static void highlightMatchningParentheses( Kawapad kawapad, int pos ) {
 		if ( ENABLED_PARENTHESIS_HIGHLIGHT )
-//				KawaPadHighlighter.highlightMatchingParenthesis( kawaPane, kawaPane.getCaretPosition() );
+			try {
+				KawaPadHighlighter2.highlightMatchingParenthesis( kawapad, kawapad.getCaretPosition() );
+			} catch (BadLocationException e) {
+				logError( "", e );
+			}
 			;
 	}
-	private static void updateHighlightParenthesesLater( Kawapad kawaPane, int pos ) {
+	private static void updateHighlightParenthesesLater( Kawapad kawapad, int pos ) {
 		if ( ENABLED_PARENTHESIS_HIGHLIGHT )
 			SwingUtilities.invokeLater( new Runnable() {
 				public void run() {
-					KawaPadHighlighter.forceClearHighlightedParenthesis();
-					highlightMatchningParentheses( kawaPane, pos );
+					KawaPadHighlighter2.forceClearHighlightedParenthesis();
+					highlightMatchningParentheses( kawapad, pos );
 				}
 			});
 	}
