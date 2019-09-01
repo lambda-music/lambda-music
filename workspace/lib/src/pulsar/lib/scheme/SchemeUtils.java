@@ -590,9 +590,7 @@ public class SchemeUtils {
 		synchronized ( scheme ) {
 			Environment env = scheme.getEnvironment();
 			
-			if ( variables != null )
-				for ( Map.Entry<String, Object> e : variables.entrySet() )
-					putVar( env , e.getKey(), e.getValue() );
+			initializeVariables( env, variables );
 			
 			putVar( env , "scheme", scheme );
 			
@@ -667,6 +665,16 @@ public class SchemeUtils {
 				Shell.currentLoadPath.set( savedPath );
 			}
 		}
+	}
+	public static void initializeVariables(Environment env, Map<String, Object> variables) {
+		if ( variables != null )
+			for ( Map.Entry<String, Object> e : variables.entrySet() )
+				putVar( env , e.getKey(), e.getValue() );
+	}
+	public static void finalizeVariables(Environment env, Map<String, Object> variables) {
+		if ( variables != null )
+			for ( Map.Entry<String, Object> e : variables.entrySet() )
+				putVar( env , e.getKey(), false );
 	}
 		
 	public static ExecuteSchemeResult evaluateScheme( SchemeSecretary schemeSecretary, Map<String,Object> variables, String schemeScript, String schemeScriptURI ) {

@@ -109,7 +109,7 @@
 ; 
 
 ; Example 
-; (show-completion frame:text-pane frame:text-pane:caret:magic-caret-position )
+; (show-completion frame:kawapad frame:kawapad:caret:magic-caret-position )
 
 
 
@@ -144,7 +144,7 @@
 ; ========================================================
 ; init-proc is called whenever a scheme object is created.
 ; ========================================================
-(define init-proc (lambda (frame)
+(define init-proc (lambda (kawapad)
                     (set! lisp-words (append default-lisp-words
                                              '(object append define-class define-simple-class )
                                              '(register-event-handler unregister-event-handler )
@@ -156,7 +156,7 @@
 ; ========================================================
 ; create-proc is called whenever a FRAME object is created.
 ; ========================================================
-(define create-proc (lambda (frame)
+(define create-proc (lambda (kawapad)
                       (**display-warn "==================")
                       (**display-warn 'create-proc)
                       (**display-warn "==================")
@@ -214,7 +214,7 @@
                                      ; (**newline-warn)
                                      (let* ((text-pane ((this):getTextComponent e ))
                                             (pos
-                                              (kawapad.KawaPad:lookupCorrespondingParenthesis 
+                                              (kawapad.Kawapad:lookupCorrespondingParenthesis 
                                                 text-pane:text 
                                                 text-pane:caret:dot )
                                               ))
@@ -239,9 +239,9 @@
                       ((frame:j-menu-bar:get-menu 1):add (javax.swing.JMenuItem (jump-to-corresponding-parenthesis-action "hello1" #t)))
                       ((frame:j-menu-bar:get-menu 1):add (javax.swing.JMenuItem (jump-to-corresponding-parenthesis-action "hello2" #f)))
 
-                      (**display-warn 'frame:text-pane:addMouseListener )
+                      (**display-warn 'frame:kawapad:addMouseListener )
                       (**newline-warn)
-                      (frame:text-pane:addMouseListener
+                      (frame:kawapad:addMouseListener
                         (object (java.awt.event.MouseAdapter) 
                                 ((mousePressed e)
                                  (**display-warn "hello-hello")

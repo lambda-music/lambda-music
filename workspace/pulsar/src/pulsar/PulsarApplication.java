@@ -5,7 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
-import kawapad.KawaPad;
+import kawapad.Kawapad;
 import pulsar.lib.PulsarLogger;
 import pulsar.lib.scheme.DescriptiveDocumentType;
 import pulsar.lib.scheme.http.SchemeHttp;
@@ -144,7 +144,7 @@ public class PulsarApplication {
 		Pulsar pulsar = new Pulsar( schemeSecretary );
 
 		if ( guiEnabled )
-			KawaPad.registerGlobalSchemeInitializer( schemeSecretary );
+			Kawapad.registerGlobalSchemeInitializer( schemeSecretary );
 		
 		Pulsar.registerLocalSchemeInitializers( schemeSecretary, pulsar );
 		Pulsar.registerFinalSchemeInitializers( schemeSecretary, pulsar );

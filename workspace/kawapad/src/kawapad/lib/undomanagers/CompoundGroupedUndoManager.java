@@ -98,7 +98,8 @@ public class CompoundGroupedUndoManager extends UndoManager implements GroupedUn
  		this.startGroup();
 	}
 	public synchronized void setSuspended(boolean suspended) {
-		logInfo( "CompoundGroupedUndoManager.setSuspended()" +suspended );
+		if ( DEBUG_ADD_EDIT )
+			logInfo( "CompoundGroupedUndoManager.setSuspended()" +suspended );
 		if ( DEBUG_SUSPENDED )
 			if ( suspended ) {
 				System.err.println();
@@ -117,7 +118,8 @@ public class CompoundGroupedUndoManager extends UndoManager implements GroupedUn
 	protected transient CompoundEdit compoundEdit = null;
 	protected transient boolean requestNewCompoundEdit = true;
 	public synchronized void startGroup0() {
-//		logInfo( "CompoundGroupedUndoManager.startGroup() suspended=" + suspended );
+		if ( DEBUG )
+			logInfo( "CompoundGroupedUndoManager.startGroup() suspended=" + suspended );
 		if ( ! suspended ) {
 			this.requestNewCompoundEdit = true;
 		}
@@ -125,7 +127,8 @@ public class CompoundGroupedUndoManager extends UndoManager implements GroupedUn
 	
 	@Override
 	public synchronized void redo() throws CannotRedoException {
-		logInfo( "CompoundGroupedUndoManager.redo()" );
+		if ( DEBUG_ADD_EDIT )
+			logInfo( "CompoundGroupedUndoManager.redo()" );
 		try {
 			setSuspended(true);
 			super.redo();
@@ -136,7 +139,8 @@ public class CompoundGroupedUndoManager extends UndoManager implements GroupedUn
 	}
 	@Override
 	public synchronized void undo() throws CannotRedoException {
-		logInfo( "CompoundGroupedUndoManager.undo()" );
+		if ( DEBUG_ADD_EDIT )
+			logInfo( "CompoundGroupedUndoManager.undo()" );
 		try {
 //			breakCurrentCompoundEdit();
 			setSuspended(true);
@@ -149,7 +153,8 @@ public class CompoundGroupedUndoManager extends UndoManager implements GroupedUn
 	
 	@Override
 	public synchronized boolean addEdit(UndoableEdit anEdit) {
-		logInfo( "CompoundGroupedUndoManager.addEdit(): requestNewCompoundEdit="+ requestNewCompoundEdit );
+		if ( DEBUG_ADD_EDIT )
+			logInfo( "CompoundGroupedUndoManager.addEdit(): requestNewCompoundEdit="+ requestNewCompoundEdit );
 		if ( DEBUG_ADD_EDIT )
 			System.err.println( anEdit.getClass().getName() + ":" +  anEdit );
 
@@ -207,7 +212,8 @@ public class CompoundGroupedUndoManager extends UndoManager implements GroupedUn
 
 	@Override
 	public synchronized void undoableEditHappened(UndoableEditEvent e) {
-		logInfo( "CompoundGroupedUndoManager.undoableEditHappened()" );
+		if ( DEBUG_ADD_EDIT )
+			logInfo( "CompoundGroupedUndoManager.undoableEditHappened()" );
 		if ( DEBUG_ADD_EDIT )
 			System.err.println( "IEH " + e.getEdit().getClass().getName() + ":" +  e.getEdit() );
 		
@@ -232,61 +238,72 @@ public class CompoundGroupedUndoManager extends UndoManager implements GroupedUn
 			logInfo( " " ) ;
 		}
 		
-		logInfo( " " ) ;
+		if ( DEBUG_ADD_EDIT )
+			logInfo( " " ) ;
 			
 		super.undoableEditHappened(e);
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
 	public synchronized  void die() {
-		logInfo( "CompoundGroupedUndoManager.die()" );
+		if ( DEBUG_ADD_EDIT )
+			logInfo( "CompoundGroupedUndoManager.die()" );
 		super.die();
 		if ( compoundEdit != null )
 			compoundEdit.die();
 	}
 	public synchronized  void end() {
-		logInfo( "CompoundGroupedUndoManager.end()" );
+		if ( DEBUG_ADD_EDIT )
+			logInfo( "CompoundGroupedUndoManager.end()" );
 		super.end();
 		compoundEdit.end();
 	}
 	public synchronized boolean canUndo() {
-		logInfo( "CompoundGroupedUndoManager.canUndo()" );
+		if ( DEBUG_ADD_EDIT )
+			logInfo( "CompoundGroupedUndoManager.canUndo()" );
 		return super.canUndo();
 //		return compoundEdit.canUndo();
 	}
 	public synchronized boolean canRedo() {
-		logInfo( "CompoundGroupedUndoManager.canRedo()" );
+		if ( DEBUG_ADD_EDIT )
+			logInfo( "CompoundGroupedUndoManager.canRedo()" );
 		return canRedo();
 //		return compoundEdit.canRedo();
 	}
 	public synchronized boolean isInProgress() {
 		boolean result = super.isInProgress();
-		logInfo( "CompoundGroupedUndoManager.isInProgress() : result="  + result );
+		if ( DEBUG_ADD_EDIT )
+			logInfo( "CompoundGroupedUndoManager.isInProgress() : result="  + result );
 		return result;
 //		return compoundEdit.isInProgress();
 	}
 	public synchronized boolean replaceEdit(UndoableEdit anEdit) {
-		logInfo( "CompoundGroupedUndoManager.replaceEdit()" );
+		if ( DEBUG_ADD_EDIT )
+			logInfo( "CompoundGroupedUndoManager.replaceEdit()" );
 		return replaceEdit( anEdit );
 //		return compoundEdit.replaceEdit( anEdit );
 	}
 	public synchronized boolean isSignificant() {
-		logInfo( "CompoundGroupedUndoManager.isSignificant()" );
+		if ( DEBUG_ADD_EDIT )
+			logInfo( "CompoundGroupedUndoManager.isSignificant()" );
 		return super.isSignificant();
 //		return compoundEdit.isSignificant();
 	}
 	public synchronized  String getPresentationName() {
-		logInfo( "CompoundGroupedUndoManager.getPresentationName()" );
+		if ( DEBUG_ADD_EDIT )
+			logInfo( "CompoundGroupedUndoManager.getPresentationName()" );
 		return super.getPresentationName();
 //		return compoundEdit.getPresentationName();
 	}
 	public synchronized String getUndoPresentationName() {
-		logInfo( "CompoundGroupedUndoManager.getUndoPresentationName()" );
+		if ( DEBUG_ADD_EDIT )
+			logInfo( "CompoundGroupedUndoManager.getUndoPresentationName()" );
 		return super.getUndoPresentationName();
 //		return compoundEdit.getUndoPresentationName();
 	}
 	public synchronized String getRedoPresentationName() {
-		logInfo( "CompoundGroupedUndoManager.getRedoPresentationName()" );
+		if ( DEBUG_ADD_EDIT )
+			logInfo( "CompoundGroupedUndoManager.getRedoPresentationName()" );
 		return super.getRedoPresentationName();
 //		return compoundEdit.getRedoPresentationName();
 	}

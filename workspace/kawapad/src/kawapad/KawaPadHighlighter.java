@@ -341,7 +341,7 @@ public class KawaPadHighlighter {
 	}
 
 	public static void highlightMatchingParenthesis(JTextPane pane, int position) {
-		if ( KawaPad.ENABLED_SHOW_CORRESPONDING_PARENTHESES ) {
+		if ( Kawapad.ENABLED_SHOW_CORRESPONDING_PARENTHESES ) {
 			String text = pane.getText();
 			ParserState parserState = 
 					SimpleSchemeParenthesisChecker.lookupParenthesis( text, position );

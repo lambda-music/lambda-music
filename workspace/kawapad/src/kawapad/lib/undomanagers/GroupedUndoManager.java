@@ -32,14 +32,16 @@ public abstract interface GroupedUndoManager extends UndoableEdit, UndoableEditL
 	public static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
 	public static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
 	public static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
-	
+	static final boolean DEBUG = false;
 	public abstract void startGroup0();
 	public default void startGroup() {
-		logInfo( "GroupedUndoManager.startGroup() >>>" );
+		if ( DEBUG )
+			logInfo( "GroupedUndoManager.startGroup() >>>" );
 		this.startGroup0();
 	}
 	public default void endGroup() {
-		logInfo( "GroupedUndoManager.endGroup() <<<" );
+		if ( DEBUG )
+			logInfo( "GroupedUndoManager.endGroup() <<<" );
 		this.startGroup0();
 	}
 	public abstract void setSuspended(boolean suspended);

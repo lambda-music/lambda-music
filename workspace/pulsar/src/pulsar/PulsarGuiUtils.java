@@ -30,7 +30,7 @@ import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import kawa.standard.Scheme;
-import kawapad.KawaPad;
+import kawapad.Kawapad;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
@@ -741,7 +741,7 @@ public class PulsarGuiUtils {
 					return pulsar.getSchemeSecretary().executeSecretarially( new SecretaryMessage.NoThrow<Scheme, String>() {
 						@Override
 						public String execute0(Scheme scheme, Object[] args) {
-							return KawaPad.KawaPane.prettify( scheme.getEnvironment(), userText );
+							return Kawapad.prettify( scheme.getEnvironment(), userText );
 						}
 					},Invokable.NOARG) ;
 

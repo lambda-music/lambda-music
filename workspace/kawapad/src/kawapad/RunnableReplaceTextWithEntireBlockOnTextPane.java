@@ -2,56 +2,54 @@ package kawapad;
 
 import javax.swing.text.BadLocationException;
 
-import kawapad.KawaPad.KawaPane;
-
 final class RunnableReplaceTextWithEntireBlockOnTextPane implements Runnable {
-		private KawaPane textPane;
-		private final String result;
-		RunnableReplaceTextWithEntireBlockOnTextPane( KawaPane textPane, String result ) {
-			this.textPane = textPane;
-			this.result = result;
-		}
+	private Kawapad kawaPane;
+	private final String result;
+	RunnableReplaceTextWithEntireBlockOnTextPane( Kawapad textPane, String result ) {
+		this.kawaPane = textPane;
+		this.result = result;
+	}
+	
+	@Override
+	public void run() {
+		KawapadFrame.logInfo( "ReplaceTextWithEntireBlockOnTextPane() begin >>" );
 		
-		@Override
-		public void run() {
-			KawaPad.logInfo( "ReplaceTextWithEntireBlockOnTextPane() begin >>" );
-
-			try {
-				if ( textPane.getSelectedText() != null ) {
-					try {
-						textPane.getKawaPad().getUndoManager().startGroup();
-						textPane.getKawaPad().getUndoManager().setSuspended(true);
-
-						// In order to avoid entering an infinite loop,
-						// we use /for/ loop instead of /while/ loop;
-						for ( int i=0; i<100; i++ ) {
-							if ( textPane.getKawaPad().getKawaPane().expandSelectedParentheses( textPane ) ) {
-								break;
-							}
+		try {
+			if ( kawaPane.getSelectedText() != null ) {
+				try {
+					kawaPane.getUndoManager().startGroup();
+					kawaPane.getUndoManager().setSuspended(true);
+					
+					// In order to avoid entering an infinite loop,
+					// we use /for/ loop instead of /while/ loop;
+					for ( int i=0; i<100; i++ ) {
+						if ( kawaPane.expandSelectedParentheses( kawaPane ) ) {
+							break;
 						}
-						textPane.replaceSelection( result );
-					} finally {
-						textPane.getKawaPad().getUndoManager().setSuspended(false);
-						textPane.getKawaPad().getUndoManager().endGroup();
 					}
-				} else {
-					try {
-						textPane.getKawaPad().getUndoManager().startGroup();
-						textPane.getKawaPad().getUndoManager().setSuspended(true);
-						int dot = textPane.getCaret().getDot();
-						textPane.getDocument().insertString( dot, result, null);
-						textPane.getCaret().moveDot(dot);
-					} finally {
-						textPane.getKawaPad().getUndoManager().setSuspended(false);
-						textPane.getKawaPad().getUndoManager().endGroup();
-					}
+					kawaPane.replaceSelection( result );
+				} finally {
+					kawaPane.getUndoManager().setSuspended(false);
+					kawaPane.getUndoManager().endGroup();
 				}
-				KawaPad.logInfo( "ReplaceTextWithEntireBlockOnTextPane() done" );
-				textPane.getKawaPad().getKawaPane().updateHighlightLater();
-			} catch (BadLocationException e1) {
-				e1.printStackTrace();
-			} finally {
-				KawaPad.logInfo( "ReplaceTextWithEntireBlockOnTextPane() end <<" );
+			} else {
+				try {
+					kawaPane.getUndoManager().startGroup();
+					kawaPane.getUndoManager().setSuspended(true);
+					int dot = kawaPane.getCaret().getDot();
+					kawaPane.getDocument().insertString( dot, result, null);
+					kawaPane.getCaret().moveDot(dot);
+				} finally {
+					kawaPane.getUndoManager().setSuspended(false);
+					kawaPane.getUndoManager().endGroup();
+				}
 			}
+			KawapadFrame.logInfo( "ReplaceTextWithEntireBlockOnTextPane() done" );
+			kawaPane.updateHighlightLater();
+		} catch (BadLocationException e1) {
+			e1.printStackTrace();
+		} finally {
+			KawapadFrame.logInfo( "ReplaceTextWithEntireBlockOnTextPane() end <<" );
 		}
 	}
+}

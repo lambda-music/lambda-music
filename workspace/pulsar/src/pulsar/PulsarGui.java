@@ -77,7 +77,7 @@ import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import kawa.standard.Scheme;
-import kawapad.KawaPad;
+import kawapad.KawapadFrame;
 import metro.MetroTrack;
 import pulsar.Pulsar.TempoTapperTempoNotifier;
 import pulsar.lib.scheme.DescriptiveDocumentType;
@@ -148,7 +148,7 @@ public class PulsarGui {
 				if ( ! mainFile.isFile() )
 					throw new RuntimeException( "The specified file does not exist (" + mainFile.getPath() + ")" );
 				
-				frame.getKawaPane().openFile( mainFile );
+				frame.getKawapad().openFile( mainFile );
 			}
 		}, Invokable.NOARG );
 	}
@@ -159,7 +159,7 @@ public class PulsarGui {
 			try {
 				in = PulsarGui.class.getResourceAsStream( "lib/intro.scm" );
 				String s = new String( SchemeUtils.readAll( in ), "UTF-8" );
-				frame.getKawaPane().setNewText( s );
+				frame.getKawapad().setNewText( s );
 			} finally {
 				if ( in != null )
 					in.close();
@@ -412,14 +412,12 @@ public class PulsarGui {
 				for ( Object o : args ) {
 					sb.append( o.toString() ).append( " " );
 				}
-				frame.getKawaPane().insertText( sb.toString().trim() );
+				frame.getKawapad().insertText( sb.toString().trim() );
     			return Invokable.NO_RESULT;
     		}
     	}, "gui-insert-text");
     }
     
-    
-
 	
     //Create the "cards".
     JPulsarFrame frame;
@@ -457,7 +455,7 @@ public class PulsarGui {
 		@SuppressWarnings("unused")
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			KawaPad scratchPad = frame.createKawaPad();
+			KawapadFrame scratchPad = frame.createKawaPad();
 		}
 		{
 			putValue( Action2.NAME, "New Scratchpad" );
@@ -526,7 +524,7 @@ public class PulsarGui {
 	};
 
 
-	protected class JPulsarFrame extends KawaPad {
+	protected class JPulsarFrame extends KawapadFrame {
 		public JPulsarFrame( SchemeSecretary schemeSecretary, String title ) throws HeadlessException {
 			super( schemeSecretary, title );
 			PulsarGui.registerLocalSchemeInitializers( schemeSecretary, PulsarGui.this );
@@ -565,7 +563,7 @@ public class PulsarGui {
 		@Override
 		public void dispose() {
 			super.dispose();
-			PulsarGui.unregisterLocalSchemeInitializers( schemeSecretary, PulsarGui.this );
+			PulsarGui.unregisterLocalSchemeInitializers( kawapad.getSchemeSecretary(), PulsarGui.this );
 			if ( shutdownWhenClose )
 				pulsar.shutdown();
 		}
