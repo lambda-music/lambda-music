@@ -18,19 +18,19 @@
  * along with Kawapad.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package kawapad.lib;
+package kawapad.lib.undomanagers;
 
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoableEdit;
 
-public class SimpleCompoundUndoManager extends GroupedUndoManager {
+public class SimpleCompoundUndoManager extends UndoManager implements GroupedUndoManager {
 	private static final boolean DEBUG_ADD_EDIT = false;
 	private static final boolean DEBUG_SUSPENDED = false;
 	protected transient boolean suspended = false;
 	public SimpleCompoundUndoManager() {
-		startGroup();
+		this.startGroup();
 	}
 	public synchronized void setSuspended(boolean suspended) {
 		if ( DEBUG_SUSPENDED )
@@ -49,7 +49,7 @@ public class SimpleCompoundUndoManager extends GroupedUndoManager {
 	
 	protected transient boolean validCompoundEdit = false;
 	protected transient CompoundEdit compoundEdit = null;
-	public synchronized void startGroup() {
+	public synchronized void startGroup0() {
 		if ( DEBUG_SUSPENDED )
 			if ( suspended  ) {
 				System.err.println("startGroup() ... but suspended");

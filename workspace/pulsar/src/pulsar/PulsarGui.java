@@ -148,7 +148,7 @@ public class PulsarGui {
 				if ( ! mainFile.isFile() )
 					throw new RuntimeException( "The specified file does not exist (" + mainFile.getPath() + ")" );
 				
-				frame.openFile( mainFile );
+				frame.getKawaPane().openFile( mainFile );
 			}
 		}, Invokable.NOARG );
 	}
@@ -159,7 +159,7 @@ public class PulsarGui {
 			try {
 				in = PulsarGui.class.getResourceAsStream( "lib/intro.scm" );
 				String s = new String( SchemeUtils.readAll( in ), "UTF-8" );
-				frame.setNewText( s );
+				frame.getKawaPane().setNewText( s );
 			} finally {
 				if ( in != null )
 					in.close();
@@ -412,7 +412,7 @@ public class PulsarGui {
 				for ( Object o : args ) {
 					sb.append( o.toString() ).append( " " );
 				}
-				frame.insertText( sb.toString().trim() );
+				frame.getKawaPane().insertText( sb.toString().trim() );
     			return Invokable.NO_RESULT;
     		}
     	}, "gui-insert-text");

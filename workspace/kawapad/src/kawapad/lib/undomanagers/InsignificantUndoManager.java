@@ -18,14 +18,14 @@
  * along with Kawapad.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package kawapad.lib;
+package kawapad.lib.undomanagers;
 
 import javax.swing.SwingUtilities;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 
-public class InsignificantUndoManager extends GroupedUndoManager {
+public class InsignificantUndoManager extends UndoManager implements GroupedUndoManager {
 	private static final boolean DEBUG_ADD_EDIT = true;
 	private static final boolean DEBUG_SUSPENDED = true;
 	boolean suspended = false;
@@ -62,7 +62,7 @@ public class InsignificantUndoManager extends GroupedUndoManager {
     }
 
 	@Override
-	public void startGroup() {
+	public void startGroup0() {
 		if ( DEBUG_SUSPENDED )
 			if ( suspended  ) {
 				System.err.println("notifySignificant(suspended)");

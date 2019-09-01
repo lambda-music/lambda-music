@@ -23,7 +23,7 @@
  * questions.
  */
 
-package kawapad.lib;
+package kawapad.lib.undomanagers;
 
 import java.util.Vector;
 

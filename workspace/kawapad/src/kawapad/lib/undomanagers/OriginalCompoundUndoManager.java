@@ -18,7 +18,7 @@
  * along with Kawapad.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package kawapad.lib;
+package kawapad.lib.undomanagers;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -44,10 +44,10 @@ import javax.swing.undo.UndoableEdit;
 **  undone as a group. Any attribute changes will be considered as part
 **  of the group and will therefore be undone when the group is undone.
 */
-public class OriginalCompoundUndoManager extends GroupedUndoManager
-	implements UndoableEditListener, DocumentListener
+public class OriginalCompoundUndoManager extends UndoManager 
+	implements UndoableEditListener, DocumentListener, GroupedUndoManager
 {
-	private GroupedUndoManager undoManager;
+	private OriginalCompoundUndoManager undoManager;
 	private CompoundEdit compoundEdit;
 	private JTextComponent textComponent;
 	private UndoAction undoAction;
@@ -65,7 +65,7 @@ public class OriginalCompoundUndoManager extends GroupedUndoManager
 	public void setSuspended(boolean suspended) {
 	}
 	@Override
-	public void startGroup() {
+	public void startGroup0() {
 	}
 	@Override
 	public boolean isSuspended() {

@@ -44,6 +44,8 @@ public class KawaPadHighlighter {
 	static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
 	static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 	
+	private static final boolean DEBUG = false;
+	
 	public static String lispWordToPatternString(Collection<String> lispWordCollection) {
 		String[] lispWords = lispWordCollection.toArray( new String[ lispWordCollection.size() ] );
 		Arrays.sort( lispWords, new Comparator<String>() {
@@ -185,7 +187,8 @@ public class KawaPadHighlighter {
 	static Pattern patternCommentUnderline = Pattern.compile( "__(\\S*?)__", Pattern.MULTILINE );
 
 	public static void highlightSyntax( JTextPane textPane, Collection<String> keywordList ) {
-		logInfo("highlightSyntax()");
+		if ( DEBUG ) 
+			logInfo("highlightSyntax() begin >>");
 		StyledDocument document = textPane.getStyledDocument();
 		String text = textPane.getText();
 		{
@@ -264,6 +267,8 @@ public class KawaPadHighlighter {
 	    		}
 	    	}
 	    }
+		if ( DEBUG ) 
+			logInfo("highlightSyntax() end <<");
 	}
 
 	static class ClearPosition {
@@ -336,10 +341,12 @@ public class KawaPadHighlighter {
 	}
 
 	public static void highlightMatchingParenthesis(JTextPane pane, int position) {
-		String text = pane.getText();
-		ParserState parserState = 
-				SimpleSchemeParenthesisChecker.lookupParenthesis( text, position );
-		if ( parserState.isFound() )
-			highlightParentheses( pane.getStyledDocument(), parserState.getIterator().getInitialIndex(), parserState.getIterator().getIndex() );
+		if ( KawaPad.ENABLED_SHOW_CORRESPONDING_PARENTHESES ) {
+			String text = pane.getText();
+			ParserState parserState = 
+					SimpleSchemeParenthesisChecker.lookupParenthesis( text, position );
+			if ( parserState.isFound() )
+				highlightParentheses( pane.getStyledDocument(), parserState.getIterator().getInitialIndex(), parserState.getIterator().getIndex() );
+		}
 	}
 }

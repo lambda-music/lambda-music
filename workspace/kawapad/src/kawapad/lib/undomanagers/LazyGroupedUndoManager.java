@@ -18,11 +18,11 @@
  * along with Kawapad.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package kawapad.lib;
+package kawapad.lib.undomanagers;
 
-public class LazyGroupedUndoManager extends GroupedUndoManager {
+public class LazyGroupedUndoManager extends UndoManager implements GroupedUndoManager {
 	@Override
-	public void startGroup() {
+	public void startGroup0() {
 	}
 	@Override
 	public void setSuspended(boolean suspended) {
