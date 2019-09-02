@@ -1,0 +1,8 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2019-09-02T14:55:01+09:00
+
+====== How to set to Nimbus ======
+Created Monday 02 September 2019
+
+-Dswing.defaultlaf=javax.swing.plaf.nimbus.NimbusLookAndFeel

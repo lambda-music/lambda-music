@@ -40,7 +40,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -49,12 +49,15 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.DefaultEditorKit.DefaultKeyTypedAction;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.StyledDocument;
 import javax.swing.text.TextAction;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -105,7 +108,10 @@ import pulsar.lib.swing.Action2;
  *  
  * @author Ats Oka
  */
-public class Kawapad extends JTextArea {
+public class Kawapad extends JTextPane {
+	private static JComponent createAncestor() {
+		return new JTextPane();
+	}
 	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
 	static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
 	static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -182,7 +188,12 @@ public class Kawapad extends JTextArea {
         
 		// This action intercepts our customization so delete it.
 		purgeKeyFromActionMap( kawapad.getActionMap(), DefaultEditorKit.insertTabAction );
+		
+//		this.setEditorKit( new KawapadEditorKit());
+		((AbstractDocument)getDocument()).setDocumentFilter( new KawapadDocumentFilter0( this.getStyledDocument()));
 	}
+	
+	
 
 	//////////////////////////////////////////////////////////////////////////////////////////
 	//
@@ -642,7 +653,7 @@ public class Kawapad extends JTextArea {
 		public void actionPerformed(ActionEvent e) {
 			super.actionPerformed(e);
 			
-			JTextArea target = (JTextArea) getTextComponent(e);
+			Kawapad target = (Kawapad) getTextComponent(e);
             if ((target != null) && (e != null)) {
                 String content = e.getActionCommand();
 //	                logInfo( "typed : " + content );
@@ -688,7 +699,7 @@ public class Kawapad extends JTextArea {
 
 	// This fix the caption for backspace menu (might be). 
 	static {
-		ActionMap actionMap = new JTextArea().getActionMap();
+		ActionMap actionMap = createAncestor().getActionMap();
 		
 		// Dump
 		if ( false ) 
@@ -1320,7 +1331,7 @@ public class Kawapad extends JTextArea {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			JTextArea textPane = (JTextArea) getTextComponent(e);
+			Kawapad textPane = (Kawapad) getTextComponent(e);
 			String text = textPane.getText();
 			Caret caret = textPane.getCaret();
 			int currDot = caret.getDot();
@@ -1825,10 +1836,39 @@ public class Kawapad extends JTextArea {
 	// 
 	//////////////////////////////////////////////////////////////////////////////////////////
 
-	public static File getInitFile() {
+	public static File getExtFile() {
 		return new File( System.getProperty("user.home"), ".kawapad/kawapad-extension.scm" );
 	}
+	public static File getInitFile() {
+		return new File( System.getProperty("user.home"), ".kawapad/kawapad-initialization.scm" );
+	}
+	public static void executeExternalFile(Scheme scheme, String fileType, File initFile) {
+		// Read user's configuration file. If any problem is occurred, print its
+		// stacktrace in the stderr, and then continue the process.
+		try {
+			logInfo( "Loading " + initFile.getName() );
+			if ( initFile.exists() ) {
+				SchemeUtils.execScheme( scheme, new FileInputStream( initFile ), initFile.getPath() );
+			} else {
+				logInfo( "The " + fileType + " file \"" + initFile.getPath() + "\" does not exist. Ignored." );
+			}
+		} catch (Throwable e) {
+			logError( "Ignored an error : ", e);
+		}
+	}
+	/**
+	 * This file is executed only once when Kawapad class is loaded to the current VM.
+	 * This file is executed before Kawapad is initialized; therefore, in this file 
+	 * the most Kawapad API is not available because at the time of execution, 
+	 * Kawapad is not initialized yet. This can only be used for initializing various 
+	 * classes. 
+	 */
+	static {
+		executeExternalFile( new Scheme(), "kawapad initialization", getInitFile() );
+	}
 
+	////////////////////////////////////////////////////////////////////////////
+	
 	protected void initScheme( Scheme scheme ) {
 		logInfo( "KawaPad#initScheme" );
 		Environment env = scheme.getEnvironment();
@@ -1911,25 +1951,10 @@ public class Kawapad extends JTextArea {
 				logError( "Ignored an error : ", e);
 			}
 
-			// Read user's configuration file. If any problem is occurred, print its
-			// stacktrace in the stderr, and then continue the process.
-			try {
-				File initFile = getInitFile();
-				logInfo( "Loading " + initFile.getName() );
-				if ( initFile.exists() ) {
-					SchemeUtils.execScheme( scheme, new FileInputStream( initFile ), initFile.getPath() );
-				} else {
-					logInfo( "The user configuration file \"" + initFile.getPath() + "\" does not exist. Ignored." );
-				}
-			} catch (Throwable e) {
-				logError( "Ignored an error : ", e);
-			}
-
-
+			executeExternalFile( scheme, "user extension", getExtFile() );
 		}
 		return scheme;
 	}
-
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
@@ -2517,7 +2542,7 @@ public class Kawapad extends JTextArea {
 	}
 	
 
-	Action OPEN_FILE_NEW = new AbstractAction() {
+	public Action OPEN_FILE_NEW = new AbstractAction() {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			try {
@@ -2533,7 +2558,7 @@ public class Kawapad extends JTextArea {
 		}        
 	};
 
-	Action OPEN_FILE = new AbstractAction() {
+	public Action OPEN_FILE = new AbstractAction() {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			try {
@@ -2548,7 +2573,7 @@ public class Kawapad extends JTextArea {
 			putValue( Action.MNEMONIC_KEY , (int) 'o' );
 		}
 	};
-	Action SAVE_FILE = new AbstractAction() {
+	public Action SAVE_FILE = new AbstractAction() {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			try {
@@ -2563,7 +2588,7 @@ public class Kawapad extends JTextArea {
 			putValue( Action.MNEMONIC_KEY , (int) 'o' );
 		}
 	};
-	Action SAVE_FILE_AS = new AbstractAction() {
+	public Action SAVE_FILE_AS = new AbstractAction() {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			try {
@@ -2605,6 +2630,42 @@ public class Kawapad extends JTextArea {
 	// highlighter
 	//
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	Pattern createLispWordPattern() {
+		return Pattern.compile( 
+			"\\b" +
+			String.join( "\\b|\\b",  DEFAULT_LISP_WORDS ) +
+			"\\b" );
+	}
+	KawapadDocumentFilter.SyntaxElement SE_KEYWORD = null;
+	KawapadDocumentFilter.SyntaxElement getKeywordSyntaxElement() {
+		if ( SE_KEYWORD == null ) {
+			SE_KEYWORD = new KawapadDocumentFilter.SyntaxElement( 
+				createLispWordPattern(), 
+				KawapadDocumentFilter.orangeAttributeSet ); 
+		}
+		return SE_KEYWORD; 
+	}
+	
+	KawapadDocumentFilter.SyntaxElement SE_PUNCT = new KawapadDocumentFilter.SyntaxElement(
+		Pattern.compile( "\\(|\\)|\\:|\\'|\\#" ),
+		KawapadDocumentFilter.redAttributeSet );
+	
+	
+	final class KawapadDocumentFilter0 extends KawapadDocumentFilter {
+		KawapadDocumentFilter0(StyledDocument document) {
+			super( document );
+		}
+		@Override
+		public List<SyntaxElement> getSyntaxElementList() {
+			return Arrays.asList( SE_PUNCT, getKeywordSyntaxElement() );
+		}
+		@Override
+		public AttributeSet getDefaultAttributeSet() {
+			return KawapadDocumentFilter.createAttribute( getForeground() );
+		}
+	}
+
 
 	String getLispWordPatternString() {
 		return KawaPadHighlighter.lispWordToPatternString( kawapad.getLispWords() ); 
