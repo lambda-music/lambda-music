@@ -69,7 +69,9 @@ public class KawapadFrame extends JFrame {
 	// private Scheme scheme;
 
 	public KawapadFrame createKawaPad() {
-		return new KawapadFrame( this.kawapad.schemeSecretary, this.getTitle() ); 
+		KawapadFrame kawapadFrame = new KawapadFrame( this.kawapad.schemeSecretary, this.getTitle() );
+		kawapadFrame.init();
+		return kawapadFrame; 
 	}
 	protected Kawapad kawapad;
 	public Kawapad getKawapad() {
@@ -120,6 +122,19 @@ public class KawapadFrame extends JFrame {
 			}
 		};
 		
+
+//		Color foreground = Color.green;
+//		Color background = Color.black;
+//		Color selectionForeground = Color.white;
+//		Color selectionBackground = Color.blue;
+//
+//		kawapad.setBackground( background );
+//		kawapad.setForeground( foreground );
+//		kawapad.setSelectedTextColor( selectionForeground );
+//		kawapad.setSelectionColor( selectionBackground );
+//		
+		// kawapad.setFont(  Font.decode( "Bitstream Vera Sans Mono 12" ) );
+		
 		kawapad.addVariableInitializer( new KawaVariableInitializer() {
 			@Override
 			public void initializeVariable(Map<String, Object> variables ) {
@@ -127,8 +142,13 @@ public class KawapadFrame extends JFrame {
 			}
 		});
 		
+//		int MARGIN = 5;
+//		{
+//			Border b = BorderFactory.createLineBorder( background, MARGIN  );
+//			kawapad.setBorder( b );
+//		}
+		
 		scrollPane = new JScrollPane( kawapad );
-
 		scratchPadRoot = new JPanel( new BorderLayout() );
 		getContentPane().add(scratchPadRoot );
 		scratchPadRoot.add( scrollPane, BorderLayout.CENTER );

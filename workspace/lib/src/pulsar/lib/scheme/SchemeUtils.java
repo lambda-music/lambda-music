@@ -292,6 +292,9 @@ public class SchemeUtils {
 	public static double toDouble( Object schemeVal ) {
 		return ((Quantity) schemeVal).doubleValue();
 	}
+	public static float toFloat( Object schemeVal ) {
+		return ((Quantity) schemeVal).floatValue();
+	}
 	public static int toInteger( Object schemeVal ) {
 		return ((Quantity) schemeVal).intValue();
 	}

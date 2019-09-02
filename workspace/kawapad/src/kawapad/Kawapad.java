@@ -3,6 +3,7 @@ package kawapad;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -395,11 +396,11 @@ public class Kawapad extends JTextArea {
 	 * One of such variables is a reference to the frame object. This reference must be
 	 * cleared when the frame is disposed.
 	 */
-	public static void registerLocalSchemeInitializers( SchemeSecretary schemeSecretary, Kawapad kawaPane ) {
-		schemeSecretary.registerSchemeInitializer( kawaPane, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+	public static void registerLocalSchemeInitializers( SchemeSecretary schemeSecretary, Kawapad kawapad ) {
+		schemeSecretary.registerSchemeInitializer( kawapad, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
 			@Override
 			public void execute0( Scheme scheme, Object[] args ) {
-				kawaPane.initScheme( scheme );				
+				kawapad.initScheme( scheme );				
 			}
 		});
 //			WARNING This should be done only in init(); (Tue, 06 Aug 2019 18:07:49 +0900)
@@ -454,6 +455,7 @@ public class Kawapad extends JTextArea {
 	///////////////////////////////////////////////////////////////////////////////////////////////
 
 	public void initialize() {
+		schemeSecretary.invokeSchemeInitializers( this );
 		Kawapad.eventHandlers.invokeEventHandler( kawapad, EventHandlers.CREATE, kawapad );
 	}
 	public void finalize() {
@@ -1824,7 +1826,7 @@ public class Kawapad extends JTextArea {
 	//////////////////////////////////////////////////////////////////////////////////////////
 
 	public static File getInitFile() {
-		return new File( System.getProperty("user.home"), ".pulsar/kawapad-extension.scm" );
+		return new File( System.getProperty("user.home"), ".kawapad/kawapad-extension.scm" );
 	}
 
 	protected void initScheme( Scheme scheme ) {
@@ -1833,6 +1835,19 @@ public class Kawapad extends JTextArea {
 		SchemeUtils.defineVar( env, this, instanceID );
 
 		textualIncrementalAddon.initScheme( env );
+		
+		SchemeUtils.defineVar( env, new Procedure2("load-font") {
+			@Override
+			public Object apply2(Object arg1,Object arg2) throws Throwable {
+				String filePath = SchemeUtils.anyToString( arg1 );
+				float  fontSize = SchemeUtils.toFloat( arg2 );
+				Font font = Font.createFont(Font.TRUETYPE_FONT, new File( filePath )).deriveFont( fontSize );
+				GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+				ge.registerFont(font);
+				kawapad.setFont( font );
+				return Values.empty;
+			}
+		}, "load-font" );
 	}
 
 	public static Scheme staticInitScheme( Scheme scheme ) {
