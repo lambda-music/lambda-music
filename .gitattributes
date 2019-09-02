@@ -1,3 +1,6 @@
 * linguist-vendored
-*.html linguist-vendored=false
-*.css linguist-vendored=false
+*.java linguist-vendored=false
+*.scm  linguist-vendored=false
+*.xml  linguist-vendored=false
+*.md   linguist-vendored=false
+*.sh   linguist-vendored=false
