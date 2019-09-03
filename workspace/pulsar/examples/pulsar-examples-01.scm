@@ -1,8 +1,25 @@
 (mov! 10 (sca! 1/1
-      (notation velo: << (cl 0.6 ) pos: >> (iota 16) ))))
+      (notation velo: << (cl 0.6 ) pos: >> (iota 16) )))
+#|
+((('pos . 10) ('velo . 0.6)) (('pos . 11) ('velo . 0.6))
+ (('pos . 12) ('velo . 0.6)) (('pos . 13) ('velo . 0.6))
+ (('pos . 14) ('velo . 0.6)) (('pos . 15) ('velo . 0.6))
+ (('pos . 16) ('velo . 0.6)) (('pos . 17) ('velo . 0.6))
+ (('pos . 18) ('velo . 0.6)) (('pos . 19) ('velo . 0.6))
+ (('pos . 20) ('velo . 0.6)) (('pos . 21) ('velo . 0.6))
+ (('pos . 22) ('velo . 0.6)) (('pos . 23) ('velo . 0.6))
+ (('pos . 24) ('velo . 0.6)) (('pos . 25) ('velo . 0.6)))
+|#
+
+
+
+(+ 10 10 10)
+(tra! 10 1/2
+  (notation velo: << (cl 0.6 ) pos: >> (iota 16) ))
+
 
 (add-incremental-keyword "hedd" "bars" )
-  hedd
+  bars
 
     
 

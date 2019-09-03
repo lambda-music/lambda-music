@@ -2,14 +2,16 @@ package kawapad;
 
 import java.awt.Color;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.text.DocumentFilter;
+import javax.swing.text.Segment;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
@@ -30,6 +32,7 @@ public abstract class KawapadDocumentFilter extends DocumentFilter {
 	public static final AttributeSet	greenAttributeSet	= createAttribute( Color.GREEN );
 	public static final AttributeSet	blueAttributeSet	= createAttribute( Color.BLUE );
 	public static final AttributeSet	redAttributeSet     = createAttribute( Color.RED );
+	public static final AttributeSet	grayAttributeSet     = createAttribute( Color.GRAY );
 	public static final AttributeSet	orangeAttributeSet     = createAttribute( Color.ORANGE );
 	public static final AttributeSet	whiteAttributeSet	= createAttribute( Color.WHITE );
 
@@ -70,37 +73,59 @@ public abstract class KawapadDocumentFilter extends DocumentFilter {
 		handleTextChanged();
 	}
 	
+	Timer timer = new Timer(true);
+	final Object lock = new Object();
+	transient TimerTask theLastRunnable = null;
 	private void handleTextChanged() {
-		AttributeSet defaultAttr = getDefaultAttributeSet();
-		SwingUtilities.invokeLater( new Runnable() {
-			@Override
-			public void run() {
-		        document.setCharacterAttributes(0, getText(document).length(), defaultAttr , true);
-				for ( SyntaxElement e : getSyntaxElementList() ) {
-					updateTextStyles( document, e.pattern , defaultAttr, e.attributeSet );
+		TimerTask r = null;
+		synchronized (lock){
+			r= new TimerTask() {
+				@Override
+				public void run() {
+					boolean f=false;
+					synchronized( lock ) {
+						if ( theLastRunnable == this ) {
+							theLastRunnable = null;
+							f=true;
+						}
+					}
+					if ( f ) {
+						SwingUtilities.invokeLater( new Runnable() {
+							@Override
+							public void run() {
+								update();
+							}
+						} );
+					}
 				}
-			}
-		});
-	}
-	
-	
-	
-	static String getText( Document document ) {
-		try {
-			return document.getText( 0, document.getLength() );
-		} catch (BadLocationException e) {
-			e.printStackTrace();
-			return "";
+			};
+			this.theLastRunnable = r;
 		}
+		if ( r != null )
+			timer.schedule( r, 100 );
 	}
 
+	void update() {
+		AttributeSet defaultAttr = getDefaultAttributeSet();
+		document.setCharacterAttributes(0, document.getLength(), defaultAttr , true);
+		for ( SyntaxElement e : getSyntaxElementList() ) {
+			updateTextStyles( document, e.pattern , defaultAttr, e.attributeSet );
+		}
+	}
+	
 	static void updateTextStyles( StyledDocument document, Pattern pattern, AttributeSet defaultAttr, AttributeSet attr ) {
 		
 		// Look for tokens and highlight them
-		Matcher matcher = pattern.matcher( getText( document ) );
-		while (matcher.find()) {
-			// Change the color of recognized tokens
-			document.setCharacterAttributes( matcher.start(), matcher.end() - matcher.start(), attr, false );
+		try {
+			Segment s = new Segment();
+			document.getText( 0, document.getLength() ,s );
+			Matcher matcher = pattern.matcher( s );
+			while (matcher.find()) {
+				// Change the color of recognized tokens
+				document.setCharacterAttributes( matcher.start(), matcher.end() - matcher.start(), attr, false );
+			}
+		} catch (BadLocationException e) {
+			e.printStackTrace();
 		}
 	}
 	

@@ -2631,34 +2631,67 @@ public class Kawapad extends JTextPane {
 	//
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	Pattern createLispWordPattern() {
-		return Pattern.compile( 
-			"\\b" +
-			String.join( "\\b|\\b",  DEFAULT_LISP_WORDS ) +
-			"\\b" );
-	}
-	KawapadDocumentFilter.SyntaxElement SE_KEYWORD = null;
-	KawapadDocumentFilter.SyntaxElement getKeywordSyntaxElement() {
-		if ( SE_KEYWORD == null ) {
-			SE_KEYWORD = new KawapadDocumentFilter.SyntaxElement( 
-				createLispWordPattern(), 
-				KawapadDocumentFilter.orangeAttributeSet ); 
-		}
-		return SE_KEYWORD; 
-	}
-	
-	KawapadDocumentFilter.SyntaxElement SE_PUNCT = new KawapadDocumentFilter.SyntaxElement(
-		Pattern.compile( "\\(|\\)|\\:|\\'|\\#" ),
-		KawapadDocumentFilter.redAttributeSet );
-	
 	
 	final class KawapadDocumentFilter0 extends KawapadDocumentFilter {
-		KawapadDocumentFilter0(StyledDocument document) {
-			super( document );
+		private Pattern createLispWordPattern() {
+			return Pattern.compile( 
+				"\\b" +
+						String.join( "\\b|\\b",  DEFAULT_LISP_WORDS ) +
+					"\\b" );
+		}
+		private KawapadDocumentFilter.SyntaxElement keywordStyleElement = null;
+		KawapadDocumentFilter.SyntaxElement getKeywordSyntaxElement() {
+			if ( keywordStyleElement == null ) {
+				keywordStyleElement = new KawapadDocumentFilter.SyntaxElement( 
+					createLispWordPattern(), 
+					KawapadDocumentFilter.orangeAttributeSet ); 
+			}
+			return keywordStyleElement; 
+		}
+		///////////////////////////////////////////////////////////////
+		private KawapadDocumentFilter.SyntaxElement punctuationStyleElement = new KawapadDocumentFilter.SyntaxElement(
+			Pattern.compile( "\\(|\\)|\\:|\\'|\\#" ),
+			KawapadDocumentFilter.redAttributeSet );
+		
+		KawapadDocumentFilter.SyntaxElement getPunctuationStyleElement() {
+			return punctuationStyleElement;
+		}
+		///////////////////////////////////////////////////////////////
+		private KawapadDocumentFilter.SyntaxElement blockCommentStyleElement = new KawapadDocumentFilter.SyntaxElement(
+			Pattern.compile( "\\#\\|[\\s\\S]*?\\|\\#", Pattern.MULTILINE ),
+			KawapadDocumentFilter.grayAttributeSet );
+		
+		KawapadDocumentFilter.SyntaxElement getBlockCommentStyleElement() {
+			return blockCommentStyleElement;
+		}
+		///////////////////////////////////////////////////////////////
+		private KawapadDocumentFilter.SyntaxElement commentStyleElement = new KawapadDocumentFilter.SyntaxElement(
+			Pattern.compile( ";.*$" ),
+			KawapadDocumentFilter.grayAttributeSet );
+		
+		KawapadDocumentFilter.SyntaxElement getCommentStyleElement() {
+			return commentStyleElement;
+		}
+		///////////////////////////////////////////////////////////////
+		
+		List<SyntaxElement> syntaxElementList;
+		private List<SyntaxElement> createSyntaxElementList() {
+			 return Arrays.asList( getPunctuationStyleElement(), getKeywordSyntaxElement(), getBlockCommentStyleElement(), getCommentStyleElement() );
+//			return Arrays.asList( getPunctuationStyleElement(), getKeywordSyntaxElement() );
+//			return Arrays.asList( getPunctuationStyleElement() );
+		}
+		public void resetSyntaxElementList() {
+			this.syntaxElementList = null;
 		}
 		@Override
 		public List<SyntaxElement> getSyntaxElementList() {
-			return Arrays.asList( SE_PUNCT, getKeywordSyntaxElement() );
+			if ( syntaxElementList == null ) {
+				this.syntaxElementList = createSyntaxElementList();
+			}
+			return syntaxElementList;
+		}
+		KawapadDocumentFilter0(StyledDocument document) {
+			super( document );
 		}
 		@Override
 		public AttributeSet getDefaultAttributeSet() {

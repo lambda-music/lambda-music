@@ -1591,7 +1591,7 @@
               notes))
 
 (define tra! (lambda (sca mov notes)
-               (sca! sca (mov! mov notes))))
+               (mov! mov (sca! sca notes))))
 
 (define cpy (lambda args
                (if (= (length args) 0 )
