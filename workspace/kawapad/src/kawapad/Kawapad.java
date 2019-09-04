@@ -1244,7 +1244,7 @@ public class Kawapad extends JTextPane {
         public static final int STRATEGY_DYNAMIC = -1024;
         public static final int STRATEGY_SIMPLE_PARENTHESIS_JUMP = 1;
         public static final int STRATEGY_CORRESPONDING_PARENTHESIS_JUMP = 2;
-        public int lookupCorrespondingParenthesis2(String text, int currDot, int direction, int constantStrategy ) throws InternalError {
+        public static int lookupCorrespondingParenthesis2(String text, int currDot, int direction, int constantStrategy ) throws InternalError {
             if ( currDot < 0 ) 
                 currDot = 0;
             if ( text.length() <= currDot )
@@ -1561,6 +1561,8 @@ public class Kawapad extends JTextPane {
         }
     };
     
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
     class ParenthesisSelect2Action extends TextAction {
         ParenthesisSelect2Action(String name) {
             super(name);
@@ -1585,7 +1587,7 @@ public class Kawapad extends JTextPane {
             int posL;
             int posR;
             {
-                posL = WordJumpAction.lookup( leftPos,  text , -1 );
+                posL =  WordJumpAction.lookup( leftPos,  text , -1 );
                 posR = WordJumpAction.lookup( rightPos, text ,  1 );
                 
                 if ( 0<=posL && 0<=posR ) {
@@ -1611,6 +1613,87 @@ public class Kawapad extends JTextPane {
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    class ParenthesisShrinkSelectionAction extends TextAction {
+        ParenthesisShrinkSelectionAction(String name) {
+            super(name);
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JTextComponent textComponent = (JTextComponent) getTextComponent(e);
+            String text  = textComponent.getText();
+            Caret caret  = textComponent.getCaret();
+
+            int currDot  = caret.getDot();
+            int currMark = caret.getMark();
+
+            if ( currDot == currMark ) {
+                PARENTHESIS_SELECT_ACTION.actionPerformed( e );
+                return;
+            }
+            
+            int leftPos;
+            int rightPos;
+            int direction;
+            if ( currDot < currMark ) {
+                leftPos = currDot;
+                rightPos = currMark - THE_FINAL_CORRECTION;
+                direction = -1;
+            } else {
+                leftPos = currMark;
+                rightPos = currDot - THE_FINAL_CORRECTION;
+                direction = +1;
+            }
+            
+            int posL;
+            int posR;
+            {
+                if ( 0 < direction ) {
+                    posR =     ParenthesisAction.lookupCorrespondingParenthesis2( text, rightPos, -1 , ParenthesisAction.STRATEGY_SIMPLE_PARENTHESIS_JUMP );
+                    if ( 0<=posR && ( text.charAt( posR ) == ')' ) ) 
+                        posL = ParenthesisAction.lookupCorrespondingParenthesis2( text, posR    , -1 , ParenthesisAction.STRATEGY_DYNAMIC );
+                    else
+                        posL = -1;
+                } else {
+                    posL =     ParenthesisAction.lookupCorrespondingParenthesis2( text, leftPos , +1 , ParenthesisAction.STRATEGY_SIMPLE_PARENTHESIS_JUMP );
+                    if ( 0<=posL && ( text.charAt( posL ) == '(' )) 
+                        posR = ParenthesisAction.lookupCorrespondingParenthesis2( text, posL    , +1 , ParenthesisAction.STRATEGY_DYNAMIC );
+                    else
+                        posR = -1;
+                }
+                System.err.println( String.format( "leftPos=%d rightPos=%d posL=%d posR=%d", leftPos, rightPos, posL, posR ) );
+                if ( (0<=posL) && (0<=posR) && (posL<=posR) ) {
+                    synchronized ( getParenthesisStack() ) {
+                        try {
+                            getParenthesisStack().setLocked( true );
+                            if ( 0 < direction ) {
+                                caret.setDot(posL);
+                                caret.moveDot(posR + THE_FINAL_CORRECTION);
+                            } else {
+                                caret.setDot(posR + THE_FINAL_CORRECTION );
+                                caret.moveDot(posL );
+                            }
+                            getParenthesisStack().push(currMark, currDot);
+                            return;
+                        } finally {
+                            getParenthesisStack().setLocked( false );
+                        }
+                    }
+                }
+            }
+        }
+    }
+    public final AbstractAction SELECT_PARENTHESES_SHRINK_ACTION = new ParenthesisShrinkSelectionAction("select-parentheses-shrink-action") {
+        {
+            putValue( Action2.NAME, "Select Parentheses Inside the Current Selection" );
+            putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, KeyEvent.SHIFT_MASK | KeyEvent.ALT_MASK ) );
+//              putValue( Action.MNEMONIC_KEY , (int) 'd' );
+        }
+    };
+
+    
 
     class ParenthesisDeselectAction extends TextAction {
         ParenthesisDeselectAction(String name) {
@@ -1655,8 +1738,8 @@ public class Kawapad extends JTextPane {
 
     {
         addKeyStroke( this, this.PARENTHESIS_SELECT_ACTION );
-        addKeyStroke( this, this.PARENTHESIS_SELECT_2_ACTION );
-        addKeyStroke( this, this.PARENTHESIS_DESELECT_ACTION );
+        addKeyStroke( this, this.SELECT_PARENTHESES_SHRINK_ACTION );
+//      addKeyStroke( this, this.PARENTHESIS_DESELECT_ACTION );
         addKeyStroke( this, this.PARENTHESIS_DESELECT_2_ACTION );
     }
 

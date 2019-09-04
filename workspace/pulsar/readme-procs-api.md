@@ -2,6 +2,7 @@ Pulsar API Reference
 ======================
 
 
+font-init
 OPEN?
 ====================
 
