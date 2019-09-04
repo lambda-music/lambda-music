@@ -36,7 +36,7 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-import kawapad.SimpleSchemeParenthesisParser.ParserState;
+import kawapad.SchemeParenthesisParser.ParserState;
 
 public class KawaPadHighlighter {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -344,7 +344,7 @@ public class KawaPadHighlighter {
         if ( Kawapad.ENABLED_SHOW_CORRESPONDING_PARENTHESES ) {
             String text = pane.getText();
             ParserState parserState = 
-                    SimpleSchemeParenthesisParser.lookupParenthesis( text, position );
+                    SchemeParenthesisParser.lookupParenthesis( text, position );
             if ( parserState.isFound() )
                 highlightParentheses( pane.getStyledDocument(), parserState.getIterator().getInitialIndex(), parserState.getIterator().getIndex() );
         }

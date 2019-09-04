@@ -29,7 +29,7 @@ import java.util.List;
  * October 3, 2018 at 9:52:28 PM
  * @author ats
  */
-public class SimpleSchemePrettifier {
+public class SchemePrettifier {
     static enum TokenType { BEGIN, END, ID }
     static class Token {
         TokenType type;
@@ -175,7 +175,7 @@ public class SimpleSchemePrettifier {
         for ( int i=0; i<tokenizedLines.length ;i++ ) {
             Tokenized tokenized = tokenizedLines[i] ;
             if ( 0 < tokenized.size() ) {
-                lines[i] = SimpleSchemeIndentChanger.changeIndentAbsolute( lines[i], tokenized.get(0).index );
+                lines[i] = SchemeIndentChanger.changeIndentAbsolute( lines[i], tokenized.get(0).index );
             }
         }
         
@@ -251,14 +251,14 @@ public class SimpleSchemePrettifier {
     
     
     public static String calculateIndentSizeO(String text, int pos, Collection<String> lispWords ) {
-        int beginIndex = SimpleSchemeIndentChanger.lookupLineStart(text, pos );
-        int endIndex   = SimpleSchemeIndentChanger.lookupLineEnd(  text, pos );
+        int beginIndex = SchemeIndentChanger.lookupLineStart(text, pos );
+        int endIndex   = SchemeIndentChanger.lookupLineEnd(  text, pos );
         String subText = text.substring(beginIndex, endIndex);
         Tokenized tokenizedLine = tokenize( subText, 0 );
         ArrayDeque<Level> stack = createStack();
         semiExecute(stack, tokenizedLine );
         int length = calculateIndentLength( lispWords, stack );
-        return SimpleSchemeIndentChanger.fillStr(' ', length );
+        return SchemeIndentChanger.fillStr(' ', length );
     }
     
     public static String calculateIndentSize(String text, int pos, Collection<String> lispWords ) {
@@ -286,7 +286,7 @@ public class SimpleSchemePrettifier {
         if ( 1<stack.size() ) {
             int index = calculateIndentLength(lispWords, stack);
             if ( 0 <=index  ) {
-                return SimpleSchemeIndentChanger.fillStr(' ', index );
+                return SchemeIndentChanger.fillStr(' ', index );
             }
         }
         return "";

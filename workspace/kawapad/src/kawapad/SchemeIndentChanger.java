@@ -20,7 +20,7 @@
 
 package kawapad;
 
-public class SimpleSchemeIndentChanger {
+public class SchemeIndentChanger {
     /**
      * Returns the next index of the nearest \n on the left side of the specified
      * position. Note that the \n itself considered that it belongs to the the

@@ -584,7 +584,7 @@ public class Kawapad extends JTextPane {
         }
     }
     public static final String calculateIndentSize( String text, int pos, Collection<String> lispWords ) {
-        return SimpleSchemePrettifier.calculateIndentSize( text, pos, lispWords );
+        return SchemePrettifier.calculateIndentSize( text, pos, lispWords );
     }
     
     
@@ -1225,8 +1225,8 @@ public class Kawapad extends JTextPane {
             Kawapad textPane = (Kawapad) getTextComponent(e);
             Caret caret = textPane.getCaret();
             int currDot = caret.getDot();
-            int newDot = SimpleSchemeParenthesisChecker.lookupCorrespondingParenthesis2(
-                SimpleSchemeParenthesisChecker.getText( textPane.getDocument() ),
+            int newDot = SchemeParentheses.lookupCorrespondingParenthesis2(
+                SchemeParentheses.getText( textPane.getDocument() ),
                 currDot, 
                 direction, 
                 constantStrategy );
@@ -1239,7 +1239,7 @@ public class Kawapad extends JTextPane {
     }
 
     public final AbstractAction SIMPLE_PARENTHESIS_JUMP_LEFT_ACTION =
-            new ParenthesisAction( "simple-parenthesis-jump-left", false, -1, SimpleSchemeParenthesisChecker.LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP )
+            new ParenthesisAction( "simple-parenthesis-jump-left", false, -1, SchemeParentheses.LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP )
     {
         {
             putValue( Action2.NAME, "Go to the Previous Parenthesis" );
@@ -1248,7 +1248,7 @@ public class Kawapad extends JTextPane {
         }
     };
     public final AbstractAction SIMPLE_PARENTHESIS_JUMP_RIGHT_ACTION =
-            new ParenthesisAction( "simple-parenthesis-jump-right", false, +1, SimpleSchemeParenthesisChecker.LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP  )
+            new ParenthesisAction( "simple-parenthesis-jump-right", false, +1, SchemeParentheses.LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP  )
     {
         {
             putValue( Action2.NAME, "Go to the Next Parenthesis" );
@@ -1257,7 +1257,7 @@ public class Kawapad extends JTextPane {
         }
     };
     public final AbstractAction SIMPLE_PARENTHESIS_SELECT_JUMP_LEFT_ACTION =
-            new ParenthesisAction( "simple-parenthesis-select-jump-left", true, -1, SimpleSchemeParenthesisChecker.LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP )
+            new ParenthesisAction( "simple-parenthesis-select-jump-left", true, -1, SchemeParentheses.LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP )
     {
         {
             putValue( Action2.NAME, "Select the Previous Parenthesis" );
@@ -1266,7 +1266,7 @@ public class Kawapad extends JTextPane {
         }
     };
     public final AbstractAction SIMPLE_PARENTHESIS_SELECT_JUMP_RIGHT_ACTION =
-            new ParenthesisAction( "simple-parenthesis-select-jump-right", true, +1, SimpleSchemeParenthesisChecker.LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP  )
+            new ParenthesisAction( "simple-parenthesis-select-jump-right", true, +1, SchemeParentheses.LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP  )
     {
         {
             putValue( Action2.NAME, "Select the Next Parenthesis" );
@@ -1276,7 +1276,7 @@ public class Kawapad extends JTextPane {
     };
     
     public final AbstractAction PARENTHESIS_JUMP_LEFT_ACTION =
-            new ParenthesisAction( "parenthesis-jump-left", false, -1, SimpleSchemeParenthesisChecker.LCP2_STRATEGY_DYNAMIC )
+            new ParenthesisAction( "parenthesis-jump-left", false, -1, SchemeParentheses.LCP2_STRATEGY_DYNAMIC )
     {
         {
             putValue( Action2.NAME, "Lookup the Corresponding Parenthesis on the Left" );
@@ -1285,7 +1285,7 @@ public class Kawapad extends JTextPane {
         }
     };
     public final AbstractAction PARENTHESIS_JUMP_RIGHT_ACTION = 
-            new ParenthesisAction( "parenthesis-jump-right", false, +1, SimpleSchemeParenthesisChecker.LCP2_STRATEGY_DYNAMIC  )
+            new ParenthesisAction( "parenthesis-jump-right", false, +1, SchemeParentheses.LCP2_STRATEGY_DYNAMIC  )
     {
         {
             putValue( Action2.NAME, "Lookup the Corresponding Parenthesis on the Right" );
@@ -1294,7 +1294,7 @@ public class Kawapad extends JTextPane {
         }
     };
     public final AbstractAction PARENTHESIS_SELECT_JUMP_LEFT_ACTION =
-            new ParenthesisAction( "parenthesis-sel-jump-left", true, -1, SimpleSchemeParenthesisChecker.LCP2_STRATEGY_DYNAMIC  )
+            new ParenthesisAction( "parenthesis-sel-jump-left", true, -1, SchemeParentheses.LCP2_STRATEGY_DYNAMIC  )
     {
         {
             putValue( Action2.NAME, "Lookup and Select the Corresponding Parenthesis on the Left" );
@@ -1303,7 +1303,7 @@ public class Kawapad extends JTextPane {
         }
     };
     public final AbstractAction PARENTHESIS_SELECT_JUMP_RIGHT_ACTION =
-            new ParenthesisAction( "parenthesis-sel-jump-right", true, +1, SimpleSchemeParenthesisChecker.LCP2_STRATEGY_DYNAMIC  )
+            new ParenthesisAction( "parenthesis-sel-jump-right", true, +1, SchemeParentheses.LCP2_STRATEGY_DYNAMIC  )
     {
         {
             putValue( Action2.NAME, "Lookup and Select the Corresponding Parenthesis to the Right" );
@@ -1346,7 +1346,7 @@ public class Kawapad extends JTextPane {
         }
         @Override
         public void actionPerformed(ActionEvent e) {
-            SimpleSchemeParenthesisChecker.expandSelectedParentheses( kawapad );
+            SchemeParentheses.expandSelectedParentheses( kawapad );
         }
     }
     public final AbstractAction PARENTHESIS_SELECT_ACTION = new ParenthesisSelectAction( "parenthesis-select" ) {
@@ -1426,9 +1426,9 @@ public class Kawapad extends JTextPane {
                 PARENTHESIS_SELECT_ACTION.actionPerformed( e );
                 return;
             }
-            SimpleSchemeParenthesisChecker.shrinkSelection( 
+            SchemeParentheses.shrinkSelection( 
                 getParenthesisStack(),
-                SimpleSchemeParenthesisChecker.getText( textComponent.getDocument() ),
+                SchemeParentheses.getText( textComponent.getDocument() ),
                 caret );
         }
     }
@@ -1514,8 +1514,8 @@ public class Kawapad extends JTextPane {
         // if there is a selected area :
         if ( min < max ) {
             isThereSelection = true;
-            beginIndex = SimpleSchemeIndentChanger.lookupLineStart(text, min  );
-            endIndex = SimpleSchemeIndentChanger.lookupLineEnd(text, max );
+            beginIndex = SchemeIndentChanger.lookupLineStart(text, min  );
+            endIndex = SchemeIndentChanger.lookupLineEnd(text, max );
             postfix = "\n";
         } else {
             isThereSelection = false;
@@ -1527,11 +1527,11 @@ public class Kawapad extends JTextPane {
              */
             if ( min ==0 || text.charAt(min-1 ) == '\n' ) {
                 beginIndex = min;
-                endIndex = SimpleSchemeIndentChanger.lookupLineEnd(text, min+1 );
+                endIndex = SchemeIndentChanger.lookupLineEnd(text, min+1 );
                 postfix = "\n";
             } else {
-                beginIndex = SimpleSchemeIndentChanger.lookupLineStart(text, min  );
-                endIndex   = SimpleSchemeIndentChanger.lookupLineEnd(text, max );
+                beginIndex = SchemeIndentChanger.lookupLineStart(text, min  );
+                endIndex   = SchemeIndentChanger.lookupLineEnd(text, max );
                 postfix = "\n";
             }
         }
@@ -1552,7 +1552,7 @@ public class Kawapad extends JTextPane {
                 textPane.moveCaretPosition( beginIndex );
             }
         } else {
-            int spaces = SimpleSchemeIndentChanger.countFirstSpaces( textPane.getText().substring( beginIndex ) );
+            int spaces = SchemeIndentChanger.countFirstSpaces( textPane.getText().substring( beginIndex ) );
             textPane.setCaretPosition(  beginIndex + spaces );
 //              textPane.moveCaretPosition( beginIndex + spaces );
         }
@@ -1573,7 +1573,7 @@ public class Kawapad extends JTextPane {
                 formatProc( kawapad, new TextFilter() {
                     @Override
                     String process(String text) {
-                        return SimpleSchemeIndentChanger.changeIndentRelativeMultiline( text, difference );
+                        return SchemeIndentChanger.changeIndentRelativeMultiline( text, difference );
                     }
                 });
             } finally {
@@ -1623,7 +1623,7 @@ public class Kawapad extends JTextPane {
     }
     
     public static final String prettify( Collection<String> lispWords, String text  ) {
-        return SimpleSchemePrettifier.prettify( lispWords, text );
+        return SchemePrettifier.prettify( lispWords, text );
     }
     public static final String prettify( Environment env, String text ) {
         return prettify( getLispWords0( env ), text );

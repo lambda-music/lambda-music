@@ -24,7 +24,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
-public class SimpleSchemeParenthesisParser {
+public class SchemeParenthesisParser {
     static final boolean DEBUG = false;
     public static enum ParseDirection { FORWARD,BACKWARD }
     public static enum ModeType { PARENTHESIS, STRING, ESCAPESEQUENCE }
@@ -59,7 +59,7 @@ public class SimpleSchemeParenthesisParser {
         }
         protected void appendProc( char c ) {
             if ( sb.length() == 0 ) {
-                int lineStart = SimpleSchemeIndentChanger.lookupLineStart( state.getIterator().getString(), state.getIterator().getIndex() );
+                int lineStart = SchemeIndentChanger.lookupLineStart( state.getIterator().getString(), state.getIterator().getIndex() );
                 int indentSize = state.getIterator().getIndex() - lineStart;
                 this.tokenInfoList.add( new TokenInfo( lineStart , indentSize ));
             }
@@ -395,8 +395,8 @@ public class SimpleSchemeParenthesisParser {
         System.out.println( parserState.getIterator().getString() );
         
         if ( parserState.isFound() ) {
-            System.out.println( SimpleSchemeIndentChanger.fillStr( ' ', parserState.getIterator().getInitialIndex() ) + '^' );
-            System.out.println( SimpleSchemeIndentChanger.fillStr( ' ', parserState.getIterator().getIndex() ) + '^' );
+            System.out.println( SchemeIndentChanger.fillStr( ' ', parserState.getIterator().getInitialIndex() ) + '^' );
+            System.out.println( SchemeIndentChanger.fillStr( ' ', parserState.getIterator().getIndex() ) + '^' );
         } else {
             System.out.println( "NOT FOUND" );
         }

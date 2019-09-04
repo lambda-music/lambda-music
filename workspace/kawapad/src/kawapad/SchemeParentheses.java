@@ -28,7 +28,7 @@ import javax.swing.text.Segment;
 /**
  *  October 3, 2018 at 9:52:22 PM
  */
-public class SimpleSchemeParenthesisChecker {
+public class SchemeParentheses {
     static final int THE_FINAL_CORRECTION = 1;
     static boolean expandSelectedParentheses(Kawapad textPane) {
         return expandSelectedParentheses( textPane.getParenthesisStack(), 
@@ -84,8 +84,8 @@ public class SimpleSchemeParenthesisChecker {
         {
             // the first search
             diff = 1;
-            posL = SimpleSchemeParenthesisParser.lookupCorrespondingParenthesis( left_leftString + ")" + left_rightString, leftPos );
-            posR = SimpleSchemeParenthesisParser.lookupCorrespondingParenthesis( right_leftString + "(" + right_rightString, rightPos );
+            posL = SchemeParenthesisParser.lookupCorrespondingParenthesis( left_leftString + ")" + left_rightString, leftPos );
+            posR = SchemeParenthesisParser.lookupCorrespondingParenthesis( right_leftString + "(" + right_rightString, rightPos );
             
             if ( 0<=posL && 0<=posR ) {
                 synchronized ( stack ) {
@@ -104,8 +104,8 @@ public class SimpleSchemeParenthesisChecker {
         {
             // the second search
             diff = 2;
-            posL = SimpleSchemeParenthesisParser.lookupCorrespondingParenthesis( left_leftString + "(\"" + left_rightString, leftPos   );
-            posR = SimpleSchemeParenthesisParser.lookupCorrespondingParenthesis( right_leftString + "\")" + right_rightString, rightPos +1 );
+            posL = SchemeParenthesisParser.lookupCorrespondingParenthesis( left_leftString + "(\"" + left_rightString, leftPos   );
+            posR = SchemeParenthesisParser.lookupCorrespondingParenthesis( right_leftString + "\")" + right_rightString, rightPos +1 );
             if ( 0<=posL && 0<=posR ) {
                 synchronized ( stack ) {
                     try {
@@ -241,7 +241,7 @@ public class SimpleSchemeParenthesisChecker {
             }
             case LCP2_STRATEGY_CORRESPONDING_PARENTHESIS_JUMP : { 
                 // strategy 0: a parenthesis is found under the cursor.
-                int pos = SimpleSchemeParenthesisParser.lookupCorrespondingParenthesis( text, currDot + totalOffset );
+                int pos = SchemeParenthesisParser.lookupCorrespondingParenthesis( text, currDot + totalOffset );
                 if ( 0<=pos ) {
                     newDot = pos;
                 } else {
