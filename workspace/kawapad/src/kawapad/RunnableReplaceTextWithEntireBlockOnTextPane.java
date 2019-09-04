@@ -3,10 +3,10 @@ package kawapad;
 import javax.swing.text.BadLocationException;
 
 final class RunnableReplaceTextWithEntireBlockOnTextPane implements Runnable {
-    private Kawapad kawaPane;
+    private Kawapad kawapad;
     private final String result;
     RunnableReplaceTextWithEntireBlockOnTextPane( Kawapad textPane, String result ) {
-        this.kawaPane = textPane;
+        this.kawapad = textPane;
         this.result = result;
     }
     
@@ -15,37 +15,37 @@ final class RunnableReplaceTextWithEntireBlockOnTextPane implements Runnable {
         KawapadFrame.logInfo( "ReplaceTextWithEntireBlockOnTextPane() begin >>" );
         
         try {
-            if ( kawaPane.getSelectedText() != null ) {
+            if ( kawapad.getSelectedText() != null ) {
                 try {
-                    kawaPane.getUndoManager().startGroup();
-                    kawaPane.getUndoManager().setSuspended(true);
+                    kawapad.getUndoManager().startGroup();
+                    kawapad.getUndoManager().setSuspended(true);
                     
                     // In order to avoid entering an infinite loop,
                     // we use /for/ loop instead of /while/ loop;
                     for ( int i=0; i<100; i++ ) {
-                        if ( kawaPane.expandSelectedParentheses( kawaPane ) ) {
+                        if ( SimpleSchemeParenthesisChecker.expandSelectedParentheses( kawapad ) ) {
                             break;
                         }
                     }
-                    kawaPane.replaceSelection( result );
+                    kawapad.replaceSelection( result );
                 } finally {
-                    kawaPane.getUndoManager().setSuspended(false);
-                    kawaPane.getUndoManager().endGroup();
+                    kawapad.getUndoManager().setSuspended(false);
+                    kawapad.getUndoManager().endGroup();
                 }
             } else {
                 try {
-                    kawaPane.getUndoManager().startGroup();
-                    kawaPane.getUndoManager().setSuspended(true);
-                    int dot = kawaPane.getCaret().getDot();
-                    kawaPane.getDocument().insertString( dot, result, null);
-                    kawaPane.getCaret().moveDot(dot);
+                    kawapad.getUndoManager().startGroup();
+                    kawapad.getUndoManager().setSuspended(true);
+                    int dot = kawapad.getCaret().getDot();
+                    kawapad.getDocument().insertString( dot, result, null);
+                    kawapad.getCaret().moveDot(dot);
                 } finally {
-                    kawaPane.getUndoManager().setSuspended(false);
-                    kawaPane.getUndoManager().endGroup();
+                    kawapad.getUndoManager().setSuspended(false);
+                    kawapad.getUndoManager().endGroup();
                 }
             }
             KawapadFrame.logInfo( "ReplaceTextWithEntireBlockOnTextPane() done" );
-            kawaPane.updateHighlightLater();
+            kawapad.updateHighlightLater();
         } catch (BadLocationException e1) {
             e1.printStackTrace();
         } finally {

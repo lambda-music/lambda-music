@@ -34,7 +34,7 @@ public class SimpleSchemeIndentChanger {
      *     lookupLineStart( s, 8 ) => 8
      *     lookupLineStart( s, 7 ) => 0
      */
-    public static int lookupLineStart( String s, int pos ) {
+    public static int lookupLineStart( CharSequence s, int pos ) {
         for ( int i=pos-1; ;i-- ) {
             if ( i<0 ) 
                 return 0;

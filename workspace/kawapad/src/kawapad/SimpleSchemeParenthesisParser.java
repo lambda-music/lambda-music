@@ -22,8 +22,10 @@ package kawapad;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
-public class SimpleSchemeParser {
+public class SimpleSchemeParenthesisParser {
+    static final boolean DEBUG = false;
     public static enum ParseDirection { FORWARD,BACKWARD }
     public static enum ModeType { PARENTHESIS, STRING, ESCAPESEQUENCE }
     public static abstract class ModeFactory {
@@ -177,7 +179,7 @@ public class SimpleSchemeParser {
         public StringMode( ParserState state, Mode parentMode, ModeFactory factory ) {
             super( state, parentMode, factory );
         }
-        public boolean process( SimpleSchemeParser.ParserState state) {
+        public boolean process( ParserState state) {
             char c = state.getIterator().getCurrentChar();
             switch ( c ) {
                 case '"' :
@@ -215,10 +217,10 @@ public class SimpleSchemeParser {
 
     public static class CharIterator {
         private ParseDirection direction;
-        private String string;
+        private CharSequence string;
         private int initialIndex;
         private int index=0;
-        public CharIterator(String s, int index, ParseDirection direction ) {
+        public CharIterator(CharSequence s, int index, ParseDirection direction ) {
             super();
             this.string = s;
             this.index = index;
@@ -246,13 +248,13 @@ public class SimpleSchemeParser {
         public int getInitialIndex() {
             return initialIndex;
         }
-        public String substring( int beginIndex, int endIndex ) {
-            return string.substring(beginIndex, endIndex);
+        public CharSequence substring( int beginIndex, int endIndex ) {
+            return string.subSequence( beginIndex, endIndex);
         }
-        public String getString() {
+        public CharSequence getString() {
             return string;
         }
-        public String setString( String string) {
+        public CharSequence setString( CharSequence string ) {
             this.string = string;
             return string;
         }
@@ -288,7 +290,7 @@ public class SimpleSchemeParser {
         public boolean isFound() {
             return found;
         }
-        public ParserState(String string, int index, ParseDirection direction ) {
+        public ParserState(CharSequence  string, int index, ParseDirection direction ) {
             super();
             this.iterator = new CharIterator( string, index, direction );
         }
@@ -297,4 +299,106 @@ public class SimpleSchemeParser {
         }
     }
 
+    public static ParserState lookupParenthesis( CharSequence string, int index ) {
+        ParserState parserState = null;
+        
+        /*
+         * If index is in the position beyond the length, do nothing. Note that the
+         * default value of 'found' property on the object is always false.
+         */
+        if (  string.length() <= index )
+            return new ParserState( string, index, ParseDirection.FORWARD );
+        
+        // added (Sun, 07 Oct 2018 17:00:57 +0900)
+        if ( index < 0 )
+            return new ParserState( string, index, ParseDirection.FORWARD );
+    
+        switch ( string.charAt(index) ) {
+            case '(' :
+                // LOGGER.info("(");
+                parserState = new ParserState( string, index, ParseDirection.FORWARD );
+                lookupParenthesisProc( parserState  );
+                return parserState;
+            case ')' : {
+                // LOGGER.info(")");
+                parserState = new ParserState( string, index, ParseDirection.BACKWARD );
+                CharSequence original = parserState.getIterator().getString();
+                parserState.getIterator().setString( swapEscapeSequence( original ) );
+                lookupParenthesisProc( parserState );
+                parserState.getIterator().setString( original );
+                return parserState;
+            }
+            default :
+                /*
+                 * If the current character is a character other than parentheses, do nothing.
+                 * Return a plain parser state object where the default value of 'found'
+                 * property is always false. 
+                 */
+                return new ParserState( string, index, ParseDirection.FORWARD );
+        }
+    }
+
+    public static void lookupParenthesisProc( ParserState parserState ) {
+            boolean started = false;
+            boolean result = false;
+    //      ArrayDeque<Mode> stack = new ArrayDeque<>();
+            ModeFactory factory = new DefaultModeFactory();
+            
+            // Initialize the stack.
+            parserState.getStack().push( factory.create( null, ModeType.PARENTHESIS, parserState ) );
+    
+            for(;; parserState.getIterator().next() ) {
+                if ( DEBUG )
+                    System.out.print( parserState.getIterator().getCurrentChar() );
+    
+                if ( parserState.getIterator().getCurrentChar() == 0 ) {
+                    break;
+                }
+    
+                if ( ! parserState.getStack().peek().process( parserState ) ) {
+                    break;
+                }
+                if ( started ) {
+                    if ( parserState.getStack().size() <= 1 ) {
+                        result = true;
+                        break;
+                    }
+                } else {
+                    if ( parserState.getStack().size() <= 1 ) {
+                    } else {
+                        started = true;
+                    }
+                }
+            }
+    
+            if ( DEBUG )
+                System.out.println();
+            parserState.setFound( result );
+        }
+
+    public static String swapEscapeSequence( CharSequence s ) {
+        return Pattern.compile( "(\\\\)(.)" ).matcher(s).replaceAll( "$2$1" );
+    }
+
+    public static final int lookupCorrespondingParenthesis( CharSequence text, int position ) {
+        ParserState parserState = lookupParenthesis( text, position );
+        if ( parserState.isFound() ) {
+            return parserState.getIterator().getIndex();
+        } else {
+            return -1;
+        }
+    }
+    public static void main(String[] args) {
+        String s = "     ( hello foo ( hello \\) ) \"fgsfdsg\" ()123456)abc";
+        ParserState parserState = lookupParenthesis( s, 48 );
+
+        System.out.println( parserState.getIterator().getString() );
+        
+        if ( parserState.isFound() ) {
+            System.out.println( SimpleSchemeIndentChanger.fillStr( ' ', parserState.getIterator().getInitialIndex() ) + '^' );
+            System.out.println( SimpleSchemeIndentChanger.fillStr( ' ', parserState.getIterator().getIndex() ) + '^' );
+        } else {
+            System.out.println( "NOT FOUND" );
+        }
+    }
 }
