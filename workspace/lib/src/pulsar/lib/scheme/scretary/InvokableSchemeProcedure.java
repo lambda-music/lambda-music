@@ -24,17 +24,17 @@ import gnu.mapping.Procedure;
 import pulsar.lib.secretary.Invokable;
 
 public class InvokableSchemeProcedure implements Invokable {
-	private final Procedure procedure;
-	public InvokableSchemeProcedure( Procedure procedure ) {
-		this.procedure = procedure;
-	}
+    private final Procedure procedure;
+    public InvokableSchemeProcedure( Procedure procedure ) {
+        this.procedure = procedure;
+    }
 
-	@Override
-	public Object invoke( Object... args ) {
-		try {
-			return procedure.applyN( args );
-		} catch (Throwable e) {
-			throw new RuntimeException(e);
-		}
-	}
+    @Override
+    public Object invoke( Object... args ) {
+        try {
+            return procedure.applyN( args );
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

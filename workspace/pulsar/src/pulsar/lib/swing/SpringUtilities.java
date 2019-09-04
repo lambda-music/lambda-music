@@ -48,11 +48,11 @@ import javax.swing.SpringLayout;
  */
 public class SpringUtilities {
     static void logInfo( String msg ) {
-    	System.err.println( msg );
-		// Logger.getLogger(SpringUtilities.class.getName()).log(Level.INFO, msg );
+        System.err.println( msg );
+        // Logger.getLogger(SpringUtilities.class.getName()).log(Level.INFO, msg );
     }
     static void logError( String msg, Throwable e ) {
-		Logger.getLogger(SpringUtilities.class.getName()).log(Level.SEVERE, msg, e);
+        Logger.getLogger(SpringUtilities.class.getName()).log(Level.SEVERE, msg, e);
     }
 
     /**

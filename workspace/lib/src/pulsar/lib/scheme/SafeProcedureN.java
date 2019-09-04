@@ -11,24 +11,24 @@ import gnu.mapping.ProcedureN;
  * (Thu, 29 Aug 2019 19:08:52 +0900)
  */
 public abstract class SafeProcedureN extends ProcedureN {
-	public SafeProcedureN() {
-		super();
-	}
-	public SafeProcedureN(boolean resultGoesToConsumer, MethodHandle applyMethod, String n) {
-		super( resultGoesToConsumer, applyMethod, n );
-	}
-	public SafeProcedureN(boolean resultGoesToConsumer, MethodHandle applyMethod) {
-		super( resultGoesToConsumer, applyMethod );
-	}
-	public SafeProcedureN(MethodHandle applyMethod, String n) {
-		super( applyMethod, n );
-	}
-	public SafeProcedureN(MethodHandle applyMethod) {
-		super( applyMethod );
-	}
-	public SafeProcedureN(String name) {
-		super( name );
-	}
-	@Override
-	public abstract Object applyN(Object[] args) throws Throwable;
+    public SafeProcedureN() {
+        super();
+    }
+    public SafeProcedureN(boolean resultGoesToConsumer, MethodHandle applyMethod, String n) {
+        super( resultGoesToConsumer, applyMethod, n );
+    }
+    public SafeProcedureN(boolean resultGoesToConsumer, MethodHandle applyMethod) {
+        super( resultGoesToConsumer, applyMethod );
+    }
+    public SafeProcedureN(MethodHandle applyMethod, String n) {
+        super( applyMethod, n );
+    }
+    public SafeProcedureN(MethodHandle applyMethod) {
+        super( applyMethod );
+    }
+    public SafeProcedureN(String name) {
+        super( name );
+    }
+    @Override
+    public abstract Object applyN(Object[] args) throws Throwable;
 }

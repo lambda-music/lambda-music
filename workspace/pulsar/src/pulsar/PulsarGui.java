@@ -91,646 +91,646 @@ import pulsar.lib.swing.FlawLayout;
 import pulsar.lib.swing.JNamedPanel;
 
 public class PulsarGui {
-	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
-	static void logError(String msg, Throwable e) {
-		LOGGER.log(Level.SEVERE, msg, e);
-	}
-	static void logInfo(String msg) {
-		LOGGER.log(Level.INFO, msg);
-	}
-	static void logWarn(String msg) {
-		LOGGER.log(Level.WARNING, msg);
-	}
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static void logError(String msg, Throwable e) {
+        LOGGER.log(Level.SEVERE, msg, e);
+    }
+    static void logInfo(String msg) {
+        LOGGER.log(Level.INFO, msg);
+    }
+    static void logWarn(String msg) {
+        LOGGER.log(Level.WARNING, msg);
+    }
 
-	public static PulsarGui start(Pulsar pulsar) {
-		return new PulsarGui( pulsar, false );
-	}
-	public static PulsarGui start(Pulsar pulsar, boolean shutdownWhenClose ) {
-		return new PulsarGui( pulsar, shutdownWhenClose );
-	}
+    public static PulsarGui start(Pulsar pulsar) {
+        return new PulsarGui( pulsar, false );
+    }
+    public static PulsarGui start(Pulsar pulsar, boolean shutdownWhenClose ) {
+        return new PulsarGui( pulsar, shutdownWhenClose );
+    }
 
 
-	static final int PB_POSITION_MAX = 1024;
-	
-	Runnable shutdownProc01 = new Runnable() {
-		@Override
-		public void run() {
-//			frame.setVisible( false );
-			frame.quit();
-		}
-	};
+    static final int PB_POSITION_MAX = 1024;
+    
+    Runnable shutdownProc01 = new Runnable() {
+        @Override
+        public void run() {
+//          frame.setVisible( false );
+            frame.quit();
+        }
+    };
 
-	public static void registerLocalSchemeInitializers( SchemeSecretary schemeSecretary, PulsarGui pulsarGui ) {
-		schemeSecretary.registerSchemeInitializer( pulsarGui, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
-			@Override
-			public void execute0( Scheme scheme, Object[] args ) {
-				pulsarGui.initScheme( scheme );
-		        pulsarGui.initPulsarGui();
-			}
-		});
-		
-		schemeSecretary.addShutdownHook(pulsarGui.shutdownProc01);
-	}
-	
-	public static void invokeLocalSchemeInitializers( SchemeSecretary schemeSecretary, PulsarGui pulsarGui ) {
-		schemeSecretary.invokeSchemeInitializers( pulsarGui );
-	}
-	public static void unregisterLocalSchemeInitializers( SchemeSecretary schemeSecretary, PulsarGui pulsarGui ) {
-		schemeSecretary.unregisterSchemeInitializer( pulsarGui );
-		schemeSecretary.removeShutdownHook(pulsarGui.shutdownProc01);
-	}
+    public static void registerLocalSchemeInitializers( SchemeSecretary schemeSecretary, PulsarGui pulsarGui ) {
+        schemeSecretary.registerSchemeInitializer( pulsarGui, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+            @Override
+            public void execute0( Scheme scheme, Object[] args ) {
+                pulsarGui.initScheme( scheme );
+                pulsarGui.initPulsarGui();
+            }
+        });
+        
+        schemeSecretary.addShutdownHook(pulsarGui.shutdownProc01);
+    }
+    
+    public static void invokeLocalSchemeInitializers( SchemeSecretary schemeSecretary, PulsarGui pulsarGui ) {
+        schemeSecretary.invokeSchemeInitializers( pulsarGui );
+    }
+    public static void unregisterLocalSchemeInitializers( SchemeSecretary schemeSecretary, PulsarGui pulsarGui ) {
+        schemeSecretary.unregisterSchemeInitializer( pulsarGui );
+        schemeSecretary.removeShutdownHook(pulsarGui.shutdownProc01);
+    }
 
-	public void openFile( File mainFile ) throws IOException {
-		pulsar.getSchemeSecretary().executeWithoutSecretarially( new SecretaryMessage.NoReturn<Scheme,IOException>() {
-			@Override
-			public void execute0(Scheme resource, Object[] args) throws IOException{
-				logInfo( "Pulsar#openMainFile()" );
-				if ( ! mainFile.isFile() )
-					throw new RuntimeException( "The specified file does not exist (" + mainFile.getPath() + ")" );
-				
-				frame.getKawapad().openFile( mainFile );
-			}
-		}, Invokable.NOARG );
-	}
-	
-	public void openIntro() {
-		InputStream in = null;
-		try {
-			try {
-				in = PulsarGui.class.getResourceAsStream( "lib/intro.scm" );
-				String s = new String( SchemeUtils.readAll( in ), "UTF-8" );
-				frame.getKawapad().setNewText( s );
-			} finally {
-				if ( in != null )
-					in.close();
-			}	
-		} catch ( IOException e ) {
-			throw new Error( "Internal Error" , e );
-		}
-	}
-	
-	boolean shutdownWhenClose;
+    public void openFile( File mainFile ) throws IOException {
+        pulsar.getSchemeSecretary().executeWithoutSecretarially( new SecretaryMessage.NoReturn<Scheme,IOException>() {
+            @Override
+            public void execute0(Scheme resource, Object[] args) throws IOException{
+                logInfo( "Pulsar#openMainFile()" );
+                if ( ! mainFile.isFile() )
+                    throw new RuntimeException( "The specified file does not exist (" + mainFile.getPath() + ")" );
+                
+                frame.getKawapad().openFile( mainFile );
+            }
+        }, Invokable.NOARG );
+    }
+    
+    public void openIntro() {
+        InputStream in = null;
+        try {
+            try {
+                in = PulsarGui.class.getResourceAsStream( "lib/intro.scm" );
+                String s = new String( SchemeUtils.readAll( in ), "UTF-8" );
+                frame.getKawapad().setNewText( s );
+            } finally {
+                if ( in != null )
+                    in.close();
+            }   
+        } catch ( IOException e ) {
+            throw new Error( "Internal Error" , e );
+        }
+    }
+    
+    boolean shutdownWhenClose;
 
-	Pulsar pulsar;
-	PulsarGui( Pulsar pulsar, boolean shutdownWhenClose ) {
-		this.pulsar = pulsar;
-		this.shutdownWhenClose = shutdownWhenClose;
-		
-	    // Create and set up the window.
+    Pulsar pulsar;
+    PulsarGui( Pulsar pulsar, boolean shutdownWhenClose ) {
+        this.pulsar = pulsar;
+        this.shutdownWhenClose = shutdownWhenClose;
+        
+        // Create and set up the window.
         this.frame = new JPulsarFrame( pulsar.getSchemeSecretary(), "Pulsar" );
 
         initPulsarGui();
-	}
-	
-	// INIT_03
-	/**
-	 * This method is called whenever the frame is created.
-	 */
-	void init() {
-		this.frame.init();
-	}
-
-	private void initPulsarGui() {
-		Pulsar.createTimer(pulsar, 1000, 20, new Invokable() {
-			@Override
-			public Object invoke(Object... args) {
-				if ( pulsar.isOpened() ) {
-					MetroTrack track = pulsar.searchTrack( "main" );
-					
-					//	This happens quite often so let us ignore it. (Mon, 29 Jul 2019 12:21:50 +0900)
-					//	Additionally this code have never been executed. Just added this for describing the concept.
-					//	if ( track == null ) {
-					//		logWarn( "" );
-					//	}
-					
-					if ( track != null && pb_position != null ) {
-						double value=0;
-						synchronized ( track.getLock() ) {
-							value = track.getTrackPosition();
-						}
-						pb_position.setValue((int) (value * PulsarGui.PB_POSITION_MAX) );
-						pb_position.repaint();
-						pb_position.revalidate();
-					}
-				}
-				return Values.empty;
-			}
-		});
-	}
-
-	enum TempoRange {
-		WIDE  ("Wide",   0,1000), 
-		NORMAL("Normal", 0,500), 
-		SLOW  ("Slow",   0,100), 
-		MEDIUM("Medium", 100,250),
-		FAST  ("Fast",   250,500);
-		private String caption;
-		private int min;
-		private int max;
-		private TempoRange(String caption, int min, int max ) {
-			this.caption = caption;
-			this.min = min;
-			this.max = max;
-		}
-		public final Action createAction( PulsarGui gui ) {
-			return new AbstractAction() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					gui.guiSetTempoRange( TempoRange.this );
-				}
-				{
-					putValue( Action2.NAME,  caption );
-					putValue( Action.MNEMONIC_KEY, (int)caption.charAt(0) );
-//					putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK) );
-				}
-			};
-		};
-	}
-	
-    void initScheme(Scheme scheme) {
-    	logInfo("PulsarGui#initScheme=======================================");
-    	//////////////////////////////////////////////////////
-		Environment env = scheme.getEnvironment();
-		
-    	SchemeUtils.defineVar( env, new SafeProcedureN("gui-get-pane") {
-			// TODO ???
-			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-				logInfo("gui-get-pane");
-    			return userPane;
-    		}
-    	}, "gui-get-pane");
-    	SchemeUtils.defineVar( env, new SafeProcedureN("gui-get-frame") {
-			// TODO ???
-			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-				logInfo("gui-get-frame");
-    			return frame;
-    		}
-    	}, "gui-get-frame");
-		SchemeUtils.defineVar( env, new SafeProcedureN("gui-set-progress-pos") {
-			@Override
-			public Object applyN(Object[] args) throws Throwable {
-				if ( 0 < args.length ) {
-					double value = SchemeUtils.toDouble(args[0]);
-					pb_position.setValue((int) (value * PB_POSITION_MAX) );
-				}
-				return Invokable.NO_RESULT;
-			}
-		}, "gui-set-progress-pos");
-    	SchemeUtils.defineVar( env, new SafeProcedureN("gui-clear") {
-			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-				guiClear();
-    			return Invokable.NO_RESULT;
-    		}
-    	}, "gui-clear");
-    	SchemeUtils.defineVar( env, new SafeProcedureN("gui-divider-location") {
-			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-				ArrayList<Object> argList = new ArrayList<Object>( Arrays.asList( args ) );
-				if ( 1 == argList.size() ) {
-					Object object = argList.get(0);
-					if ( object instanceof JSplitPane ) {
-						JSplitPane pane = (JSplitPane) object;
-						return SchemeUtils.toSchemeNumber( pane.getDividerLocation() );
-					} else {
-						return SchemeUtils.toSchemeNumber( -1 );
-					}
-				} else if ( 2 == argList.size() ) {
-					Object object = argList.get(0);
-					if ( object instanceof JSplitPane ) {
-						JSplitPane pane = (JSplitPane) object;
-						int location = SchemeUtils.toInteger( argList.get(1) );
-						pane.setDividerLocation( location );
-						pane.revalidate();
-						return SchemeUtils.toSchemeNumber( pane.getDividerLocation() );
-					} else {
-						return SchemeUtils.toSchemeNumber( -1 );
-					}
-
-				} else {
-    				throw new RuntimeException( 
-    						"Invalid argument error\n"+
-    						"usage : (gui-divider-location! [pane])" );
-				}
-    		}
-    	}, "gui-divider-location");
-
-    	SchemeUtils.defineVar( env, new SafeProcedureN("gui-frame-height") {
-			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-				Dimension size = frame.getSize();
-				if ( 0 == args.length ) {
-					
-				} else {
-					size.height = SchemeUtils.toInteger(args[0]);
-					frame.setSize(size);
-					frame.revalidate();
-				}
-				return SchemeUtils.toSchemeNumber( size.height );
-			}
-    		
-    	}, "gui-frame-height");
-    	SchemeUtils.defineVar( env, new SafeProcedureN("gui-frame-width") {
-			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-				Dimension size = frame.getSize();
-				if ( 0 == args.length ) {
-					
-				} else {
-					size.width = SchemeUtils.toInteger(args[0]);
-					frame.setSize(size);
-					frame.revalidate();
-				}
-				return SchemeUtils.toSchemeNumber( size.width );
-			}
-    		
-    	}, "gui-frame-width");
-    	SchemeUtils.defineVar( env, new SafeProcedureN("gui-frame-left") {
-			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-				Point pos = frame.getLocation();
-				if ( 0 == args.length ) {
-				} else {
-					pos.x = SchemeUtils.toInteger(args[0]);
-					frame.setLocation( pos);
-					frame.revalidate();
-				}
-				return SchemeUtils.toSchemeNumber( pos.x );
-			}
-    		
-    	}, "gui-frame-left");
-    	SchemeUtils.defineVar( env, new SafeProcedureN("gui-frame-top") {
-			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-				Point pos = frame.getLocation();
-				if ( 0 == args.length ) {
-				} else {
-					pos.y = SchemeUtils.toInteger(args[0]);
-					frame.setLocation( pos);
-					frame.revalidate();
-				}
-				return SchemeUtils.toSchemeNumber( pos.y );
-			}
-    		
-    	}, "gui-frame-top");
-
-    	SchemeUtils.defineVar( env, new SafeProcedureN("gui-frame-divider-position") {
-			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-				ArrayList<Object> argList = new ArrayList<Object>( Arrays.asList( args ) );
-				if ( 0 == argList.size() ) {
-					if ( rootPane instanceof JSplitPane ) {
-						JSplitPane pane = (JSplitPane) rootPane;
-						return SchemeUtils.toSchemeNumber( pane.getDividerLocation() );
-					} else {
-						return SchemeUtils.toSchemeNumber( -1 );
-					}
-				} else if ( 1 == argList.size() ) {
-					if ( rootPane instanceof JSplitPane ) {
-						JSplitPane pane = (JSplitPane) rootPane;
-						int location = SchemeUtils.toInteger( argList.get(0) );
-						pane.setDividerLocation( location );
-						frame.revalidate();
-						return SchemeUtils.toSchemeNumber( pane.getDividerLocation() );
-					} else {
-						return SchemeUtils.toSchemeNumber( -1 );
-					}
-				} else {
-    				throw new RuntimeException( 
-    						"Invalid argument error\n"+
-    						"usage : (gui-panel-divider-position! [pane])" );
-				}
-    		}
-    	}, "gui-frame-divider-position");
-
-    	SchemeUtils.defineVar( env, new SafeProcedureN("gui-insert-text") {
-			@Override
-    		public Object applyN(Object[] args) throws Throwable {
-				StringBuilder sb = new StringBuilder();
-				for ( Object o : args ) {
-					sb.append( o.toString() ).append( " " );
-				}
-				frame.getKawapad().insertText( sb.toString().trim() );
-    			return Invokable.NO_RESULT;
-    		}
-    	}, "gui-insert-text");
     }
     
-	
+    // INIT_03
+    /**
+     * This method is called whenever the frame is created.
+     */
+    void init() {
+        this.frame.init();
+    }
+
+    private void initPulsarGui() {
+        Pulsar.createTimer(pulsar, 1000, 20, new Invokable() {
+            @Override
+            public Object invoke(Object... args) {
+                if ( pulsar.isOpened() ) {
+                    MetroTrack track = pulsar.searchTrack( "main" );
+                    
+                    //  This happens quite often so let us ignore it. (Mon, 29 Jul 2019 12:21:50 +0900)
+                    //  Additionally this code have never been executed. Just added this for describing the concept.
+                    //  if ( track == null ) {
+                    //      logWarn( "" );
+                    //  }
+                    
+                    if ( track != null && pb_position != null ) {
+                        double value=0;
+                        synchronized ( track.getLock() ) {
+                            value = track.getTrackPosition();
+                        }
+                        pb_position.setValue((int) (value * PulsarGui.PB_POSITION_MAX) );
+                        pb_position.repaint();
+                        pb_position.revalidate();
+                    }
+                }
+                return Values.empty;
+            }
+        });
+    }
+
+    enum TempoRange {
+        WIDE  ("Wide",   0,1000), 
+        NORMAL("Normal", 0,500), 
+        SLOW  ("Slow",   0,100), 
+        MEDIUM("Medium", 100,250),
+        FAST  ("Fast",   250,500);
+        private String caption;
+        private int min;
+        private int max;
+        private TempoRange(String caption, int min, int max ) {
+            this.caption = caption;
+            this.min = min;
+            this.max = max;
+        }
+        public final Action createAction( PulsarGui gui ) {
+            return new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    gui.guiSetTempoRange( TempoRange.this );
+                }
+                {
+                    putValue( Action2.NAME,  caption );
+                    putValue( Action.MNEMONIC_KEY, (int)caption.charAt(0) );
+//                  putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK) );
+                }
+            };
+        };
+    }
+    
+    void initScheme(Scheme scheme) {
+        logInfo("PulsarGui#initScheme=======================================");
+        //////////////////////////////////////////////////////
+        Environment env = scheme.getEnvironment();
+        
+        SchemeUtils.defineVar( env, new SafeProcedureN("gui-get-pane") {
+            // TODO ???
+            @Override
+            public Object applyN(Object[] args) throws Throwable {
+                logInfo("gui-get-pane");
+                return userPane;
+            }
+        }, "gui-get-pane");
+        SchemeUtils.defineVar( env, new SafeProcedureN("gui-get-frame") {
+            // TODO ???
+            @Override
+            public Object applyN(Object[] args) throws Throwable {
+                logInfo("gui-get-frame");
+                return frame;
+            }
+        }, "gui-get-frame");
+        SchemeUtils.defineVar( env, new SafeProcedureN("gui-set-progress-pos") {
+            @Override
+            public Object applyN(Object[] args) throws Throwable {
+                if ( 0 < args.length ) {
+                    double value = SchemeUtils.toDouble(args[0]);
+                    pb_position.setValue((int) (value * PB_POSITION_MAX) );
+                }
+                return Invokable.NO_RESULT;
+            }
+        }, "gui-set-progress-pos");
+        SchemeUtils.defineVar( env, new SafeProcedureN("gui-clear") {
+            @Override
+            public Object applyN(Object[] args) throws Throwable {
+                guiClear();
+                return Invokable.NO_RESULT;
+            }
+        }, "gui-clear");
+        SchemeUtils.defineVar( env, new SafeProcedureN("gui-divider-location") {
+            @Override
+            public Object applyN(Object[] args) throws Throwable {
+                ArrayList<Object> argList = new ArrayList<Object>( Arrays.asList( args ) );
+                if ( 1 == argList.size() ) {
+                    Object object = argList.get(0);
+                    if ( object instanceof JSplitPane ) {
+                        JSplitPane pane = (JSplitPane) object;
+                        return SchemeUtils.toSchemeNumber( pane.getDividerLocation() );
+                    } else {
+                        return SchemeUtils.toSchemeNumber( -1 );
+                    }
+                } else if ( 2 == argList.size() ) {
+                    Object object = argList.get(0);
+                    if ( object instanceof JSplitPane ) {
+                        JSplitPane pane = (JSplitPane) object;
+                        int location = SchemeUtils.toInteger( argList.get(1) );
+                        pane.setDividerLocation( location );
+                        pane.revalidate();
+                        return SchemeUtils.toSchemeNumber( pane.getDividerLocation() );
+                    } else {
+                        return SchemeUtils.toSchemeNumber( -1 );
+                    }
+
+                } else {
+                    throw new RuntimeException( 
+                            "Invalid argument error\n"+
+                            "usage : (gui-divider-location! [pane])" );
+                }
+            }
+        }, "gui-divider-location");
+
+        SchemeUtils.defineVar( env, new SafeProcedureN("gui-frame-height") {
+            @Override
+            public Object applyN(Object[] args) throws Throwable {
+                Dimension size = frame.getSize();
+                if ( 0 == args.length ) {
+                    
+                } else {
+                    size.height = SchemeUtils.toInteger(args[0]);
+                    frame.setSize(size);
+                    frame.revalidate();
+                }
+                return SchemeUtils.toSchemeNumber( size.height );
+            }
+            
+        }, "gui-frame-height");
+        SchemeUtils.defineVar( env, new SafeProcedureN("gui-frame-width") {
+            @Override
+            public Object applyN(Object[] args) throws Throwable {
+                Dimension size = frame.getSize();
+                if ( 0 == args.length ) {
+                    
+                } else {
+                    size.width = SchemeUtils.toInteger(args[0]);
+                    frame.setSize(size);
+                    frame.revalidate();
+                }
+                return SchemeUtils.toSchemeNumber( size.width );
+            }
+            
+        }, "gui-frame-width");
+        SchemeUtils.defineVar( env, new SafeProcedureN("gui-frame-left") {
+            @Override
+            public Object applyN(Object[] args) throws Throwable {
+                Point pos = frame.getLocation();
+                if ( 0 == args.length ) {
+                } else {
+                    pos.x = SchemeUtils.toInteger(args[0]);
+                    frame.setLocation( pos);
+                    frame.revalidate();
+                }
+                return SchemeUtils.toSchemeNumber( pos.x );
+            }
+            
+        }, "gui-frame-left");
+        SchemeUtils.defineVar( env, new SafeProcedureN("gui-frame-top") {
+            @Override
+            public Object applyN(Object[] args) throws Throwable {
+                Point pos = frame.getLocation();
+                if ( 0 == args.length ) {
+                } else {
+                    pos.y = SchemeUtils.toInteger(args[0]);
+                    frame.setLocation( pos);
+                    frame.revalidate();
+                }
+                return SchemeUtils.toSchemeNumber( pos.y );
+            }
+            
+        }, "gui-frame-top");
+
+        SchemeUtils.defineVar( env, new SafeProcedureN("gui-frame-divider-position") {
+            @Override
+            public Object applyN(Object[] args) throws Throwable {
+                ArrayList<Object> argList = new ArrayList<Object>( Arrays.asList( args ) );
+                if ( 0 == argList.size() ) {
+                    if ( rootPane instanceof JSplitPane ) {
+                        JSplitPane pane = (JSplitPane) rootPane;
+                        return SchemeUtils.toSchemeNumber( pane.getDividerLocation() );
+                    } else {
+                        return SchemeUtils.toSchemeNumber( -1 );
+                    }
+                } else if ( 1 == argList.size() ) {
+                    if ( rootPane instanceof JSplitPane ) {
+                        JSplitPane pane = (JSplitPane) rootPane;
+                        int location = SchemeUtils.toInteger( argList.get(0) );
+                        pane.setDividerLocation( location );
+                        frame.revalidate();
+                        return SchemeUtils.toSchemeNumber( pane.getDividerLocation() );
+                    } else {
+                        return SchemeUtils.toSchemeNumber( -1 );
+                    }
+                } else {
+                    throw new RuntimeException( 
+                            "Invalid argument error\n"+
+                            "usage : (gui-panel-divider-position! [pane])" );
+                }
+            }
+        }, "gui-frame-divider-position");
+
+        SchemeUtils.defineVar( env, new SafeProcedureN("gui-insert-text") {
+            @Override
+            public Object applyN(Object[] args) throws Throwable {
+                StringBuilder sb = new StringBuilder();
+                for ( Object o : args ) {
+                    sb.append( o.toString() ).append( " " );
+                }
+                frame.getKawapad().insertText( sb.toString().trim() );
+                return Invokable.NO_RESULT;
+            }
+        }, "gui-insert-text");
+    }
+    
+    
     //Create the "cards".
     JPulsarFrame frame;
     JComponent rootPane; 
-	JPanel staticPane;
-	JNamedPanel userPane ;
-	JPanel staticPaneOuter;
-	JScrollPane userPaneOuter;
+    JPanel staticPane;
+    JNamedPanel userPane ;
+    JPanel staticPaneOuter;
+    JScrollPane userPaneOuter;
 
     transient boolean isComboBoxUpdating = false;
-	JComboBox<String> cb_relatedFiles;
-	JTextField tf_currentFile;
-	JProgressBar pb_position;
-	JSlider sl_tempoSlider;
-	
-	public void quit() {
-		frame.quit();
-	}
+    JComboBox<String> cb_relatedFiles;
+    JTextField tf_currentFile;
+    JProgressBar pb_position;
+    JSlider sl_tempoSlider;
+    
+    public void quit() {
+        frame.quit();
+    }
 
-	public void guiClear() {
-		userPane.removeAll();
-		PulsarGuiUtils.guiFlowLayout( userPane );
-		frame.invalidate();
-		frame.revalidate();
-		// frame.pack();
-	}
+    public void guiClear() {
+        userPane.removeAll();
+        PulsarGuiUtils.guiFlowLayout( userPane );
+        frame.invalidate();
+        frame.revalidate();
+        // frame.pack();
+    }
 
-	public void guiSetTempoRange( PulsarGui.TempoRange tempoRange ) {
-		this.sl_tempoSlider.setMaximum( tempoRange.max );
-		this.sl_tempoSlider.setMinimum( tempoRange.min );
-	}
-	
-	
-	public final Action NEW_SCRATCHPAD = new AbstractAction() {
-		@SuppressWarnings("unused")
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			KawapadFrame scratchPad = frame.createKawaPad();
-		}
-		{
-			putValue( Action2.NAME, "New Scratchpad" );
-			putValue( Action.MNEMONIC_KEY, (int)'n' );
-			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_F4, ActionEvent.SHIFT_MASK) );
-		}
-	};
-
-
-	public final Action RESET_SEQUENCER = new AbstractAction() {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			pulsar.close();
-		}
-		{
-			putValue( Action2.NAME, "Reset the Sequencer" );
-			putValue( Action.MNEMONIC_KEY, (int)'r' );
-			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0 ) );
-		}
-	};
-
-	public final Action QUIT_SEQUENCER = new AbstractAction() {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			quit();
-		}
-		{
-			putValue( Action2.NAME, "Quit" );
-			putValue( Action.MNEMONIC_KEY, (int)'q' );
-			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK) );
-		}
-	};
-
-	public final Action TOGGLE_PLAYING_ACTION = new AbstractAction() {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			pulsar.togglePlaying();
-		}
-		{
-			putValue( Action2.NAME, "Play/Stop" );
-			putValue( Action.MNEMONIC_KEY, (int)'P' );
-			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, ActionEvent.CTRL_MASK) );
-		}
-	};
-	public final Action RESET_PLAYING_ACTION = new AbstractAction() {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			pulsar.rewind();
-		}
-		{
-			putValue( Action2.NAME, "Reset" );
-			putValue( Action.MNEMONIC_KEY, (int)'R' );
-			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_HOME, ActionEvent.CTRL_MASK) );
-		}
-	};
-	public final Action TAP_TEMPO_ACTION = new AbstractAction() {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			pulsar.tempoTapper.tap();
-		}
-		{
-			putValue( Action2.NAME, "Tap Tempo" );
-			putValue( Action.MNEMONIC_KEY, (int)'T' );
-			putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, ActionEvent.CTRL_MASK) );
-		}
-	};
+    public void guiSetTempoRange( PulsarGui.TempoRange tempoRange ) {
+        this.sl_tempoSlider.setMaximum( tempoRange.max );
+        this.sl_tempoSlider.setMinimum( tempoRange.min );
+    }
+    
+    
+    public final Action NEW_SCRATCHPAD = new AbstractAction() {
+        @SuppressWarnings("unused")
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            KawapadFrame scratchPad = frame.createKawaPad();
+        }
+        {
+            putValue( Action2.NAME, "New Scratchpad" );
+            putValue( Action.MNEMONIC_KEY, (int)'n' );
+            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_F4, ActionEvent.SHIFT_MASK) );
+        }
+    };
 
 
-	protected class JPulsarFrame extends KawapadFrame {
-		public JPulsarFrame( SchemeSecretary schemeSecretary, String title ) throws HeadlessException {
-			super( schemeSecretary, title );
-			PulsarGui.registerLocalSchemeInitializers( schemeSecretary, PulsarGui.this );
-//			DELETED >>> INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
-//			PulsarGui.invokeLocalSchemeInitializers( schemeSecretary, PulsarGui.this );
-//			DELETED <<< INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
-			
-			initIcon();
-		}
+    public final Action RESET_SEQUENCER = new AbstractAction() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            pulsar.close();
+        }
+        {
+            putValue( Action2.NAME, "Reset the Sequencer" );
+            putValue( Action.MNEMONIC_KEY, (int)'r' );
+            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0 ) );
+        }
+    };
 
-		// THIS IS NOT WORKING. (Tue, 06 Aug 2019 10:04:23 +0900)
-		// This doesn't work and I don't know why. It maybe because GTK thing. 
-		void initIcon() {
-			try  {
-				ArrayList<Image> list = new ArrayList<>();
-				list.add( ImageIO.read( PulsarGui.class.getResource("pulsar-32x32.png")));
-				list.add( ImageIO.read( PulsarGui.class.getResource("pulsar-64x64.png")));
-				list.add( ImageIO.read( PulsarGui.class.getResource("pulsar-500x500.png")));
-				list.add( ImageIO.read( PulsarGui.class.getResource("pulsar-512x512.png")));
-				this.setIconImages(list);
-//				JFrame.setDefaultLookAndFeelDecorated(true);
-			} catch ( Exception e ) {
-				logError("failed to load icon", e );
-			}
-		}
-		
-		// INIT_03
-		/**
-		 * This method is called whenever the frame is created.
-		 */
-		@Override
-		public void init(){
-			super.init();
-		}
+    public final Action QUIT_SEQUENCER = new AbstractAction() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            quit();
+        }
+        {
+            putValue( Action2.NAME, "Quit" );
+            putValue( Action.MNEMONIC_KEY, (int)'q' );
+            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK) );
+        }
+    };
 
-		@Override
-		public void dispose() {
-			super.dispose();
-			PulsarGui.unregisterLocalSchemeInitializers( kawapad.getSchemeSecretary(), PulsarGui.this );
-			if ( shutdownWhenClose )
-				pulsar.shutdown();
-		}
-		
-		{
-			setTitle( "Pulsar - a Lisp Scheme Music Sequencer" );
-//			JMenuBar menuBar = new JMenuBar();
-//			setJMenuBar(menuBar);
-			
-			JMenuBar menuBar = getJMenuBar();
-			
-			{
-				JMenu m = menuBar.getMenu(0); // File
-				m.addSeparator();
-				m.add( new JMenuItem( QUIT_SEQUENCER ) );
-			}
-			
-			{
-				JMenu m = new JMenu( "Sequencer" );
-				m.setMnemonic( 's' );
+    public final Action TOGGLE_PLAYING_ACTION = new AbstractAction() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            pulsar.togglePlaying();
+        }
+        {
+            putValue( Action2.NAME, "Play/Stop" );
+            putValue( Action.MNEMONIC_KEY, (int)'P' );
+            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, ActionEvent.CTRL_MASK) );
+        }
+    };
+    public final Action RESET_PLAYING_ACTION = new AbstractAction() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            pulsar.rewind();
+        }
+        {
+            putValue( Action2.NAME, "Reset" );
+            putValue( Action.MNEMONIC_KEY, (int)'R' );
+            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_HOME, ActionEvent.CTRL_MASK) );
+        }
+    };
+    public final Action TAP_TEMPO_ACTION = new AbstractAction() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            pulsar.tempoTapper.tap();
+        }
+        {
+            putValue( Action2.NAME, "Tap Tempo" );
+            putValue( Action.MNEMONIC_KEY, (int)'T' );
+            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, ActionEvent.CTRL_MASK) );
+        }
+    };
 
-				m.add( new JMenuItem( TOGGLE_PLAYING_ACTION ) );
-				m.add( new JMenuItem( RESET_PLAYING_ACTION ) );
-				m.add( new JMenuItem( TAP_TEMPO_ACTION ) );
-				m.addSeparator();
-				m.add( new JMenuItem( RESET_SEQUENCER ) );
 
-				
-//				m.add( new JMenuItem( NEW_SCRATCHPAD ) );
-//				m.add( new JMenuItem( SET_MAIN_FILE_ACTION ) );
-//				m.add( new JMenuItem( CLEAR_MAIN_FILE_ACTION ) );
-//				m.add( new JMenuItem( EDIT_SCRATCHPAD ) );
+    protected class JPulsarFrame extends KawapadFrame {
+        public JPulsarFrame( SchemeSecretary schemeSecretary, String title ) throws HeadlessException {
+            super( schemeSecretary, title );
+            PulsarGui.registerLocalSchemeInitializers( schemeSecretary, PulsarGui.this );
+//          DELETED >>> INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
+//          PulsarGui.invokeLocalSchemeInitializers( schemeSecretary, PulsarGui.this );
+//          DELETED <<< INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
+            
+            initIcon();
+        }
 
-				menuBar.add( m );
-			}
-			{
-				JMenu m = new JMenu( "View" );
-				m.setMnemonic( 'v' );
+        // THIS IS NOT WORKING. (Tue, 06 Aug 2019 10:04:23 +0900)
+        // This doesn't work and I don't know why. It maybe because GTK thing. 
+        void initIcon() {
+            try  {
+                ArrayList<Image> list = new ArrayList<>();
+                list.add( ImageIO.read( PulsarGui.class.getResource("pulsar-32x32.png")));
+                list.add( ImageIO.read( PulsarGui.class.getResource("pulsar-64x64.png")));
+                list.add( ImageIO.read( PulsarGui.class.getResource("pulsar-500x500.png")));
+                list.add( ImageIO.read( PulsarGui.class.getResource("pulsar-512x512.png")));
+                this.setIconImages(list);
+//              JFrame.setDefaultLookAndFeelDecorated(true);
+            } catch ( Exception e ) {
+                logError("failed to load icon", e );
+            }
+        }
+        
+        // INIT_03
+        /**
+         * This method is called whenever the frame is created.
+         */
+        @Override
+        public void init(){
+            super.init();
+        }
 
-				{
-					JMenu mm = new JMenu( "Tempo Range" );
-					for ( PulsarGui.TempoRange r :  TempoRange.values() ) {
-						mm.add( new JMenuItem( r.createAction( PulsarGui.this ) ) );
-					}
-					m.add( mm );
-				}
+        @Override
+        public void dispose() {
+            super.dispose();
+            PulsarGui.unregisterLocalSchemeInitializers( kawapad.getSchemeSecretary(), PulsarGui.this );
+            if ( shutdownWhenClose )
+                pulsar.shutdown();
+        }
+        
+        {
+            setTitle( "Pulsar - a Lisp Scheme Music Sequencer" );
+//          JMenuBar menuBar = new JMenuBar();
+//          setJMenuBar(menuBar);
+            
+            JMenuBar menuBar = getJMenuBar();
+            
+            {
+                JMenu m = menuBar.getMenu(0); // File
+                m.addSeparator();
+                m.add( new JMenuItem( QUIT_SEQUENCER ) );
+            }
+            
+            {
+                JMenu m = new JMenu( "Sequencer" );
+                m.setMnemonic( 's' );
 
-				menuBar.add( m );
-			}
-			
-			Action2.processMenuBar(menuBar);
-		}
-		
-		@Override
-		protected void onCloseWindow() {
-			pulsar.close();
-//			System.exit(0);
-		}
-		
-		JComponent pulsarRootPane;
-		JPanel staticPane;
-		JNamedPanel userPane;
-		{
-//			this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			setDefaultCloseOperation( JFrame.DO_NOTHING_ON_CLOSE );
+                m.add( new JMenuItem( TOGGLE_PLAYING_ACTION ) );
+                m.add( new JMenuItem( RESET_PLAYING_ACTION ) );
+                m.add( new JMenuItem( TAP_TEMPO_ACTION ) );
+                m.addSeparator();
+                m.add( new JMenuItem( RESET_SEQUENCER ) );
 
-			staticPane = new JPanel() {
-				@Override
-				public Dimension getPreferredSize() {
-					return new Dimension(500,180);
-				}
-			};
-			
-			PulsarGuiUtils.guiBorderLayout( staticPane );
+                
+//              m.add( new JMenuItem( NEW_SCRATCHPAD ) );
+//              m.add( new JMenuItem( SET_MAIN_FILE_ACTION ) );
+//              m.add( new JMenuItem( CLEAR_MAIN_FILE_ACTION ) );
+//              m.add( new JMenuItem( EDIT_SCRATCHPAD ) );
 
-			JPanel staticPaneOuter = staticPane; 
+                menuBar.add( m );
+            }
+            {
+                JMenu m = new JMenu( "View" );
+                m.setMnemonic( 'v' );
 
-			userPane   = new JNamedPanel() {
-				@Override
-				public Dimension getMinimumSize() {
-					return new Dimension(0,0);
-				}
-			};
-			userPane.setLayout(new FlawLayout());
+                {
+                    JMenu mm = new JMenu( "Tempo Range" );
+                    for ( PulsarGui.TempoRange r :  TempoRange.values() ) {
+                        mm.add( new JMenuItem( r.createAction( PulsarGui.this ) ) );
+                    }
+                    m.add( mm );
+                }
 
-			//Create and set up the content pane.
-			JScrollPane userPaneOuter = new JScrollPane( userPane );
-//			userPaneOuter.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED );
-//			userPaneOuter.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED );
-			userPaneOuter.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
-			userPaneOuter.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER );
-			// SEE TAG_PACK_TWICE
-			
-			pulsarRootPane  = new JPanel( new BorderLayout() );
-			pulsarRootPane.add( staticPaneOuter, BorderLayout.PAGE_START);
-			pulsarRootPane.add( userPaneOuter, BorderLayout.CENTER );
-			pulsarRootPane.setMaximumSize( new Dimension( 500, 400 ));
+                menuBar.add( m );
+            }
+            
+            Action2.processMenuBar(menuBar);
+        }
+        
+        @Override
+        protected void onCloseWindow() {
+            pulsar.close();
+//          System.exit(0);
+        }
+        
+        JComponent pulsarRootPane;
+        JPanel staticPane;
+        JNamedPanel userPane;
+        {
+//          this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            setDefaultCloseOperation( JFrame.DO_NOTHING_ON_CLOSE );
 
-			this.scratchPadRoot.remove( this.scrollPane );
-			this.scratchPadRoot.add( this.scrollPane, BorderLayout.CENTER );
-			this.scratchPadRoot.add( this.pulsarRootPane, BorderLayout.PAGE_START );
-			this.scratchPadRoot.revalidate();
+            staticPane = new JPanel() {
+                @Override
+                public Dimension getPreferredSize() {
+                    return new Dimension(500,180);
+                }
+            };
+            
+            PulsarGuiUtils.guiBorderLayout( staticPane );
 
-			// Tempo Button
-	        staticPane.add( new JPusarFilePanel(), BorderLayout.PAGE_START );
-			staticPane.add( createStartStopButton(), BorderLayout.LINE_END );
-			staticPane.add( createTempoTapButton(), BorderLayout.CENTER );
-			staticPane.add( createRewindButton(), BorderLayout.LINE_START );
-						
-			
-//			REMOVED >>> (Mon, 08 Jul 2019 22:06:16 +0900)
-//			staticPane.add( createCueButton(), BorderLayout.PAGE_END );
-//			REMOVED <<< (Mon, 08 Jul 2019 22:06:16 +0900)
+            JPanel staticPaneOuter = staticPane; 
 
-			// createEmptyBorder( top left bottom right )
-//				staticPane.setBorder( BorderFactory.createEmptyBorder(10,20,5,20) );
-//				userPane.setBorder(   BorderFactory.createEmptyBorder(5,20,20,20) );
+            userPane   = new JNamedPanel() {
+                @Override
+                public Dimension getMinimumSize() {
+                    return new Dimension(0,0);
+                }
+            };
+            userPane.setLayout(new FlawLayout());
 
-//				((JComponent)pulsarRootPane).setBorder( BorderFactory.createEmptyBorder() );
-			((JComponent)pulsarRootPane).setBorder( BorderFactory.createEmptyBorder(10,10,10,10) );
+            //Create and set up the content pane.
+            JScrollPane userPaneOuter = new JScrollPane( userPane );
+//          userPaneOuter.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED );
+//          userPaneOuter.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED );
+            userPaneOuter.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
+            userPaneOuter.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER );
+            // SEE TAG_PACK_TWICE
+            
+            pulsarRootPane  = new JPanel( new BorderLayout() );
+            pulsarRootPane.add( staticPaneOuter, BorderLayout.PAGE_START);
+            pulsarRootPane.add( userPaneOuter, BorderLayout.CENTER );
+            pulsarRootPane.setMaximumSize( new Dimension( 500, 400 ));
 
-			// frame.setMaximizedBounds(new Rectangle(0, 0, 400, 1000));
-			this.pack();
-			this.setSize( 750, 750 );
-			this.setVisible(true);
-			this.addComponentListener( new ComponentAdapter() {
-				@Override
-				public void componentResized(ComponentEvent e) {
-					JRootPane pane = JPulsarFrame. this.getRootPane();
-					for (Component c : pane.getComponents() ) {
-						c.revalidate();
-					}
-					pane.revalidate();
-					pane.validate();
-					
-				}
-			});
-			
-	        PulsarGui.this.rootPane = pulsarRootPane;
-	        PulsarGui.this.staticPane = staticPane;
-	        PulsarGui.this.userPane = userPane;
-	        PulsarGui.this.staticPaneOuter = staticPaneOuter;
-	        PulsarGui.this.userPaneOuter = userPaneOuter;
-	        
-			
-		}
-		
-		JProgressBar pb_position = new JProgressBar() {
-			@Override
-			public Dimension getPreferredSize() {
-				Dimension s = super.getPreferredSize();
-				s.height = 40;
-				return s;
-			}
-		};
-		{
-			PulsarGui.this.pb_position = pb_position; 
-			add( pb_position , BorderLayout.PAGE_END );
-			pb_position.setBorder( BorderFactory.createCompoundBorder(
-					BorderFactory.createEmptyBorder(10,10,10,10),
-					pb_position.getBorder()) );
-//				pb_position.setBorder( BorderFactory.createEmptyBorder(0,0,0,0) );
-			pb_position.setMaximum( PB_POSITION_MAX );
-			pb_position.setMinimum(0);
-		}
+            this.scratchPadRoot.remove( this.scrollPane );
+            this.scratchPadRoot.add( this.scrollPane, BorderLayout.CENTER );
+            this.scratchPadRoot.add( this.pulsarRootPane, BorderLayout.PAGE_START );
+            this.scratchPadRoot.revalidate();
 
-	}
+            // Tempo Button
+            staticPane.add( new JPusarFilePanel(), BorderLayout.PAGE_START );
+            staticPane.add( createStartStopButton(), BorderLayout.LINE_END );
+            staticPane.add( createTempoTapButton(), BorderLayout.CENTER );
+            staticPane.add( createRewindButton(), BorderLayout.LINE_START );
+                        
+            
+//          REMOVED >>> (Mon, 08 Jul 2019 22:06:16 +0900)
+//          staticPane.add( createCueButton(), BorderLayout.PAGE_END );
+//          REMOVED <<< (Mon, 08 Jul 2019 22:06:16 +0900)
+
+            // createEmptyBorder( top left bottom right )
+//              staticPane.setBorder( BorderFactory.createEmptyBorder(10,20,5,20) );
+//              userPane.setBorder(   BorderFactory.createEmptyBorder(5,20,20,20) );
+
+//              ((JComponent)pulsarRootPane).setBorder( BorderFactory.createEmptyBorder() );
+            ((JComponent)pulsarRootPane).setBorder( BorderFactory.createEmptyBorder(10,10,10,10) );
+
+            // frame.setMaximizedBounds(new Rectangle(0, 0, 400, 1000));
+            this.pack();
+            this.setSize( 750, 750 );
+            this.setVisible(true);
+            this.addComponentListener( new ComponentAdapter() {
+                @Override
+                public void componentResized(ComponentEvent e) {
+                    JRootPane pane = JPulsarFrame. this.getRootPane();
+                    for (Component c : pane.getComponents() ) {
+                        c.revalidate();
+                    }
+                    pane.revalidate();
+                    pane.validate();
+                    
+                }
+            });
+            
+            PulsarGui.this.rootPane = pulsarRootPane;
+            PulsarGui.this.staticPane = staticPane;
+            PulsarGui.this.userPane = userPane;
+            PulsarGui.this.staticPaneOuter = staticPaneOuter;
+            PulsarGui.this.userPaneOuter = userPaneOuter;
+            
+            
+        }
+        
+        JProgressBar pb_position = new JProgressBar() {
+            @Override
+            public Dimension getPreferredSize() {
+                Dimension s = super.getPreferredSize();
+                s.height = 40;
+                return s;
+            }
+        };
+        {
+            PulsarGui.this.pb_position = pb_position; 
+            add( pb_position , BorderLayout.PAGE_END );
+            pb_position.setBorder( BorderFactory.createCompoundBorder(
+                    BorderFactory.createEmptyBorder(10,10,10,10),
+                    pb_position.getBorder()) );
+//              pb_position.setBorder( BorderFactory.createEmptyBorder(0,0,0,0) );
+            pb_position.setMaximum( PB_POSITION_MAX );
+            pb_position.setMinimum(0);
+        }
+
+    }
 
     /*
      * === Meaning of these variable name for panels ===
@@ -755,176 +755,176 @@ public class PulsarGui {
      */
 
 
-	// XXX REMOVE THIS
+    // XXX REMOVE THIS
     private class JPusarFilePanel extends JPanel {
-    	public JPusarFilePanel() {
-    		super( PulsarGuiUtils.newLayout() );
-    	}
-    	    	
-    	JSliderPanel panel_slider = new JSliderPanel();
-    	{
-//    		add( panel_slider, BorderLayout.PAGE_END );
-    		add( panel_slider, BorderLayout.CENTER );
-    	}
-    	class JSliderPanel extends JPanel {
-    		public JSliderPanel() {
-    			super( PulsarGuiUtils.newLayout() );
-			}
-    		
-    		JSlider sl_tempoSlider = new JSlider();
-    		{
-    			PulsarGui.this.sl_tempoSlider = sl_tempoSlider;
-//    			add( sl_tempoSlider, BorderLayout.PAGE_END );
-    			add( sl_tempoSlider, BorderLayout.CENTER );
-    			sl_tempoSlider.setBorder( BorderFactory.createEmptyBorder() );
-    			sl_tempoSlider.setMinimum(1);
-    			sl_tempoSlider.setMaximum(1000);
-    			sl_tempoSlider.setPaintTicks(true);
-    			sl_tempoSlider.setPaintTrack( true);
-    			sl_tempoSlider.setMajorTickSpacing(100);
-    			sl_tempoSlider.setMinorTickSpacing(25);
-    			sl_tempoSlider.setPreferredSize( new Dimension(500, 80));
-    			Dictionary<Integer,JLabel> labelTables = new Hashtable<>();
-    			labelTables.put(10, new JLabel( "10" ));
-    			labelTables.put(50, new JLabel( "50" ));
-    			labelTables.put(100, new JLabel( "100" ));
-    			labelTables.put(150, new JLabel( "150" ));
-    			labelTables.put(200, new JLabel( "200" ));
-    			labelTables.put(300, new JLabel( "300" ));
-    			labelTables.put(400, new JLabel( "400" ));
-    			labelTables.put(500, new JLabel( "500" ));
-    			labelTables.put(750, new JLabel( "750" ));
-    			labelTables.put(1000, new JLabel( "1000" ));
+        public JPusarFilePanel() {
+            super( PulsarGuiUtils.newLayout() );
+        }
+                
+        JSliderPanel panel_slider = new JSliderPanel();
+        {
+//          add( panel_slider, BorderLayout.PAGE_END );
+            add( panel_slider, BorderLayout.CENTER );
+        }
+        class JSliderPanel extends JPanel {
+            public JSliderPanel() {
+                super( PulsarGuiUtils.newLayout() );
+            }
+            
+            JSlider sl_tempoSlider = new JSlider();
+            {
+                PulsarGui.this.sl_tempoSlider = sl_tempoSlider;
+//              add( sl_tempoSlider, BorderLayout.PAGE_END );
+                add( sl_tempoSlider, BorderLayout.CENTER );
+                sl_tempoSlider.setBorder( BorderFactory.createEmptyBorder() );
+                sl_tempoSlider.setMinimum(1);
+                sl_tempoSlider.setMaximum(1000);
+                sl_tempoSlider.setPaintTicks(true);
+                sl_tempoSlider.setPaintTrack( true);
+                sl_tempoSlider.setMajorTickSpacing(100);
+                sl_tempoSlider.setMinorTickSpacing(25);
+                sl_tempoSlider.setPreferredSize( new Dimension(500, 80));
+                Dictionary<Integer,JLabel> labelTables = new Hashtable<>();
+                labelTables.put(10, new JLabel( "10" ));
+                labelTables.put(50, new JLabel( "50" ));
+                labelTables.put(100, new JLabel( "100" ));
+                labelTables.put(150, new JLabel( "150" ));
+                labelTables.put(200, new JLabel( "200" ));
+                labelTables.put(300, new JLabel( "300" ));
+                labelTables.put(400, new JLabel( "400" ));
+                labelTables.put(500, new JLabel( "500" ));
+                labelTables.put(750, new JLabel( "750" ));
+                labelTables.put(1000, new JLabel( "1000" ));
 
-    			sl_tempoSlider.setLabelTable( labelTables );
-    			sl_tempoSlider.setPaintLabels(true);
-    			sl_tempoSlider.addChangeListener(new ChangeListener() {
-    				@Override
-    				public void stateChanged(ChangeEvent e) {
-    					try {
-    						//    					logInfo( "TempoSlider : " + ((JSlider)e.getSource()).getValue() );
-    						pulsar.tempoTapper.setBeatsPerMinute( ((JSlider)e.getSource()).getValue() );
-    					} catch (JackException e1) {
-    						logError("", e1);
-    					}
-    				}
-    			});
-    			
-    			sl_tempoSlider.setBorder(
-    					BorderFactory.createCompoundBorder(
-    							BorderFactory.createTitledBorder("TEMPO"),
-    							sl_tempoSlider.getBorder()
-    							)
-    					);
-    			
-    			// InitializeTempoSlider
-    			pulsar.tempoTapper.registerNotifier( new TempoTapperTempoNotifier() {
-    				@Override
-    				public void notifyTempo(double beatPerMinute) {
-    					sl_tempoSlider.setValue( (int)beatPerMinute );
-    				}
-    			});
-    			
-    			//
-    			guiSetTempoRange( TempoRange.NORMAL );
-    		}
-    	}
+                sl_tempoSlider.setLabelTable( labelTables );
+                sl_tempoSlider.setPaintLabels(true);
+                sl_tempoSlider.addChangeListener(new ChangeListener() {
+                    @Override
+                    public void stateChanged(ChangeEvent e) {
+                        try {
+                            //                      logInfo( "TempoSlider : " + ((JSlider)e.getSource()).getValue() );
+                            pulsar.tempoTapper.setBeatsPerMinute( ((JSlider)e.getSource()).getValue() );
+                        } catch (JackException e1) {
+                            logError("", e1);
+                        }
+                    }
+                });
+                
+                sl_tempoSlider.setBorder(
+                        BorderFactory.createCompoundBorder(
+                                BorderFactory.createTitledBorder("TEMPO"),
+                                sl_tempoSlider.getBorder()
+                                )
+                        );
+                
+                // InitializeTempoSlider
+                pulsar.tempoTapper.registerNotifier( new TempoTapperTempoNotifier() {
+                    @Override
+                    public void notifyTempo(double beatPerMinute) {
+                        sl_tempoSlider.setValue( (int)beatPerMinute );
+                    }
+                });
+                
+                //
+                guiSetTempoRange( TempoRange.NORMAL );
+            }
+        }
     }
 
-	void initializeTempoSlider() {
-	}
+    void initializeTempoSlider() {
+    }
 
     private JButton createStartStopButton() {
-    	JButton b = new JButton( "■|▶" ) {
-    		@Override
-    		public Dimension getPreferredSize() {
-    			Dimension s = super.getPreferredSize();
-    			s.width =  75;
-    			return s;
-    		}
-    	};
-    	b.addActionListener( new ActionListener() {
-    		@Override
-    		public void actionPerformed(ActionEvent e) {
-    			pulsar.togglePlaying();
-    		}
-    	});
-    	return b;
+        JButton b = new JButton( "■|▶" ) {
+            @Override
+            public Dimension getPreferredSize() {
+                Dimension s = super.getPreferredSize();
+                s.width =  75;
+                return s;
+            }
+        };
+        b.addActionListener( new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pulsar.togglePlaying();
+            }
+        });
+        return b;
     }
     
     private JButton createRewindButton() {
-    	JButton b = new JButton( "||◀" ) {
-    		@Override
-    		public Dimension getPreferredSize() {
-    			Dimension s = super.getPreferredSize();
-    			s.width =  75;
-    			return s;
-    		}
-    	};
-    	b.addActionListener( new ActionListener() {
-    		@Override
-    		public void actionPerformed(ActionEvent e) {
-    			pulsar.rewind();
-    		}
-    	});
-    	return b;
+        JButton b = new JButton( "||◀" ) {
+            @Override
+            public Dimension getPreferredSize() {
+                Dimension s = super.getPreferredSize();
+                s.width =  75;
+                return s;
+            }
+        };
+        b.addActionListener( new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pulsar.rewind();
+            }
+        });
+        return b;
     }
     
-	private JButton createTempoTapButton() {
-    	JButton tempoTapButton = new JButton( "TEMPO" );
-    	tempoTapButton.addActionListener( new ActionListener() {
-    		@Override
-    		public void actionPerformed(ActionEvent e) {
-    			pulsar.tempoTapper.tap();
-    		}
-    	});
+    private JButton createTempoTapButton() {
+        JButton tempoTapButton = new JButton( "TEMPO" );
+        tempoTapButton.addActionListener( new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pulsar.tempoTapper.tap();
+            }
+        });
 
-    	pulsar.tempoTapper.registerNotifier( new TempoTapperTempoNotifier() {
-			@Override
-			public void notifyTempo(double beatPerMinute) {
-				tempoTapButton.setText( String.format( "Tempo=%.2f", beatPerMinute  ) );
-			}
-		} );
+        pulsar.tempoTapper.registerNotifier( new TempoTapperTempoNotifier() {
+            @Override
+            public void notifyTempo(double beatPerMinute) {
+                tempoTapButton.setText( String.format( "Tempo=%.2f", beatPerMinute  ) );
+            }
+        } );
 
-    	tempoTapButton.setPreferredSize(new Dimension(200, 100));
-    	tempoTapButton.setMargin(new Insets(20, 20, 20, 20));
+        tempoTapButton.setPreferredSize(new Dimension(200, 100));
+        tempoTapButton.setMargin(new Insets(20, 20, 20, 20));
 
-    	return tempoTapButton;
-	}
+        return tempoTapButton;
+    }
 
-	public static List<Symbol> getPulsarWords( Scheme scheme ) {
-		List result = new ArrayList<>();
-		try {
-			LList p1 = DescriptiveDocumentType.PROCS.getDocumentList( scheme.getEnvironment() );
-			for ( Object o2 : p1 ) {
-				LList p2 = (LList) o2;
-				result.addAll( (LList) srfi1.drop.apply2( p2, 1 )); 
-			}
-			return (List<Symbol>)result;
-		} catch (Throwable e) {
-			throw new InternalError(e);
-		} 
-	}
-	public static void addLispWords( Scheme scheme, List<Symbol> additionalLispWords ) {
-		Environment env = scheme.getEnvironment();
-		Pair lispWords = (Pair) SchemeUtils.getVar( env, "lisp-words" );
-		if ( lispWords != null) {
-			try {
-				
-				Object newLispWords = ((Procedure)srfi1.append.get()).apply2(
-					LList.makeList( additionalLispWords) , lispWords );
-				
-				SchemeUtils.putVar(env, "lisp-words", newLispWords );
-			} catch (Throwable e) {
-				logError( "" ,  e );
-			}
-		} else {
-			logWarn( "could not retrieve lisp-words." );
-		}
-	}
+    public static List<Symbol> getPulsarWords( Scheme scheme ) {
+        List result = new ArrayList<>();
+        try {
+            LList p1 = DescriptiveDocumentType.PROCS.getDocumentList( scheme.getEnvironment() );
+            for ( Object o2 : p1 ) {
+                LList p2 = (LList) o2;
+                result.addAll( (LList) srfi1.drop.apply2( p2, 1 )); 
+            }
+            return (List<Symbol>)result;
+        } catch (Throwable e) {
+            throw new InternalError(e);
+        } 
+    }
+    public static void addLispWords( Scheme scheme, List<Symbol> additionalLispWords ) {
+        Environment env = scheme.getEnvironment();
+        Pair lispWords = (Pair) SchemeUtils.getVar( env, "lisp-words" );
+        if ( lispWords != null) {
+            try {
+                
+                Object newLispWords = ((Procedure)srfi1.append.get()).apply2(
+                    LList.makeList( additionalLispWords) , lispWords );
+                
+                SchemeUtils.putVar(env, "lisp-words", newLispWords );
+            } catch (Throwable e) {
+                logError( "" ,  e );
+            }
+        } else {
+            logWarn( "could not retrieve lisp-words." );
+        }
+    }
 
-	public static void addStringLispWords( Scheme scheme, List<String> PULSAR_WORDS ) {
-		addLispWords( scheme , SchemeUtils.javaStringListToSchemeSymbolList( PULSAR_WORDS ) );
-	}
+    public static void addStringLispWords( Scheme scheme, List<String> PULSAR_WORDS ) {
+        addLispWords( scheme , SchemeUtils.javaStringListToSchemeSymbolList( PULSAR_WORDS ) );
+    }
 
 }

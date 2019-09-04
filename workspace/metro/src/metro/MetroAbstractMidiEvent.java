@@ -30,18 +30,18 @@ import java.util.Comparator;
  * @author ats
  */
 public interface MetroAbstractMidiEvent extends Comparable<MetroAbstractMidiEvent> {
-	public static final Comparator<? super MetroAbstractMidiEvent> COMPARATOR = new Comparator<MetroAbstractMidiEvent>( ) {
-		@Override
-		public int compare(MetroAbstractMidiEvent o1, MetroAbstractMidiEvent o2) {
-			return o1.compareTo( o2 );
-		}
-	};
+    public static final Comparator<? super MetroAbstractMidiEvent> COMPARATOR = new Comparator<MetroAbstractMidiEvent>( ) {
+        @Override
+        public int compare(MetroAbstractMidiEvent o1, MetroAbstractMidiEvent o2) {
+            return o1.compareTo( o2 );
+        }
+    };
 
-	MetroPort getOutputPort();
-	int       getMidiOffset();
-	byte[]    getMidiData();
-	
-	public default int compareTo( MetroAbstractMidiEvent o ) {
-		return this.getMidiOffset() - o.getMidiOffset();
-	}
+    MetroPort getOutputPort();
+    int       getMidiOffset();
+    byte[]    getMidiData();
+    
+    public default int compareTo( MetroAbstractMidiEvent o ) {
+        return this.getMidiOffset() - o.getMidiOffset();
+    }
 }

@@ -21,5 +21,5 @@
 package metro;
 
 public interface MetroLock {
-	public Object getMetroLock();
+    public Object getMetroLock();
 }

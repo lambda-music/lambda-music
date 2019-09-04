@@ -34,75 +34,75 @@ import javax.swing.text.JTextComponent;
 import kawapad.SimpleSchemeParser.ParserState;
 
 public class KawaPadHighlighter2 {
-	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
-	static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
-	static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
-	static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
-	
-//	private static final boolean DEBUG = false;
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+    static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
+    static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
+    
+//  private static final boolean DEBUG = false;
 
-	static class ClearPosition {
-		Highlighter highlighter;
-		Object tag;
-		public ClearPosition(Highlighter highlighter, Object tag ) {
-			super();
-			this.highlighter = highlighter;
-			this.tag = tag;
-		}
-		public void clear() {
-			highlighter.removeHighlight( tag );
-		}
-	}
+    static class ClearPosition {
+        Highlighter highlighter;
+        Object tag;
+        public ClearPosition(Highlighter highlighter, Object tag ) {
+            super();
+            this.highlighter = highlighter;
+            this.tag = tag;
+        }
+        public void clear() {
+            highlighter.removeHighlight( tag );
+        }
+    }
 
-	static ArrayDeque<ClearPosition> clearQueue = new ArrayDeque<>();
-	static void addClearQueue(Highlighter highlighter, Object tag ) {
-		synchronized ( clearQueue ) {
-			ClearPosition cp = new ClearPosition( highlighter, tag );
-			clearQueue.push(cp);
-		}
-	}
-	static void eliminateClearQueue() {
-		synchronized ( clearQueue ) {
-			for ( ClearPosition cp : clearQueue ) {
-				cp.clear();
-			}
-			clearQueue.clear();
-		}
-	}
-	static void popClearQueue() {
-		synchronized ( clearQueue ) {
-			if ( ! clearQueue.isEmpty() ) {
-				clearQueue.pop().clear();
-			}
-		}
-	}
-	
-	static void highlightParentheses(JTextComponent tc, int open_pos, int close_pos) throws BadLocationException {
-		Highlighter highlighter = tc.getHighlighter();
-		{
-			Object tag =  highlighter.addHighlight( open_pos, open_pos+1, new DefaultHighlighter.DefaultHighlightPainter( Color.GREEN ) );
-			addClearQueue( highlighter, tag );
-		}
-		{
-			Object tag =  highlighter.addHighlight( close_pos, close_pos+1, new DefaultHighlighter.DefaultHighlightPainter( Color.GREEN ) );
-			addClearQueue( highlighter, tag );
-		}
-	}
+    static ArrayDeque<ClearPosition> clearQueue = new ArrayDeque<>();
+    static void addClearQueue(Highlighter highlighter, Object tag ) {
+        synchronized ( clearQueue ) {
+            ClearPosition cp = new ClearPosition( highlighter, tag );
+            clearQueue.push(cp);
+        }
+    }
+    static void eliminateClearQueue() {
+        synchronized ( clearQueue ) {
+            for ( ClearPosition cp : clearQueue ) {
+                cp.clear();
+            }
+            clearQueue.clear();
+        }
+    }
+    static void popClearQueue() {
+        synchronized ( clearQueue ) {
+            if ( ! clearQueue.isEmpty() ) {
+                clearQueue.pop().clear();
+            }
+        }
+    }
+    
+    static void highlightParentheses(JTextComponent tc, int open_pos, int close_pos) throws BadLocationException {
+        Highlighter highlighter = tc.getHighlighter();
+        {
+            Object tag =  highlighter.addHighlight( open_pos, open_pos+1, new DefaultHighlighter.DefaultHighlightPainter( Color.GREEN ) );
+            addClearQueue( highlighter, tag );
+        }
+        {
+            Object tag =  highlighter.addHighlight( close_pos, close_pos+1, new DefaultHighlighter.DefaultHighlightPainter( Color.GREEN ) );
+            addClearQueue( highlighter, tag );
+        }
+    }
 
-	public static void forceClearHighlightedParenthesis() {
-		eliminateClearQueue();
-	}
-	public static void clearHighlightedParenthesis() {
-		popClearQueue();
-	}
+    public static void forceClearHighlightedParenthesis() {
+        eliminateClearQueue();
+    }
+    public static void clearHighlightedParenthesis() {
+        popClearQueue();
+    }
 
-	public static void highlightMatchingParenthesis( JTextComponent component, int position ) throws BadLocationException {
-		if ( Kawapad.ENABLED_SHOW_CORRESPONDING_PARENTHESES ) {
- 			String text = component.getText();
-			ParserState parserState = 
-					SimpleSchemeParenthesisChecker.lookupParenthesis( text, position );
-			if ( parserState.isFound() )
-				highlightParentheses( component, parserState.getIterator().getInitialIndex(), parserState.getIterator().getIndex() );
-		}
-	}
+    public static void highlightMatchingParenthesis( JTextComponent component, int position ) throws BadLocationException {
+        if ( Kawapad.ENABLED_SHOW_CORRESPONDING_PARENTHESES ) {
+            String text = component.getText();
+            ParserState parserState = 
+                    SimpleSchemeParenthesisChecker.lookupParenthesis( text, position );
+            if ( parserState.isFound() )
+                highlightParentheses( component, parserState.getIterator().getInitialIndex(), parserState.getIterator().getIndex() );
+        }
+    }
 }

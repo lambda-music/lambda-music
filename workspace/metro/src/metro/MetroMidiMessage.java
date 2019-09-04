@@ -128,297 +128,297 @@ import java.util.logging.Logger;
  */
 
 public class MetroMidiMessage implements MetroMidiReceiver<byte[]> {
-	public static MetroMidiMessage getInstance() {
-		return INSTANCE;
-	}
-	private static final MetroMidiMessage INSTANCE = new MetroMidiMessage();
-	private MetroMidiMessage() {
-	}
-	
-	/** @formatter:on */
-	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
-	static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
-	static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
-	static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
-	
-	public byte[] noteOn( int channel, int note, double velocity ) {
-		return MetroMidiMessageGen.noteOn (channel, note, velocity );
-	}
-	public byte[] noteOn( int channel, int note, int velocity ) {
-		return MetroMidiMessageGen.noteOn (channel, note, velocity );
-	}
-	public byte[] noteOff ( int channel, int note, double velocity ) {
-		return MetroMidiMessageGen.noteOff(channel, note, velocity );
-	}
-	public byte[] noteOff ( int channel, int note, int velocity ) {
-		return MetroMidiMessageGen.noteOff(channel, note, velocity );
-	}
-	public byte[] keyPressure( int channel, int note, double value ) {
-		return MetroMidiMessageGen.keyPressure( channel, note, value );
-	}
-	public byte[] keyPressure( int channel, int note, int value ) {
-		return MetroMidiMessageGen.keyPressure( channel, note, value );
-	}
-	public byte[] controlChange( int channel, int controlNumber, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, controlNumber, controlValue );
-	}
-	public byte[] programChange( int channel, int value ) {
-		return MetroMidiMessageGen.programChange( channel, value );
-	}
-	public byte[] channelPressure( int channel, double value ) {
-		return MetroMidiMessageGen.channelPressure( channel, value );
-	}
-	public byte[] channelPressure( int channel, int value ) {
-		return MetroMidiMessageGen.channelPressure( channel, value );
-	}
-	public byte[] pitchBend(int channel, double value) {
-		return MetroMidiMessageGen.pitchBend( channel, value );
-	}
-	public byte[] pitchBend(int channel, int value) {
-		return MetroMidiMessageGen.pitchBend( channel, value );
-	}
+    public static MetroMidiMessage getInstance() {
+        return INSTANCE;
+    }
+    private static final MetroMidiMessage INSTANCE = new MetroMidiMessage();
+    private MetroMidiMessage() {
+    }
+    
+    /** @formatter:on */
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+    static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
+    static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
+    
+    public byte[] noteOn( int channel, int note, double velocity ) {
+        return MetroMidiMessageGen.noteOn (channel, note, velocity );
+    }
+    public byte[] noteOn( int channel, int note, int velocity ) {
+        return MetroMidiMessageGen.noteOn (channel, note, velocity );
+    }
+    public byte[] noteOff ( int channel, int note, double velocity ) {
+        return MetroMidiMessageGen.noteOff(channel, note, velocity );
+    }
+    public byte[] noteOff ( int channel, int note, int velocity ) {
+        return MetroMidiMessageGen.noteOff(channel, note, velocity );
+    }
+    public byte[] keyPressure( int channel, int note, double value ) {
+        return MetroMidiMessageGen.keyPressure( channel, note, value );
+    }
+    public byte[] keyPressure( int channel, int note, int value ) {
+        return MetroMidiMessageGen.keyPressure( channel, note, value );
+    }
+    public byte[] controlChange( int channel, int controlNumber, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, controlNumber, controlValue );
+    }
+    public byte[] programChange( int channel, int value ) {
+        return MetroMidiMessageGen.programChange( channel, value );
+    }
+    public byte[] channelPressure( int channel, double value ) {
+        return MetroMidiMessageGen.channelPressure( channel, value );
+    }
+    public byte[] channelPressure( int channel, int value ) {
+        return MetroMidiMessageGen.channelPressure( channel, value );
+    }
+    public byte[] pitchBend(int channel, double value) {
+        return MetroMidiMessageGen.pitchBend( channel, value );
+    }
+    public byte[] pitchBend(int channel, int value) {
+        return MetroMidiMessageGen.pitchBend( channel, value );
+    }
 
-	/*
-	 * Channel Mode Control Change 
-	 */
-	public static final int CC_ALL_SOUND_OFF         = 120;
-	public static final int CC_RESET_ALL_CONTROLLERS = 121;
-	public static final int CC_LOCAL_CONTROLS        = 122;
-	public static final int CC_ALL_NOTE_OFF          = 123;
-	public static final int CC_OMNI_MODE_OFF         = 124;
-	public static final int CC_OMNI_MODE_ON          = 125;
-	public static final int CC_MONO_MODE_ON          = 126;
-	public static final int CC_POLY_MODE_ON          = 127;
+    /*
+     * Channel Mode Control Change 
+     */
+    public static final int CC_ALL_SOUND_OFF         = 120;
+    public static final int CC_RESET_ALL_CONTROLLERS = 121;
+    public static final int CC_LOCAL_CONTROLS        = 122;
+    public static final int CC_ALL_NOTE_OFF          = 123;
+    public static final int CC_OMNI_MODE_OFF         = 124;
+    public static final int CC_OMNI_MODE_ON          = 125;
+    public static final int CC_MONO_MODE_ON          = 126;
+    public static final int CC_POLY_MODE_ON          = 127;
 
-	public byte[] cc_allSoundOff(int channel) {
-		return MetroMidiMessageGen.cc_allSoundOff( channel );
-	}
-	public byte[] cc_resetAllControllers(int channel) {
-		return MetroMidiMessageGen.cc_resetAllControllers( channel );
-	}
-	public byte[] cc_localControls(int channel,boolean value ) {
-		return MetroMidiMessageGen.cc_localControls( channel, value ) ;
-	}
-	public byte[] cc_allNoteOff(int channel) {
-		return MetroMidiMessageGen.cc_allNoteOff( channel );
-	}
-	public byte[] cc_omniModeOff(int channel) {
-		return MetroMidiMessageGen.cc_omniModeOff( channel );
-	}
-	public byte[] cc_omniModeOn(int channel) {
-		return MetroMidiMessageGen.cc_omniModeOn( channel );
-	}
-	public byte[] cc_monoModeOn(int channel) {
-		return MetroMidiMessageGen.cc_monoModeOn( channel );
-	}
-	public byte[] cc_polyModeOn(int channel) {
-		return MetroMidiMessageGen.cc_polyModeOn( channel );
-	}
-	
-	public byte[] songPositionPointer( int value ) {
-		return MetroMidiMessageGen.songPositionPointer( value );
-	}
-	public byte[] songSelect(int value) {
-		return MetroMidiMessageGen.songSelect( value );
-	}
-	public byte[] endOfExclusive () {
-		return MetroMidiMessageGen.endOfExclusive();
-	}
-	public byte[] clock ( ) {
-		return MetroMidiMessageGen.clock();
-	}
-	public byte[] start ( ) {
-		return MetroMidiMessageGen.start();
-	}
-	public byte[] cont( ) {
-		return MetroMidiMessageGen.cont();
-	}
-	public byte[] stop ( ) {
-		return MetroMidiMessageGen.stop();
-	}
-	public byte[] reset ( ) {
-		return MetroMidiMessageGen.reset();
-	}
-	
-	
-	public static final int CC_BANK_SELECT                            = 0  ;
-	public byte[] cc_bankSelect( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_BANK_SELECT, controlValue );
-	}
-	public static final int CC_MODULATION                             = 1  ;
-	public byte[] cc_modulation( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_MODULATION, controlValue );
-	}
-	public static final int CC_BREATH_CTRL                            = 2  ;
-	public byte[] cc_breathController( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_BREATH_CTRL, controlValue );
-	}
-	public static final int CC_FOOT_CTRL                              = 4  ;
-	public byte[] cc_footController( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_FOOT_CTRL, controlValue );
-	}
-	public static final int CC_PORTAMENTO_TIME                        = 5  ;
-	public byte[] cc_portamentoTime( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_PORTAMENTO_TIME, controlValue );
-	}
-	public static final int CC_DATA_ENTRY_MSB                         = 6  ;
-	public byte[] cc_dataEntryMsb( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_DATA_ENTRY_MSB, controlValue );
-	}
-	public static final int CC_VOLUME                                 = 7  ;
-	public byte[] cc_volume( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_VOLUME, controlValue );
-	}
-	public static final int CC_BALANCE                                = 8  ;
-	public byte[] cc_balance( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_BALANCE, controlValue );
-	}
-	public static final int CC_PAN                                    = 10 ;
-	public byte[] cc_pan( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_PAN, controlValue );
-	}
-	public static final int CC_EXPRESSION                             = 11 ;
-	public byte[] cc_expression( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_EXPRESSION, controlValue );
-	}
-	public static final int CC_EFFECT_CTRL_1                          = 12 ;
-	public byte[] cc_effectController1( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_EFFECT_CTRL_1, controlValue );
-	}
-	public static final int CC_EFFECT_CTRL_2                          = 13 ;
-	public byte[] cc_effectController2( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_EFFECT_CTRL_2, controlValue );
-	}
-	public static final int CC_SUSTAIN_PEDAL                          = 64 ;
-	public byte[] cc_sustainPedal( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_SUSTAIN_PEDAL, controlValue );
-	}
-	public static final int CC_PORTAMENTO_SWITCH                      = 65 ;
-	public byte[] cc_portamentoSwitch( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_PORTAMENTO_SWITCH, controlValue );
-	}
-	public static final int CC_SOSTENUTO_SWITCH                       = 66 ;
-	public byte[] cc_sostenutoSwitch( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_SOSTENUTO_SWITCH, controlValue );
-	}
-	public static final int CC_SOFT_PEDAL_SWITCH                      = 67 ;
-	public byte[] cc_pedalSwitch( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_SOFT_PEDAL_SWITCH, controlValue );
-	}
-	public static final int CC_LEGATO_FOOTSWITCH                      = 68 ;
-	public byte[] cc_legatoSwitch( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_LEGATO_FOOTSWITCH, controlValue );
-	}
-	public static final int CC_HOLD_2                                 = 69 ;
-	public byte[] cc_hold2( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_HOLD_2, controlValue );
-	}
-	public static final int CC_SOUND_CTRL_01                          = 70 ;
-	public byte[] cc_soundController1( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_01, controlValue );
-	}
-	public static final int CC_SOUND_CTRL_02                          = 71 ;
-	public byte[] cc_soundController2( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_02, controlValue );
-	}
-	public static final int CC_SOUND_CTRL_03                          = 72 ;
-	public byte[] cc_soundController3( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_03, controlValue );
-	}
-	public static final int CC_SOUND_CTRL_04                          = 73 ;
-	public byte[] cc_soundController4( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_04, controlValue );
-	}
-	public static final int CC_SOUND_CTRL_05                          = 74 ;
-	public byte[] cc_soundController5( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_05, controlValue );
-	}
-	public static final int CC_SOUND_CTRL_06                          = 75 ;
-	public byte[] cc_soundController6( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_06, controlValue );
-	}
-	public static final int CC_SOUND_CTRL_07                          = 76 ;
-	public byte[] cc_soundController7( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_07, controlValue );
-	}
-	public static final int CC_SOUND_CTRL_08                          = 77 ;
-	public byte[] cc_soundController8( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_08, controlValue );
-	}
-	public static final int CC_SOUND_CTRL_09                          = 78 ;
-	public byte[] cc_soundController9( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_09, controlValue );
-	}
-	public static final int CC_SOUND_CTRL_10                          = 79 ;
-	public byte[] cc_soundController10( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_10, controlValue );
-	}
-	public static final int CC_GENERAL_PURPOSE_01                     = 80 ;
-	public byte[] cc_generalPurpose01( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_GENERAL_PURPOSE_01, controlValue );
-	}
-	public static final int CC_GENERAL_PURPOSE_02                     = 81 ;
-	public byte[] cc_generalPurpose02( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_GENERAL_PURPOSE_02, controlValue );
-	}
-	public static final int CC_GENERAL_PURPOSE_03                     = 82 ;
-	public byte[] cc_generalPurpose03( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_GENERAL_PURPOSE_03, controlValue );
-	}
-	public static final int CC_GENERAL_PURPOSE_04                     = 83 ;
-	public byte[] cc_generalPurpose04( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_GENERAL_PURPOSE_04, controlValue );
-	}
-	public static final int CC_PORTAMENTO_CC_CTRL                     = 84 ;
-	public byte[] cc_portamento( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_PORTAMENTO_CC_CTRL, controlValue );
-	}
-	public static final int CC_EFFECT_1_DEPTH                         = 91 ;
-	public byte[] cc_effect1( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_EFFECT_1_DEPTH, controlValue );
-	}
-	public static final int CC_EFFECT_2_DEPTH                         = 92 ;
-	public byte[] cc_effect2( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_EFFECT_2_DEPTH, controlValue );
-	}
-	public static final int CC_EFFECT_3_DEPTH                         = 93 ;
-	public byte[] cc_effect3( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_EFFECT_3_DEPTH, controlValue );
-	}
-	public static final int CC_EFFECT_4_DEPTH                         = 94 ;
-	public byte[] cc_effect4( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_EFFECT_4_DEPTH, controlValue );
-	}
-	public static final int CC_EFFECT_5_DEPTH                         = 95 ;
-	public byte[] cc_effect5( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_EFFECT_5_DEPTH, controlValue );
-	}
-	public static final int CC_DATA_INCREMENT                         = 96 ;
-	public byte[] cc_dataIncrement( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_DATA_INCREMENT, controlValue );
-	}
-	public static final int CC_DATA_DECREMENT                         = 97 ;
-	public byte[] cc_dataDecrement( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_DATA_DECREMENT, controlValue );
-	}
-	public static final int CC_NRPN_LSB                               = 98 ;
-	public byte[] cc_nrpnLsb( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_NRPN_LSB, controlValue );
-	}
-	public static final int CC_NRPN_MSB                               = 99 ;
-	public byte[] cc_nrpnMsb( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_NRPN_MSB, controlValue );
-	}
-	public static final int CC_RPN_LSB                                = 100;
-	public byte[] cc_rpnLsb( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_RPN_LSB, controlValue );
-	}
-	public static final int CC_RPN_MSB                                = 101;
-	public byte[] cc_rpnMsb( int channel, int controlValue ) {
-		return MetroMidiMessageGen.controlChange( channel, CC_RPN_MSB, controlValue );
-	}
-	@Override
-	public byte[] error(String string) {
-		return null;
-	}
+    public byte[] cc_allSoundOff(int channel) {
+        return MetroMidiMessageGen.cc_allSoundOff( channel );
+    }
+    public byte[] cc_resetAllControllers(int channel) {
+        return MetroMidiMessageGen.cc_resetAllControllers( channel );
+    }
+    public byte[] cc_localControls(int channel,boolean value ) {
+        return MetroMidiMessageGen.cc_localControls( channel, value ) ;
+    }
+    public byte[] cc_allNoteOff(int channel) {
+        return MetroMidiMessageGen.cc_allNoteOff( channel );
+    }
+    public byte[] cc_omniModeOff(int channel) {
+        return MetroMidiMessageGen.cc_omniModeOff( channel );
+    }
+    public byte[] cc_omniModeOn(int channel) {
+        return MetroMidiMessageGen.cc_omniModeOn( channel );
+    }
+    public byte[] cc_monoModeOn(int channel) {
+        return MetroMidiMessageGen.cc_monoModeOn( channel );
+    }
+    public byte[] cc_polyModeOn(int channel) {
+        return MetroMidiMessageGen.cc_polyModeOn( channel );
+    }
+    
+    public byte[] songPositionPointer( int value ) {
+        return MetroMidiMessageGen.songPositionPointer( value );
+    }
+    public byte[] songSelect(int value) {
+        return MetroMidiMessageGen.songSelect( value );
+    }
+    public byte[] endOfExclusive () {
+        return MetroMidiMessageGen.endOfExclusive();
+    }
+    public byte[] clock ( ) {
+        return MetroMidiMessageGen.clock();
+    }
+    public byte[] start ( ) {
+        return MetroMidiMessageGen.start();
+    }
+    public byte[] cont( ) {
+        return MetroMidiMessageGen.cont();
+    }
+    public byte[] stop ( ) {
+        return MetroMidiMessageGen.stop();
+    }
+    public byte[] reset ( ) {
+        return MetroMidiMessageGen.reset();
+    }
+    
+    
+    public static final int CC_BANK_SELECT                            = 0  ;
+    public byte[] cc_bankSelect( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_BANK_SELECT, controlValue );
+    }
+    public static final int CC_MODULATION                             = 1  ;
+    public byte[] cc_modulation( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_MODULATION, controlValue );
+    }
+    public static final int CC_BREATH_CTRL                            = 2  ;
+    public byte[] cc_breathController( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_BREATH_CTRL, controlValue );
+    }
+    public static final int CC_FOOT_CTRL                              = 4  ;
+    public byte[] cc_footController( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_FOOT_CTRL, controlValue );
+    }
+    public static final int CC_PORTAMENTO_TIME                        = 5  ;
+    public byte[] cc_portamentoTime( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_PORTAMENTO_TIME, controlValue );
+    }
+    public static final int CC_DATA_ENTRY_MSB                         = 6  ;
+    public byte[] cc_dataEntryMsb( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_DATA_ENTRY_MSB, controlValue );
+    }
+    public static final int CC_VOLUME                                 = 7  ;
+    public byte[] cc_volume( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_VOLUME, controlValue );
+    }
+    public static final int CC_BALANCE                                = 8  ;
+    public byte[] cc_balance( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_BALANCE, controlValue );
+    }
+    public static final int CC_PAN                                    = 10 ;
+    public byte[] cc_pan( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_PAN, controlValue );
+    }
+    public static final int CC_EXPRESSION                             = 11 ;
+    public byte[] cc_expression( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_EXPRESSION, controlValue );
+    }
+    public static final int CC_EFFECT_CTRL_1                          = 12 ;
+    public byte[] cc_effectController1( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_EFFECT_CTRL_1, controlValue );
+    }
+    public static final int CC_EFFECT_CTRL_2                          = 13 ;
+    public byte[] cc_effectController2( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_EFFECT_CTRL_2, controlValue );
+    }
+    public static final int CC_SUSTAIN_PEDAL                          = 64 ;
+    public byte[] cc_sustainPedal( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_SUSTAIN_PEDAL, controlValue );
+    }
+    public static final int CC_PORTAMENTO_SWITCH                      = 65 ;
+    public byte[] cc_portamentoSwitch( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_PORTAMENTO_SWITCH, controlValue );
+    }
+    public static final int CC_SOSTENUTO_SWITCH                       = 66 ;
+    public byte[] cc_sostenutoSwitch( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_SOSTENUTO_SWITCH, controlValue );
+    }
+    public static final int CC_SOFT_PEDAL_SWITCH                      = 67 ;
+    public byte[] cc_pedalSwitch( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_SOFT_PEDAL_SWITCH, controlValue );
+    }
+    public static final int CC_LEGATO_FOOTSWITCH                      = 68 ;
+    public byte[] cc_legatoSwitch( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_LEGATO_FOOTSWITCH, controlValue );
+    }
+    public static final int CC_HOLD_2                                 = 69 ;
+    public byte[] cc_hold2( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_HOLD_2, controlValue );
+    }
+    public static final int CC_SOUND_CTRL_01                          = 70 ;
+    public byte[] cc_soundController1( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_01, controlValue );
+    }
+    public static final int CC_SOUND_CTRL_02                          = 71 ;
+    public byte[] cc_soundController2( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_02, controlValue );
+    }
+    public static final int CC_SOUND_CTRL_03                          = 72 ;
+    public byte[] cc_soundController3( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_03, controlValue );
+    }
+    public static final int CC_SOUND_CTRL_04                          = 73 ;
+    public byte[] cc_soundController4( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_04, controlValue );
+    }
+    public static final int CC_SOUND_CTRL_05                          = 74 ;
+    public byte[] cc_soundController5( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_05, controlValue );
+    }
+    public static final int CC_SOUND_CTRL_06                          = 75 ;
+    public byte[] cc_soundController6( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_06, controlValue );
+    }
+    public static final int CC_SOUND_CTRL_07                          = 76 ;
+    public byte[] cc_soundController7( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_07, controlValue );
+    }
+    public static final int CC_SOUND_CTRL_08                          = 77 ;
+    public byte[] cc_soundController8( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_08, controlValue );
+    }
+    public static final int CC_SOUND_CTRL_09                          = 78 ;
+    public byte[] cc_soundController9( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_09, controlValue );
+    }
+    public static final int CC_SOUND_CTRL_10                          = 79 ;
+    public byte[] cc_soundController10( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_SOUND_CTRL_10, controlValue );
+    }
+    public static final int CC_GENERAL_PURPOSE_01                     = 80 ;
+    public byte[] cc_generalPurpose01( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_GENERAL_PURPOSE_01, controlValue );
+    }
+    public static final int CC_GENERAL_PURPOSE_02                     = 81 ;
+    public byte[] cc_generalPurpose02( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_GENERAL_PURPOSE_02, controlValue );
+    }
+    public static final int CC_GENERAL_PURPOSE_03                     = 82 ;
+    public byte[] cc_generalPurpose03( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_GENERAL_PURPOSE_03, controlValue );
+    }
+    public static final int CC_GENERAL_PURPOSE_04                     = 83 ;
+    public byte[] cc_generalPurpose04( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_GENERAL_PURPOSE_04, controlValue );
+    }
+    public static final int CC_PORTAMENTO_CC_CTRL                     = 84 ;
+    public byte[] cc_portamento( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_PORTAMENTO_CC_CTRL, controlValue );
+    }
+    public static final int CC_EFFECT_1_DEPTH                         = 91 ;
+    public byte[] cc_effect1( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_EFFECT_1_DEPTH, controlValue );
+    }
+    public static final int CC_EFFECT_2_DEPTH                         = 92 ;
+    public byte[] cc_effect2( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_EFFECT_2_DEPTH, controlValue );
+    }
+    public static final int CC_EFFECT_3_DEPTH                         = 93 ;
+    public byte[] cc_effect3( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_EFFECT_3_DEPTH, controlValue );
+    }
+    public static final int CC_EFFECT_4_DEPTH                         = 94 ;
+    public byte[] cc_effect4( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_EFFECT_4_DEPTH, controlValue );
+    }
+    public static final int CC_EFFECT_5_DEPTH                         = 95 ;
+    public byte[] cc_effect5( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_EFFECT_5_DEPTH, controlValue );
+    }
+    public static final int CC_DATA_INCREMENT                         = 96 ;
+    public byte[] cc_dataIncrement( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_DATA_INCREMENT, controlValue );
+    }
+    public static final int CC_DATA_DECREMENT                         = 97 ;
+    public byte[] cc_dataDecrement( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_DATA_DECREMENT, controlValue );
+    }
+    public static final int CC_NRPN_LSB                               = 98 ;
+    public byte[] cc_nrpnLsb( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_NRPN_LSB, controlValue );
+    }
+    public static final int CC_NRPN_MSB                               = 99 ;
+    public byte[] cc_nrpnMsb( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_NRPN_MSB, controlValue );
+    }
+    public static final int CC_RPN_LSB                                = 100;
+    public byte[] cc_rpnLsb( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_RPN_LSB, controlValue );
+    }
+    public static final int CC_RPN_MSB                                = 101;
+    public byte[] cc_rpnMsb( int channel, int controlValue ) {
+        return MetroMidiMessageGen.controlChange( channel, CC_RPN_MSB, controlValue );
+    }
+    @Override
+    public byte[] error(String string) {
+        return null;
+    }
 }

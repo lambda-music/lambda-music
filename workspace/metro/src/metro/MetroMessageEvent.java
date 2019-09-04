@@ -23,16 +23,16 @@ package metro;
 import java.util.List;
 
 public class MetroMessageEvent extends MetroEvent {
-	private final Runnable message;
-	public MetroMessageEvent( String id, double offset, Runnable message ) {
-		super(id, offset);
-		this.message = message;
-	}
-	public void execute( Metro metro ) {
-		metro.postMessage( message );
-	}
-	@Override
-	public void process(Metro metro, int from, int to, int nframes, List<MetroAbstractMidiEvent> eventList) {
-		execute( metro );		
-	}
+    private final Runnable message;
+    public MetroMessageEvent( String id, double offset, Runnable message ) {
+        super(id, offset);
+        this.message = message;
+    }
+    public void execute( Metro metro ) {
+        metro.postMessage( message );
+    }
+    @Override
+    public void process(Metro metro, int from, int to, int nframes, List<MetroAbstractMidiEvent> eventList) {
+        execute( metro );       
+    }
 }

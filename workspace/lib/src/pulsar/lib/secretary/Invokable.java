@@ -31,16 +31,16 @@ import pulsar.lib.scheme.scretary.InvokableSchemeProcedure;
  * @author ats
  */
 public abstract interface Invokable {
-	Object NOARG = new Object[0];
-//	Object NO_RESULT = EmptyList.emptyList;
-	Object NO_RESULT = Values.empty;
+    Object NOARG = new Object[0];
+//  Object NO_RESULT = EmptyList.emptyList;
+    Object NO_RESULT = Values.empty;
 
-	/**
-	 * This method invokes the invokable which is denoted by the subclasses
-	 * implement this interface.
-	 * 
-	 * @param args
-	 * @return
-	 */
-	abstract Object invoke( Object... args );
+    /**
+     * This method invokes the invokable which is denoted by the subclasses
+     * implement this interface.
+     * 
+     * @param args
+     * @return
+     */
+    abstract Object invoke( Object... args );
 }

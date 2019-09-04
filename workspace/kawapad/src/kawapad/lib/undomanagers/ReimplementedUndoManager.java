@@ -36,19 +36,19 @@ class RumCompoundEdit extends CompoundEdit {
     }
 }
 public class ReimplementedUndoManager extends AbstractUndoableEdit implements UndoableEditListener, GroupedUndoManager {
-	@Override
-	public void startGroup0() {
-	}
-	@Override
-	public void setSuspended(boolean suspended) {
-	}
-	@Override
-	public boolean isSuspended() {
-		return false;
-	}
-	@Override
-	public void discardAllEdits() {
-	}
+    @Override
+    public void startGroup0() {
+    }
+    @Override
+    public void setSuspended(boolean suspended) {
+    }
+    @Override
+    public boolean isSuspended() {
+        return false;
+    }
+    @Override
+    public void discardAllEdits() {
+    }
 
     String lastEditName=null;
     ArrayList<RumCompoundEdit> edits=new ArrayList<RumCompoundEdit>();

@@ -28,33 +28,33 @@ import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.UndoableEdit;
 
 public abstract interface GroupedUndoManager extends UndoableEdit, UndoableEditListener {
-	public static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
-	public static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
-	public static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
-	public static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
-	static final boolean DEBUG = false;
-	public abstract void startGroup0();
-	public default void startGroup() {
-		if ( DEBUG )
-			logInfo( "GroupedUndoManager.startGroup() >>>" );
-		this.startGroup0();
-	}
-	public default void endGroup() {
-		if ( DEBUG )
-			logInfo( "GroupedUndoManager.endGroup() <<<" );
-		this.startGroup0();
-	}
-	public abstract void setSuspended(boolean suspended);
-	public abstract boolean isSuspended();
-	
-	void discardAllEdits();
-	
-//	public default void dump() {
-//		System.err.println( "==== DUMP ====" );
-//		
-//		for ( int i=0; i<edits.size(); i++  ) {
-//			System.err.println( edits.get(i) + ":" + (  indexOfNextAdd == i ? "[CURRENT]" : ""  ) );
-//		}
-//		System.err.println( "" );
-//	}
+    public static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    public static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+    public static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
+    public static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
+    static final boolean DEBUG = false;
+    public abstract void startGroup0();
+    public default void startGroup() {
+        if ( DEBUG )
+            logInfo( "GroupedUndoManager.startGroup() >>>" );
+        this.startGroup0();
+    }
+    public default void endGroup() {
+        if ( DEBUG )
+            logInfo( "GroupedUndoManager.endGroup() <<<" );
+        this.startGroup0();
+    }
+    public abstract void setSuspended(boolean suspended);
+    public abstract boolean isSuspended();
+    
+    void discardAllEdits();
+    
+//  public default void dump() {
+//      System.err.println( "==== DUMP ====" );
+//      
+//      for ( int i=0; i<edits.size(); i++  ) {
+//          System.err.println( edits.get(i) + ":" + (  indexOfNextAdd == i ? "[CURRENT]" : ""  ) );
+//      }
+//      System.err.println( "" );
+//  }
 }

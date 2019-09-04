@@ -37,47 +37,47 @@ import java.util.List;
  * @author Ats Oka
  */
 public interface MetroAbstractEvent {
-	/**
-	 * Check if the position of this event is inside the duration specified in the
-	 * parameter. See {@link MetroTrack#progressCursor(int, List) } for further
-	 * information.
-	 * 
-	 * This methods is called as a callback of JACKAudio processing; this method
-	 * should return as soon as possible. The heavy processing that blocks for
-	 * longer time than the current setting of JACK's frame rate causes JACK to
-	 * XRUN.
-	 * 
-	 * @param from
-	 *            Specifies the beginning point of the duration to check. The value
-	 *            is inclusive.
-	 * @param to
-	 *            Specifies the end point of the duration to check. The value is
-	 *            exclusive.
-	 * @return <code>true</code> if this event is inside the duration.
-	 */
-	boolean between(int from, int to);
+    /**
+     * Check if the position of this event is inside the duration specified in the
+     * parameter. See {@link MetroTrack#progressCursor(int, List) } for further
+     * information.
+     * 
+     * This methods is called as a callback of JACKAudio processing; this method
+     * should return as soon as possible. The heavy processing that blocks for
+     * longer time than the current setting of JACK's frame rate causes JACK to
+     * XRUN.
+     * 
+     * @param from
+     *            Specifies the beginning point of the duration to check. The value
+     *            is inclusive.
+     * @param to
+     *            Specifies the end point of the duration to check. The value is
+     *            exclusive.
+     * @return <code>true</code> if this event is inside the duration.
+     */
+    boolean between(int from, int to);
 
-	/**
-	 * Defines the procedure to execute when this event is activated. This method is
-	 * usually called when {@link #between(int, int)} returned <code>true</code>.
-	 * See {@link MetroTrack#progressCursor(int, List) } for further information.
-	 * 
-	 * This methods is called as a callback of JACKAudio processing; this method
-	 * should return as soon as possible. The heavy processing that blocks for
-	 * longer time than the current setting of JACK's frame rate causes JACK to
-	 * XRUN.
-	 * 
-	 * @param metro
-	 *            The Metro instance which is the owner of this event.
-	 * @param from
-	 *            the value of <code>from</code> when {@link #between(int, int)}
-	 *            returns <code>true</code>.
-	 * @param to
-	 *            the value of <code>to</code> when {@link #between(int, int)}
-	 *            returns <code>true</code>.
-	 * @param nframes
-	 *            the current
-	 * @param eventList
-	 */
-	void process(Metro metro, int from, int to, int nframes, List<MetroAbstractMidiEvent> eventList);
+    /**
+     * Defines the procedure to execute when this event is activated. This method is
+     * usually called when {@link #between(int, int)} returned <code>true</code>.
+     * See {@link MetroTrack#progressCursor(int, List) } for further information.
+     * 
+     * This methods is called as a callback of JACKAudio processing; this method
+     * should return as soon as possible. The heavy processing that blocks for
+     * longer time than the current setting of JACK's frame rate causes JACK to
+     * XRUN.
+     * 
+     * @param metro
+     *            The Metro instance which is the owner of this event.
+     * @param from
+     *            the value of <code>from</code> when {@link #between(int, int)}
+     *            returns <code>true</code>.
+     * @param to
+     *            the value of <code>to</code> when {@link #between(int, int)}
+     *            returns <code>true</code>.
+     * @param nframes
+     *            the current
+     * @param eventList
+     */
+    void process(Metro metro, int from, int to, int nframes, List<MetroAbstractMidiEvent> eventList);
 }

@@ -42,93 +42,93 @@ import pulsar.lib.scheme.scretary.SchemeSecretary;
  */
 
 public class SchemeHttp {
-	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
-	static void logError(String msg, Throwable e) {
-		LOGGER.log(Level.SEVERE, msg, e);
-	}
-	static void logInfo(String msg) {
-		LOGGER.log(Level.INFO, msg);
-	}
-	static void logWarn(String msg) {
-		LOGGER.log(Level.WARNING, msg);
-	}
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static void logError(String msg, Throwable e) {
+        LOGGER.log(Level.SEVERE, msg, e);
+    }
+    static void logInfo(String msg) {
+        LOGGER.log(Level.INFO, msg);
+    }
+    static void logWarn(String msg) {
+        LOGGER.log(Level.WARNING, msg);
+    }
 
 
-	SchemeSecretary schemeSecretary;
-	HttpServer httpServer;
-	Charset charset = Charset.forName( "UTF-8" );
-	public SchemeHttp( SchemeSecretary schemeSecretary, int port ) throws IOException {
-		super();
-		this.schemeSecretary = schemeSecretary;
-		this.init( port );
-	}
-	private void init( int port ) throws IOException {
-		httpServer = HttpServer.create(new InetSocketAddress( port ), 0);
-		httpServer.createContext("/pulsar", new PulsarHttpHandler() );
-		httpServer.setExecutor(null); // creates a default executor
-		httpServer.start();
-		schemeSecretary.addShutdownHook( new Runnable() {
-			@Override
-			public void run() {
-				stop();
-			}
-		});
-	}
+    SchemeSecretary schemeSecretary;
+    HttpServer httpServer;
+    Charset charset = Charset.forName( "UTF-8" );
+    public SchemeHttp( SchemeSecretary schemeSecretary, int port ) throws IOException {
+        super();
+        this.schemeSecretary = schemeSecretary;
+        this.init( port );
+    }
+    private void init( int port ) throws IOException {
+        httpServer = HttpServer.create(new InetSocketAddress( port ), 0);
+        httpServer.createContext("/pulsar", new PulsarHttpHandler() );
+        httpServer.setExecutor(null); // creates a default executor
+        httpServer.start();
+        schemeSecretary.addShutdownHook( new Runnable() {
+            @Override
+            public void run() {
+                stop();
+            }
+        });
+    }
 
-	void start(){
-		this.httpServer.start();
-	}
-	void stop(){
-		this.httpServer.stop(0);
-	}
+    void start(){
+        this.httpServer.start();
+    }
+    void stop(){
+        this.httpServer.stop(0);
+    }
 
-	static String readInputStream( InputStream inputStream ) throws IOException {
-		BufferedInputStream bis = new BufferedInputStream(inputStream);
-		ByteArrayOutputStream buf = new ByteArrayOutputStream();
-		int result = bis.read();
-		while(result != -1) {
-			buf.write((byte) result);
-			result = bis.read();
-		}
-		// StandardCharsets.UTF_8.name() > JDK 7
-		try {
-			return buf.toString("UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-			return buf.toString();
-		}
-	}
+    static String readInputStream( InputStream inputStream ) throws IOException {
+        BufferedInputStream bis = new BufferedInputStream(inputStream);
+        ByteArrayOutputStream buf = new ByteArrayOutputStream();
+        int result = bis.read();
+        while(result != -1) {
+            buf.write((byte) result);
+            result = bis.read();
+        }
+        // StandardCharsets.UTF_8.name() > JDK 7
+        try {
+            return buf.toString("UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return buf.toString();
+        }
+    }
 
-	class PulsarHttpHandler implements HttpHandler {
-		@Override
-		public void handle(HttpExchange t) throws IOException {
-			logInfo( "=========PulsarHttp========" );
-			logInfo( t.getRemoteAddress().toString() );
+    class PulsarHttpHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange t) throws IOException {
+            logInfo( "=========PulsarHttp========" );
+            logInfo( t.getRemoteAddress().toString() );
 
-			if ( t.getRemoteAddress().getAddress().isLoopbackAddress() ) {
-				String requestString = readInputStream( t.getRequestBody() ); 
-				logInfo( requestString );
-				ExecuteSchemeResult result = SchemeUtils.evaluateScheme( schemeSecretary, null, requestString, "web-scratchpad" );
-				String responseString;
-				responseString = 
-						SchemeUtils.endWithLineFeed( requestString ) + 
-						SchemeUtils.formatResult( result.result );
-				logInfo( result.result );
-				t.sendResponseHeaders(200, responseString.length());
-				t.getResponseHeaders().put( "Content-Type",  Arrays.asList( "text/plain; charset=utf-8" ) );
-				OutputStream os = t.getResponseBody();
-				os.write(responseString.getBytes());
-				os.close();
-			} else {
-				// forbidden
-				String response = "";
-				t.sendResponseHeaders(403, response.length());
-				t.getResponseHeaders().put( "Content-Type",  Arrays.asList( "text/plain; charset=utf-8" ) );
-				OutputStream os = t.getResponseBody();
-				os.write(response.getBytes());
-				os.close();
-			}
-		}
+            if ( t.getRemoteAddress().getAddress().isLoopbackAddress() ) {
+                String requestString = readInputStream( t.getRequestBody() ); 
+                logInfo( requestString );
+                ExecuteSchemeResult result = SchemeUtils.evaluateScheme( schemeSecretary, null, requestString, "web-scratchpad" );
+                String responseString;
+                responseString = 
+                        SchemeUtils.endWithLineFeed( requestString ) + 
+                        SchemeUtils.formatResult( result.result );
+                logInfo( result.result );
+                t.sendResponseHeaders(200, responseString.length());
+                t.getResponseHeaders().put( "Content-Type",  Arrays.asList( "text/plain; charset=utf-8" ) );
+                OutputStream os = t.getResponseBody();
+                os.write(responseString.getBytes());
+                os.close();
+            } else {
+                // forbidden
+                String response = "";
+                t.sendResponseHeaders(403, response.length());
+                t.getResponseHeaders().put( "Content-Type",  Arrays.asList( "text/plain; charset=utf-8" ) );
+                OutputStream os = t.getResponseBody();
+                os.write(response.getBytes());
+                os.close();
+            }
+        }
 
-	}
+    }
 }

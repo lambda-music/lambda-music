@@ -21,14 +21,14 @@
 package pulsar.lib.secretary;
 
 public final class InvokablyRunnable implements Runnable {
-	private final Invokable invokable;
-	private final Object[] args;
-	public InvokablyRunnable( Invokable invokable , Object ... args ) {
-		this.invokable = invokable;
-		this.args = args;
-	}
-	@Override
-	public void run() {
-		invokable.invoke( args );
-	}
+    private final Invokable invokable;
+    private final Object[] args;
+    public InvokablyRunnable( Invokable invokable , Object ... args ) {
+        this.invokable = invokable;
+        this.args = args;
+    }
+    @Override
+    public void run() {
+        invokable.invoke( args );
+    }
 }

@@ -21,37 +21,37 @@
 package metro;
 
 public final class MetroStaticMidiEvent implements MetroAbstractMidiEvent {
-	private MetroPort outputPort;
-	private int midiOffset;
-	private byte[] midiData;
-	public MetroStaticMidiEvent( MetroPort outputPort, int offset, byte[] data ) {
-		this.outputPort = outputPort;
-		this.midiOffset = offset;
-		this.midiData = data;
-	}
-	@Override
-	public MetroPort getOutputPort() {
-		return outputPort;
-	}
-	public void setOutputPort( MetroPort outputPort ) {
-		this.outputPort = outputPort;
-	}
-	@Override
-	public int getMidiOffset() {
-		return midiOffset;
-	}
-	public void setMidiOffset(int midiOffset) {
-		this.midiOffset = midiOffset;
-	}
-	@Override
-	public byte[] getMidiData() {
-		return midiData;
-	}
-	public void setMidiData(byte[] midiData) {
-		this.midiData = midiData;
-	}
-	@Override
-	public String toString() {
-		return "offset : " + Integer.toString( this.midiOffset ) ;
-	}
+    private MetroPort outputPort;
+    private int midiOffset;
+    private byte[] midiData;
+    public MetroStaticMidiEvent( MetroPort outputPort, int offset, byte[] data ) {
+        this.outputPort = outputPort;
+        this.midiOffset = offset;
+        this.midiData = data;
+    }
+    @Override
+    public MetroPort getOutputPort() {
+        return outputPort;
+    }
+    public void setOutputPort( MetroPort outputPort ) {
+        this.outputPort = outputPort;
+    }
+    @Override
+    public int getMidiOffset() {
+        return midiOffset;
+    }
+    public void setMidiOffset(int midiOffset) {
+        this.midiOffset = midiOffset;
+    }
+    @Override
+    public byte[] getMidiData() {
+        return midiData;
+    }
+    public void setMidiData(byte[] midiData) {
+        this.midiData = midiData;
+    }
+    @Override
+    public String toString() {
+        return "offset : " + Integer.toString( this.midiOffset ) ;
+    }
 }
