@@ -228,14 +228,29 @@ public class SchemeUtils {
 			return SchemeUtils.schemeSymbol( o );
 		});
 	}
+	public static List<IString> javaStringListToSchemeStringList( List<String> stringList) { 
+		return SchemeUtils.<String,IString>convertList( stringList, (o)->{
+			return SchemeUtils.schemeString( o );
+		});
+	}
 	
+	private static IString schemeString(String o) {
+		return IString.valueOf( o ) ;
+	}
 	/*
 	 * We changed the policy the way to treat null here;
 	 * now we are ignoring null value. (Sun, 04 Aug 2019 22:01:39 +0900)
 	 */
 	public static Symbol schemeSymbol( String string ) {
-//		return Symbol.valueOf( string );
-		return SimpleSymbol.valueOf(string);	
+		if ( string == null )
+			return null;
+		else
+//			return Symbol.valueOf( string );
+			return SimpleSymbol.valueOf(string);	
+	}
+	
+	public static String schemeStringToJavaString(Object arg1) {
+		return anyToString( arg1 );
 	}
 
 	// If it is allowed to return null (in case such return type is Object), then
@@ -320,6 +335,9 @@ public class SchemeUtils {
 	public static List<String> symbolListToStringList(List p) {
 		return SchemeUtils.<Object,String>convertList((List<Object>)p, (v)->SchemeUtils.symbolToString(v) );
 	}
+	public static List<String> schemeStringListToJavaStringList(List p) {
+		return SchemeUtils.<Object,String>convertList((List<Object>)p, (v)->SchemeUtils.schemeStringToJavaString(v) );
+	}
 	public static List<String> anySchemeValueListToStringList(List p) {
 		return SchemeUtils.<Object,String>convertList((List<Object>)p, (v)->SchemeUtils.anyToString(v) );
 	}
@@ -388,6 +406,9 @@ public class SchemeUtils {
 		for ( String name : names ) {
 			env.define( schemeSymbol( name ), null, value );
 		}
+	}
+	public static final void defineVar( Environment env, Procedure value ) {
+		defineVar( env, value, value.getName() );
 	}
 	public static final boolean isDefined( Environment env, String name  ) {
 		// env = Environment.getCurrent();

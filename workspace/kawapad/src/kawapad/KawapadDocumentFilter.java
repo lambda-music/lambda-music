@@ -1,7 +1,8 @@
 package kawapad;
 
 import java.awt.Color;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.regex.Matcher;
@@ -26,31 +27,132 @@ import javax.swing.text.StyledDocument;
  */
 public abstract class KawapadDocumentFilter extends DocumentFilter {
 	private static final StyleContext styleContext = StyleContext.getDefaultStyleContext();
-	public static AttributeSet createAttribute(Color foreground) {
+	public static AttributeSet createAttributeSet(Color foreground) {
 		return styleContext.addAttribute( styleContext.getEmptySet(), StyleConstants.Foreground, foreground );
 	}
-	public static final AttributeSet	greenAttributeSet	= createAttribute( Color.GREEN );
-	public static final AttributeSet	blueAttributeSet	= createAttribute( Color.BLUE );
-	public static final AttributeSet	redAttributeSet     = createAttribute( Color.RED );
-	public static final AttributeSet	grayAttributeSet    = createAttribute( Color.GRAY );
-	public static final AttributeSet	orangeAttributeSet  = createAttribute( Color.ORANGE );
-	public static final AttributeSet	whiteAttributeSet	= createAttribute( Color.WHITE );
+	public static AttributeSet createAttributeSet(Color foreground, Color background) {
+		return 
+				styleContext.addAttribute(
+					styleContext.addAttribute(
+						styleContext.getEmptySet(), 
+						StyleConstants.Foreground, 
+						foreground ),
+					StyleConstants.Background, 
+					background );
+	}
+	public static Color getColorFromAttributeSet(AttributeSet attr) {
+		return (Color) attr.getAttribute( StyleConstants.Foreground );
+	}
+	public static Color getForegroundColor(AttributeSet attr) {
+		return (Color) attr.getAttribute( StyleConstants.Foreground );
+	}
+	public static Color getBackgroundColor(AttributeSet attr) {
+		return (Color) attr.getAttribute( StyleConstants.Background );
+	}
+	public static final AttributeSet	darkGreenAttributeSet	= createAttributeSet( new Color(0x00008800 ) );
+	public static final AttributeSet	greenAttributeSet	= createAttributeSet( Color.GREEN );
+	public static final AttributeSet	blueAttributeSet	= createAttributeSet( Color.BLUE );
+	public static final AttributeSet	redAttributeSet     = createAttributeSet( Color.RED );
+	public static final AttributeSet	grayAttributeSet    = createAttributeSet( Color.GRAY );
+	public static final AttributeSet	orangeAttributeSet  = createAttributeSet( Color.ORANGE );
+	public static final AttributeSet	whiteAttributeSet	= createAttributeSet( Color.WHITE );
 
 	private final StyledDocument document;
 	public KawapadDocumentFilter(StyledDocument document) {
 		this.document = document;
 	}
-	public static final class SyntaxElement {
-		Pattern pattern;
-		AttributeSet attributeSet;
-		public SyntaxElement(Pattern pattern, AttributeSet attributeSet) {
+	public interface SyntaxElement {
+		Object getName();
+		void setPattern(Pattern pattern);
+		Pattern getPattern();
+		AttributeSet getAttributeSet();
+		void setAttributeSet(AttributeSet attributeSet);
+		void setColor(Color foreground, Color background);
+		void setColor(Color foreground);
+		Color getForegroundColor();
+		Color getBackgroundColor();
+		
+		public static final class Default implements SyntaxElement {
+			Object name;
+			Pattern pattern;
+			AttributeSet attributeSet;
+			public Default(Object name, Pattern pattern, AttributeSet attributeSet) {
+				super();
+				this.name = name;
+				this.pattern = pattern;
+				this.attributeSet = attributeSet;
+			}
+			@Override
+			public Object getName() {
+				return name;
+			}
+			@Override
+			public void setPattern(Pattern pattern) {
+				this.pattern = pattern;
+			}
+			@Override
+			public Pattern getPattern() {
+				return pattern;
+			}
+			@Override
+			public AttributeSet getAttributeSet() {
+				return attributeSet;
+			}
+			@Override
+			public void setAttributeSet( AttributeSet attributeSet ) {
+				this.attributeSet = attributeSet;
+			}
+			@Override
+			public void setColor( Color foreground, Color background ) {
+				this.attributeSet = createAttributeSet( foreground, background );
+			}
+			@Override
+			public void setColor( Color foreground) {
+				this.attributeSet = createAttributeSet( foreground );
+			}
+			@Override
+			public Color getForegroundColor() {
+				return KawapadDocumentFilter.getForegroundColor( this.attributeSet );
+			}
+			@Override
+			public Color getBackgroundColor() {
+				return KawapadDocumentFilter.getBackgroundColor( this.attributeSet );
+			}
+		}
+	}
+	public static SyntaxElement createSyntaxElement( Object name, Pattern pattern, AttributeSet attributeSet ) {
+		return new SyntaxElement.Default( name, pattern, attributeSet );
+	}
+	
+	public static class SyntaxElementList extends ArrayList<SyntaxElement> {
+		public SyntaxElementList() {
 			super();
-			this.pattern = pattern;
-			this.attributeSet = attributeSet;
+		}
+		public SyntaxElementList(Collection<? extends SyntaxElement> c) {
+			super( c );
+		}
+		public SyntaxElement get( Object name ) {
+			for ( SyntaxElement se : this ) {
+				if ( name.equals( se.getName() ) ) {
+					return se;
+				}
+			}
+			throw new IllegalArgumentException( "could not find " + name + "." );
 		}
 	}
 	
-	public abstract List<SyntaxElement> getSyntaxElementList();  
+	protected abstract Collection<SyntaxElement> createSyntaxElementList();
+
+	private SyntaxElementList syntaxElementList;
+	public void resetSyntaxElementList() {
+		this.syntaxElementList = null;
+	}
+	public SyntaxElementList getSyntaxElementList() {
+		if ( syntaxElementList == null ) {
+			this.syntaxElementList = new SyntaxElementList( createSyntaxElementList() );
+		}
+		return syntaxElementList;
+	}
 	public abstract AttributeSet getDefaultAttributeSet();  
 	
 	@Override
@@ -109,12 +211,12 @@ public abstract class KawapadDocumentFilter extends DocumentFilter {
 		AttributeSet defaultAttr = getDefaultAttributeSet();
 		document.setCharacterAttributes(0, document.getLength(), defaultAttr , true);
 		for ( SyntaxElement e : getSyntaxElementList() ) {
-			updateTextStyles( document, e.pattern , defaultAttr, e.attributeSet );
+			updateTextStyles( document, e.getPattern(), defaultAttr, e.getAttributeSet() );
 		}
 	}
 	
+	public static final String GROUP = "K";
 	static void updateTextStyles( StyledDocument document, Pattern pattern, AttributeSet defaultAttr, AttributeSet attr ) {
-		
 		// Look for tokens and highlight them
 		try {
 			Segment s = new Segment();
@@ -122,7 +224,11 @@ public abstract class KawapadDocumentFilter extends DocumentFilter {
 			Matcher matcher = pattern.matcher( s );
 			while (matcher.find()) {
 				// Change the color of recognized tokens
-				document.setCharacterAttributes( matcher.start(), matcher.end() - matcher.start(), attr, false );
+				if ( 0 < matcher.groupCount() ) {
+					document.setCharacterAttributes( matcher.start(GROUP), matcher.end(GROUP) - matcher.start(GROUP), attr, false );
+				} else {
+					document.setCharacterAttributes( matcher.start(),      matcher.end()      - matcher.start(),      attr, false );
+				}
 			}
 		} catch (BadLocationException e) {
 			e.printStackTrace();
@@ -162,6 +268,5 @@ public abstract class KawapadDocumentFilter extends DocumentFilter {
 		
 		return p;
 	}
-	
 
 }

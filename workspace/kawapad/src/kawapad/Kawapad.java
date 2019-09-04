@@ -1,11 +1,14 @@
 package kawapad;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -21,6 +24,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -65,6 +69,7 @@ import javax.swing.undo.CannotUndoException;
 import gnu.expr.Language;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
+import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
@@ -73,11 +78,13 @@ import gnu.mapping.Procedure2;
 import gnu.mapping.Procedure3;
 import gnu.mapping.Symbol;
 import gnu.mapping.Values;
+import gnu.mapping.WrongArguments;
 import kawa.standard.Scheme;
 import kawapad.SimpleSchemeParser.ParserState;
 import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.OriginalCompoundUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
+import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.SchemeUtils.ExecuteSchemeResult;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
@@ -163,7 +170,7 @@ public class Kawapad extends JTextPane {
 	}
 
 	////////////////////////////////////////////////////////////////////////////
-	
+	static ArrayList<Kawapad> kawapadList = new ArrayList<>();
 	public Kawapad( SchemeSecretary schemeSecretary ) {
 		super();
 		this.schemeSecretary = schemeSecretary;
@@ -189,8 +196,26 @@ public class Kawapad extends JTextPane {
 		// This action intercepts our customization so delete it.
 		purgeKeyFromActionMap( kawapad.getActionMap(), DefaultEditorKit.insertTabAction );
 		
-//		this.setEditorKit( new KawapadEditorKit());
-		((AbstractDocument)getDocument()).setDocumentFilter( new KawapadDocumentFilter0( this.getStyledDocument()));
+		documentFilter = new KawapadDocumentFilter0( this.getStyledDocument());
+		((AbstractDocument)getDocument()).setDocumentFilter( documentFilter);
+		
+		// https://stackoverflow.com/questions/6189599/automatically-causing-a-subclassed-jpanels-resources-to-be-released
+		this.addHierarchyListener( new HierarchyListener() {
+			@Override
+			public void hierarchyChanged(HierarchyEvent e) {
+				if ( 0 != ( e.getChangeFlags() & HierarchyEvent.DISPLAYABILITY_CHANGED ) ) {
+					if ( ((Component)e.getSource()).isDisplayable() ) {
+						synchronized ( Kawapad.class ) {
+							kawapadList.add( Kawapad.this ); 
+						}
+					} else {
+						synchronized ( Kawapad.class ) {
+							kawapadList.remove( Kawapad.this ); 
+						}
+					}
+				}
+			}
+		});
 	}
 	
 	
@@ -1888,7 +1913,71 @@ public class Kawapad extends JTextPane {
 				return Values.empty;
 			}
 		}, "load-font" );
+		
+		SchemeUtils.defineVar(env, new SafeProcedureN("add-lisp-keyword") {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				addAllLispKeywords( SchemeUtils.schemeStringListToJavaStringList( Arrays.asList( args )));
+				return Values.empty;
+			}
+		} );
+		SchemeUtils.defineVar(env, new SafeProcedureN( "delete-lisp-keyword" ) {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				deleteAllLispKeywords( SchemeUtils.schemeStringListToJavaStringList( Arrays.asList( args )));
+				return Values.empty;
+			}
+		} );
+		SchemeUtils.defineVar(env, new SafeProcedureN("add-syntax-keyword") {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				addAllLispKeywords( SchemeUtils.schemeStringListToJavaStringList( Arrays.asList( args )));
+				return Values.empty;
+			}
+		} );
+		SchemeUtils.defineVar(env, new SafeProcedureN( "delete-syntax-keyword" ) {
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				deleteAllLispKeywords( SchemeUtils.schemeStringListToJavaStringList( Arrays.asList( args )));
+				return Values.empty;
+			}
+		} );
+		
+		SchemeUtils.defineVar(env, new Procedure1("get-lisp-keywords") {
+			@Override
+			public Object apply1(Object arg1) throws Throwable {
+				return LList.makeList( SchemeUtils.javaStringListToSchemeSymbolList( lispKeywordList ) );
+			}
+		} );
+
+		SchemeUtils.defineVar(env, new SafeProcedureN( "set-syntax-color" ) {
+			@Override
+			public Object apply2(Object arg1, Object arg2) throws Throwable {
+				documentFilter.getSyntaxElementList().get(
+					KawapadSyntaxElementType.schemeValueOf((Symbol)arg1)).setColor((Color)arg2);
+				
+				return Values.empty; 
+			}
+			@Override
+			public Object apply3(Object arg1, Object arg2, Object arg3) throws Throwable {
+				documentFilter.getSyntaxElementList().get(
+					KawapadSyntaxElementType.schemeValueOf((Symbol)arg1)).setColor((Color)arg2,(Color)arg3);
+				return Values.empty; 
+			}
+			@Override
+			public Object applyN(Object[] args) throws Throwable {
+				WrongArguments.checkArgCount( this.getName() , 2, 3, args.length );
+
+				if ( args.length == 2 )
+					return apply2( args[0], args[1] );
+				else if ( args.length == 3 )
+					return apply3( args[0], args[1], args[2] );
+				
+				throw new InternalError();
+			}
+		});
 	}
+
 
 	public static Scheme staticInitScheme( Scheme scheme ) {
 		logInfo( "KawaPad#staticInitScheme" );
@@ -2631,73 +2720,63 @@ public class Kawapad extends JTextPane {
 	//
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	
+	public static enum KawapadSyntaxElementType {
+		KEYWORD,
+		PUNCTUATION,
+		STRING,
+		LINE_COMMENT,
+		BLOCK_COMMENT;
+		static KawapadSyntaxElementType schemeValueOf( Symbol symbol ) {
+			String str = SchemeUtils.symbolToString( symbol ).toUpperCase().replaceAll( "-" , "_" );
+			return valueOf( str );
+		}
+	}
+	static String REGEX_NON_WORD = "(?:[^a-zA-Z0-9-_])";
 	final class KawapadDocumentFilter0 extends KawapadDocumentFilter {
-		private Pattern createLispWordPattern() {
-			return Pattern.compile( 
-				"\\b" +
-						String.join( "\\b|\\b",  DEFAULT_LISP_WORDS ) +
-					"\\b" );
-		}
-		private KawapadDocumentFilter.SyntaxElement keywordStyleElement = null;
-		KawapadDocumentFilter.SyntaxElement getKeywordSyntaxElement() {
-			if ( keywordStyleElement == null ) {
-				keywordStyleElement = new KawapadDocumentFilter.SyntaxElement( 
-					createLispWordPattern(), 
-					KawapadDocumentFilter.orangeAttributeSet ); 
-			}
-			return keywordStyleElement; 
-		}
-		///////////////////////////////////////////////////////////////
-		private KawapadDocumentFilter.SyntaxElement punctuationStyleElement = new KawapadDocumentFilter.SyntaxElement(
-			Pattern.compile( "\\(|\\)|\\:|\\'|\\#" ),
-			KawapadDocumentFilter.redAttributeSet );
-		
-		KawapadDocumentFilter.SyntaxElement getPunctuationStyleElement() {
-			return punctuationStyleElement;
-		}
-		///////////////////////////////////////////////////////////////
-		private KawapadDocumentFilter.SyntaxElement blockCommentStyleElement = new KawapadDocumentFilter.SyntaxElement(
-			Pattern.compile( "\\#\\|[\\s\\S]*?\\|\\#", Pattern.MULTILINE ),
-			KawapadDocumentFilter.grayAttributeSet );
-		
-		KawapadDocumentFilter.SyntaxElement getBlockCommentStyleElement() {
-			return blockCommentStyleElement;
-		}
-		///////////////////////////////////////////////////////////////
-		private KawapadDocumentFilter.SyntaxElement commentStyleElement = new KawapadDocumentFilter.SyntaxElement(
-			Pattern.compile( ";.*$" ),
-			KawapadDocumentFilter.grayAttributeSet );
-		
-		KawapadDocumentFilter.SyntaxElement getCommentStyleElement() {
-			return commentStyleElement;
-		}
-		///////////////////////////////////////////////////////////////
-		
-		List<SyntaxElement> syntaxElementList;
-		private List<SyntaxElement> createSyntaxElementList() {
-			 return Arrays.asList( getPunctuationStyleElement(), getKeywordSyntaxElement(), getBlockCommentStyleElement(), getCommentStyleElement() );
-//			return Arrays.asList( getPunctuationStyleElement(), getKeywordSyntaxElement() );
-//			return Arrays.asList( getPunctuationStyleElement() );
-		}
-		public void resetSyntaxElementList() {
-			this.syntaxElementList = null;
-		}
-		@Override
-		public List<SyntaxElement> getSyntaxElementList() {
-			if ( syntaxElementList == null ) {
-				this.syntaxElementList = createSyntaxElementList();
-			}
-			return syntaxElementList;
-		}
+		final AttributeSet defaultBlockCommentColor  = KawapadDocumentFilter.grayAttributeSet;
+		final AttributeSet defaultLineCommentColor   = KawapadDocumentFilter.grayAttributeSet;
+		final AttributeSet defaultStringColor        = KawapadDocumentFilter.darkGreenAttributeSet;
+		final AttributeSet defaultPunctuationColor   = KawapadDocumentFilter.redAttributeSet;
+		final AttributeSet defaultKeywordColor       = KawapadDocumentFilter.orangeAttributeSet;
 		KawapadDocumentFilter0(StyledDocument document) {
 			super( document );
 		}
+		private Pattern createLispWordPattern() {
+			synchronized ( Kawapad.class ) {
+				lispKeywordList.sort( LISP_KEYWORD_COMPARATOR );
+				return Pattern.compile( 
+					REGEX_NON_WORD + "(?<"+GROUP+">" + String.join( "|",  lispKeywordList ) + ")" + REGEX_NON_WORD );
+			}
+		}
+		protected Collection<SyntaxElement> createSyntaxElementList() {
+			return Arrays.asList( 
+				KawapadDocumentFilter.createSyntaxElement(
+					KawapadSyntaxElementType.PUNCTUATION,
+					Pattern.compile( "\\(|\\)|\\:|\\'|\\#" ),
+					defaultPunctuationColor ), 
+				KawapadDocumentFilter.createSyntaxElement(
+					KawapadSyntaxElementType.KEYWORD,
+					createLispWordPattern(), 
+					defaultKeywordColor ), 
+				KawapadDocumentFilter.createSyntaxElement(
+					KawapadSyntaxElementType.STRING,
+					Pattern.compile( "\\\"[\\s\\S]*?\\\"", Pattern.MULTILINE ),
+					defaultStringColor ), 
+				KawapadDocumentFilter.createSyntaxElement(
+					KawapadSyntaxElementType.BLOCK_COMMENT,
+					Pattern.compile( "\\#\\|[\\s\\S]*?\\|\\#", Pattern.MULTILINE ),
+					defaultBlockCommentColor ), 
+				KawapadDocumentFilter.createSyntaxElement(
+					KawapadSyntaxElementType.LINE_COMMENT,
+					Pattern.compile( ";.*$" ),
+					defaultLineCommentColor ) );
+		}
 		@Override
 		public AttributeSet getDefaultAttributeSet() {
-			return KawapadDocumentFilter.createAttribute( getForeground() );
+			return KawapadDocumentFilter.createAttributeSet( getForeground() );
 		}
 	}
+	private KawapadDocumentFilter0 documentFilter; // See the constructor how this field is initialized.
 
 
 	String getLispWordPatternString() {
@@ -2920,6 +2999,56 @@ public class Kawapad extends JTextPane {
 			"print-unreadable-object",};
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//
+	// The Bridge to the Scheme Interface of Highlighter 
+	//
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	static final Comparator<String> LISP_KEYWORD_COMPARATOR = new Comparator<String>() {
+		@Override
+		public int compare(String o1, String o2) {
+			return o1.length() - o2.length();
+		}
+	};
+	static void notifySyntaxChangeToAll() {
+		synchronized ( Kawapad.class ) {
+			for ( Kawapad kawapad : kawapadList ) {
+				kawapad.notifySyntaxChange();
+			}
+		}
+	}
+	private ArrayList<String> lispKeywordList = new ArrayList<>( Arrays.asList( DEFAULT_LISP_WORDS ));
+	public void addLispKeyword( String s ) {
+		synchronized ( Kawapad.this ) {
+			lispKeywordList.add( s );
+			notifySyntaxChangeToAll();
+		}
+	}
+	public void addAllLispKeywords( List<String> s ) {
+		synchronized ( Kawapad.this ) {
+			lispKeywordList.addAll( s );
+			notifySyntaxChangeToAll();
+		}
+	}
+	public void deleteLispKeyword( String s ) {
+		synchronized ( Kawapad.this ) {
+			lispKeywordList.remove( s );
+			notifySyntaxChangeToAll();
+		}
+	}
+	public void deleteAllLispKeywords( List<String> s ) {
+		synchronized ( Kawapad.this ) {
+			lispKeywordList.removeAll( s );
+			notifySyntaxChangeToAll();
+		}
+	}
+	void notifySyntaxChange() {
+		synchronized ( Kawapad.this ) {
+			this.documentFilter.resetSyntaxElementList();
+		}
+	}
+	
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
 	//  Variable Initializer
 	//
@@ -2929,6 +3058,7 @@ public class Kawapad extends JTextPane {
 		void initializeVariable( Map<String, Object> variables ); 
 	}
 	List<KawaVariableInitializer> kawaVariableInitializerList = new ArrayList<>();
+
 	public void addVariableInitializer( KawaVariableInitializer i ){
 		this.kawaVariableInitializerList.add( i );
 	}
