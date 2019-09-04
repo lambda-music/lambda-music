@@ -32,8 +32,8 @@ public abstract class KawapadDocumentFilter extends DocumentFilter {
 	public static final AttributeSet	greenAttributeSet	= createAttribute( Color.GREEN );
 	public static final AttributeSet	blueAttributeSet	= createAttribute( Color.BLUE );
 	public static final AttributeSet	redAttributeSet     = createAttribute( Color.RED );
-	public static final AttributeSet	grayAttributeSet     = createAttribute( Color.GRAY );
-	public static final AttributeSet	orangeAttributeSet     = createAttribute( Color.ORANGE );
+	public static final AttributeSet	grayAttributeSet    = createAttribute( Color.GRAY );
+	public static final AttributeSet	orangeAttributeSet  = createAttribute( Color.ORANGE );
 	public static final AttributeSet	whiteAttributeSet	= createAttribute( Color.WHITE );
 
 	private final StyledDocument document;

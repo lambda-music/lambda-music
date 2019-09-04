@@ -139,6 +139,7 @@ public class KawapadFrame extends JFrame {
 			@Override
 			public void initializeVariable(Map<String, Object> variables ) {
 				variables.put( "frame", KawapadFrame.this );
+				variables.put( "kawapad", KawapadFrame.this.kawapad );
 			}
 		});
 		
