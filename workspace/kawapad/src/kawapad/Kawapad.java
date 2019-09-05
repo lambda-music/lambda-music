@@ -82,6 +82,9 @@ import gnu.mapping.Values;
 import gnu.mapping.WrongArguments;
 import kawa.standard.Scheme;
 import kawapad.SchemeParentheses.ExpandParenthesisSelector;
+import kawapad.SchemeParentheses.SelectCurrentWordTransformer;
+import kawapad.SchemeParentheses.SelectLeftLispWordTransformer;
+import kawapad.SchemeParentheses.SelectRightLispWordTransformer;
 import kawapad.SchemeParentheses.ShrinkParenthesisSelector;
 import kawapad.SchemeParentheses.SideParenthesisSelector;
 import kawapad.lib.undomanagers.GroupedUndoManager;
@@ -147,6 +150,9 @@ public class Kawapad extends JTextPane {
     private static final boolean ENABLED_PARENTHESIS_HIGHLIGHT = true;
     static final boolean ENABLED_SHOW_CORRESPONDING_PARENTHESES = true;
 
+    // ADDED (Fri, 06 Sep 2019 01:05:27 +0900)
+    private static final boolean ENABLED_SYNTAX_HIGHLIGHTING = false;
+
     ////////////////////////////////////////////////////////////////////////////
 
     static transient int uniqueIDCounter = 0;
@@ -200,7 +206,9 @@ public class Kawapad extends JTextPane {
         purgeKeyFromActionMap( kawapad.getActionMap(), DefaultEditorKit.insertTabAction );
         
         documentFilter = new KawapadDocumentFilter0( this.getStyledDocument());
-        ((AbstractDocument)getDocument()).setDocumentFilter( documentFilter);
+        if ( ENABLED_SYNTAX_HIGHLIGHTING ) {
+            ((AbstractDocument)getDocument()).setDocumentFilter( documentFilter);
+        }
         
         // https://stackoverflow.com/questions/6189599/automatically-causing-a-subclassed-jpanels-resources-to-be-released
         this.addHierarchyListener( new HierarchyListener() {
@@ -1315,6 +1323,62 @@ public class Kawapad extends JTextPane {
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
+
+    public final AbstractAction SELECT_CURRENT_LISP_WORD_ACTION =
+            new TextAction( "select-current-lisp-word" )
+    {
+        CaretTransformer transformer = new SelectCurrentWordTransformer();
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JTextComponent t = getTextComponent( e );
+            Document document = t.getDocument();
+            Caret caret = t.getCaret();
+            transformer.transform( getParenthesisStack(), document, caret );
+        }
+        {
+            putValue( Action2.NAME, "Select the Word on the Cursor." );
+            putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_UP, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK ) );
+//              putValue( Action.MNEMONIC_KEY , (int) 'd' );
+        }
+
+    };
+    public final AbstractAction SELECT_RIGHT_LISP_WORD_ACTION =
+            new TextAction( "select-right-lisp-word" )
+    {
+        CaretTransformer transformer = new SelectRightLispWordTransformer();
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JTextComponent t = getTextComponent( e );
+            Document document = t.getDocument();
+            Caret caret = t.getCaret();
+            transformer.transform( getParenthesisStack(), document, caret );
+        }
+        {
+            putValue( Action2.NAME, "Select the Word on the Cursor." );
+            putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK ) );
+//              putValue( Action.MNEMONIC_KEY , (int) 'd' );
+        }
+
+    };
+    public final AbstractAction SELECT_LEFT_LISP_WORD_ACTION =
+            new TextAction( "select-left-lisp-word" )
+    {
+        CaretTransformer transformer = new SelectLeftLispWordTransformer();
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JTextComponent t = getTextComponent( e );
+            Document document = t.getDocument();
+            Caret caret = t.getCaret();
+            transformer.transform( getParenthesisStack(), document, caret );
+        }
+        {
+            putValue( Action2.NAME, "Select the Word on the Cursor." );
+            putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK ) );
+//              putValue( Action.MNEMONIC_KEY , (int) 'd' );
+        }
+
+    };
+
     
     static void addKeyStroke( JComponent component, Action action ) {
         Object name = action.getValue( Action.NAME );
@@ -1335,6 +1399,12 @@ public class Kawapad extends JTextPane {
         }
         addKeyStroke( this, this.PARENTHESIS_SELECT_JUMP_LEFT_ACTION );
         addKeyStroke( this, this.PARENTHESIS_SELECT_JUMP_RIGHT_ACTION );
+        
+        addKeyStroke( this, this.SELECT_CURRENT_LISP_WORD_ACTION );
+        addKeyStroke( this, this.SELECT_RIGHT_LISP_WORD_ACTION );
+        addKeyStroke( this, this.SELECT_LEFT_LISP_WORD_ACTION );
+        
+        
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -2638,7 +2708,7 @@ public class Kawapad extends JTextPane {
             }
         }
         protected Collection<SyntaxElement> createSyntaxElementList() {
-            return Arrays.asList( 
+            return Arrays.asList(
                 KawapadDocumentFilter.createSyntaxElement(
                     KawapadSyntaxElementType.PUNCTUATION,
                     Pattern.compile( "\\(|\\)|\\:|\\'|\\#" ),

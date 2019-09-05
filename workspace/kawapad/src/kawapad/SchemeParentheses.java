@@ -133,8 +133,40 @@ public class SchemeParentheses {
         }
     }   
 
+    
+    public interface CharSelector {
+        boolean select( char ch );
+    }
+    
+    public static final int lookup( CharSequence text, CharSelector selector, int position, int step ) {
+        if ( text == null )
+            throw new NullPointerException();
+        
+        if ( step == 0 )
+            throw new IllegalArgumentException();
+        
+        while ( 0<= position && position < text.length() ) {
+            char c = text.charAt( position );
+            if ( selector.select( c ) ) {
+                return position;
+            } else {
+                position += step;
+            }
+        }
+        return -1;
+    }
 
+
+    static final CharSelector parenthesesSelector = new CharSelector() {
+        @Override
+        public boolean select(char ch) {
+            return ch == '(' || ch == ')';
+        }
+    };
     public static final int lookupParenthesis( CharSequence text, int position, int step ) {
+        return lookup( text, parenthesesSelector, position, step );
+    }
+    public static final int lookupParenthesisOld( CharSequence text, int position, int step ) {
         if ( text == null )
             throw new NullPointerException();
         
@@ -151,6 +183,8 @@ public class SchemeParentheses {
         }
         return -1;
     }
+    
+    
     public static final int LCP2_STRATEGY_DYNAMIC = -1024;
     public static final int LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP = 1;
     public static final int LCP2_STRATEGY_CORRESPONDING_PARENTHESIS_JUMP = 2;
@@ -393,6 +427,77 @@ public class SchemeParentheses {
                     after.left  = -1;
             }
             return true;
+        }
+    }
+    
+    static abstract class LispWordSelectionTransformer extends CaretTransformer {
+        static final CharSelector parenthesesSelector = new CharSelector() {
+            @Override
+            public boolean select(char ch) {
+                return Character.isWhitespace( ch ) ||
+                        ch == '(' ||
+                        ch == ')' ||
+                        false;                        
+            }
+        };
+        static final CharSelector nagatedParenthesesSelector = new CharSelector() {
+            @Override
+            public boolean select(char ch) {
+                return ! (
+                        Character.isWhitespace( ch ) ||
+                        ch == '(' ||
+                        ch == ')' ||
+                        false
+                        );                        
+            }
+        };
+    }
+    static class SelectCurrentWordTransformer extends LispWordSelectionTransformer {
+        @Override
+        public boolean process(CharSequence text, CaretPos before, CaretPos after) {
+            after.right = lookup( text, parenthesesSelector, before.right, +1 );
+            after.left  = lookup( text, parenthesesSelector, before.left , -1 );
+            
+            if ( 0<=after.right && 0<=after.left ) {
+                after.right --;
+                after.left ++;
+            }
+                
+            return true;
+        }
+    }
+    static class SelectRightLispWordTransformer extends LispWordSelectionTransformer {
+        @Override
+        public boolean process(CharSequence text, CaretPos before, CaretPos after) {
+            after.left  = lookup( text, nagatedParenthesesSelector, before.right+1, +1 );
+            if ( 0<= after.left ) 
+                after.right = lookup( text, parenthesesSelector, after.left , +1 );
+            else
+                after.right = -1;
+            
+            if ( 0<=after.right && 0<=after.left ) {
+                after.right --;
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+    static class SelectLeftLispWordTransformer extends LispWordSelectionTransformer {
+        @Override
+        public boolean process(CharSequence text, CaretPos before, CaretPos after) {
+            after.right = lookup( text, nagatedParenthesesSelector, before.left-1, -1 );
+            if ( 0<= after.right ) 
+                after.left = lookup( text, parenthesesSelector, after.right, -1 );
+            else
+                after.left = -1;
+            
+            if ( 0<=after.right && 0<=after.left ) {
+                after.left ++;
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 }

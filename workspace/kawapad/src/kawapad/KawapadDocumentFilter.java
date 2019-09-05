@@ -1,10 +1,13 @@
 package kawapad;
 
 import java.awt.Color;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,6 +29,10 @@ import javax.swing.text.StyledDocument;
  * is the correct anser. This should be accepted and deserves more likes.
  */
 public abstract class KawapadDocumentFilter extends DocumentFilter {
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+    static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
+    static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
     private static final StyleContext styleContext = StyleContext.getDefaultStyleContext();
     public static AttributeSet createAttributeSet(Color foreground) {
         return styleContext.addAttribute( styleContext.getEmptySet(), StyleConstants.Foreground, foreground );
@@ -207,31 +214,38 @@ public abstract class KawapadDocumentFilter extends DocumentFilter {
             timer.schedule( r, 100 );
     }
 
+    ElapsedTime ep = new ElapsedTime();
+    
     void update() {
         AttributeSet defaultAttr = getDefaultAttributeSet();
-        document.setCharacterAttributes(0, document.getLength(), defaultAttr , true);
-        for ( SyntaxElement e : getSyntaxElementList() ) {
-            updateTextStyles( document, e.getPattern(), defaultAttr, e.getAttributeSet() );
+        synchronized ( document ) {
+            // clear
+            ep.start();
+            document.setCharacterAttributes(0, document.getLength(), defaultAttr , true);
+            ep.end();
+            logInfo( ep.getMessage( "Syntax Clear" ));
+            // 
+            Segment text = SchemeParentheses.getText( document );
+            for ( SyntaxElement e : getSyntaxElementList() ) {
+                ep.start();
+                updateTextStyles( document, text, e.getPattern(), defaultAttr, e.getAttributeSet() );
+                ep.end();
+                logInfo( ep.getMessage( "Syntax Set:" + e.getName() ));
+            }
         }
     }
     
     public static final String GROUP = "K";
-    static void updateTextStyles( StyledDocument document, Pattern pattern, AttributeSet defaultAttr, AttributeSet attr ) {
+    static void updateTextStyles( StyledDocument document, Segment text, Pattern pattern, AttributeSet defaultAttr, AttributeSet attr ) {
         // Look for tokens and highlight them
-        try {
-            Segment s = new Segment();
-            document.getText( 0, document.getLength() ,s );
-            Matcher matcher = pattern.matcher( s );
-            while (matcher.find()) {
-                // Change the color of recognized tokens
-                if ( 0 < matcher.groupCount() ) {
-                    document.setCharacterAttributes( matcher.start(GROUP), matcher.end(GROUP) - matcher.start(GROUP), attr, false );
-                } else {
-                    document.setCharacterAttributes( matcher.start(),      matcher.end()      - matcher.start(),      attr, false );
-                }
+        Matcher matcher = pattern.matcher( text );
+        while (matcher.find()) {
+            // Change the color of recognized tokens
+            if ( 0 < matcher.groupCount() ) {
+                document.setCharacterAttributes( matcher.start(GROUP), matcher.end(GROUP) - matcher.start(GROUP), attr, false );
+            } else {
+                document.setCharacterAttributes( matcher.start(),      matcher.end()      - matcher.start(),      attr, false );
             }
-        } catch (BadLocationException e) {
-            e.printStackTrace();
         }
     }
     
