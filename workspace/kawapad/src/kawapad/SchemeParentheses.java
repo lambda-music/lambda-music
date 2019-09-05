@@ -255,6 +255,24 @@ public class SchemeParentheses {
         return newDot;
     }
     
+    public static int recursiveIndexOf( CharSequence text, int fromIndex, int direction, char descendChar, char ascendChar ) {
+        if ( direction == 0 )
+            throw new IllegalArgumentException();
+        int depth =1;
+        for ( int i=fromIndex; 0<=i && i<text.length(); i+=direction ) {
+            char ch = text.charAt( i );
+            if ( ch == descendChar )
+                depth ++;
+            else if ( ch == ascendChar )
+                depth --;
+            if ( depth <= 0 ) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+    
     static void shrinkSelection(KawaPadParenthesisStack stack, CharSequence text, Caret caret) throws InternalError {
         int currDot  = caret.getDot();
         int currMark = caret.getMark();
@@ -320,13 +338,13 @@ public class SchemeParentheses {
             Kawapad.logInfo( "SideParenthesisSelector:" + current );
             CaretPos after = new CaretPos( current );
             if ( 0< direction ) {
-                after.left      = lookupCorrespondingParenthesis2( text, after.right +1 , +1, LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP );
+                after.left      = recursiveIndexOf( text, current.right+1, +1 , ')', '('  );
                 if ( 0<=after.left ) 
                     after.right = lookupCorrespondingParenthesis2( text, after.left     , +1, LCP2_STRATEGY_DYNAMIC );
                 else
                     after.right = -1;
             } else {
-                after.right     = lookupCorrespondingParenthesis2( text, after.left  -1 , -1, LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP );
+                after.right     = recursiveIndexOf( text, current.left-1, -1, '(', ')' );
                 if ( 0<=after.right ) 
                     after.left  = lookupCorrespondingParenthesis2( text, after.right    , -1, LCP2_STRATEGY_DYNAMIC );
                 else

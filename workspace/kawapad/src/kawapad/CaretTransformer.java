@@ -83,7 +83,7 @@ public abstract class CaretTransformer {
                         caret.moveDot( after.getLeft() );
                     } else {
                         caret.setDot(  after.getLeft() );
-                        caret.moveDot( after.getRight() );
+                        caret.moveDot( after.getRight() + SchemeParentheses.THE_FINAL_CORRECTION );
                     }
                     stack.push(currMark, currDot);
                     return;
