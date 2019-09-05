@@ -54,10 +54,8 @@ import gnu.mapping.Procedure0;
 import gnu.mapping.Procedure1;
 import gnu.mapping.Procedure2;
 import gnu.mapping.Procedure3;
-import gnu.mapping.SimpleSymbol;
 import gnu.mapping.Symbol;
 import gnu.mapping.Values;
-import gnu.mapping.WrongArguments;
 import gnu.math.DFloNum;
 import kawa.standard.Scheme;
 import metro.Metro;
@@ -65,7 +63,7 @@ import metro.MetroPort;
 import metro.MetroTrack;
 import metro.MetroTrack.SyncType;
 import pulsar.lib.scheme.DescriptiveDocumentType;
-import pulsar.lib.scheme.MarkdownDescriptive;
+import pulsar.lib.scheme.PulsarProceduralDescriptiveBean;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
@@ -327,23 +325,6 @@ public final class Pulsar extends Metro {
     }
 
 
-    public String outputMarkdownReference( DescriptiveDocumentType type ) {
-        if ( type == null )
-            throw new IllegalArgumentException( "'type' argument cannot be null." );
-        
-        return this.getSchemeSecretary().executeSecretarially( new SecretaryMessage.NoThrow<Scheme,String>() {
-            @Override
-            public String execute0( Scheme scheme, Object[] args ) {
-                logInfo( "Pulsar#outputReference()" );
-                
-                List list = new ArrayList();
-                list.addAll( type.getDocumentList(
-                        scheme.getEnvironment()));
-
-                return MarkdownDescriptive.createMarkdownHelp( list );
-            }
-        }, Invokable.NOARG );
-    }
 
     public void invokeLater( Runnable r ) {
          this.getSchemeSecretary().executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
@@ -622,11 +603,6 @@ public final class Pulsar extends Metro {
     public MetroTrack createTrack( Object name, Collection<Object> tags, Procedure procedure ) {
         return createTrack( name, tags, new SchemeSequence( createInvokable( procedure ) ) );
     }
-
-    /**
-     * 
-     */
-    int helpTextWidth = 60;
 
     /**
      *  
@@ -1034,7 +1010,7 @@ public final class Pulsar extends Metro {
                                     + "A canonical port name consists two parts; these are separated by a semicolon and "
                                     + "the former part is the name of a client and the latter is the name of a port "
                                     + "as \"a-nice-client:the-port\". \n\n"
-                                    + "It is able to enumerate all ports by ||get-all-output|| and ||get-all-input|| procedure. "
+                                    + "It is able to enumerate all ports by ||list-all-output|| and ||list-all-input|| procedure. "
                                     + ""
                                     + THROWS_AN_ERROR_IF_NOT_OPEN );
         }}
@@ -1076,27 +1052,27 @@ public final class Pulsar extends Metro {
                                     );
         }}
         InitDocAllConnection initDocAllConnection = new InitDocAllConnection(); 
-        SchemeUtils.defineVar( env, new SafeProcedureN("get-all-output") {
+        SchemeUtils.defineVar( env, new SafeProcedureN("list-all-output") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 return Pair.makeList( getAllOutputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
                     .collect( Collectors.toList() ) );
             }
-        } , "get-all-output", "gao" );
+        } , "list-all-output", "lao" );
 
-        DescriptiveDocumentType.PROCS.defineDoc( env, initDocAllConnection.process( "output" ).setNames("get-all-output", "gao") );
+        DescriptiveDocumentType.PROCS.defineDoc( env, initDocAllConnection.process( "output" ).setNames("list-all-output", "lao") );
 
         //////////////////////////////////////////////////////////
         
-        SchemeUtils.defineVar( env, new SafeProcedureN("get-all-input") {
+        SchemeUtils.defineVar( env, new SafeProcedureN("list-all-input") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 return Pair.makeList( getAllInputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
                     .collect( Collectors.toList() ) );
             }
-        } , "get-all-input", "gai" );
+        } , "list-all-input", "lai" );
         
-        DescriptiveDocumentType.PROCS.defineDoc( env, initDocAllConnection.process( "input" ).setNames("get-all-input", "gai") );
+        DescriptiveDocumentType.PROCS.defineDoc( env, initDocAllConnection.process( "input" ).setNames("list-all-input", "lai") );
 
         //////////////////////////////////////////////////////////
         
@@ -1932,295 +1908,6 @@ public final class Pulsar extends Metro {
                     + "When the specified value is equals or less than zero, the returning value is always #f. "
                     + "When the specified value is equals or larger than one the returning value is always #t. "
                     + "The only parameter can be omitted and in that case the default value one is applied. " );
-        }} );
-        
-        SchemeUtils.defineVar( env, new Procedure1("make-page") {
-            @Override
-            public Object apply1(Object arg1) throws Throwable {
-                return SchemeUtils.makePage( SchemeUtils.anyToString(arg1), helpTextWidth ); 
-            }
-        }, "make-page");
-        
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
-            setNames( "make-page" );
-            setParameterDescription( "[string]" );
-            addParameter("content",   "string",  null,  false, "the content to convert to a ||kawapad-page||. " );
-            setReturnValueDescription( "::kawapad-page" );
-            setShortDescription( "<name/> makes the passed value into ||kawapad-page|| object. " );
-            setLongDescription( ""
-                                + "When an expression is evaluated in KawaPad, the result value is displayed on the current editor. "
-                                + "When the result value is a ||kawapad-page|| object, the value is displayed in a special way; "
-                                + "when the KawaPad system detect the result value is a ||kawapad-page||, the editor expands the current "
-                                + "selection to the outer-most parentheses and replace the region with the result value. "
-                                + "This enables it to use KawaPad as a dynamic Hypertext editor. \n\n"
-                                + "The <name/> procedure convert the passed value into the kawapad-page object in order to "
-                                + "activate the special display function of KawaPad. "
-                                + "" 
-                                + THROWS_AN_ERROR_IF_NOT_OPEN );
-        }} );
-        
-        SchemeUtils.defineVar( env, new SafeProcedureN("help!") {
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                return "Calm down!";
-            }
-        }, "help!");
-        
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
-            setNames( "help!" );
-            setParameterDescription( "" );
-            setReturnValueDescription( "::string" );
-            setShortDescription(  "is a procedure to execute when the user needs something which calms you down." );
-            setLongDescription( 
-                "When this procedure is called, this procedure will return a message which "
-                + "tries to calm the user down. Any argument specified to this procedure will be silently ignored."
-                + "This procedure is deliberately defined as a joke and has by no means effect to the current system state "
-                + "nor any other related elements. See (help about-main)." );
-        }} );
-        
-        final class ProcedureHelp extends SafeProcedureN {
-            final Environment environment;
-            final int index;
-            final Procedure reverse = (Procedure)gnu.kawa.slib.srfi1.reverse.get();
-            final Procedure map = (Procedure)gnu.kawa.slib.srfi1.map.get();
-            
-            private ProcedureHelp(Environment environment, String name, int index ) {
-                super(name);
-                this.environment=environment ;
-                this.index = index;
-            }
-            
-            public LList availableProcedures( DescriptiveDocumentType type ) throws Throwable {
-                Procedure1 proc1 = new Procedure1() {
-                    @Override
-                    public Object apply1(Object arg1) throws Throwable {
-                        Pair pair = (Pair)arg1;
-                        Object result;
-                        if ( index < pair.length() ) {
-                            result = pair.get(index);
-                        } else if ( 1 < pair.length() ) {
-                            result =  pair.get(1);
-                        } else if ( 0 < pair.length() ) {
-                            result =  Symbol.valueOf(((Procedure)pair.get(0)).getName());
-                        } else {
-                            result =  "";
-                        }
-                        
-                        return result;
-                    }
-                };
-                return (LList)map.apply2( proc1, 
-                                reverse.apply1( 
-                                    type.getDocumentList( this.environment )));
-            }
-            LList allAvailable() throws Throwable {
-                ArrayList list = new ArrayList();
-                list.addAll( availableProcedures( DescriptiveDocumentType.PROCS ));
-                list.addAll( availableProcedures( DescriptiveDocumentType.NOTES ));
-                return LList.makeList( list );
-            }
-
-            public Object apply0() throws Throwable {
-                return SchemeUtils.makePage( helpList( allAvailable() ) );
- 
-//              result = String.join( " ", (List)result ); 
-//              return SchemeUtils.makePage(  result.toString(), helpTextWidth );
-            }
-
-            Object helpList( LList list ) throws Throwable {
-                Procedure1 proc1 = new Procedure1() {
-                    @Override
-                    public Object apply1(Object arg1) throws Throwable {
-                        return SchemeUtils.toSchemeString( "(help " + SchemeUtils.symbolToString( arg1 ) + ")" );
-                    }
-                };
-                
-                Object result = kawa.standard.append.append.apply2(
-                                    Pair.make( 
-                                        SchemeUtils.toSchemeString( "#| === The list of all available procedures ===\n\n" ), 
-                                        map.apply2( proc1, list )),
-                                    Pair.make( SchemeUtils.toSchemeString( "|#" ), EmptyList.emptyList ));
-                return result;
-            }; 
-            
-            String MSG_NO_DOCUMENTATION = "No documentation is available.";
-            SimpleSymbol ALL_AVAILABLE = Symbol.valueOf( "all" );
-            public Object apply1(Object arg1) throws Throwable {
-                if ( ALL_AVAILABLE.equals( arg1 ) ) {
-                    return allAvailable();
-                } else  {
-                    if ( arg1 instanceof Symbol ) {
-                        DescriptiveDocumentType t = 
-                                DescriptiveDocumentType.valueOf( SchemeUtils.anyToString( arg1 ).toUpperCase() );
-                        return SchemeUtils.makePage( helpList( availableProcedures( t ) ) );
-                    } else {
-                        String message = SchemeUtils.getDescription( arg1 );
-                        if ( message == null ) {
-                            message = MSG_NO_DOCUMENTATION;
-                        }
-                        System.err.println( message );
-                        return SchemeUtils.makePage( message, helpTextWidth );
-                    }
-                }
-            }
-
-
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                if ( args.length == 0 )
-                    return apply0();
-                else if ( args.length == 1 )
-                    return apply1(args[0]);
-                else
-                    throw new WrongArguments( this, args.length );
-
-            }
-        }
-        SchemeUtils.defineVar( env, new ProcedureHelp( env, "help", 1 ) , "help", "he" );
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
-            setNames( "help", "he" );
-            setParameterDescription( "[symbol|procedure]" );
-            addParameter(
-                "query" , "'procs|'notes|'all|procedure", "'all", false, "" );
-            
-            setReturnValueDescription( "::string|list" );
-            setShortDescription( "is a procedure to show the description of a specified procedure." ); 
-            setLongDescription( 
-                    "When a reference to a procedure is passed, ||<name/>|| returns "
-                    + "the description of the the procedure. \n\n"
-                    + "If no procedure is specified, it returns a list that contains all procedures which "
-                    + "description is available. "
-                    + "Pass a special keyword 'all to get "
-                    + "a symbol list of all procedures which are available for this command. "
-                    + "Pass 'procs to get all available procedures. "
-                    + "Pass 'notes to get all available notation types. " 
-                    );
-        }} );
-
-        
-        SchemeUtils.defineVar( env, new Procedure2("make-help") {
-            Symbol names = Symbol.valueOf( "names" );
-            Symbol params = Symbol.valueOf( "params" );
-            Symbol returns = Symbol.valueOf( "returns" );
-            Symbol shortDescription = Symbol.valueOf( "short-description" );
-            Symbol longDescription = Symbol.valueOf( "long-description" );
-            @Override
-            public Object apply2(Object arg1,Object arg2) throws Throwable {
-                LList list = (LList) arg2;
-                PulsarProceduralDescriptiveBean bean = new PulsarProceduralDescriptiveBean();
-                for ( Object e : list ) {
-                    Pair ep = (Pair) e;
-                    Object car = ep.getCar();
-                    Object cdr = ep.getCdr();
-                    if ( names.equals( car ) ) {
-                        
-                        bean.setNames((List<String>)
-                            new ArrayList((LList)cdr)
-                                .stream()
-                                .map((e2)->SchemeUtils.toString(e2))
-                                .collect(Collectors.toList())
-                                );
-                        
-                    } else if ( params.equals( car ) ) {
-                        for (Object o3: ((LList)cdr)) {
-                            LList l3=(LList)o3;
-                            if ( l3.size() != 5 ) {
-                                throw new IllegalArgumentException("an element in 'params' parameter must be a list which size is 5. ");
-                            }
-                            bean.addParameter( 
-                                SchemeUtils.toString(l3.get( 0 )) , // names
-                                SchemeUtils.toString(l3.get( 1 )), // type, 
-                                Boolean.FALSE.equals( l3.get( 2 ) ) ?
-                                            null :
-                                            SchemeUtils.toString(l3.get( 2 )), // defaultValue,
-                                SchemeUtils.toBoolean( l3.get(3 )), // isVariable,
-                                SchemeUtils.toString(l3.get( 4 )) //description );
-                                );
-                        }
-                    } else if ( returns.equals( car ) ) {
-                        bean.setReturnValueDescription( SchemeUtils.toString( ((Pair)cdr).getCar() ));
-                    } else if ( shortDescription.equals( car ) ) {
-                        bean.setShortDescription( SchemeUtils.toString(
-                            String.join( "", 
-                                SchemeUtils.anySchemeValueListToStringList(
-                                    ((Pair)cdr)))));
-                    } else if ( longDescription.equals( car ) ) {
-                        bean.setLongDescription( SchemeUtils.toString( 
-                            String.join( "", 
-                                SchemeUtils.anySchemeValueListToStringList(
-                                    ((Pair)cdr)))));
-                    } else {
-                        throw new IllegalArgumentException( "unknown field name " + car );
-                    }
-                }
-                DescriptiveDocumentType.PROCS.defineDoc( env, arg1, bean );
-                return Values.empty;
-            }
-        }, "make-help");
-        
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
-            setNames( "make-help" );
-            setParameterDescription( "" );
-            addParameter( "target", "procedure" , null, false, "The reference to the target procedure. See the description. " );
-            addParameter( "content", "(list cons ...)" , null, false, "See the description. " );
-            setReturnValueDescription( "::void" );
-            setShortDescription(  "||<name/>|| registers a reference manual for a procedure on the Pulsar documentation system. " );
-            setLongDescription( 
-                " "
-                + "The ||target|| argument is the reference of the target procedure."
-                + "The ||content|| argument is the content of the reference manual. The value is "
-                + "an association list contains various data. \n\n"
-                + "    (<name/>   target-proc"
-                + "               '((names \"foo-bar\" \"fb\") \n"
-                + "               (params\n"
-                + "                 (\"param-name\" \"param-type\" \"default-value or #f if no-default\" \"#t if variable-length\" \"description\") \n"
-                + "                    ...\n"
-                + "                 )\n"
-                + "                (returns \"return-type\" )\n"
-                + "                (short-description \"description\" )\n"
-                + "                (long-description  \"description\" )\n"
-                + "              )\n\n"
-                + "The ||name|| field contains names of the procedure. "
-                + "In Pulsar, the most procedures have multiple names. "
-                + "The first element of this list is its 'long name' which should be the canonical name for the procedure. "
-                + "And the others are its aliases. If the procedure have no alias, then the list will have only one element. "
-                + "The list must have at least one element. \n\n"
-                + "The ||params|| field contains information of parameters. "
-                + "The field contains a list per a parameter. \n\n"
-                + "The ||short-description|| field contains a string value of its short description. "
-                + "The ||long-description|| field contains a string value of its long description. "
-                + "" );
-        }} );
-
-        
-        SchemeUtils.defineVar( env, new Procedure1("help-markdown") {
-            @Override
-            public Object apply0() throws Throwable {
-                return this.apply1( DescriptiveDocumentType.PROCS.toSymbol() );
-            }
-            @Override
-            public Object apply1(Object arg1) throws Throwable {
-                System.out.println(
-                    outputMarkdownReference(
-                        DescriptiveDocumentType.valueOf(
-                            (Symbol)arg1)));
-//              SchemeUtils.toSchemeSymbol( sb.toString() );
-                return Values.empty;
-            }
-
-        }, "help-markdown" );
-        
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
-            setNames("help-markdown");
-            setParameterDescription( "" );
-            addParameter( "type", "string", "'procs", false,  "either 'procs or 'notes " );
-            setReturnValueDescription( "::string" );
-            setShortDescription(  "is a procedure to execute when the user needs something which calms you down." );
-            setLongDescription( 
-                "When this procedure is called, this procedure will return a message which "
-                + "tries to calm the user down. Any argument specified to this procedure will be silently ignored."
-                + "This procedure is deliberately defined as a joke and has by no means effect to the current system state "
-                + "nor any other related elements. See (help about-main)." );
         }} );
         
         PulsarDocuments.defineDoc( scheme, PulsarNoteListParser.getInstance() );

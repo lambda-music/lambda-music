@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import kawapad.Kawapad;
 import pulsar.lib.PulsarLogger;
 import pulsar.lib.scheme.DescriptiveDocumentType;
+import pulsar.lib.scheme.DescriptiveHelp;
 import pulsar.lib.scheme.http.SchemeHttp;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 
@@ -87,7 +88,7 @@ public class PulsarApplication {
 //          } catch (InterruptedException e) {
 //              System.err.println( e.getMessage() );
 //          }
-        String str = pulsar.outputMarkdownReference( type );
+        String str = DescriptiveHelp.outputMarkdownReference( type, pulsar.getSchemeSecretary() );
         if ( outputFile == null /* || "-".equals( outputFile ) */ ) {
             System.out.println( str );      
         } else {
@@ -140,6 +141,8 @@ public class PulsarApplication {
 //      >>> VERSION INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
         SchemeSecretary schemeSecretary = new SchemeSecretary();
         schemeSecretary.setDirectMeeting( false );
+
+        DescriptiveHelp.registerGlobalSchemeInitializer( schemeSecretary );
 
         Pulsar pulsar = new Pulsar( schemeSecretary );
 

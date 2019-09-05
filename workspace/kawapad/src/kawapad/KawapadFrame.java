@@ -47,6 +47,7 @@ import javax.swing.KeyStroke;
 
 import kawapad.Kawapad.KawaVariableInitializer;
 import pulsar.lib.PulsarLogger;
+import pulsar.lib.scheme.DescriptiveHelp;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.swing.Action2;
 
@@ -200,7 +201,7 @@ public class KawapadFrame extends JFrame {
 
         
         {
-            setSize( new Dimension( 500, 500 ) );
+            setSize( new Dimension( 640, 480 ) );
             setDefaultCloseOperation( JFrame.DO_NOTHING_ON_CLOSE );
             
             this.addWindowListener( kawapad.createCloseQuery( new Runnable() {
@@ -260,6 +261,8 @@ public class KawapadFrame extends JFrame {
     
     public static KawapadFrame createStaticInstance() {
         SchemeSecretary schemeSecretary = new SchemeSecretary();
+        DescriptiveHelp.registerGlobalSchemeInitializer( schemeSecretary );
+        Kawapad.registerGlobalIntroSchemeInitializer( schemeSecretary );
         Kawapad.registerGlobalSchemeInitializer( schemeSecretary );
         schemeSecretary.newScheme();
         KawapadFrame kawapadFrame = new KawapadFrame( schemeSecretary, "Scheme Scratch Pad" );

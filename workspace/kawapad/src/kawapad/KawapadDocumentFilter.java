@@ -214,23 +214,23 @@ public abstract class KawapadDocumentFilter extends DocumentFilter {
             timer.schedule( r, 100 );
     }
 
-    ElapsedTime ep = new ElapsedTime();
+//    ElapsedTime ep = new ElapsedTime();
     
     void update() {
         AttributeSet defaultAttr = getDefaultAttributeSet();
         synchronized ( document ) {
             // clear
-            ep.start();
+//            ep.start();
             document.setCharacterAttributes(0, document.getLength(), defaultAttr , true);
-            ep.end();
-            logInfo( ep.getMessage( "Syntax Clear" ));
+//            ep.end();
+//            logInfo( ep.getMessage( "Syntax Clear" ));
             // 
             Segment text = SchemeParentheses.getText( document );
             for ( SyntaxElement e : getSyntaxElementList() ) {
-                ep.start();
+//                ep.start();
                 updateTextStyles( document, text, e.getPattern(), defaultAttr, e.getAttributeSet() );
-                ep.end();
-                logInfo( ep.getMessage( "Syntax Set:" + e.getName() ));
+//                ep.end();
+//                logInfo( ep.getMessage( "Syntax Set:" + e.getName() ));
             }
         }
     }

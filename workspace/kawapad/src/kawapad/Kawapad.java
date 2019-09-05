@@ -90,6 +90,8 @@ import kawapad.SchemeParentheses.SideParenthesisSelector;
 import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.OriginalCompoundUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
+import pulsar.lib.scheme.DescriptiveDocumentType;
+import pulsar.lib.scheme.PulsarProceduralDescriptiveBean;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.SchemeUtils.ExecuteSchemeResult;
@@ -151,7 +153,7 @@ public class Kawapad extends JTextPane {
     static final boolean ENABLED_SHOW_CORRESPONDING_PARENTHESES = true;
 
     // ADDED (Fri, 06 Sep 2019 01:05:27 +0900)
-    private static final boolean ENABLED_SYNTAX_HIGHLIGHTING = false;
+    private static final boolean ENABLED_SYNTAX_HIGHLIGHTING = true;
 
     ////////////////////////////////////////////////////////////////////////////
 
@@ -501,6 +503,47 @@ public class Kawapad extends JTextPane {
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * This initializes variables which do not need to refer the reference to the
+     * current frame. This initializer does not have to be removed even if  
+     * frames are disposed.
+     */
+    public static void registerGlobalIntroSchemeInitializer( SchemeSecretary schemeSecretary ) {
+        schemeSecretary.registerSchemeInitializer( Kawapad.class, staticIntroInitializer01 );
+    }
+    static SecretaryMessage.NoReturnNoThrow<Scheme> staticIntroInitializer01 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+        @Override
+        public void execute0( Scheme scheme, Object[] args ) {
+            Kawapad.staticIntroInitScheme( scheme.getEnvironment() );             
+        }
+    };
+    // I added this for the sake of symmetricity, but this didn't use it.
+    // I left it for future use. (Mon, 12 Aug 2019 14:24:38 +0900)
+    public static void unregisterGlobalIntroSchemeInitializer( SchemeSecretary schemeSecretary ) {
+        schemeSecretary.unregisterSchemeFinalizer( Kawapad.class );
+    }
+    
+    protected static void staticIntroInitScheme( Environment env ) {
+        // ( canonical )
+        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+            setNames( "about-intro"  );
+            setParameterDescription( "" );
+            setReturnValueDescription( "" );
+            setShortDescription( "Welcome to Kawapad!" );
+            setLongDescription( ""
+                                + "Kawapad is a simple Lisp Scheme editor which can edit and execute Scheme code "
+                                + "on the fly. Kawapad includes Java implementation of a powerful computer language Lisp Scheme. "
+                                + " "
+                                + "To show all available procedures, execute (help). \n"
+                                + "To show help of a procedure, execute (help [procedure-name] ) . \n"
+                                + "" 
+                             );
+        }} );
+        
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    
     public void initialize() {
         schemeSecretary.invokeSchemeInitializers( this );
         Kawapad.eventHandlers.invokeEventHandler( kawapad, EventHandlers.CREATE, kawapad );
@@ -1851,6 +1894,7 @@ public class Kawapad extends JTextPane {
         executeExternalFile( new Scheme(), "kawapad initialization", getInitFile() );
     }
 
+
     ////////////////////////////////////////////////////////////////////////////
     
     protected void initScheme( Scheme scheme ) {
@@ -1935,6 +1979,9 @@ public class Kawapad extends JTextPane {
                 throw new InternalError();
             }
         });
+        
+
+        
     }
 
 
@@ -2017,7 +2064,7 @@ public class Kawapad extends JTextPane {
         }
         
         public void initScheme(Environment env) {
-            SchemeUtils.defineVar( env, new Procedure2() {
+            SchemeUtils.defineVar( env, new Procedure2("add-incremental-keyword") {
                 @Override
                 public Object apply2(Object arg1, Object arg2) throws Throwable {
                     addIncrementalSymbol( 
@@ -2025,17 +2072,16 @@ public class Kawapad extends JTextPane {
                         SchemeUtils.anyToString( arg2 ));
                     return Values.empty;
                 }
-            }, "add-incremental-keyword" );
-            SchemeUtils.defineVar( env, new Procedure1() {
+            });
+            SchemeUtils.defineVar( env, new Procedure1("delete-incremental-keyword") {
                 @Override
                 public Object apply1(Object arg1) throws Throwable {
                     deleteIncrementalSymbol( 
                         SchemeUtils.anyToString( arg1 ));
                     return Values.empty;
                 }
-            }, "delete-incremental-keyword" );
+            });
         }
-
         public static final String TEXTUAL_INCREMENT = "textual-increment-action";
         public static final String TEXTUAL_DECREMENT = "textual-decrement-action";
         static class IncrementalSymbol {
@@ -2708,27 +2754,43 @@ public class Kawapad extends JTextPane {
             }
         }
         protected Collection<SyntaxElement> createSyntaxElementList() {
-            return Arrays.asList(
-                KawapadDocumentFilter.createSyntaxElement(
-                    KawapadSyntaxElementType.PUNCTUATION,
-                    Pattern.compile( "\\(|\\)|\\:|\\'|\\#" ),
-                    defaultPunctuationColor ), 
-                KawapadDocumentFilter.createSyntaxElement(
-                    KawapadSyntaxElementType.KEYWORD,
-                    createLispWordPattern(), 
-                    defaultKeywordColor ), 
-                KawapadDocumentFilter.createSyntaxElement(
-                    KawapadSyntaxElementType.STRING,
-                    Pattern.compile( "\\\"[\\s\\S]*?\\\"", Pattern.MULTILINE ),
-                    defaultStringColor ), 
-                KawapadDocumentFilter.createSyntaxElement(
-                    KawapadSyntaxElementType.BLOCK_COMMENT,
-                    Pattern.compile( "\\#\\|[\\s\\S]*?\\|\\#", Pattern.MULTILINE ),
-                    defaultBlockCommentColor ), 
-                KawapadDocumentFilter.createSyntaxElement(
-                    KawapadSyntaxElementType.LINE_COMMENT,
-                    Pattern.compile( ";.*$" ),
-                    defaultLineCommentColor ) );
+            if ( true ) {
+                return Arrays.asList(
+                    KawapadDocumentFilter.createSyntaxElement(
+                        KawapadSyntaxElementType.STRING,
+                        Pattern.compile( "\\\"[\\s\\S]*?\\\"", Pattern.MULTILINE ),
+                        defaultStringColor ), 
+                    KawapadDocumentFilter.createSyntaxElement(
+                        KawapadSyntaxElementType.BLOCK_COMMENT,
+                        Pattern.compile( "\\#\\|[\\s\\S]*?\\|\\#", Pattern.MULTILINE ),
+                        defaultBlockCommentColor ), 
+                    KawapadDocumentFilter.createSyntaxElement(
+                        KawapadSyntaxElementType.LINE_COMMENT,
+                        Pattern.compile( ";.*$" ),
+                        defaultLineCommentColor ) );
+            } else {
+                return Arrays.asList(
+                    KawapadDocumentFilter.createSyntaxElement(
+                        KawapadSyntaxElementType.PUNCTUATION,
+                        Pattern.compile( "\\(|\\)|\\:|\\'|\\#" ),
+                        defaultPunctuationColor ), 
+                    KawapadDocumentFilter.createSyntaxElement(
+                        KawapadSyntaxElementType.KEYWORD,
+                        createLispWordPattern(), 
+                        defaultKeywordColor ), 
+                    KawapadDocumentFilter.createSyntaxElement(
+                        KawapadSyntaxElementType.STRING,
+                        Pattern.compile( "\\\"[\\s\\S]*?\\\"", Pattern.MULTILINE ),
+                        defaultStringColor ), 
+                    KawapadDocumentFilter.createSyntaxElement(
+                        KawapadSyntaxElementType.BLOCK_COMMENT,
+                        Pattern.compile( "\\#\\|[\\s\\S]*?\\|\\#", Pattern.MULTILINE ),
+                        defaultBlockCommentColor ), 
+                    KawapadDocumentFilter.createSyntaxElement(
+                        KawapadSyntaxElementType.LINE_COMMENT,
+                        Pattern.compile( ";.*$" ),
+                        defaultLineCommentColor ) );
+            }
         }
         @Override
         public AttributeSet getDefaultAttributeSet() {
