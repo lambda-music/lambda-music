@@ -52,10 +52,10 @@ public abstract class CaretTransformer {
             return new CaretPos( this );
         }
     }
-    public final void execute( KawaPadParenthesisStack stack, Document text, Caret caret ) {
-        execute( stack, SchemeParentheses.getText( text ), caret );
+    public final void transform( KawaPadParenthesisStack stack, Document text, Caret caret ) {
+        transform( stack, SchemeParentheses.getText( text ), caret );
     }
-    public final void execute( KawaPadParenthesisStack stack, CharSequence text, Caret caret ) {
+    public final void transform( KawaPadParenthesisStack stack, CharSequence text, Caret caret ) {
         int currDot  = caret.getDot();
         int currMark = caret.getMark();
 
@@ -101,5 +101,5 @@ public abstract class CaretTransformer {
             }
         }
     }
-    public abstract void process( CharSequence text,  CaretPos before, CaretPos after );
+    protected abstract void process( CharSequence text,  CaretPos before, CaretPos after );
 }

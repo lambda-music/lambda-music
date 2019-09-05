@@ -1432,12 +1432,12 @@ public class Kawapad extends JTextPane {
             Caret caret  = textComponent.getCaret();
             if ( caret.getDot() == caret.getMark() ) {
 //                PARENTHESIS_SELECT_ACTION.actionPerformed( e );
-                selector.execute( 
+                selector.transform( 
                     getParenthesisStack(), 
                     SchemeParentheses.getText( textComponent.getDocument() ), 
                     textComponent.getCaret() );
             } else {
-                selector.execute( 
+                selector.transform( 
                     getParenthesisStack(), 
                     SchemeParentheses.getText( textComponent.getDocument() ), 
                     textComponent.getCaret() );
@@ -1478,7 +1478,7 @@ public class Kawapad extends JTextPane {
                 PARENTHESIS_SELECT_ACTION.actionPerformed( e );
                 return;
             }
-            selector.execute( getParenthesisStack(), document, caret );
+            selector.transform( getParenthesisStack(), document, caret );
 //            SchemeParentheses.shrinkSelection( 
 //                getParenthesisStack(),
 //                SchemeParentheses.getText( textComponent.getDocument() ),
