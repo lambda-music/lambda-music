@@ -29,6 +29,16 @@ import javax.swing.text.Segment;
  *  October 3, 2018 at 9:52:22 PM
  */
 public class SchemeParentheses {
+    public static Segment getText(Document document) throws InternalError {
+        Segment text = new Segment();
+        try {
+            document.getText( 0, document.getLength(), text );
+        } catch ( BadLocationException e ) {
+            throw new InternalError(e);
+        }
+        return text;
+    }
+
     static final int THE_FINAL_CORRECTION = 1;
     static boolean expandSelectedParentheses(Kawapad textPane) {
         return expandSelectedParentheses( textPane.getParenthesisStack(), 
@@ -123,16 +133,6 @@ public class SchemeParentheses {
         }
     }   
 
-
-    public static Segment getText(Document document) throws InternalError {
-        Segment text = new Segment();
-        try {
-            document.getText( 0, document.getLength(), text );
-        } catch ( BadLocationException e ) {
-            throw new InternalError(e);
-        }
-        return text;
-    }
 
     public static final int lookupParenthesis( CharSequence text, int position, int step ) {
         if ( text == null )
@@ -261,21 +261,21 @@ public class SchemeParentheses {
     
         int leftPos;
         int rightPos;
-        int direction;
+        int caretDirection;
         if ( currDot < currMark ) {
             leftPos = currDot;
             rightPos = currMark - THE_FINAL_CORRECTION;
-            direction = -1;
+            caretDirection = -1;
         } else {
             leftPos = currMark;
             rightPos = currDot - THE_FINAL_CORRECTION;
-            direction = +1;
+            caretDirection = +1;
         }
         
         int posL;
         int posR;
         {
-            if ( 0 < direction ) {
+            if ( 0 < caretDirection ) {
                 posR =     lookupCorrespondingParenthesis2( text, rightPos, -1 , LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP );
                 if ( 0<=posR && ( text.charAt( posR ) == ')' ) ) 
                     posL = lookupCorrespondingParenthesis2( text, posR    , -1 , LCP2_STRATEGY_DYNAMIC );
@@ -293,7 +293,7 @@ public class SchemeParentheses {
                 synchronized ( stack ) {
                     try {
                         stack.setLocked( true );
-                        if ( 0 < direction ) {
+                        if ( 0 < caretDirection ) {
                             caret.setDot(posL);
                             caret.moveDot(posR + THE_FINAL_CORRECTION);
                         } else {
@@ -308,5 +308,34 @@ public class SchemeParentheses {
                 }
             }
         }
+    }
+    static class SideParenthesisSelector extends CaretTransformer {
+        int direction;
+        public SideParenthesisSelector(int direction) {
+            super();
+            this.direction = direction;
+        }
+        @Override
+        public CaretPos process(CharSequence text, CaretPos current) {
+            Kawapad.logInfo( "SideParenthesisSelector:" + current );
+            CaretPos after = new CaretPos( current );
+            if ( 0< direction ) {
+                after.left      = lookupCorrespondingParenthesis2( text, after.right +1 , +1, LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP );
+                if ( 0<=after.left ) 
+                    after.right = lookupCorrespondingParenthesis2( text, after.left     , +1, LCP2_STRATEGY_DYNAMIC );
+                else
+                    after.right = -1;
+            } else {
+                after.right     = lookupCorrespondingParenthesis2( text, after.left  -1 , -1, LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP );
+                if ( 0<=after.right ) 
+                    after.left  = lookupCorrespondingParenthesis2( text, after.right    , -1, LCP2_STRATEGY_DYNAMIC );
+                else
+                    after.left  = -1;
+            }
+            return after;
+        }
+    }
+    public static void selectSideParentheses( KawaPadParenthesisStack stack, CharSequence text, Caret caret, int direction) {
+        new SideParenthesisSelector( direction ).execute( stack, text, caret );
     }
 }

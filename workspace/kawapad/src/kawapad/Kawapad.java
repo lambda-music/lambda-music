@@ -80,6 +80,7 @@ import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import gnu.mapping.WrongArguments;
 import kawa.standard.Scheme;
+import kawapad.SchemeParentheses.SideParenthesisSelector;
 import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.OriginalCompoundUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
@@ -1321,10 +1322,14 @@ public class Kawapad extends JTextPane {
     {
         addKeyStroke( this, this.SIMPLE_PARENTHESIS_JUMP_LEFT_ACTION );
         addKeyStroke( this, this.SIMPLE_PARENTHESIS_JUMP_RIGHT_ACTION );
-        addKeyStroke( this, this.SIMPLE_PARENTHESIS_SELECT_JUMP_LEFT_ACTION );
-        addKeyStroke( this, this.SIMPLE_PARENTHESIS_SELECT_JUMP_RIGHT_ACTION );
-        addKeyStroke( this, this.PARENTHESIS_JUMP_LEFT_ACTION );
-        addKeyStroke( this, this.PARENTHESIS_JUMP_RIGHT_ACTION );
+        if ( false ) {
+            addKeyStroke( this, this.SIMPLE_PARENTHESIS_SELECT_JUMP_LEFT_ACTION );
+            addKeyStroke( this, this.SIMPLE_PARENTHESIS_SELECT_JUMP_RIGHT_ACTION );
+        }
+        if ( false ) {
+            addKeyStroke( this, this.PARENTHESIS_JUMP_LEFT_ACTION );
+            addKeyStroke( this, this.PARENTHESIS_JUMP_RIGHT_ACTION );
+        }
         addKeyStroke( this, this.PARENTHESIS_SELECT_JUMP_LEFT_ACTION );
         addKeyStroke( this, this.PARENTHESIS_SELECT_JUMP_RIGHT_ACTION );
     }
@@ -1410,6 +1415,50 @@ public class Kawapad extends JTextPane {
         }
     };
 
+    
+    class SelectSideParenthesesAction extends TextAction {
+        int direction;
+        SideParenthesisSelector selector;
+        SelectSideParenthesesAction(String name, int direction ) {
+            super(name);
+            this.direction = direction;
+            this.selector = new SideParenthesisSelector( direction );
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JTextComponent textComponent = (JTextComponent) getTextComponent(e);
+            String text  = textComponent.getText();
+            Caret caret  = textComponent.getCaret();
+            if ( caret.getDot() == caret.getMark() ) {
+//                PARENTHESIS_SELECT_ACTION.actionPerformed( e );
+                selector.execute( 
+                    getParenthesisStack(), 
+                    SchemeParentheses.getText( textComponent.getDocument() ), 
+                    textComponent.getCaret() );
+            } else {
+                selector.execute( 
+                    getParenthesisStack(), 
+                    SchemeParentheses.getText( textComponent.getDocument() ), 
+                    textComponent.getCaret() );
+            }
+        }
+    }
+
+    public final AbstractAction SELECT_LEFT_PARENTHESES_ACTION = new SelectSideParenthesesAction("select-left-parentheses",-1) {
+        {
+            putValue( Action2.NAME, "Select the Parentheses on the Left Side" );
+            putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, KeyEvent.SHIFT_MASK | KeyEvent.ALT_MASK ) );
+//              putValue( Action.MNEMONIC_KEY , (int) 'd' );
+        }
+    };
+    public final AbstractAction SELECT_RIGHT_PARENTHESES_ACTION = new SelectSideParenthesesAction("select-right-parentheses",+1) {
+        {
+            putValue( Action2.NAME, "Select the Parentheses on the Left Side" );
+            putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, KeyEvent.SHIFT_MASK | KeyEvent.ALT_MASK ) );
+//              putValue( Action.MNEMONIC_KEY , (int) 'd' );
+        }
+    };
+
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     class ParenthesisShrinkSelectionAction extends TextAction {
@@ -1488,6 +1537,8 @@ public class Kawapad extends JTextPane {
         addKeyStroke( this, this.SELECT_PARENTHESES_SHRINK_ACTION );
 //      addKeyStroke( this, this.PARENTHESIS_DESELECT_ACTION );
         addKeyStroke( this, this.PARENTHESIS_DESELECT_2_ACTION );
+        addKeyStroke( this, this.SELECT_LEFT_PARENTHESES_ACTION );
+        addKeyStroke( this, this.SELECT_RIGHT_PARENTHESES_ACTION );
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
