@@ -5,9 +5,11 @@ import javax.swing.text.BadLocationException;
 final class RunnableReplaceTextWithEntireBlockOnTextPane implements Runnable {
     private Kawapad kawapad;
     private final String result;
-    RunnableReplaceTextWithEntireBlockOnTextPane( Kawapad textPane, String result ) {
+    private boolean doSelect;
+    RunnableReplaceTextWithEntireBlockOnTextPane( Kawapad textPane, String result, boolean doSelect ) {
         this.kawapad = textPane;
         this.result = result;
+        this.doSelect = doSelect;
     }
     
     @Override
@@ -38,7 +40,8 @@ final class RunnableReplaceTextWithEntireBlockOnTextPane implements Runnable {
                     kawapad.getUndoManager().setSuspended(true);
                     int dot = kawapad.getCaret().getDot();
                     kawapad.getDocument().insertString( dot, result, null);
-                    kawapad.getCaret().moveDot(dot);
+                    if ( doSelect )
+                        kawapad.getCaret().moveDot(dot);
                 } finally {
                     kawapad.getUndoManager().setSuspended(false);
                     kawapad.getUndoManager().endGroup();

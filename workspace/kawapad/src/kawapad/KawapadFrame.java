@@ -281,8 +281,11 @@ public class KawapadFrame extends JFrame {
         KawapadFrame kawapadFrame = createStaticInstance();
         if ( f != null )
             kawapadFrame.kawapad.openFile( f );
+        else
+            kawapadFrame.kawapad.openIntro();
     }
     public static void start() throws IOException {
         start( null );
+        
     }
 }

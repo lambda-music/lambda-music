@@ -154,6 +154,10 @@ public class PulsarGui {
     }
     
     public void openIntro() {
+        frame.openIntro();
+    }
+    
+    public void openIntro2() {
         InputStream in = null;
         try {
             try {
@@ -533,6 +537,10 @@ public class PulsarGui {
 //          DELETED <<< INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
             
             initIcon();
+        }
+
+        public void openIntro() {
+            kawapad.openIntro();
         }
 
         // THIS IS NOT WORKING. (Tue, 06 Aug 2019 10:04:23 +0900)

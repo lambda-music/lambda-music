@@ -91,7 +91,7 @@ import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.OriginalCompoundUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
 import pulsar.lib.scheme.DescriptiveDocumentType;
-import pulsar.lib.scheme.PulsarProceduralDescriptiveBean;
+import pulsar.lib.scheme.ProceduralDescriptiveBean;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.SchemeUtils.ExecuteSchemeResult;
@@ -525,7 +525,7 @@ public class Kawapad extends JTextPane {
     
     protected static void staticIntroInitScheme( Environment env ) {
         // ( canonical )
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "about-intro"  );
             setParameterDescription( "" );
             setReturnValueDescription( "" );
@@ -1125,7 +1125,9 @@ public class Kawapad extends JTextPane {
                         logWarn( "**KAWAPAD_PAGE**" );
                         SwingUtilities.invokeLater( new RunnableReplaceTextWithEntireBlockOnTextPane(
                             kawaPane,
-                            "(" + result.result.replaceFirst( "\n$", "" ) +" )" ) );
+                            "(" + result.result.replaceFirst( "\n$", "" ) +" )",
+                            false
+                            ) );
                     } else {
                         SwingUtilities.invokeLater( new RunnableReplaceTextOnTextPane(
                             kawaPane,
@@ -1138,7 +1140,7 @@ public class Kawapad extends JTextPane {
                         resultString = "\n" + SchemeUtils.formatResult( result.result ); 
                     }
                     logInfo( resultString );
-                    SwingUtilities.invokeLater( new RunnableInsertTextToTextPane( kawaPane, resultString ) );
+                    SwingUtilities.invokeLater( new RunnableInsertTextToTextPane( kawaPane, resultString, true ) );
                 }
             }
         }
@@ -1224,7 +1226,7 @@ public class Kawapad extends JTextPane {
 //          
 //          // ??? IS THIS NECESSARY?
 //          textPane.getActionMap();
-        SwingUtilities.invokeLater( new RunnableInsertTextToTextPane( kawapad, t ) );
+        SwingUtilities.invokeLater( new RunnableInsertTextToTextPane( kawapad, t, true ) );
     }
     
     private final class SetTextToTextPane implements Runnable {
@@ -1916,6 +1918,21 @@ public class Kawapad extends JTextPane {
                 return Values.empty;
             }
         }, "load-font" );
+
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
+            setNames( "load-font"  );
+            setParameterDescription( "" );
+            addParameter( "file-size", "string", null , false, "Specifies the path to the font file. " );
+            addParameter( "font-size", "number", null , false, "Specifies its font size. " );
+            setReturnValueDescription( "::void" );
+            setShortDescription( "Set the main font of the editor." );
+            setLongDescription( ""
+                    + "Kawapad can change its font-face. ||<name/>|| loads a file from the filesystem and "
+                    + "set it to the font-face of Kawapad. "
+                                + "" 
+                             );
+        }});
+
         
         SchemeUtils.defineVar(env, new SafeProcedureN("add-lisp-keyword") {
             @Override
@@ -2568,6 +2585,15 @@ public class Kawapad extends JTextPane {
             openFileProc( fc.getSelectedFile() );
         }
     }
+    public void openIntro() {
+        setCaretPosition( 0 );
+        kawapad.getThreadManager().startScratchPadThread( new EvaluateRunnable(
+            kawapad,
+            "(help about-intro)",
+            true, true ));
+        
+    }
+
     static class ConfirmType { 
         static final Kawapad.ConfirmType OPEN_FILE = new ConfirmType( 
             "Do you save the changes before closing the current document?", 
@@ -3167,8 +3193,7 @@ public class Kawapad extends JTextPane {
         kawapad.initMenu( fileMenuItem, editMenuItem, viewMenuItem, schemeMenuItem );
 
         Action2.processMenuBar( menuBar );
-    }
-    
+    }    
     
 
 }

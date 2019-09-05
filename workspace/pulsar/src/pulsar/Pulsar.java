@@ -63,7 +63,7 @@ import metro.MetroPort;
 import metro.MetroTrack;
 import metro.MetroTrack.SyncType;
 import pulsar.lib.scheme.DescriptiveDocumentType;
-import pulsar.lib.scheme.PulsarProceduralDescriptiveBean;
+import pulsar.lib.scheme.ProceduralDescriptiveBean;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
@@ -799,7 +799,7 @@ public final class Pulsar extends Metro {
             }
         }, "open?" );
         
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean() {{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean() {{
             setNames( "open?" );
             setParameterDescription(   "" );
             setReturnValueDescription( "::boolean" );
@@ -816,7 +816,7 @@ public final class Pulsar extends Metro {
             }
         }, "open");
         
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean() {{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean() {{
             setNames( "open" );
             setParameterDescription( "[string]" );
             addParameter( "client-name", "string", null , false, "The client name in the current Jack session. " );
@@ -837,7 +837,7 @@ public final class Pulsar extends Metro {
             }
         }, "close" );
 
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean() {{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean() {{
             setNames( "close" );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -850,7 +850,7 @@ public final class Pulsar extends Metro {
 
         //////////////////////////////////////////////////////////
 
-        PulsarProceduralDescriptiveBean initDocOpenPorts = new PulsarProceduralDescriptiveBean() {{
+        ProceduralDescriptiveBean initDocOpenPorts = new ProceduralDescriptiveBean() {{
                 setParameterDescription( "[ANY|(list ANY...)  ]..." );
                 addParameter( "port-name", "any|(list any ...)", null , true, "The port name in the current JACK session. " );
                 setReturnValueDescription( "::MetroPort" );
@@ -905,7 +905,7 @@ public final class Pulsar extends Metro {
         
         //////////////////////////////////////////////////////////
         
-        class InitDocClosePorts extends PulsarProceduralDescriptiveBean {{
+        class InitDocClosePorts extends ProceduralDescriptiveBean {{
             setParameterDescription( "[MetroPort|symbol|string|(list MetroPort|symbol|string ...) ]..." );
             addParameter( "port", "MetroPort|symbol|string|(list MetroPort|symbol|string ...)", null , true, "The port object to close. " );
             setReturnValueDescription( "::void" );
@@ -955,7 +955,7 @@ public final class Pulsar extends Metro {
 
         //////////////////////////////////////////////////////////
 
-        class InitDocListPorts extends PulsarProceduralDescriptiveBean {{
+        class InitDocListPorts extends ProceduralDescriptiveBean {{
                 setParameterDescription( "" );
                 setReturnValueDescription( "::(list MetroPort ...)" );
                 setShortDescription( "returns a list which contains all %s ports on the current JACK connection. " );
@@ -994,7 +994,7 @@ public final class Pulsar extends Metro {
 
         //////////////////////////////////////////////////////////
 
-        class InitDocConnection extends PulsarProceduralDescriptiveBean {{
+        class InitDocConnection extends ProceduralDescriptiveBean {{
                 setParameterDescription( "[string] ..." );
                 addParameter( "from", "string", null , true, "a canonical port name in the current JACK session. " );
                 addParameter( "to", "string", null , true, "a canonical port name in the current JACK session. " );
@@ -1040,7 +1040,7 @@ public final class Pulsar extends Metro {
 
         //////////////////////////////////////////////////////////
         
-        class InitDocAllConnection extends PulsarProceduralDescriptiveBean {{
+        class InitDocAllConnection extends ProceduralDescriptiveBean {{
                 setParameterDescription( "" );
                 setReturnValueDescription( "::list<string>" );
                 setShortDescription( "retrieves IDs of all %s connections in the current session of JACK Audio Connection Kit. " );
@@ -1091,7 +1091,7 @@ public final class Pulsar extends Metro {
             }
         }, "set-main");
 
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean() {{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean() {{
             setNames( "set-main" );
             setParameterDescription( "[procedure]" );
             addParameter( "main-procedure", "procedure", null , false, "a procedure to set as the main procedure. " );
@@ -1113,7 +1113,7 @@ public final class Pulsar extends Metro {
             }
         }, "get-main");
         
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean() {{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean() {{
             setNames( "get-main" );
             setParameterDescription( "" );
             setReturnValueDescription( "::procedure" );
@@ -1138,7 +1138,7 @@ public final class Pulsar extends Metro {
             }
         }, "set-playing" );
 
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames("set-playing" );
             setParameterDescription( "[boolean]" );
             addParameter( "playing","boolean",  null, false, "the status to set. " );
@@ -1158,7 +1158,7 @@ public final class Pulsar extends Metro {
             }
         }, "playing?");
 
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "playing?" );
             setParameterDescription( "" );
             setReturnValueDescription( "::boolean" );
@@ -1178,7 +1178,7 @@ public final class Pulsar extends Metro {
             }
         }, "play");
         
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "play" );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -1196,7 +1196,7 @@ public final class Pulsar extends Metro {
             }
         }, "stop");
 
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "stop"  );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -1231,7 +1231,7 @@ public final class Pulsar extends Metro {
             }
         }, "quit" );
         
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "quit"  );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -1251,7 +1251,7 @@ public final class Pulsar extends Metro {
             }
         } , "tap-tempo", "tapt" );
         
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "tap-tempo", "tapt" );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -1279,7 +1279,7 @@ public final class Pulsar extends Metro {
             }
         }, "set-tempo" );
         
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "set-tempo" );
             setParameterDescription( "number" );
             addParameter( "tempo", "number", null, false, "the tempo to set." ); 
@@ -1309,7 +1309,7 @@ public final class Pulsar extends Metro {
             }
         };
         SchemeUtils.defineVar( env, resetScheme, "reset" );
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames("reset" );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -1333,7 +1333,7 @@ public final class Pulsar extends Metro {
             }
         }, "rewind");
         
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "rewind" );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -1367,7 +1367,7 @@ public final class Pulsar extends Metro {
             }
         };
         SchemeUtils.defineVar( env, simul , "simultaneous", "simul" );
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "simultaneous", "simul" );
             setParameterDescription( "[procedure]..." );
             addParameter( "subproc", "procedure", null, true, "a subprocedure to execute by this procedure. " ); 
@@ -1396,7 +1396,7 @@ public final class Pulsar extends Metro {
             }
         };
         SchemeUtils.defineVar( env, getTrack, "get-track", "gett" );
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "get-track", "gett" );
             setParameterDescription( "[track-spec]..." );
             addParameter( "track-spec", "any", null, true, "a subprocedure to execute by this procedure. See (help about-track-spec). " ); 
@@ -1412,7 +1412,7 @@ public final class Pulsar extends Metro {
         
         /////////////////////////////////////////////////////////////////
 
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "about-track-spec" );
             setParameterDescription( "" );
             setReturnValueDescription( "" );
@@ -1462,7 +1462,7 @@ public final class Pulsar extends Metro {
             }
         };
         SchemeUtils.defineVar( env, newTrack , "new-track", "newt" );
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "new-track" , "newt" );
             setParameterDescription( "[procedure/(list notation)]..." );
             addParameter( "notations", "procedure/(list notation)", null, true, "The contents of the track. " );
@@ -1485,7 +1485,7 @@ public final class Pulsar extends Metro {
         
         /////////////////////////////////////////////////////////////////
         // ( canonical )
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "about-notation" );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -1501,7 +1501,7 @@ public final class Pulsar extends Metro {
         }} );
         
         // ( canonical )
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "about-intro"  );
             setParameterDescription( "" );
             setReturnValueDescription( "" );
@@ -1586,7 +1586,7 @@ public final class Pulsar extends Metro {
         };
         SchemeUtils.defineVar( env, putTrack , "put-track", "putt" );
 
-        PulsarProceduralDescriptiveBean trackInitializer = new PulsarProceduralDescriptiveBean(){{
+        ProceduralDescriptiveBean trackInitializer = new ProceduralDescriptiveBean(){{
             setParameterDescription( "track [sync-type] [sync-track] [sync-offset]" );
             addParameter( "sync-type",   "symbol",     "", false, "one of ||immediate||, ||parallel|| and ||serial||. " );
             addParameter( "sync-track",  "MetroTrack|track-spec", "", false, "a reference to MetroTrack object to synchronize with. " ); // XXX
@@ -1643,7 +1643,7 @@ public final class Pulsar extends Metro {
             }
         };
         SchemeUtils.defineVar( env, notifyTrackChange , "notify-track-change", "nott" );
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "notify-track-change", "nott" );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -1673,7 +1673,7 @@ public final class Pulsar extends Metro {
             }
         } , "list-tracks", "lstt" );
 
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "list-tracks", "lstt" );
             setParameterDescription( "" );
             setReturnValueDescription( "::(list track ...)" );
@@ -1694,7 +1694,7 @@ public final class Pulsar extends Metro {
         };
         SchemeUtils.defineVar( env, clr , "clear-tracks", "clet" );
         
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "clear-tracks", "clet" );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -1726,7 +1726,7 @@ public final class Pulsar extends Metro {
             }
         }, "print-stack-trace");
         
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "print-stack-trace" );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -1745,7 +1745,7 @@ public final class Pulsar extends Metro {
             }
         }, "display-warn");
 
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "display-warn" );
             setParameterDescription( "any" );
             addParameter("value", "any", null, false , "" );
@@ -1764,7 +1764,7 @@ public final class Pulsar extends Metro {
             }
         }, "newline-warn");
 
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "newline-warn" );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -1787,7 +1787,7 @@ public final class Pulsar extends Metro {
             }
         }, "typeof");
         
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "typeof" );
             setParameterDescription( "any" );
             addParameter("value", "any", null, false , "" );
@@ -1816,7 +1816,7 @@ public final class Pulsar extends Metro {
             }
         }, "make-timer" );
 
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames("make-timer" );
             setParameterDescription( "delay interval proc" );
             addParameter("delay",     "number",    null, false , "" );
@@ -1856,7 +1856,7 @@ public final class Pulsar extends Metro {
             }
         } , "random", "rnd");
         
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "random", "rnd" );
             setParameterDescription( "[range::number]" );
             addParameter("range",     "number",  "1",  false , "" );
@@ -1897,7 +1897,7 @@ public final class Pulsar extends Metro {
 //          "luck" );
 
 
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "luck" );
             setParameterDescription( "[numeric]" );
             addParameter("probability",   "number",  "0.5",  false, "the probability to return #t." );

@@ -71,7 +71,7 @@ public class DescriptiveHelp {
             }
         }, "make-page");
         
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "make-page" );
             setParameterDescription( "[string]" );
             addParameter("content",   "string",  null,  false, "the content to convert to a ||kawapad-page||. " );
@@ -96,7 +96,7 @@ public class DescriptiveHelp {
             }
         }, "help!");
         
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "help!" );
             setParameterDescription( "" );
             setReturnValueDescription( "::string" );
@@ -207,7 +207,7 @@ public class DescriptiveHelp {
             }
         }
         SchemeUtils.defineVar( env, new ProcedureHelp( env, "help", 1 ) , "help", "he" );
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "help", "he" );
             setParameterDescription( "[symbol|procedure]" );
             addParameter(
@@ -237,7 +237,7 @@ public class DescriptiveHelp {
             @Override
             public Object apply2(Object arg1,Object arg2) throws Throwable {
                 LList list = (LList) arg2;
-                PulsarProceduralDescriptiveBean bean = new PulsarProceduralDescriptiveBean();
+                ProceduralDescriptiveBean bean = new ProceduralDescriptiveBean();
                 for ( Object e : list ) {
                     Pair ep = (Pair) e;
                     Object car = ep.getCar();
@@ -288,7 +288,7 @@ public class DescriptiveHelp {
             }
         }, "make-help");
         
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "make-help" );
             setParameterDescription( "" );
             addParameter( "target", "procedure" , null, false, "The reference to the target procedure. See the description. " );
@@ -339,7 +339,7 @@ public class DescriptiveHelp {
 
         }, "help-markdown" );
         
-        DescriptiveDocumentType.PROCS.defineDoc( env, new PulsarProceduralDescriptiveBean(){{
+        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames("help-markdown");
             setParameterDescription( "" );
             addParameter( "type", "string", "'procs", false,  "either 'procs or 'notes " );

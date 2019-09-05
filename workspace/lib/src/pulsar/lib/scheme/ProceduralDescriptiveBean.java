@@ -3,11 +3,11 @@ package pulsar.lib.scheme;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PulsarProceduralDescriptiveBean extends DescriptiveBean {
-    public PulsarProceduralDescriptiveBean() {
+public class ProceduralDescriptiveBean extends DescriptiveBean {
+    public ProceduralDescriptiveBean() {
         super();
     }
-    public PulsarProceduralDescriptiveBean(
+    public ProceduralDescriptiveBean(
             List<String> names, String parameterDescription, String returnValueDescription,
             String shortDescription, String longDescription) {
         super( names, parameterDescription, returnValueDescription, shortDescription, longDescription );
@@ -40,9 +40,9 @@ public class PulsarProceduralDescriptiveBean extends DescriptiveBean {
 
     @Override
     public String formatSynopsis() {
-        return formatSynopsisForProcedure( (PulsarProceduralDescriptiveBean) this );
+        return formatSynopsisForProcedure( (ProceduralDescriptiveBean) this );
     }
-    static String formatSynopsisForProcedure(PulsarProceduralDescriptiveBean bean) {
+    static String formatSynopsisForProcedure(ProceduralDescriptiveBean bean) {
         String syn = bean.formatParameterDescription();
         String rv = bean.getReturnValueDescription();
         String str = "(" +

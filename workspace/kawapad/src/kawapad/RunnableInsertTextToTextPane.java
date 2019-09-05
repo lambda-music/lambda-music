@@ -5,9 +5,11 @@ import javax.swing.text.BadLocationException;
 final class RunnableInsertTextToTextPane implements Runnable {
     private Kawapad kawaPane;
     private final String result;
-    RunnableInsertTextToTextPane( Kawapad textPane, String result ) {
+    private boolean doSelect;
+    RunnableInsertTextToTextPane( Kawapad textPane, String result, boolean doSelect ) {
         this.kawaPane = textPane;
         this.result = result;
+        this.doSelect = doSelect;
     }
     
     @Override
@@ -37,7 +39,8 @@ final class RunnableInsertTextToTextPane implements Runnable {
                     kawaPane.getUndoManager().setSuspended(true);
                     int dot = kawaPane.getCaret().getDot();
                     kawaPane.getDocument().insertString( dot, result, null);
-                    kawaPane.getCaret().moveDot(dot);
+                    if ( doSelect )
+                        kawaPane.getCaret().moveDot(dot);
                 } finally {
                     kawaPane.getUndoManager().setSuspended(false);
                     kawaPane.getUndoManager().endGroup();
