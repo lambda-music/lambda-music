@@ -1,6 +1,7 @@
 package kawapad;
 
 import javax.swing.text.Caret;
+import javax.swing.text.Document;
 
 public abstract class CaretTransformer {
     public static class CaretPos {
@@ -47,29 +48,36 @@ public abstract class CaretTransformer {
                 return String.format( "CaretPos %d==%d", left,right );
             }
         }
+        public CaretPos duplicate() {
+            return new CaretPos( this );
+        }
+    }
+    public final void execute( KawaPadParenthesisStack stack, Document text, Caret caret ) {
+        execute( stack, SchemeParentheses.getText( text ), caret );
     }
     public final void execute( KawaPadParenthesisStack stack, CharSequence text, Caret caret ) {
         int currDot  = caret.getDot();
         int currMark = caret.getMark();
 
-        CaretPos current;
+        CaretPos before;
         if ( currDot < currMark ) {
-            current = new CaretPos( 
+            before = new CaretPos( 
                 currDot, 
                 currMark - SchemeParentheses.THE_FINAL_CORRECTION,
                 -1 );
         } else if ( currMark < currDot ) {
-            current = new CaretPos( 
+            before = new CaretPos( 
                 currMark, 
                 currDot - SchemeParentheses.THE_FINAL_CORRECTION,
                 +1 );
         } else {
-            current = new CaretPos( 
+            before = new CaretPos( 
                 currMark, 
                 currDot,
                 0 );
         }
-        CaretPos after = process( text, current );
+        CaretPos after = before.duplicate();
+        process( text, before, after );
         
         if ( (0<=after.left) && (0<=after.right ) && (after.getLeft() <= after.getRight() ) ) {
             synchronized ( stack ) {
@@ -93,5 +101,5 @@ public abstract class CaretTransformer {
             }
         }
     }
-    public abstract CaretPos process( CharSequence text,  CaretPos current );
+    public abstract void process( CharSequence text,  CaretPos before, CaretPos after );
 }

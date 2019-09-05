@@ -327,6 +327,31 @@ public class SchemeParentheses {
             }
         }
     }
+    static class ShrinkParenthesisSelector extends CaretTransformer {
+        @Override
+        public void process(CharSequence text, CaretPos before, CaretPos after ) {
+            if ( 0 < before.direction ) {
+                after.right     = lookupCorrespondingParenthesis2( text, before.right, -1 , LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP );
+                if ( 0<=after.right && ( text.charAt( after.right ) == ')' ) ) 
+                    after.left  = lookupCorrespondingParenthesis2( text, after.right  , -1 , LCP2_STRATEGY_DYNAMIC );
+                else
+                    after.left  = -1;
+            } else {
+                after.left      = lookupCorrespondingParenthesis2( text, before.left , +1 , LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP );
+                if ( 0<=after.left && ( text.charAt( after.left ) == '(' )) 
+                    after.right = lookupCorrespondingParenthesis2( text, after.left   , +1 , LCP2_STRATEGY_DYNAMIC );
+                else
+                    after.right = -1;
+            }
+            System.err.println(
+                String.format( "leftPos=%d rightPos=%d posL=%d posR=%d", 
+                    before.left, before.right, 
+                    before.left, before.right ));
+            
+        }
+    }
+    
+    
     static class SideParenthesisSelector extends CaretTransformer {
         int direction;
         public SideParenthesisSelector(int direction) {
@@ -334,26 +359,21 @@ public class SchemeParentheses {
             this.direction = direction;
         }
         @Override
-        public CaretPos process(CharSequence text, CaretPos current) {
-            Kawapad.logInfo( "SideParenthesisSelector:" + current );
-            CaretPos after = new CaretPos( current );
+        public void process(CharSequence text, CaretPos before, CaretPos after) {
+            Kawapad.logInfo( "SideParenthesisSelector:" + before );
             if ( 0< direction ) {
-                after.left      = recursiveIndexOf( text, current.right+1, +1 , ')', '('  );
+                after.left      = recursiveIndexOf( text, before.right+1, +1 , ')', '('  );
                 if ( 0<=after.left ) 
                     after.right = lookupCorrespondingParenthesis2( text, after.left     , +1, LCP2_STRATEGY_DYNAMIC );
                 else
                     after.right = -1;
             } else {
-                after.right     = recursiveIndexOf( text, current.left-1, -1, '(', ')' );
+                after.right     = recursiveIndexOf( text, before.left-1, -1, '(', ')' );
                 if ( 0<=after.right ) 
                     after.left  = lookupCorrespondingParenthesis2( text, after.right    , -1, LCP2_STRATEGY_DYNAMIC );
                 else
                     after.left  = -1;
             }
-            return after;
         }
-    }
-    public static void selectSideParentheses( KawaPadParenthesisStack stack, CharSequence text, Caret caret, int direction) {
-        new SideParenthesisSelector( direction ).execute( stack, text, caret );
     }
 }

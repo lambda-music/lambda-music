@@ -60,6 +60,7 @@ import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.DefaultEditorKit.DefaultKeyTypedAction;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.TextAction;
@@ -80,6 +81,7 @@ import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import gnu.mapping.WrongArguments;
 import kawa.standard.Scheme;
+import kawapad.SchemeParentheses.ShrinkParenthesisSelector;
 import kawapad.SchemeParentheses.SideParenthesisSelector;
 import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.OriginalCompoundUndoManager;
@@ -1427,7 +1429,6 @@ public class Kawapad extends JTextPane {
         @Override
         public void actionPerformed(ActionEvent e) {
             JTextComponent textComponent = (JTextComponent) getTextComponent(e);
-            String text  = textComponent.getText();
             Caret caret  = textComponent.getCaret();
             if ( caret.getDot() == caret.getMark() ) {
 //                PARENTHESIS_SELECT_ACTION.actionPerformed( e );
@@ -1462,12 +1463,14 @@ public class Kawapad extends JTextPane {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     class ParenthesisShrinkSelectionAction extends TextAction {
+        ShrinkParenthesisSelector selector = new ShrinkParenthesisSelector();
         ParenthesisShrinkSelectionAction(String name) {
             super(name);
         }
         @Override
         public void actionPerformed(ActionEvent e) {
             JTextComponent textComponent = (JTextComponent) getTextComponent(e);
+            Document document = textComponent.getDocument();
             Caret caret  = textComponent.getCaret();
             int currDot  = caret.getDot();
             int currMark = caret.getMark();
@@ -1475,10 +1478,11 @@ public class Kawapad extends JTextPane {
                 PARENTHESIS_SELECT_ACTION.actionPerformed( e );
                 return;
             }
-            SchemeParentheses.shrinkSelection( 
-                getParenthesisStack(),
-                SchemeParentheses.getText( textComponent.getDocument() ),
-                caret );
+            selector.execute( getParenthesisStack(), document, caret );
+//            SchemeParentheses.shrinkSelection( 
+//                getParenthesisStack(),
+//                SchemeParentheses.getText( textComponent.getDocument() ),
+//                caret );
         }
     }
     public final AbstractAction SELECT_PARENTHESES_SHRINK_ACTION = new ParenthesisShrinkSelectionAction("select-parentheses-shrink-action") {
