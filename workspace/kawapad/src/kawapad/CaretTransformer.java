@@ -77,21 +77,20 @@ public abstract class CaretTransformer {
                 0 );
         }
         CaretPos after = before.duplicate();
-        process( text, before, after );
-        
-        if ( (0<=after.left) && (0<=after.right ) && (after.getLeft() <= after.getRight() ) ) {
+        boolean result = process( text, before, after );
+        if ( result && (0<=after.left) && (0<=after.right ) && (after.left <= after.right ) ) {
             synchronized ( stack ) {
                 try {
                     stack.setLocked( true );
                     if ( 0 < after.direction ) {
-                        caret.setDot(  after.getLeft() );
-                        caret.moveDot( after.getRight() + SchemeParentheses.THE_FINAL_CORRECTION);
+                        caret.setDot(  after.left );
+                        caret.moveDot( after.right + SchemeParentheses.THE_FINAL_CORRECTION);
                     } else if ( after.direction < 0) {
-                        caret.setDot(  after.getRight() + SchemeParentheses.THE_FINAL_CORRECTION );
-                        caret.moveDot( after.getLeft() );
+                        caret.setDot(  after.right + SchemeParentheses.THE_FINAL_CORRECTION );
+                        caret.moveDot( after.left );
                     } else {
-                        caret.setDot(  after.getLeft() );
-                        caret.moveDot( after.getRight() + SchemeParentheses.THE_FINAL_CORRECTION );
+                        caret.setDot(  after.left );
+                        caret.moveDot( after.right + SchemeParentheses.THE_FINAL_CORRECTION );
                     }
                     stack.push(currMark, currDot);
                     return;
@@ -101,5 +100,5 @@ public abstract class CaretTransformer {
             }
         }
     }
-    protected abstract void process( CharSequence text,  CaretPos before, CaretPos after );
+    protected abstract boolean process( CharSequence text,  CaretPos before, CaretPos after );
 }

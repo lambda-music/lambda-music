@@ -272,64 +272,77 @@ public class SchemeParentheses {
         return -1;
     }
     
-    
-    static void shrinkSelection(KawaPadParenthesisStack stack, CharSequence text, Caret caret) throws InternalError {
-        int currDot  = caret.getDot();
-        int currMark = caret.getMark();
-    
-        int leftPos;
-        int rightPos;
-        int caretDirection;
-        if ( currDot < currMark ) {
-            leftPos = currDot;
-            rightPos = currMark - THE_FINAL_CORRECTION;
-            caretDirection = -1;
-        } else {
-            leftPos = currMark;
-            rightPos = currDot - THE_FINAL_CORRECTION;
-            caretDirection = +1;
-        }
-        
-        int posL;
-        int posR;
-        {
-            if ( 0 < caretDirection ) {
-                posR =     lookupCorrespondingParenthesis2( text, rightPos, -1 , LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP );
-                if ( 0<=posR && ( text.charAt( posR ) == ')' ) ) 
-                    posL = lookupCorrespondingParenthesis2( text, posR    , -1 , LCP2_STRATEGY_DYNAMIC );
-                else
-                    posL = -1;
-            } else {
-                posL =     lookupCorrespondingParenthesis2( text, leftPos , +1 , LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP );
-                if ( 0<=posL && ( text.charAt( posL ) == '(' )) 
-                    posR = lookupCorrespondingParenthesis2( text, posL    , +1 , LCP2_STRATEGY_DYNAMIC );
-                else
-                    posR = -1;
+    static class ExpandParenthesisSelector extends CaretTransformer {
+        @Override
+        protected boolean process(CharSequence text, CaretPos before, CaretPos after ) {
+            // if there is a selection area now, it is to expand one on the left side.
+            if ( after.left != after.right )
+                after.right ++;
+            else if ( text.charAt(after.left) == '(') {
+                after.left ++;
+                after.right++;
             }
-            System.err.println( String.format( "leftPos=%d rightPos=%d posL=%d posR=%d", leftPos, rightPos, posL, posR ) );
-            if ( (0<=posL) && (0<=posR) && (posL<=posR) ) {
-                synchronized ( stack ) {
-                    try {
-                        stack.setLocked( true );
-                        if ( 0 < caretDirection ) {
-                            caret.setDot(posL);
-                            caret.moveDot(posR + THE_FINAL_CORRECTION);
-                        } else {
-                            caret.setDot(posR + THE_FINAL_CORRECTION );
-                            caret.moveDot(posL );
-                        }
-                        stack.push(currMark, currDot);
-                        return;
-                    } finally {
-                        stack.setLocked( false );
+            
+            if ( after.left < 0 )
+                after.left = 0;
+            else if ( text.length() < after.left )
+                after.left = text.length();
+            if ( after.right < 0 )
+                after.right = 0;
+            else if ( text.length() < after.right )
+                after.right = text.length();
+            
+            CharSequence left_leftString   = text.subSequence(0, after.left);
+            CharSequence left_rightString  = text.subSequence(after.left,text.length());
+            CharSequence right_leftString  = text.subSequence(0, after.right);
+            CharSequence right_rightString = text.subSequence(after.right,text.length());
+            int diff; // the length in char of the inserted text in the middle of the argument string.
+            
+            /*
+             * We will search twice :
+             *  - once for simply looking for the corresponding parenthesis.
+             *   - once we presume that we are in a block of quotations. We well try to close it before searching
+             *     the corresponding parenthesis; otherwise, we will search for the next half quotation which
+             *     is not what we want.
+             */
+            {
+                // the first search
+                diff = 1;
+                after.left   = SchemeParenthesisParser.lookupCorrespondingParenthesis( left_leftString  + ")" + left_rightString,  after.left  );
+                after.right  = SchemeParenthesisParser.lookupCorrespondingParenthesis( right_leftString + "(" + right_rightString, after.right );
+                after.right -=diff;
+                if ( 0<=after.left && 0<=after.right ) {
+                    if ( Math.abs( after.left - before.left ) < Math.abs( after.right - before.right ) ) {
+                        after.direction = -1;
+                    } else {
+                        after.direction =  1;
                     }
+                    return true;
                 }
             }
-        }
+            {
+                // the second search
+                diff = 2;
+                after.left  = SchemeParenthesisParser.lookupCorrespondingParenthesis( left_leftString + "(\"" + left_rightString, after.left   );
+                after.right = SchemeParenthesisParser.lookupCorrespondingParenthesis( right_leftString + "\")" + right_rightString, after.right +1 );
+                after.right -=diff;
+                if ( 0<=after.left && 0<=after.right ) {
+                    if ( Math.abs( after.left - before.left ) < Math.abs( after.right - before.right ) ) {
+                        after.direction = -1;
+                    } else {
+                        after.direction =  1;
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }            
     }
+    
+    
     static class ShrinkParenthesisSelector extends CaretTransformer {
         @Override
-        public void process(CharSequence text, CaretPos before, CaretPos after ) {
+        public boolean process(CharSequence text, CaretPos before, CaretPos after ) {
             if ( 0 < before.direction ) {
                 after.right     = lookupCorrespondingParenthesis2( text, before.right, -1 , LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP );
                 if ( 0<=after.right && ( text.charAt( after.right ) == ')' ) ) 
@@ -347,10 +360,9 @@ public class SchemeParentheses {
                 String.format( "leftPos=%d rightPos=%d posL=%d posR=%d", 
                     before.left, before.right, 
                     before.left, before.right ));
-            
+            return true;
         }
     }
-    
     
     static class SideParenthesisSelector extends CaretTransformer {
         int direction;
@@ -359,7 +371,7 @@ public class SchemeParentheses {
             this.direction = direction;
         }
         @Override
-        public void process(CharSequence text, CaretPos before, CaretPos after) {
+        public boolean process(CharSequence text, CaretPos before, CaretPos after) {
             Kawapad.logInfo( "SideParenthesisSelector:" + before );
             if ( 0< direction ) {
                 after.left      = recursiveIndexOf( text, before.right+1, +1 , ')', '('  );
@@ -374,6 +386,7 @@ public class SchemeParentheses {
                 else
                     after.left  = -1;
             }
+            return true;
         }
     }
 }

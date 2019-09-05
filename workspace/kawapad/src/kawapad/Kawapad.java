@@ -81,6 +81,7 @@ import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import gnu.mapping.WrongArguments;
 import kawa.standard.Scheme;
+import kawapad.SchemeParentheses.ExpandParenthesisSelector;
 import kawapad.SchemeParentheses.ShrinkParenthesisSelector;
 import kawapad.SchemeParentheses.SideParenthesisSelector;
 import kawapad.lib.undomanagers.GroupedUndoManager;
@@ -1348,12 +1349,15 @@ public class Kawapad extends JTextPane {
     }
     
     class ParenthesisSelectAction extends TextAction {
+        ExpandParenthesisSelector transformer = new ExpandParenthesisSelector();
         ParenthesisSelectAction(String name) {
             super(name);
         }
         @Override
         public void actionPerformed(ActionEvent e) {
-            SchemeParentheses.expandSelectedParentheses( kawapad );
+            JTextComponent c = getTextComponent(e);
+            transformer.transform( getParenthesisStack(), c.getDocument(), c.getCaret() );
+//            SchemeParentheses.expandSelectedParentheses( kawapad );
         }
     }
     public final AbstractAction PARENTHESIS_SELECT_ACTION = new ParenthesisSelectAction( "parenthesis-select" ) {
