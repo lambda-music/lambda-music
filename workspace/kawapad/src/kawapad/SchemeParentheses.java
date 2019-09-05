@@ -360,6 +360,12 @@ public class SchemeParentheses {
                 String.format( "leftPos=%d rightPos=%d posL=%d posR=%d", 
                     before.left, before.right, 
                     before.left, before.right ));
+            
+            if ( after.right < 0 || after.left < 0 ) {
+                after.left = before.left + (( before.right - before.left ) / 2);
+                after.right = after.left;
+            }
+            
             return true;
         }
     }

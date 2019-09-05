@@ -78,19 +78,20 @@ public abstract class CaretTransformer {
         }
         CaretPos after = before.duplicate();
         boolean result = process( text, before, after );
-        if ( result && (0<=after.left) && (0<=after.right ) && (after.left <= after.right ) ) {
+        if ( result && (0<=after.left) && (0<=after.right ) && (after.left <= after.right) ) {
             synchronized ( stack ) {
                 try {
                     stack.setLocked( true );
+                    int correction = after.left == after.right ? 0 : SchemeParentheses.THE_FINAL_CORRECTION;
                     if ( 0 < after.direction ) {
                         caret.setDot(  after.left );
-                        caret.moveDot( after.right + SchemeParentheses.THE_FINAL_CORRECTION);
+                        caret.moveDot( after.right + correction );
                     } else if ( after.direction < 0) {
-                        caret.setDot(  after.right + SchemeParentheses.THE_FINAL_CORRECTION );
+                        caret.setDot(  after.right + correction );
                         caret.moveDot( after.left );
                     } else {
                         caret.setDot(  after.left );
-                        caret.moveDot( after.right + SchemeParentheses.THE_FINAL_CORRECTION );
+                        caret.moveDot( after.right + correction );
                     }
                     stack.push(currMark, currDot);
                     return;
