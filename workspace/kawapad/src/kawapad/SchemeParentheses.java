@@ -403,6 +403,20 @@ public class SchemeParentheses {
             return true;
         }
     }
+    static int leftWordEdgePos( CharSequence text, int pos ) {
+        int p = lookup( text, LispWordSelectionTransformer.parenthesesSelector, pos , -1 );
+        if ( 0<=p )
+            return p+1;
+        else
+            return -1;
+    }
+    static int rightWordEdgePos( CharSequence text, int pos ) {
+        int p = lookup( text, LispWordSelectionTransformer.parenthesesSelector, pos , +1 );
+        if ( 0<=p )
+            return p-1;
+        else
+            return -1;
+    }
     
     static class SideParenthesisSelector extends CaretTransformer {
         int direction;

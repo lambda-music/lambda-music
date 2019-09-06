@@ -38,6 +38,7 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
@@ -623,17 +624,22 @@ public class Kawapad extends JTextPane {
                     return;
                 }
                 
-                try {
-                    kawapad.getUndoManager().startGroup();
-                    kawapad.getUndoManager().setSuspended(true);
-                    
-                    String text = kawapad.getText();
-                    int pos = kawapad.getCaretPosition();
-                    String indentString = calculateIndentSize(text, pos, kawapad.getLispWords());
-                    kawapad.replaceSelection( "\n" + indentString );
-                } finally {
-                    kawapad.getUndoManager().setSuspended(false);
-                    kawapad.getUndoManager().endGroup();
+                if ( popupEnabled ) {
+                    popupEnabled = false;
+                    popup.complete( getCaret() );
+                } else {
+                    try {
+                        kawapad.getUndoManager().startGroup();
+                        kawapad.getUndoManager().setSuspended(true);
+                        
+                        String text = kawapad.getText();
+                        int pos = kawapad.getCaretPosition();
+                        String indentString = calculateIndentSize(text, pos, kawapad.getLispWords());
+                        kawapad.replaceSelection( "\n" + indentString );
+                    } finally {
+                        kawapad.getUndoManager().setSuspended(false);
+                        kawapad.getUndoManager().endGroup();
+                    }
                 }
             }
         }
@@ -955,14 +961,88 @@ public class Kawapad extends JTextPane {
 
     //////////////////////////////////////////////////////////////////////////////////////////
     //
-    //
+    // Popup Management
     //
     //////////////////////////////////////////////////////////////////////////////////////////
     
+    KawapadPopup popup = new KawapadPopup( kawapad );
+    boolean popupEnabled = false;
+    Action defaultUpAction =  kawapad.getActionMap().get( DefaultEditorKit.upAction );
+    Action defaultDownAction =  kawapad.getActionMap().get( DefaultEditorKit.downAction );
+    Action defaultEnterAction =  kawapad.getActionMap().get( DefaultEditorKit.endLineAction );
+    class KawapadCursorKeyAction extends TextAction {
+        int direction;
+        Action defaultAction;
+        public KawapadCursorKeyAction(String name, int direction, Action defaultAction ) {
+            super( name );
+            this.direction = direction;
+            this.defaultAction = defaultAction;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if ( popupEnabled ) {
+                popup.moveTo( direction );
+            } else {
+                defaultAction.actionPerformed( e );
+            }
+        }
+    }
+    Action kawapadUpAction   = new KawapadCursorKeyAction( DefaultEditorKit.upAction,   -1, defaultUpAction );
+    Action kawapadDownAction = new KawapadCursorKeyAction( DefaultEditorKit.downAction, +1, defaultDownAction );
+    public static final String KAWAPAD_DISABLE_CONTENT_ASSIST = "kawapad-disable-content-assist";
+    public static final String KAWAPAD_ENABLE_CONTENT_ASSIST = "kawapad-enable-content-assist";
+    Action kawapadDisableContentAssistAction = new TextAction(KAWAPAD_DISABLE_CONTENT_ASSIST ) {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if ( popupEnabled ) {
+                popupEnabled = false;
+                popup.hide();
+            }
+        }
+        {
+            putValue( Action2.NAME, "Disable Content Asist" );
+            putValue( Action.MNEMONIC_KEY, (int)'d' );
+            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke( KeyEvent.VK_ESCAPE , 0 ) );
+        }
+    };
+    Action kawapadEnableContentAssistAction = new TextAction( KAWAPAD_ENABLE_CONTENT_ASSIST ) {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            popupEnabled = true;
+            popup.updatePopup( kawapad.getCaret() );
+        }
+        {
+            putValue( Action2.NAME, "Enable Content Asist" );
+            putValue( Action.MNEMONIC_KEY, (int)'e' );
+            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke( KeyEvent.VK_SPACE , KeyEvent.CTRL_MASK ) );
+        }
+    };
+    private static final void addActionToInputMap( InputMap map, Action action ) {
+        map.put((KeyStroke) action.getValue( Action.ACCELERATOR_KEY ), action );
+    }
+    {
+        // This action intercepts our customization so delete it.
+        purgeKeyFromActionMap( kawapad.getActionMap(), DefaultEditorKit.upAction );
+        purgeKeyFromActionMap( kawapad.getActionMap(), DefaultEditorKit.downAction );
+        kawapad.getActionMap().put( DefaultEditorKit.upAction, kawapadUpAction );
+        kawapad.getActionMap().put( DefaultEditorKit.downAction, kawapadDownAction );
+        addActionToInputMap( kawapad.getInputMap(), kawapadDisableContentAssistAction );
+        addActionToInputMap( kawapad.getInputMap(), kawapadEnableContentAssistAction );
+        kawapad.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_P, KeyEvent.CTRL_MASK), kawapadUpAction );
+        kawapad.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_N, KeyEvent.CTRL_MASK), kawapadDownAction );
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    //
+    //
+    //
+    //////////////////////////////////////////////////////////////////////////////////////////
     private class PulsarScratchPadListener implements CaretListener, DocumentListener  {
         PulsarScratchPadListener() {
             super();
         }
+        
         // CaretListener
         public void caretUpdate(CaretEvent e) {
             getParenthesisStack().checkSelectionStack();
@@ -972,6 +1052,26 @@ public class Kawapad extends JTextPane {
                 eventHandlers.invokeEventHandler( kawapad, EventHandlers.CARET,   kawapad);
                 eventHandlers.invokeEventHandler( kawapad, EventHandlers.CHANGE,  kawapad);
             }
+
+            if ( popupEnabled ) {
+                SwingUtilities.invokeLater( new Runnable() {
+                    @Override
+                    public void run() {
+                        popup.updatePopup( kawapad.getCaret() );
+                    }
+                } );
+            } else {
+                SwingUtilities.invokeLater( new Runnable() {
+                    @Override
+                    public void run() {
+                        popup.hide();
+                    }
+                } );
+            }
+
+//            if ( popup != null)
+//                popup.hide();
+
         }
         //DocumentListener
         public void insertUpdate(DocumentEvent e) {
@@ -982,6 +1082,7 @@ public class Kawapad extends JTextPane {
                 eventHandlers.invokeEventHandler( kawapad, EventHandlers.INSERT,  kawapad);
                 eventHandlers.invokeEventHandler( kawapad, EventHandlers.CHANGE,  kawapad);
             }
+//            kp.updatePopup( Kawapad.this.getCaret() );
         }
         public void removeUpdate(DocumentEvent e) {
             kawapad.fileModified = true;
@@ -991,6 +1092,7 @@ public class Kawapad extends JTextPane {
                 eventHandlers.invokeEventHandler( kawapad, EventHandlers.REMOVE,  kawapad);
                 eventHandlers.invokeEventHandler( kawapad, EventHandlers.CHANGE,  kawapad);
             }
+//            kp.updatePopup( Kawapad.this.getCaret() );
         }
         public void changedUpdate(DocumentEvent e) {
 //              fileModified = true;
@@ -999,7 +1101,7 @@ public class Kawapad extends JTextPane {
                 eventHandlers.invokeEventHandler( kawapad, EventHandlers.ATTRIBUTE,  kawapad);
                 eventHandlers.invokeEventHandler( kawapad, EventHandlers.CHANGE,  kawapad);
             }
-            return;
+//            updatePopup( Kawapad.this.getCaret() );
         }
     }
     private PulsarScratchPadListener textPaneController = new PulsarScratchPadListener();
@@ -2762,7 +2864,7 @@ public class Kawapad extends JTextPane {
             return valueOf( str );
         }
     }
-    static String REGEX_NON_WORD = "(?:[^a-zA-Z0-9-_])";
+    private static final String REGEX_NON_WORD = "(?:[^a-zA-Z0-9-_])";
     final class KawapadDocumentFilter0 extends KawapadDocumentFilter {
         final AttributeSet defaultBlockCommentColor  = KawapadDocumentFilter.grayAttributeSet;
         final AttributeSet defaultLineCommentColor   = KawapadDocumentFilter.grayAttributeSet;
@@ -2780,21 +2882,7 @@ public class Kawapad extends JTextPane {
             }
         }
         protected Collection<SyntaxElement> createSyntaxElementList() {
-            if ( true ) {
-                return Arrays.asList(
-                    KawapadDocumentFilter.createSyntaxElement(
-                        KawapadSyntaxElementType.STRING,
-                        Pattern.compile( "\\\"[\\s\\S]*?\\\"", Pattern.MULTILINE ),
-                        defaultStringColor ), 
-                    KawapadDocumentFilter.createSyntaxElement(
-                        KawapadSyntaxElementType.BLOCK_COMMENT,
-                        Pattern.compile( "\\#\\|[\\s\\S]*?\\|\\#", Pattern.MULTILINE ),
-                        defaultBlockCommentColor ), 
-                    KawapadDocumentFilter.createSyntaxElement(
-                        KawapadSyntaxElementType.LINE_COMMENT,
-                        Pattern.compile( ";.*$" ),
-                        defaultLineCommentColor ) );
-            } else {
+            if ( false ) {
                 return Arrays.asList(
                     KawapadDocumentFilter.createSyntaxElement(
                         KawapadSyntaxElementType.PUNCTUATION,
@@ -2817,7 +2905,44 @@ public class Kawapad extends JTextPane {
                         Pattern.compile( ";.*$" ),
                         defaultLineCommentColor ) );
             }
-        }
+
+            if ( false ) {
+                return Arrays.asList(
+                    KawapadDocumentFilter.createSyntaxElement(
+                        KawapadSyntaxElementType.STRING,
+                        Pattern.compile( "\\\"[\\s\\S]*?\\\"", Pattern.MULTILINE ),
+                        defaultStringColor ), 
+                    KawapadDocumentFilter.createSyntaxElement(
+                        KawapadSyntaxElementType.BLOCK_COMMENT,
+                        Pattern.compile( "\\#\\|[\\s\\S]*?\\|\\#", Pattern.MULTILINE ),
+                        defaultBlockCommentColor ), 
+                    KawapadDocumentFilter.createSyntaxElement(
+                        KawapadSyntaxElementType.LINE_COMMENT,
+                        Pattern.compile( ";.*$" ),
+                        defaultLineCommentColor ) );
+            } 
+            return Arrays.asList(
+                KawapadDocumentFilter.createSyntaxElement(
+                    KawapadSyntaxElementType.PUNCTUATION,
+                    Pattern.compile( "(?<K>(?:\\(|\\)|\\:|\\'|\\#)+)" ),
+                    defaultPunctuationColor ), 
+                KawapadDocumentFilter.createSyntaxElement(
+                    KawapadSyntaxElementType.KEYWORD,
+                    createLispWordPattern(), 
+                    defaultKeywordColor ), 
+                KawapadDocumentFilter.createSyntaxElement(
+                    KawapadSyntaxElementType.STRING,
+                    Pattern.compile( "\\\"[\\s\\S]*?\\\"", Pattern.MULTILINE ),
+                    defaultStringColor ), 
+                KawapadDocumentFilter.createSyntaxElement(
+                    KawapadSyntaxElementType.BLOCK_COMMENT,
+                    Pattern.compile( "\\#\\|[\\s\\S]*?\\|\\#", Pattern.MULTILINE ),
+                    defaultBlockCommentColor ), 
+                KawapadDocumentFilter.createSyntaxElement(
+                    KawapadSyntaxElementType.LINE_COMMENT,
+                    Pattern.compile( ";.*$" ),
+                    defaultLineCommentColor ) );
+                    }
         @Override
         public AttributeSet getDefaultAttributeSet() {
             return KawapadDocumentFilter.createAttributeSet( getForeground() );
