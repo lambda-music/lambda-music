@@ -6,10 +6,12 @@ final class RunnableReplaceTextWithEntireBlockOnTextPane implements Runnable {
     private Kawapad kawapad;
     private final String result;
     private boolean doSelect;
-    RunnableReplaceTextWithEntireBlockOnTextPane( Kawapad textPane, String result, boolean doSelect ) {
+    private boolean doReset;
+    RunnableReplaceTextWithEntireBlockOnTextPane( Kawapad textPane, String result, boolean doSelect, boolean doReset ) {
         this.kawapad = textPane;
         this.result = result;
         this.doSelect = doSelect;
+        this.doReset = doReset;
     }
     
     @Override
@@ -47,6 +49,8 @@ final class RunnableReplaceTextWithEntireBlockOnTextPane implements Runnable {
                     kawapad.getUndoManager().endGroup();
                 }
             }
+            if ( doReset )
+                kawapad.resetFileModifiedStatus();
             KawapadFrame.logInfo( "ReplaceTextWithEntireBlockOnTextPane() done" );
         } catch (BadLocationException e1) {
             e1.printStackTrace();

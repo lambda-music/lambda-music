@@ -3,49 +3,53 @@ package kawapad;
 import javax.swing.text.BadLocationException;
 
 final class RunnableInsertTextToTextPane implements Runnable {
-    private Kawapad kawaPane;
+    private Kawapad kawapad;
     private final String result;
     private boolean doSelect;
-    RunnableInsertTextToTextPane( Kawapad textPane, String result, boolean doSelect ) {
-        this.kawaPane = textPane;
+    private boolean doReset;
+    RunnableInsertTextToTextPane( Kawapad textPane, String result, boolean doSelect, boolean doReset ) {
+        this.kawapad = textPane;
         this.result = result;
         this.doSelect = doSelect;
+        this.doReset = doReset;
     }
     
     @Override
     public void run() {
         KawapadFrame.logInfo( "InsertTextToTextPane() begin >>" );
         try {
-            if ( kawaPane.getSelectedText() != null ) {
+            if ( kawapad.getSelectedText() != null ) {
                 try {
-                    kawaPane.getUndoManager().startGroup();
-                    kawaPane.getUndoManager().setSuspended(true);
-                    int selectionEnd = kawaPane.getSelectionEnd();
-                    kawaPane.getDocument().insertString( 
+                    kawapad.getUndoManager().startGroup();
+                    kawapad.getUndoManager().setSuspended(true);
+                    int selectionEnd = kawapad.getSelectionEnd();
+                    kawapad.getDocument().insertString( 
                         selectionEnd, 
                         result,
                         null
 //                          ((StyledEditorKit)textPane.getEditorKit()).getInputAttributes()
                             );
-                    kawaPane.setSelectionEnd( selectionEnd + result.length() );
-                    kawaPane.setSelectionStart(selectionEnd  );
+                    kawapad.setSelectionEnd( selectionEnd + result.length() );
+                    kawapad.setSelectionStart(selectionEnd  );
                 } finally {
-                    kawaPane.getUndoManager().setSuspended(false);
-                    kawaPane.getUndoManager().endGroup();
+                    kawapad.getUndoManager().setSuspended(false);
+                    kawapad.getUndoManager().endGroup();
                 }
             } else {
                 try {
-                    kawaPane.getUndoManager().startGroup();
-                    kawaPane.getUndoManager().setSuspended(true);
-                    int dot = kawaPane.getCaret().getDot();
-                    kawaPane.getDocument().insertString( dot, result, null);
+                    kawapad.getUndoManager().startGroup();
+                    kawapad.getUndoManager().setSuspended(true);
+                    int dot = kawapad.getCaret().getDot();
+                    kawapad.getDocument().insertString( dot, result, null);
                     if ( doSelect )
-                        kawaPane.getCaret().moveDot(dot);
+                        kawapad.getCaret().moveDot(dot);
                 } finally {
-                    kawaPane.getUndoManager().setSuspended(false);
-                    kawaPane.getUndoManager().endGroup();
+                    kawapad.getUndoManager().setSuspended(false);
+                    kawapad.getUndoManager().endGroup();
                 }
             }
+            if ( doReset )
+                kawapad.resetFileModifiedStatus();
         } catch (BadLocationException e1) {
             e1.printStackTrace();
         } finally { 

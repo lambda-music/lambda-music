@@ -3,11 +3,13 @@ package kawapad;
 import javax.swing.text.BadLocationException;
 
 final class RunnableReplaceTextOnTextPane implements Runnable {
-    private Kawapad kawaPane;
+    private Kawapad kawapad;
     private final String result;
-    RunnableReplaceTextOnTextPane( Kawapad textPane, String result ) {
-        this.kawaPane = textPane;
+    private boolean doReset;
+    RunnableReplaceTextOnTextPane( Kawapad textPane, String result, boolean doReset ) {
+        this.kawapad = textPane;
         this.result = result;
+        this.doReset = doReset;
     }
     
     @Override
@@ -15,27 +17,29 @@ final class RunnableReplaceTextOnTextPane implements Runnable {
         KawapadFrame.logInfo( "ReplaceTextOnTextPane() begin >>" );
         
         try {
-            if ( kawaPane.getSelectedText() != null ) {
+            if ( kawapad.getSelectedText() != null ) {
                 try {
-                    kawaPane.getUndoManager().startGroup();
-                    kawaPane.getUndoManager().setSuspended(true);
-                    kawaPane.replaceSelection( result );
+                    kawapad.getUndoManager().startGroup();
+                    kawapad.getUndoManager().setSuspended(true);
+                    kawapad.replaceSelection( result );
                 } finally {
-                    kawaPane.getUndoManager().setSuspended(false);
-                    kawaPane.getUndoManager().endGroup();
+                    kawapad.getUndoManager().setSuspended(false);
+                    kawapad.getUndoManager().endGroup();
                 }
             } else {
                 try {
-                    kawaPane.getUndoManager().startGroup();
-                    kawaPane.getUndoManager().setSuspended(true);
-                    int dot = kawaPane.getCaret().getDot();
-                    kawaPane.getDocument().insertString( dot, result, null);
-                    kawaPane.getCaret().moveDot(dot);
+                    kawapad.getUndoManager().startGroup();
+                    kawapad.getUndoManager().setSuspended(true);
+                    int dot = kawapad.getCaret().getDot();
+                    kawapad.getDocument().insertString( dot, result, null);
+                    kawapad.getCaret().moveDot(dot);
                 } finally {
-                    kawaPane.getUndoManager().setSuspended(false);
-                    kawaPane.getUndoManager().endGroup();
+                    kawapad.getUndoManager().setSuspended(false);
+                    kawapad.getUndoManager().endGroup();
                 }
             }
+            if ( doReset )
+                kawapad.resetFileModifiedStatus();
             KawapadFrame.logInfo( "ReplaceTextOnTextPane() done" );
         } catch (BadLocationException e1) {
             e1.printStackTrace();

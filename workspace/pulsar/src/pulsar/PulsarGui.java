@@ -63,6 +63,7 @@ import javax.swing.JSlider;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -145,9 +146,15 @@ public class PulsarGui {
             }
         }, Invokable.NOARG );
     }
-    
-    public void openIntro() {
-        frame.openIntro();
+    // Is this really necessary to be executed with secretary?
+    public void openIntro() throws IOException {
+        pulsar.getSchemeSecretary().executeWithoutSecretarially( new SecretaryMessage.NoReturn<Scheme,IOException>() {
+            @Override
+            public void execute0(Scheme resource, Object[] args) throws IOException{
+                logInfo( "Pulsar#openIntro()" );
+                frame.getKawapad().openIntro();
+            }
+        }, Invokable.NOARG );
     }
     
     public void openIntro2() {
@@ -532,9 +539,6 @@ public class PulsarGui {
             initIcon();
         }
 
-        public void openIntro() {
-            kawapad.openIntro();
-        }
 
         // THIS IS NOT WORKING. (Tue, 06 Aug 2019 10:04:23 +0900)
         // This doesn't work and I don't know why. It maybe because GTK thing. 
@@ -730,7 +734,15 @@ public class PulsarGui {
             pb_position.setMaximum( PB_POSITION_MAX );
             pb_position.setMinimum(0);
         }
-
+        
+        {
+            SwingUtilities.invokeLater( new Runnable() {
+                @Override
+                public void run() {
+                    kawapad.requestFocus();
+                }
+            });
+        }
     }
 
     /*

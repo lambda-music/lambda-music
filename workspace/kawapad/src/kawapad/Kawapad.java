@@ -1205,17 +1205,19 @@ public class Kawapad extends JTextPane {
     //////////////////////////////////////////////////////////////////////////////////////////
 
 
-    static final class EvaluateRunnable implements Runnable {
+    static class EvaluateRunnable implements Runnable {
         Kawapad kawaPane;
         String schemeScript;
         boolean insertText;
         boolean replaceText;
-        public EvaluateRunnable(Kawapad kawaPane, String schemeScript, boolean insertText, boolean replaceText ) {
+        boolean doReset;
+        public EvaluateRunnable(Kawapad kawaPane, String schemeScript, boolean insertText, boolean replaceText, boolean doReset ) {
             super();
             this.kawaPane = kawaPane;
             this.schemeScript = schemeScript;
             this.insertText = insertText;
             this.replaceText = replaceText;
+            this.doReset = doReset;
         }
         @Override
         public void run() {
@@ -1231,12 +1233,15 @@ public class Kawapad extends JTextPane {
                         SwingUtilities.invokeLater( new RunnableReplaceTextWithEntireBlockOnTextPane(
                             kawaPane,
                             "(" + result.result.replaceFirst( "\n$", "" ) +" )",
-                            false
+                            false,
+                            doReset
                             ) );
                     } else {
                         SwingUtilities.invokeLater( new RunnableReplaceTextOnTextPane(
                             kawaPane,
-                            result.result ) );
+                            result.result,
+                            doReset
+                            ) );
                     }
                 } else {
                     String resultString = SchemeUtils.formatResult( result.result ); 
@@ -1245,7 +1250,7 @@ public class Kawapad extends JTextPane {
                         resultString = "\n" + SchemeUtils.formatResult( result.result ); 
                     }
                     logInfo( resultString );
-                    SwingUtilities.invokeLater( new RunnableInsertTextToTextPane( kawaPane, resultString, true ) );
+                    SwingUtilities.invokeLater( new RunnableInsertTextToTextPane( kawaPane, resultString, true, doReset ) );
                 }
             }
         }
@@ -1268,15 +1273,13 @@ public class Kawapad extends JTextPane {
                         public void run() {
                             String schemeScript2 = getSelectedText( kawapad );
                             kawapad.getThreadManager().startScratchPadThread(
-                                new EvaluateRunnable(
-                                    kawapad, schemeScript2,  true, true ) );
+                                new EvaluateRunnable( kawapad, schemeScript2,  true, true, false ) );
                         }
                     });
 
                 } else {
                     kawapad.getThreadManager().startScratchPadThread( 
-                        new EvaluateRunnable( kawapad,
-                            schemeScript,  true, true ) );
+                        new EvaluateRunnable( kawapad, schemeScript,  true, true, false ) );
                 }
             }
 
@@ -1294,8 +1297,7 @@ public class Kawapad extends JTextPane {
         public void actionPerformed(ActionEvent e) {
             //  JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
             kawapad.getThreadManager().startScratchPadThread( new EvaluateRunnable(
-                kawapad,
-                getTextDefault(), true, false ) );
+                kawapad, getTextDefault(), true, false, false ) );
         }
         {
             putValue( Action2.NAME, "Evaluate" );
@@ -1309,7 +1311,7 @@ public class Kawapad extends JTextPane {
         @Override
         public void actionPerformed(ActionEvent e) {
             //  JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
-            kawapad.getThreadManager().startScratchPadThread( new EvaluateRunnable( kawapad, getTextDefault(), false, false ) );
+            kawapad.getThreadManager().startScratchPadThread( new EvaluateRunnable( kawapad, getTextDefault(), false, false, false ) );
         }
         {
             putValue( Action2.NAME, "Run" );
@@ -1331,7 +1333,7 @@ public class Kawapad extends JTextPane {
 //          
 //          // ??? IS THIS NECESSARY?
 //          textPane.getActionMap();
-        SwingUtilities.invokeLater( new RunnableInsertTextToTextPane( kawapad, t, true ) );
+        SwingUtilities.invokeLater( new RunnableInsertTextToTextPane( kawapad, t, true, false ) );
     }
     
     private final class SetTextToTextPane implements Runnable {
@@ -2617,6 +2619,9 @@ public class Kawapad extends JTextPane {
         this.getUndoManager().discardAllEdits();
 //          JOptionPane.showMessageDialog(this, "OPEN FILE PROC" + file );
     }
+    public void resetFileModifiedStatus() {
+        this.fileModified = false;
+    }
     public void openFile( File filePath ) throws IOException {
         if ( ! confirmSave( ConfirmType.OPEN_FILE ) ) {
             return;
@@ -2641,7 +2646,7 @@ public class Kawapad extends JTextPane {
         kawapad.getThreadManager().startScratchPadThread( new EvaluateRunnable(
             kawapad,
             "(help about-intro)",
-            true, true ));
+            true, true, true ));
         
     }
 
