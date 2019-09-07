@@ -1656,7 +1656,9 @@ public class Kawapad extends JTextPane {
         public void actionPerformed(ActionEvent e) {
             JTextComponent textComponent = (JTextComponent) getTextComponent(e);
             Caret caret  = textComponent.getCaret();
-            if ( caret.getDot() == caret.getMark() ) {
+            int dot = caret.getDot();
+            int mark = caret.getMark();
+            if ( dot == mark ) {
 //                PARENTHESIS_SELECT_ACTION.actionPerformed( e );
                 // DO SAME WITH THE FOLLOWING (Sun, 08 Sep 2019 01:55:30 +0900)
                 selector.transform( 
@@ -1664,10 +1666,19 @@ public class Kawapad extends JTextPane {
                     SchemeParentheses.getText( textComponent.getDocument() ), 
                     textComponent.getCaret() );
             } else {
-                selector.transform( 
-                    getParenthesisStack(), 
-                    SchemeParentheses.getText( textComponent.getDocument() ), 
-                    textComponent.getCaret() );
+                // reverse the direction of the selection.
+                if ( this.direction < 0 && mark < dot ) {
+                    caret.setDot( dot );
+                    caret.moveDot( mark );
+                } else if ( 0 < this.direction && dot < mark ) {
+                    caret.setDot( dot );
+                    caret.moveDot( mark );
+                } else {
+                    selector.transform( 
+                        getParenthesisStack(), 
+                        SchemeParentheses.getText( textComponent.getDocument() ), 
+                        textComponent.getCaret() );
+                }
             }
         }
     }
