@@ -245,7 +245,7 @@ public class Kawapad extends JTextPane {
     //
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    public final class ScratchPadThreadManager {
+    public final class KawapadThreadManager {
         private final class ScratchPadThread extends Thread {
             private final Runnable r;
             private ScratchPadThread(Runnable r) {
@@ -301,8 +301,8 @@ public class Kawapad extends JTextPane {
         }
     }
     
-    private final ScratchPadThreadManager threadManager = new ScratchPadThreadManager();
-    public ScratchPadThreadManager getThreadManager() {
+    private final KawapadThreadManager threadManager = new KawapadThreadManager();
+    public KawapadThreadManager getThreadManager() {
         return threadManager;
     }
     
@@ -354,7 +354,7 @@ public class Kawapad extends JTextPane {
         private static final String CHANGE    = "change";
         private static final String TYPED     = "typed";
 
-        final Map<Symbol,Map<Symbol,Kawapad.SchemeProcedure>> map = new HashMap<>();
+        final Map<Symbol,Map<Symbol,SchemeProcedure>> map = new HashMap<>();
         {
             map.put( Symbol.valueOf(INIT),      new HashMap<>() );
             map.put( Symbol.valueOf(CREATE),    new HashMap<>() );
@@ -365,8 +365,8 @@ public class Kawapad extends JTextPane {
             map.put( Symbol.valueOf(CHANGE),    new HashMap<>() );
             map.put( Symbol.valueOf(TYPED),     new HashMap<>() );
         }
-        Map<Symbol, Kawapad.SchemeProcedure> getEventType(Symbol eventTypeID) {
-            Map<Symbol, Kawapad.SchemeProcedure> eventType = map.get( eventTypeID );
+        Map<Symbol, SchemeProcedure> getEventType(Symbol eventTypeID) {
+            Map<Symbol, SchemeProcedure> eventType = map.get( eventTypeID );
             if ( eventType == null )
                 throw new RuntimeException( "unknown event type + ( " + eventTypeID + ")"  );
             return eventType;
@@ -382,19 +382,19 @@ public class Kawapad extends JTextPane {
             map.get( Symbol.valueOf(CHANGE)).clear();
             map.get( Symbol.valueOf(TYPED)).clear();
         }
-        Map<Symbol, Kawapad.SchemeProcedure> getEventType(String eventTypeID) {
+        Map<Symbol, SchemeProcedure> getEventType(String eventTypeID) {
             return getEventType( Symbol.valueOf(eventTypeID));
         }
         
         public void register( Symbol eventTypeID, Symbol procID, Procedure proc ) {
             register( eventTypeID, procID, new SchemeProcedure( proc, Environment.getCurrent() ) );
         }
-        public void register( Symbol eventTypeID, Symbol procID, Kawapad.SchemeProcedure proc ) {
-            Map<Symbol, Kawapad.SchemeProcedure> eventType = getEventType(eventTypeID);
+        public void register( Symbol eventTypeID, Symbol procID, SchemeProcedure proc ) {
+            Map<Symbol, SchemeProcedure> eventType = getEventType(eventTypeID);
             eventType.put( procID, proc );
         }
         public void unregister( Symbol eventTypeID, Symbol procID ) {
-            Map<Symbol, Kawapad.SchemeProcedure> eventType = getEventType(eventTypeID);
+            Map<Symbol, SchemeProcedure> eventType = getEventType(eventTypeID);
             eventType.remove( procID );
         }
         public void invokeEventHandler( Kawapad kawaPane, String eventTypeID, Object ... args ) {
@@ -415,7 +415,7 @@ public class Kawapad extends JTextPane {
                                     kawaPane.initVariables( variables );
                                     SchemeUtils.initializeVariables( env, variables );
                                     
-                                    for( Entry<Symbol,Kawapad.SchemeProcedure> e :  getEventType(eventTypeID).entrySet() ) {
+                                    for( Entry<Symbol,SchemeProcedure> e :  getEventType(eventTypeID).entrySet() ) {
                                         try {
                                             e.getValue().invoke( args );
                                         } catch ( Throwable t ) {
@@ -438,7 +438,7 @@ public class Kawapad extends JTextPane {
 //          void invokeEventHandlers( String )
         
     }
-    public static final Kawapad.EventHandlers eventHandlers = new EventHandlers();
+    public static final EventHandlers eventHandlers = new EventHandlers();
     
     //////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -609,9 +609,9 @@ public class Kawapad extends JTextPane {
         kawapad.setCaret( dc );
     }
     
+    //  Action inserBreakAction = textPane.getActionMap().get( DefaultEditorKit.insertBreakAction );
+    public final Action newInsertBreakAction = new NewInsertBreakTextAction( DefaultEditorKit.insertBreakAction );
     {
-        //  Action inserBreakAction = textPane.getActionMap().get( DefaultEditorKit.insertBreakAction );
-        Action newInsertBreakAction = new NewInsertBreakTextAction( DefaultEditorKit.insertBreakAction );
         //  purgeKeyFromActionMap( textPane.getActionMap(), DefaultEditorKit.insertBreakAction );
         kawapad.getActionMap().put( DefaultEditorKit.insertBreakAction, newInsertBreakAction );
     }
@@ -738,7 +738,7 @@ public class Kawapad extends JTextPane {
 
     ////////////////////////////////////////////////////////////////////////////
 
-    Action KEYMAP_DEFAULT = new DefaultKeyTypedAction() {
+    public Action KEYMAP_DEFAULT = new DefaultKeyTypedAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
             super.actionPerformed(e);
@@ -972,9 +972,9 @@ public class Kawapad extends JTextPane {
     
     KawapadContentAssist contentAssist = new KawapadContentAssist( kawapad );
     boolean contentAssistEnabled = false;
-    Action defaultUpAction =  kawapad.getActionMap().get( DefaultEditorKit.upAction );
-    Action defaultDownAction =  kawapad.getActionMap().get( DefaultEditorKit.downAction );
-    Action defaultEnterAction =  kawapad.getActionMap().get( DefaultEditorKit.endLineAction );
+    public final Action defaultUpAction =  kawapad.getActionMap().get( DefaultEditorKit.upAction );
+    public final Action defaultDownAction =  kawapad.getActionMap().get( DefaultEditorKit.downAction );
+    public final Action defaultEnterAction =  kawapad.getActionMap().get( DefaultEditorKit.endLineAction );
     class KawapadCursorKeyAction extends TextAction {
         int direction;
         Action defaultAction;
@@ -993,11 +993,11 @@ public class Kawapad extends JTextPane {
             }
         }
     }
-    Action kawapadUpAction   = new KawapadCursorKeyAction( DefaultEditorKit.upAction,   -1, defaultUpAction );
-    Action kawapadDownAction = new KawapadCursorKeyAction( DefaultEditorKit.downAction, +1, defaultDownAction );
+    public final Action kawapadUpAction   = new KawapadCursorKeyAction( DefaultEditorKit.upAction,   -1, defaultUpAction );
+    public final Action kawapadDownAction = new KawapadCursorKeyAction( DefaultEditorKit.downAction, +1, defaultDownAction );
     public static final String KAWAPAD_DISABLE_CONTENT_ASSIST = "kawapad-disable-content-assist";
     public static final String KAWAPAD_ENABLE_CONTENT_ASSIST = "kawapad-enable-content-assist";
-    Action kawapadDisableContentAssistAction = new TextAction(KAWAPAD_DISABLE_CONTENT_ASSIST ) {
+    public final Action kawapadDisableContentAssistAction = new TextAction(KAWAPAD_DISABLE_CONTENT_ASSIST ) {
         @Override
         public void actionPerformed(ActionEvent e) {
             if ( contentAssistEnabled ) {
@@ -1011,7 +1011,7 @@ public class Kawapad extends JTextPane {
             putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke( KeyEvent.VK_ESCAPE , 0 ) );
         }
     };
-    Action kawapadEnableContentAssistAction = new TextAction( KAWAPAD_ENABLE_CONTENT_ASSIST ) {
+    public final Action kawapadEnableContentAssistAction = new TextAction( KAWAPAD_ENABLE_CONTENT_ASSIST ) {
         @Override
         public void actionPerformed(ActionEvent e) {
             contentAssistEnabled = true;
@@ -1043,8 +1043,8 @@ public class Kawapad extends JTextPane {
     //
     //
     //////////////////////////////////////////////////////////////////////////////////////////
-    private class PulsarScratchPadListener implements CaretListener, DocumentListener  {
-        PulsarScratchPadListener() {
+    private class KawapadListener implements CaretListener, DocumentListener  {
+        KawapadListener() {
             super();
         }
         
@@ -1107,7 +1107,7 @@ public class Kawapad extends JTextPane {
 //            updatePopup( Kawapad.this.getCaret() );
         }
     }
-    private PulsarScratchPadListener textPaneController = new PulsarScratchPadListener();
+    private KawapadListener textPaneController = new KawapadListener();
     {
         this.getDocument().addDocumentListener( textPaneController );
         this.addCaretListener( textPaneController );
@@ -1115,7 +1115,7 @@ public class Kawapad extends JTextPane {
     
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    public final AbstractAction RESET_ACTION = new ResetAction();
+    public final Action RESET_ACTION = new ResetAction();
     private final class ResetAction extends AbstractAction {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -1258,7 +1258,28 @@ public class Kawapad extends JTextPane {
 
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    public final AbstractAction EVALUATE_REPLACE_ACTION = new EvaluateReplaceAction();
+    public final Action SELECT_EVALUATE_ACTION = new EvaluateAlternateAction( "kawapad-select-evaluate" );
+    final class EvaluateAlternateAction extends EvaluateAction {
+        public EvaluateAlternateAction(String name) {
+            super( name );
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            BACKWARD_ACTION.actionPerformed( e );
+            PARENTHESIS_SELECT_ACTION.actionPerformed( e );
+            kawapad.getThreadManager().startScratchPadThread(
+                new EvaluateRunnable(
+                    kawapad, getTextDefault(), true, false, false ) );
+        }
+        {
+            putValue( Action2.NAME, "Select and Evaluate" );
+            putValue( Action.MNEMONIC_KEY, (int)'q' );
+            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, ActionEvent.CTRL_MASK ) );
+        }
+    }
+
+    public final Action BACKWARD_ACTION = kawapad.getActionMap().get( DefaultEditorKit.backwardAction );
+    public final Action EVALUATE_REPLACE_ACTION = new EvaluateReplaceAction();
     final class EvaluateReplaceAction extends AbstractAction {
         @Override
         public void actionPerformed(ActionEvent event) {
@@ -1266,7 +1287,7 @@ public class Kawapad extends JTextPane {
             {
                 schemeScript = getSelectedText( kawapad );
                 if ( schemeScript == null ) {
-                    kawapad.getActionMap().get( DefaultEditorKit.backwardAction ).actionPerformed( event );
+                    BACKWARD_ACTION.actionPerformed( event );
                     PARENTHESIS_SELECT_ACTION.actionPerformed( event );
                     SwingUtilities.invokeLater( new Runnable() {
                         @Override
@@ -1285,14 +1306,17 @@ public class Kawapad extends JTextPane {
 
         }
         {
-            putValue( Action2.NAME, "Evaluate Replace" );
+            putValue( Action2.NAME, "Select, Evaluate and Replace" );
             putValue( Action.MNEMONIC_KEY, (int)'t' );
-            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, ActionEvent.CTRL_MASK) );
+            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, ActionEvent.CTRL_MASK | ActionEvent.SHIFT_MASK ) );
         }
     }
 
-    public final AbstractAction EVALUATE_ACTION = new EvaluateAction();
-    final class EvaluateAction extends AbstractAction {
+    public final Action EVALUATE_ACTION = new EvaluateAction( "kawapad-evaluate" );
+    class EvaluateAction extends AbstractAction {
+        public EvaluateAction(String name) {
+            super( name );
+        }
         @Override
         public void actionPerformed(ActionEvent e) {
             //  JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
@@ -1306,7 +1330,7 @@ public class Kawapad extends JTextPane {
         }
     }
 
-    public final AbstractAction RUN_ACTION = new RunAction();
+    public final Action RUN_ACTION = new RunAction();
     final class RunAction extends AbstractAction {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -1355,7 +1379,7 @@ public class Kawapad extends JTextPane {
         SwingUtilities.invokeLater( new SetTextToTextPane(null, t) );
     }
 
-    public final AbstractAction INTERRUPT_ACTION = new InterruptAction();
+    public final Action INTERRUPT_ACTION = new InterruptAction();
     private final class InterruptAction extends AbstractAction {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -1402,7 +1426,7 @@ public class Kawapad extends JTextPane {
         }
     }
 
-    public final AbstractAction SIMPLE_PARENTHESIS_JUMP_LEFT_ACTION =
+    public final Action SIMPLE_PARENTHESIS_JUMP_LEFT_ACTION =
             new ParenthesisAction( "simple-parenthesis-jump-left", false, -1, SchemeParentheses.LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP )
     {
         {
@@ -1411,7 +1435,7 @@ public class Kawapad extends JTextPane {
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
-    public final AbstractAction SIMPLE_PARENTHESIS_JUMP_RIGHT_ACTION =
+    public final Action SIMPLE_PARENTHESIS_JUMP_RIGHT_ACTION =
             new ParenthesisAction( "simple-parenthesis-jump-right", false, +1, SchemeParentheses.LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP  )
     {
         {
@@ -1420,7 +1444,7 @@ public class Kawapad extends JTextPane {
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
-    public final AbstractAction SIMPLE_PARENTHESIS_SELECT_JUMP_LEFT_ACTION =
+    public final Action SIMPLE_PARENTHESIS_SELECT_JUMP_LEFT_ACTION =
             new ParenthesisAction( "simple-parenthesis-select-jump-left", true, -1, SchemeParentheses.LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP )
     {
         {
@@ -1429,7 +1453,7 @@ public class Kawapad extends JTextPane {
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
-    public final AbstractAction SIMPLE_PARENTHESIS_SELECT_JUMP_RIGHT_ACTION =
+    public final Action SIMPLE_PARENTHESIS_SELECT_JUMP_RIGHT_ACTION =
             new ParenthesisAction( "simple-parenthesis-select-jump-right", true, +1, SchemeParentheses.LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP  )
     {
         {
@@ -1439,7 +1463,7 @@ public class Kawapad extends JTextPane {
         }
     };
     
-    public final AbstractAction PARENTHESIS_JUMP_LEFT_ACTION =
+    public final Action PARENTHESIS_JUMP_LEFT_ACTION =
             new ParenthesisAction( "parenthesis-jump-left", false, -1, SchemeParentheses.LCP2_STRATEGY_DYNAMIC )
     {
         {
@@ -1448,7 +1472,7 @@ public class Kawapad extends JTextPane {
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
-    public final AbstractAction PARENTHESIS_JUMP_RIGHT_ACTION = 
+    public final Action PARENTHESIS_JUMP_RIGHT_ACTION = 
             new ParenthesisAction( "parenthesis-jump-right", false, +1, SchemeParentheses.LCP2_STRATEGY_DYNAMIC  )
     {
         {
@@ -1457,7 +1481,7 @@ public class Kawapad extends JTextPane {
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
-    public final AbstractAction PARENTHESIS_SELECT_JUMP_LEFT_ACTION =
+    public final Action PARENTHESIS_SELECT_JUMP_LEFT_ACTION =
             new ParenthesisAction( "parenthesis-sel-jump-left", true, -1, SchemeParentheses.LCP2_STRATEGY_DYNAMIC  )
     {
         {
@@ -1466,7 +1490,7 @@ public class Kawapad extends JTextPane {
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
-    public final AbstractAction PARENTHESIS_SELECT_JUMP_RIGHT_ACTION =
+    public final Action PARENTHESIS_SELECT_JUMP_RIGHT_ACTION =
             new ParenthesisAction( "parenthesis-sel-jump-right", true, +1, SchemeParentheses.LCP2_STRATEGY_DYNAMIC  )
     {
         {
@@ -1476,7 +1500,7 @@ public class Kawapad extends JTextPane {
         }
     };
 
-    public final AbstractAction SELECT_CURRENT_LISP_WORD_ACTION =
+    public final Action SELECT_CURRENT_LISP_WORD_ACTION =
             new TextAction( "select-current-lisp-word" )
     {
         CaretTransformer transformer = new SelectCurrentWordTransformer();
@@ -1494,7 +1518,7 @@ public class Kawapad extends JTextPane {
         }
 
     };
-    public final AbstractAction SELECT_RIGHT_LISP_WORD_ACTION =
+    public final Action SELECT_RIGHT_LISP_WORD_ACTION =
             new TextAction( "select-right-lisp-word" )
     {
         CaretTransformer transformer = new SelectRightLispWordTransformer();
@@ -1512,7 +1536,7 @@ public class Kawapad extends JTextPane {
         }
 
     };
-    public final AbstractAction SELECT_LEFT_LISP_WORD_ACTION =
+    public final Action SELECT_LEFT_LISP_WORD_ACTION =
             new TextAction( "select-left-lisp-word" )
     {
         CaretTransformer transformer = new SelectLeftLispWordTransformer();
@@ -1582,7 +1606,7 @@ public class Kawapad extends JTextPane {
 //            SchemeParentheses.expandSelectedParentheses( kawapad );
         }
     }
-    public final AbstractAction PARENTHESIS_SELECT_ACTION = new ParenthesisSelectAction( "parenthesis-select" ) {
+    public final Action PARENTHESIS_SELECT_ACTION = new ParenthesisSelectAction( "parenthesis-select" ) {
         {
             putValue( Action2.NAME, "Select Inside the Current Parentheses" );
             putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke( KeyEvent.VK_UP, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK ) );
@@ -1635,7 +1659,7 @@ public class Kawapad extends JTextPane {
             }
         }
     }
-    public final AbstractAction PARENTHESIS_SELECT_2_ACTION = new ParenthesisSelect2Action("parenthesis-select-2-action") {
+    public final Action PARENTHESIS_SELECT_2_ACTION = new ParenthesisSelect2Action("parenthesis-select-2-action") {
         {
             putValue( Action2.NAME, "Deselect Inside the Current Parentheses" );
             putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke( KeyEvent.VK_UP, KeyEvent.CTRL_MASK | KeyEvent.ALT_MASK ) );
@@ -1683,7 +1707,7 @@ public class Kawapad extends JTextPane {
         }
     }
 
-    public final AbstractAction SELECT_LEFT_PARENTHESES_ACTION = new SelectSideParenthesesAction("select-left-parentheses",-1) {
+    public final Action SELECT_LEFT_PARENTHESES_ACTION = new SelectSideParenthesesAction("select-left-parentheses",-1) {
         
         {
             putValue( Action2.NAME, "Select the Parentheses on the Left Side" );
@@ -1691,7 +1715,7 @@ public class Kawapad extends JTextPane {
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
-    public final AbstractAction SELECT_RIGHT_PARENTHESES_ACTION = new SelectSideParenthesesAction("select-right-parentheses",+1) {
+    public final Action SELECT_RIGHT_PARENTHESES_ACTION = new SelectSideParenthesesAction("select-right-parentheses",+1) {
         {
             putValue( Action2.NAME, "Select the Parentheses on the Left Side" );
             putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, KeyEvent.SHIFT_MASK | KeyEvent.ALT_MASK ) );
@@ -1724,7 +1748,7 @@ public class Kawapad extends JTextPane {
 //                caret );
         }
     }
-    public final AbstractAction SELECT_PARENTHESES_SHRINK_ACTION = new ParenthesisShrinkSelectionAction("select-parentheses-shrink-action") {
+    public final Action SELECT_PARENTHESES_SHRINK_ACTION = new ParenthesisShrinkSelectionAction("select-parentheses-shrink-action") {
         {
             putValue( Action2.NAME, "Select Parentheses Inside the Current Selection" );
             putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, KeyEvent.SHIFT_MASK | KeyEvent.ALT_MASK ) );
@@ -1760,14 +1784,14 @@ public class Kawapad extends JTextPane {
             }
         }
     }
-    public final AbstractAction PARENTHESIS_DESELECT_ACTION = new ParenthesisDeselectAction( "parenthesis-deselect" ) {
+    public final Action PARENTHESIS_DESELECT_ACTION = new ParenthesisDeselectAction( "parenthesis-deselect" ) {
         {
             putValue( Action2.NAME, "Deselect Inside the Current Parentheses" );
             putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK ) );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
-    public final AbstractAction PARENTHESIS_DESELECT_2_ACTION = new ParenthesisDeselectAction( "parenthesis-deselect-2" ) {
+    public final Action PARENTHESIS_DESELECT_2_ACTION = new ParenthesisDeselectAction( "parenthesis-deselect-2" ) {
         {
             putValue( Action2.NAME, "Deselect Inside the Current Parentheses" );
             putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, KeyEvent.CTRL_MASK | KeyEvent.ALT_MASK ) );
@@ -1888,14 +1912,14 @@ public class Kawapad extends JTextPane {
             }
         }
     }
-    public final AbstractAction INCREASE_INDENT_ACTION = new FormatAction( +2 ) {
+    public final Action INCREASE_INDENT_ACTION = new FormatAction( +2 ) {
         {
             putValue( Action2.NAME, "Increase Indentation" );
             putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_TAB , 0 ) ) ;
             putValue( Action.MNEMONIC_KEY , (int) 'c' );
         }
     };
-    public final AbstractAction DECREASE_INDENT_ACTION = new FormatAction( -2 ) {
+    public final Action DECREASE_INDENT_ACTION = new FormatAction( -2 ) {
         {
             putValue( Action2.NAME, "Decrease Indentation" );
             putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_TAB , KeyEvent.SHIFT_MASK ) );
@@ -1923,7 +1947,7 @@ public class Kawapad extends JTextPane {
         return prettify( kawapad.getLispKeywordList(), text );
     }
 
-    public final AbstractAction PRETTIFY_ACTION = new PrettifyAction() {
+    public final Action PRETTIFY_ACTION = new PrettifyAction() {
         {
             putValue( Action2.NAME, "Correct Indentation" );
             putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_I , KeyEvent.CTRL_MASK ));
@@ -2731,7 +2755,7 @@ public class Kawapad extends JTextPane {
     }
     
 
-    public Action OPEN_FILE_NEW = new AbstractAction() {
+    public final Action OPEN_FILE_NEW = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
@@ -2747,7 +2771,7 @@ public class Kawapad extends JTextPane {
         }        
     };
 
-    public Action OPEN_FILE = new AbstractAction() {
+    public final Action OPEN_FILE = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
@@ -2762,7 +2786,7 @@ public class Kawapad extends JTextPane {
             putValue( Action.MNEMONIC_KEY , (int) 'o' );
         }
     };
-    public Action SAVE_FILE = new AbstractAction() {
+    public final Action SAVE_FILE = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
@@ -2777,7 +2801,7 @@ public class Kawapad extends JTextPane {
             putValue( Action.MNEMONIC_KEY , (int) 'o' );
         }
     };
-    public Action SAVE_FILE_AS = new AbstractAction() {
+    public final Action SAVE_FILE_AS = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
@@ -3059,7 +3083,8 @@ public class Kawapad extends JTextPane {
         fileMenuItem.add( new JMenuItem( kawapad.SAVE_FILE ) );
         fileMenuItem.add( new JMenuItem( kawapad.SAVE_FILE_AS ) ); 
         
-        schemeMenuItem.add( new JMenuItem( kawapad.EVALUATE_REPLACE_ACTION ) );
+        schemeMenuItem.add( new JMenuItem( kawapad.EVALUATE_REPLACE_ACTION ));
+        schemeMenuItem.add( new JMenuItem( kawapad.SELECT_EVALUATE_ACTION ));
         schemeMenuItem.add( new JMenuItem( kawapad.EVALUATE_ACTION ) );
         schemeMenuItem.add( new JMenuItem( kawapad.RUN_ACTION ) );
         schemeMenuItem.add( new JMenuItem( kawapad.INTERRUPT_ACTION ) );

@@ -523,7 +523,7 @@ public class PulsarGui {
         {
             putValue( Action2.NAME, "Tap Tempo" );
             putValue( Action.MNEMONIC_KEY, (int)'T' );
-            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, ActionEvent.CTRL_MASK) );
+            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, ActionEvent.CTRL_MASK | ActionEvent.SHIFT_MASK ) );
         }
     };
 
