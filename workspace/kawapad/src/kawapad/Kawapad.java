@@ -1,5 +1,6 @@
 package kawapad;
 
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -28,6 +29,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -128,6 +130,7 @@ public class Kawapad extends JTextPane {
     private static JComponent createAncestor() {
         return new JTextPane();
     }
+    
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -208,7 +211,7 @@ public class Kawapad extends JTextPane {
         // This action intercepts our customization so delete it.
         purgeKeyFromActionMap( kawapad.getActionMap(), DefaultEditorKit.insertTabAction );
         
-        documentFilter = new KawapadDocumentFilter0( this.getStyledDocument());
+        documentFilter = new KawapadDocumentFilter0( this, this.getStyledDocument());
         if ( ENABLED_SYNTAX_HIGHLIGHTING ) {
             ((AbstractDocument)getDocument()).setDocumentFilter( documentFilter);
         }
@@ -2075,14 +2078,14 @@ public class Kawapad extends JTextPane {
         SchemeUtils.defineVar(env, new SafeProcedureN( "set-syntax-color" ) {
             @Override
             public Object apply2(Object arg1, Object arg2) throws Throwable {
-                documentFilter.getSyntaxElementList().get(
+                documentFilter.getBlockSyntaxElementList().get(
                     KawapadSyntaxElementType.schemeValueOf((Symbol)arg1)).setColor((Color)arg2);
                 
                 return Values.empty; 
             }
             @Override
             public Object apply3(Object arg1, Object arg2, Object arg3) throws Throwable {
-                documentFilter.getSyntaxElementList().get(
+                documentFilter.getBlockSyntaxElementList().get(
                     KawapadSyntaxElementType.schemeValueOf((Symbol)arg1)).setColor((Color)arg2,(Color)arg3);
                 return Values.empty; 
             }
@@ -2864,33 +2867,40 @@ public class Kawapad extends JTextPane {
             return valueOf( str );
         }
     }
-    private static final String REGEX_NON_WORD = "(?:[^a-zA-Z0-9-_])";
+    private static final String REGEX_NON_WORD_L = "(?<=[^a-zA-Z0-9-_])";
+    private static final String REGEX_NON_WORD_R = "(?=[^a-zA-Z0-9-_])";
     final class KawapadDocumentFilter0 extends KawapadDocumentFilter {
         final AttributeSet defaultBlockCommentColor  = KawapadDocumentFilter.grayAttributeSet;
         final AttributeSet defaultLineCommentColor   = KawapadDocumentFilter.grayAttributeSet;
         final AttributeSet defaultStringColor        = KawapadDocumentFilter.darkGreenAttributeSet;
         final AttributeSet defaultPunctuationColor   = KawapadDocumentFilter.redAttributeSet;
         final AttributeSet defaultKeywordColor       = KawapadDocumentFilter.orangeAttributeSet;
-        KawapadDocumentFilter0(StyledDocument document) {
-            super( document );
+        KawapadDocumentFilter0(Kawapad kawapad, StyledDocument document) {
+            super( kawapad, document );
         }
-        private Pattern createLispWordPattern() {
+        private Pattern createKeywordPattern() {
             synchronized ( Kawapad.class ) {
-                lispKeywordList.sort( LISP_KEYWORD_COMPARATOR );
+                List<String> keywordList = SchemeUtils.getAllKey(getSchemeSecretary()); 
+                keywordList.sort( KEYWORD_COMPARATOR );
+                for ( ListIterator<String> i=keywordList.listIterator(); i.hasNext(); ) {
+                    String s = i.next();
+                    i.set( Pattern.quote( s ) );
+                }
                 return Pattern.compile( 
-                    REGEX_NON_WORD + "(?<"+GROUP+">" + String.join( "|",  lispKeywordList ) + ")" + REGEX_NON_WORD );
+                    REGEX_NON_WORD_L + "(?<"+GROUP+">" + String.join( "|",  keywordList ) + ")" + REGEX_NON_WORD_R );
             }
         }
-        protected Collection<SyntaxElement> createSyntaxElementList() {
+        
+        protected Collection<SyntaxElement> createBlockSyntaxElementList() {
             if ( false ) {
                 return Arrays.asList(
                     KawapadDocumentFilter.createSyntaxElement(
                         KawapadSyntaxElementType.PUNCTUATION,
-                        Pattern.compile( "\\(|\\)|\\:|\\'|\\#" ),
+                        Pattern.compile( "(?<K>(?:\\(|\\)|\\:|\\'|\\#))" ),
                         defaultPunctuationColor ), 
                     KawapadDocumentFilter.createSyntaxElement(
                         KawapadSyntaxElementType.KEYWORD,
-                        createLispWordPattern(), 
+                        createKeywordPattern(), 
                         defaultKeywordColor ), 
                     KawapadDocumentFilter.createSyntaxElement(
                         KawapadSyntaxElementType.STRING,
@@ -2928,7 +2938,7 @@ public class Kawapad extends JTextPane {
                     defaultPunctuationColor ), 
                 KawapadDocumentFilter.createSyntaxElement(
                     KawapadSyntaxElementType.KEYWORD,
-                    createLispWordPattern(), 
+                    createKeywordPattern(), 
                     defaultKeywordColor ), 
                 KawapadDocumentFilter.createSyntaxElement(
                     KawapadSyntaxElementType.STRING,
@@ -2943,6 +2953,10 @@ public class Kawapad extends JTextPane {
                     Pattern.compile( ";.*$" ),
                     defaultLineCommentColor ) );
                     }
+        @Override
+        protected Collection<SyntaxElement> createCharacterSyntaxElementList() {
+            return Arrays.asList(); // XXX
+        }
         @Override
         public AttributeSet getDefaultAttributeSet() {
             return KawapadDocumentFilter.createAttributeSet( getForeground() );
@@ -3175,10 +3189,14 @@ public class Kawapad extends JTextPane {
     // The Bridge to the Scheme Interface of Highlighter 
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    static final Comparator<String> LISP_KEYWORD_COMPARATOR = new Comparator<String>() {
+    static final Comparator<String> KEYWORD_COMPARATOR = new Comparator<String>() {
         @Override
         public int compare(String o1, String o2) {
-            return o1.length() - o2.length();
+            int i = o2.length() - o1.length();
+            if ( i != 0 )
+                return i;
+            else
+                return o1.compareTo( o2 );
         }
     };
     static void notifySyntaxChangeToAll() {

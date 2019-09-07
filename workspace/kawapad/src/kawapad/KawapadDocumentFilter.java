@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.DocumentFilter;
 import javax.swing.text.Segment;
 import javax.swing.text.StyleConstants;
@@ -64,8 +65,10 @@ public abstract class KawapadDocumentFilter extends DocumentFilter {
     public static final AttributeSet    orangeAttributeSet  = createAttributeSet( Color.ORANGE );
     public static final AttributeSet    whiteAttributeSet   = createAttributeSet( Color.WHITE );
 
+    private Kawapad kawapad;
     private final StyledDocument document;
-    public KawapadDocumentFilter(StyledDocument document) {
+    public KawapadDocumentFilter(Kawapad kawapad, StyledDocument document) {
+        this.kawapad = kawapad;
         this.document = document;
     }
     public interface SyntaxElement {
@@ -148,24 +151,46 @@ public abstract class KawapadDocumentFilter extends DocumentFilter {
         }
     }
     
-    protected abstract Collection<SyntaxElement> createSyntaxElementList();
+    protected abstract Collection<SyntaxElement> createBlockSyntaxElementList();
+    protected abstract Collection<SyntaxElement> createCharacterSyntaxElementList();
 
-    private SyntaxElementList syntaxElementList;
+    private SyntaxElementList blockSyntaxElementList;
+    private SyntaxElementList characterSyntaxElementList;
+    
     public void resetSyntaxElementList() {
-        this.syntaxElementList = null;
+        this.blockSyntaxElementList = null;
     }
-    public SyntaxElementList getSyntaxElementList() {
-        if ( syntaxElementList == null ) {
-            this.syntaxElementList = new SyntaxElementList( createSyntaxElementList() );
+    public SyntaxElementList getBlockSyntaxElementList() {
+        if ( blockSyntaxElementList == null ) {
+            this.blockSyntaxElementList = new SyntaxElementList( createBlockSyntaxElementList() );
         }
-        return syntaxElementList;
+        return blockSyntaxElementList;
     }
+    public SyntaxElementList getCharacterSyntaxElementList() {
+        if ( characterSyntaxElementList == null ) {
+            this.characterSyntaxElementList = new SyntaxElementList( createCharacterSyntaxElementList() );
+        }
+        return characterSyntaxElementList;
+    }
+    
     public abstract AttributeSet getDefaultAttributeSet();  
     
     @Override
     public void insertString(FilterBypass fb, int offset, String text, AttributeSet attributeSet)
             throws BadLocationException {
-        super.insertString( fb, offset, text, attributeSet );
+        
+        boolean found = false;
+        for ( SyntaxElement e : getCharacterSyntaxElementList() ) {
+            if ( e.getPattern().matcher( text ).find() ) {
+                found = true;
+                super.insertString( fb, offset, text, e.getAttributeSet() );
+                break;
+            }
+        }
+        if ( ! found ) {
+            super.insertString( fb, offset, text, attributeSet );
+        }
+        
         handleTextChanged();
     }
     
@@ -178,7 +203,18 @@ public abstract class KawapadDocumentFilter extends DocumentFilter {
     @Override
     public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attributeSet)
             throws BadLocationException {
-        super.replace( fb, offset, length, text, attributeSet );
+        boolean found = false;
+        for ( SyntaxElement e : getCharacterSyntaxElementList() ) {
+            if ( e.getPattern().matcher( text ).find() ) {
+                found = true;
+                super.replace( fb, offset, length, text, e.getAttributeSet() );
+                break;
+            }
+        }
+        if ( ! found ) {
+            super.replace( fb, offset, length, text, attributeSet );
+        }
+
         handleTextChanged();
     }
     
@@ -216,21 +252,33 @@ public abstract class KawapadDocumentFilter extends DocumentFilter {
 
 //    ElapsedTime ep = new ElapsedTime();
     
+    StyledDocument emptyDocument = new DefaultStyledDocument();
     void update() {
         AttributeSet defaultAttr = getDefaultAttributeSet();
         synchronized ( document ) {
-            // clear
+            int dot = kawapad.getCaret().getDot();
+            int mark = kawapad.getCaret().getMark();
+            kawapad.setDocument( emptyDocument );
+            try {
+                // clear
 //            ep.start();
-            document.setCharacterAttributes(0, document.getLength(), defaultAttr , true);
+                document.setCharacterAttributes(0, document.getLength(), defaultAttr , true);
 //            ep.end();
 //            logInfo( ep.getMessage( "Syntax Clear" ));
-            // 
-            Segment text = SchemeParentheses.getText( document );
-            for ( SyntaxElement e : getSyntaxElementList() ) {
+                // 
+                Segment text = SchemeParentheses.getText( document );
+                for ( SyntaxElement e : getBlockSyntaxElementList() ) {
 //                ep.start();
-                updateTextStyles( document, text, e.getPattern(), defaultAttr, e.getAttributeSet() );
+                    updateTextStyles( document, text, e.getPattern(), defaultAttr, e.getAttributeSet() );
 //                ep.end();
 //                logInfo( ep.getMessage( "Syntax Set:" + e.getName() ));
+                }
+            } finally {
+                kawapad.setDocument( document );
+                kawapad.getCaret().setDot( mark );
+                if ( mark!=dot)
+                    kawapad.getCaret().moveDot( dot );
+                    
             }
         }
     }
@@ -242,45 +290,11 @@ public abstract class KawapadDocumentFilter extends DocumentFilter {
         while (matcher.find()) {
             // Change the color of recognized tokens
             if ( 0 < matcher.groupCount() ) {
-                document.setCharacterAttributes( matcher.start(GROUP), matcher.end(GROUP) - matcher.start(GROUP), attr, false );
+                document.setCharacterAttributes( matcher.start(GROUP), matcher.end(GROUP) - matcher.start(GROUP), attr, true );
             } else {
-                document.setCharacterAttributes( matcher.start(),      matcher.end()      - matcher.start(),      attr, false );
+                document.setCharacterAttributes( matcher.start(),      matcher.end()      - matcher.start(),      attr, true );
             }
         }
-    }
-    
-    // Use a regular expression to find the words you are looking for
-    Pattern pattern = buildPattern();
-
-    /**
-     * Build the regular expression that looks for the whole word of each word that
-     * you wish to find. The "\\b" is the beginning or end of a word boundary. The
-     * "|" is a regex "or" operator.
-     * 
-     * @return
-     */
-    static String[] KEYWORDS    = { "display" };
-    static String[] LETTERS     = { "(", ")", };
-    
-    private Pattern buildPattern() {
-        StringBuilder sb = new StringBuilder();
-        for (String token : KEYWORDS) {
-            sb.append( "\\b" ); // Start of word boundary
-            sb.append( token );
-            sb.append( "\\b|" ); // End of word boundary and an or for the next word
-        }
-        for (String token : LETTERS) {
-            sb.append( "\\" );
-            sb.append( token );
-            sb.append( "|" ); // End of word boundary and an or for the next word
-        }
-        if (sb.length() > 0) {
-            sb.deleteCharAt( sb.length() - 1 ); // Remove the trailing "|"
-        }
-        
-        Pattern p = Pattern.compile( sb.toString() );
-        
-        return p;
     }
 
 }
