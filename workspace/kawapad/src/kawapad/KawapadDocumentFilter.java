@@ -260,11 +260,16 @@ public abstract class KawapadDocumentFilter extends DocumentFilter {
         Matcher matcher = pattern.matcher( text );
         while (matcher.find()) {
             // Change the color of recognized tokens
+            int start;
+            int end;
             if ( 0 < matcher.groupCount() ) {
-                document.setCharacterAttributes( matcher.start(GROUP), matcher.end(GROUP) - matcher.start(GROUP), attr, true );
+                start = matcher.start(GROUP);
+                end = matcher.end(GROUP);
             } else {
-                document.setCharacterAttributes( matcher.start(),      matcher.end()      - matcher.start(),      attr, true );
+                start = matcher.start();
+                end = matcher.end();
             }
+            document.setCharacterAttributes( start, end - start, attr, true );
         }
     }
 

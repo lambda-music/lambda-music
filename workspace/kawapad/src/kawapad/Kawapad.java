@@ -2859,8 +2859,12 @@ public class Kawapad extends JTextPane {
                         defaultLineCommentColor ) );
             }
 
-            if ( false ) {
+            if ( true ) {
                 return Arrays.asList(
+                    KawapadDocumentFilter.createSyntaxElement(
+                        KawapadSyntaxElementType.KEYWORD,
+                        createKeywordPattern(), 
+                        defaultKeywordColor ), 
                     KawapadDocumentFilter.createSyntaxElement(
                         KawapadSyntaxElementType.STRING,
                         Pattern.compile( "\\\"[\\s\\S]*?\\\"", Pattern.MULTILINE ),
@@ -2873,29 +2877,32 @@ public class Kawapad extends JTextPane {
                         KawapadSyntaxElementType.LINE_COMMENT,
                         Pattern.compile( ";.*$" ),
                         defaultLineCommentColor ) );
-            } 
-            return Arrays.asList(
-                KawapadDocumentFilter.createSyntaxElement(
-                    KawapadSyntaxElementType.PUNCTUATION,
-                    Pattern.compile( "(?<K>(?:\\(|\\)|\\:|\\'|\\#)+)" ),
-                    defaultPunctuationColor ), 
-                KawapadDocumentFilter.createSyntaxElement(
-                    KawapadSyntaxElementType.KEYWORD,
-                    createKeywordPattern(), 
-                    defaultKeywordColor ), 
-                KawapadDocumentFilter.createSyntaxElement(
-                    KawapadSyntaxElementType.STRING,
-                    Pattern.compile( "\\\"[\\s\\S]*?\\\"", Pattern.MULTILINE ),
-                    defaultStringColor ), 
-                KawapadDocumentFilter.createSyntaxElement(
-                    KawapadSyntaxElementType.BLOCK_COMMENT,
-                    Pattern.compile( "\\#\\|[\\s\\S]*?\\|\\#", Pattern.MULTILINE ),
-                    defaultBlockCommentColor ), 
-                KawapadDocumentFilter.createSyntaxElement(
-                    KawapadSyntaxElementType.LINE_COMMENT,
-                    Pattern.compile( ";.*$" ),
-                    defaultLineCommentColor ) );
-                    }
+            }
+            if ( false ) {
+                return Arrays.asList(
+                    KawapadDocumentFilter.createSyntaxElement(
+                        KawapadSyntaxElementType.PUNCTUATION,
+                        Pattern.compile( "(?<K>(?:\\(|\\)|\\:|\\'|\\#)+)" ),
+                        defaultPunctuationColor ), 
+                    KawapadDocumentFilter.createSyntaxElement(
+                        KawapadSyntaxElementType.KEYWORD,
+                        createKeywordPattern(), 
+                        defaultKeywordColor ), 
+                    KawapadDocumentFilter.createSyntaxElement(
+                        KawapadSyntaxElementType.STRING,
+                        Pattern.compile( "\\\"[\\s\\S]*?\\\"", Pattern.MULTILINE ),
+                        defaultStringColor ), 
+                    KawapadDocumentFilter.createSyntaxElement(
+                        KawapadSyntaxElementType.BLOCK_COMMENT,
+                        Pattern.compile( "\\#\\|[\\s\\S]*?\\|\\#", Pattern.MULTILINE ),
+                        defaultBlockCommentColor ), 
+                    KawapadDocumentFilter.createSyntaxElement(
+                        KawapadSyntaxElementType.LINE_COMMENT,
+                        Pattern.compile( ";.*$" ),
+                        defaultLineCommentColor ) );
+            }
+            return null;
+        }
         @Override
         public AttributeSet getDefaultAttributeSet() {
             return KawapadDocumentFilter.createAttributeSet( getForeground() );
