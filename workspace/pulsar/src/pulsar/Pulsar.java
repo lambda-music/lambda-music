@@ -185,7 +185,7 @@ public final class Pulsar extends Metro {
         schemeSecretary.registerSchemeInitializer( pulsar, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
             public void execute0( Scheme scheme, Object[] args ) {
-                PulsarGui.addLispWords( scheme, PulsarGui.getPulsarWords(scheme) );
+//                PulsarGui.addLispWords( scheme, PulsarGui.getPulsarWords(scheme) );
             }
         });
     }

@@ -46,7 +46,6 @@ final class RunnableInsertTextToTextPane implements Runnable {
                     kawaPane.getUndoManager().endGroup();
                 }
             }
-            kawaPane.updateHighlightLater();
         } catch (BadLocationException e1) {
             e1.printStackTrace();
         } finally { 

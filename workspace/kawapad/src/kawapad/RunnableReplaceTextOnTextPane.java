@@ -37,7 +37,6 @@ final class RunnableReplaceTextOnTextPane implements Runnable {
                 }
             }
             KawapadFrame.logInfo( "ReplaceTextOnTextPane() done" );
-            kawaPane.updateHighlightLater();
         } catch (BadLocationException e1) {
             e1.printStackTrace();
         } finally {

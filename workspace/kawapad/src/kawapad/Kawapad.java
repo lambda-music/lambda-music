@@ -25,6 +25,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -72,9 +73,7 @@ import javax.swing.undo.CannotUndoException;
 
 import gnu.expr.Language;
 import gnu.lists.EmptyList;
-import gnu.lists.IString;
 import gnu.lists.LList;
-import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Procedure1;
@@ -152,7 +151,6 @@ public class Kawapad extends JTextPane {
     private static final String FLAG_DONE_INIT_PULSAR_SCRATCHPAD = "flag-done-init-pulsar-scratchpad";
     private static final boolean DEBUG_UNDO_BUFFER = false;
     private static final boolean DEBUG = false;
-    private static final boolean ENABLED_HIGHLIGHT = false;
     private static final boolean ENABLED_PARENTHESIS_HIGHLIGHT = true;
     static final boolean ENABLED_SHOW_CORRESPONDING_PARENTHESES = true;
 
@@ -637,7 +635,7 @@ public class Kawapad extends JTextPane {
                         
                         String text = kawapad.getText();
                         int pos = kawapad.getCaretPosition();
-                        String indentString = calculateIndentSize(text, pos, kawapad.getLispWords());
+                        String indentString = calculateIndentSize(text, pos, kawapad.getLispKeywordList() );
                         kawapad.replaceSelection( "\n" + indentString );
                     } finally {
                         kawapad.getUndoManager().setSuspended(false);
@@ -1081,7 +1079,6 @@ public class Kawapad extends JTextPane {
             kawapad.fileModified = true;
 //              System.err.println("PulsarScratchPadTextPaneController.insertUpdate()");
             if ( ! kawapad.getUndoManager().isSuspended() ) {
-                kawapad.updateHighlightLater();
                 eventHandlers.invokeEventHandler( kawapad, EventHandlers.INSERT,  kawapad);
                 eventHandlers.invokeEventHandler( kawapad, EventHandlers.CHANGE,  kawapad);
             }
@@ -1091,7 +1088,6 @@ public class Kawapad extends JTextPane {
             kawapad.fileModified = true;
 //              System.err.println("PulsarScratchPadTextPaneController.removeUpdate()");
             if ( ! kawapad.getUndoManager().isSuspended() ) {
-                kawapad.updateHighlightLater();
                 eventHandlers.invokeEventHandler( kawapad, EventHandlers.REMOVE,  kawapad);
                 eventHandlers.invokeEventHandler( kawapad, EventHandlers.CHANGE,  kawapad);
             }
@@ -1895,7 +1891,7 @@ public class Kawapad extends JTextPane {
             formatProc( kawapad, new TextFilter() {
                 @Override
                 String process(String text) {
-                    return prettify( text );
+                    return prettify( kawapad, text );
                 }
             });
         }
@@ -1904,16 +1900,8 @@ public class Kawapad extends JTextPane {
     public static final String prettify( Collection<String> lispWords, String text  ) {
         return SchemePrettifier.prettify( lispWords, text );
     }
-    public static final String prettify( Environment env, String text ) {
-        return prettify( getLispWords0( env ), text );
-    }
-    public final String prettify( String text ) {
-        return kawapad.schemeSecretary.executeSecretarially( new SecretaryMessage.NoThrow<Scheme, String>() {
-            @Override
-            public String execute0( Scheme scheme, Object[] args ) {
-                return prettify( scheme.getEnvironment(), text );
-            }
-        }, text );
+    public static final String prettify( Kawapad kawapad, String text ) {
+        return prettify( kawapad.getLispKeywordList(), text );
     }
 
     public final AbstractAction PRETTIFY_ACTION = new PrettifyAction() {
@@ -1932,37 +1920,6 @@ public class Kawapad extends JTextPane {
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    /*
-     *  
-     * 
-     */
-
-    private static List<String> FALLBACK_LISP_WORDS = Arrays.asList( "let", "lambda" );
-
-    public Collection<String> getLispWords() {
-        return kawapad.schemeSecretary.executeSecretarially( new SecretaryMessage.NoThrow<Scheme, Collection<String>>() {
-            @Override
-            public Collection<String> execute0(Scheme scheme, Object[] args) {
-                return getLispWords0( scheme.getEnvironment() );
-            }
-        });
-    }
-
-    public static Collection<String> getLispWords0( Environment env ) {
-        Collection<String> lispWords = FALLBACK_LISP_WORDS;
-        try {
-            Object object = env.get( Symbol.valueOf("lisp-words") );
-            if ( object instanceof Pair ) {
-                Pair p = (Pair) object;
-                lispWords = SchemeUtils.<Object,String>convertList( p, (o)->{
-                    return SchemeUtils.anyToString( o );
-                });
-            }
-        } catch ( Throwable t ) {
-            logError("", t);
-        }
-        return lispWords;
-    }
     
     //////////////////////////////////////////////////////////////////////////////////////////
     // 
@@ -2078,14 +2035,14 @@ public class Kawapad extends JTextPane {
         SchemeUtils.defineVar(env, new SafeProcedureN( "set-syntax-color" ) {
             @Override
             public Object apply2(Object arg1, Object arg2) throws Throwable {
-                documentFilter.getBlockSyntaxElementList().get(
+                documentFilter.getSyntaxElementList().get(
                     KawapadSyntaxElementType.schemeValueOf((Symbol)arg1)).setColor((Color)arg2);
                 
                 return Values.empty; 
             }
             @Override
             public Object apply3(Object arg1, Object arg2, Object arg3) throws Throwable {
-                documentFilter.getBlockSyntaxElementList().get(
+                documentFilter.getSyntaxElementList().get(
                     KawapadSyntaxElementType.schemeValueOf((Symbol)arg1)).setColor((Color)arg2,(Color)arg3);
                 return Values.empty; 
             }
@@ -2101,6 +2058,19 @@ public class Kawapad extends JTextPane {
                 throw new InternalError();
             }
         });
+        SchemeUtils.defineVar(env, new Procedure1() {
+            @Override
+            public Object apply1(Object arg1 ) throws Throwable {
+                return Kawapad.prettify( kawapad, SchemeUtils.anyToString(SchemeUtils.prettyPrint(arg1)));
+            }
+        }, "pretty-print");
+        SchemeUtils.defineVar(env, new Procedure1() {
+            @Override
+            public Object apply1(Object arg1 ) throws Throwable {
+                return Kawapad.prettify( kawapad, SchemeUtils.anyToString(arg1));
+            }
+        }, "prettify");
+
         
 
         
@@ -2117,22 +2087,6 @@ public class Kawapad extends JTextPane {
 
             SchemeUtils.defineVar(env, false, "frame"  );
             SchemeUtils.defineVar(env, false, "scheme" );
-
-            SchemeUtils.defineVar(env, 
-                    Pair.makeList( (List)SchemeUtils.<String,IString>convertList( 
-                            Arrays.asList( DEFAULT_LISP_WORDS ),
-                            (o)->{
-                                return SchemeUtils.toSchemeString( o );
-                            }) 
-                        ), "lisp-words");
-
-            SchemeUtils.defineVar(env, Pair.makeList( (List)SchemeUtils.<String,IString>convertList( 
-                                        Arrays.asList( DEFAULT_LISP_WORDS ),
-                                        (o)->{
-                                            return SchemeUtils.toSchemeString( o );
-                                        }) 
-                                    ), "default-lisp-words"
-                    );
             
             SchemeUtils.defineVar(env, new Procedure3() {
                 @Override
@@ -2148,18 +2102,6 @@ public class Kawapad extends JTextPane {
                     return EmptyList.emptyList;
                 }
             }, "unregister-event-handler");
-            SchemeUtils.defineVar(env, new Procedure1() {
-                @Override
-                public Object apply1(Object arg1 ) throws Throwable {
-                    return Kawapad.prettify( scheme.getEnvironment(), SchemeUtils.anyToString(SchemeUtils.prettyPrint(arg1)));
-                }
-            }, "pretty-print");
-            SchemeUtils.defineVar(env, new Procedure1() {
-                @Override
-                public Object apply1(Object arg1 ) throws Throwable {
-                    return Kawapad.prettify( scheme.getEnvironment(), SchemeUtils.anyToString(arg1));
-                }
-            }, "prettify");
 
             try {
                 logInfo( "Loading [KawaPad internal]/kawapad-extension.scm" );
@@ -2881,6 +2823,7 @@ public class Kawapad extends JTextPane {
         private Pattern createKeywordPattern() {
             synchronized ( Kawapad.class ) {
                 List<String> keywordList = SchemeUtils.getAllKey(getSchemeSecretary()); 
+                keywordList.addAll( lispKeywordList );
                 keywordList.sort( KEYWORD_COMPARATOR );
                 for ( ListIterator<String> i=keywordList.listIterator(); i.hasNext(); ) {
                     String s = i.next();
@@ -2891,7 +2834,7 @@ public class Kawapad extends JTextPane {
             }
         }
         
-        protected Collection<SyntaxElement> createBlockSyntaxElementList() {
+        protected Collection<SyntaxElement> createSyntaxElementList() {
             if ( false ) {
                 return Arrays.asList(
                     KawapadDocumentFilter.createSyntaxElement(
@@ -2954,10 +2897,6 @@ public class Kawapad extends JTextPane {
                     defaultLineCommentColor ) );
                     }
         @Override
-        protected Collection<SyntaxElement> createCharacterSyntaxElementList() {
-            return Arrays.asList(); // XXX
-        }
-        @Override
         public AttributeSet getDefaultAttributeSet() {
             return KawapadDocumentFilter.createAttributeSet( getForeground() );
         }
@@ -2965,32 +2904,6 @@ public class Kawapad extends JTextPane {
     private KawapadDocumentFilter0 documentFilter; // See the constructor how this field is initialized.
 
 
-    String getLispWordPatternString() {
-        return KawaPadHighlighter.lispWordToPatternString( kawapad.getLispWords() ); 
-    }
-    void updateHighlight() {
-        if ( ENABLED_HIGHLIGHT ) {
-            logInfo( "KawaPad.updateHighlight() >>>" );
-            try {
-                getUndoManager().setSuspended( true );
-//                  KawaPadHighlighter.resetStyles( kawaPane );
-//                  KawaPadHighlighter.highlightSyntax( kawaPane, getLispWordPatternString() );
-//                  KawaPadHighlighter.highlightSyntax( kawaPane, getLispWords() );
-            } finally { 
-                getUndoManager().setSuspended( false );
-                logInfo( "KawaPad.updateHighlight() <<<" );
-            }
-        }
-    }
-    void updateHighlightLater() {
-        if ( ENABLED_HIGHLIGHT )
-            SwingUtilities.invokeLater( new Runnable() {
-                public void run() {
-                    updateHighlight();
-                }
-            });
-    }
-    
     private static void highlightMatchningParentheses( Kawapad kawapad, int pos ) {
         if ( ENABLED_PARENTHESIS_HIGHLIGHT )
             try {
@@ -3010,179 +2923,6 @@ public class Kawapad extends JTextPane {
             });
     }
     
-
-    public static final String[] DEFAULT_LISP_WORDS = {
-            // ??
-            "let", "letrec", "let*", "letrec*","set!",
-            "do","if", "cond", "else", "#t", "#f", "begin", "apply","define", 
-            "not", "and", "or","lambda", "eval",
-            
-            // https://www.gnu.org/software/kawa/Numerical-types.html
-            "number?",
-            "quantity?",
-            "complex?",
-            "real?",
-            "rational?",
-            "integer?",
-            "longv",
-            "int?",
-            "short?",
-            "byte?",
-            "ulong?",
-            "uint?",
-            "ushort?",
-            "ubyte?",
-            "double?",
-            "float?",
-            
-            // https://www.gnu.org/software/kawa/Standard-Types.html
-            "Object?",
-            "symbol?",
-            "keyword?",
-            "list?",
-            "pair?",
-            "string?",
-            "String?",
-            "character?",
-            "vector?",
-            "procedure?",
-            "input-port?",
-            "output-port?",
-            "parameter?",
-            "dynamic?",
-            // https://srfi.schemers.org/srfi-1/srfi-1.html
-            "cons", "list",
-            "xcons", "cons*", "make-list", "list-tabulate", 
-            "list-copy", "circular-list", "iota",
-
-            "pair?", "null?",
-            "proper-list?", "circular-list?", "dotted-list?", 
-            "not-pair?", "null-list?",
-            "list=",
-
-            "car", "cdr", "cddadr", "cddddr", "list-ref",
-            "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth",
-            "car+cdr",
-            "take",       "drop",
-            "take-right", "drop-right",
-            "take!",      "drop-right!", 
-            "split-at",   "split-at!", 
-            "last", "last-pair",
-
-            "length", "length+",
-            "append",  "concatenate",  "reverse",
-            "append!", "concatenate!", "reverse!",
-            "append-reverse", "append-reverse!",
-            "zip", "unzip1", "unzip2", "unzip3", "unzip4", "unzip5",
-            "count",
-
-            "map", "for-each",
-            "fold",       "unfold",       "pair-fold",       "reduce", 
-            "fold-right", "unfold-right", "pair-fold-right", "reduce-right", 
-            "append-map", "append-map!",
-            "map!", "pair-for-each", "filter-map", "map-in-order",
-
-            "filter",  "partition",  "remove",
-            "filter!", "partition!", "remove!", 
-
-            "member", "memq", "memv",
-            "find", "find-tail", 
-            "any", "every",
-            "list-index",
-            "take-while", "drop-while", "take-while!",
-            "span", "break", "span!", "break!",
-
-            "delete",  "delete-duplicates", 
-            "delete!", "delete-duplicates!",
-
-            "assoc", "assq", "assv",
-            "alist-cons", "alist-copy",
-            "alist-delete", "alist-delete!",
-
-            "lset<=", "lset=", "lset-adjoin",
-            "lset-union",           "lset-union!",
-            "lset-intersection",        "lset-intersection!",
-            "lset-difference",              "lset-difference!",
-            "lset-xor",         "lset-xor!",
-            "lset-diff+intersection",           "lset-diff+intersection!",
-
-            "set-car!", "set-cdr!",
-
-            // kawa
-            "import",
-            "require",
-            "load",
-            "load-relative",
-            
-            };
-
-    public static final String[] DEFAULT_LISP_WORDS_OLD = {
-            "defun",
-            "define",
-            "defmacro",
-            "set!",
-            "lambda",
-            "lambda*",
-            "if",
-            "case",
-            "let",
-            "flet",
-            "let*",
-            "letrec",
-            "do",
-            "do*",
-            "define-syntax",
-            "let-syntax",
-            "letrec-syntax",
-            "destructuring-bind",
-            "defpackage",
-            "defparameter",
-            "defstruct",
-            "deftype",
-            "defvar",
-            "do-all-symbols",
-            "do-external-symbols",
-            "do-symbols",
-            "dolist",
-            "dotimes",
-            "ecase",
-            "etypecase",
-            "eval-when",
-            "labels",
-            "macrolet",
-            "multiple-value-bind",
-            "multiple-value-call",
-            "multiple-value-prog1",
-            "multiple-value-setq",
-            "prog1",
-            "progv",
-            "typecase",
-            "unless",
-            "unwind-protect",
-            "when",
-            "with-input-from-string",
-            "with-open-file",
-            "with-open-stream",
-            "with-output-to-string",
-            "with-package-iterator",
-            "define-condition",
-            "handler-bind",
-            "handler-case",
-            "restart-bind",
-            "restart-case",
-            "with-simple-restart",
-            "store-value",
-            "use-value",
-            "muffle-warning",
-            "abort",
-            "continue",
-            "with-slots",
-            "with-slots*",
-            "with-accessors",
-            "with-accessors*",
-            "defclass",
-            "defmethod",
-            "print-unreadable-object",};
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -3206,7 +2946,11 @@ public class Kawapad extends JTextPane {
             }
         }
     }
-    private ArrayList<String> lispKeywordList = new ArrayList<>( Arrays.asList( DEFAULT_LISP_WORDS ));
+    private static final List<String> DEFAULT_LISP_WORDS = Arrays.asList( "let", "lambda" );
+    private ArrayList<String> lispKeywordList = new ArrayList<>( DEFAULT_LISP_WORDS );
+    public List<String> getLispKeywordList() {
+        return Collections.unmodifiableList( this.lispKeywordList );
+    }
     public void addLispKeyword( String s ) {
         synchronized ( Kawapad.this ) {
             lispKeywordList.add( s );

@@ -48,7 +48,6 @@ final class RunnableReplaceTextWithEntireBlockOnTextPane implements Runnable {
                 }
             }
             KawapadFrame.logInfo( "ReplaceTextWithEntireBlockOnTextPane() done" );
-            kawapad.updateHighlightLater();
         } catch (BadLocationException e1) {
             e1.printStackTrace();
         } finally {

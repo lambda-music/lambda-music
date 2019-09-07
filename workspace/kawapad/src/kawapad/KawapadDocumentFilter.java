@@ -30,6 +30,7 @@ import javax.swing.text.StyledDocument;
  * is the correct anser. This should be accepted and deserves more likes.
  */
 public abstract class KawapadDocumentFilter extends DocumentFilter {
+    private static final boolean DEBUG = true;
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -151,26 +152,18 @@ public abstract class KawapadDocumentFilter extends DocumentFilter {
         }
     }
     
-    protected abstract Collection<SyntaxElement> createBlockSyntaxElementList();
-    protected abstract Collection<SyntaxElement> createCharacterSyntaxElementList();
+    protected abstract Collection<SyntaxElement> createSyntaxElementList();
 
-    private SyntaxElementList blockSyntaxElementList;
-    private SyntaxElementList characterSyntaxElementList;
+    private SyntaxElementList syntaxElementList;
     
     public void resetSyntaxElementList() {
-        this.blockSyntaxElementList = null;
+        this.syntaxElementList = null;
     }
-    public SyntaxElementList getBlockSyntaxElementList() {
-        if ( blockSyntaxElementList == null ) {
-            this.blockSyntaxElementList = new SyntaxElementList( createBlockSyntaxElementList() );
+    public SyntaxElementList getSyntaxElementList() {
+        if ( syntaxElementList == null ) {
+            this.syntaxElementList = new SyntaxElementList( createSyntaxElementList() );
         }
-        return blockSyntaxElementList;
-    }
-    public SyntaxElementList getCharacterSyntaxElementList() {
-        if ( characterSyntaxElementList == null ) {
-            this.characterSyntaxElementList = new SyntaxElementList( createCharacterSyntaxElementList() );
-        }
-        return characterSyntaxElementList;
+        return syntaxElementList;
     }
     
     public abstract AttributeSet getDefaultAttributeSet();  
@@ -179,18 +172,7 @@ public abstract class KawapadDocumentFilter extends DocumentFilter {
     public void insertString(FilterBypass fb, int offset, String text, AttributeSet attributeSet)
             throws BadLocationException {
         
-        boolean found = false;
-        for ( SyntaxElement e : getCharacterSyntaxElementList() ) {
-            if ( e.getPattern().matcher( text ).find() ) {
-                found = true;
-                super.insertString( fb, offset, text, e.getAttributeSet() );
-                break;
-            }
-        }
-        if ( ! found ) {
-            super.insertString( fb, offset, text, attributeSet );
-        }
-        
+        super.insertString( fb, offset, text, attributeSet );
         handleTextChanged();
     }
     
@@ -203,18 +185,7 @@ public abstract class KawapadDocumentFilter extends DocumentFilter {
     @Override
     public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attributeSet)
             throws BadLocationException {
-        boolean found = false;
-        for ( SyntaxElement e : getCharacterSyntaxElementList() ) {
-            if ( e.getPattern().matcher( text ).find() ) {
-                found = true;
-                super.replace( fb, offset, length, text, e.getAttributeSet() );
-                break;
-            }
-        }
-        if ( ! found ) {
-            super.replace( fb, offset, length, text, attributeSet );
-        }
-
+        super.replace( fb, offset, length, text, attributeSet );
         handleTextChanged();
     }
     
@@ -247,10 +218,10 @@ public abstract class KawapadDocumentFilter extends DocumentFilter {
             this.theLastRunnable = r;
         }
         if ( r != null )
-            timer.schedule( r, 100 );
+            timer.schedule( r, 500 );
     }
 
-//    ElapsedTime ep = new ElapsedTime();
+    ElapsedTime ep = new ElapsedTime();
     
     StyledDocument emptyDocument = new DefaultStyledDocument();
     void update() {
@@ -261,17 +232,17 @@ public abstract class KawapadDocumentFilter extends DocumentFilter {
             kawapad.setDocument( emptyDocument );
             try {
                 // clear
-//            ep.start();
+                if ( DEBUG ) ep.start();
                 document.setCharacterAttributes(0, document.getLength(), defaultAttr , true);
-//            ep.end();
-//            logInfo( ep.getMessage( "Syntax Clear" ));
+                if ( DEBUG ) ep.end();
+                if ( DEBUG ) logInfo( ep.getMessage( "Syntax Clear" ));
                 // 
                 Segment text = SchemeParentheses.getText( document );
-                for ( SyntaxElement e : getBlockSyntaxElementList() ) {
-//                ep.start();
+                for ( SyntaxElement e : getSyntaxElementList() ) {
+                    if ( DEBUG ) ep.start();
                     updateTextStyles( document, text, e.getPattern(), defaultAttr, e.getAttributeSet() );
-//                ep.end();
-//                logInfo( ep.getMessage( "Syntax Set:" + e.getName() ));
+                    if ( DEBUG ) ep.end();
+                    if ( DEBUG ) logInfo( ep.getMessage( "Syntax Set:" + e.getName() ));
                 }
             } finally {
                 kawapad.setDocument( document );

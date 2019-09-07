@@ -30,12 +30,10 @@ import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import kawa.standard.Scheme;
-import kawapad.Kawapad;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.Invokable;
-import pulsar.lib.secretary.SecretaryMessage;
 import pulsar.lib.swing.FlawLayout;
 import pulsar.lib.swing.JNamedPanel;
 import pulsar.lib.swing.JPulsarUserObject;
@@ -732,27 +730,6 @@ public class PulsarGuiUtils {
                 }
             }
         }, "gui-get-user-object");
-
-        // XXX
-        SchemeUtils.defineVar( env, new SafeProcedureN("gui-prettify") {
-            public Object applyN(Object[] args) throws Throwable {
-                if ( 1 == args.length ) {
-                    String userText = SchemeUtils.anyToString( args[0] );
-                    return pulsar.getSchemeSecretary().executeSecretarially( new SecretaryMessage.NoThrow<Scheme, String>() {
-                        @Override
-                        public String execute0(Scheme scheme, Object[] args) {
-                            return Kawapad.prettify( scheme.getEnvironment(), userText );
-                        }
-                    },Invokable.NOARG) ;
-
-                } else {
-                    throw new RuntimeException( 
-                        "Invalid argument error\n"+
-                            "usage : (gui-set-text text-component text )" );
-                }
-
-            }
-        }, "gui-prettify");
 
         SchemeUtils.defineVar( env, new SafeProcedureN("gui-build") {
             @Override
