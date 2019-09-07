@@ -6,6 +6,7 @@ import java.awt.Rectangle;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,8 +31,10 @@ public class KawapadContentAssist {
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
     private static final boolean DEBUG = false;
+    private static final int HISTORY_SIZE = 512;
     Kawapad kawapad;
     Popup popup =null;
+    LinkedList<String> history = new LinkedList<>();
     JList list=null;
     public KawapadContentAssist(Kawapad kawapad) {
         this.kawapad = kawapad;
@@ -74,8 +77,17 @@ public class KawapadContentAssist {
         } else {
             caret.setDot( leftEdgePos );
             caret.moveDot( rightEdgePos );
-            kawapad.replaceSelection( get() );
+            String s = get();
+            kawapad.replaceSelection( s );
+            addHistory( s );
             hide();
+        }
+    }
+    private void addHistory(String s) {
+        history.remove( s );
+        history.add( s );
+        while ( HISTORY_SIZE  < history.size() ){
+            history.pop();
         }
     }
     public synchronized void updatePopup(Caret caret) {
@@ -111,10 +123,17 @@ public class KawapadContentAssist {
                             allKeys.add(key);
                         }
                     }
+                    
                     allKeys.sort( new Comparator<String>() {
                         @Override
                         public int compare(String o1, String o2) {
-                            return o1.compareTo( o2 );
+                            int i1= history.indexOf( o1 );
+                            int i2= history.indexOf( o2 );
+                                
+                            if ( i1 != i2 )
+                                return i2-i1;
+                            else
+                                return o1.compareTo( o2 );
                         }
                     });
                     
