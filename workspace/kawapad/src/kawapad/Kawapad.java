@@ -1461,7 +1461,7 @@ public class Kawapad extends JTextPane {
             new ParenthesisAction( "parenthesis-sel-jump-left", true, -1, SchemeParentheses.LCP2_STRATEGY_DYNAMIC  )
     {
         {
-            putValue( Action2.NAME, "Lookup and Select the Corresponding Parenthesis on the Left" );
+            putValue( Action2.NAME, "Lookup the Pair of Parenthesis on the Left and Select" );
             putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK ) );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
@@ -1470,7 +1470,7 @@ public class Kawapad extends JTextPane {
             new ParenthesisAction( "parenthesis-sel-jump-right", true, +1, SchemeParentheses.LCP2_STRATEGY_DYNAMIC  )
     {
         {
-            putValue( Action2.NAME, "Lookup and Select the Corresponding Parenthesis to the Right" );
+            putValue( Action2.NAME, "Lookup the Pair of Parenthesis on the Right and Select" );
             putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK ) );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
@@ -1501,8 +1501,8 @@ public class Kawapad extends JTextPane {
         @Override
         public void actionPerformed(ActionEvent e) {
             JTextComponent t = getTextComponent( e );
-            Document document = t.getDocument();
             Caret caret = t.getCaret();
+            Document document = t.getDocument();
             transformer.transform( getParenthesisStack(), document, caret );
         }
         {
@@ -1519,8 +1519,8 @@ public class Kawapad extends JTextPane {
         @Override
         public void actionPerformed(ActionEvent e) {
             JTextComponent t = getTextComponent( e );
-            Document document = t.getDocument();
             Caret caret = t.getCaret();
+            Document document = t.getDocument();
             transformer.transform( getParenthesisStack(), document, caret );
         }
         {
@@ -1658,6 +1658,7 @@ public class Kawapad extends JTextPane {
             Caret caret  = textComponent.getCaret();
             if ( caret.getDot() == caret.getMark() ) {
 //                PARENTHESIS_SELECT_ACTION.actionPerformed( e );
+                // DO SAME WITH THE FOLLOWING (Sun, 08 Sep 2019 01:55:30 +0900)
                 selector.transform( 
                     getParenthesisStack(), 
                     SchemeParentheses.getText( textComponent.getDocument() ), 
@@ -1672,6 +1673,7 @@ public class Kawapad extends JTextPane {
     }
 
     public final AbstractAction SELECT_LEFT_PARENTHESES_ACTION = new SelectSideParenthesesAction("select-left-parentheses",-1) {
+        
         {
             putValue( Action2.NAME, "Select the Parentheses on the Left Side" );
             putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, KeyEvent.SHIFT_MASK | KeyEvent.ALT_MASK ) );
@@ -2923,7 +2925,16 @@ public class Kawapad extends JTextPane {
     private static void highlightMatchningParentheses( Kawapad kawapad, int pos ) {
         if ( ENABLED_PARENTHESIS_HIGHLIGHT )
             try {
-                KawaPadHighlighter2.highlightMatchingParenthesis( kawapad, kawapad.getCaretPosition() );
+                Caret caret = kawapad.getCaret();
+                if ( caret.getDot() == caret.getMark() ) {
+                    KawaPadHighlighter2.highlightMatchingParenthesis( kawapad, caret.getDot() );
+                } else {
+                    if ( caret.getMark() < caret.getDot() ) {
+                        KawaPadHighlighter2.highlightMatchingParenthesis( kawapad, caret.getDot() -1 );
+                    } else {
+                        KawaPadHighlighter2.highlightMatchingParenthesis( kawapad, caret.getDot() );
+                    }
+                }
             } catch (BadLocationException e) {
                 logError( "", e );
             }

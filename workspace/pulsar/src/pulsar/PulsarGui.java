@@ -712,8 +712,6 @@ public class PulsarGui {
             PulsarGui.this.userPane = userPane;
             PulsarGui.this.staticPaneOuter = staticPaneOuter;
             PulsarGui.this.userPaneOuter = userPaneOuter;
-            
-            
         }
         
         JProgressBar pb_position = new JProgressBar() {
