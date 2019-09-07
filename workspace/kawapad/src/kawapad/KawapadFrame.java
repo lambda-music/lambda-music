@@ -44,6 +44,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 
 import kawapad.Kawapad.KawaVariableInitializer;
 import pulsar.lib.PulsarLogger;
@@ -215,6 +216,13 @@ public class KawapadFrame extends JFrame {
             
             setVisible(true);
         }
+        
+        SwingUtilities.invokeLater( new Runnable() {
+            @Override
+            public void run() {
+                kawapad.requestFocus();
+            }
+        } );
     }
     
     public void quit() {
