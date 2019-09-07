@@ -4,6 +4,10 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 
 public abstract class CaretTransformer {
+    /**
+     * The Object that consists a range of a string
+     * whereas the both properties "left" "right" are inclusive 
+     */
     public static class CaretPos {
         public int left;
         public int right;
@@ -78,7 +82,13 @@ public abstract class CaretTransformer {
         }
         CaretPos after = before.duplicate();
         boolean result = process( text, before, after );
-        if ( result && (0<=after.left) && (0<=after.right ) && (after.left <= after.right) ) {
+        if (    result && 
+                (0<=after.left) && 
+                (0<=after.right ) && 
+                (after.left  <  text.length() ) && 
+                (after.right <= text.length() ) && 
+                (after.left <= after.right)) 
+        {
             synchronized ( stack ) {
                 try {
                     stack.setLocked( true );

@@ -138,6 +138,12 @@ public class SchemeParentheses {
         boolean select( char ch );
     }
     
+    /**
+     * This method looks up the specified character from the passed CharSequence
+     * object. When the specified character was not found, returns -1 when the
+     * "step" is lower than zero and returns text.length() when the "step" is higher
+     * than zero. This throws {@link IllegalArgumentException} when step is zero.
+     */
     public static final int lookup( CharSequence text, CharSelector selector, int position, int step ) {
         if ( text == null )
             throw new NullPointerException();
@@ -145,7 +151,8 @@ public class SchemeParentheses {
         if ( step == 0 )
             throw new IllegalArgumentException();
         
-        while ( 0<= position && position < text.length() ) {
+        int length = text.length();
+        while ( 0<= position && position < length ) {
             char c = text.charAt( position );
             if ( selector.select( c ) ) {
                 return position;
@@ -153,7 +160,7 @@ public class SchemeParentheses {
                 position += step;
             }
         }
-        return -1;
+        return position;
     }
 
 
@@ -470,13 +477,7 @@ public class SchemeParentheses {
         @Override
         public boolean process(CharSequence text, CaretPos before, CaretPos after) {
             after.right = lookup( text, parenthesesSelector, before.right, +1 );
-            after.left  = lookup( text, parenthesesSelector, before.left , -1 );
-            
-            if ( 0<=after.right && 0<=after.left ) {
-                after.right --;
-                after.left ++;
-            }
-                
+            after.left  = lookup( text, parenthesesSelector, before.left , -1 )-1;
             return true;
         }
     }
@@ -484,34 +485,16 @@ public class SchemeParentheses {
         @Override
         public boolean process(CharSequence text, CaretPos before, CaretPos after) {
             after.left  = lookup( text, nagatedParenthesesSelector, before.right+1, +1 );
-            if ( 0<= after.left ) 
-                after.right = lookup( text, parenthesesSelector, after.left , +1 );
-            else
-                after.right = -1;
-            
-            if ( 0<=after.right && 0<=after.left ) {
-                after.right --;
-                return true;
-            } else {
-                return false;
-            }
+            after.right = lookup( text, parenthesesSelector,        after.left    , +1 )-1;
+            return true;
         }
     }
     static class SelectLeftLispWordTransformer extends LispWordSelectionTransformer {
         @Override
         public boolean process(CharSequence text, CaretPos before, CaretPos after) {
-            after.right = lookup( text, nagatedParenthesesSelector, before.left-1, -1 );
-            if ( 0<= after.right ) 
-                after.left = lookup( text, parenthesesSelector, after.right, -1 );
-            else
-                after.left = -1;
-            
-            if ( 0<=after.right && 0<=after.left ) {
-                after.left ++;
-                return true;
-            } else {
-                return false;
-            }
+            after.right = lookup( text, nagatedParenthesesSelector, before.left-1 , -1 );
+            after.left  = lookup( text, parenthesesSelector,        after.right   , -1 )+1;
+            return true;
         }
     }
 }
