@@ -59,6 +59,8 @@ import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.CallContext;
 import gnu.mapping.Environment;
+import gnu.mapping.LocationEnumeration;
+import gnu.mapping.NamedLocation;
 import gnu.mapping.Procedure;
 import gnu.mapping.Procedure1;
 import gnu.mapping.SimpleSymbol;
@@ -813,6 +815,20 @@ public class SchemeUtils {
         return (LList)map.apply2( proc1, 
                         reverse.apply1( 
                             DescriptiveDocumentType.PROCS.getDocumentList(environment)));
+    }
+    public static List<String> getAllKey( SchemeSecretary schemeSecretary ) {
+        return schemeSecretary.executeSecretarially( new SecretaryMessage.NoThrow<Scheme, List<String>>() {
+            @Override
+            public List<String> execute0(Scheme scheme, Object[] args) {
+                ArrayList<String> list = new ArrayList<>();
+                Environment env = scheme.getEnvironment();
+                for ( LocationEnumeration e=env.enumerateAllLocations();e.hasMoreElements(); ) {
+                    NamedLocation nl = e.nextElement();
+                    list.add( symbolToString( nl.getKeySymbol() ) );
+                }
+                return list;
+            }
+        });
     }
     
 }

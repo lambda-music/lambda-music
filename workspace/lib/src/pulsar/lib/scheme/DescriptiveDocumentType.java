@@ -17,6 +17,7 @@ public enum DescriptiveDocumentType {
     PROCS( Symbol.valueOf( "all-procedures" )),
     NOTES( Symbol.valueOf( "all-notation-types" )),
     ;
+    private static final boolean DEBUG = false; 
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }
     static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }
@@ -129,7 +130,8 @@ public enum DescriptiveDocumentType {
 
     //      static Procedure proc_defineDocument = eval( lis( "lambda", lis("rt"),   ) );   
     public static Object defineDoc0( Environment env, DescriptiveDocumentType type, final Object target, String description, String name, List<String> names )  {
-        logInfo( "DescriptiveDocumentType.defineDoc0()" + name );
+        if ( DEBUG )
+            logInfo( "DescriptiveDocumentType.defineDoc0()" + name );
         Object actualTarget;
         if ( target != null ) {
             actualTarget = target;
@@ -142,7 +144,8 @@ public enum DescriptiveDocumentType {
             }
         }
             
-        logInfo( "setting description on '" + name + "'" + " " + actualTarget.toString() );
+        if ( DEBUG )
+            logInfo( "setting description on '" + name + "'" + " " + actualTarget.toString() );
         //          logInfo( "description" );
         //          logInfo( description );
         SchemeUtils.setDescription( actualTarget, description );

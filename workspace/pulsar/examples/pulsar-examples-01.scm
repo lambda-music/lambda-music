@@ -1,3 +1,8 @@
+(((((java.lang.Class:get-protection-domain
+     pulsar.Pulsar):get-code-source):get-location):to-URI):get-path)
+
+
+
 (mov! 10 (sca! 1/1
       (notation velo: << (cl 0.6 ) pos: >> (iota 16) )))
 #|
