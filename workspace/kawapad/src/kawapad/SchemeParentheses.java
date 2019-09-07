@@ -413,7 +413,7 @@ public class SchemeParentheses {
     static int rightWordEdgePos( CharSequence text, int pos ) {
         int p = lookup( text, LispWordSelectionTransformer.parenthesesSelector, pos , +1 );
         if ( 0<=p )
-            return p-1;
+            return p;
         else
             return -1;
     }

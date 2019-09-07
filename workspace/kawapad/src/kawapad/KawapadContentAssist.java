@@ -24,7 +24,7 @@ import kawa.standard.Scheme;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.SecretaryMessage;
 
-public class KawapadPopup {
+public class KawapadContentAssist {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -33,7 +33,7 @@ public class KawapadPopup {
     Kawapad kawapad;
     Popup popup =null;
     JList list=null;
-    public KawapadPopup(Kawapad kawapad) {
+    public KawapadContentAssist(Kawapad kawapad) {
         this.kawapad = kawapad;
     }
     public synchronized void hide() {

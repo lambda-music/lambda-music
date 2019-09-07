@@ -1,5 +1,9 @@
 package kawapad;
 
+// === Table of Contents === 
+// Search these keywords to go to the proper code block :
+//    - CONTENT_ASSIST
+
 
 import java.awt.Color;
 import java.awt.Component;
@@ -625,9 +629,9 @@ public class Kawapad extends JTextPane {
                     return;
                 }
                 
-                if ( popupEnabled ) {
-                    popupEnabled = false;
-                    popup.complete( getCaret() );
+                if ( contentAssistEnabled ) {
+                    contentAssistEnabled = false;
+                    contentAssist.complete( getCaret() );
                 } else {
                     try {
                         kawapad.getUndoManager().startGroup();
@@ -962,12 +966,12 @@ public class Kawapad extends JTextPane {
 
     //////////////////////////////////////////////////////////////////////////////////////////
     //
-    // Popup Management
+    // CONTENT_ASSIST
     //
     //////////////////////////////////////////////////////////////////////////////////////////
     
-    KawapadPopup popup = new KawapadPopup( kawapad );
-    boolean popupEnabled = false;
+    KawapadContentAssist contentAssist = new KawapadContentAssist( kawapad );
+    boolean contentAssistEnabled = false;
     Action defaultUpAction =  kawapad.getActionMap().get( DefaultEditorKit.upAction );
     Action defaultDownAction =  kawapad.getActionMap().get( DefaultEditorKit.downAction );
     Action defaultEnterAction =  kawapad.getActionMap().get( DefaultEditorKit.endLineAction );
@@ -982,8 +986,8 @@ public class Kawapad extends JTextPane {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            if ( popupEnabled ) {
-                popup.moveTo( direction );
+            if ( contentAssistEnabled ) {
+                contentAssist.moveTo( direction );
             } else {
                 defaultAction.actionPerformed( e );
             }
@@ -996,9 +1000,9 @@ public class Kawapad extends JTextPane {
     Action kawapadDisableContentAssistAction = new TextAction(KAWAPAD_DISABLE_CONTENT_ASSIST ) {
         @Override
         public void actionPerformed(ActionEvent e) {
-            if ( popupEnabled ) {
-                popupEnabled = false;
-                popup.hide();
+            if ( contentAssistEnabled ) {
+                contentAssistEnabled = false;
+                contentAssist.hide();
             }
         }
         {
@@ -1010,8 +1014,8 @@ public class Kawapad extends JTextPane {
     Action kawapadEnableContentAssistAction = new TextAction( KAWAPAD_ENABLE_CONTENT_ASSIST ) {
         @Override
         public void actionPerformed(ActionEvent e) {
-            popupEnabled = true;
-            popup.updatePopup( kawapad.getCaret() );
+            contentAssistEnabled = true;
+            contentAssist.updatePopup( kawapad.getCaret() );
         }
         {
             putValue( Action2.NAME, "Enable Content Asist" );
@@ -1054,18 +1058,18 @@ public class Kawapad extends JTextPane {
                 eventHandlers.invokeEventHandler( kawapad, EventHandlers.CHANGE,  kawapad);
             }
 
-            if ( popupEnabled ) {
+            if ( contentAssistEnabled ) {
                 SwingUtilities.invokeLater( new Runnable() {
                     @Override
                     public void run() {
-                        popup.updatePopup( kawapad.getCaret() );
+                        contentAssist.updatePopup( kawapad.getCaret() );
                     }
                 } );
             } else {
                 SwingUtilities.invokeLater( new Runnable() {
                     @Override
                     public void run() {
-                        popup.hide();
+                        contentAssist.hide();
                     }
                 } );
             }
