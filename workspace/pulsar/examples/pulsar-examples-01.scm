@@ -130,10 +130,13 @@
 
 (if (not (open?))
   (begin
-   (load "./ats's-drumkit.scm" )
-   (load "./pulsar-pattern-generator.scm" )
+   (load-relative "./ats's-drumkit.scm" )
+   (load-relative "./pulsar-pattern-generator.scm" )
    (create-gui)
    ))
+
+(close)
+
 ((gnu.kawa.io.Path "."):absolute?)
 
 (java.io.File (java.net.URI "a"))

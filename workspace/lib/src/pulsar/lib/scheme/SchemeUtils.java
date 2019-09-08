@@ -22,14 +22,11 @@ package pulsar.lib.scheme;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayDeque;
@@ -71,7 +68,6 @@ import gnu.math.Quantity;
 import kawa.Shell;
 import kawa.standard.Scheme;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
-import pulsar.lib.secretary.Invokable;
 import pulsar.lib.secretary.SecretaryMessage;
 
 public class SchemeUtils {
@@ -445,20 +441,6 @@ public class SchemeUtils {
         }
     }
     
-    public static void execSchemeFromFile( Scheme scheme, File file) throws FileNotFoundException {
-        execScheme( scheme, new FileInputStream(file), file.getName() );
-    }
-    public static void execScheme( Class parentClass, Scheme scheme, String resourcePath ) {
-        try {
-            execScheme( scheme, parentClass.getResource( resourcePath ).openStream(), resourcePath );
-        } catch (IOException e) {
-            throw new RuntimeException(e); 
-        }
-    }
-    public static void execScheme( Scheme scheme, InputStream in, String resourcePathAlias ) {
-        evaluateScheme( scheme, null, new InputStreamReader( in ), resourcePathAlias ).throwIfError();
-    }
-    
     public static Object prettyPrintReconstruction( Object o ) {
         return prettyPrintReconstruction0( new ArrayDeque<>(), o );
     }
@@ -582,6 +564,23 @@ public class SchemeUtils {
 //  }
     
     
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    
+    public static void execSchemeFromResource( Scheme scheme, Class parentClass, String resourcePath ) throws IOException {
+        evaluateScheme( 
+            scheme, 
+            null, 
+            new InputStreamReader( parentClass.getResource( resourcePath ).openStream() ), 
+            null, 
+            resourcePath 
+            ).throwIfError();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////
     
     public static final class ExecuteSchemeResult {
         public final boolean isDocument;
@@ -609,7 +608,7 @@ public class SchemeUtils {
     }
 
     public static ExecuteSchemeResult evaluateScheme( 
-            Scheme scheme, Map<String, Object> variables, Reader schemeScript, String schemeScriptURI) 
+            Scheme scheme, Map<String, Object> variables, Reader schemeScript, File currentFile, String schemeScriptURI ) 
     {
         //              schemeSecretary.initializeSchemeForCurrentThread();
         SchemeSecretary.initializeSchemeForCurrentThreadStatic( scheme );
@@ -632,17 +631,24 @@ public class SchemeUtils {
             // But I think it is cumbersome to ask users to use load-relative procedure in
             // every situation. IMO load-relative supposed to be default.
             // I'm thinking about it.  (Thu, 15 Aug 2019 16:21:22 +0900)
+            
+            
             Path savedPath = (Path) Shell.currentLoadPath.get();
             try {
-                Shell.currentLoadPath.set( Path.valueOf( new File(".").getAbsoluteFile().getCanonicalFile() ) );
+                File parentDirectory;
+                if ( currentFile != null ) {
+                    parentDirectory = currentFile.getParentFile();
+                } else {
+                    parentDirectory = new File(".").getAbsoluteFile().getCanonicalFile();
+                }
+
+                Shell.currentLoadPath.set( Path.valueOf( parentDirectory ) );
 
                 CallContext ctx = CallContext.getInstance();
                 Consumer out = Shell.getOutputConsumer(OutPort.outDefault());
-                if (out != null)
-                {
+                if (out != null) {
                     ctx.consumer = out;
                 }
-                
                 
                  // {@link kawa.Shell#runFile(InputStream, Path, gnu.mapping.Environment, boolean, int) }
                 Object result = scheme.eval( new InPort( schemeScript, Path.valueOf( schemeScriptURI ) ) );
@@ -703,19 +709,6 @@ public class SchemeUtils {
                 putVar( env , e.getKey(), false );
     }
         
-    public static ExecuteSchemeResult evaluateScheme( SchemeSecretary schemeSecretary, Map<String,Object> variables, String schemeScript, String schemeScriptURI ) {
-        return evaluateScheme( schemeSecretary, variables, new StringReader( schemeScript ),  schemeScriptURI );
-    }
-    public static ExecuteSchemeResult evaluateScheme( SchemeSecretary schemeSecretary, Map<String,Object> variables, Reader schemeScript, String schemeScriptURI ) {
-        return schemeSecretary.executeSecretarially( new SecretaryMessage.NoThrow<Scheme,ExecuteSchemeResult>() {
-            @Override
-            public ExecuteSchemeResult execute0(Scheme scheme, Object[] args) {
-                return evaluateScheme(scheme, variables, schemeScript, schemeScriptURI);
-            }
-        }, Invokable.NOARG );
-    }
-
-    
     public static String endWithLineFeed(String s) {
         if ( s == null )
             return null;

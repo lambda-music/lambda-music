@@ -1,10 +1,14 @@
 package pulsar.lib.scheme.scretary;
 
+import java.io.File;
+import java.io.Reader;
+import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,6 +18,7 @@ import gnu.expr.Language;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import kawa.standard.Scheme;
+import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.Invokable;
 import pulsar.lib.secretary.SecretariallyInvokable;
 import pulsar.lib.secretary.Secretary;
@@ -353,5 +358,24 @@ public class SchemeSecretary extends Secretary<Scheme> implements ShutdownHook {
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
+    }
+    public static SchemeUtils.ExecuteSchemeResult evaluateScheme( SchemeSecretary schemeSecretary,
+            Map<String,Object> variables, 
+            String schemeScript, 
+            File schemeScriptFile, String schemeScriptURI ) 
+    {
+        return SchemeSecretary.evaluateScheme( schemeSecretary, variables, new StringReader( schemeScript ),  schemeScriptFile, schemeScriptURI );
+    }
+
+    public static SchemeUtils.ExecuteSchemeResult evaluateScheme( SchemeSecretary schemeSecretary, 
+            Map<String,Object> variables, 
+            Reader schemeScript, 
+            File schemeScriptFile, String schemeScriptURI ) {
+        return schemeSecretary.executeSecretarially( new SecretaryMessage.NoThrow<Scheme,SchemeUtils.ExecuteSchemeResult>() {
+            @Override
+            public SchemeUtils.ExecuteSchemeResult execute0(Scheme scheme, Object[] args) {
+                return SchemeUtils.evaluateScheme(scheme, variables, schemeScript, null, schemeScriptURI);
+            }
+        }, Invokable.NOARG );
     }
 }

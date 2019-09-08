@@ -7,8 +7,8 @@ final class RunnableReplaceTextWithEntireBlockOnTextPane implements Runnable {
     private final String result;
     private boolean doSelect;
     private boolean doReset;
-    RunnableReplaceTextWithEntireBlockOnTextPane( Kawapad textPane, String result, boolean doSelect, boolean doReset ) {
-        this.kawapad = textPane;
+    RunnableReplaceTextWithEntireBlockOnTextPane( Kawapad kawapad, String result, boolean doSelect, boolean doReset ) {
+        this.kawapad = kawapad;
         this.result = result;
         this.doSelect = doSelect;
         this.doReset = doReset;

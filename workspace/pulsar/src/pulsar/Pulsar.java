@@ -22,7 +22,6 @@ package pulsar;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.invoke.MethodHandles;
@@ -543,28 +542,6 @@ public final class Pulsar extends Metro {
         }
     }
     final TempoTapper tempoTapper = new TempoTapper();
-
-
-    /**
-     * Loads and executes the specified scheme script file.
-     * 
-     * If the specified path is a relative path, {@link Pulsar#loadScheme(File) }
-     * try to resolve the path from the {@link Pulsar#parentFile}. If {@link Pulsar#parentFile}
-     * is not specified, {@link Pulsar#loadScheme(File) } throws an exception.
-     * 
-     * @param file
-     * @throws FileNotFoundException
-     */
-    @Deprecated
-    public void loadScheme( File file ) throws FileNotFoundException {
-        getSchemeSecretary().executeSecretarially(
-            new SecretaryMessage.NoReturn<Scheme,FileNotFoundException>() {
-                @Override
-                public void execute0( Scheme scheme, Object[] args ) throws FileNotFoundException {
-                    SchemeUtils.execSchemeFromFile( scheme, file );
-                }
-            });
-    }
 
     interface ConnectProc {
         void apply( Pulsar pulsar, String from, String to ) throws JackException;
@@ -1912,11 +1889,13 @@ public final class Pulsar extends Metro {
         
         PulsarDocuments.defineDoc( scheme, PulsarNoteListParser.getInstance() );
 
-        {
-            SchemeUtils.execScheme( Pulsar.class, scheme, "lib/init.scm"  );
-            SchemeUtils.execScheme( Pulsar.class, scheme, "lib/basic-notes.scm"  );
-            SchemeUtils.execScheme( Pulsar.class, scheme, "lib/music.scm"  );
-            SchemeUtils.execScheme( Pulsar.class, scheme, "lib/xnoop.scm" );
+        try {
+            SchemeUtils.execSchemeFromResource( scheme, Pulsar.class, "lib/init.scm"  );
+            SchemeUtils.execSchemeFromResource( scheme, Pulsar.class, "lib/basic-notes.scm"  );
+            SchemeUtils.execSchemeFromResource( scheme, Pulsar.class, "lib/music.scm"  );
+            SchemeUtils.execSchemeFromResource( scheme, Pulsar.class, "lib/xnoop.scm" );
+        } catch ( Throwable t ) {
+            logError( "", t );
         }
         
         

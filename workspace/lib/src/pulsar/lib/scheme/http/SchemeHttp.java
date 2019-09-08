@@ -108,7 +108,7 @@ public class SchemeHttp {
             if ( t.getRemoteAddress().getAddress().isLoopbackAddress() ) {
                 String requestString = readInputStream( t.getRequestBody() ); 
                 logInfo( requestString );
-                ExecuteSchemeResult result = SchemeUtils.evaluateScheme( schemeSecretary, null, requestString, "web-scratchpad" );
+                ExecuteSchemeResult result = SchemeSecretary.evaluateScheme( schemeSecretary, null, requestString, null, "web-scratchpad" );
                 String responseString;
                 responseString = 
                         SchemeUtils.endWithLineFeed( requestString ) + 
