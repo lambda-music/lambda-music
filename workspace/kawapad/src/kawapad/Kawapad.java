@@ -88,6 +88,7 @@ import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import gnu.mapping.WrongArguments;
 import kawa.standard.Scheme;
+import kawa.standard.load;
 import kawapad.SchemeParentheses.ExpandParenthesisSelector;
 import kawapad.SchemeParentheses.SelectCurrentWordTransformer;
 import kawapad.SchemeParentheses.SelectLeftLispWordTransformer;
@@ -2139,6 +2140,7 @@ public class Kawapad extends JTextPane {
 
             SchemeUtils.defineVar(env, false, "frame"  );
             SchemeUtils.defineVar(env, false, "scheme" );
+            SchemeUtils.defineVar(env, load.loadRelative , "load" );
             
             SchemeUtils.defineVar(env, new Procedure3() {
                 @Override
@@ -2680,6 +2682,8 @@ public class Kawapad extends JTextPane {
             return;
         }
         JFileChooser fc = new JFileChooser();
+        if ( filePath != null )
+            fc.setCurrentDirectory( filePath.getParentFile() );
         fc.addChoosableFileFilter( SCHEME_FILE_FILTER );
         fc.setMultiSelectionEnabled(false);
         int i = fc.showOpenDialog(this);
@@ -2784,6 +2788,18 @@ public class Kawapad extends JTextPane {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
+                {
+                    String text = kawapad.getSelectedText();
+                    if ( text != null ) {
+                        if ( text.startsWith( "\"" ) )
+                            text = text.substring( 1 );
+                        if ( text.endsWith( "\"" ) )
+                            text = text.substring( 0, text.length()-1 );
+                        
+                        createKawapad( new File( text ) );
+                        return;
+                    }
+                }
                 openFile();
             } catch (IOException e1) {
                 logError("", e1);
@@ -2846,6 +2862,14 @@ public class Kawapad extends JTextPane {
         };
     }
     
+    public KawapadFrame createKawapad( File f) throws IOException {
+        KawapadFrame kawapadFrame = new KawapadFrame( this.kawapad.schemeSecretary, "Kawapad" );
+        kawapadFrame.init();
+        if ( f != null )
+            kawapadFrame.getKawapad().openFile( f );
+        return kawapadFrame; 
+    }
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 

@@ -67,6 +67,7 @@ import gnu.math.IntNum;
 import gnu.math.Quantity;
 import kawa.Shell;
 import kawa.standard.Scheme;
+import kawa.standard.load;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.SecretaryMessage;
 
@@ -643,6 +644,15 @@ public class SchemeUtils {
                 }
 
                 Shell.currentLoadPath.set( Path.valueOf( parentDirectory ) );
+
+                // I feel overriding "load" by "load-relative" is too risky. It
+                // may destroy the compatibility inside the kawa library; we
+                // decide to call it "source".  Usually ,this kind of
+                // initialization process should be done in staticInitScheme()
+                // method.  But we want to make it visible here that "source"
+                // is available in this way.  (Mon, 09 Sep 2019 04:31:19 +0900)
+                SchemeUtils.defineVar(env, load.loadRelative , "source" );
+
 
                 CallContext ctx = CallContext.getInstance();
                 Consumer out = Shell.getOutputConsumer(OutPort.outDefault());

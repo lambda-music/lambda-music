@@ -459,7 +459,11 @@ public class PulsarGui {
         @SuppressWarnings("unused")
         @Override
         public void actionPerformed(ActionEvent e) {
-            KawapadFrame scratchPad = frame.createKawaPad();
+            try {
+                KawapadFrame scratchPad = frame.getKawapad().createKawapad( null );
+            } catch (IOException e1) {
+                logError( "", e1 );
+            }
         }
         {
             putValue( Action2.NAME, "New Scratchpad" );

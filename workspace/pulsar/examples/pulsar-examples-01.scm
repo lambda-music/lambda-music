@@ -130,8 +130,8 @@
 
 (if (not (open?))
   (begin
-   (load-relative "./ats's-drumkit.scm" )
-   (load-relative "./pulsar-pattern-generator.scm" )
+   (source "./ats's-drumkit.scm" )
+   (source "./pulsar-pattern-generator.scm" )
    (create-gui)
    ))
 

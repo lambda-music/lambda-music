@@ -70,11 +70,6 @@ public class KawapadFrame extends JFrame {
     
     // private Scheme scheme;
 
-    public KawapadFrame createKawaPad() {
-        KawapadFrame kawapadFrame = new KawapadFrame( this.kawapad.schemeSecretary, this.getTitle() );
-        kawapadFrame.init();
-        return kawapadFrame; 
-    }
     protected Kawapad kawapad;
     public Kawapad getKawapad() {
         return kawapad;
@@ -95,7 +90,11 @@ public class KawapadFrame extends JFrame {
     public final AbstractAction NEW_SCRATCHPAD_ACTION = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            createKawaPad();
+            try {
+                kawapad.createKawapad( null );
+            } catch (IOException e1) {
+                logError( "", e1 );
+            }
         }
         {
             putValue( Action2.NAME, "Create a New Scratchpad" );
