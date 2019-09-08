@@ -7,6 +7,7 @@ package kawapad;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GraphicsEnvironment;
@@ -53,7 +54,9 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
+import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -1505,6 +1508,38 @@ public class Kawapad extends JTextPane {
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
+    
+    public void resetHorzScrollPos() {
+        if ( false ) {
+            Container c = kawapad.getParent();
+            if ( c instanceof JViewport && c.getParent() instanceof JScrollPane  ) {
+                JScrollPane pane = ((JScrollPane)c.getParent());
+                pane.getHorizontalScrollBar().setValue( 0 );
+            }
+        }
+    }
+    public void moveToSelection() {
+        try {
+            Rectangle dot = kawapad.modelToView( kawapad.getCaret().getDot() );
+            Rectangle mark = kawapad.modelToView( kawapad.getCaret().getMark() );
+            Rectangle r = new Rectangle( 
+                Math.min( dot.x, mark.x ), 
+                Math.min( dot.y, mark.y ), 
+                Math.max( dot.x + dot.width, mark.x + mark.width ), 
+                Math.max( dot.y + dot.height, mark.y + mark.height ) );
+            r.width = r.width - r.x;
+            r.height = r.height - r.y;
+            SwingUtilities.invokeLater( new Runnable() {
+                @Override
+                public void run() {
+                    kawapad.scrollRectToVisible( r );
+                }
+            });
+            logInfo( ""+ r  );
+        } catch (BadLocationException e) {
+            logError( "", e );
+        }
+    }
 
     public final Action SELECT_CURRENT_LISP_WORD_ACTION =
             new TextAction( "select-current-lisp-word" )
@@ -1516,13 +1551,13 @@ public class Kawapad extends JTextPane {
             Document document = t.getDocument();
             Caret caret = t.getCaret();
             transformer.transform( getParenthesisStack(), document, caret );
+            moveToSelection();
         }
         {
             putValue( Action2.NAME, "Select the Word on the Cursor." );
             putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_UP, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK ) );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
-
     };
     public final Action SELECT_RIGHT_LISP_WORD_ACTION =
             new TextAction( "select-right-lisp-word" )
@@ -1533,7 +1568,9 @@ public class Kawapad extends JTextPane {
             JTextComponent t = getTextComponent( e );
             Caret caret = t.getCaret();
             Document document = t.getDocument();
+            resetHorzScrollPos();
             transformer.transform( getParenthesisStack(), document, caret );
+            moveToSelection();
         }
         {
             putValue( Action2.NAME, "Select the Word on the Cursor." );
@@ -1551,7 +1588,9 @@ public class Kawapad extends JTextPane {
             JTextComponent t = getTextComponent( e );
             Caret caret = t.getCaret();
             Document document = t.getDocument();
+            resetHorzScrollPos();
             transformer.transform( getParenthesisStack(), document, caret );
+            moveToSelection();
         }
         {
             putValue( Action2.NAME, "Select the Word on the Cursor." );
@@ -1609,6 +1648,7 @@ public class Kawapad extends JTextPane {
         public void actionPerformed(ActionEvent e) {
             JTextComponent c = getTextComponent(e);
             transformer.transform( getParenthesisStack(), c.getDocument(), c.getCaret() );
+            moveToSelection();
 //            SchemeParentheses.expandSelectedParentheses( kawapad );
         }
     }
@@ -1684,6 +1724,7 @@ public class Kawapad extends JTextPane {
         }
         @Override
         public void actionPerformed(ActionEvent e) {
+            resetHorzScrollPos();
             JTextComponent textComponent = (JTextComponent) getTextComponent(e);
             Caret caret  = textComponent.getCaret();
             int dot = caret.getDot();
@@ -1710,6 +1751,7 @@ public class Kawapad extends JTextPane {
                         textComponent.getCaret() );
                 }
             }
+            moveToSelection();
         }
     }
 
