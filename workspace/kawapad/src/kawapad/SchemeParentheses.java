@@ -299,13 +299,23 @@ public class SchemeParentheses {
     public static int recursiveIndexOf( CharSequence text, int fromIndex, int direction, char descendChar, char ascendChar ) {
         if ( direction == 0 )
             throw new IllegalArgumentException();
+        boolean ascending = false;
         int depth =1;
         for ( int i=fromIndex; 0<=i && i<text.length(); i+=direction ) {
             char ch = text.charAt( i );
-            if ( ch == descendChar )
+            if ( ch == descendChar ) {
+                // we only look for the trench which is next to the current trench.
+                // (Mon, 09 Sep 2019 06:47:37 +0900) 
+                if ( ascending ) {
+                    return -1;
+                }
                 depth ++;
-            else if ( ch == ascendChar )
+                
+            } else if ( ch == ascendChar ) {
                 depth --;
+                ascending = true;
+            }
+            
             if ( depth <= 0 ) {
                 return i;
             }
