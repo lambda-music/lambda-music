@@ -476,8 +476,8 @@ public class SchemeParentheses {
     static class SelectCurrentWordTransformer extends LispWordSelectionTransformer {
         @Override
         public boolean process(CharSequence text, CaretPos before, CaretPos after) {
-            after.right = lookup( text, parenthesesSelector, before.right, +1 );
-            after.left  = lookup( text, parenthesesSelector, before.left , -1 )-1;
+            after.right = lookup( text, parenthesesSelector, before.right, +1 )-1;
+            after.left  = lookup( text, parenthesesSelector, before.left , -1 )+1;
             return true;
         }
     }
