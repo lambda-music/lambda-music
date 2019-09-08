@@ -2954,7 +2954,7 @@ public class Kawapad extends JTextPane {
                         defaultBlockCommentColor ), 
                     KawapadDocumentFilter.createSyntaxElement(
                         KawapadSyntaxElementType.LINE_COMMENT,
-                        Pattern.compile( ";.*$" ),
+                        Pattern.compile( ";.*$", Pattern.MULTILINE  ),
                         defaultLineCommentColor ) );
             }
             if ( false ) {
