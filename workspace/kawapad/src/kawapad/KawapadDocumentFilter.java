@@ -237,7 +237,7 @@ public abstract class KawapadDocumentFilter extends DocumentFilter {
                 if ( DEBUG ) ep.end();
                 if ( DEBUG ) logInfo( ep.getMessage( "Syntax Clear" ));
                 // 
-                Segment text = SchemeParentheses.getText( document );
+                Segment text = KawapadParenthesisMovement.getText( document );
                 for ( SyntaxElement e : getSyntaxElementList() ) {
                     if ( DEBUG ) ep.start();
                     updateTextStyles( document, text, e.getPattern(), defaultAttr, e.getAttributeSet() );

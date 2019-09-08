@@ -27,7 +27,6 @@ import java.lang.invoke.MethodHandles;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,7 +37,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -79,7 +77,6 @@ import javax.swing.text.TextAction;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
-import gnu.expr.Language;
 import gnu.lists.EmptyList;
 import gnu.lists.LList;
 import gnu.mapping.Environment;
@@ -92,12 +89,12 @@ import gnu.mapping.Values;
 import gnu.mapping.WrongArguments;
 import kawa.standard.Scheme;
 import kawa.standard.load;
-import kawapad.SchemeParentheses.ExpandParenthesisSelector;
-import kawapad.SchemeParentheses.SelectCurrentWordTransformer;
-import kawapad.SchemeParentheses.SelectLeftLispWordTransformer;
-import kawapad.SchemeParentheses.SelectRightLispWordTransformer;
-import kawapad.SchemeParentheses.ShrinkParenthesisSelector;
-import kawapad.SchemeParentheses.SideParenthesisSelector;
+import kawapad.KawapadParenthesisMovement.ExpandParenthesisSelector;
+import kawapad.KawapadParenthesisMovement.SelectCurrentWordTransformer;
+import kawapad.KawapadParenthesisMovement.SelectLeftLispWordTransformer;
+import kawapad.KawapadParenthesisMovement.SelectRightLispWordTransformer;
+import kawapad.KawapadParenthesisMovement.ShrinkParenthesisSelector;
+import kawapad.KawapadParenthesisMovement.SideParenthesisSelector;
 import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.OriginalCompoundUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
@@ -159,6 +156,7 @@ public class Kawapad extends JTextPane {
 
     private static final String FLAG_DONE_INIT_PULSAR_SCRATCHPAD = "flag-done-init-pulsar-scratchpad";
     private static final boolean DEBUG_UNDO_BUFFER = false;
+    @SuppressWarnings("unused")
     private static final boolean DEBUG = false;
     private static final boolean ENABLED_PARENTHESIS_HIGHLIGHT = true;
     static final boolean ENABLED_SHOW_CORRESPONDING_PARENTHESES = true;
@@ -241,8 +239,6 @@ public class Kawapad extends JTextPane {
             }
         });
     }
-    
-    
 
     //////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -250,62 +246,6 @@ public class Kawapad extends JTextPane {
     //
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    public final class KawapadThreadManager {
-        private final class ScratchPadThread extends Thread {
-            private final Runnable r;
-            private ScratchPadThread(Runnable r) {
-                this.r = r;
-            }
-
-            @Override
-            public void run() {
-                try {
-                    if ( DEBUG )
-                        logInfo( "ScratchPadThreadManager:run" );
-                    // ==== WORKAROUND SEE acvpoeov === (Tue, 23 Jul 2019 11:37:32 +0900) //
-//                      schemeSecretary.initializeSchemeForCurrentThread();
-                    // ==== WORKAROUND SEE acvpoeov === (Tue, 23 Jul 2019 11:37:32 +0900) //
-                    r.run();
-                } finally {
-                    if ( DEBUG )
-                        logInfo( "ScratchPadThreadManager:end" );
-                    removeScratchPadThread( this );
-                }
-            }
-            @Override
-            public void interrupt() {
-                logInfo("interrupted");
-                super.interrupt();
-            }
-        }
-        private ArrayDeque<Thread> scratchPadThreadList = new ArrayDeque<>();
-        public void addScratchPadThread( Thread t ) {
-            synchronized ( scratchPadThreadList ) {
-                scratchPadThreadList.add( t );
-            }
-        }
-        public void startScratchPadThread( Runnable r ) {
-            Thread t = new ScratchPadThread(r);
-            addScratchPadThread(t);
-            t.start();
-        }
-        public void removeScratchPadThread( Thread t ) {
-            synchronized ( scratchPadThreadList ) {
-                scratchPadThreadList.remove( t );
-            }
-        }
-        public void interruptScratchPadThreads() {
-            logInfo("interruptScratchPadThreads");
-            synchronized ( scratchPadThreadList ) {
-                for ( Thread t : scratchPadThreadList ) {
-                    logInfo( "interrupt start" );
-                    t.interrupt();
-                    logInfo( "interrpt end" );
-                }
-            }
-        }
-    }
-    
     private final KawapadThreadManager threadManager = new KawapadThreadManager();
     public KawapadThreadManager getThreadManager() {
         return threadManager;
@@ -316,134 +256,8 @@ public class Kawapad extends JTextPane {
     // Event Manager
     //
     //////////////////////////////////////////////////////////////////////////////////////////
-
-
-    static final class SchemeProcedure {
-        /*
-         *  The variable environment and language are not necessary anymore
-         *  but there are many that setting these so left them their be.
-         *  This class should also be replaced to Invokable.
-         *  (Wed, 24 Jul 2019 16:21:59 +0900)
-         */
-        @SuppressWarnings("unused")
-        private final Environment environment;
-        @SuppressWarnings("unused")
-        private final Language language;
-        private final Procedure procedure;
-        SchemeProcedure( Procedure procedure , Environment environmen ) {
-            this.environment = environmen;
-            this.language = Language.getDefaultLanguage();
-            this.procedure = procedure;
-        }
-        public Object invoke( Object... args ) {
-            try {
-//                  Environment.setCurrent( this.environment );
-//                  Environment.setCurrent( environment );
-//                  Language.setCurrentLanguage( this.language );
-                return procedure.applyN( args );
-            } catch (Throwable e) {
-                logError( "SchemeInvokableProcedure:error" , e );
-                return e;
-                //                  throw new RuntimeException(e);
-            }
-        }
-    }
     
-    public static class EventHandlers {
-        private static final String INIT      = "init";   // occurs when initializing scheme objects. (Tue, 06 Aug 2019 08:37:12 +0900)
-        private static final String CREATE    = "create"; // occurs when creating form objects.       (Tue, 06 Aug 2019 08:37:12 +0900)
-        private static final String CARET     = "caret";
-        private static final String INSERT    = "insert";
-        private static final String REMOVE    = "remove";
-        private static final String ATTRIBUTE = "attribute";
-        private static final String CHANGE    = "change";
-        private static final String TYPED     = "typed";
-
-        final Map<Symbol,Map<Symbol,SchemeProcedure>> map = new HashMap<>();
-        {
-            map.put( Symbol.valueOf(INIT),      new HashMap<>() );
-            map.put( Symbol.valueOf(CREATE),    new HashMap<>() );
-            map.put( Symbol.valueOf(CARET),     new HashMap<>() );
-            map.put( Symbol.valueOf(INSERT),    new HashMap<>() );
-            map.put( Symbol.valueOf(REMOVE),    new HashMap<>() );
-            map.put( Symbol.valueOf(ATTRIBUTE), new HashMap<>() );
-            map.put( Symbol.valueOf(CHANGE),    new HashMap<>() );
-            map.put( Symbol.valueOf(TYPED),     new HashMap<>() );
-        }
-        Map<Symbol, SchemeProcedure> getEventType(Symbol eventTypeID) {
-            Map<Symbol, SchemeProcedure> eventType = map.get( eventTypeID );
-            if ( eventType == null )
-                throw new RuntimeException( "unknown event type + ( " + eventTypeID + ")"  );
-            return eventType;
-        }
-        public void clear() {
-            logInfo("EventHandlers#clear()");
-            map.get( Symbol.valueOf(INIT)).clear();
-            map.get( Symbol.valueOf(CREATE)).clear();
-            map.get( Symbol.valueOf(CARET)).clear();
-            map.get( Symbol.valueOf(INSERT)).clear();
-            map.get( Symbol.valueOf(REMOVE)).clear();
-            map.get( Symbol.valueOf(ATTRIBUTE)).clear();
-            map.get( Symbol.valueOf(CHANGE)).clear();
-            map.get( Symbol.valueOf(TYPED)).clear();
-        }
-        Map<Symbol, SchemeProcedure> getEventType(String eventTypeID) {
-            return getEventType( Symbol.valueOf(eventTypeID));
-        }
-        
-        public void register( Symbol eventTypeID, Symbol procID, Procedure proc ) {
-            register( eventTypeID, procID, new SchemeProcedure( proc, Environment.getCurrent() ) );
-        }
-        public void register( Symbol eventTypeID, Symbol procID, SchemeProcedure proc ) {
-            Map<Symbol, SchemeProcedure> eventType = getEventType(eventTypeID);
-            eventType.put( procID, proc );
-        }
-        public void unregister( Symbol eventTypeID, Symbol procID ) {
-            Map<Symbol, SchemeProcedure> eventType = getEventType(eventTypeID);
-            eventType.remove( procID );
-        }
-        public void invokeEventHandler( Kawapad kawaPane, String eventTypeID, Object ... args ) {
-//              logInfo( "eventHandlers.invokeEventHandler(outer)" );
-            kawaPane.schemeSecretary.executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
-                @Override
-                public void execute0( Scheme scheme, Object[] args ) {
-                    kawaPane.getThreadManager().startScratchPadThread( new Runnable() {
-                        @Override
-                        public void run() {
-                            kawaPane.schemeSecretary.initializeSchemeForCurrentThread();
-                            synchronized ( scheme ) {
-                                //  logInfo( "eventHandlers.invokeEventHandler(inner)" );
-                                Environment env = scheme.getEnvironment();
-                                HashMap<String,Object> variables = new HashMap<>();
-                                try {
-                                    SchemeUtils.putVar( env, "scheme", scheme );
-                                    kawaPane.initVariables( variables );
-                                    SchemeUtils.initializeVariables( env, variables );
-                                    
-                                    for( Entry<Symbol,SchemeProcedure> e :  getEventType(eventTypeID).entrySet() ) {
-                                        try {
-                                            e.getValue().invoke( args );
-                                        } catch ( Throwable t ) {
-                                            logError("invoking event handlers : ", t);
-                                        }
-                                    }
-                                    
-                                } finally {
-                                    SchemeUtils.putVar( env, "scheme", false );
-                                    SchemeUtils.finalizeVariables( env, variables );
-                                }
-                                
-                            }
-                        }
-                    });
-                }
-            }, kawaPane );
-        }
-        
-//          void invokeEventHandlers( String )
-        
-    }
-    public static final EventHandlers eventHandlers = new EventHandlers();
+    public static final KawapadEventHandlers eventHandlers = new KawapadEventHandlers();
     
     //////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -557,7 +371,7 @@ public class Kawapad extends JTextPane {
     
     public void initialize() {
         schemeSecretary.invokeSchemeInitializers( this );
-        Kawapad.eventHandlers.invokeEventHandler( kawapad, EventHandlers.CREATE, kawapad );
+        Kawapad.eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.CREATE, kawapad );
     }
     public void finalize() {
         unregisterLocalSchemeInitializers( schemeSecretary, kawapad );
@@ -770,7 +584,7 @@ public class Kawapad extends JTextPane {
                         break;
                 }
                 
-                Kawapad.eventHandlers.invokeEventHandler( kawapad, EventHandlers.TYPED, target, SchemeUtils.toSchemeString( content ) );
+                Kawapad.eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.TYPED, target, SchemeUtils.toSchemeString( content ) );
             }
         }
     };
@@ -977,9 +791,11 @@ public class Kawapad extends JTextPane {
     
     KawapadContentAssist contentAssist = new KawapadContentAssist( kawapad );
     boolean contentAssistEnabled = false;
-    public final Action defaultUpAction =  kawapad.getActionMap().get( DefaultEditorKit.upAction );
-    public final Action defaultDownAction =  kawapad.getActionMap().get( DefaultEditorKit.downAction );
-    public final Action defaultEnterAction =  kawapad.getActionMap().get( DefaultEditorKit.endLineAction );
+    public final Action DEFAULT_UP_ACTION       =  kawapad.getActionMap().get( DefaultEditorKit.upAction );
+    public final Action DEFAULT_DOWN_ACTION     =  kawapad.getActionMap().get( DefaultEditorKit.downAction );
+//    public final Action DEFAULT_BACKWARD_ACTION =  kawapad.getActionMap().get( DefaultEditorKit.backwardAction );
+//    public final Action DEFAULT_FORWARD_ACTION  =  kawapad.getActionMap().get( DefaultEditorKit.forwardAction );
+    public final Action DEFAULT_ENTER_ACTION    =  kawapad.getActionMap().get( DefaultEditorKit.endLineAction );
     class KawapadCursorKeyAction extends TextAction {
         int direction;
         Action defaultAction;
@@ -998,8 +814,8 @@ public class Kawapad extends JTextPane {
             }
         }
     }
-    public final Action kawapadUpAction   = new KawapadCursorKeyAction( DefaultEditorKit.upAction,   -1, defaultUpAction );
-    public final Action kawapadDownAction = new KawapadCursorKeyAction( DefaultEditorKit.downAction, +1, defaultDownAction );
+    public final Action KAWAPAD_UP_ACTION   = new KawapadCursorKeyAction( DefaultEditorKit.upAction,   -1, DEFAULT_UP_ACTION );
+    public final Action KAWAPAD_DOWN_ACTION = new KawapadCursorKeyAction( DefaultEditorKit.downAction, +1, DEFAULT_DOWN_ACTION );
     public static final String KAWAPAD_DISABLE_CONTENT_ASSIST = "kawapad-disable-content-assist";
     public static final String KAWAPAD_ENABLE_CONTENT_ASSIST = "kawapad-enable-content-assist";
     public final Action kawapadDisableContentAssistAction = new TextAction(KAWAPAD_DISABLE_CONTENT_ASSIST ) {
@@ -1035,12 +851,14 @@ public class Kawapad extends JTextPane {
         // This action intercepts our customization so delete it.
         purgeKeyFromActionMap( kawapad.getActionMap(), DefaultEditorKit.upAction );
         purgeKeyFromActionMap( kawapad.getActionMap(), DefaultEditorKit.downAction );
-        kawapad.getActionMap().put( DefaultEditorKit.upAction, kawapadUpAction );
-        kawapad.getActionMap().put( DefaultEditorKit.downAction, kawapadDownAction );
+        kawapad.getActionMap().put( DefaultEditorKit.upAction, KAWAPAD_UP_ACTION );
+        kawapad.getActionMap().put( DefaultEditorKit.downAction, KAWAPAD_DOWN_ACTION );
         addActionToInputMap( kawapad.getInputMap(), kawapadDisableContentAssistAction );
         addActionToInputMap( kawapad.getInputMap(), kawapadEnableContentAssistAction );
-        kawapad.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_P, KeyEvent.CTRL_MASK), kawapadUpAction );
-        kawapad.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_N, KeyEvent.CTRL_MASK), kawapadDownAction );
+        kawapad.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_P, KeyEvent.CTRL_MASK), KAWAPAD_UP_ACTION );
+        kawapad.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_N, KeyEvent.CTRL_MASK), KAWAPAD_DOWN_ACTION );
+//        kawapad.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_F, KeyEvent.CTRL_MASK), DEFAULT_FORWARD_ACTION );
+//        kawapad.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_B, KeyEvent.CTRL_MASK), DEFAULT_BACKWARD_ACTION );
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -1059,8 +877,8 @@ public class Kawapad extends JTextPane {
 //              System.err.println("PulsarScratchPadTextPaneController.caretUpdate()");
             if ( ! kawapad.getUndoManager().isSuspended() ) {
                 updateHighlightParenthesesLater( kawapad, e.getDot() );
-                eventHandlers.invokeEventHandler( kawapad, EventHandlers.CARET,   kawapad);
-                eventHandlers.invokeEventHandler( kawapad, EventHandlers.CHANGE,  kawapad);
+                eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.CARET,   kawapad);
+                eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.CHANGE,  kawapad);
             }
 
             if ( contentAssistEnabled ) {
@@ -1088,8 +906,8 @@ public class Kawapad extends JTextPane {
             kawapad.fileModified = true;
 //              System.err.println("PulsarScratchPadTextPaneController.insertUpdate()");
             if ( ! kawapad.getUndoManager().isSuspended() ) {
-                eventHandlers.invokeEventHandler( kawapad, EventHandlers.INSERT,  kawapad);
-                eventHandlers.invokeEventHandler( kawapad, EventHandlers.CHANGE,  kawapad);
+                eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.INSERT,  kawapad);
+                eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.CHANGE,  kawapad);
             }
 //            kp.updatePopup( Kawapad.this.getCaret() );
         }
@@ -1097,8 +915,8 @@ public class Kawapad extends JTextPane {
             kawapad.fileModified = true;
 //              System.err.println("PulsarScratchPadTextPaneController.removeUpdate()");
             if ( ! kawapad.getUndoManager().isSuspended() ) {
-                eventHandlers.invokeEventHandler( kawapad, EventHandlers.REMOVE,  kawapad);
-                eventHandlers.invokeEventHandler( kawapad, EventHandlers.CHANGE,  kawapad);
+                eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.REMOVE,  kawapad);
+                eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.CHANGE,  kawapad);
             }
 //            kp.updatePopup( Kawapad.this.getCaret() );
         }
@@ -1106,8 +924,8 @@ public class Kawapad extends JTextPane {
 //              fileModified = true;
 //              System.err.println("PulsarScratchPadTextPaneController.changedUpdate() : ignored");
             if ( ! kawapad.getUndoManager().isSuspended() ) {
-                eventHandlers.invokeEventHandler( kawapad, EventHandlers.ATTRIBUTE,  kawapad);
-                eventHandlers.invokeEventHandler( kawapad, EventHandlers.CHANGE,  kawapad);
+                eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.ATTRIBUTE,  kawapad);
+                eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.CHANGE,  kawapad);
             }
 //            updatePopup( Kawapad.this.getCaret() );
         }
@@ -1422,8 +1240,8 @@ public class Kawapad extends JTextPane {
             Kawapad textPane = (Kawapad) getTextComponent(e);
             Caret caret = textPane.getCaret();
             int currDot = caret.getDot();
-            int newDot = SchemeParentheses.lookupCorrespondingParenthesis2(
-                SchemeParentheses.getText( textPane.getDocument() ),
+            int newDot = KawapadParenthesisMovement.lookupCorrespondingParenthesis2(
+                KawapadParenthesisMovement.getText( textPane.getDocument() ),
                 currDot, 
                 direction, 
                 constantStrategy );
@@ -1436,7 +1254,7 @@ public class Kawapad extends JTextPane {
     }
 
     public final Action SIMPLE_PARENTHESIS_JUMP_LEFT_ACTION =
-            new ParenthesisAction( "simple-parenthesis-jump-left", false, -1, SchemeParentheses.LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP )
+            new ParenthesisAction( "simple-parenthesis-jump-left", false, -1, KawapadParenthesisMovement.LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP )
     {
         {
             putValue( Action2.NAME, "Go to the Previous Parenthesis" );
@@ -1445,7 +1263,7 @@ public class Kawapad extends JTextPane {
         }
     };
     public final Action SIMPLE_PARENTHESIS_JUMP_RIGHT_ACTION =
-            new ParenthesisAction( "simple-parenthesis-jump-right", false, +1, SchemeParentheses.LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP  )
+            new ParenthesisAction( "simple-parenthesis-jump-right", false, +1, KawapadParenthesisMovement.LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP  )
     {
         {
             putValue( Action2.NAME, "Go to the Next Parenthesis" );
@@ -1453,8 +1271,9 @@ public class Kawapad extends JTextPane {
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
+    // NOT USED (Mon, 09 Sep 2019 07:03:07 +0900)
     public final Action SIMPLE_PARENTHESIS_SELECT_JUMP_LEFT_ACTION =
-            new ParenthesisAction( "simple-parenthesis-select-jump-left", true, -1, SchemeParentheses.LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP )
+            new ParenthesisAction( "simple-parenthesis-select-jump-left", true, -1, KawapadParenthesisMovement.LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP )
     {
         {
             putValue( Action2.NAME, "Select the Previous Parenthesis" );
@@ -1462,8 +1281,9 @@ public class Kawapad extends JTextPane {
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
+    // NOT USED (Mon, 09 Sep 2019 07:03:07 +0900)
     public final Action SIMPLE_PARENTHESIS_SELECT_JUMP_RIGHT_ACTION =
-            new ParenthesisAction( "simple-parenthesis-select-jump-right", true, +1, SchemeParentheses.LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP  )
+            new ParenthesisAction( "simple-parenthesis-select-jump-right", true, +1, KawapadParenthesisMovement.LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP  )
     {
         {
             putValue( Action2.NAME, "Select the Next Parenthesis" );
@@ -1472,8 +1292,9 @@ public class Kawapad extends JTextPane {
         }
     };
     
+    // NOT USED (Mon, 09 Sep 2019 07:03:07 +0900)
     public final Action PARENTHESIS_JUMP_LEFT_ACTION =
-            new ParenthesisAction( "parenthesis-jump-left", false, -1, SchemeParentheses.LCP2_STRATEGY_DYNAMIC )
+            new ParenthesisAction( "parenthesis-jump-left", false, -1, KawapadParenthesisMovement.LCP2_STRATEGY_DYNAMIC )
     {
         {
             putValue( Action2.NAME, "Lookup the Corresponding Parenthesis on the Left" );
@@ -1481,8 +1302,9 @@ public class Kawapad extends JTextPane {
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
+    // NOT USED (Mon, 09 Sep 2019 07:03:07 +0900)
     public final Action PARENTHESIS_JUMP_RIGHT_ACTION = 
-            new ParenthesisAction( "parenthesis-jump-right", false, +1, SchemeParentheses.LCP2_STRATEGY_DYNAMIC  )
+            new ParenthesisAction( "parenthesis-jump-right", false, +1, KawapadParenthesisMovement.LCP2_STRATEGY_DYNAMIC  )
     {
         {
             putValue( Action2.NAME, "Lookup the Corresponding Parenthesis on the Right" );
@@ -1491,7 +1313,7 @@ public class Kawapad extends JTextPane {
         }
     };
     public final Action PARENTHESIS_SELECT_JUMP_LEFT_ACTION =
-            new ParenthesisAction( "parenthesis-sel-jump-left", true, -1, SchemeParentheses.LCP2_STRATEGY_DYNAMIC  )
+            new ParenthesisAction( "parenthesis-sel-jump-left", true, -1, KawapadParenthesisMovement.LCP2_STRATEGY_DYNAMIC  )
     {
         {
             putValue( Action2.NAME, "Lookup the Pair of Parenthesis on the Left and Select" );
@@ -1500,7 +1322,7 @@ public class Kawapad extends JTextPane {
         }
     };
     public final Action PARENTHESIS_SELECT_JUMP_RIGHT_ACTION =
-            new ParenthesisAction( "parenthesis-sel-jump-right", true, +1, SchemeParentheses.LCP2_STRATEGY_DYNAMIC  )
+            new ParenthesisAction( "parenthesis-sel-jump-right", true, +1, KawapadParenthesisMovement.LCP2_STRATEGY_DYNAMIC  )
     {
         {
             putValue( Action2.NAME, "Lookup the Pair of Parenthesis on the Right and Select" );
@@ -1624,8 +1446,6 @@ public class Kawapad extends JTextPane {
         addKeyStroke( this, this.SELECT_CURRENT_LISP_WORD_ACTION );
         addKeyStroke( this, this.SELECT_RIGHT_LISP_WORD_ACTION );
         addKeyStroke( this, this.SELECT_LEFT_LISP_WORD_ACTION );
-        
-        
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -1662,6 +1482,7 @@ public class Kawapad extends JTextPane {
     
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
+    // NOT USED (Mon, 09 Sep 2019 06:53:32 +0900)
     class ParenthesisSelect2Action extends TextAction {
         ParenthesisSelect2Action(String name) {
             super(name);
@@ -1705,6 +1526,8 @@ public class Kawapad extends JTextPane {
             }
         }
     }
+    
+    // NOT USED (Mon, 09 Sep 2019 06:53:32 +0900)
     public final Action PARENTHESIS_SELECT_2_ACTION = new ParenthesisSelect2Action("parenthesis-select-2-action") {
         {
             putValue( Action2.NAME, "Deselect Inside the Current Parentheses" );
@@ -1716,11 +1539,11 @@ public class Kawapad extends JTextPane {
     
     class SelectSideParenthesesAction extends TextAction {
         int direction;
-        SideParenthesisSelector selector;
+        CaretTransformer caretTransformer;
         SelectSideParenthesesAction(String name, int direction ) {
             super(name);
             this.direction = direction;
-            this.selector = new SideParenthesisSelector( direction );
+            this.caretTransformer = new SideParenthesisSelector( direction );
         }
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -1732,9 +1555,9 @@ public class Kawapad extends JTextPane {
             if ( dot == mark ) {
 //                PARENTHESIS_SELECT_ACTION.actionPerformed( e );
                 // DO SAME WITH THE FOLLOWING (Sun, 08 Sep 2019 01:55:30 +0900)
-                selector.transform( 
+                caretTransformer.transform( 
                     getParenthesisStack(), 
-                    SchemeParentheses.getText( textComponent.getDocument() ), 
+                    KawapadParenthesisMovement.getText( textComponent.getDocument() ), 
                     textComponent.getCaret() );
             } else {
                 // reverse the direction of the selection.
@@ -1745,9 +1568,9 @@ public class Kawapad extends JTextPane {
                     caret.setDot( dot );
                     caret.moveDot( mark );
                 } else {
-                    selector.transform( 
+                    caretTransformer.transform( 
                         getParenthesisStack(), 
-                        SchemeParentheses.getText( textComponent.getDocument() ), 
+                        KawapadParenthesisMovement.getText( textComponent.getDocument() ), 
                         textComponent.getCaret() );
                 }
             }
@@ -3037,12 +2860,12 @@ public class Kawapad extends JTextPane {
             try {
                 Caret caret = kawapad.getCaret();
                 if ( caret.getDot() == caret.getMark() ) {
-                    KawaPadHighlighter2.highlightMatchingParenthesis( kawapad, caret.getDot() );
+                    KawapadParenthesisHighlighter.highlightMatchingParenthesis( kawapad, caret.getDot() );
                 } else {
                     if ( caret.getMark() < caret.getDot() ) {
-                        KawaPadHighlighter2.highlightMatchingParenthesis( kawapad, caret.getDot() -1 );
+                        KawapadParenthesisHighlighter.highlightMatchingParenthesis( kawapad, caret.getDot() -1 );
                     } else {
-                        KawaPadHighlighter2.highlightMatchingParenthesis( kawapad, caret.getDot() );
+                        KawapadParenthesisHighlighter.highlightMatchingParenthesis( kawapad, caret.getDot() );
                     }
                 }
             } catch (BadLocationException e) {
@@ -3054,7 +2877,7 @@ public class Kawapad extends JTextPane {
         if ( ENABLED_PARENTHESIS_HIGHLIGHT )
             SwingUtilities.invokeLater( new Runnable() {
                 public void run() {
-                    KawaPadHighlighter2.forceClearHighlightedParenthesis();
+                    KawapadParenthesisHighlighter.forceClearHighlightedParenthesis();
                     highlightMatchningParentheses( kawapad, pos );
                 }
             });

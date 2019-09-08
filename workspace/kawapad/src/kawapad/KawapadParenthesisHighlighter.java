@@ -33,7 +33,7 @@ import javax.swing.text.JTextComponent;
 
 import kawapad.SchemeParenthesisParser.ParserState;
 
-public class KawaPadHighlighter2 {
+public class KawapadParenthesisHighlighter {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 

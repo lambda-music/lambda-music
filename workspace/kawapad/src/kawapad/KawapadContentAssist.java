@@ -65,14 +65,14 @@ public class KawapadContentAssist {
     public synchronized void complete( Caret caret ) {
         Document document = kawapad.getDocument();
         int length = document.getLength();
-        Segment text = SchemeParentheses.getText( document );
+        Segment text = KawapadParenthesisMovement.getText( document );
         int dot = caret.getDot();
         if ( length < dot )
             dot = length;
 
         int rightEdgePos = dot == length ? length : 
-                SchemeParentheses.rightWordEdgePos( text, dot );
-        int leftEdgePos = SchemeParentheses.leftWordEdgePos( text, dot -1 );
+                KawapadParenthesisMovement.rightWordEdgePos( text, dot );
+        int leftEdgePos = KawapadParenthesisMovement.leftWordEdgePos( text, dot -1 );
         if ( rightEdgePos < 0 || leftEdgePos < 0 || rightEdgePos <= leftEdgePos ) {
         } else {
             caret.setDot( leftEdgePos );
@@ -97,13 +97,13 @@ public class KawapadContentAssist {
                 try {
                     Document document = kawapad.getDocument();
                     int length = document.getLength();
-                    Segment text = SchemeParentheses.getText( document );
+                    Segment text = KawapadParenthesisMovement.getText( document );
                     int dot = caret.getDot();
                     if ( length < dot )
                         dot = length;
 
                     int rightEdgePos = dot;
-                    int leftEdgePos = SchemeParentheses.leftWordEdgePos( text, dot -1 );
+                    int leftEdgePos = KawapadParenthesisMovement.leftWordEdgePos( text, dot -1 );
                     String currentWord;
                     if ( rightEdgePos < 0 || leftEdgePos < 0 || rightEdgePos <= leftEdgePos ) {
                         currentWord = "";

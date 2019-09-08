@@ -28,7 +28,7 @@ import javax.swing.text.Segment;
 /**
  *  October 3, 2018 at 9:52:22 PM
  */
-public class SchemeParentheses {
+public class KawapadParenthesisMovement {
     public static Segment getText(Document document) throws InternalError {
         Segment text = new Segment();
         try {

@@ -57,7 +57,7 @@ public abstract class CaretTransformer {
         }
     }
     public final void transform( KawaPadParenthesisStack stack, Document text, Caret caret ) {
-        transform( stack, SchemeParentheses.getText( text ), caret );
+        transform( stack, KawapadParenthesisMovement.getText( text ), caret );
     }
     public final void transform( KawaPadParenthesisStack stack, CharSequence text, Caret caret ) {
         int currDot  = caret.getDot();
@@ -67,12 +67,12 @@ public abstract class CaretTransformer {
         if ( currDot < currMark ) {
             before = new CaretPos( 
                 currDot, 
-                currMark - SchemeParentheses.THE_FINAL_CORRECTION,
+                currMark - KawapadParenthesisMovement.THE_FINAL_CORRECTION,
                 -1 );
         } else if ( currMark < currDot ) {
             before = new CaretPos( 
                 currMark, 
-                currDot - SchemeParentheses.THE_FINAL_CORRECTION,
+                currDot - KawapadParenthesisMovement.THE_FINAL_CORRECTION,
                 +1 );
         } else {
             before = new CaretPos( 
@@ -92,7 +92,7 @@ public abstract class CaretTransformer {
             synchronized ( stack ) {
                 try {
                     stack.setLocked( true );
-                    int correction = after.left == after.right ? 0 : SchemeParentheses.THE_FINAL_CORRECTION;
+                    int correction = after.left == after.right ? 0 : KawapadParenthesisMovement.THE_FINAL_CORRECTION;
                     if ( 0 < after.direction ) {
                         caret.setDot(  after.left );
                         caret.moveDot( after.right + correction );

@@ -27,7 +27,7 @@ final class RunnableReplaceTextWithEntireBlockOnTextPane implements Runnable {
                     // In order to avoid entering an infinite loop,
                     // we use /for/ loop instead of /while/ loop;
                     for ( int i=0; i<100; i++ ) {
-                        if ( SchemeParentheses.expandSelectedParentheses( kawapad ) ) {
+                        if ( KawapadParenthesisMovement.expandSelectedParentheses( kawapad ) ) {
                             break;
                         }
                     }
