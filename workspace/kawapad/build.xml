@@ -9,12 +9,13 @@
     <target name="create_run_jar">
         <jar destfile="${dir.jarfile}/kawapad.jar" filesetmanifest="mergewithoutmain">
             <manifest>
-                <attribute name="Main-Class" value="kawapad.KawaPad"/>
+                <attribute name="Main-Class" value="kawapad.KawapadFrame"/>
                 <attribute name="Class-Path" value="."/>
             </manifest>
             <fileset dir="${dir.jarfile}/bin"/>
             <fileset dir="${dir.workspace}/lib/bin"/>
             <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/lib/lib/kawa.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/lib/lib/JTattoo-1.6.11.jar" /> <!-- ADDED -->
             <fileset dir="${dir.jarfile}/bin.scheme"/>
         </jar>
     </target>

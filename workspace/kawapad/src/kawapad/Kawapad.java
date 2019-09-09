@@ -79,6 +79,7 @@ import gnu.lists.EmptyList;
 import gnu.lists.LList;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
+import gnu.mapping.Procedure0;
 import gnu.mapping.Procedure1;
 import gnu.mapping.Procedure2;
 import gnu.mapping.Procedure3;
@@ -2129,6 +2130,13 @@ public class Kawapad extends JTextPane {
                     return Values.empty;
                 }
             });
+            SchemeUtils.defineVar( env, new Procedure0("clear-incremental-keyword") {
+                @Override
+                public Object apply0() throws Throwable {
+                    clearIncrementalSymbol();
+                    return Values.empty;
+                }
+            });
         }
         public static final String TEXTUAL_INCREMENT = "textual-increment-action";
         public static final String TEXTUAL_DECREMENT = "textual-decrement-action";
@@ -2166,13 +2174,37 @@ public class Kawapad extends JTextPane {
                 return this.getClass().getName() + "(" + this.from + "->" + this.to + ")";
             }
         }
-        LinkedList<TextualIncrementalAddon.IncrementalSymbol> incrementalSymbols = new LinkedList<>();
+        List<TextualIncrementalAddon.IncrementalSymbol> incrementalSymbols = new LinkedList<>();
         
+        static final Comparator<IncrementalSymbol> COMPARATOR_FROM = new Comparator<IncrementalSymbol>() {
+            @Override
+            public int compare(IncrementalSymbol o1, IncrementalSymbol o2) {
+                if ( o1.from.length() != o2.from.length() ) {
+                    return o2.from.length() - o1.from.length(); 
+                } else {
+                    return o2.from.compareTo( o1.from );
+                }
+            }
+        };
+        static final Comparator<IncrementalSymbol> COMPARATOR_TO = new Comparator<IncrementalSymbol>() {
+            @Override
+            public int compare(IncrementalSymbol o1, IncrementalSymbol o2) {
+                if ( o1.to.length() != o2.to.length() ) {
+                    return o2.to.length() - o1.to.length(); 
+                } else {
+                    return o2.to.compareTo( o1.to );
+                }
+            }
+        };
+
         void addIncrementalSymbol0( String from, String to ) {
             incrementalSymbols.add( new IncrementalSymbol( from, to ) );
         }
         void deleteIncrementalSymbol0( String from ) {
             incrementalSymbols.remove( new IncrementalSymbol( from, null ) );
+        }
+        void clearIncrementalSymbol0() {
+            incrementalSymbols.clear();
         }
 
         public void addIncrementalSymbol( String from, String to ) {
@@ -2180,6 +2212,9 @@ public class Kawapad extends JTextPane {
         }
         public void deleteIncrementalSymbol( String from ) {
             deleteIncrementalSymbol0( from );
+        }
+        public void clearIncrementalSymbol( ) {
+            clearIncrementalSymbol0();
         }
         static Pattern NUMBER_PATTERN = Pattern.compile( "[0-9\\/\\.\\-\\+]+" );
 
@@ -2204,8 +2239,8 @@ public class Kawapad extends JTextPane {
                     fp ="";
                     fpLen = 0;
                 } else {
-                    wnp = s.substring( 0,tmpPos );
-                    fp =  s.substring( tmpPos+1 );
+                    wnp = s.substring( 0,tmpPos ).trim();
+                    fp =  s.substring( tmpPos+1 ).trim();
                     fpLen = s.length() - tmpPos - 1;
                 }
             }
@@ -2249,7 +2284,7 @@ public class Kawapad extends JTextPane {
             return String.join( "/", ss );
         }
 
-        void replace(JTextComponent target, int direction ) {
+        synchronized void replace(JTextComponent target, int direction ) {
             String str = target.getText();
             Caret caret = target.getCaret();
             
@@ -2284,6 +2319,11 @@ public class Kawapad extends JTextPane {
             
             logInfo( "TextualIncrementAction:" + beginPos + ":" + endPos );
             String targetStr = str.substring( beginPos , endPos );
+            
+            // \\b does not match the end of the string.
+            // so add an extra space to the target string.
+            // (Mon, 09 Sep 2019 12:00:58 +0900)
+//            targetStr =  targetStr + " ";
 
             String foundSubstr=null;
             int foundBeginPos=Integer.MAX_VALUE;
@@ -2313,7 +2353,14 @@ public class Kawapad extends JTextPane {
                     }
                 }
                 if ( foundSubstr == null ) {
-                    for ( TextualIncrementalAddon.IncrementalSymbol s : incrementalSymbols ) {
+                    if ( 0 <= direction ) {
+                        incrementalSymbols.sort( COMPARATOR_FROM );
+                    } else {
+                        incrementalSymbols.sort( COMPARATOR_TO );
+                    }
+
+
+                    for ( IncrementalSymbol s : incrementalSymbols ) {
                         Pattern pattern;
                         String substr;
                         if ( 0 <= direction ) {
@@ -2334,6 +2381,7 @@ public class Kawapad extends JTextPane {
                                 foundEndPos   = tempEndPos;
                                 foundSubstr   = substr;
                             }
+                            break;
                         }
                     }
                 }
@@ -2357,130 +2405,6 @@ public class Kawapad extends JTextPane {
             }
         }
 
-        @Deprecated
-        void replace2(JTextComponent target, int direction ) {
-            String str = target.getText();
-            Caret caret = target.getCaret();
-            
-            int pos = caret.getDot();
-            if ( str.length() < pos )
-                pos = str.length();
-            
-            int beginPos = -1;
-            {
-                for ( int i=pos; 0<=i; i-- ) {
-                    if ( Character.isWhitespace( str.charAt( i ) ) ) {
-                        beginPos = i;
-                        break;
-                    }
-                }
-                if ( beginPos == -1 )
-                    beginPos = 0;
-            }
-            int endPos = -1;
-            {
-                Matcher m = Pattern.compile("$", Pattern.MULTILINE ).matcher( str +"\n" );
-                if ( m.find( pos ) ) {
-                    endPos = m.start();
-                }
-                
-                if ( endPos == -1 )
-                    endPos = str.length();
-            }
-            
-            if ( endPos <= beginPos )
-                return;
-            
-            logInfo( "TextualIncrementAction:" + beginPos + ":" + endPos );
-            String targetStr = str.substring( beginPos , endPos );
-
-            String foundSubstr=null;
-            int foundBeginPos=Integer.MAX_VALUE;
-            int foundEndPos =Integer.MAX_VALUE;
-
-            {
-                if ( foundSubstr == null ) {
-                    Matcher m = NUMBER_PATTERN.matcher( targetStr );
-                    if ( m.find() ) {
-                        Scheme scheme = ((Kawapad)target).schemeSecretary.getExecutive();
-                        
-                        synchronized ( scheme ) {
-                            try {
-                                String numStr = targetStr.substring( m.start(), m.end());
-                                String strResult = null;
-                                {
-                                    String[] ss = numStr.split( "\\/" );
-                                    {
-                                        String[] sss = ss[0].split( "\\." );
-                                        {
-                                            int lastPos = sss.length-1;
-                                            if ( direction < 0 ) {
-                                                sss[lastPos] = String.valueOf( Integer.valueOf( sss[lastPos] ) - 1 ); 
-                                            } else {
-                                                sss[lastPos] = String.valueOf( Integer.valueOf( sss[lastPos] ) + 1 ); 
-                                            }
-                                        }
-                                        ss[0] = String.join( ".", sss );
-                                    }
-                                    strResult = String.join( "/", ss );
-                                }
-                                
-                                if ( strResult != null ) {
-                                    foundSubstr = strResult.toString();
-                                    foundBeginPos = m.start() + beginPos;
-                                    foundEndPos   = m.end()   + beginPos;
-                                }
-                            } catch (Throwable e) {
-                                logError( "failed to increment the number", e );
-                            }
-                        }
-                         
-                    }
-                }
-                if ( foundSubstr == null ) {
-                    for ( TextualIncrementalAddon.IncrementalSymbol s : incrementalSymbols ) {
-                        Pattern pattern;
-                        String substr;
-                        if ( direction < 0 ) {
-                            pattern = s.fromPattern;
-                            substr = s.to;
-                        } else {
-                            pattern = s.toPattern;
-                            substr = s.from;
-                        }
-                        
-                        Matcher m = pattern.matcher( targetStr );
-                        if ( m.find() ) {
-                            int tempBeginPos = m.start() + beginPos;
-                            int tempEndPos   = m.end()   + beginPos;
-                            
-                            if ( tempBeginPos < foundBeginPos ) {
-                                foundBeginPos = tempBeginPos;
-                                foundEndPos   = tempEndPos;
-                                foundSubstr   = substr;
-                            }
-                        }
-                    }
-                }
-            }
-            
-            Kawapad kawaPane = ((Kawapad)target);
-            
-            if ( foundSubstr != null ) {
-                kawaPane.getUndoManager().startGroup();
-                kawaPane.getUndoManager().setSuspended( true );
-                try {
-                    caret.setDot( foundBeginPos );
-                    caret.moveDot( foundEndPos );
-                    target.replaceSelection( foundSubstr );
-                    caret.setDot( foundBeginPos + foundSubstr.length() );
-                    caret.moveDot( foundBeginPos );
-                } finally {
-                    kawaPane.getUndoManager().setSuspended( false );
-                    kawaPane.getUndoManager().endGroup();
-                }
-            }
-        }       
         class TextualIncrementAction extends TextAction {
             
             /** Create this object with the appropriate identifier. */
