@@ -35,7 +35,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,6 +51,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.JViewport;
@@ -64,7 +64,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.text.AbstractDocument;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
@@ -72,7 +71,6 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.DefaultEditorKit.DefaultKeyTypedAction;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.StyledDocument;
 import javax.swing.text.TextAction;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -95,6 +93,7 @@ import kawapad.KawapadParenthesisMovement.SelectLeftLispWordTransformer;
 import kawapad.KawapadParenthesisMovement.SelectRightLispWordTransformer;
 import kawapad.KawapadParenthesisMovement.ShrinkParenthesisSelector;
 import kawapad.KawapadParenthesisMovement.SideParenthesisSelector;
+import kawapad.KawapadSyntaxHighlighter.KawapadSyntaxElementType;
 import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.OriginalCompoundUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
@@ -216,9 +215,9 @@ public class Kawapad extends JTextPane {
         // This action intercepts our customization so delete it.
         purgeKeyFromActionMap( kawapad.getActionMap(), DefaultEditorKit.insertTabAction );
         
-        documentFilter = new KawapadDocumentFilter0( this, this.getStyledDocument());
+        documentFilter = new KawapadSyntaxHighlighter( this );
         if ( ENABLED_SYNTAX_HIGHLIGHTING ) {
-            ((AbstractDocument)getDocument()).setDocumentFilter( documentFilter);
+            ((AbstractDocument)getDocument()).setDocumentFilter(documentFilter);
         }
         
         // https://stackoverflow.com/questions/6189599/automatically-causing-a-subclassed-jpanels-resources-to-be-released
@@ -429,10 +428,10 @@ public class Kawapad extends JTextPane {
     }
     
     //  Action inserBreakAction = textPane.getActionMap().get( DefaultEditorKit.insertBreakAction );
-    public final Action newInsertBreakAction = new NewInsertBreakTextAction( DefaultEditorKit.insertBreakAction );
+    public final Action KAWAPAD_INSERT_BREAK_ACTION = new NewInsertBreakTextAction( DefaultEditorKit.insertBreakAction );
     {
         //  purgeKeyFromActionMap( textPane.getActionMap(), DefaultEditorKit.insertBreakAction );
-        kawapad.getActionMap().put( DefaultEditorKit.insertBreakAction, newInsertBreakAction );
+        kawapad.getActionMap().put( DefaultEditorKit.insertBreakAction, KAWAPAD_INSERT_BREAK_ACTION );
     }
     final class NewInsertBreakTextAction extends TextAction {
         private NewInsertBreakTextAction(String name) {
@@ -477,8 +476,10 @@ public class Kawapad extends JTextPane {
 
     private static final class WordJumpAction extends AbstractAction {
         private int direction;
-        public WordJumpAction(int direction) {
+        private boolean select;
+        public WordJumpAction(int direction, boolean select) {
             this.direction = direction;
+            this.select = select;
         }
         public void actionPerformed(ActionEvent ae) {
             JTextComponent ta = (JTextComponent)ae.getSource();
@@ -488,24 +489,32 @@ public class Kawapad extends JTextPane {
             int p1 = lookup(p0, text, direction);
             
             // Then, jump to there.
+            int to;
             if ( p1 < 0 ) {
-                ta.setCaretPosition(0);
+                to = 0;
             } else {
-                ta.setCaretPosition(p1);
+                to = p1;
             }
+            Caret caret = ta.getCaret();
+            if ( select ) {
+                caret.moveDot(to);
+            } else {
+                caret.setDot(to);
+            }
+            
         }
         private static boolean isExclusiveBoundary( char ch ) {
             return Character.isWhitespace(ch); 
         }
         private static boolean isInclusiveBoundary( char ch ) {
-            return ch == '"' || ch == ')' || ch == '('  || ch == '-' || ch == '_' || ch == '.'  ; 
+            return ch == '"' || ch == ')' || ch == '('  || ch == '-' || ch == '_' || ch == '.' || ch == '/' || ch == '\\'  ; 
         }
         static int lookup(int p0, String text, int direction ) {
             int length = text.length();
             if ( length <= p0 ) {
                 p0 = length-1;
             }
-            int p1;
+            int p1=-1;
 
             if ( isInclusiveBoundary( text.charAt( p0 ))) {
                 p1 = p0 + direction;
@@ -524,11 +533,22 @@ public class Kawapad extends JTextPane {
                 }
             } else {
                 p0 += direction * 1;
-                if ( 
-                        isExclusiveBoundary( text.charAt( p0 ) ) ||
-                        isInclusiveBoundary( text.charAt( p0 ) ) )
-                {
-                    p1 = p0;
+                if ( isExclusiveBoundary( text.charAt( p0 ) ) ) {
+                    for ( int i=p0; 0<=i&&i<length; i+=direction ) {
+                        char ch = text.charAt( i );
+                        if ( ! isExclusiveBoundary(ch) ) {
+                            p1 = i;
+                            break;
+                        }
+                    }
+                } else if ( isInclusiveBoundary( text.charAt( p0 ) ) ) {
+                    for ( int i=p0; 0<=i&&i<length; i+=direction ) {
+                        char ch = text.charAt( i );
+                        if ( ! isInclusiveBoundary(ch) ) {
+                            p1 = i;
+                            break;
+                        }
+                    }
                 } else {
                     // Look up the nearest space character.
                     p1 = -1;
@@ -551,8 +571,10 @@ public class Kawapad extends JTextPane {
     
     {
         ActionMap map = this.kawapad.getActionMap();
-        map.put( DefaultEditorKit.nextWordAction, new WordJumpAction(1));
-        map.put( DefaultEditorKit.previousWordAction, new WordJumpAction(-1));
+        map.put( DefaultEditorKit.nextWordAction, new WordJumpAction(1,false));
+        map.put( DefaultEditorKit.previousWordAction, new WordJumpAction(-1,false));
+        map.put( DefaultEditorKit.selectionNextWordAction, new WordJumpAction(1,true));
+        map.put( DefaultEditorKit.selectionPreviousWordAction, new WordJumpAction(-1,true));
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -793,8 +815,8 @@ public class Kawapad extends JTextPane {
     boolean contentAssistEnabled = false;
     public final Action DEFAULT_UP_ACTION       =  kawapad.getActionMap().get( DefaultEditorKit.upAction );
     public final Action DEFAULT_DOWN_ACTION     =  kawapad.getActionMap().get( DefaultEditorKit.downAction );
-//    public final Action DEFAULT_BACKWARD_ACTION =  kawapad.getActionMap().get( DefaultEditorKit.backwardAction );
-//    public final Action DEFAULT_FORWARD_ACTION  =  kawapad.getActionMap().get( DefaultEditorKit.forwardAction );
+    public final Action DEFAULT_BACKWARD_ACTION =  kawapad.getActionMap().get( DefaultEditorKit.backwardAction );
+    public final Action DEFAULT_FORWARD_ACTION  =  kawapad.getActionMap().get( DefaultEditorKit.forwardAction );
     public final Action DEFAULT_ENTER_ACTION    =  kawapad.getActionMap().get( DefaultEditorKit.endLineAction );
     class KawapadCursorKeyAction extends TextAction {
         int direction;
@@ -816,9 +838,35 @@ public class Kawapad extends JTextPane {
     }
     public final Action KAWAPAD_UP_ACTION   = new KawapadCursorKeyAction( DefaultEditorKit.upAction,   -1, DEFAULT_UP_ACTION );
     public final Action KAWAPAD_DOWN_ACTION = new KawapadCursorKeyAction( DefaultEditorKit.downAction, +1, DEFAULT_DOWN_ACTION );
+
+    class KawapadScrollAction extends TextAction {
+        int direction;
+        Action defaultAction;
+        public KawapadScrollAction(String name, int direction  ) {
+            super( name );
+            this.direction = direction;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try {
+                JScrollPane c = (JScrollPane)((JComponent)e.getSource()).getParent().getParent();
+                JScrollBar sb = c.getVerticalScrollBar();
+                int v = sb.getValue() + direction;
+                if ( v < sb.getMinimum() ) v = sb.getMinimum();
+                else if ( sb.getMaximum() < v ) v = sb.getMaximum();
+                sb.setValue( v ); 
+            } catch ( NullPointerException|ClassCastException t) {
+                logError( "ignored an error ( usually this does not cause a problem. )", t );
+            }
+        }
+    }
+    public final Action KAWAPAD_SCROLL_UP_ACTION   = new KawapadScrollAction( DefaultEditorKit.upAction,   -12 );
+    public final Action KAWAPAD_SCROLL_DOWN_ACTION = new KawapadScrollAction( DefaultEditorKit.downAction, +12 );
+
     public static final String KAWAPAD_DISABLE_CONTENT_ASSIST = "kawapad-disable-content-assist";
     public static final String KAWAPAD_ENABLE_CONTENT_ASSIST = "kawapad-enable-content-assist";
-    public final Action kawapadDisableContentAssistAction = new TextAction(KAWAPAD_DISABLE_CONTENT_ASSIST ) {
+    public final Action KAWAPAD_DISABLE_CONTENT_ASSIST_ACTION = new TextAction(KAWAPAD_DISABLE_CONTENT_ASSIST ) {
         @Override
         public void actionPerformed(ActionEvent e) {
             if ( contentAssistEnabled ) {
@@ -832,7 +880,7 @@ public class Kawapad extends JTextPane {
             putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke( KeyEvent.VK_ESCAPE , 0 ) );
         }
     };
-    public final Action kawapadEnableContentAssistAction = new TextAction( KAWAPAD_ENABLE_CONTENT_ASSIST ) {
+    public final Action KAWAPAD_ENABLE_CONTENT_ASSIST_ACTION = new TextAction( KAWAPAD_ENABLE_CONTENT_ASSIST ) {
         @Override
         public void actionPerformed(ActionEvent e) {
             contentAssistEnabled = true;
@@ -853,12 +901,16 @@ public class Kawapad extends JTextPane {
         purgeKeyFromActionMap( kawapad.getActionMap(), DefaultEditorKit.downAction );
         kawapad.getActionMap().put( DefaultEditorKit.upAction, KAWAPAD_UP_ACTION );
         kawapad.getActionMap().put( DefaultEditorKit.downAction, KAWAPAD_DOWN_ACTION );
-        addActionToInputMap( kawapad.getInputMap(), kawapadDisableContentAssistAction );
-        addActionToInputMap( kawapad.getInputMap(), kawapadEnableContentAssistAction );
+        kawapad.getInputMap().put( KeyStroke.getKeyStroke( "ctrl UP" ), KAWAPAD_SCROLL_UP_ACTION );
+        kawapad.getInputMap().put( KeyStroke.getKeyStroke( "ctrl DOWN" ), KAWAPAD_SCROLL_DOWN_ACTION );
+        
+        
+        addActionToInputMap( kawapad.getInputMap(), KAWAPAD_DISABLE_CONTENT_ASSIST_ACTION );
+        addActionToInputMap( kawapad.getInputMap(), KAWAPAD_ENABLE_CONTENT_ASSIST_ACTION );
         kawapad.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_P, KeyEvent.CTRL_MASK), KAWAPAD_UP_ACTION );
         kawapad.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_N, KeyEvent.CTRL_MASK), KAWAPAD_DOWN_ACTION );
-//        kawapad.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_F, KeyEvent.CTRL_MASK), DEFAULT_FORWARD_ACTION );
-//        kawapad.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_B, KeyEvent.CTRL_MASK), DEFAULT_BACKWARD_ACTION );
+        kawapad.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_F, KeyEvent.CTRL_MASK), DEFAULT_FORWARD_ACTION );
+        kawapad.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_B, KeyEvent.CTRL_MASK), DEFAULT_BACKWARD_ACTION );
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -1093,7 +1145,7 @@ public class Kawapad extends JTextPane {
         @Override
         public void actionPerformed(ActionEvent e) {
             BACKWARD_ACTION.actionPerformed( e );
-            PARENTHESIS_SELECT_ACTION.actionPerformed( e );
+            PARENTHESIS_EXPAND_SELECTION_ACTION.actionPerformed( e );
             kawapad.getThreadManager().startScratchPadThread(
                 new EvaluateRunnable(
                     kawapad, getTextDefault(), filePath, true, false, false ) );
@@ -1115,7 +1167,7 @@ public class Kawapad extends JTextPane {
                 schemeScript = getSelectedText( kawapad );
                 if ( schemeScript == null ) {
                     BACKWARD_ACTION.actionPerformed( event );
-                    PARENTHESIS_SELECT_ACTION.actionPerformed( event );
+                    PARENTHESIS_EXPAND_SELECTION_ACTION.actionPerformed( event );
                     SwingUtilities.invokeLater( new Runnable() {
                         @Override
                         public void run() {
@@ -1446,6 +1498,16 @@ public class Kawapad extends JTextPane {
         addKeyStroke( this, this.SELECT_CURRENT_LISP_WORD_ACTION );
         addKeyStroke( this, this.SELECT_RIGHT_LISP_WORD_ACTION );
         addKeyStroke( this, this.SELECT_LEFT_LISP_WORD_ACTION );
+        
+        kawapad.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_P, KeyEvent.CTRL_MASK|KeyEvent.ALT_MASK), null );
+        kawapad.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_N, KeyEvent.CTRL_MASK|KeyEvent.ALT_MASK), null );
+        kawapad.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_F, KeyEvent.CTRL_MASK|KeyEvent.ALT_MASK), SELECT_RIGHT_LISP_WORD_ACTION );
+        kawapad.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_B, KeyEvent.CTRL_MASK|KeyEvent.ALT_MASK), SELECT_LEFT_LISP_WORD_ACTION );
+        kawapad.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_P, KeyEvent.SHIFT_MASK|KeyEvent.ALT_MASK), null  ); // XXX
+        kawapad.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_N, KeyEvent.SHIFT_MASK|KeyEvent.ALT_MASK), null );
+        kawapad.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_F, KeyEvent.SHIFT_MASK|KeyEvent.ALT_MASK), PARENTHESIS_SELECT_JUMP_RIGHT_ACTION );
+        kawapad.getInputMap().put( KeyStroke.getKeyStroke( KeyEvent.VK_B, KeyEvent.SHIFT_MASK|KeyEvent.ALT_MASK), PARENTHESIS_SELECT_JUMP_LEFT_ACTION );
+
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -1472,7 +1534,7 @@ public class Kawapad extends JTextPane {
 //            SchemeParentheses.expandSelectedParentheses( kawapad );
         }
     }
-    public final Action PARENTHESIS_SELECT_ACTION = new ParenthesisSelectAction( "parenthesis-select" ) {
+    public final Action PARENTHESIS_EXPAND_SELECTION_ACTION = new ParenthesisSelectAction( "parenthesis-select" ) {
         {
             putValue( Action2.NAME, "Select Inside the Current Parentheses" );
             putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke( KeyEvent.VK_UP, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK ) );
@@ -1609,7 +1671,7 @@ public class Kawapad extends JTextPane {
             int currDot  = caret.getDot();
             int currMark = caret.getMark();
             if ( currDot == currMark ) {
-                PARENTHESIS_SELECT_ACTION.actionPerformed( e );
+                PARENTHESIS_EXPAND_SELECTION_ACTION.actionPerformed( e );
                 return;
             }
             selector.transform( getParenthesisStack(), document, caret );
@@ -1619,7 +1681,7 @@ public class Kawapad extends JTextPane {
 //                caret );
         }
     }
-    public final Action SELECT_PARENTHESES_SHRINK_ACTION = new ParenthesisShrinkSelectionAction("select-parentheses-shrink-action") {
+    public final Action PARENTHESES_SHRINK_SELECTION_ACTION = new ParenthesisShrinkSelectionAction("select-parentheses-shrink-action") {
         {
             putValue( Action2.NAME, "Select Parentheses Inside the Current Selection" );
             putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, KeyEvent.SHIFT_MASK | KeyEvent.ALT_MASK ) );
@@ -1629,6 +1691,7 @@ public class Kawapad extends JTextPane {
 
     
 
+    // NOT USED (Mon, 09 Sep 2019 09:40:08 +0900)
     class ParenthesisDeselectAction extends TextAction {
         ParenthesisDeselectAction(String name) {
             super(name);
@@ -1655,6 +1718,7 @@ public class Kawapad extends JTextPane {
             }
         }
     }
+    // NOT USED (Mon, 09 Sep 2019 09:40:08 +0900)
     public final Action PARENTHESIS_DESELECT_ACTION = new ParenthesisDeselectAction( "parenthesis-deselect" ) {
         {
             putValue( Action2.NAME, "Deselect Inside the Current Parentheses" );
@@ -1662,6 +1726,7 @@ public class Kawapad extends JTextPane {
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
+    // NOT USED (Mon, 09 Sep 2019 09:40:08 +0900)
     public final Action PARENTHESIS_DESELECT_2_ACTION = new ParenthesisDeselectAction( "parenthesis-deselect-2" ) {
         {
             putValue( Action2.NAME, "Deselect Inside the Current Parentheses" );
@@ -1671,10 +1736,10 @@ public class Kawapad extends JTextPane {
     };
 
     {
-        addKeyStroke( this, this.PARENTHESIS_SELECT_ACTION );
-        addKeyStroke( this, this.SELECT_PARENTHESES_SHRINK_ACTION );
+        addKeyStroke( this, this.PARENTHESIS_EXPAND_SELECTION_ACTION );
+        addKeyStroke( this, this.PARENTHESES_SHRINK_SELECTION_ACTION );
 //      addKeyStroke( this, this.PARENTHESIS_DESELECT_ACTION );
-        addKeyStroke( this, this.PARENTHESIS_DESELECT_2_ACTION );
+//        addKeyStroke( this, this.PARENTHESIS_DESELECT_2_ACTION );
         addKeyStroke( this, this.SELECT_LEFT_PARENTHESES_ACTION );
         addKeyStroke( this, this.SELECT_RIGHT_PARENTHESES_ACTION );
     }
@@ -2742,118 +2807,7 @@ public class Kawapad extends JTextPane {
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static enum KawapadSyntaxElementType {
-        KEYWORD,
-        PUNCTUATION,
-        STRING,
-        LINE_COMMENT,
-        BLOCK_COMMENT;
-        static KawapadSyntaxElementType schemeValueOf( Symbol symbol ) {
-            String str = SchemeUtils.symbolToString( symbol ).toUpperCase().replaceAll( "-" , "_" );
-            return valueOf( str );
-        }
-    }
-    private static final String REGEX_NON_WORD_L = "(?<=[^a-zA-Z0-9-_])";
-    private static final String REGEX_NON_WORD_R = "(?=[^a-zA-Z0-9-_])";
-    final class KawapadDocumentFilter0 extends KawapadDocumentFilter {
-        final AttributeSet defaultBlockCommentColor  = KawapadDocumentFilter.grayAttributeSet;
-        final AttributeSet defaultLineCommentColor   = KawapadDocumentFilter.grayAttributeSet;
-        final AttributeSet defaultStringColor        = KawapadDocumentFilter.darkGreenAttributeSet;
-        final AttributeSet defaultPunctuationColor   = KawapadDocumentFilter.redAttributeSet;
-        final AttributeSet defaultKeywordColor       = KawapadDocumentFilter.orangeAttributeSet;
-        KawapadDocumentFilter0(Kawapad kawapad, StyledDocument document) {
-            super( kawapad, document );
-        }
-        private Pattern createKeywordPattern() {
-            synchronized ( Kawapad.class ) {
-                List<String> keywordList = SchemeUtils.getAllKey(getSchemeSecretary()); 
-                keywordList.addAll( lispKeywordList );
-                keywordList.sort( KEYWORD_COMPARATOR );
-                for ( ListIterator<String> i=keywordList.listIterator(); i.hasNext(); ) {
-                    String s = i.next();
-                    i.set( Pattern.quote( s ) );
-                }
-                return Pattern.compile( 
-                    REGEX_NON_WORD_L + "(?<"+GROUP+">" + String.join( "|",  keywordList ) + ")" + REGEX_NON_WORD_R );
-            }
-        }
-        
-        protected Collection<SyntaxElement> createSyntaxElementList() {
-            if ( false ) {
-                return Arrays.asList(
-                    KawapadDocumentFilter.createSyntaxElement(
-                        KawapadSyntaxElementType.PUNCTUATION,
-                        Pattern.compile( "(?<K>(?:\\(|\\)|\\:|\\'|\\#))" ),
-                        defaultPunctuationColor ), 
-                    KawapadDocumentFilter.createSyntaxElement(
-                        KawapadSyntaxElementType.KEYWORD,
-                        createKeywordPattern(), 
-                        defaultKeywordColor ), 
-                    KawapadDocumentFilter.createSyntaxElement(
-                        KawapadSyntaxElementType.STRING,
-                        Pattern.compile( "\\\"[\\s\\S]*?\\\"", Pattern.MULTILINE ),
-                        defaultStringColor ), 
-                    KawapadDocumentFilter.createSyntaxElement(
-                        KawapadSyntaxElementType.BLOCK_COMMENT,
-                        Pattern.compile( "\\#\\|[\\s\\S]*?\\|\\#", Pattern.MULTILINE ),
-                        defaultBlockCommentColor ), 
-                    KawapadDocumentFilter.createSyntaxElement(
-                        KawapadSyntaxElementType.LINE_COMMENT,
-                        Pattern.compile( ";.*$" ),
-                        defaultLineCommentColor ) );
-            }
-
-            if ( true ) {
-                return Arrays.asList(
-                    KawapadDocumentFilter.createSyntaxElement(
-                        KawapadSyntaxElementType.KEYWORD,
-                        createKeywordPattern(), 
-                        defaultKeywordColor ), 
-                    KawapadDocumentFilter.createSyntaxElement(
-                        KawapadSyntaxElementType.STRING,
-                        Pattern.compile( "\\\"[\\s\\S]*?\\\"", Pattern.MULTILINE ),
-                        defaultStringColor ), 
-                    KawapadDocumentFilter.createSyntaxElement(
-                        KawapadSyntaxElementType.BLOCK_COMMENT,
-                        Pattern.compile( "\\#\\|[\\s\\S]*?\\|\\#", Pattern.MULTILINE ),
-                        defaultBlockCommentColor ), 
-                    KawapadDocumentFilter.createSyntaxElement(
-                        KawapadSyntaxElementType.LINE_COMMENT,
-                        Pattern.compile( ";.*$", Pattern.MULTILINE  ),
-                        defaultLineCommentColor ) );
-            }
-            if ( false ) {
-                return Arrays.asList(
-                    KawapadDocumentFilter.createSyntaxElement(
-                        KawapadSyntaxElementType.PUNCTUATION,
-                        Pattern.compile( "(?<K>(?:\\(|\\)|\\:|\\'|\\#)+)" ),
-                        defaultPunctuationColor ), 
-                    KawapadDocumentFilter.createSyntaxElement(
-                        KawapadSyntaxElementType.KEYWORD,
-                        createKeywordPattern(), 
-                        defaultKeywordColor ), 
-                    KawapadDocumentFilter.createSyntaxElement(
-                        KawapadSyntaxElementType.STRING,
-                        Pattern.compile( "\\\"[\\s\\S]*?\\\"", Pattern.MULTILINE ),
-                        defaultStringColor ), 
-                    KawapadDocumentFilter.createSyntaxElement(
-                        KawapadSyntaxElementType.BLOCK_COMMENT,
-                        Pattern.compile( "\\#\\|[\\s\\S]*?\\|\\#", Pattern.MULTILINE ),
-                        defaultBlockCommentColor ), 
-                    KawapadDocumentFilter.createSyntaxElement(
-                        KawapadSyntaxElementType.LINE_COMMENT,
-                        Pattern.compile( ";.*$" ),
-                        defaultLineCommentColor ) );
-            }
-            return null;
-        }
-        @Override
-        public AttributeSet getDefaultAttributeSet() {
-            return KawapadDocumentFilter.createAttributeSet( getForeground() );
-        }
-    }
-    private KawapadDocumentFilter0 documentFilter; // See the constructor how this field is initialized.
-
+    private KawapadSyntaxHighlighter documentFilter; // See the constructor how this field is initialized.
 
     private static void highlightMatchningParentheses( Kawapad kawapad, int pos ) {
         if ( ENABLED_PARENTHESIS_HIGHLIGHT )
@@ -2907,7 +2861,7 @@ public class Kawapad extends JTextPane {
         }
     }
     private static final List<String> DEFAULT_LISP_WORDS = Arrays.asList( "let", "lambda" );
-    private ArrayList<String> lispKeywordList = new ArrayList<>( DEFAULT_LISP_WORDS );
+    ArrayList<String> lispKeywordList = new ArrayList<>( DEFAULT_LISP_WORDS );
     public List<String> getLispKeywordList() {
         return Collections.unmodifiableList( this.lispKeywordList );
     }

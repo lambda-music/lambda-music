@@ -16,6 +16,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.DocumentFilter;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.Segment;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
@@ -29,7 +30,7 @@ import javax.swing.text.StyledDocument;
  * you. Even though the answer is not taken as an accepted answer, in fact it
  * is the correct anser. This should be accepted and deserves more likes.
  */
-public abstract class KawapadDocumentFilter extends DocumentFilter {
+public abstract class SyntaxHighlighter extends DocumentFilter {
     private static final boolean DEBUG = true;
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
@@ -66,11 +67,9 @@ public abstract class KawapadDocumentFilter extends DocumentFilter {
     public static final AttributeSet    orangeAttributeSet  = createAttributeSet( Color.ORANGE );
     public static final AttributeSet    whiteAttributeSet   = createAttributeSet( Color.WHITE );
 
-    private Kawapad kawapad;
-    private final StyledDocument document;
-    public KawapadDocumentFilter(Kawapad kawapad, StyledDocument document) {
-        this.kawapad = kawapad;
-        this.document = document;
+    private JTextComponent textComponent;
+    public SyntaxHighlighter(JTextComponent kawapad) {
+        this.textComponent = kawapad;
     }
     public interface SyntaxElement {
         Object getName();
@@ -123,11 +122,11 @@ public abstract class KawapadDocumentFilter extends DocumentFilter {
             }
             @Override
             public Color getForegroundColor() {
-                return KawapadDocumentFilter.getForegroundColor( this.attributeSet );
+                return SyntaxHighlighter.getForegroundColor( this.attributeSet );
             }
             @Override
             public Color getBackgroundColor() {
-                return KawapadDocumentFilter.getBackgroundColor( this.attributeSet );
+                return SyntaxHighlighter.getBackgroundColor( this.attributeSet );
             }
         }
     }
@@ -226,10 +225,11 @@ public abstract class KawapadDocumentFilter extends DocumentFilter {
     StyledDocument emptyDocument = new DefaultStyledDocument();
     void update() {
         AttributeSet defaultAttr = getDefaultAttributeSet();
+        StyledDocument document = (StyledDocument)textComponent.getDocument();
         synchronized ( document ) {
-            int dot = kawapad.getCaret().getDot();
-            int mark = kawapad.getCaret().getMark();
-            kawapad.setDocument( emptyDocument );
+            int dot = textComponent.getCaret().getDot();
+            int mark = textComponent.getCaret().getMark();
+            textComponent.setDocument( emptyDocument );
             try {
                 // clear
                 if ( DEBUG ) ep.start();
@@ -245,10 +245,10 @@ public abstract class KawapadDocumentFilter extends DocumentFilter {
                     if ( DEBUG ) logInfo( ep.getMessage( "Syntax Set:" + e.getName() ));
                 }
             } finally {
-                kawapad.setDocument( document );
-                kawapad.getCaret().setDot( mark );
+                textComponent.setDocument( document );
+                textComponent.getCaret().setDot( mark );
                 if ( mark!=dot)
-                    kawapad.getCaret().moveDot( dot );
+                    textComponent.getCaret().moveDot( dot );
                     
             }
         }
