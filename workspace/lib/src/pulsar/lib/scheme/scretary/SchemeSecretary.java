@@ -360,21 +360,21 @@ public class SchemeSecretary extends Secretary<Scheme> implements ShutdownHook {
         }
     }
     public static SchemeUtils.ExecuteSchemeResult evaluateScheme( SchemeSecretary schemeSecretary,
+            Collection<Runnable> threadInitializers, 
             Map<String,Object> variables, 
-            String schemeScript, 
-            File schemeScriptFile, String schemeScriptURI ) 
+            String schemeScript, File schemeScriptFile, String schemeScriptURI ) 
     {
-        return SchemeSecretary.evaluateScheme( schemeSecretary, variables, new StringReader( schemeScript ),  schemeScriptFile, schemeScriptURI );
+        return SchemeSecretary.evaluateScheme( schemeSecretary, threadInitializers, variables,  new StringReader( schemeScript ), schemeScriptFile, schemeScriptURI );
     }
 
     public static SchemeUtils.ExecuteSchemeResult evaluateScheme( SchemeSecretary schemeSecretary, 
+            Collection<Runnable> threadInitializers, 
             Map<String,Object> variables, 
-            Reader schemeScript, 
-            File schemeScriptFile, String schemeScriptURI ) {
+            Reader schemeScript, File schemeScriptFile, String schemeScriptURI ) {
         return schemeSecretary.executeSecretarially( new SecretaryMessage.NoThrow<Scheme,SchemeUtils.ExecuteSchemeResult>() {
             @Override
             public SchemeUtils.ExecuteSchemeResult execute0(Scheme scheme, Object[] args) {
-                return SchemeUtils.evaluateScheme(scheme, variables, schemeScript, null, schemeScriptURI);
+                return SchemeUtils.evaluateScheme(scheme, threadInitializers, variables, schemeScript, null, schemeScriptURI);
             }
         }, Invokable.NOARG );
     }

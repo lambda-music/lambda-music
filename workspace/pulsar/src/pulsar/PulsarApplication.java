@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 
 import kawapad.Kawapad;
 import pulsar.lib.PulsarLogger;
@@ -143,7 +144,7 @@ public class PulsarApplication {
         schemeSecretary.setDirectMeeting( false );
 
         DescriptiveHelp.registerGlobalSchemeInitializer( schemeSecretary );
-
+        PulsarGui.registerGlobalSchemeInitializers( schemeSecretary );
         Pulsar pulsar = new Pulsar( schemeSecretary );
 
         if ( guiEnabled )
@@ -164,7 +165,8 @@ public class PulsarApplication {
         @SuppressWarnings("unused")
         SchemeHttp schemeHttp;
         if ( httpEnabled )
-            schemeHttp = new SchemeHttp( schemeSecretary, httpPort );
+            schemeHttp = new SchemeHttp( schemeSecretary, httpPort, 
+                Arrays.asList( pulsarGui.frame.getKawapad().threadInitializer()));
         else
             schemeHttp = null;
         

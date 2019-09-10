@@ -33,13 +33,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -79,7 +76,6 @@ import gnu.lists.EmptyList;
 import gnu.lists.LList;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
-import gnu.mapping.Procedure0;
 import gnu.mapping.Procedure1;
 import gnu.mapping.Procedure2;
 import gnu.mapping.Procedure3;
@@ -87,7 +83,6 @@ import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import gnu.mapping.WrongArguments;
 import kawa.standard.Scheme;
-import kawa.standard.load;
 import kawapad.KawapadParenthesisMovement.ExpandParenthesisSelector;
 import kawapad.KawapadParenthesisMovement.SelectCurrentWordTransformer;
 import kawapad.KawapadParenthesisMovement.SelectLeftLispWordTransformer;
@@ -102,7 +97,6 @@ import pulsar.lib.scheme.DescriptiveDocumentType;
 import pulsar.lib.scheme.ProceduralDescriptiveBean;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
-import pulsar.lib.scheme.SchemeUtils.ExecuteSchemeResult;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.SecretaryMessage;
 import pulsar.lib.secretary.SecretaryMessage.NoReturnNoThrow;
@@ -168,10 +162,10 @@ public class Kawapad extends JTextPane {
 
     static transient int uniqueIDCounter = 0;
     static String getUniqueID( int uniqueIDCounter ) {
-        return "kawapad" + uniqueIDCounter;
+        return "kawapad-" + uniqueIDCounter;
     }
     synchronized static String newUniqueID() {
-        return "kawapad" + ( uniqueIDCounter ++ );
+        return "kawapad-" + ( uniqueIDCounter ++ );
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -181,9 +175,55 @@ public class Kawapad extends JTextPane {
     public String getInstanceID() {
         return instanceID;
     }
+
+    
     
     ////////////////////////////////////////////////////////////////////////////
+
+    private static ThreadLocal<Kawapad> threadLocalKawapad = new ThreadLocal<>();
+    public static void setCurrent( Kawapad kawapad ) {
+        threadLocalKawapad.set( kawapad );
+    }
+    public static Kawapad getCurrent() {
+        Kawapad currentKawapad = threadLocalKawapad.get();
+        if ( currentKawapad == null ) 
+            throw new IllegalStateException();
+        return currentKawapad;
+    }
+    private final Runnable threadInitializer = new Runnable() {
+        @Override
+        public void run() {
+            setCurrent( Kawapad.this );
+        }
+    };
+    public Runnable threadInitializer() {
+        return threadInitializer;
+    }
     
+    ////////////////////////////////////////////////////////////////////////////
+    // The Thread Initializer Facility
+    ////////////////////////////////////////////////////////////////////////////
+
+    Collection<Runnable> threadInitializerList = new ArrayList<>();
+    public void addThreadInitializer( Runnable r ) {
+        threadInitializerList.add( r );
+    }
+    public void deleteThreadInitializer( Runnable r ) {
+        threadInitializerList.remove( r );
+    }
+    public Collection<Runnable> getThreadInitializerList() {
+        return Collections.unmodifiableCollection( threadInitializerList );
+    }
+    
+    {
+        addThreadInitializer( threadInitializer() );
+    }
+    
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // 
+    ////////////////////////////////////////////////////////////////////////////
+
     protected SchemeSecretary schemeSecretary;
     public SchemeSecretary getSchemeSecretary() {
         return schemeSecretary;
@@ -270,11 +310,12 @@ public class Kawapad extends JTextPane {
      * One of such variables is a reference to the frame object. This reference must be
      * cleared when the frame is disposed.
      */
+    @Deprecated
     public static void registerLocalSchemeInitializers( SchemeSecretary schemeSecretary, Kawapad kawapad ) {
         schemeSecretary.registerSchemeInitializer( kawapad, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
             public void execute0( Scheme scheme, Object[] args ) {
-                kawapad.initScheme( scheme );               
+                kawapad.initSchemeLocal( scheme );               
             }
         });
 //          WARNING This should be done only in init(); (Tue, 06 Aug 2019 18:07:49 +0900)
@@ -288,6 +329,7 @@ public class Kawapad extends JTextPane {
 //          });
     }
     
+    @Deprecated
     public static void invokeLocalSchemeInitializers( SchemeSecretary schemeSecretary, Kawapad kawaPane ) {
         schemeSecretary.invokeSchemeInitializers( kawaPane );
     }
@@ -295,6 +337,7 @@ public class Kawapad extends JTextPane {
     /**
      * Remove initializers that initialize variables for the current frame.
      */
+    @Deprecated
     public static void unregisterLocalSchemeInitializers(SchemeSecretary schemeSecretary, Kawapad kawaPane ) {
         schemeSecretary.unregisterSchemeInitializer( kawaPane );
     }
@@ -1081,63 +1124,6 @@ public class Kawapad extends JTextPane {
     //////////////////////////////////////////////////////////////////////////////////////////
 
 
-    static class EvaluateRunnable implements Runnable {
-        Kawapad kadapad;
-        String schemeScript;
-        File schemeScriptFile;
-        boolean insertText;
-        boolean replaceText;
-        boolean doReset;
-        public EvaluateRunnable(Kawapad kawaPane, String schemeScript, File schemeScriptFile, boolean insertText, boolean replaceText, boolean doReset ) {
-            super();
-            this.kadapad = kawaPane;
-            this.schemeScript = schemeScript;
-            this.insertText = insertText;
-            this.replaceText = replaceText;
-            this.doReset = doReset;
-        }
-        @Override
-        public void run() {
-            logInfo( schemeScript );
-            HashMap<String,Object> variables = new HashMap<>();
-            kadapad.initVariables( variables );
-            ExecuteSchemeResult result = SchemeSecretary.evaluateScheme( 
-                kadapad.schemeSecretary, 
-                variables, schemeScript, 
-                schemeScriptFile, "scratchpad" );
-
-            if ( insertText || ! result.succeeded() ) {
-                if ( replaceText && result.succeeded() ) {
-                    if ( result.isDocument )  {
-                        logWarn( "**KAWAPAD_PAGE**" );
-                        SwingUtilities.invokeLater( new RunnableReplaceTextWithEntireBlockOnTextPane(
-                            kadapad,
-                            "(" + result.result.replaceFirst( "\n$", "" ) +" )",
-                            false,
-                            doReset
-                            ) );
-                    } else {
-                        SwingUtilities.invokeLater( new RunnableReplaceTextOnTextPane(
-                            kadapad,
-                            result.result,
-                            doReset
-                            ) );
-                    }
-                } else {
-                    String resultString = SchemeUtils.formatResult( result.result ); 
-                    // We want to make sure the result string ends with "\n" to avoid to get an extra line.
-                    if ( ! schemeScript.endsWith( "\n" ) ) {
-                        resultString = "\n" + SchemeUtils.formatResult( result.result ); 
-                    }
-                    logInfo( resultString );
-                    SwingUtilities.invokeLater( new RunnableInsertTextToTextPane( kadapad, resultString, true, doReset ) );
-                }
-            }
-        }
-    }
-
-    //////////////////////////////////////////////////////////////////////////////////////////
-
     public final Action SELECT_EVALUATE_ACTION = new EvaluateAlternateAction( "kawapad-select-evaluate" );
     final class EvaluateAlternateAction extends EvaluateAction {
         public EvaluateAlternateAction(String name) {
@@ -1148,7 +1134,7 @@ public class Kawapad extends JTextPane {
             BACKWARD_ACTION.actionPerformed( e );
             PARENTHESIS_EXPAND_SELECTION_ACTION.actionPerformed( e );
             kawapad.getThreadManager().startScratchPadThread(
-                new EvaluateRunnable(
+                new KawapadEvaluator(
                     kawapad, getTextDefault(), filePath, true, false, false ) );
         }
         {
@@ -1174,13 +1160,13 @@ public class Kawapad extends JTextPane {
                         public void run() {
                             String schemeScript2 = getSelectedText( kawapad );
                             kawapad.getThreadManager().startScratchPadThread(
-                                new EvaluateRunnable( kawapad, schemeScript2,  filePath, true, true, false ) );
+                                new KawapadEvaluator( kawapad, schemeScript2,  filePath, true, true, false ) );
                         }
                     });
 
                 } else {
                     kawapad.getThreadManager().startScratchPadThread( 
-                        new EvaluateRunnable( kawapad, schemeScript,  filePath, true, true, false ) );
+                        new KawapadEvaluator( kawapad, schemeScript,  filePath, true, true, false ) );
                 }
             }
 
@@ -1200,7 +1186,7 @@ public class Kawapad extends JTextPane {
         @Override
         public void actionPerformed(ActionEvent e) {
             //  JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
-            kawapad.getThreadManager().startScratchPadThread( new EvaluateRunnable(
+            kawapad.getThreadManager().startScratchPadThread( new KawapadEvaluator(
                 kawapad, getTextDefault(), filePath, true, false, false ) );
         }
         {
@@ -1215,7 +1201,7 @@ public class Kawapad extends JTextPane {
         @Override
         public void actionPerformed(ActionEvent e) {
             //  JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
-            kawapad.getThreadManager().startScratchPadThread( new EvaluateRunnable( kawapad, getTextDefault(), filePath, false, false, false ) );
+            kawapad.getThreadManager().startScratchPadThread( new KawapadEvaluator( kawapad, getTextDefault(), filePath, false, false, false ) );
         }
         {
             putValue( Action2.NAME, "Run" );
@@ -1920,9 +1906,9 @@ public class Kawapad extends JTextPane {
             logInfo( "Loading " + initFile.getName() );
             if ( initFile.exists() ) {
                 SchemeUtils.evaluateScheme( 
-                    scheme, null, new InputStreamReader( new FileInputStream( initFile ) ), 
-                    initFile, 
-                    initFile.getPath() 
+                    scheme, null, null, 
+                    new InputStreamReader( new FileInputStream( initFile ) ), 
+                    initFile, initFile.getPath() 
                     ).throwIfError();
             } else {
                 logInfo( "The " + fileType + " file \"" + initFile.getPath() + "\" does not exist. Ignored." );
@@ -1945,121 +1931,9 @@ public class Kawapad extends JTextPane {
 
     ////////////////////////////////////////////////////////////////////////////
     
-    protected void initScheme( Scheme scheme ) {
+    protected void initSchemeLocal( Scheme scheme ) {
         logInfo( "KawaPad#initScheme" );
-        Environment env = scheme.getEnvironment();
-        SchemeUtils.defineVar( env, this, instanceID );
-
-        textualIncrementalAddon.initScheme( env );
-        
-        SchemeUtils.defineVar( env, new Procedure2("load-font") {
-            @Override
-            public Object apply2(Object arg1,Object arg2) throws Throwable {
-                String filePath = SchemeUtils.anyToString( arg1 );
-                float  fontSize = SchemeUtils.toFloat( arg2 );
-                Font font = Font.createFont(Font.TRUETYPE_FONT, new File( filePath )).deriveFont( fontSize );
-                GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-                ge.registerFont(font);
-                kawapad.setFont( font );
-                return Values.empty;
-            }
-        }, "load-font" );
-
-        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
-            setNames( "load-font"  );
-            setParameterDescription( "" );
-            addParameter( "file-size", "string", null , false, "Specifies the path to the font file. " );
-            addParameter( "font-size", "number", null , false, "Specifies its font size. " );
-            setReturnValueDescription( "::void" );
-            setShortDescription( "Set the main font of the editor." );
-            setLongDescription( ""
-                    + "Kawapad can change its font-face. ||<name/>|| loads a file from the filesystem and "
-                    + "set it to the font-face of Kawapad. "
-                                + "" 
-                             );
-        }});
-
-        
-        SchemeUtils.defineVar(env, new SafeProcedureN("add-lisp-keyword") {
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                addAllLispKeywords( SchemeUtils.schemeStringListToJavaStringList( Arrays.asList( args )));
-                return Values.empty;
-            }
-        } );
-        SchemeUtils.defineVar(env, new SafeProcedureN( "delete-lisp-keyword" ) {
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                deleteAllLispKeywords( SchemeUtils.schemeStringListToJavaStringList( Arrays.asList( args )));
-                return Values.empty;
-            }
-        } );
-        SchemeUtils.defineVar(env, new SafeProcedureN("add-syntax-keyword") {
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                addAllLispKeywords( SchemeUtils.schemeStringListToJavaStringList( Arrays.asList( args )));
-                return Values.empty;
-            }
-        } );
-        SchemeUtils.defineVar(env, new SafeProcedureN( "delete-syntax-keyword" ) {
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                deleteAllLispKeywords( SchemeUtils.schemeStringListToJavaStringList( Arrays.asList( args )));
-                return Values.empty;
-            }
-        } );
-        
-        SchemeUtils.defineVar(env, new Procedure1("get-lisp-keywords") {
-            @Override
-            public Object apply1(Object arg1) throws Throwable {
-                return LList.makeList( SchemeUtils.javaStringListToSchemeSymbolList( lispKeywordList ) );
-            }
-        } );
-
-        SchemeUtils.defineVar(env, new SafeProcedureN( "set-syntax-color" ) {
-            @Override
-            public Object apply2(Object arg1, Object arg2) throws Throwable {
-                documentFilter.getSyntaxElementList().get(
-                    KawapadSyntaxElementType.schemeValueOf((Symbol)arg1)).setColor((Color)arg2);
-                
-                return Values.empty; 
-            }
-            @Override
-            public Object apply3(Object arg1, Object arg2, Object arg3) throws Throwable {
-                documentFilter.getSyntaxElementList().get(
-                    KawapadSyntaxElementType.schemeValueOf((Symbol)arg1)).setColor((Color)arg2,(Color)arg3);
-                return Values.empty; 
-            }
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                WrongArguments.checkArgCount( this.getName() , 2, 3, args.length );
-
-                if ( args.length == 2 )
-                    return apply2( args[0], args[1] );
-                else if ( args.length == 3 )
-                    return apply3( args[0], args[1], args[2] );
-                
-                throw new InternalError();
-            }
-        });
-        SchemeUtils.defineVar(env, new Procedure1() {
-            @Override
-            public Object apply1(Object arg1 ) throws Throwable {
-                return Kawapad.prettify( kawapad, SchemeUtils.anyToString(SchemeUtils.prettyPrint(arg1)));
-            }
-        }, "pretty-print");
-        SchemeUtils.defineVar(env, new Procedure1() {
-            @Override
-            public Object apply1(Object arg1 ) throws Throwable {
-                return Kawapad.prettify( kawapad, SchemeUtils.anyToString(arg1));
-            }
-        }, "prettify");
-
-        
-
-        
     }
-
 
     public static Scheme staticInitScheme( Scheme scheme ) {
         logInfo( "KawaPad#staticInitScheme" );
@@ -2071,7 +1945,6 @@ public class Kawapad extends JTextPane {
 
             SchemeUtils.defineVar(env, false, "frame"  );
             SchemeUtils.defineVar(env, false, "scheme" );
-            SchemeUtils.defineVar(env, load.loadRelative , "load" );
             
             SchemeUtils.defineVar(env, new Procedure3() {
                 @Override
@@ -2088,6 +1961,117 @@ public class Kawapad extends JTextPane {
                 }
             }, "unregister-event-handler");
 
+            
+            // deprecated? 
+            SchemeUtils.defineVar(env, new Procedure1() {
+                @Override
+                public Object apply1(Object arg1 ) throws Throwable {
+                    return Kawapad.prettify( getCurrent(), SchemeUtils.anyToString(SchemeUtils.prettyPrint(arg1)));
+                }
+            }, "pretty-print");
+            // deprecated?
+            SchemeUtils.defineVar(env, new Procedure1() {
+                @Override
+                public Object apply1(Object arg1 ) throws Throwable {
+                    return Kawapad.prettify( getCurrent(), SchemeUtils.anyToString(arg1));
+                }
+            }, "prettify");
+
+            KawapadTextualIncrement.initScheme( env );
+            
+            SchemeUtils.defineVar( env, new Procedure2("load-font") {
+                @Override
+                public Object apply2(Object arg1,Object arg2) throws Throwable {
+                    String filePath = SchemeUtils.anyToString( arg1 );
+                    float  fontSize = SchemeUtils.toFloat( arg2 );
+                    Font font = Font.createFont(Font.TRUETYPE_FONT, new File( filePath )).deriveFont( fontSize );
+                    GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+                    ge.registerFont(font);
+                    Kawapad kawapad = getCurrent();
+                    kawapad.setFont( font );
+                    return Values.empty;
+                }
+            }, "load-font" );
+
+            DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
+                setNames( "load-font"  );
+                setParameterDescription( "" );
+                addParameter( "file-size", "string", null , false, "Specifies the path to the font file. " );
+                addParameter( "font-size", "number", null , false, "Specifies its font size. " );
+                setReturnValueDescription( "::void" );
+                setShortDescription( "Set the main font of the editor." );
+                setLongDescription( ""
+                        + "Kawapad can change its font-face. ||<name/>|| loads a file from the filesystem and "
+                        + "set it to the font-face of Kawapad. "
+                                    + "" 
+                                 );
+            }});
+
+            
+            SchemeUtils.defineVar(env, new SafeProcedureN("add-lisp-keyword") {
+                @Override
+                public Object applyN(Object[] args) throws Throwable {
+                    getCurrent().addAllLispKeywords( SchemeUtils.schemeStringListToJavaStringList( Arrays.asList( args )));
+                    return Values.empty;
+                }
+            } );
+            SchemeUtils.defineVar(env, new SafeProcedureN( "delete-lisp-keyword" ) {
+                @Override
+                public Object applyN(Object[] args) throws Throwable {
+                    getCurrent().deleteAllLispKeywords( SchemeUtils.schemeStringListToJavaStringList( Arrays.asList( args )));
+                    return Values.empty;
+                }
+            } );
+            SchemeUtils.defineVar(env, new SafeProcedureN("add-syntax-keyword") {
+                @Override
+                public Object applyN(Object[] args) throws Throwable {
+                    getCurrent().addAllLispKeywords( SchemeUtils.schemeStringListToJavaStringList( Arrays.asList( args )));
+                    return Values.empty;
+                }
+            } );
+            SchemeUtils.defineVar(env, new SafeProcedureN( "delete-syntax-keyword" ) {
+                @Override
+                public Object applyN(Object[] args) throws Throwable {
+                    getCurrent().deleteAllLispKeywords( SchemeUtils.schemeStringListToJavaStringList( Arrays.asList( args )));
+                    return Values.empty;
+                }
+            } );
+            
+            SchemeUtils.defineVar(env, new Procedure1("get-syntax-keywords") {
+                @Override
+                public Object apply1(Object arg1) throws Throwable {
+                    return LList.makeList( SchemeUtils.javaStringListToSchemeSymbolList( getCurrent().lispKeywordList ) );
+                }
+            } );
+
+            SchemeUtils.defineVar(env, new SafeProcedureN( "set-syntax-color" ) {
+                @Override
+                public Object apply2(Object arg1, Object arg2) throws Throwable {
+                    getCurrent().documentFilter.getSyntaxElementList().get(
+                        KawapadSyntaxElementType.schemeValueOf((Symbol)arg1)).setColor((Color)arg2);
+                    
+                    return Values.empty; 
+                }
+                @Override
+                public Object apply3(Object arg1, Object arg2, Object arg3) throws Throwable {
+                    getCurrent().documentFilter.getSyntaxElementList().get(
+                        KawapadSyntaxElementType.schemeValueOf((Symbol)arg1)).setColor((Color)arg2,(Color)arg3);
+                    return Values.empty; 
+                }
+                @Override
+                public Object applyN(Object[] args) throws Throwable {
+                    WrongArguments.checkArgCount( this.getName() , 2, 3, args.length );
+
+                    if ( args.length == 2 )
+                        return apply2( args[0], args[1] );
+                    else if ( args.length == 3 )
+                        return apply3( args[0], args[1], args[2] );
+                    
+                    throw new InternalError();
+                }
+            });
+
+            
             try {
                 logInfo( "Loading [KawaPad internal]/kawapad-extension.scm" );
                 SchemeUtils.execSchemeFromResource( scheme, Kawapad.class, "kawapad-extension.scm" );
@@ -2106,360 +2090,7 @@ public class Kawapad extends JTextPane {
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    static class TextualIncrementalAddon {
-        public void initGui( JMenu file, JMenu edit, JMenu view, JMenu scheme ) {
-            edit.add( TEXTUAL_INCREMENT_ACTION );
-            edit.add( TEXTUAL_DECREMENT_ACTION );
-        }
-        
-        public void initScheme(Environment env) {
-            SchemeUtils.defineVar( env, new Procedure2("add-incremental-keyword") {
-                @Override
-                public Object apply2(Object arg1, Object arg2) throws Throwable {
-                    addIncrementalSymbol( 
-                        SchemeUtils.anyToString( arg1 ),
-                        SchemeUtils.anyToString( arg2 ));
-                    return Values.empty;
-                }
-            });
-            SchemeUtils.defineVar( env, new Procedure1("delete-incremental-keyword") {
-                @Override
-                public Object apply1(Object arg1) throws Throwable {
-                    deleteIncrementalSymbol( 
-                        SchemeUtils.anyToString( arg1 ));
-                    return Values.empty;
-                }
-            });
-            SchemeUtils.defineVar( env, new Procedure0("clear-incremental-keyword") {
-                @Override
-                public Object apply0() throws Throwable {
-                    clearIncrementalSymbol();
-                    return Values.empty;
-                }
-            });
-        }
-        public static final String TEXTUAL_INCREMENT = "textual-increment-action";
-        public static final String TEXTUAL_DECREMENT = "textual-decrement-action";
-        static class IncrementalSymbol {
-            final String from;
-            final String to;
-            final Pattern fromPattern;
-            final Pattern toPattern;
-            IncrementalSymbol(String from, String to) {
-                super();
-                if ( from == null  )
-                    throw new NullPointerException( "from is null" );
-                if ( to == null  )
-                    throw new NullPointerException( "to is null");
-                
-                this.from = from;
-                this.to = to;
-                
-                this.fromPattern = Pattern.compile( "\\b" + from + "\\b" );
-                this.toPattern   = Pattern.compile( "\\b" + to   + "\\b" );
-            }
-            @Override
-            public boolean equals(Object obj) {
-                if ( obj instanceof TextualIncrementalAddon.IncrementalSymbol )
-                    return this.from.equals( ((TextualIncrementalAddon.IncrementalSymbol)obj).from );
-                else
-                    return false;
-            }
-            @Override
-            public int hashCode() {
-                return from.hashCode();
-            }
-            @Override
-            public String toString() {
-                return this.getClass().getName() + "(" + this.from + "->" + this.to + ")";
-            }
-        }
-        List<TextualIncrementalAddon.IncrementalSymbol> incrementalSymbols = new LinkedList<>();
-        
-        static final Comparator<IncrementalSymbol> COMPARATOR_FROM = new Comparator<IncrementalSymbol>() {
-            @Override
-            public int compare(IncrementalSymbol o1, IncrementalSymbol o2) {
-                if ( o1.from.length() != o2.from.length() ) {
-                    return o2.from.length() - o1.from.length(); 
-                } else {
-                    return o2.from.compareTo( o1.from );
-                }
-            }
-        };
-        static final Comparator<IncrementalSymbol> COMPARATOR_TO = new Comparator<IncrementalSymbol>() {
-            @Override
-            public int compare(IncrementalSymbol o1, IncrementalSymbol o2) {
-                if ( o1.to.length() != o2.to.length() ) {
-                    return o2.to.length() - o1.to.length(); 
-                } else {
-                    return o2.to.compareTo( o1.to );
-                }
-            }
-        };
-
-        void addIncrementalSymbol0( String from, String to ) {
-            incrementalSymbols.add( new IncrementalSymbol( from, to ) );
-        }
-        void deleteIncrementalSymbol0( String from ) {
-            incrementalSymbols.remove( new IncrementalSymbol( from, null ) );
-        }
-        void clearIncrementalSymbol0() {
-            incrementalSymbols.clear();
-        }
-
-        public void addIncrementalSymbol( String from, String to ) {
-            addIncrementalSymbol0( from, to );
-        }
-        public void deleteIncrementalSymbol( String from ) {
-            deleteIncrementalSymbol0( from );
-        }
-        public void clearIncrementalSymbol( ) {
-            clearIncrementalSymbol0();
-        }
-        static Pattern NUMBER_PATTERN = Pattern.compile( "[0-9\\/\\.\\-\\+]+" );
-
-        String zeroPad( String s, int len ) {
-            StringBuilder sb = new StringBuilder();
-            int slen = s.length();
-            for ( int i=0; i<len-slen; i++ ) {
-                sb.append( '0' );
-            }
-            sb.append(s);
-            return sb.toString();
-        }
-        
-        String fixedFloatAdd( String s, int n, boolean doZeroPad ) {
-            String wnp; // whole-number part 
-            String fp;  // fraction part
-            int fpLen = -1;
-            {
-                int tmpPos = s.indexOf( '.' );
-                if ( tmpPos < 0 ) {
-                    wnp = s;
-                    fp ="";
-                    fpLen = 0;
-                } else {
-                    wnp = s.substring( 0,tmpPos ).trim();
-                    fp =  s.substring( tmpPos+1 ).trim();
-                    fpLen = s.length() - tmpPos - 1;
-                }
-            }
-            int totalLen = wnp.length() + fp.length();
-            int inValue  = Integer.parseInt( wnp+fp );
-            int outValue = inValue + n;
-            if ( ( inValue < 0 ) && !( outValue < 0 ) ) {
-                totalLen --;
-            } else if ( ( 0 <= inValue ) && !( 0 <= outValue ) ) {
-                totalLen ++;
-            }
-            
-            String resultString = String.valueOf( outValue );
-            if ( doZeroPad && fp.length() !=0 ) {
-                resultString = zeroPad( resultString, totalLen );
-                {
-                    int minusPos = resultString.indexOf( '-' );
-                    if ( 0<minusPos ) {
-                        resultString = 
-                                "-" + 
-                                        resultString.substring( 0, minusPos ) + 
-                                        resultString.substring( minusPos+1, resultString.length() );
-                    }
-                }
-            }
-            
-            if ( fp.length() == 0 ) {
-                return resultString;
-            } else {
-                return  ""
-                        + resultString.substring( 0, resultString.length() - fpLen ) 
-                        + "." 
-                        + resultString.substring(    resultString.length() - fpLen ); 
-            }
-            
-            
-        }
-        String fractionAdd(String numStr, int n) {
-            String[] ss = numStr.split( "\\/" );
-            ss[0] = String.valueOf( fixedFloatAdd( ss[0], n, !(1<ss.length) ) ); 
-            return String.join( "/", ss );
-        }
-
-        synchronized void replace(JTextComponent target, int direction ) {
-            String str = target.getText();
-            Caret caret = target.getCaret();
-            
-            int pos = caret.getDot();
-            if ( str.length() < pos )
-                pos = str.length();
-            
-            int beginPos = -1;
-            {
-                for ( int i=pos; 0<=i; i-- ) {
-                    if ( Character.isWhitespace( str.charAt( i ) ) ) {
-                        beginPos = i;
-                        break;
-                    }
-                }
-                if ( beginPos == -1 )
-                    beginPos = 0;
-            }
-            int endPos = -1;
-            {
-                Matcher m = Pattern.compile("$", Pattern.MULTILINE ).matcher( str +"\n" );
-                if ( m.find( pos ) ) {
-                    endPos = m.start();
-                }
-                
-                if ( endPos == -1 )
-                    endPos = str.length();
-            }
-            
-            if ( endPos <= beginPos )
-                return;
-            
-            logInfo( "TextualIncrementAction:" + beginPos + ":" + endPos );
-            String targetStr = str.substring( beginPos , endPos );
-            
-            // \\b does not match the end of the string.
-            // so add an extra space to the target string.
-            // (Mon, 09 Sep 2019 12:00:58 +0900)
-//            targetStr =  targetStr + " ";
-
-            String foundSubstr=null;
-            int foundBeginPos=Integer.MAX_VALUE;
-            int foundEndPos =Integer.MAX_VALUE;
-
-            {
-                if ( foundSubstr == null ) {
-                    Matcher m = NUMBER_PATTERN.matcher( targetStr );
-                    if ( m.find() ) {
-                        Scheme scheme = ((Kawapad)target).schemeSecretary.getExecutive();
-                        
-                        synchronized ( scheme ) {
-                            try {
-                                String numStr = targetStr.substring( m.start(), m.end());
-                                String strResult = fractionAdd( numStr, direction );
-                                
-                                if ( strResult != null ) {
-                                    foundSubstr = strResult.toString();
-                                    foundBeginPos = m.start() + beginPos;
-                                    foundEndPos   = m.end()   + beginPos;
-                                }
-                            } catch (Throwable e) {
-                                logError( "failed to increment the number", e );
-                            }
-                        }
-                         
-                    }
-                }
-                if ( foundSubstr == null ) {
-                    if ( 0 <= direction ) {
-                        incrementalSymbols.sort( COMPARATOR_FROM );
-                    } else {
-                        incrementalSymbols.sort( COMPARATOR_TO );
-                    }
-
-
-                    for ( IncrementalSymbol s : incrementalSymbols ) {
-                        Pattern pattern;
-                        String substr;
-                        if ( 0 <= direction ) {
-                            pattern = s.fromPattern;
-                            substr = s.to;
-                        } else {
-                            pattern = s.toPattern;
-                            substr = s.from;
-                        }
-                        
-                        Matcher m = pattern.matcher( targetStr );
-                        if ( m.find() ) {
-                            int tempBeginPos = m.start() + beginPos;
-                            int tempEndPos   = m.end()   + beginPos;
-                            
-                            if ( tempBeginPos < foundBeginPos ) {
-                                foundBeginPos = tempBeginPos;
-                                foundEndPos   = tempEndPos;
-                                foundSubstr   = substr;
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
-            
-            Kawapad kawaPane = ((Kawapad)target);
-            
-            if ( foundSubstr != null ) {
-                kawaPane.getUndoManager().startGroup();
-                kawaPane.getUndoManager().setSuspended( true );
-                try {
-                    caret.setDot( foundBeginPos );
-                    caret.moveDot( foundEndPos );
-                    target.replaceSelection( foundSubstr );
-                    caret.setDot( foundBeginPos + foundSubstr.length() );
-                    caret.moveDot( foundBeginPos );
-                } finally {
-                    kawaPane.getUndoManager().setSuspended( false );
-                    kawaPane.getUndoManager().endGroup();
-                }
-            }
-        }
-
-        class TextualIncrementAction extends TextAction {
-            
-            /** Create this object with the appropriate identifier. */
-            public TextualIncrementAction() {
-                super(TEXTUAL_INCREMENT);
-            }
-
-            /**
-             * The operation to perform when this action is triggered.
-             *
-             * @param e the action event
-             */
-            public void actionPerformed(ActionEvent e) {
-                logInfo("TextualIncrementAction.actionPerformed()");
-                JTextComponent target = getTextComponent(e);
-                if (target != null) {
-                    replace( target, 1);
-                }
-            }
-
-            {
-                putValue( Action2.NAME, "Increment the Nearest Number" );
-                putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_G , KeyEvent.CTRL_MASK ));
-                putValue( Action.MNEMONIC_KEY , (int) 'i' );
-            }
-        }
-        {
-            addIncrementalSymbol( "foo", "bar" );
-            addIncrementalSymbol( "bar", "baz" );
-            addIncrementalSymbol( "baz", "foo" );
-        }
-        class TextualDecrementAction extends TextAction {
-            /** Create this object with the appropriate identifier. */
-            public TextualDecrementAction( ) {
-                super(TEXTUAL_DECREMENT);
-            }
-
-            public void actionPerformed(ActionEvent e) {
-                logInfo("TextualDecrementAction.actionPerformed()");
-                JTextComponent target = getTextComponent(e);
-                if (target != null) {
-                    replace( target, -1);
-                }
-            }
-            {
-                putValue( Action2.NAME, "Decrement the Nearest Number" );
-                putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_D , KeyEvent.CTRL_MASK ));
-                putValue( Action.MNEMONIC_KEY , (int) 'd' );
-            }
-        }
-        
-        final TextualIncrementAction TEXTUAL_INCREMENT_ACTION = new TextualIncrementAction();
-        final TextualDecrementAction TEXTUAL_DECREMENT_ACTION = new TextualDecrementAction();
-    }
-    Kawapad.TextualIncrementalAddon textualIncrementalAddon = new TextualIncrementalAddon(); 
+    KawapadTextualIncrement textualIncrement = new KawapadTextualIncrement(); 
     
     //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2547,7 +2178,7 @@ public class Kawapad extends JTextPane {
     }
     public void openIntro() {
         setCaretPosition( 0 );
-        kawapad.getThreadManager().startScratchPadThread( new EvaluateRunnable(
+        kawapad.getThreadManager().startScratchPadThread( new KawapadEvaluator(
             kawapad,
             "(help about-intro)",
             filePath, true, true, true ));
@@ -2650,7 +2281,7 @@ public class Kawapad extends JTextPane {
                         if ( text.endsWith( "\"" ) )
                             text = text.substring( 0, text.length()-1 );
                         
-                        createKawapad( new File( text ) );
+                        createKawapadFrame( new File( text ) );
                         return;
                     }
                 }
@@ -2716,7 +2347,7 @@ public class Kawapad extends JTextPane {
         };
     }
     
-    public KawapadFrame createKawapad( File f) throws IOException {
+    public KawapadFrame createKawapadFrame( File f) throws IOException {
         KawapadFrame kawapadFrame = new KawapadFrame( this.kawapad.schemeSecretary, "Kawapad" );
         kawapadFrame.init();
         if ( f != null )
@@ -2846,6 +2477,16 @@ public class Kawapad extends JTextPane {
             }
         }
     }
+    
+    {
+        addVariableInitializer( new KawaVariableInitializer() {
+            @Override
+            public void initializeVariable(Map<String, Object> variables ) {
+                variables.put( "kawapad", this );
+                variables.put( instanceID, this );
+            }
+        });
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 
@@ -2881,7 +2522,7 @@ public class Kawapad extends JTextPane {
         
         // TEXTUAL_INCREMENT
         {
-            kawapad.textualIncrementalAddon.initGui( fileMenuItem, editMenuItem, viewMenuItem, schemeMenuItem );
+            kawapad.textualIncrement.initGui( fileMenuItem, editMenuItem, viewMenuItem, schemeMenuItem );
         }
         
 //          editMenuItem.addSeparator();

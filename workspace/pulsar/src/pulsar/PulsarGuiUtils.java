@@ -536,7 +536,7 @@ public class PulsarGuiUtils {
     
     
     
-    static void initStaticScheme( Pulsar pulsar, Scheme scheme ) {
+    static void initScheme( Pulsar pulsar, Scheme scheme ) {
         logInfo("PulsarGui#initStaticScheme=======================================");
         //////////////////////////////////////////////////////
         SchemeSecretary.initializeSchemeForCurrentThreadStatic( scheme );

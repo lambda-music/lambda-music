@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -57,6 +58,7 @@ import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import gnu.math.DFloNum;
 import kawa.standard.Scheme;
+import kawapad.Kawapad.KawaVariableInitializer;
 import metro.Metro;
 import metro.MetroPort;
 import metro.MetroTrack;
@@ -135,7 +137,7 @@ public final class Pulsar extends Metro {
         return "could not find a track which name was " + arg + " ... ignored.";
     }
     
-    long shutdownWait = 1024;
+    static long shutdownWait = 1024;
     public static void registerLocalSchemeInitializers( SchemeSecretary schemeSecretary, Pulsar pulsar ) {
         schemeSecretary.registerSchemeInitializer( pulsar, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
@@ -165,13 +167,13 @@ public final class Pulsar extends Metro {
         schemeSecretary.registerSchemeInitializer( pulsar, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
             public void execute0( Scheme scheme, Object[] args ) {
-                pulsar.initScheme( scheme );
+                Pulsar.initScheme( scheme );
             }
         });
         schemeSecretary.registerSchemeInitializer( pulsar, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
             public void execute0( Scheme scheme, Object[] args ) {
-                PulsarGuiUtils.initStaticScheme( pulsar, scheme );
+                PulsarGuiUtils.initScheme( pulsar, scheme );
             }
         });
 
@@ -188,6 +190,37 @@ public final class Pulsar extends Metro {
             }
         });
     }
+    
+    private static ThreadLocal<Pulsar> threadLocalCurrent = new ThreadLocal<>();
+    public static void setCurrent( Pulsar current ) {
+        threadLocalCurrent.set( current );
+    }
+    public static Pulsar getCurrent() {
+        Pulsar current = threadLocalCurrent.get();
+        if ( current == null ) 
+            throw new IllegalStateException();
+        return current;
+    }
+    private final Runnable threadInitializer = new Runnable() {
+        @Override
+        public void run() {
+            setCurrent( Pulsar.this );
+        }
+    };
+    public Runnable getThreadInitializer() {
+        return threadInitializer;
+    }
+    
+    private KawaVariableInitializer variableInitializer = new KawaVariableInitializer() {
+        @Override
+        public void initializeVariable(Map<String, Object> variables) {
+            variables.put( "pulsar", Pulsar.this );
+        }
+    };
+    public KawaVariableInitializer getVariableInitializer() {
+        return variableInitializer;
+    }
+
 
     @Override
     protected void onCreateThread() {
@@ -709,7 +742,7 @@ public final class Pulsar extends Metro {
         }
     }
 
-    protected List<Object> readParamPortName( Object arg ) {
+    protected static List<Object> readParamPortName( Object arg ) {
         if ( arg instanceof Pair ) {
             return ((Pair)arg);
         } else {
@@ -739,7 +772,7 @@ public final class Pulsar extends Metro {
         }
     }
     
-    private MetroPort readParamNameToPort( List<MetroPort> portList, Object arg ) {
+    private static MetroPort readParamNameToPort( List<MetroPort> portList, Object arg ) {
         if ( arg instanceof MetroPort ) 
             return (MetroPort)arg;
         
@@ -765,14 +798,13 @@ public final class Pulsar extends Metro {
      * @param scheme
      *            the scheme instance to initialize.
      */
-    public void initScheme( Scheme scheme ) {
+    public static void initScheme( Scheme scheme ) {
         Environment env = scheme.getEnvironment();
 
-        SchemeUtils.defineVar( env, this, "pulsar" );
         SchemeUtils.defineVar( env, new SafeProcedureN( "open?" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                return isOpened();
+                return getCurrent().isOpened();
             }
         }, "open?" );
         
@@ -788,7 +820,7 @@ public final class Pulsar extends Metro {
         SchemeUtils.defineVar( env, new Procedure1("open") {
             @Override
             public Object apply1(Object arg0) throws Throwable {
-                open( SchemeUtils.toString( arg0 ) );
+                getCurrent().open( SchemeUtils.toString( arg0 ) );
                 return Invokable.NO_RESULT;
             }
         }, "open");
@@ -809,7 +841,7 @@ public final class Pulsar extends Metro {
         SchemeUtils.defineVar( env, new SafeProcedureN("close") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                close();
+                getCurrent().close();
                 return Invokable.NO_RESULT;
             }
         }, "close" );
@@ -845,10 +877,11 @@ public final class Pulsar extends Metro {
         Procedure openOutput = new SafeProcedureN("open-output") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
+                Pulsar pulsar = getCurrent();
                 ArrayList<MetroPort> list = new ArrayList<>();
                 for ( Object o : args ) {
                     for ( Object portName : readParamPortName( o ) ) {
-                        list.add( createOutputPort(portName) );
+                        list.add( pulsar.createOutputPort(portName) );
                     }
                 }
                 Collections.reverse( list );
@@ -864,10 +897,11 @@ public final class Pulsar extends Metro {
         Procedure openInput = new SafeProcedureN("open-input") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
+                Pulsar pulsar = getCurrent();
                 ArrayList<MetroPort> list = new ArrayList<>();
                 for ( Object o : args ) {
                     for ( Object portName : readParamPortName( o ) ) {
-                        list.add( createInputPort(portName) );
+                        list.add( pulsar.createInputPort(portName) );
                     }
                 }
                 Collections.reverse( list );
@@ -902,9 +936,10 @@ public final class Pulsar extends Metro {
         Procedure closeOutput = new SafeProcedureN("close-output") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
+                Pulsar pulsar = getCurrent();
                 for ( Object o : args ) {
-                    for ( MetroPort p : readParamPort( o ) ) {
-                        destroyOutputPort( p );
+                    for ( MetroPort p : pulsar.readParamPort( o ) ) {
+                        pulsar.destroyOutputPort( p );
                     }
                 }
                 return Invokable.NO_RESULT;
@@ -918,9 +953,10 @@ public final class Pulsar extends Metro {
         Procedure closeInput = new SafeProcedureN("close-input") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
+                Pulsar pulsar = getCurrent();
                 for ( Object o : args ) {
-                    for ( MetroPort p : readParamPort( o ) ) {
-                        destroyInputPort( p );
+                    for ( MetroPort p : pulsar.readParamPort( o ) ) {
+                        pulsar.destroyInputPort( p );
                     }
                 }
                 return Invokable.NO_RESULT;
@@ -947,7 +983,7 @@ public final class Pulsar extends Metro {
         Procedure listOutput = new SafeProcedureN("list-output") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                List<MetroPort> list = getOutputPorts();
+                List<MetroPort> list = getCurrent().getOutputPorts();
                 Collections.reverse( list );
                 return LList.makeList( list  );
             }
@@ -961,7 +997,7 @@ public final class Pulsar extends Metro {
         Procedure listInput = new SafeProcedureN("list-input") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                List<MetroPort> list = getInputPorts();
+                List<MetroPort> list = getCurrent().getInputPorts();
                 Collections.reverse( list );
                 return LList.makeList( list  );
             }
@@ -996,7 +1032,7 @@ public final class Pulsar extends Metro {
         SchemeUtils.defineVar( env, new SafeProcedureN("connect") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                connectProc(Pulsar.this, args, ConnectProc.CONNECT );
+                connectProc( getCurrent(), args, ConnectProc.CONNECT );
                 return Invokable.NO_RESULT;
             }
         }, "connect" );
@@ -1008,7 +1044,7 @@ public final class Pulsar extends Metro {
         SchemeUtils.defineVar( env, new SafeProcedureN("disconnect") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                connectProc(Pulsar.this, args, ConnectProc.DISCONNECT );
+                connectProc(getCurrent(), args, ConnectProc.DISCONNECT );
                 return Invokable.NO_RESULT;
             }
         }, "disconnect");
@@ -1032,7 +1068,7 @@ public final class Pulsar extends Metro {
         SchemeUtils.defineVar( env, new SafeProcedureN("list-all-output") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                return Pair.makeList( getAllOutputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
+                return Pair.makeList( getCurrent().getAllOutputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
                     .collect( Collectors.toList() ) );
             }
         } , "list-all-output", "lao" );
@@ -1044,7 +1080,7 @@ public final class Pulsar extends Metro {
         SchemeUtils.defineVar( env, new SafeProcedureN("list-all-input") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                return Pair.makeList( getAllInputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
+                return Pair.makeList( getCurrent().getAllInputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
                     .collect( Collectors.toList() ) );
             }
         } , "list-all-input", "lai" );
@@ -1060,7 +1096,7 @@ public final class Pulsar extends Metro {
                 logInfo("set-main");
                 if ( args.length == 1 ) {
                     Procedure procedure = (Procedure)args[0];
-                    setMainProcedure( Pulsar.this.createInvokable(procedure) );
+                    getCurrent().setMainProcedure( getCurrent().createInvokable(procedure) );
                 } else {
                     throw new RuntimeException( "invalid argument length" );
                 }
@@ -1086,7 +1122,7 @@ public final class Pulsar extends Metro {
         SchemeUtils.defineVar( env, new Procedure0( "get-main" ) {
             @Override
             public Object apply0() throws Throwable {
-                return getMainProcedure();
+                return getCurrent().getMainProcedure();
             }
         }, "get-main");
         
@@ -1104,10 +1140,11 @@ public final class Pulsar extends Metro {
         SchemeUtils.defineVar( env, new SafeProcedureN("set-playing") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
+                Pulsar pulsar = getCurrent();
                 if ( args.length == 0 ) {
-                    togglePlaying();
+                    pulsar.togglePlaying();
                 } else if ( args.length == 1 ) {
-                    setPlaying( (Boolean)args[0] );
+                    pulsar.setPlaying( (Boolean)args[0] );
                 } else {
                     throw new RuntimeException( "invalid argument length" );
                 }
@@ -1131,7 +1168,7 @@ public final class Pulsar extends Metro {
         SchemeUtils.defineVar( env, new SafeProcedureN("playing?") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                return getPlaying();
+                return getCurrent().getPlaying();
             }
         }, "playing?");
 
@@ -1150,7 +1187,7 @@ public final class Pulsar extends Metro {
         SchemeUtils.defineVar( env, new SafeProcedureN("play") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                setPlaying( true ); 
+                getCurrent().setPlaying( true ); 
                 return Invokable.NO_RESULT;
             }
         }, "play");
@@ -1168,7 +1205,7 @@ public final class Pulsar extends Metro {
         SchemeUtils.defineVar( env, new SafeProcedureN("stop") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                setPlaying( false ); 
+                getCurrent().setPlaying( false ); 
                 return Invokable.NO_RESULT;
             }
         }, "stop");
@@ -1189,7 +1226,7 @@ public final class Pulsar extends Metro {
                 Thread t = new Thread() {
                     @Override
                     public void run() {
-                        schemeSecretary.executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+                        getCurrent().schemeSecretary.executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
                             @Override
                             public void execute0(Scheme resource, Object[] args) {
                                 try {
@@ -1197,7 +1234,7 @@ public final class Pulsar extends Metro {
                                 } catch (InterruptedException e) {
                                     logWarn( e.getMessage() );
                                 }
-                                quit(); 
+                                getCurrent().quit(); 
                             }
                         }, Invokable.NOARG );
                     }
@@ -1223,7 +1260,7 @@ public final class Pulsar extends Metro {
         SchemeUtils.defineVar( env, new SafeProcedureN("tap-tempo") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                tempoTapper.tap(); 
+                getCurrent().tempoTapper.tap(); 
                 return Invokable.NO_RESULT;
             }
         } , "tap-tempo", "tapt" );
@@ -1249,7 +1286,7 @@ public final class Pulsar extends Metro {
             public Object applyN(Object[] args) throws Throwable {
                 if ( 0 < args.length ) {
                     double bpm = SchemeUtils.toDouble(args[0]);
-                    tempoTapper.setBeatsPerMinute( bpm );
+                    getCurrent().tempoTapper.setBeatsPerMinute( bpm );
                 }
 
                 return Invokable.NO_RESULT;
@@ -1281,7 +1318,7 @@ public final class Pulsar extends Metro {
         Procedure0 resetScheme = new Procedure0( "reset" ) {
             @Override
             public Object apply0() throws Throwable {
-                reset();
+                getCurrent().reset();
                 return Invokable.NO_RESULT;
             }
         };
@@ -1305,7 +1342,7 @@ public final class Pulsar extends Metro {
         SchemeUtils.defineVar( env, new Procedure0("rewind") {
             @Override
             public Object apply0() throws Throwable {
-                rewind();
+                getCurrent().rewind();
                 return Invokable.NO_RESULT;
             }
         }, "rewind");
@@ -1324,9 +1361,10 @@ public final class Pulsar extends Metro {
         Procedure simul = new SafeProcedureN( "simultaneous" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                synchronized ( getMetroLock() ) {
+                Pulsar pulsar = getCurrent();
+                synchronized ( pulsar.getMetroLock() ) {
                     try {
-                        enterTrackChangeBlock();
+                        pulsar.enterTrackChangeBlock();
                         for ( int i=0; i<args.length; i++ ) {
                             Object arg = args[i];
                             if ( arg instanceof Procedure ) {
@@ -1336,8 +1374,8 @@ public final class Pulsar extends Metro {
                             }
                         }
                     } finally {
-                        leaveTrackChangeBlock();
-                        notifyTrackChange();
+                        pulsar.leaveTrackChangeBlock();
+                        pulsar.notifyTrackChange();
                     }
                 }
                 return Invokable.NO_RESULT;
@@ -1364,10 +1402,11 @@ public final class Pulsar extends Metro {
         Procedure getTrack = new SafeProcedureN( "get-track" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
+                Pulsar current = getCurrent();
                 ArrayList<MetroTrack> t = new ArrayList<>();
                 for ( int i=0; i<args.length; i++ ) {
                     Object arg = args[i];
-                    t.addAll( searchTrackCombo( arg ) );
+                    t.addAll( current.searchTrackCombo( arg ) );
                 }
                 return Pair.makeList( t );
             }
@@ -1435,7 +1474,7 @@ public final class Pulsar extends Metro {
                     default :
                         throw new IllegalArgumentException();
                 }
-                return createTrack( name, tags, procedure );
+                return getCurrent().createTrack( name, tags, procedure );
             }
         };
         SchemeUtils.defineVar( env, newTrack , "new-track", "newt" );
@@ -1510,31 +1549,32 @@ public final class Pulsar extends Metro {
                 SyncType syncType;
                 List<MetroTrack> syncTrackList;
                 double syncOffset;
+                Pulsar pulsar = getCurrent();
                 switch ( args.length ) {
                     case 0 :
                         throw new IllegalArgumentException();
                     case 1 :
-                        trackList     = readParamTrack( args[0] );
+                        trackList     = pulsar.readParamTrack( args[0] );
                         syncType      = SyncType.IMMEDIATE;
                         syncTrackList = Collections.EMPTY_LIST;
                         syncOffset    = 0.0d;
                         break;
                     case 2 :
-                        trackList     = readParamTrack( args[0] );
+                        trackList     = pulsar.readParamTrack( args[0] );
                         syncType      = readParamSyncType( args[1] );
                         syncTrackList = Collections.EMPTY_LIST;
                         syncOffset    = 0.0d;
                         break;
                     case 3 :
-                        trackList     = readParamTrack( args[0] );
+                        trackList     = pulsar.readParamTrack( args[0] );
                         syncType      = readParamSyncType( args[1] );
-                        syncTrackList = readParamTrack( args[2] );
+                        syncTrackList = pulsar.readParamTrack( args[2] );
                         syncOffset    = 0.0d;
                         break;
                     case 4 :
-                        trackList     = readParamTrack( args[0] );
+                        trackList     = pulsar.readParamTrack( args[0] );
                         syncType      = readParamSyncType( args[1] );
-                        syncTrackList = readParamTrack( args[2] );
+                        syncTrackList = pulsar.readParamTrack( args[2] );
                         syncOffset    = readParamSyncOffset( args[3] );
                         break;
                     default :
@@ -1558,7 +1598,7 @@ public final class Pulsar extends Metro {
         Procedure putTrack = new TrackManagementProcedure( "put-track" ) {
             @Override
             void procTrack( List<MetroTrack> trackList, SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
-                putTrack(trackList, syncType, syncTrack, syncOffset);
+                getCurrent().putTrack(trackList, syncType, syncTrack, syncOffset);
             }
         };
         SchemeUtils.defineVar( env, putTrack , "put-track", "putt" );
@@ -1599,7 +1639,7 @@ public final class Pulsar extends Metro {
         Procedure removeTrack = new TrackManagementProcedure( "remove-track" ) {
             @Override
             void procTrack( List<MetroTrack> trackList, SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
-                removeTrack(trackList, syncType, syncTrack, syncOffset);
+                getCurrent().removeTrack(trackList, syncType, syncTrack, syncOffset);
             }
         };
         SchemeUtils.defineVar( env, removeTrack , "remove-track", "remt" );
@@ -1615,7 +1655,7 @@ public final class Pulsar extends Metro {
         Procedure notifyTrackChange = new Procedure0( "notify-track-change" ) {
             @Override
             public Object apply0() throws Throwable {
-                notifyTrackChange();
+                getCurrent().notifyTrackChange();
                 return Invokable.NO_RESULT;
             }
         };
@@ -1639,7 +1679,7 @@ public final class Pulsar extends Metro {
         SchemeUtils.defineVar( env, new Procedure0("list-tracks") {
             @Override
             public Object apply0() throws Throwable {
-                List<MetroTrack> tempAllTracks = replicateAllTracks(); 
+                List<MetroTrack> tempAllTracks = getCurrent().replicateAllTracks(); 
                 ArrayList<Object> list = new ArrayList<>( tempAllTracks.size() );
                 for ( MetroTrack track :  tempAllTracks ) {
                     list.add( track );
@@ -1665,7 +1705,7 @@ public final class Pulsar extends Metro {
         Procedure0 clr = new Procedure0("clear-tracks") {
             @Override
             public Object apply0() throws Throwable {
-                clearTracks();
+                getCurrent().clearTracks();
                 return Invokable.NO_RESULT;
             }
         };
@@ -1779,10 +1819,10 @@ public final class Pulsar extends Metro {
         SchemeUtils.defineVar( env, new Procedure3("make-timer") {
             @Override
             public Object apply3(Object arg0, Object arg1,Object arg2 ) throws Throwable {
-                Runnable runnable = createTimer( Pulsar.this, 
+                Runnable runnable = createTimer( getCurrent(), 
                     SchemeUtils.toInteger( arg0 ), 
                     SchemeUtils.toInteger( arg1 ), 
-                    Pulsar.this.createInvokable2( (Procedure)arg2 ) );
+                    getCurrent().createInvokable2( (Procedure)arg2 ) );
 
                 return new Procedure0() {
                     public Object apply0() throws Throwable {
@@ -1814,12 +1854,13 @@ public final class Pulsar extends Metro {
         SchemeUtils.defineVar( env, new SafeProcedureN("random") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
+                Pulsar pulsar = getCurrent();
                 switch ( args.length ) {
                     case 0 :
-                        return DFloNum.valueOf( random.nextDouble() );
+                        return DFloNum.valueOf( pulsar.random.nextDouble() );
                     case 1 : {
                         double range = SchemeUtils.toDouble( args[0] );
-                        return DFloNum.valueOf( random.nextDouble() * range );
+                        return DFloNum.valueOf( pulsar.random.nextDouble() * range );
                     }
                     default :
                     {
@@ -1827,7 +1868,7 @@ public final class Pulsar extends Metro {
                         double rangeMax = SchemeUtils.toDouble( args[1] );
                         double range    = rangeMax - rangeMin;
 
-                        return DFloNum.valueOf( random.nextDouble() * range + rangeMin );
+                        return DFloNum.valueOf( pulsar.random.nextDouble() * range + rangeMin );
                     }
                 }
             }
@@ -1853,7 +1894,7 @@ public final class Pulsar extends Metro {
                 double probability = args.length == 0 ? 0.5 : SchemeUtils.toDouble( args[0] );
                 if ( probability < 0 ) return false;
                 if ( 1.0<=probability  ) return true;
-                return random.nextBoolean( probability );
+                return getCurrent().random.nextBoolean( probability );
             }
 
         }, "luck" );

@@ -103,22 +103,24 @@ public class KawapadEventHandlers {
         Map<Symbol, SchemeProcedure> eventType = getEventType(eventTypeID);
         eventType.remove( procID );
     }
-    public void invokeEventHandler( Kawapad kawaPane, String eventTypeID, Object ... args ) {
+    public void invokeEventHandler( Kawapad kawapad, String eventTypeID, Object ... args ) {
 //              logInfo( "eventHandlers.invokeEventHandler(outer)" );
-        kawaPane.schemeSecretary.executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+        kawapad.schemeSecretary.executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
             public void execute0( Scheme scheme, Object[] args ) {
-                kawaPane.getThreadManager().startScratchPadThread( new Runnable() {
+                kawapad.getThreadManager().startScratchPadThread( new Runnable() {
                     @Override
                     public void run() {
-                        kawaPane.schemeSecretary.initializeSchemeForCurrentThread();
+                        kawapad.schemeSecretary.initializeSchemeForCurrentThread();
+                        SchemeUtils.initializeThread( kawapad.getThreadInitializerList() );
+                        
                         synchronized ( scheme ) {
                             //  logInfo( "eventHandlers.invokeEventHandler(inner)" );
                             Environment env = scheme.getEnvironment();
                             HashMap<String,Object> variables = new HashMap<>();
                             try {
                                 SchemeUtils.putVar( env, "scheme", scheme );
-                                kawaPane.initVariables( variables );
+                                kawapad.initVariables( variables );
                                 SchemeUtils.initializeVariables( env, variables );
                                 
                                 for( Entry<Symbol,SchemeProcedure> e :  getEventType(eventTypeID).entrySet() ) {
@@ -138,7 +140,7 @@ public class KawapadEventHandlers {
                     }
                 });
             }
-        }, kawaPane );
+        }, kawapad );
     }
     
 //          void invokeEventHandlers( String )

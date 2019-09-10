@@ -118,7 +118,6 @@ public class PulsarGui {
         schemeSecretary.registerSchemeInitializer( pulsarGui, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
             public void execute0( Scheme scheme, Object[] args ) {
-                pulsarGui.initScheme( scheme );
                 pulsarGui.initPulsarGui();
             }
         });
@@ -133,6 +132,16 @@ public class PulsarGui {
         schemeSecretary.unregisterSchemeInitializer( pulsarGui );
         schemeSecretary.removeShutdownHook(pulsarGui.shutdownProc01);
     }
+    
+    public static void registerGlobalSchemeInitializers( SchemeSecretary schemeSecretary ) {
+        schemeSecretary.registerSchemeInitializer( PulsarGui.class, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+            @Override
+            public void execute0( Scheme scheme, Object[] args ) {
+                initScheme( scheme );
+            }
+        });
+    }
+
 
     public void openFile( File mainFile ) throws IOException {
         pulsar.getSchemeSecretary().executeWithoutSecretarially( new SecretaryMessage.NoReturn<Scheme,IOException>() {
@@ -173,6 +182,34 @@ public class PulsarGui {
         }
     }
     
+    //////////////////////////////////////////////////////////////////////////////////
+    //
+    //////////////////////////////////////////////////////////////////////////////////
+
+    private static ThreadLocal<PulsarGui> threadLocalKawapad = new ThreadLocal<>();
+    public static void setCurrent( PulsarGui pulsarGui ) {
+        threadLocalKawapad.set( pulsarGui );
+    }
+    public static PulsarGui getCurrent() {
+        PulsarGui currentKawapad = threadLocalKawapad.get();
+        if ( currentKawapad == null ) 
+            throw new IllegalStateException();
+        return currentKawapad;
+    }
+    private final Runnable threadInitializer = new Runnable() {
+        @Override
+        public void run() {
+            setCurrent( PulsarGui.this );
+        }
+    };
+    public Runnable threadInitializer() {
+        return threadInitializer;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////
+    //
+    //////////////////////////////////////////////////////////////////////////////////
+    
     boolean shutdownWhenClose;
 
     Pulsar pulsar;
@@ -182,6 +219,8 @@ public class PulsarGui {
         
         // Create and set up the window.
         this.frame = new JPulsarFrame( pulsar.getSchemeSecretary(), "Pulsar" );
+        
+        frame.getKawapad().addThreadInitializer( threadInitializer());
 
         initPulsarGui();
     }
@@ -251,7 +290,7 @@ public class PulsarGui {
         };
     }
     
-    void initScheme(Scheme scheme) {
+    static void initScheme(Scheme scheme) {
         logInfo("PulsarGui#initScheme=======================================");
         //////////////////////////////////////////////////////
         Environment env = scheme.getEnvironment();
@@ -261,7 +300,7 @@ public class PulsarGui {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo("gui-get-pane");
-                return userPane;
+                return getCurrent().userPane;
             }
         }, "gui-get-pane");
         SchemeUtils.defineVar( env, new SafeProcedureN("gui-get-frame") {
@@ -269,7 +308,7 @@ public class PulsarGui {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo("gui-get-frame");
-                return frame;
+                return getCurrent().frame;
             }
         }, "gui-get-frame");
         SchemeUtils.defineVar( env, new SafeProcedureN("gui-set-progress-pos") {
@@ -277,7 +316,7 @@ public class PulsarGui {
             public Object applyN(Object[] args) throws Throwable {
                 if ( 0 < args.length ) {
                     double value = SchemeUtils.toDouble(args[0]);
-                    pb_position.setValue((int) (value * PB_POSITION_MAX) );
+                    getCurrent().pb_position.setValue((int) (value * PB_POSITION_MAX) );
                 }
                 return Invokable.NO_RESULT;
             }
@@ -285,7 +324,7 @@ public class PulsarGui {
         SchemeUtils.defineVar( env, new SafeProcedureN("gui-clear") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                guiClear();
+                getCurrent().guiClear();
                 return Invokable.NO_RESULT;
             }
         }, "gui-clear");
@@ -324,13 +363,14 @@ public class PulsarGui {
         SchemeUtils.defineVar( env, new SafeProcedureN("gui-frame-height") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                Dimension size = frame.getSize();
+                PulsarGui pulsarGui = getCurrent();
+                Dimension size = pulsarGui.frame.getSize();
                 if ( 0 == args.length ) {
                     
                 } else {
                     size.height = SchemeUtils.toInteger(args[0]);
-                    frame.setSize(size);
-                    frame.revalidate();
+                    pulsarGui.frame.setSize(size);
+                    pulsarGui.frame.revalidate();
                 }
                 return SchemeUtils.toSchemeNumber( size.height );
             }
@@ -339,13 +379,14 @@ public class PulsarGui {
         SchemeUtils.defineVar( env, new SafeProcedureN("gui-frame-width") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                Dimension size = frame.getSize();
+                PulsarGui pulsarGui = getCurrent();
+                Dimension size = pulsarGui.frame.getSize();
                 if ( 0 == args.length ) {
                     
                 } else {
                     size.width = SchemeUtils.toInteger(args[0]);
-                    frame.setSize(size);
-                    frame.revalidate();
+                    pulsarGui.frame.setSize(size);
+                    pulsarGui.frame.revalidate();
                 }
                 return SchemeUtils.toSchemeNumber( size.width );
             }
@@ -354,12 +395,13 @@ public class PulsarGui {
         SchemeUtils.defineVar( env, new SafeProcedureN("gui-frame-left") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                Point pos = frame.getLocation();
+                PulsarGui pulsarGui = getCurrent();
+                Point pos = pulsarGui.frame.getLocation();
                 if ( 0 == args.length ) {
                 } else {
                     pos.x = SchemeUtils.toInteger(args[0]);
-                    frame.setLocation( pos);
-                    frame.revalidate();
+                    pulsarGui.frame.setLocation( pos);
+                    pulsarGui.frame.revalidate();
                 }
                 return SchemeUtils.toSchemeNumber( pos.x );
             }
@@ -368,12 +410,13 @@ public class PulsarGui {
         SchemeUtils.defineVar( env, new SafeProcedureN("gui-frame-top") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                Point pos = frame.getLocation();
+                PulsarGui pulsarGui = getCurrent();
+                Point pos = pulsarGui.frame.getLocation();
                 if ( 0 == args.length ) {
                 } else {
                     pos.y = SchemeUtils.toInteger(args[0]);
-                    frame.setLocation( pos);
-                    frame.revalidate();
+                    pulsarGui.frame.setLocation( pos);
+                    pulsarGui.frame.revalidate();
                 }
                 return SchemeUtils.toSchemeNumber( pos.y );
             }
@@ -383,20 +426,21 @@ public class PulsarGui {
         SchemeUtils.defineVar( env, new SafeProcedureN("gui-frame-divider-position") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
+                PulsarGui pulsarGui = getCurrent();
                 ArrayList<Object> argList = new ArrayList<Object>( Arrays.asList( args ) );
                 if ( 0 == argList.size() ) {
-                    if ( rootPane instanceof JSplitPane ) {
-                        JSplitPane pane = (JSplitPane) rootPane;
+                    if ( pulsarGui.rootPane instanceof JSplitPane ) {
+                        JSplitPane pane = (JSplitPane) pulsarGui.rootPane;
                         return SchemeUtils.toSchemeNumber( pane.getDividerLocation() );
                     } else {
                         return SchemeUtils.toSchemeNumber( -1 );
                     }
                 } else if ( 1 == argList.size() ) {
-                    if ( rootPane instanceof JSplitPane ) {
-                        JSplitPane pane = (JSplitPane) rootPane;
+                    if ( pulsarGui.rootPane instanceof JSplitPane ) {
+                        JSplitPane pane = (JSplitPane) pulsarGui.rootPane;
                         int location = SchemeUtils.toInteger( argList.get(0) );
                         pane.setDividerLocation( location );
-                        frame.revalidate();
+                        pulsarGui.frame.revalidate();
                         return SchemeUtils.toSchemeNumber( pane.getDividerLocation() );
                     } else {
                         return SchemeUtils.toSchemeNumber( -1 );
@@ -416,7 +460,7 @@ public class PulsarGui {
                 for ( Object o : args ) {
                     sb.append( o.toString() ).append( " " );
                 }
-                frame.getKawapad().insertText( sb.toString().trim() );
+                getCurrent().frame.getKawapad().insertText( sb.toString().trim() );
                 return Invokable.NO_RESULT;
             }
         }, "gui-insert-text");
@@ -460,7 +504,7 @@ public class PulsarGui {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                KawapadFrame scratchPad = frame.getKawapad().createKawapad( null );
+                KawapadFrame scratchPad = frame.getKawapad().createKawapadFrame( null );
             } catch (IOException e1) {
                 logError( "", e1 );
             }
@@ -539,6 +583,9 @@ public class PulsarGui {
 //          DELETED >>> INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
 //          PulsarGui.invokeLocalSchemeInitializers( schemeSecretary, PulsarGui.this );
 //          DELETED <<< INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
+            
+            this.kawapad.addThreadInitializer( pulsar.getThreadInitializer() );
+            this.kawapad.addVariableInitializer( pulsar.getVariableInitializer() );
             
             initIcon();
         }

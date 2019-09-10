@@ -32,6 +32,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -573,9 +574,9 @@ public class SchemeUtils {
         evaluateScheme( 
             scheme, 
             null, 
-            new InputStreamReader( parentClass.getResource( resourcePath ).openStream() ), 
             null, 
-            resourcePath 
+            new InputStreamReader( parentClass.getResource( resourcePath ).openStream() ), 
+            null, resourcePath 
             ).throwIfError();
     }
 
@@ -609,14 +610,18 @@ public class SchemeUtils {
     }
 
     public static ExecuteSchemeResult evaluateScheme( 
-            Scheme scheme, Map<String, Object> variables, Reader schemeScript, File currentFile, String schemeScriptURI ) 
+            Scheme scheme, Collection<Runnable> threadInitializers, 
+            Map<String, Object> variables, Reader schemeScript, File currentFile, String schemeScriptURI ) 
     {
         //              schemeSecretary.initializeSchemeForCurrentThread();
         SchemeSecretary.initializeSchemeForCurrentThreadStatic( scheme );
         synchronized ( scheme ) {
             Environment env = scheme.getEnvironment();
             
-            initializeVariables( env, variables );
+            if ( threadInitializers != null )
+                initializeThread( threadInitializers );
+            if ( variables != null )
+                initializeVariables( env, variables );
             
             putVar( env , "scheme", scheme );
             
@@ -707,6 +712,16 @@ public class SchemeUtils {
                 Shell.currentLoadPath.set( savedPath );
             }
         }
+    }
+    public static void initializeThread( Collection<Runnable> threadInitializers ) {
+        if ( threadInitializers != null )
+            for ( Runnable r : threadInitializers ) {
+                try {
+                    r.run();
+                } catch ( Throwable t ) {
+                    logError( "", t );
+                }
+            }
     }
     public static void initializeVariables(Environment env, Map<String, Object> variables) {
         if ( variables != null )

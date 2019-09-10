@@ -91,7 +91,7 @@ public class KawapadFrame extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                kawapad.createKawapad( null );
+                kawapad.createKawapadFrame( null );
             } catch (IOException e1) {
                 logError( "", e1 );
             }
@@ -140,7 +140,6 @@ public class KawapadFrame extends JFrame {
             @Override
             public void initializeVariable(Map<String, Object> variables ) {
                 variables.put( "frame", KawapadFrame.this );
-                variables.put( "kawapad", KawapadFrame.this.kawapad );
             }
         });
         

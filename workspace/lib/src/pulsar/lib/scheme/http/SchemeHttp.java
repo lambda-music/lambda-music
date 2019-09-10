@@ -10,6 +10,7 @@ import java.lang.invoke.MethodHandles;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -57,9 +58,11 @@ public class SchemeHttp {
     SchemeSecretary schemeSecretary;
     HttpServer httpServer;
     Charset charset = Charset.forName( "UTF-8" );
-    public SchemeHttp( SchemeSecretary schemeSecretary, int port ) throws IOException {
+    List<Runnable> threadInitializers;
+    public SchemeHttp( SchemeSecretary schemeSecretary, int port, List<Runnable> threadInitializers ) throws IOException {
         super();
         this.schemeSecretary = schemeSecretary;
+        this.threadInitializers = threadInitializers;
         this.init( port );
     }
     private void init( int port ) throws IOException {
@@ -108,7 +111,7 @@ public class SchemeHttp {
             if ( t.getRemoteAddress().getAddress().isLoopbackAddress() ) {
                 String requestString = readInputStream( t.getRequestBody() ); 
                 logInfo( requestString );
-                ExecuteSchemeResult result = SchemeSecretary.evaluateScheme( schemeSecretary, null, requestString, null, "web-scratchpad" );
+                ExecuteSchemeResult result = SchemeSecretary.evaluateScheme( schemeSecretary, threadInitializers, null, requestString, null, "web-scratchpad" );
                 String responseString;
                 responseString = 
                         SchemeUtils.endWithLineFeed( requestString ) + 
