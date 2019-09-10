@@ -2,15 +2,16 @@
 Pulsar a Lisp Scheme Music Sequencer
 ===================================
 
+![corresponding-parenthesis-movement](documents/imgs/corresponding-parenthesis-movement.gif)
 
 ### Pulsar lets you write a piece of music by Lisp Scheme! ###
 
-Pulsar is a music sequencer program which enables users to write music as Lisp
-Scheme programs. In this system, musical notes and other informations are
-written as Scheme's association lists. The musical notes can be dynamically
-generated as Scheme's association lists on-the-fly. Users can also interact
-with the dynamically generated music at runtime and affect the direction that
-the music is going.
+Pulsar is a music sequencer which enables users to write music as Lisp Scheme
+programs. In this system, musical notes and other informations are written as
+Scheme's association lists. The musical notes can be dynamically generated as
+Scheme's association lists on-the-fly. Users can also interact with the
+dynamically generated music at runtime and affect the direction that the music
+is going.
 
 Pulsar is written in Java and Lisp Scheme which is powered by Kawa a Java based
 Scheme implementation. You can process MIDI data via Jack Audio Connection Kit
@@ -18,7 +19,7 @@ a multiplatform audio connection system which is accessed via Java Native
 Access.
 
 Pulsar runs on most major platforms which can run Java such as Windows, Mac-OSX
-and Linux distributions. 
+and various Linux distributions. 
 
 
 ### Documentation ###
