@@ -326,29 +326,30 @@ public class KawapadParenthesisMovement {
     static class ExpandParenthesisSelector extends CaretTransformer {
         @Override
         protected boolean process(CharSequence text, CaretPos before, CaretPos after ) {
+            CaretPos start = before.duplicate();
             boolean selection = false;
             // if there is a selection area now, it is to expand one on the left side.
-            if ( after.left != after.right ) {
-                after.right ++;
+            if ( start.left != start.right ) {
+                start.right ++;
                 selection = true;
-            } else if ( text.charAt(after.left) == '(') {
-                after.left ++;
-                after.right++;
+            } else if ( text.charAt(start.left) == '(') {
+                start.left ++;
+                start.right++;
             }
             
-            if ( after.left < 0 )
-                after.left = 0;
-            else if ( text.length() < after.left )
-                after.left = text.length();
-            if ( after.right < 0 )
-                after.right = 0;
-            else if ( text.length() < after.right )
-                after.right = text.length();
+            if ( start.left < 0 )
+                start.left = 0;
+            else if ( text.length() < start.left )
+                start.left = text.length();
+            if ( start.right < 0 )
+                start.right = 0;
+            else if ( text.length() < start.right )
+                start.right = text.length();
             
-            CharSequence left_leftString   = text.subSequence(0, after.left);
-            CharSequence left_rightString  = text.subSequence(after.left,text.length());
-            CharSequence right_leftString  = text.subSequence(0, after.right);
-            CharSequence right_rightString = text.subSequence(after.right,text.length());
+            CharSequence left_leftString   = text.subSequence(0, start.left);
+            CharSequence left_rightString  = text.subSequence(start.left,text.length());
+            CharSequence right_leftString  = text.subSequence(0, start.right);
+            CharSequence right_rightString = text.subSequence(start.right,text.length());
             int diff; // the length in char of the inserted text in the middle of the argument string.
             
             /*
@@ -361,8 +362,8 @@ public class KawapadParenthesisMovement {
             {
                 // the first search
                 diff = 1;
-                after.left   = SchemeParenthesisParser.lookupCorrespondingParenthesis( left_leftString  + ")" + left_rightString,  after.left  );
-                after.right  = SchemeParenthesisParser.lookupCorrespondingParenthesis( right_leftString + "(" + right_rightString, after.right );
+                after.left   = SchemeParenthesisParser.lookupCorrespondingParenthesis( left_leftString  + ")" + left_rightString,  start.left  );
+                after.right  = SchemeParenthesisParser.lookupCorrespondingParenthesis( right_leftString + "(" + right_rightString, start.right );
                 after.right -=diff;
                 if ( 0<=after.left && 0<=after.right ) {
                     // Change the direction of the selection, if it is not selected; otherwise
@@ -380,8 +381,8 @@ public class KawapadParenthesisMovement {
             {
                 // the second search
                 diff = 2;
-                after.left  = SchemeParenthesisParser.lookupCorrespondingParenthesis( left_leftString + "(\"" + left_rightString, after.left   );
-                after.right = SchemeParenthesisParser.lookupCorrespondingParenthesis( right_leftString + "\")" + right_rightString, after.right +1 );
+                after.left   = SchemeParenthesisParser.lookupCorrespondingParenthesis( right_leftString + "\")" + right_rightString, start.right +1 );
+                after.right  = SchemeParenthesisParser.lookupCorrespondingParenthesis( left_leftString + "(\"" + left_rightString, start.left   );
                 after.right -=diff;
                 // Change the direction of the selection, if it is not selected; otherwise
                 // keep the current direction of the selection.
