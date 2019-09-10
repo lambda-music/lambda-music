@@ -326,10 +326,12 @@ public class KawapadParenthesisMovement {
     static class ExpandParenthesisSelector extends CaretTransformer {
         @Override
         protected boolean process(CharSequence text, CaretPos before, CaretPos after ) {
+            boolean selection = false;
             // if there is a selection area now, it is to expand one on the left side.
-            if ( after.left != after.right )
+            if ( after.left != after.right ) {
                 after.right ++;
-            else if ( text.charAt(after.left) == '(') {
+                selection = true;
+            } else if ( text.charAt(after.left) == '(') {
                 after.left ++;
                 after.right++;
             }
@@ -363,10 +365,14 @@ public class KawapadParenthesisMovement {
                 after.right  = SchemeParenthesisParser.lookupCorrespondingParenthesis( right_leftString + "(" + right_rightString, after.right );
                 after.right -=diff;
                 if ( 0<=after.left && 0<=after.right ) {
-                    if ( Math.abs( after.left - before.left ) < Math.abs( after.right - before.right ) ) {
-                        after.direction = -1;
-                    } else {
-                        after.direction =  1;
+                    // Change the direction of the selection, if it is not selected; otherwise
+                    // keep the current direction of the selection.
+                    if ( ! selection ) {
+                        if ( Math.abs( after.left - before.left ) < Math.abs( after.right - before.right ) ) {
+                            after.direction = -1;
+                        } else {
+                            after.direction =  1;
+                        }
                     }
                     return true;
                 }
@@ -377,13 +383,17 @@ public class KawapadParenthesisMovement {
                 after.left  = SchemeParenthesisParser.lookupCorrespondingParenthesis( left_leftString + "(\"" + left_rightString, after.left   );
                 after.right = SchemeParenthesisParser.lookupCorrespondingParenthesis( right_leftString + "\")" + right_rightString, after.right +1 );
                 after.right -=diff;
-                if ( 0<=after.left && 0<=after.right ) {
-                    if ( Math.abs( after.left - before.left ) < Math.abs( after.right - before.right ) ) {
-                        after.direction = -1;
-                    } else {
-                        after.direction =  1;
+                // Change the direction of the selection, if it is not selected; otherwise
+                // keep the current direction of the selection.
+                if ( ! selection ) {
+                    if ( 0<=after.left && 0<=after.right ) {
+                        if ( Math.abs( after.left - before.left ) < Math.abs( after.right - before.right ) ) {
+                            after.direction = -1;
+                        } else {
+                            after.direction =  1;
+                        }
+                        return true;
                     }
-                    return true;
                 }
             }
             return false;

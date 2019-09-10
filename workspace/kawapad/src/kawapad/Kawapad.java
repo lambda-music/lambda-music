@@ -623,7 +623,7 @@ public class Kawapad extends JTextPane {
 
     ////////////////////////////////////////////////////////////////////////////
 
-    public Action KEYMAP_DEFAULT = new DefaultKeyTypedAction() {
+    public final Action KEYMAP_DEFAULT = new DefaultKeyTypedAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
             super.actionPerformed(e);
@@ -1508,9 +1508,9 @@ public class Kawapad extends JTextPane {
         return parenthesisStack;
     }
     
-    class ParenthesisSelectAction extends TextAction {
+    class ParenthesisExpandSelectionAction extends TextAction {
         ExpandParenthesisSelector transformer = new ExpandParenthesisSelector();
-        ParenthesisSelectAction(String name) {
+        ParenthesisExpandSelectionAction(String name) {
             super(name);
         }
         @Override
@@ -1521,7 +1521,7 @@ public class Kawapad extends JTextPane {
 //            SchemeParentheses.expandSelectedParentheses( kawapad );
         }
     }
-    public final Action PARENTHESIS_EXPAND_SELECTION_ACTION = new ParenthesisSelectAction( "parenthesis-select" ) {
+    public final Action PARENTHESIS_EXPAND_SELECTION_ACTION = new ParenthesisExpandSelectionAction( "parenthesis-select" ) {
         {
             putValue( Action2.NAME, "Select Inside the Current Parentheses" );
             putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke( KeyEvent.VK_UP, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK ) );
@@ -1604,10 +1604,14 @@ public class Kawapad extends JTextPane {
             if ( dot == mark ) {
 //                PARENTHESIS_SELECT_ACTION.actionPerformed( e );
                 // DO SAME WITH THE FOLLOWING (Sun, 08 Sep 2019 01:55:30 +0900)
-                caretTransformer.transform( 
+                boolean result;
+                result = caretTransformer.transform( 
                     getParenthesisStack(), 
                     KawapadParenthesisMovement.getText( textComponent.getDocument() ), 
                     textComponent.getCaret() );
+                if ( ! result ) {
+                    PARENTHESIS_EXPAND_SELECTION_ACTION.actionPerformed( e );
+                }
             } else {
                 // reverse the direction of the selection.
                 if ( this.direction < 0 && mark < dot ) {
@@ -1617,10 +1621,14 @@ public class Kawapad extends JTextPane {
                     caret.setDot( dot );
                     caret.moveDot( mark );
                 } else {
-                    caretTransformer.transform( 
-                        getParenthesisStack(), 
-                        KawapadParenthesisMovement.getText( textComponent.getDocument() ), 
-                        textComponent.getCaret() );
+                    boolean result;
+                    result = caretTransformer.transform( 
+                                getParenthesisStack(), 
+                                KawapadParenthesisMovement.getText( textComponent.getDocument() ), 
+                                textComponent.getCaret() );
+                    if ( ! result ) {
+                        PARENTHESIS_EXPAND_SELECTION_ACTION.actionPerformed( e );
+                    }
                 }
             }
             moveToSelection();
@@ -1668,7 +1676,7 @@ public class Kawapad extends JTextPane {
 //                caret );
         }
     }
-    public final Action PARENTHESES_SHRINK_SELECTION_ACTION = new ParenthesisShrinkSelectionAction("select-parentheses-shrink-action") {
+    public final Action PARENTHESIS_SHRINK_SELECTION_ACTION = new ParenthesisShrinkSelectionAction("select-parentheses-shrink-action") {
         {
             putValue( Action2.NAME, "Select Parentheses Inside the Current Selection" );
             putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke( KeyEvent.VK_DOWN, KeyEvent.SHIFT_MASK | KeyEvent.ALT_MASK ) );
@@ -1721,14 +1729,20 @@ public class Kawapad extends JTextPane {
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
+    
 
     {
         addKeyStroke( this, this.PARENTHESIS_EXPAND_SELECTION_ACTION );
-        addKeyStroke( this, this.PARENTHESES_SHRINK_SELECTION_ACTION );
+        addKeyStroke( this, this.PARENTHESIS_SHRINK_SELECTION_ACTION );
 //      addKeyStroke( this, this.PARENTHESIS_DESELECT_ACTION );
 //        addKeyStroke( this, this.PARENTHESIS_DESELECT_2_ACTION );
         addKeyStroke( this, this.SELECT_LEFT_PARENTHESES_ACTION );
         addKeyStroke( this, this.SELECT_RIGHT_PARENTHESES_ACTION );
+        kawapad.getInputMap().put( KeyStroke.getKeyStroke( "shift alt N" ), PARENTHESIS_EXPAND_SELECTION_ACTION );
+        kawapad.getInputMap().put( KeyStroke.getKeyStroke( "shift alt P" ), PARENTHESIS_SHRINK_SELECTION_ACTION );
+        kawapad.getInputMap().put( KeyStroke.getKeyStroke( "shift alt B" ), SELECT_LEFT_PARENTHESES_ACTION );
+        kawapad.getInputMap().put( KeyStroke.getKeyStroke( "shift alt F" ), SELECT_RIGHT_PARENTHESES_ACTION );
+        
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////

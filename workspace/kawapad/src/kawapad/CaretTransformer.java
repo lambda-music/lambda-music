@@ -59,7 +59,7 @@ public abstract class CaretTransformer {
     public final void transform( KawaPadParenthesisStack stack, Document text, Caret caret ) {
         transform( stack, KawapadParenthesisMovement.getText( text ), caret );
     }
-    public final void transform( KawaPadParenthesisStack stack, CharSequence text, Caret caret ) {
+    public final boolean transform( KawaPadParenthesisStack stack, CharSequence text, Caret caret ) {
         int currDot  = caret.getDot();
         int currMark = caret.getMark();
 
@@ -104,11 +104,13 @@ public abstract class CaretTransformer {
                         caret.moveDot( after.right + correction );
                     }
                     stack.push(currMark, currDot);
-                    return;
+                    return true;
                 } finally {
                     stack.setLocked( false );
                 }
             }
+        } else {
+            return false;
         }
     }
     protected abstract boolean process( CharSequence text,  CaretPos before, CaretPos after );
