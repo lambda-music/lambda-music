@@ -173,7 +173,7 @@ public final class Pulsar extends Metro {
         schemeSecretary.registerSchemeInitializer( pulsar, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
             public void execute0( Scheme scheme, Object[] args ) {
-                PulsarGuiUtils.initScheme( pulsar, scheme );
+                PulsarFramePackage.initScheme( pulsar, scheme );
             }
         });
 

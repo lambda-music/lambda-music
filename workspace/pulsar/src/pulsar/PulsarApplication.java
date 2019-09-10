@@ -144,7 +144,7 @@ public class PulsarApplication {
         schemeSecretary.setDirectMeeting( false );
 
         DescriptiveHelp.registerGlobalSchemeInitializer( schemeSecretary );
-        PulsarGui.registerGlobalSchemeInitializers( schemeSecretary );
+        PulsarFrame.registerGlobalSchemeInitializers( schemeSecretary );
         Pulsar pulsar = new Pulsar( schemeSecretary );
 
         if ( guiEnabled )
@@ -156,9 +156,9 @@ public class PulsarApplication {
         
 //      <<< VERSION INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
         
-        PulsarGui pulsarGui;
+        PulsarFrame pulsarGui;
         if ( guiEnabled )
-            pulsarGui = PulsarGui.start( pulsar, true );
+            pulsarGui = PulsarFrame.start( pulsar, true );
         else
             pulsarGui = null;
         

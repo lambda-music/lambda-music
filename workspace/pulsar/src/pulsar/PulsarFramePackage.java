@@ -41,7 +41,7 @@ import pulsar.lib.swing.JSelectableUserObject;
 import pulsar.lib.swing.LayoutUtils;
 import pulsar.lib.swing.SpringLayoutUtil;
 
-public class PulsarGuiUtils {
+public class PulsarFramePackage {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
@@ -54,7 +54,7 @@ public class PulsarGuiUtils {
     }
     static final int BORDER_SIZE = 10;
 
-    public PulsarGuiUtils() {
+    public PulsarFramePackage() {
     }
 
     public static void guiPack() {
@@ -530,12 +530,6 @@ public class PulsarGuiUtils {
         parent.repaint();;
     }
 
-    
-    
-    
-    
-    
-    
     static void initScheme( Pulsar pulsar, Scheme scheme ) {
         logInfo("PulsarGui#initStaticScheme=======================================");
         //////////////////////////////////////////////////////
