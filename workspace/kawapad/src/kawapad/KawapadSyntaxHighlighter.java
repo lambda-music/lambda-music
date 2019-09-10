@@ -1,5 +1,6 @@
 package kawapad;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -20,7 +21,7 @@ class KawapadSyntaxHighlighter extends SyntaxHighlighter {
         LINE_COMMENT,
         BLOCK_COMMENT;
         static KawapadSyntaxHighlighter.KawapadSyntaxElementType schemeValueOf( Symbol symbol ) {
-            String str = SchemeUtils.symbolToString( symbol ).toUpperCase().replaceAll( "-" , "_" );
+            String str = SchemeUtils.schemeSymbolToJavaString( symbol ).toUpperCase().replaceAll( "-" , "_" );
             return valueOf( str );
         }
     }
@@ -39,7 +40,10 @@ class KawapadSyntaxHighlighter extends SyntaxHighlighter {
     }
     private Pattern createKeywordPattern() {
         synchronized ( Kawapad.class ) {
-            List<String> keywordList = SchemeUtils.getAllKey( kawapad.getSchemeSecretary() ); 
+            List<String> keywordList = new ArrayList<>();
+            // vvv IS THIS REALLY NECESSARY?????? TODO (Wed, 11 Sep 2019 03:01:16 +0900)  vvvv
+            keywordList.addAll( SchemeUtils.getAllKey( kawapad.getSchemeSecretary() ) );
+            // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
             keywordList.addAll( kawapad.lispKeywordList );
             keywordList.sort( Kawapad.KEYWORD_COMPARATOR );
             for ( ListIterator<String> i=keywordList.listIterator(); i.hasNext(); ) {

@@ -5,9 +5,15 @@ import java.util.List;
 
 import kawa.standard.Scheme;
 import pulsar.lib.scheme.DescriptiveBean;
-import pulsar.lib.scheme.DescriptiveDocumentType;
+import pulsar.lib.scheme.DescriptiveDocumentCategory;
 
 public class PulsarDocuments {
+    public static final DescriptiveDocumentCategory DOCS = 
+            DescriptiveDocumentCategory.createCategory( "pulsar-procedures" );
+
+    public static final DescriptiveDocumentCategory NOTES = 
+            DescriptiveDocumentCategory.createCategory( "pulsar-notations" );
+
     private PulsarDocuments() {}
     public static void defineDoc(Scheme scheme, NoteListParser parser ) {
         List<NoteListParserElement> allElements = parser.getAllElements();
@@ -65,6 +71,6 @@ public class PulsarDocuments {
         bean.setShortDescription( nullCheck( element.getShortDescription() ) );
         bean.setLongDescription( nullCheck( element.getLongDescription() ) );
         
-        DescriptiveDocumentType.NOTES.defineDoc( scheme.getEnvironment(), bean );
+        NOTES.defineDoc( scheme.getEnvironment(), bean );
     }
 }

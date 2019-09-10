@@ -30,6 +30,7 @@ import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import kawa.standard.Scheme;
+import pulsar.lib.scheme.DescriptiveDocumentCategory;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
@@ -42,6 +43,9 @@ import pulsar.lib.swing.LayoutUtils;
 import pulsar.lib.swing.SpringLayoutUtil;
 
 public class PulsarFramePackage {
+    public static final DescriptiveDocumentCategory DOCS = 
+            DescriptiveDocumentCategory.createCategory( "pulsar-gui-procedures" );
+
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
@@ -192,7 +196,7 @@ public class PulsarFramePackage {
     //
     public static void guiLayout_auto( Container container, Object[] args ) {
         ArrayList<Object> argList = new ArrayList<>( Arrays.asList(args) );
-        String    type = 0 < argList.size() ? SchemeUtils.symbolToString( argList.remove(0) ) : "default";
+        String    type = 0 < argList.size() ? SchemeUtils.schemeSymbolToJavaString( argList.remove(0) ) : "default";
         guiLayout( container, type, argList.toArray() );
     }
     public static void guiLayout( Container container, String type, Object ... args  ) {
@@ -260,7 +264,7 @@ public class PulsarFramePackage {
         for ( int i=1; i<args.length; i++ ) {
             Object curr = args[i];
             if ( curr instanceof Symbol ) {
-                String symbolName = SchemeUtils.symbolToString( curr );
+                String symbolName = SchemeUtils.schemeSymbolToJavaString( curr );
 
                 if ( "name".equals( mode ) ) {
                     guiName( parent, symbolName );
@@ -381,7 +385,7 @@ public class PulsarFramePackage {
                     mode = null;
                 } else {
                     if ( curr instanceof Symbol ) {
-                        String symbolName = SchemeUtils.symbolToString( curr );
+                        String symbolName = SchemeUtils.schemeSymbolToJavaString( curr );
                         switch ( symbolName ) {
                             case "newline" : 
                                 guiNewline( parent );
@@ -761,7 +765,7 @@ public class PulsarFramePackage {
                 } else {
                     ArrayList<Object> argList = new ArrayList<>( Arrays.asList(args) );
                     Container container = 0 < argList.size() ? (Container) argList.remove(0) : null;
-                    String    type      = 0 < argList.size() ? SchemeUtils.symbolToString( argList.remove(0) ) : "default";
+                    String    type      = 0 < argList.size() ? SchemeUtils.schemeSymbolToJavaString( argList.remove(0) ) : "default";
                     if ( container instanceof JFrame ){
                         container = ((JFrame)container).getContentPane();
                     }

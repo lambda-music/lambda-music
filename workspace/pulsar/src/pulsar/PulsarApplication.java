@@ -4,12 +4,17 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 import kawapad.Kawapad;
+import kawapad.KawapadDocuments;
 import pulsar.lib.PulsarLogger;
-import pulsar.lib.scheme.DescriptiveDocumentType;
+import pulsar.lib.scheme.DescriptiveDocumentCategory;
 import pulsar.lib.scheme.DescriptiveHelp;
+import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.http.SchemeHttp;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 
@@ -24,9 +29,9 @@ public class PulsarApplication {
      * @throws IOException 
      */
     static Pulsar parseArgsAndStartPulsar( String[] args ) throws IOException {
-        boolean argSpecialOutputReference0 = false; 
-        boolean argSpecialOutputReference1 = false; 
-        boolean argSpecialOutputReference2 = false; 
+        boolean argSpecialOutputReference = false;
+        String  argSpecialOutputReferenceName = null;
+        boolean argSpecialAllAvailableReferences = false;
         boolean argHttp = true;
         int     argHttpPort = 8192;
         boolean argGui = true;
@@ -51,14 +56,19 @@ public class PulsarApplication {
             } else if ( s.equals( "--no-gui" ) ) { 
                 argGui = false;
                 break;
+            } else if ( s.equals( "--all-available-references" ) ) { 
+                argSpecialAllAvailableReferences = true;
+                break;
             } else if ( s.equals( "--output-reference" ) ) { 
-                argSpecialOutputReference0 = true;
-                break;
-            } else if ( s.equals( "--output-reference-procs" ) ) { 
-                argSpecialOutputReference1 = true;
-                break;
-            } else if ( s.equals( "--output-reference-notes" ) ) { 
-                argSpecialOutputReference2 = true;
+                argSpecialOutputReference = true;
+                i++;
+                if ( i < args.length  ){
+                    argSpecialOutputReferenceName = args[i];
+                    System.err.println( "--output-reference:" + argSpecialOutputReferenceName  );
+                } else {
+                    System.err.println( "warning : insufficient nubmer of arguments."
+                            + " The given argument --output-reference was ignroed." );  
+                }
                 break;
             } else {
                 if ( argFileName == null )
@@ -69,12 +79,10 @@ public class PulsarApplication {
         if ( false ) {
             // dummy
             return null; 
-        } else if ( argSpecialOutputReference0 ) {
-            return outputReference( argFileName, DescriptiveDocumentType.PROCS );
-        } else if ( argSpecialOutputReference1 ) {
-            return outputReference( argFileName, DescriptiveDocumentType.PROCS );
-        } else if ( argSpecialOutputReference2 ) {
-            return outputReference( argFileName, DescriptiveDocumentType.NOTES );
+        } else if ( argSpecialAllAvailableReferences ) {
+            return outputAllAvailableReferences( argFileName );
+        } else if ( argSpecialOutputReference ) {
+            return outputReference( argFileName,  argSpecialOutputReferenceName );
         } else if ( argHttp || argGui ) {
             return start(argGui, argHttp, argHttpPort, argFileName);
         } else {
@@ -82,14 +90,54 @@ public class PulsarApplication {
             return start(argGui, argHttp, argHttpPort, argFileName);
         }
     }
-    static Pulsar outputReference( String outputFile, DescriptiveDocumentType type ) throws IOException {
+    static void forceLoad( Class c ) {
+        try {
+            Class.forName( c.getName(), true, c.getClassLoader() );
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    static Collection<DescriptiveDocumentCategory> loadAllAvailableHelps() {
+        forceLoad( PulsarDocuments.class );
+        forceLoad( PulsarFramePackage.class );
+        forceLoad( KawapadDocuments.class );
+        forceLoad( DescriptiveHelp.class );
+        
+        return DescriptiveDocumentCategory.getAll();
+    }
+    
+    static Pulsar outputAllAvailableReferences( String outputFile ) throws IOException {
         Pulsar pulsar = start(true,true,8193);
-//          try {
-//              Thread.sleep( 1024 );
-//          } catch (InterruptedException e) {
-//              System.err.println( e.getMessage() );
-//          }
-        String str = DescriptiveHelp.outputMarkdownReference( type, pulsar.getSchemeSecretary() );
+        List<String> stringList = new ArrayList<>();
+        for ( DescriptiveDocumentCategory c : loadAllAvailableHelps() ) {
+            stringList.add( SchemeUtils.schemeStringToJavaString( c.getSymbol() ) );
+        }
+        String str = String.join( ",", stringList );
+        if ( outputFile == null /* || "-".equals( outputFile ) */ ) {
+            System.out.println( str );      
+        } else {
+            FileOutputStream fo = null;
+            try {
+                fo = new FileOutputStream( new File( outputFile ) );
+                fo.write( str.getBytes( Charset.forName( "utf-8" ) ) );
+                System.err.println( str );      
+                fo.flush();
+            } finally {
+                if ( fo != null )
+                    fo.close();
+            }
+        }
+        
+        quitPulsarSafely( pulsar );
+        return pulsar;
+    }
+
+    static Pulsar outputReference( String outputFile, String categoryName ) throws IOException {
+        loadAllAvailableHelps();
+        DescriptiveDocumentCategory category = DescriptiveDocumentCategory.valueOf( categoryName );
+        Pulsar pulsar = start(true,true,8193);
+        String str = DescriptiveHelp.outputMarkdownReference( category, pulsar.getSchemeSecretary() );
         if ( outputFile == null /* || "-".equals( outputFile ) */ ) {
             System.out.println( str );      
         } else {
@@ -105,6 +153,10 @@ public class PulsarApplication {
             }
         }
 
+        quitPulsarSafely( pulsar );
+        return pulsar;
+    }
+    static void quitPulsarSafely(Pulsar pulsar) {
         // Pause for the safe shutdown; at this moment, other initializers are still
         // working and they somehow remain on the AWT-eventqueue and prevent JVM to
         // shutdown. (Mon, 26 Aug 2019 14:11:31 +0900)
@@ -122,8 +174,8 @@ public class PulsarApplication {
         // This is possibly not necessary. But it might help to flush the AWT-eventqueue.
         // See https://stackoverflow.com/questions/6309407/remove-top-level-container-on-runtime
         System.gc();
-        return pulsar;
     }
+    
     public static Pulsar start( boolean guiEnabled, boolean httpEnabled, int httpPort, String filename ) throws IOException {
 //      >>> VERSION 1 
 //      this.schemeSecretary = new SchemeSecretary();

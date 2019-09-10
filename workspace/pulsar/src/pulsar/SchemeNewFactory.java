@@ -209,7 +209,7 @@ public abstract class SchemeNewFactory {
             } else {
                 for ( Object e : args ) {
                     if ( e instanceof Symbol ) {
-                        String symbol = SchemeUtils.symbolToString(e);
+                        String symbol = SchemeUtils.schemeSymbolToJavaString(e);
                         switch ( symbol ) {
                             case "selected" :
                                 if ( result.size() == 0 ) {

@@ -374,7 +374,7 @@ public class PulsarSpecialNoteListParsers {
             double offset            = getValue( map, ID_OFFSET, 0.0d, (v)-> SchemeUtils.toDouble( v )   );
             String id                = getValue( map, "id",   null, (v)-> SchemeUtils.anyToString(    SchemeUtils.schemeNullCheck( v ) ) );
             List<Object> tags        = getValue( map, "tags", el,   (v)-> new ArrayList<Object>( (Pair)v ) );
-            SyncType syncType        = getValue( map, "syty", SyncType.SERIAL, (v)-> SyncType.valueOf( SchemeUtils.symbolToString( SchemeUtils.schemeNullCheck( v ) ).toUpperCase() ) );
+            SyncType syncType        = getValue( map, "syty", SyncType.SERIAL, (v)-> SyncType.valueOf( SchemeUtils.schemeSymbolToJavaString( SchemeUtils.schemeNullCheck( v ) ).toUpperCase() ) );
             String syncSequenceId    = getValue( map, "syid", SEQ_BASE, (v)-> SchemeUtils.anyToString(    SchemeUtils.schemeNullCheck( v ) ) );
             double syncOffset        = getValue( map, "syof", 0.0d, (v)-> SchemeUtils.toDouble( v )   );
             Procedure procedure      = getValue( map, ID_PROCEDURE, null, (v)->(Procedure)v );

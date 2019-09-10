@@ -2,9 +2,9 @@
 Pulsar a Lisp Scheme Music Sequencer
 ===================================
 
-![corresponding-parenthesis-movement](documents/imgs/corresponding-parenthesis-movement.gif)
-
 ### Pulsar lets you write a piece of music by Lisp Scheme! ###
+
+![corresponding-parenthesis-movement](documents/imgs/corresponding-parenthesis-movement.gif)
 
 Pulsar is a music sequencer which enables users to write music as Lisp Scheme
 programs. In this system, musical notes and other informations are written as
@@ -24,6 +24,7 @@ and various Linux distributions.
 
 ### Documentation ###
 
+- [Getting Started](getting-started.md)
 - [Pulsar](workspace/pulsar/readme.md)
 - [Pulsar API Reference](workspace/pulsar/readme-procs-api.md)
 - [Pulsar Notation Reference](workspace/pulsar/readme-notes-api.md)
@@ -58,8 +59,10 @@ Pulser uses following libraries :
 - JNA-4.5.0
 - JNAJACK-1.3.0
 - KAWA-3.0
+- JTattoo-1.6.11
 
-These are statically linked to the main file `pulsar.jar`.
+These are statically linked to the main file `pulsar.jar`; therefore, they are
+not necessary to separately be installed.
 
 ### How to Install ###
 

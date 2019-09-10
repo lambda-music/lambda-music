@@ -93,7 +93,6 @@ import kawapad.KawapadSyntaxHighlighter.KawapadSyntaxElementType;
 import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.OriginalCompoundUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
-import pulsar.lib.scheme.DescriptiveDocumentType;
 import pulsar.lib.scheme.ProceduralDescriptiveBean;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
@@ -393,7 +392,7 @@ public class Kawapad extends JTextPane {
     
     protected static void staticIntroInitScheme( Environment env ) {
         // ( canonical )
-        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
+        KawapadDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "about-intro"  );
             setParameterDescription( "" );
             setReturnValueDescription( "" );
@@ -2007,7 +2006,7 @@ public class Kawapad extends JTextPane {
                 }
             }, "load-font" );
 
-            DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
+            KawapadDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
                 setNames( "load-font"  );
                 setParameterDescription( "" );
                 addParameter( "file-size", "string", null , false, "Specifies the path to the font file. " );

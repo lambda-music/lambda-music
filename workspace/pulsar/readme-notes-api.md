@@ -2,7 +2,6 @@ Pulsar Notation API Reference
 ======================
 
 
-font-init
 NO-OPERATION
 ====================
 

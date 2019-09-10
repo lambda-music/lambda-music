@@ -118,7 +118,7 @@ public class KawapadContentAssist {
                     LocationEnumeration en = scheme.getEnvironment().enumerateAllLocations();
                     for ( ; en.hasNext(); ) {
                         NamedLocation l= en.next();
-                        String key = SchemeUtils.symbolToString( l.getKeySymbol() );
+                        String key = SchemeUtils.schemeSymbolToJavaString( l.getKeySymbol() );
                         if ( key.startsWith( currentWord ) ) {
                             allKeys.add(key);
                         }

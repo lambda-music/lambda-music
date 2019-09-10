@@ -74,7 +74,7 @@ public class NoteListParser {
                 Object o2 = p1.getCar();
                 if ( o2 instanceof Symbol ) {
                     Symbol s2 = (Symbol)o2;
-                    if ( "type".equals( SchemeUtils.symbolToString(s2))) { 
+                    if ( "type".equals( SchemeUtils.schemeSymbolToJavaString(s2))) { 
                         return true;
                     }
                 }
@@ -206,7 +206,7 @@ public class NoteListParser {
 
     private boolean parseNote( Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, boolean result, AbstractSequence list ) {
         Map<String,Object> map = SchemeUtils.list2map(list, null );
-        String type      = map.containsKey( ID_TYPE ) ? SchemeUtils.symbolToString(  map.get( ID_TYPE ) ) : "";
+        String type      = map.containsKey( ID_TYPE ) ? SchemeUtils.schemeSymbolToJavaString(  map.get( ID_TYPE ) ) : "";
         NoteListParserElement parser = get( type );
         if ( parser == null ) {
             logWarn( "unknown type (" +  type + ")" );

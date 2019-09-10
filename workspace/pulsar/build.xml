@@ -26,21 +26,41 @@
         </jar>
     </target>
     <target name="create_api_reference" depends="create_run_jar" >
-        <java jar="pulsar.jar"  fork="true" output="generated-readme-procs-api.md" error="generated-readme-procs-api.log" >
-            <arg value="--output-reference-procs" />
+        <java jar="pulsar.jar"  fork="true" error="generated/generated-avail-api.log" >
+            <arg value="--all-available-references" />
         </java>
-        <java jar="pulsar.jar"  fork="true" output="generated-readme-notes-api.md" error="generated-readme-notes-api.log" >
-            <arg value="--output-reference-notes" />
+        <java jar="pulsar.jar"  fork="true" output="generated/generated-help-api.md" error="generated/generated-help-api.log" >
+            <arg value="--output-reference" />
+            <arg value="help-procedures" />
+        </java>
+        <java jar="pulsar.jar"  fork="true" output="generated/generated-pulsar-api.md" error="generated/generated-pulsar-api.log" >
+            <arg value="--output-reference" />
+            <arg value="pulsar-procedures" />
+        </java>
+        <java jar="pulsar.jar"  fork="true" output="generated/generated-pulsar-gui-api.md" error="generated/generated-pulsar-gui-api.log" >
+            <arg value="--output-reference" />
+            <arg value="pulsar-gui-procedures" />
+        </java>
+        <java jar="pulsar.jar"  fork="true" output="generated/generated-pulsar-notations-api.md" error="generated/generated-pulsar-notations-api.log" >
+            <arg value="--output-reference" />
+            <arg value="pulsar-notations" />
+        </java>
+        <java jar="pulsar.jar"  fork="true" output="generated/generated-kawapad-api.md" error="generated/generated-kawapad-api.log" >
+            <arg value="--output-reference" />
+            <arg value="kawapad-procedures" />
         </java>
     </target>
     <target name="concat_api_reference" depends="create_api_reference" >
         <concat destfile="readme-procs-api.md"  >
             <file file="manual-readme-procs-api.md" />
-            <file file="generated-readme-procs-api.md" />
+            <file file="generated/generated-pulsar-api.md" />
+            <file file="generated/generated-pulsar-gui-api.md" />
+            <file file="generated/generated-kawapad-api.md" />
+            <file file="generated/generated-help-api.md" />
         </concat>
         <concat destfile="readme-notes-api.md"  >
             <file file="manual-readme-notes-api.md" />
-            <file file="generated-readme-notes-api.md" />
+            <file file="generated/generated-pulsar-notations-api.md" />
         </concat>
     </target>
 

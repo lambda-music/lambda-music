@@ -1,12 +1,17 @@
-Pulsar
+  Pulsar
 ==================
 
-Pulsar is a shell interface for Metro a music sequencing framework.  Pulsar
-adopts Kawa the Lisp Scheme interpreter and attempts to bridge users and the
-sequencer.
+Pulsar is an interface of [Metro music sequencer](../metro/readme.md). Pulsar
+embraces [Kawa Scheme](https://www.gnu.org/software/kawa/) in its heart, and
+attempts to bridge the world with the sequencer.
 
-Pulsar has Pulsar API which is a set of procedures.
-Please see the [Pulsar API Reference](readme-procs-api.md) and 
-[Pulsar API Reference](readme-notes-api.md) for further information.
+Pulsar has an API procedure set which is called [Pulsar
+API](readme-procs-api.md).  A user may use the API to build a set of notation
+data. The notation data is defined in a specification which is called [Pulsar
+Notation API](readme-notes-api.md).
+
+
+- [Pulsar API](readme-procs-api.md)
+- [Pulsar Notation API](readme-notes-api.md)
 
 

@@ -21,6 +21,8 @@ import pulsar.lib.secretary.Invokable;
 import pulsar.lib.secretary.SecretaryMessage;
 
 public class DescriptiveHelp {
+    public static final DescriptiveDocumentCategory DOCS = 
+            DescriptiveDocumentCategory.createCategory( "help-procedures" );
     /**
      * This initializes variables which do not need to refer the reference to the
      * current frame. This initializer does not have to be removed even if  
@@ -41,12 +43,12 @@ public class DescriptiveHelp {
      * 
      */
 
-    static String outputMarkdownReference0(DescriptiveDocumentType type, Environment env ) {
+    static String outputMarkdownReference0(DescriptiveDocumentCategory type, Environment env ) {
         List list = new ArrayList();
         list.addAll( type.getDocumentList( env ));
         return MarkdownDescriptive.createMarkdownHelp( list );
     }
-    public static String outputMarkdownReference( DescriptiveDocumentType type, SchemeSecretary schemeSecretary ) {
+    public static String outputMarkdownReference( DescriptiveDocumentCategory type, SchemeSecretary schemeSecretary ) {
         if ( type == null )
             throw new IllegalArgumentException( "'type' argument cannot be null." );
         
@@ -71,7 +73,7 @@ public class DescriptiveHelp {
             }
         }, "make-page");
         
-        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
+        DescriptiveHelp.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "make-page" );
             setParameterDescription( "[string]" );
             addParameter("content",   "string",  null,  false, "the content to convert to a ||kawapad-page||. " );
@@ -96,7 +98,7 @@ public class DescriptiveHelp {
             }
         }, "help!");
         
-        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
+        DescriptiveHelp.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "help!" );
             setParameterDescription( "" );
             setReturnValueDescription( "::string" );
@@ -120,7 +122,7 @@ public class DescriptiveHelp {
                 this.index = index;
             }
             
-            public LList availableProcedures( DescriptiveDocumentType type ) throws Throwable {
+            public LList availableProcedures( DescriptiveDocumentCategory category ) throws Throwable {
                 Procedure1 proc1 = new Procedure1() {
                     @Override
                     public Object apply1(Object arg1) throws Throwable {
@@ -141,13 +143,18 @@ public class DescriptiveHelp {
                 };
                 return (LList)map.apply2( proc1, 
                                 reverse.apply1( 
-                                    type.getDocumentList( this.environment )));
+                                    category.getDocumentList( this.environment )));
             }
-            LList allAvailable() throws Throwable {
+            public ArrayList allAvailableProcedures() throws Throwable {
                 ArrayList list = new ArrayList();
-                list.addAll( availableProcedures( DescriptiveDocumentType.PROCS ));
-                list.addAll( availableProcedures( DescriptiveDocumentType.NOTES ));
-                return LList.makeList( list );
+                for ( DescriptiveDocumentCategory category : DescriptiveDocumentCategory.getAll() ) {
+                    list.addAll( availableProcedures( category ) );
+                }
+                return list;
+            }
+
+            LList allAvailable() throws Throwable {
+                return LList.makeList( allAvailableProcedures() );
             }
 
             public Object apply0() throws Throwable {
@@ -161,7 +168,7 @@ public class DescriptiveHelp {
                 Procedure1 proc1 = new Procedure1() {
                     @Override
                     public Object apply1(Object arg1) throws Throwable {
-                        return SchemeUtils.toSchemeString( "(help " + SchemeUtils.symbolToString( arg1 ) + ")" );
+                        return SchemeUtils.toSchemeString( "(help " + SchemeUtils.schemeSymbolToJavaString( arg1 ) + ")" );
                     }
                 };
                 
@@ -180,8 +187,8 @@ public class DescriptiveHelp {
                     return allAvailable();
                 } else  {
                     if ( arg1 instanceof Symbol ) {
-                        DescriptiveDocumentType t = 
-                                DescriptiveDocumentType.valueOf( SchemeUtils.anyToString( arg1 ).toUpperCase() );
+                        DescriptiveDocumentCategory t = 
+                                DescriptiveDocumentCategory.valueOf( (Symbol)arg1 );
                         return SchemeUtils.makePage( helpList( availableProcedures( t ) ) );
                     } else {
                         String message = SchemeUtils.getDescription( arg1 );
@@ -207,7 +214,7 @@ public class DescriptiveHelp {
             }
         }
         SchemeUtils.defineVar( env, new ProcedureHelp( env, "help", 1 ) , "help", "he" );
-        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
+        DescriptiveHelp.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "help", "he" );
             setParameterDescription( "[symbol|procedure]" );
             addParameter(
@@ -283,12 +290,12 @@ public class DescriptiveHelp {
                         throw new IllegalArgumentException( "unknown field name " + car );
                     }
                 }
-                DescriptiveDocumentType.PROCS.defineDoc( env, arg1, bean );
+                DescriptiveHelp.DOCS.defineDoc( env, arg1, bean );
                 return Values.empty;
             }
         }, "make-help");
         
-        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
+        DescriptiveHelp.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "make-help" );
             setParameterDescription( "" );
             addParameter( "target", "procedure" , null, false, "The reference to the target procedure. See the description. " );
@@ -326,20 +333,20 @@ public class DescriptiveHelp {
         SchemeUtils.defineVar( env, new Procedure1("help-markdown") {
             @Override
             public Object apply0() throws Throwable {
-                return this.apply1( DescriptiveDocumentType.PROCS.toSymbol() );
+                return this.apply1( DescriptiveHelp.DOCS.getSymbol() );
             }
             @Override
             public Object apply1(Object arg1) throws Throwable {
                 System.out.println(
                     outputMarkdownReference0(
-                        DescriptiveDocumentType.valueOf((Symbol)arg1), env));
+                        DescriptiveDocumentCategory.valueOf((Symbol)arg1), env));
 //              SchemeUtils.toSchemeSymbol( sb.toString() );
                 return Values.empty;
             }
 
         }, "help-markdown" );
         
-        DescriptiveDocumentType.PROCS.defineDoc( env, new ProceduralDescriptiveBean(){{
+        DescriptiveHelp.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames("help-markdown");
             setParameterDescription( "" );
             addParameter( "type", "string", "'procs", false,  "either 'procs or 'notes " );
