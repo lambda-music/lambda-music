@@ -1,6 +1,11 @@
 package pulsar.lib.scheme;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -15,6 +20,7 @@ import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Symbol;
+import pulsar.lib.scheme.scretary.SchemeSecretary;
 
 
 public class DescriptiveDocumentCategory {
@@ -162,4 +168,47 @@ public class DescriptiveDocumentCategory {
         return actualTarget;
     }
     
+
+    public static void outputAvailableReferences(String outputFile) throws FileNotFoundException, IOException {
+        List<String> stringList = new ArrayList<>();
+        for ( DescriptiveDocumentCategory c : getAll() ) {
+            stringList.add( SchemeUtils.schemeStringToJavaString( c.getSymbol() ) );
+        }
+        String str = String.join( ",", stringList );
+        if ( outputFile == null /* || "-".equals( outputFile ) */ ) {
+            System.out.println( str );      
+        } else {
+            FileOutputStream fo = null;
+            try {
+                fo = new FileOutputStream( new File( outputFile ) );
+                fo.write( str.getBytes( Charset.forName( "utf-8" ) ) );
+                System.err.println( str );      
+                fo.flush();
+            } finally {
+                if ( fo != null )
+                    fo.close();
+            }
+        }
+    }
+
+    public static void outputReference(SchemeSecretary schemeSecretary, String categoryName, String outputFile)
+            throws FileNotFoundException, IOException 
+    {
+        DescriptiveDocumentCategory category = valueOf( categoryName );
+        String str = DescriptiveHelp.outputMarkdownReference( category, schemeSecretary );
+        if ( outputFile == null /* || "-".equals( outputFile ) */ ) {
+            System.out.println( str );      
+        } else {
+            FileOutputStream fo = null;
+            try {
+                fo = new FileOutputStream( new File( outputFile ) );
+                fo.write( str.getBytes( Charset.forName( "utf-8" ) ) );
+                System.err.println( str );      
+                fo.flush();
+            } finally {
+                if ( fo != null )
+                    fo.close();
+            }
+        }
+    }
 }

@@ -1524,7 +1524,7 @@ public final class Pulsar extends Metro {
             setLongDescription( ""
                                 + "Pulsar music sequencer is a music sequencer which collaboratively works with "
                                 + "a powerful computer language Lisp Scheme. "
-                                + "And this frame itself is a powerful Lisp Scheme editor which is called KawaPad. "
+                                + "And this frame itself is a powerful Lisp Scheme editor which is called Kawapad. "
                                 + "In Lisp, all commands are surrounded with a pair of parentheses. You can easily execute "
                                 + "one of those command by moving your cursor within the pair of parentheses and pressing CTRL+ENTER. \n\n"
                                 + "To show this help, execute (help about-intro). \n"

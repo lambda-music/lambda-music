@@ -109,7 +109,7 @@ import pulsar.lib.swing.Action2;
  * <li>{@link KawapadFrame#initialize() } must be called before use the object.</li>
  * </ol>
  * <pre> 
- * new KawaPad( initSchemeForScratchPad( new Scheme() ) ).initialize();
+ * new Kawapad( initSchemeForScratchPad( new Scheme() ) ).initialize();
  * </pre>
  * 
  * There are several global variables which are fundamental to this tool.
@@ -138,7 +138,7 @@ public class Kawapad extends JTextPane {
      * This is a map for debugging or something. This map is intended to be used for
      * keeping values from Scheme.
      * 
-     * The current environment is frequently scrapped and replaced in KawaPad/Pulsar
+     * The current environment is frequently scrapped and replaced in Kawapad/Pulsar
      * system. In Scheme, you cannot keep the same value between those multiple
      * environments. This map is intended to be used as a place to keep values
      * without environments. (Sat, 17 Aug 2019 13:10:44 +0900)
@@ -321,7 +321,7 @@ public class Kawapad extends JTextPane {
 //          schemeSecretary.registerSchemeInitializer( kawaPad, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
 //              @Override
 //              public void execute0( Scheme scheme, Object[] args ) {
-//                  logInfo( "eventinvokeEventHandler of KawaPad#registerLocalSchemeInitializers " );
+//                  logInfo( "eventinvokeEventHandler of Kawapad#registerLocalSchemeInitializers " );
 ////                    eventHandlers.invokeEventHandler( kawaPad, EventHandlers.INIT );
 //                  eventHandlers.invokeEventHandler( kawaPad, EventHandlers.CREATE );
 //              }
@@ -329,16 +329,16 @@ public class Kawapad extends JTextPane {
     }
     
     @Deprecated
-    public static void invokeLocalSchemeInitializers( SchemeSecretary schemeSecretary, Kawapad kawaPane ) {
-        schemeSecretary.invokeSchemeInitializers( kawaPane );
+    public static void invokeLocalSchemeInitializers( SchemeSecretary schemeSecretary, Kawapad kawapad ) {
+        schemeSecretary.invokeSchemeInitializers( kawapad );
     }
 
     /**
      * Remove initializers that initialize variables for the current frame.
      */
     @Deprecated
-    public static void unregisterLocalSchemeInitializers(SchemeSecretary schemeSecretary, Kawapad kawaPane ) {
-        schemeSecretary.unregisterSchemeInitializer( kawaPane );
+    public static void unregisterLocalSchemeInitializers(SchemeSecretary schemeSecretary, Kawapad kawapad ) {
+        schemeSecretary.unregisterSchemeInitializer( kawapad );
     }
 
     /**
@@ -641,7 +641,7 @@ public class Kawapad extends JTextPane {
                         int pos = kawapad.getCaretPosition() -1;
                         logInfo( "caret : " + pos );
                         highlightMatchningParentheses( kawapad, pos );
-//                          KawaPadHighlighter.highlightMatchingParenthesis( kawaPane, pos ); 
+//                          KawapadHighlighter.highlightMatchingParenthesis( kawapad, pos ); 
 //                          SwingUtilities.invokeLater(hilightRunnable);
                         break;
                         
@@ -807,14 +807,14 @@ public class Kawapad extends JTextPane {
         }
     }
     {
-//          kawaPane.getActionMap().put( DefaultEditorKit.pasteAction , DEBUG_ACTION );
+//          kawapad.getActionMap().put( DefaultEditorKit.pasteAction , DEBUG_ACTION );
     }
     
-    public final Action PASTE_ACTION = new KawaPadPasteAction();
-    class KawaPadPasteAction extends TextAction {
+    public final Action PASTE_ACTION = new KawapadPasteAction();
+    class KawapadPasteAction extends TextAction {
 
         /** Create this object with the appropriate identifier. */
-        public KawaPadPasteAction() {
+        public KawapadPasteAction() {
             super(DefaultEditorKit.pasteAction);
         }
 
@@ -824,7 +824,7 @@ public class Kawapad extends JTextPane {
          * @param e the action event
          */
         public void actionPerformed(ActionEvent e) {
-            logInfo("KawaPad.PasteAction.actionPerformed()");
+            logInfo("Kawapad.PasteAction.actionPerformed()");
             JTextComponent target = getTextComponent(e);
             if (target != null) {
                 try {
@@ -1502,8 +1502,8 @@ public class Kawapad extends JTextPane {
     //
     //////////////////////////////////////////////////////////////////////////////////////////
     
-    private final KawaPadParenthesisStack parenthesisStack = new KawaPadParenthesisStack();
-    public KawaPadParenthesisStack getParenthesisStack() {
+    private final KawapadParenthesisStack parenthesisStack = new KawapadParenthesisStack();
+    public KawapadParenthesisStack getParenthesisStack() {
         return parenthesisStack;
     }
     
@@ -1698,7 +1698,7 @@ public class Kawapad extends JTextPane {
                     getParenthesisStack().setLocked( true );
                     if ( textComponent.getSelectedText() != null ) {
                         if ( ! getParenthesisStack().isEmpty() ) {
-                            KawaPadParenthesisStack.Element elem = getParenthesisStack().pop();
+                            KawapadParenthesisStack.Element elem = getParenthesisStack().pop();
                             Caret caret = textComponent.getCaret();
                             caret.setDot( elem.mark );
                             caret.moveDot( elem.dot );
@@ -1945,11 +1945,11 @@ public class Kawapad extends JTextPane {
     ////////////////////////////////////////////////////////////////////////////
     
     protected void initSchemeLocal( Scheme scheme ) {
-        logInfo( "KawaPad#initScheme" );
+        logInfo( "Kawapad#initScheme" );
     }
 
     public static Scheme staticInitScheme( Scheme scheme ) {
-        logInfo( "KawaPad#staticInitScheme" );
+        logInfo( "Kawapad#staticInitScheme" );
         SchemeSecretary.initializeSchemeForCurrentThreadStatic( scheme );
         Environment env = scheme.getEnvironment();
         
@@ -2086,7 +2086,7 @@ public class Kawapad extends JTextPane {
 
             
             try {
-                logInfo( "Loading [KawaPad internal]/kawapad-extension.scm" );
+                logInfo( "Loading [Kawapad internal]/kawapad-extension.scm" );
                 SchemeUtils.execSchemeFromResource( scheme, Kawapad.class, "kawapad-extension.scm" );
             } catch (Throwable e) {
                 logError( "Ignored an error : ", e);

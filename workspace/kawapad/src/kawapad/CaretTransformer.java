@@ -56,10 +56,10 @@ public abstract class CaretTransformer {
             return new CaretPos( this );
         }
     }
-    public final void transform( KawaPadParenthesisStack stack, Document text, Caret caret ) {
+    public final void transform( KawapadParenthesisStack stack, Document text, Caret caret ) {
         transform( stack, KawapadParenthesisMovement.getText( text ), caret );
     }
-    public final boolean transform( KawaPadParenthesisStack stack, CharSequence text, Caret caret ) {
+    public final boolean transform( KawapadParenthesisStack stack, CharSequence text, Caret caret ) {
         int currDot  = caret.getDot();
         int currMark = caret.getMark();
 

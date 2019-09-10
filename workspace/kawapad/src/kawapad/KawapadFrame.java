@@ -48,6 +48,7 @@ import javax.swing.SwingUtilities;
 
 import kawapad.Kawapad.KawaVariableInitializer;
 import pulsar.lib.PulsarLogger;
+import pulsar.lib.scheme.DescriptiveDocumentCategory;
 import pulsar.lib.scheme.DescriptiveHelp;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.swing.Action2;
@@ -228,7 +229,7 @@ public class KawapadFrame extends JFrame {
     }
 
     /**
-     * KawaPad#init() must be called whenever any KawaPad instance is created. Due
+     * Kawapad#init() must be called whenever any Kawapad instance is created. Due
      * to INIT_03 (see the comment in the source code), the constructor cannot call
      * this method directory; we decided to mandate the users to call this method
      * manually.
@@ -242,8 +243,8 @@ public class KawapadFrame extends JFrame {
          * different way from the creation of a scheme object. (Tue, 06 Aug 2019 08:47:14 +0900) 
          */
         // MODIFIED (Mon, 02 Sep 2019 06:16:35 +0900) >>>
-        // Calling eventhanders is done inside KawaPane 
-//      KawaPane.eventHandlers.invokeEventHandler( kawaPad, EventHandlers.CREATE,  kawaPad );
+        // Calling eventhanders is done inside Kawapad 
+//      Kawapad.eventHandlers.invokeEventHandler( kawaPad, EventHandlers.CREATE,  kawaPad );
         this.kawapad.initialize();
         // MODIFIED (Mon, 02 Sep 2019 06:16:35 +0900) <<<
 //      ADDED <<< (Tue, 06 Aug 2019 08:47:14 +0900)
@@ -280,10 +281,23 @@ public class KawapadFrame extends JFrame {
     public static void main(String[] args) throws IOException {
         PulsarLogger.init();
         if ( 0 < args.length  ) {
-            start( new File( args[0] ) );
+            if ( args[0].equals( "--output-reference" ) ) {
+                outputDocument();
+            } else {
+                start( new File( args[0] ) );
+            }
         } else {
             start();        
         }
+    }
+    public static void outputDocument() throws IOException {
+        KawapadFrame kawapadFrame = createStaticInstance();
+        DescriptiveDocumentCategory.outputReference( kawapadFrame.kawapad.getSchemeSecretary(), "kawapad-procedures", null );
+        try {
+            Thread.sleep( 2048 );
+        } catch ( InterruptedException e ) {
+        }
+        kawapadFrame.quit();
     }
     public static void start(File f) throws IOException {
         KawapadFrame kawapadFrame = createStaticInstance();

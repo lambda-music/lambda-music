@@ -275,7 +275,7 @@ public class SchemeSecretary extends Secretary<Scheme> implements ShutdownHook {
      * 
      *  1. The scheme object 
      *  2. Pulsar's  Frame objects (global/local)
-     *  3. KawaPad's Frame objects (global/local)
+     *  3. Kawapad's Frame objects (global/local)
      * 
      *  |                                          |                                        |
      *  |                                          |                                        |

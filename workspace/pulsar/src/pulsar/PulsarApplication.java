@@ -1,20 +1,14 @@
 package pulsar;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 
 import kawapad.Kawapad;
 import kawapad.KawapadDocuments;
 import pulsar.lib.PulsarLogger;
 import pulsar.lib.scheme.DescriptiveDocumentCategory;
 import pulsar.lib.scheme.DescriptiveHelp;
-import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.http.SchemeHttp;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 
@@ -98,61 +92,25 @@ public class PulsarApplication {
         }
     }
     
-    static Collection<DescriptiveDocumentCategory> loadAllAvailableHelps() {
+    static void loadAllAvailableHelps() {
         forceLoad( PulsarDocuments.class );
         forceLoad( PulsarFramePackage.class );
         forceLoad( KawapadDocuments.class );
         forceLoad( DescriptiveHelp.class );
-        
-        return DescriptiveDocumentCategory.getAll();
     }
     
     static Pulsar outputAllAvailableReferences( String outputFile ) throws IOException {
         Pulsar pulsar = start(true,true,8193);
-        List<String> stringList = new ArrayList<>();
-        for ( DescriptiveDocumentCategory c : loadAllAvailableHelps() ) {
-            stringList.add( SchemeUtils.schemeStringToJavaString( c.getSymbol() ) );
-        }
-        String str = String.join( ",", stringList );
-        if ( outputFile == null /* || "-".equals( outputFile ) */ ) {
-            System.out.println( str );      
-        } else {
-            FileOutputStream fo = null;
-            try {
-                fo = new FileOutputStream( new File( outputFile ) );
-                fo.write( str.getBytes( Charset.forName( "utf-8" ) ) );
-                System.err.println( str );      
-                fo.flush();
-            } finally {
-                if ( fo != null )
-                    fo.close();
-            }
-        }
-        
+        loadAllAvailableHelps();
+        DescriptiveDocumentCategory.outputAvailableReferences( outputFile );
         quitPulsarSafely( pulsar );
         return pulsar;
     }
-
+    
     static Pulsar outputReference( String outputFile, String categoryName ) throws IOException {
         loadAllAvailableHelps();
-        DescriptiveDocumentCategory category = DescriptiveDocumentCategory.valueOf( categoryName );
-        Pulsar pulsar = start(true,true,8193);
-        String str = DescriptiveHelp.outputMarkdownReference( category, pulsar.getSchemeSecretary() );
-        if ( outputFile == null /* || "-".equals( outputFile ) */ ) {
-            System.out.println( str );      
-        } else {
-            FileOutputStream fo = null;
-            try {
-                fo = new FileOutputStream( new File( outputFile ) );
-                fo.write( str.getBytes( Charset.forName( "utf-8" ) ) );
-                System.err.println( str );      
-                fo.flush();
-            } finally {
-                if ( fo != null )
-                    fo.close();
-            }
-        }
-
+        Pulsar pulsar = start( true, true, 8193 );
+        DescriptiveDocumentCategory.outputReference( pulsar.getSchemeSecretary(), categoryName, outputFile );
         quitPulsarSafely( pulsar );
         return pulsar;
     }
@@ -180,7 +138,7 @@ public class PulsarApplication {
 //      >>> VERSION 1 
 //      this.schemeSecretary = new SchemeSecretary();
 //      this.schemeSecretary.setDirectMeeting( false );
-//      KawaPad.registerGlobalSchemeInitializer( schemeSecretary );
+//      Kawapad.registerGlobalSchemeInitializer( schemeSecretary );
 //      this.schemeSecretary.newScheme();
 //
 //      Pulsar.registerLocalSchemeInitializers( schemeSecretary, this );

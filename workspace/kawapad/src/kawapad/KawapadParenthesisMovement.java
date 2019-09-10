@@ -46,7 +46,7 @@ public class KawapadParenthesisMovement {
             textPane.getCaret() );
     }
     
-    static boolean expandSelectedParentheses( KawaPadParenthesisStack stack, CharSequence text, Caret caret ) {
+    static boolean expandSelectedParentheses( KawapadParenthesisStack stack, CharSequence text, Caret caret ) {
         int currDot  = caret.getDot();
         int currMark = caret.getMark();
         int leftPos;

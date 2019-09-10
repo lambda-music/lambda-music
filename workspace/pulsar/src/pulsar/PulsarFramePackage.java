@@ -857,7 +857,7 @@ public class PulsarFramePackage {
             }
         }, "gui-repaint");
 
-//      KawaPad.staticInitScheme( scheme );
+//      Kawapad.staticInitScheme( scheme );
     }
 
 }

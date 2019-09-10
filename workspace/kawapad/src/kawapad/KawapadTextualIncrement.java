@@ -305,11 +305,11 @@ class KawapadTextualIncrement {
             }
         }
         
-        Kawapad kawaPane = ((Kawapad)target);
+        Kawapad kawapad = ((Kawapad)target);
         
         if ( foundSubstr != null ) {
-            kawaPane.getUndoManager().startGroup();
-            kawaPane.getUndoManager().setSuspended( true );
+            kawapad.getUndoManager().startGroup();
+            kawapad.getUndoManager().setSuspended( true );
             try {
                 caret.setDot( foundBeginPos );
                 caret.moveDot( foundEndPos );
@@ -317,8 +317,8 @@ class KawapadTextualIncrement {
                 caret.setDot( foundBeginPos + foundSubstr.length() );
                 caret.moveDot( foundBeginPos );
             } finally {
-                kawaPane.getUndoManager().setSuspended( false );
-                kawaPane.getUndoManager().endGroup();
+                kawapad.getUndoManager().setSuspended( false );
+                kawapad.getUndoManager().endGroup();
             }
         }
     }

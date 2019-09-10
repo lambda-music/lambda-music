@@ -7,7 +7,7 @@ public class UndoManagers {
 //      return new LazyGroupedUndoManager();
 //      return new SimpleCompoundUndoManager();
         return new CompoundGroupedUndoManager();
-//      return new OriginalCompoundUndoManager( kawaPane );
+//      return new OriginalCompoundUndoManager( kawapad );
 //      return new NewGroupedUndoManager();
 //      return new ReimplementedUndoManager();
     }

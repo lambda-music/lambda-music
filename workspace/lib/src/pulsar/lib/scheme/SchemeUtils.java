@@ -475,7 +475,7 @@ public class SchemeUtils {
     }
 
     /*
-     * moved from KawaPad.java (Mon, 29 Jul 2019 19:31:42 +0900)
+     * moved from Kawapad.java (Mon, 29 Jul 2019 19:31:42 +0900)
      */
     // TODO integrate all prettyPrint things.
     public static String prettyPrint(Object resultObject) throws Throwable {

@@ -19,4 +19,11 @@
             <fileset dir="${dir.jarfile}/bin.scheme"/>
         </jar>
     </target>
+            
+    <target name="create_api_reference" depends="create_run_jar" >
+        <java jar="kawapad.jar"  fork="true" output="generated-kawapad-api.md" error="generated-kawapad-api.log" >
+            <arg value="--output-reference" />
+            <arg value="kawapad-procedures" />
+        </java>
+    </target>
 </project>

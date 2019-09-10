@@ -192,7 +192,7 @@ public abstract class DescriptiveBean implements DescriptiveBeanSynopsisFormatte
     }
     
     public String format() {
-        return KawaPadDescriptive.formatForKawaPad( this );
+        return KawapadDescriptive.formatForKawapad( this );
     };
     
 //  @Override

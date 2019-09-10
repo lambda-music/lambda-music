@@ -80,13 +80,13 @@ public class DescriptiveHelp {
             setReturnValueDescription( "::kawapad-page" );
             setShortDescription( "<name/> makes the passed value into ||kawapad-page|| object. " );
             setLongDescription( ""
-                                + "When an expression is evaluated in KawaPad, the result value is displayed on the current editor. "
+                                + "When an expression is evaluated in Kawapad, the result value is displayed on the current editor. "
                                 + "When the result value is a ||kawapad-page|| object, the value is displayed in a special way; "
-                                + "when the KawaPad system detect the result value is a ||kawapad-page||, the editor expands the current "
+                                + "when the Kawapad system detect the result value is a ||kawapad-page||, the editor expands the current "
                                 + "selection to the outer-most parentheses and replace the region with the result value. "
-                                + "This enables it to use KawaPad as a dynamic Hypertext editor. \n\n"
+                                + "This enables it to use Kawapad as a dynamic Hypertext editor. \n\n"
                                 + "The <name/> procedure convert the passed value into the kawapad-page object in order to "
-                                + "activate the special display function of KawaPad. "
+                                + "activate the special display function of Kawapad. "
                                 + "" 
                                 );
         }} );
