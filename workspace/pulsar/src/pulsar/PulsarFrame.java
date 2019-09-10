@@ -481,7 +481,7 @@ public class PulsarFrame extends KawapadFrame {
     JSlider sl_tempoSlider;
     
     public void quit() {
-        frame.quit();
+        super.quit();
     }
 
     public void guiClear() {

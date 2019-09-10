@@ -384,17 +384,17 @@ public class KawapadParenthesisMovement {
                 after.left   = SchemeParenthesisParser.lookupCorrespondingParenthesis( right_leftString + "\")" + right_rightString, start.right +1 );
                 after.right  = SchemeParenthesisParser.lookupCorrespondingParenthesis( left_leftString + "(\"" + left_rightString, start.left   );
                 after.right -=diff;
-                // Change the direction of the selection, if it is not selected; otherwise
-                // keep the current direction of the selection.
-                if ( ! selection ) {
-                    if ( 0<=after.left && 0<=after.right ) {
+                if ( 0<=after.left && 0<=after.right ) {
+                    // Change the direction of the selection, if it is not selected; otherwise
+                    // keep the current direction of the selection.
+                    if ( ! selection ) {
                         if ( Math.abs( after.left - before.left ) < Math.abs( after.right - before.right ) ) {
                             after.direction = -1;
                         } else {
                             after.direction =  1;
                         }
-                        return true;
                     }
+                    return true;
                 }
             }
             return false;
