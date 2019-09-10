@@ -234,7 +234,10 @@ public class PulsarFrame extends KawapadFrame {
         initGui();
         initGuiMenu();
         initGuiIcon();
+        initGuiProgressBar();
+        initGuiFocus();
         initPulsarGui();
+        
     }
     
     private void initPulsarGui() {
@@ -757,7 +760,7 @@ public class PulsarFrame extends KawapadFrame {
             return s;
         }
     };
-    {
+    void initGuiProgressBar() {
         PulsarFrame.this.pb_position = pb_position; 
         add( pb_position , BorderLayout.PAGE_END );
         pb_position.setBorder( BorderFactory.createCompoundBorder(
@@ -768,7 +771,7 @@ public class PulsarFrame extends KawapadFrame {
         pb_position.setMinimum(0);
     }
     
-    {
+    void initGuiFocus() {
         SwingUtilities.invokeLater( new Runnable() {
             @Override
             public void run() {
