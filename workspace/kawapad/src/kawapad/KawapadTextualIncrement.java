@@ -344,7 +344,7 @@ class KawapadTextualIncrement {
         }
 
         {
-            putValue( Action2.NAME, "Increment the Nearest Number" );
+            putValue( Action2.CAPTION, "Increment the Nearest Number" );
             putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_G , KeyEvent.CTRL_MASK ));
             putValue( Action.MNEMONIC_KEY , (int) 'i' );
         }
@@ -368,7 +368,7 @@ class KawapadTextualIncrement {
             }
         }
         {
-            putValue( Action2.NAME, "Decrement the Nearest Number" );
+            putValue( Action2.CAPTION, "Decrement the Nearest Number" );
             putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_D , KeyEvent.CTRL_MASK ));
             putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }

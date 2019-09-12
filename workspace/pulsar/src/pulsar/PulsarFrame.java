@@ -289,7 +289,7 @@ public class PulsarFrame extends KawapadFrame {
                     gui.guiSetTempoRange( TempoRange.this );
                 }
                 {
-                    putValue( Action2.NAME,  caption );
+                    putValue( Action2.CAPTION,  caption );
                     putValue( Action.MNEMONIC_KEY, (int)caption.charAt(0) );
 //                  putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK) );
                 }
@@ -512,7 +512,7 @@ public class PulsarFrame extends KawapadFrame {
             }
         }
         {
-            putValue( Action2.NAME, "New Scratchpad" );
+            putValue( Action2.CAPTION, "New Scratchpad" );
             putValue( Action.MNEMONIC_KEY, (int)'n' );
             putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_F4, ActionEvent.SHIFT_MASK) );
         }
@@ -525,7 +525,7 @@ public class PulsarFrame extends KawapadFrame {
             pulsar.close();
         }
         {
-            putValue( Action2.NAME, "Reset the Sequencer" );
+            putValue( Action2.CAPTION, "Reset the Sequencer" );
             putValue( Action.MNEMONIC_KEY, (int)'r' );
             putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0 ) );
         }
@@ -537,7 +537,7 @@ public class PulsarFrame extends KawapadFrame {
             quit();
         }
         {
-            putValue( Action2.NAME, "Quit" );
+            putValue( Action2.CAPTION, "Quit" );
             putValue( Action.MNEMONIC_KEY, (int)'q' );
             putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK) );
         }
@@ -549,7 +549,7 @@ public class PulsarFrame extends KawapadFrame {
             pulsar.togglePlaying();
         }
         {
-            putValue( Action2.NAME, "Play/Stop" );
+            putValue( Action2.CAPTION, "Play/Stop" );
             putValue( Action.MNEMONIC_KEY, (int)'P' );
             putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, ActionEvent.CTRL_MASK) );
         }
@@ -560,7 +560,7 @@ public class PulsarFrame extends KawapadFrame {
             pulsar.rewind();
         }
         {
-            putValue( Action2.NAME, "Reset" );
+            putValue( Action2.CAPTION, "Reset" );
             putValue( Action.MNEMONIC_KEY, (int)'R' );
             putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_HOME, ActionEvent.CTRL_MASK) );
         }
@@ -571,7 +571,7 @@ public class PulsarFrame extends KawapadFrame {
             pulsar.tempoTapper.tap();
         }
         {
-            putValue( Action2.NAME, "Tap Tempo" );
+            putValue( Action2.CAPTION, "Tap Tempo" );
             putValue( Action.MNEMONIC_KEY, (int)'T' );
             putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, ActionEvent.CTRL_MASK | ActionEvent.SHIFT_MASK ) );
         }

@@ -47,7 +47,15 @@ public class KawapadContentAssist {
     }
     public synchronized void moveTo( int direction ) {
         if ( list != null ) {
-            list.setSelectedIndex( list.getSelectedIndex() + direction );
+            int index = list.getSelectedIndex() + direction;
+            if ( index < 0 ) 
+                index =0;
+            
+            int size = list.getModel().getSize();
+            if ( size <= index )
+                index = size-1;
+                
+            list.setSelectedIndex( index );
         }
     }
     public synchronized String get() {

@@ -44,15 +44,24 @@ import javax.swing.JMenuItem;
  * 
  * @author Ats Oka
  */
-public class Action2 {
-    public static final String NAME = "CAPTION";
+public abstract interface Action2 extends Action {
+    
+    ////////////////////////////////////////////////////////////////////////
+    //
+    // Methods to perform countermeasure for cumbersome menu caption management
+    // of default Java actions and menu items.
+    //
+    ////////////////////////////////////////////////////////////////////////
+    
+
+    public static final String CAPTION = "CAPTION";
     public static void setCaption( Action action, String caption ) {
-        action.putValue( NAME , caption );
+        action.putValue( CAPTION , caption );
     }
     public static <C extends AbstractButton> C processButton( C button  ) {
         Action action = button.getAction();
         if ( action != null ) {
-            String caption = (String)action.getValue( NAME );
+            String caption = (String)action.getValue( CAPTION );
             if ( caption != null )
                 button.setText( caption );
         }
@@ -84,4 +93,11 @@ public class Action2 {
         }
         return menuBar;
     }
+    
+    ////////////////////////////////////////////////////////////////////////
+    //
+    //
+    ////////////////////////////////////////////////////////////////////////
+    
+
 }

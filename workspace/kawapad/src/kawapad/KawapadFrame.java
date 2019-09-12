@@ -98,7 +98,7 @@ public class KawapadFrame extends JFrame {
             }
         }
         {
-            putValue( Action2.NAME, "Create a New Scratchpad" );
+            putValue( Action2.CAPTION, "Create a New Scratchpad" );
             putValue( Action.MNEMONIC_KEY, (int)'n' );
             putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK | ActionEvent.SHIFT_MASK ) );
         }

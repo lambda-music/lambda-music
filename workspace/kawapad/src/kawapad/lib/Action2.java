@@ -11,6 +11,6 @@ public class Action2 {
     // I left this class as a reminder for the issue.
     // (Wed, 07 Aug 2019 22:45:34 +0900)
     
-    public static final String NAME = pulsar.lib.swing.Action2.NAME;
+    public static final String NAME = pulsar.lib.swing.Action2.CAPTION;
     private Action2() { }
 }
