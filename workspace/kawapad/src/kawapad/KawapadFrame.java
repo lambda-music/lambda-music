@@ -283,6 +283,8 @@ public class KawapadFrame extends JFrame {
         if ( 0 < args.length  ) {
             if ( args[0].equals( "--output-reference" ) ) {
                 outputDocument();
+            } else if ( args[0].equals( "--output-keystroke-reference" ) ) {
+                outputKeyStrokeReference();
             } else {
                 start( new File( args[0] ) );
             }
@@ -290,13 +292,25 @@ public class KawapadFrame extends JFrame {
             start();        
         }
     }
-    public static void outputDocument() throws IOException {
+    
+    public static void outputKeyStrokeReference() throws IOException {
         KawapadFrame kawapadFrame = createStaticInstance();
-        DescriptiveDocumentCategory.outputReference( kawapadFrame.kawapad.getSchemeSecretary(), "kawapad-procedures", null );
         try {
             Thread.sleep( 2048 );
         } catch ( InterruptedException e ) {
         }
+        System.out.println( kawapadFrame.getKawapad().outputKeyStrokeReference() );
+        System.out.flush();
+        kawapadFrame.quit();
+    }
+
+    public static void outputDocument() throws IOException {
+        KawapadFrame kawapadFrame = createStaticInstance();
+        try {
+            Thread.sleep( 2048 );
+        } catch ( InterruptedException e ) {
+        }
+        DescriptiveDocumentCategory.outputReference( kawapadFrame.kawapad.getSchemeSecretary(), "kawapad-procedures", null );
         kawapadFrame.quit();
     }
     public static void start(File f) throws IOException {

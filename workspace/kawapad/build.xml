@@ -21,9 +21,21 @@
     </target>
             
     <target name="create_api_reference" depends="create_run_jar" >
-        <java jar="kawapad.jar"  fork="true" output="generated-kawapad-api.md" error="generated-kawapad-api.log" >
+        <mkdir dir="generated"/>
+        <java jar="kawapad.jar"  fork="true" output="generated/generated-kawapad-api.md" error="generated/generated-kawapad-api.log" >
             <arg value="--output-reference" />
             <arg value="kawapad-procedures" />
         </java>
+        <java jar="kawapad.jar"  fork="true" output="generated/generated-kawapad-keystrokes.md" error="generated/generated-kawapad-keystrokes.log" >
+            <arg value="--output-keystroke-reference" />
+        </java>
     </target>
+    <target name="concat_api_reference" depends="create_api_reference" >
+        <concat destfile="readme.md"  >
+            <file file="manual-readme.md" />
+            <file file="generated/generated-kawapad-api.md" />
+            <file file="generated/generated-kawapad-keystrokes.md" />
+        </concat>
+    </target>
+
 </project>

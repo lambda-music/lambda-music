@@ -8,7 +8,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.Action;
-import javax.swing.text.JTextComponent;
 
 public class AutomatedActions {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -16,13 +15,13 @@ public class AutomatedActions {
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
-    public static List<Action> getActionList(JTextComponent c) {
+    public static List<Action> getActionList(Object o) {
         List<Action> actionList= new ArrayList<>();
-        for ( Field f : c.getClass().getFields() ) {
+        for ( Field f : o.getClass().getFields() ) {
             AutomatedActionField annotation = f.getAnnotation( AutomatedActionField.class );
             if ( annotation != null ) {
                 try {
-                    actionList.add( (Action) f.get( c ) );
+                    actionList.add( (Action) f.get( o ) );
                 } catch (IllegalArgumentException | IllegalAccessException e) {
                     logError( "Ignored an exception", e );
                 }

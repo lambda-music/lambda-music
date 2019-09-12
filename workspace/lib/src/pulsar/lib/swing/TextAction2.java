@@ -23,9 +23,6 @@ package pulsar.lib.swing;
 import javax.swing.text.TextAction;
 
 public abstract class TextAction2 extends TextAction implements Action2 {
-    public TextAction2() {
-        super( null );
-    }
     public TextAction2(String name) {
         super( name );
     }
