@@ -39,6 +39,7 @@ class KawapadSyntaxHighlighter extends SyntaxHighlighter {
         this.kawapad = kawapad;
     }
     private Pattern createKeywordPattern() {
+        Kawapad.logInfo( "createKeywordPattern()" );
         synchronized ( Kawapad.class ) {
             List<String> keywordList = new ArrayList<>();
             // vvv IS THIS REALLY NECESSARY?????? TODO (Wed, 11 Sep 2019 03:01:16 +0900)  vvvv
@@ -50,7 +51,7 @@ class KawapadSyntaxHighlighter extends SyntaxHighlighter {
                 String s = i.next();
                 i.set( Pattern.quote( s ) );
             }
-            return Pattern.compile( 
+            return Pattern.compile(
                 REGEX_NON_WORD_L + "(?<"+GROUP+">" + String.join( "|",  keywordList ) + ")" + REGEX_NON_WORD_R );
         }
     }

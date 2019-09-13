@@ -88,6 +88,7 @@ import kawapad.KawapadParenthesisMovement.SideParenthesisSelector;
 import kawapad.KawapadSyntaxHighlighter.KawapadSyntaxElementType;
 import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
+import pulsar.lib.CurrentObject;
 import pulsar.lib.scheme.DescriptiveActions;
 import pulsar.lib.scheme.ProceduralDescriptiveBean;
 import pulsar.lib.scheme.SafeProcedureN;
@@ -178,25 +179,13 @@ public class Kawapad extends JTextPane {
     
     ////////////////////////////////////////////////////////////////////////////
 
-    private static ThreadLocal<Kawapad> threadLocalKawapad = new ThreadLocal<>();
-    public static void setCurrent( Kawapad kawapad ) {
-        threadLocalKawapad.set( kawapad );
-    }
+    public static final CurrentObject<Kawapad> currentObject = new CurrentObject<>();
+    public final CurrentObject.ThreadInitializer<Kawapad> threadInitializer = 
+            new CurrentObject.ThreadInitializer<Kawapad>( currentObject, this );
     public static Kawapad getCurrent() {
-        Kawapad currentKawapad = threadLocalKawapad.get();
-        if ( currentKawapad == null ) 
-            throw new IllegalStateException();
-        return currentKawapad;
+        return currentObject.get();
     }
-    private final Runnable threadInitializer = new Runnable() {
-        @Override
-        public void run() {
-            setCurrent( Kawapad.this );
-        }
-    };
-    public Runnable threadInitializer() {
-        return threadInitializer;
-    }
+
     
     ////////////////////////////////////////////////////////////////////////////
     // The Thread Initializer Facility
@@ -214,7 +203,7 @@ public class Kawapad extends JTextPane {
     }
     
     {
-        addThreadInitializer( threadInitializer() );
+        addThreadInitializer( threadInitializer );
     }
     
     

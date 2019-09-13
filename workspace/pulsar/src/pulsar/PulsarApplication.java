@@ -6,6 +6,7 @@ import java.util.Arrays;
 
 import kawapad.Kawapad;
 import kawapad.KawapadDocuments;
+import pulsar.lib.GC;
 import pulsar.lib.PulsarLogger;
 import pulsar.lib.scheme.DescriptiveDocumentCategory;
 import pulsar.lib.scheme.DescriptiveHelp;
@@ -131,7 +132,7 @@ public class PulsarApplication {
         });
         // This is possibly not necessary. But it might help to flush the AWT-eventqueue.
         // See https://stackoverflow.com/questions/6309407/remove-top-level-container-on-runtime
-        System.gc();
+        GC.exec();
     }
     
     public static Pulsar start( boolean guiEnabled, boolean httpEnabled, int httpPort, String filename ) throws IOException {
@@ -166,17 +167,20 @@ public class PulsarApplication {
         
 //      <<< VERSION INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
         
-        PulsarFrame pulsarGui;
+        PulsarFrame pulsarFrame;
         if ( guiEnabled )
-            pulsarGui = PulsarFrame.start( pulsar, true );
+            pulsarFrame = PulsarFrame.start( pulsar, true );
         else
-            pulsarGui = null;
+            pulsarFrame = null;
         
         @SuppressWarnings("unused")
         SchemeHttp schemeHttp;
         if ( httpEnabled )
             schemeHttp = new SchemeHttp( schemeSecretary, httpPort, 
-                Arrays.asList( pulsarGui.frame.getKawapad().threadInitializer()));
+                Arrays.asList( 
+//                    pulsarFrame.getKawapad().threadInitializer,
+                    pulsar.threadInializer
+                    ));
         else
             schemeHttp = null;
         
@@ -193,13 +197,13 @@ public class PulsarApplication {
         // initialized.
         // 
         // The method init() is called whenever the frame is created.
-        if ( pulsarGui != null )
-            pulsarGui.init();
+        if ( pulsarFrame != null )
+            pulsarFrame.init();
 
-        if ( filename != null && pulsarGui != null )
-            pulsarGui.openFile( new File( filename ) );
+        if ( filename != null && pulsarFrame != null )
+            pulsarFrame.openFile( new File( filename ) );
         else
-            pulsarGui.openIntro();
+            pulsarFrame.openIntro();
         
         return pulsar;
     }

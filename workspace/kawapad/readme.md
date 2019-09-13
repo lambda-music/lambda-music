@@ -36,7 +36,7 @@ Set the main font of the editor. Kawapad can change its font-face.
 
 
 | ID | Description | Keybind |
-| :----: | :----: | :----- |
+| :----- | :----- | :----- |
 |kawapad-undo-action|Undo|  CTRL-Z  |
 |kawapad-redo-action|Redo|  SHIFT-CTRL-Z  |
 |kawapad-debug|Debug|  CTRL-ALT-BACK_QUOTE  |

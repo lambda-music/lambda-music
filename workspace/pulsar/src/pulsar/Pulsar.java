@@ -63,6 +63,7 @@ import metro.Metro;
 import metro.MetroPort;
 import metro.MetroTrack;
 import metro.MetroTrack.SyncType;
+import pulsar.lib.CurrentObject;
 import pulsar.lib.scheme.ProceduralDescriptiveBean;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
@@ -189,27 +190,18 @@ public final class Pulsar extends Metro {
             }
         });
     }
+
+    //////////////////////////////////////////////////////////////////////////////////////////
     
-    private static ThreadLocal<Pulsar> threadLocalCurrent = new ThreadLocal<>();
-    public static void setCurrent( Pulsar current ) {
-        threadLocalCurrent.set( current );
-    }
+    public static final CurrentObject<Pulsar> currentObject = new CurrentObject<>();
+    public final CurrentObject.ThreadInitializer<Pulsar> threadInializer = 
+            new CurrentObject.ThreadInitializer<Pulsar>( currentObject, this );
     public static Pulsar getCurrent() {
-        Pulsar current = threadLocalCurrent.get();
-        if ( current == null ) 
-            throw new IllegalStateException();
-        return current;
+        return currentObject.get();
     }
-    private final Runnable threadInitializer = new Runnable() {
-        @Override
-        public void run() {
-            setCurrent( Pulsar.this );
-        }
-    };
-    public Runnable getThreadInitializer() {
-        return threadInitializer;
-    }
-    
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+
     private KawaVariableInitializer variableInitializer = new KawaVariableInitializer() {
         @Override
         public void initializeVariable(Map<String, Object> variables) {

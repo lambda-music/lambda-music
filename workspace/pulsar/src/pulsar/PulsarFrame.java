@@ -74,6 +74,7 @@ import kawa.standard.Scheme;
 import kawapad.KawapadFrame;
 import metro.MetroTrack;
 import pulsar.Pulsar.TempoTapperTempoNotifier;
+import pulsar.lib.CurrentObject;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
@@ -188,24 +189,11 @@ public class PulsarFrame extends KawapadFrame {
     //
     //////////////////////////////////////////////////////////////////////////////////
 
-    private static ThreadLocal<PulsarFrame> threadLocalKawapad = new ThreadLocal<>();
-    public static void setCurrent( PulsarFrame pulsarGui ) {
-        threadLocalKawapad.set( pulsarGui );
-    }
+    public static final CurrentObject<PulsarFrame> currentObject = new CurrentObject<>();
+    public final CurrentObject.ThreadInitializer<PulsarFrame> threadInializer = 
+            new CurrentObject.ThreadInitializer<PulsarFrame>( currentObject, this );
     public static PulsarFrame getCurrent() {
-        PulsarFrame currentKawapad = threadLocalKawapad.get();
-        if ( currentKawapad == null ) 
-            throw new IllegalStateException();
-        return currentKawapad;
-    }
-    private final Runnable threadInitializer = new Runnable() {
-        @Override
-        public void run() {
-            setCurrent( PulsarFrame.this );
-        }
-    };
-    public Runnable threadInitializer() {
-        return threadInitializer;
+        return currentObject.get();
     }
 
     //////////////////////////////////////////////////////////////////////////////////
@@ -221,15 +209,15 @@ public class PulsarFrame extends KawapadFrame {
         this.pulsar = pulsar;
         this.shutdownWhenClose = shutdownWhenClose;
         
-        frame.getKawapad().addThreadInitializer( threadInitializer());
+        this.kawapad.addThreadInitializer( this.threadInializer );
 
         PulsarFrame.registerLocalSchemeInitializers( pulsar.getSchemeSecretary(), PulsarFrame.this );
         //          DELETED >>> INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
         //          PulsarGui.invokeLocalSchemeInitializers( schemeSecretary, PulsarGui.this );
         //          DELETED <<< INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
         
-        this.kawapad.addThreadInitializer( pulsar.getThreadInitializer() );
-        this.kawapad.addVariableInitializer( pulsar.getVariableInitializer() );
+        this.kawapad.addThreadInitializer( this.pulsar.threadInializer );
+        this.kawapad.addVariableInitializer( this.pulsar.getVariableInitializer() );
         
         initGui();
         initGuiMenu();

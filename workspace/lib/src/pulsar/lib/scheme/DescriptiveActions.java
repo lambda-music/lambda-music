@@ -22,9 +22,9 @@ public class DescriptiveActions {
         sb.append( "|" );
         sb.append( "\n" );
         sb.append( "|" );
-        sb.append( " :----: " );
+        sb.append( " :----- " );
         sb.append( "|" );
-        sb.append( " :----: " );
+        sb.append( " :----- " );
         sb.append( "|" );
         sb.append( " :----- " );
         sb.append( "|" );
