@@ -148,7 +148,7 @@ public class Kawapad extends JTextPane {
     ////////////////////////////////////////////////////////////////////////////
 
     private static final String FLAG_DONE_INIT_PULSAR_SCRATCHPAD = "flag-done-init-pulsar-scratchpad";
-    private static final boolean DEBUG_UNDO_BUFFER = false;
+    private static final boolean DEBUG_UNDO_BUFFER = true;
     @SuppressWarnings("unused")
     private static final boolean DEBUG = false;
     private static final boolean ENABLED_PARENTHESIS_HIGHLIGHT = true;
@@ -175,7 +175,12 @@ public class Kawapad extends JTextPane {
         return instanceID;
     }
 
-    
+    ////////////////////////////////////////////////////////////////////////////
+    // This must be done before the constructor and other initializers.
+    // (Sun, 15 Sep 2019 09:16:53 +0900)
+    {
+        this.setDocument( new SyntaxHighlighterStyledDocument() );
+    }
     
     ////////////////////////////////////////////////////////////////////////////
 
@@ -222,8 +227,6 @@ public class Kawapad extends JTextPane {
         super();
         this.schemeSecretary = schemeSecretary;
         
-        this.setDocument( new SyntaxHighlighterStyledDocument());
-
         // initialization
         registerLocalSchemeInitializers( schemeSecretary, this );
 
@@ -733,7 +736,7 @@ public class Kawapad extends JTextPane {
     }
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
-    public final Action UNDO_ACTION = addAction( new UndoAction( KAWAPAD_UNDO, getUndoManager() ) );
+    public final Action UNDO_ACTION = new UndoAction( KAWAPAD_UNDO, getUndoManager() );
 
     static class RedoAction extends Kawapad.UndoRedoAction {
         public RedoAction(String name, GroupedUndoManager manager) {
@@ -760,7 +763,7 @@ public class Kawapad extends JTextPane {
     }
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
-    public final Action REDO_ACTION = addAction( new RedoAction( KAWAPAD_REDO, getUndoManager() ) );
+    public final Action REDO_ACTION = new RedoAction( KAWAPAD_REDO, getUndoManager() );
     
     ////////////////////////////////////////////////////////////////////////////
 
@@ -784,7 +787,7 @@ public class Kawapad extends JTextPane {
     
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
-    public final Action DEBUG_ACTION = addAction( new DebugAction( KAWAPAD_DEBUG ));
+    public final Action DEBUG_ACTION = new DebugAction( KAWAPAD_DEBUG );
     class DebugAction extends TextAction2 {
         public DebugAction(String string) {
             super(string);
@@ -803,7 +806,7 @@ public class Kawapad extends JTextPane {
     
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
-    public final Action PASTE_ACTION = addAction( new KawapadPasteAction() );
+    public final Action PASTE_ACTION = new KawapadPasteAction();
     class KawapadPasteAction extends TextAction2 {
 
         /** Create this object with the appropriate identifier. */
@@ -859,7 +862,6 @@ public class Kawapad extends JTextPane {
     public final Action DEFAULT_BACKWARD_ACTION =  kawapad.getActionMap().get( DefaultEditorKit.backwardAction );
     {
         AcceleratorKeyList.putAcceleratorKeyList( DEFAULT_BACKWARD_ACTION, "LEFT", "ctrl B" );
-        addAction( DEFAULT_BACKWARD_ACTION );
     }
 
     // INTEGRATED_ACTIONS_DEFAULT (Wed, 11 Sep 2019 08:26:57 +0900)
@@ -867,7 +869,6 @@ public class Kawapad extends JTextPane {
     public final Action DEFAULT_FORWARD_ACTION  =  kawapad.getActionMap().get( DefaultEditorKit.forwardAction );
     {
         AcceleratorKeyList.putAcceleratorKeyList( DEFAULT_FORWARD_ACTION, "RIGHT", "ctrl F" );
-        addAction( DEFAULT_FORWARD_ACTION );
     }
     
     
@@ -901,7 +902,6 @@ public class Kawapad extends JTextPane {
     public final Action KAWAPAD_UP_ACTION   = new KawapadCursorKeyAction( DefaultEditorKit.upAction,   -1, DEFAULT_UP_ACTION );
     {
         AcceleratorKeyList.putAcceleratorKeyList( KAWAPAD_UP_ACTION, "UP", "ctrl P" );
-        addAction( KAWAPAD_UP_ACTION );
     }
     
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
@@ -909,7 +909,6 @@ public class Kawapad extends JTextPane {
     public final Action KAWAPAD_DOWN_ACTION = new KawapadCursorKeyAction( DefaultEditorKit.downAction, +1, DEFAULT_DOWN_ACTION );
     {
         AcceleratorKeyList.putAcceleratorKeyList( KAWAPAD_DOWN_ACTION, "DOWN", "ctrl N" );
-        addAction( KAWAPAD_DOWN_ACTION );
     };
 
     class KawapadScrollAction extends TextAction2 {
@@ -943,16 +942,14 @@ public class Kawapad extends JTextPane {
     public final Action KAWAPAD_SCROLL_UP_ACTION   = new KawapadScrollAction( KAWAPAD_SCROLL_UP,   -12 );
     {
         AcceleratorKeyList.putAcceleratorKeyList( KAWAPAD_SCROLL_UP_ACTION, "ctrl UP" );
-        addAction( KAWAPAD_SCROLL_UP_ACTION );
     }
+    
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
     public final Action KAWAPAD_SCROLL_DOWN_ACTION = new KawapadScrollAction( KAWAPAD_SCROLL_DOWN, +12 );
     {
         AcceleratorKeyList.putAcceleratorKeyList( KAWAPAD_SCROLL_DOWN_ACTION, "ctrl DOWN" );
-        addAction( KAWAPAD_SCROLL_DOWN_ACTION );
     }
-
     
     public static final String KAWAPAD_DISABLE_CONTENT_ASSIST = "kawapad-disable-content-assist";
     public static final String KAWAPAD_ENABLE_CONTENT_ASSIST = "kawapad-enable-content-assist";
@@ -974,9 +971,6 @@ public class Kawapad extends JTextPane {
             AcceleratorKeyList.putAcceleratorKeyList( this, "ESCAPE" );
         }
     };
-    {
-        addAction( KAWAPAD_DISABLE_CONTENT_ASSIST_ACTION );
-    }
 
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
@@ -993,9 +987,6 @@ public class Kawapad extends JTextPane {
             AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl SPACE" );
         }
     };
-    {
-        addAction( KAWAPAD_ENABLE_CONTENT_ASSIST_ACTION );
-    }
 
     //////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -1092,10 +1083,6 @@ public class Kawapad extends JTextPane {
             putValue( Action.MNEMONIC_KEY, (int)'s' );
 //              putValue( Action.ACCELERATOR_KEY , AcceleratorKeyList.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK) );
         }
-    }
-    {
-//        RESET_ACTION
-        addAction( RESET_ACTION ); 
     }
     
     
@@ -1199,7 +1186,6 @@ public class Kawapad extends JTextPane {
     }
     {
         AcceleratorKeyList.putAcceleratorKeyList( SELECT_EVALUATE_ACTION, "ctrl ENTER" );
-        addAction( SELECT_EVALUATE_ACTION );
     }
 
     public static final String KAWAPAD_EVALUATE = "kawapad-evaluate";
