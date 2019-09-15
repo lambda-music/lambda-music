@@ -854,6 +854,10 @@ public class Kawapad extends JTextPane {
     // INTEGRATED_ACTIONS_DEFAULT (Wed, 11 Sep 2019 08:26:57 +0900)
     public final Action DEFAULT_DOWN_ACTION     =  kawapad.getActionMap().get( DefaultEditorKit.downAction );
     // INTEGRATED_ACTIONS_DEFAULT (Wed, 11 Sep 2019 08:26:57 +0900)
+    public final Action DEFAULT_PAGE_UP_ACTION       =  kawapad.getActionMap().get( DefaultEditorKit.pageUpAction );
+    // INTEGRATED_ACTIONS_DEFAULT (Wed, 11 Sep 2019 08:26:57 +0900)
+    public final Action DEFAULT_PAGE_DOWN_ACTION     =  kawapad.getActionMap().get( DefaultEditorKit.pageDownAction );
+    // INTEGRATED_ACTIONS_DEFAULT (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
     public final Action DEFAULT_BACKWARD_ACTION =  kawapad.getActionMap().get( DefaultEditorKit.backwardAction );
     {
@@ -894,16 +898,22 @@ public class Kawapad extends JTextPane {
     class KawapadCursorKeyAction extends TextAction2 {
         int direction;
         Action defaultAction;
-        public KawapadCursorKeyAction(String name, int direction, Action defaultAction ) {
+        boolean page;
+        public KawapadCursorKeyAction(String name, int direction, Action defaultAction, boolean page ) {
             super( name );
             this.direction = direction;
             this.defaultAction = defaultAction;
+            this.page = page;
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
             if ( contentAssistEnabled ) {
-                contentAssist.moveTo( direction );
+                if ( page ) {
+                    contentAssist.pageTo( direction );
+                } else {
+                    contentAssist.moveTo( direction );
+                }
             } else {
                 defaultAction.actionPerformed( e );
             }
@@ -912,17 +922,33 @@ public class Kawapad extends JTextPane {
     
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
-    public final Action KAWAPAD_UP_ACTION   = new KawapadCursorKeyAction( DefaultEditorKit.upAction,   -1, DEFAULT_UP_ACTION );
+    public final Action KAWAPAD_UP_ACTION   = new KawapadCursorKeyAction( DefaultEditorKit.upAction,   -1, DEFAULT_UP_ACTION, false );
     {
         AcceleratorKeyList.putAcceleratorKeyList( KAWAPAD_UP_ACTION, "UP", "ctrl P" );
     }
     
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
-    public final Action KAWAPAD_DOWN_ACTION = new KawapadCursorKeyAction( DefaultEditorKit.downAction, +1, DEFAULT_DOWN_ACTION );
+    public final Action KAWAPAD_DOWN_ACTION = new KawapadCursorKeyAction( DefaultEditorKit.downAction, +1, DEFAULT_DOWN_ACTION, false );
     {
         AcceleratorKeyList.putAcceleratorKeyList( KAWAPAD_DOWN_ACTION, "DOWN", "ctrl N" );
-    };
+    }
+    
+    // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
+    @AutomatedActionField
+    public final Action KAWAPAD_PAGE_UP_ACTION   = new KawapadCursorKeyAction( DefaultEditorKit.pageUpAction,   -1, DEFAULT_PAGE_UP_ACTION, true );
+    {
+        AcceleratorKeyList.putAcceleratorKeyList( KAWAPAD_UP_ACTION, "UP", "ctrl P" );
+    }
+    
+    // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
+    @AutomatedActionField
+    public final Action KAWAPAD_PAGE_DOWN_ACTION = new KawapadCursorKeyAction( DefaultEditorKit.pageDownAction, +1, DEFAULT_PAGE_DOWN_ACTION, true );
+    {
+        AcceleratorKeyList.putAcceleratorKeyList( KAWAPAD_DOWN_ACTION, "DOWN", "ctrl N" );
+    }
+    
+    
 
     class KawapadScrollAction extends TextAction2 {
         int direction;

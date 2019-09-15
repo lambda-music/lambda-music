@@ -43,8 +43,14 @@ Set the main font of the editor. Kawapad can change its font-face.
 |paste-from-clipboard|Paste|  CTRL-V  |
 |caret-backward|caret-backward|  LEFT, CTRL-B  |
 |caret-forward|caret-forward|  RIGHT, CTRL-F  |
+|selection-backward|selection-backward|  SHIFT-LEFT, SHIFT-CTRL-B  |
+|selection-forward|selection-forward|  SHIFT-RIGHT, SHIFT-CTRL-F  |
+|selection-up|selection-up|  SHIFT-UP, SHIFT-CTRL-P  |
+|selection-down|selection-down|  SHIFT-DOWN, SHIFT-CTRL-N  |
 |caret-up|caret-up|  UP, CTRL-P  |
 |caret-down|caret-down|  DOWN, CTRL-N  |
+|page-up|page-up|    |
+|page-down|page-down|    |
 |kawapad-scroll-up|kawapad-scroll-up|  CTRL-UP  |
 |kawapad-scroll-down|kawapad-scroll-down|  CTRL-DOWN  |
 |kawapad-disable-content-assist|Disable Content Assist|  ESCAPE  |
@@ -69,7 +75,7 @@ Set the main font of the editor. Kawapad can change its font-face.
 |kawapad-format-inc|Increase Indentation|  TAB  |
 |kawapad-format-dec|Decrease Indentation|  SHIFT-TAB  |
 |kawapad-prettify|Correct Indentation|  CTRL-I  |
-|kawapad-open-new|Open New|  SHIFT-CTRL-N  |
+|kawapad-open-new|Open New|    |
 |kawapad-open-file|Open|  CTRL-O  |
 |kawapad-save-file|Save|  CTRL-S  |
 |kawapad-save-file-as|Save as|  SHIFT-CTRL-S  |

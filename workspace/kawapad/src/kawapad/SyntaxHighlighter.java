@@ -271,7 +271,7 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
                 start = matcher.start();
                 end = matcher.end();
             }
-            document.setCharacterAttributes( start, end - start, attr, false );
+            document.setCharacterAttributes( start, end - start, attr, true );
         }
     }
 

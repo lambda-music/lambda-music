@@ -1923,7 +1923,7 @@ public final class Pulsar extends Metro {
 
         try {
             SchemeUtils.execSchemeFromResource( scheme, Pulsar.class, "lib/init.scm"  );
-            SchemeUtils.execSchemeFromResource( scheme, Pulsar.class, "lib/basic-notes.scm"  );
+//            SchemeUtils.execSchemeFromResource( scheme, Pulsar.class, "lib/basic-notes.scm"  );
             SchemeUtils.execSchemeFromResource( scheme, Pulsar.class, "lib/music.scm"  );
             SchemeUtils.execSchemeFromResource( scheme, Pulsar.class, "lib/xnoop.scm" );
         } catch ( Throwable t ) {

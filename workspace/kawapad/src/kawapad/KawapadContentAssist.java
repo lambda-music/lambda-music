@@ -9,6 +9,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import javax.swing.JList;
 import javax.swing.JScrollPane;
@@ -38,6 +39,31 @@ public class KawapadContentAssist {
     Popup popup =null;
     LinkedList<String> history = new LinkedList<>();
     JList list=null;
+    Pattern pat = Pattern.compile( "^[^a-zA-Z0-9].*$" );
+    Comparator<String> comparator = new Comparator<String>() {
+        @Override
+        public int compare(String o1, String o2) {
+            int i1= history.indexOf( o1 );
+            int i2= history.indexOf( o2 );
+                
+            if ( i1 != i2 ) {
+                return i2-i1;
+            } else {
+                boolean o1cat = pat.matcher( o1 ).matches();
+                boolean o2cat = pat.matcher( o2 ).matches();
+                if ( o1cat != o2cat ) {
+                    if ( o2cat ) {
+                        return -1;
+                    } else {
+                        return  1;
+                    }
+                }
+                
+                return o1.compareToIgnoreCase( o2 );
+            }
+        }
+    };
+
     public KawapadContentAssist(Kawapad kawapad) {
         this.kawapad = kawapad;
     }
@@ -47,6 +73,12 @@ public class KawapadContentAssist {
         popup = null;
         list = null;
     }
+    public synchronized void pageTo( int direction ) {
+        if ( list != null ) {
+            moveTo( (list.getVisibleRowCount() -1) * direction );
+        }
+    }
+
     public synchronized void moveTo( int direction ) {
         if ( list != null ) {
             int index = list.getSelectedIndex() + direction;
@@ -83,7 +115,7 @@ public class KawapadContentAssist {
         int rightEdgePos = dot == length ? length : 
                 KawapadParenthesisMovement.rightWordEdgePos( text, dot );
         int leftEdgePos = KawapadParenthesisMovement.leftWordEdgePos( text, dot -1 );
-        if ( rightEdgePos < 0 || leftEdgePos < 0 || rightEdgePos <= leftEdgePos ) {
+        if ( rightEdgePos < 0 || leftEdgePos < 0 || rightEdgePos < leftEdgePos ) {
         } else {
             caret.setDot( leftEdgePos );
             caret.moveDot( rightEdgePos );
@@ -134,18 +166,7 @@ public class KawapadContentAssist {
                         }
                     }
                     
-                    allKeys.sort( new Comparator<String>() {
-                        @Override
-                        public int compare(String o1, String o2) {
-                            int i1= history.indexOf( o1 );
-                            int i2= history.indexOf( o2 );
-                                
-                            if ( i1 != i2 )
-                                return i2-i1;
-                            else
-                                return o1.compareTo( o2 );
-                        }
-                    });
+                    allKeys.sort( comparator );
                     
                     if ( popup != null)
                         popup.hide();
@@ -154,6 +175,13 @@ public class KawapadContentAssist {
                     list = new JList( allKeys.toArray() );
                     JScrollPane sp = new JScrollPane(list);
                     sp.setSize( new Dimension( 300,300 ) );
+                    list.addListSelectionListener( new ListSelectionListener() {
+                        @Override
+                        public void valueChanged(ListSelectionEvent e) {
+                            list.ensureIndexIsVisible( list.getSelectedIndex() );
+                        }
+                    } );
+
                     PopupFactory popupFactory = PopupFactory.getSharedInstance();
                     Point s = kawapad.getLocationOnScreen();
                     popup = popupFactory.getPopup( kawapad, sp, s.x + rectangle.x, s.y+rectangle.y+rectangle.height + 1 );
