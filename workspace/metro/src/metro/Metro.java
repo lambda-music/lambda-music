@@ -238,6 +238,37 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
         this.outputPortList.clear();
     }
     
+    private static List<MetroPort> searchPort( List<MetroPort> ports, Invokable condition ) {
+        List<MetroPort> result = new ArrayList<>();
+        for ( MetroPort port : ports ) {
+            if ( ! Boolean.FALSE.equals( condition.invoke( port.name ) ) ) {
+                result.add( port );
+            }
+        }
+        return result;
+    }
+    private static List<MetroPort> searchPort( List<MetroPort> ports, Object name ) {
+        return searchPort( ports, new Invokable() {
+            @Override
+            public Object invoke(Object... args) {
+                return name.equals( args[0] );
+            }
+        });
+    }
+    
+    public List<MetroPort> searchInputPort( Invokable condition ) {
+        return searchPort( this.getInputPorts(), condition );
+    }
+    public List<MetroPort> searchOutputPort( Invokable condition ) {
+        return searchPort( this.getOutputPorts(), condition );
+    }
+    public List<MetroPort> searchInputPort( Object name ) {
+        return searchPort( this.getInputPorts(), name );
+    }
+    public List<MetroPort> searchOutputPort( Object name ) {
+        return searchPort( this.getOutputPorts(), name );
+    }
+    
     /**
      * For debug-purpose only.
      */
@@ -342,7 +373,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
         return resultAllTracks;
     }
     
-    public MetroTrack searchTrack( String name ) {
+    public MetroTrack searchTrack( Object name ) {
         if ( name == null ) throw new NullPointerException( "name was null" );
         List<MetroTrack> list = searchTrack( new Invokable() {
             @Override

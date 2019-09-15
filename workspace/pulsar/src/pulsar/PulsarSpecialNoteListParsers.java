@@ -33,7 +33,6 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import gnu.lists.IString;
 import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
@@ -70,14 +69,20 @@ public class PulsarSpecialNoteListParsers {
     static MetroPort getPort( Metro metro, Map<String, Object> map ) {
         if ( map.containsKey( ID_PORT ) ) {
             Object o = map.get(ID_PORT );
-            if ( o instanceof Number ) {
+            if ( o instanceof MetroPort ) {
+                return (MetroPort)o;
+            } else if ( o instanceof Number ) {
                 int i = ((Number)o).intValue();
                 List<MetroPort> list = metro.getOutputPorts();
                 if ( i<0  ||  list.size() <= i )
                     throw new IllegalStateException( i + " is not proper. list size=" + list.size() );
                 return list.get(i);
             } else {
-                return (MetroPort)o;
+                List<MetroPort> portList = metro.searchOutputPort( o );
+                if ( portList.isEmpty() ) {
+                    throw new IllegalArgumentException( "'" + o + "' does not exists" );
+                }
+                return portList.get( 0 );
             }
         } else {
             List<MetroPort> list = metro.getOutputPorts();
@@ -441,12 +446,21 @@ public class PulsarSpecialNoteListParsers {
                                     v = SchemeUtils.schemeNullCheck(v);
                                     
                                     MetroTrack track=null;
-                                    if ( v instanceof IString ) {
-                                        String id = v==null ? null : SchemeUtils.anyToString( v );
-                                        track = metro.searchTrack( id );
-                                    } else if ( v instanceof MetroTrack ) {
+                                    // I think this is not correct anymore. 
+                                    // MODIFIED >>> (Sun, 15 Sep 2019 11:16:06 +0900)
+                                    // if ( v instanceof IString ) {
+                                    //     String id = v==null ? null : SchemeUtils.anyToString( v );
+                                    //     track = metro.searchTrack( id );
+                                    // } else if ( v instanceof MetroTrack ) {
+                                    //     track = (MetroTrack) v ;
+                                    // }
+                                    if ( v instanceof MetroTrack ) {
                                         track = (MetroTrack) v ;
+                                    } else {
+                                        track = metro.searchTrack( v );
                                     }
+                                    // MODIFIED <<< (Sun, 15 Sep 2019 11:16:06 +0900)
+
     
                                     if ( track != null ) {
                                         removeTrackProc( metro, track );
