@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="build-all" name="Create Runnable Jar for Project pulsar">
+    <target name="build-all" >
+        <ant antfile="../kawapad/build.xml" target="build_all" dir="../kawapad/" />
+        <ant antfile="./build.xml" target="build_all" dir="./" />
+    </target>
+</project>

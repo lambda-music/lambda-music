@@ -63,5 +63,6 @@
             <file file="generated/generated-pulsar-notations-api.md" />
         </concat>
     </target>
-
+    <target name="build_all" depends="concat_api_reference">
+    </target>
 </project>

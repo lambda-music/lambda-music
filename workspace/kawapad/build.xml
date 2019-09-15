@@ -37,5 +37,6 @@
             <file file="generated/generated-kawapad-keystrokes.md" />
         </concat>
     </target>
-
+    <target name="build_all" depends="concat_api_reference">
+    </target>
 </project>

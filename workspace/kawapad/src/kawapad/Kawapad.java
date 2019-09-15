@@ -221,6 +221,8 @@ public class Kawapad extends JTextPane {
     public Kawapad( SchemeSecretary schemeSecretary ) {
         super();
         this.schemeSecretary = schemeSecretary;
+        
+        this.setDocument( new SyntaxHighlighterStyledDocument());
 
         // initialization
         registerLocalSchemeInitializers( schemeSecretary, this );
@@ -726,6 +728,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Undo" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_Z , KeyEvent.CTRL_MASK ));
             putValue( Action.MNEMONIC_KEY , (int) 'u' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl Z" );
         }
     }
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
@@ -752,6 +755,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Redo" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_Z , KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK ));
             putValue( Action.MNEMONIC_KEY , (int) 'r' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl shift Z" );
         }
     }
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
@@ -793,6 +797,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Debug" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_BACK_QUOTE, KeyEvent.CTRL_MASK | KeyEvent.ALT_MASK ));
             putValue( Action.MNEMONIC_KEY , (int) 'd' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl alt BACK_QUOTE" );
         }
     }
     
@@ -829,6 +834,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Paste" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_V , KeyEvent.CTRL_MASK ));
             putValue( Action.MNEMONIC_KEY , (int) 'p' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl V" );
         }
     }
     
@@ -863,6 +869,9 @@ public class Kawapad extends JTextPane {
         AcceleratorKeyList.putAcceleratorKeyList( DEFAULT_FORWARD_ACTION, "RIGHT", "ctrl F" );
         addAction( DEFAULT_FORWARD_ACTION );
     }
+    
+    
+    
     
     
     // INTEGRATED_ACTIONS_DEFAULT (Wed, 11 Sep 2019 08:26:57 +0900)
@@ -962,6 +971,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Disable Content Assist" );
             putValue( Action.MNEMONIC_KEY, (int)'d' );
             putValue( Action.ACCELERATOR_KEY , AcceleratorKeyList.getKeyStroke( KeyEvent.VK_ESCAPE , 0 ) );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ESCAPE" );
         }
     };
     {
@@ -980,6 +990,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Enable Content Assist" );
             putValue( Action.MNEMONIC_KEY, (int)'e' );
             putValue( Action.ACCELERATOR_KEY , AcceleratorKeyList.getKeyStroke( "ctrl SPACE" ) );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl SPACE" );
         }
     };
     {
@@ -1183,6 +1194,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Select and Evaluate" );
             putValue( Action.MNEMONIC_KEY, (int)'q' );
             putValue( Action.ACCELERATOR_KEY , AcceleratorKeyList.getKeyStroke(KeyEvent.VK_ENTER, ActionEvent.CTRL_MASK ) );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl ENTER" );
         }
     }
     {
@@ -1227,6 +1239,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Select, Evaluate and Replace" );
             putValue( Action.MNEMONIC_KEY, (int)'t' );
             putValue( Action.ACCELERATOR_KEY , AcceleratorKeyList.getKeyStroke(KeyEvent.VK_ENTER, ActionEvent.CTRL_MASK | ActionEvent.SHIFT_MASK ) );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl shift ENTER" );
         }
     }
 
@@ -1247,6 +1260,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Evaluate" );
             putValue( Action.MNEMONIC_KEY, (int)'e' );
             putValue( Action.ACCELERATOR_KEY , AcceleratorKeyList.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK) );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl E" );
         }
     }
 
@@ -1269,6 +1283,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Run" );
             putValue( Action.MNEMONIC_KEY, (int)'r' );
             putValue( Action.ACCELERATOR_KEY , AcceleratorKeyList.getKeyStroke(KeyEvent.VK_R, ActionEvent.CTRL_MASK) );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl R" );
         }
     }
 
@@ -1324,6 +1339,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Interrupt" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_K, ActionEvent.CTRL_MASK) );
             putValue( Action.MNEMONIC_KEY , (int) 'i' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl K" );
         }
     }
     
@@ -1369,6 +1385,7 @@ public class Kawapad extends JTextPane {
         {
             putValue( Action2.CAPTION, "Go to the Previous Parenthesis" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK ) );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "alt LEFT" );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
@@ -1383,6 +1400,7 @@ public class Kawapad extends JTextPane {
         {
             putValue( Action2.CAPTION, "Go to the Next Parenthesis" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK ) );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "alt RIGHT" );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
@@ -1396,6 +1414,7 @@ public class Kawapad extends JTextPane {
         {
             putValue( Action2.CAPTION, "Select the Previous Parenthesis" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK |KeyEvent.SHIFT_MASK ) );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "alt shift LEFT" );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
@@ -1408,6 +1427,7 @@ public class Kawapad extends JTextPane {
         {
             putValue( Action2.CAPTION, "Select the Next Parenthesis" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK ) );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "alt shift RIGHT" );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
@@ -1422,6 +1442,8 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Lookup the Corresponding Parenthesis on the Left" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK ) );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "alt ctrl LEFT" );
+
         }
     };
     public static final String KAWAPAD_PARENTHESIS_JUMP_RIGHT = "kawapad-parenthesis-jump-right"; 
@@ -1435,6 +1457,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Lookup the Corresponding Parenthesis on the Right" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK  ) );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "alt ctrl RIGHT" );
         }
     };
     
@@ -1449,6 +1472,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Lookup the Pair of Parenthesis on the Left and Select" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK ) );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "alt ctrl shift LEFT" );
         }
     };
     
@@ -1463,6 +1487,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Lookup the Pair of Parenthesis on the Right and Select" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK ) );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "alt ctrl shift RIGHT" );
         }
     };
     
@@ -1516,6 +1541,7 @@ public class Kawapad extends JTextPane {
         {
             putValue( Action2.CAPTION, "Select the Word on the Cursor." );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_UP, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK ) );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "alt ctrl UP" );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
@@ -1540,6 +1566,7 @@ public class Kawapad extends JTextPane {
         {
             putValue( Action2.CAPTION, "Select the Word on the Cursor." );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK ) );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "alt ctrl RIGHT" );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
@@ -1564,6 +1591,7 @@ public class Kawapad extends JTextPane {
         {
             putValue( Action2.CAPTION, "Select the Word on the Cursor." );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK ) );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "alt ctrl LEFT" );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
 
@@ -1691,6 +1719,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Deselect Inside the Current Parentheses" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke( KeyEvent.VK_UP, KeyEvent.CTRL_MASK | KeyEvent.ALT_MASK ) );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl alt UP" );
         }
     };
 
@@ -1753,7 +1782,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Select the Parentheses on the Left Side" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke( KeyEvent.VK_LEFT, KeyEvent.SHIFT_MASK | KeyEvent.ALT_MASK ) );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "alt shift B", "alt shift B" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "alt shift LEFT", "alt shift B" );
         }
     };
 
@@ -1766,7 +1795,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Select the Parentheses on the Left Side" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke( KeyEvent.VK_RIGHT, KeyEvent.SHIFT_MASK | KeyEvent.ALT_MASK ) );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "alt shift F", "alt shift F");
+            AcceleratorKeyList.putAcceleratorKeyList( this, "alt shift RIGHT", "alt shift F");
         }
     };
 
@@ -1805,7 +1834,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Select Parentheses Inside the Current Selection" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke( KeyEvent.VK_DOWN, KeyEvent.SHIFT_MASK | KeyEvent.ALT_MASK ) );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "alt shift N", "alt shift N");
+            AcceleratorKeyList.putAcceleratorKeyList( this, "alt shift DOWN", "alt shift N");
 
         }
     };
@@ -1849,6 +1878,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Deselect Inside the Current Parentheses" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke( KeyEvent.VK_DOWN, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK ) );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "alt shift DOWN" );
         }
     };
     
@@ -1861,6 +1891,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Deselect Inside the Current Parentheses" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke( KeyEvent.VK_DOWN, KeyEvent.CTRL_MASK | KeyEvent.ALT_MASK ) );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl alt DOWN" );
         }
     };
     
@@ -1995,6 +2026,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Increase Indentation" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_TAB , 0 ) ) ;
             putValue( Action.MNEMONIC_KEY , (int) 'c' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "TAB" );
         }
     };
 
@@ -2007,6 +2039,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Decrease Indentation" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_TAB , KeyEvent.SHIFT_MASK ) );
             putValue( Action.MNEMONIC_KEY , (int) 'd' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "shift TAB" );
         }
     };
     
@@ -2042,6 +2075,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Correct Indentation" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_I , KeyEvent.CTRL_MASK ));
             putValue( Action.MNEMONIC_KEY , (int) 'i' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl I" );
         }
     };
 
@@ -2437,6 +2471,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Open New" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_N , KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK ));
             putValue( Action.MNEMONIC_KEY , (int) 'n' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl shift N" );
         }        
     };
 
@@ -2469,6 +2504,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Open" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_O , KeyEvent.CTRL_MASK ));
             putValue( Action.MNEMONIC_KEY , (int) 'o' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl O" );
         }
     };
 
@@ -2489,6 +2525,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Save" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_S , KeyEvent.CTRL_MASK ));
             putValue( Action.MNEMONIC_KEY , (int) 'o' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl S" );
         }
     };
     
@@ -2509,6 +2546,7 @@ public class Kawapad extends JTextPane {
             putValue( Action2.CAPTION, "Save as" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_S , KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK ));
             putValue( Action.MNEMONIC_KEY , (int) 'o' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl shift S" );
         }
     };
     

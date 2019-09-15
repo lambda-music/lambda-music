@@ -51,6 +51,7 @@ import pulsar.lib.PulsarLogger;
 import pulsar.lib.scheme.DescriptiveDocumentCategory;
 import pulsar.lib.scheme.DescriptiveHelp;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
+import pulsar.lib.swing.AcceleratorKeyList;
 import pulsar.lib.swing.Action2;
 
 public class KawapadFrame extends JFrame {
@@ -101,6 +102,7 @@ public class KawapadFrame extends JFrame {
             putValue( Action2.CAPTION, "Create a New Scratchpad" );
             putValue( Action.MNEMONIC_KEY, (int)'n' );
             putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK | ActionEvent.SHIFT_MASK ) );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl shift N" );
         }
     };
 

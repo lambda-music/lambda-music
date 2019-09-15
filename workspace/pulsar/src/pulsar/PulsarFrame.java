@@ -80,7 +80,9 @@ import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.Invokable;
 import pulsar.lib.secretary.SecretaryMessage;
+import pulsar.lib.swing.AcceleratorKeyList;
 import pulsar.lib.swing.Action2;
+import pulsar.lib.swing.AutomatedActionField;
 import pulsar.lib.swing.FlawLayout;
 import pulsar.lib.swing.JNamedPanel;
 
@@ -226,6 +228,7 @@ public class PulsarFrame extends KawapadFrame {
         initGuiFocus();
         initPulsarGui();
         
+        AcceleratorKeyList.processAcceleratorKeys( this.getRootPane() );
     }
     
     private void initPulsarGui() {
@@ -488,7 +491,7 @@ public class PulsarFrame extends KawapadFrame {
         this.sl_tempoSlider.setMinimum( tempoRange.min );
     }
     
-    
+    @AutomatedActionField
     public final Action NEW_SCRATCHPAD = new AbstractAction() {
         @SuppressWarnings("unused")
         @Override
@@ -503,10 +506,12 @@ public class PulsarFrame extends KawapadFrame {
             putValue( Action2.CAPTION, "New Scratchpad" );
             putValue( Action.MNEMONIC_KEY, (int)'n' );
             putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_F4, ActionEvent.SHIFT_MASK) );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "shift F4" );
         }
     };
 
 
+    @AutomatedActionField
     public final Action RESET_SEQUENCER = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -515,10 +520,12 @@ public class PulsarFrame extends KawapadFrame {
         {
             putValue( Action2.CAPTION, "Reset the Sequencer" );
             putValue( Action.MNEMONIC_KEY, (int)'r' );
-            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0 ) );
+//            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0 ) );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "F5" );
         }
     };
 
+    @AutomatedActionField
     public final Action QUIT_SEQUENCER = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -528,9 +535,11 @@ public class PulsarFrame extends KawapadFrame {
             putValue( Action2.CAPTION, "Quit" );
             putValue( Action.MNEMONIC_KEY, (int)'q' );
             putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK) );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl Q" );
         }
     };
 
+    @AutomatedActionField
     public final Action TOGGLE_PLAYING_ACTION = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -539,9 +548,11 @@ public class PulsarFrame extends KawapadFrame {
         {
             putValue( Action2.CAPTION, "Play/Stop" );
             putValue( Action.MNEMONIC_KEY, (int)'P' );
-            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, ActionEvent.CTRL_MASK) );
+            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, ActionEvent.CTRL_MASK) );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "alt ENTER" );
         }
     };
+    @AutomatedActionField
     public final Action RESET_PLAYING_ACTION = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -550,9 +561,11 @@ public class PulsarFrame extends KawapadFrame {
         {
             putValue( Action2.CAPTION, "Reset" );
             putValue( Action.MNEMONIC_KEY, (int)'R' );
-            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_HOME, ActionEvent.CTRL_MASK) );
+            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_HOME, ActionEvent.ALT_MASK) );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "alt HOME" );
         }
     };
+    @AutomatedActionField
     public final Action TAP_TEMPO_ACTION = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -561,7 +574,8 @@ public class PulsarFrame extends KawapadFrame {
         {
             putValue( Action2.CAPTION, "Tap Tempo" );
             putValue( Action.MNEMONIC_KEY, (int)'T' );
-            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, ActionEvent.CTRL_MASK | ActionEvent.SHIFT_MASK ) );
+            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, ActionEvent.ALT_MASK ) );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "alt ESCAPE" );
         }
     };
     
@@ -637,7 +651,9 @@ public class PulsarFrame extends KawapadFrame {
             {
                 JMenu mm = new JMenu( "Tempo Range" );
                 for ( PulsarFrame.TempoRange r :  TempoRange.values() ) {
-                    mm.add( new JMenuItem( r.createAction( PulsarFrame.this ) ) );
+                    Action action = r.createAction( PulsarFrame.this );
+                    mm.add( new JMenuItem( action ) );
+                    AcceleratorKeyList.addAction( frame.getRootPane(), action ); 
                 }
                 m.add( mm );
             }

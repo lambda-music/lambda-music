@@ -63,9 +63,9 @@ Set the main font of the editor. Kawapad can change its font-face.
 |kawapad-select-right-lisp-word|Select the Word on the Cursor.|  CTRL-ALT-RIGHT  |
 |kawapad-select-left-lisp-word|Select the Word on the Cursor.|  CTRL-ALT-LEFT  |
 |kawapad-expand-parenthesis-selection|Select Inside the Current Parentheses|  SHIFT-ALT-UP, SHIFT-ALT-P  |
-|kawapad-select-left-parentheses|Select the Parentheses on the Left Side|  SHIFT-ALT-B, SHIFT-ALT-B  |
-|kawapad-select-right-parentheses|Select the Parentheses on the Left Side|  SHIFT-ALT-F, SHIFT-ALT-F  |
-|kawapad-select-parentheses-shrink|Select Parentheses Inside the Current Selection|  SHIFT-ALT-N, SHIFT-ALT-N  |
+|kawapad-select-left-parentheses|Select the Parentheses on the Left Side|  SHIFT-ALT-LEFT, SHIFT-ALT-B  |
+|kawapad-select-right-parentheses|Select the Parentheses on the Left Side|  SHIFT-ALT-RIGHT, SHIFT-ALT-F  |
+|kawapad-select-parentheses-shrink|Select Parentheses Inside the Current Selection|  SHIFT-ALT-DOWN, SHIFT-ALT-N  |
 |kawapad-format-inc|Increase Indentation|  TAB  |
 |kawapad-format-dec|Decrease Indentation|  SHIFT-TAB  |
 |kawapad-prettify|Correct Indentation|  CTRL-I  |

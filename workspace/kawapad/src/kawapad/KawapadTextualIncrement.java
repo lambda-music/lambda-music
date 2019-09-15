@@ -22,6 +22,7 @@ import gnu.mapping.Procedure2;
 import gnu.mapping.Values;
 import kawa.standard.Scheme;
 import pulsar.lib.scheme.SchemeUtils;
+import pulsar.lib.swing.AcceleratorKeyList;
 import pulsar.lib.swing.Action2;
 
 class KawapadTextualIncrement {
@@ -347,6 +348,7 @@ class KawapadTextualIncrement {
             putValue( Action2.CAPTION, "Increment the Nearest Number" );
             putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_G , KeyEvent.CTRL_MASK ));
             putValue( Action.MNEMONIC_KEY , (int) 'i' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl G" );
         }
     }
     {
@@ -371,6 +373,7 @@ class KawapadTextualIncrement {
             putValue( Action2.CAPTION, "Decrement the Nearest Number" );
             putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_D , KeyEvent.CTRL_MASK ));
             putValue( Action.MNEMONIC_KEY , (int) 'd' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl D" );
         }
     }
     

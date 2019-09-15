@@ -225,11 +225,12 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
     StyledDocument emptyDocument = new DefaultStyledDocument();
     void update() {
         AttributeSet defaultAttr = getDefaultAttributeSet();
-        StyledDocument document = (StyledDocument)textComponent.getDocument();
+        SyntaxHighlighterStyledDocument document = (SyntaxHighlighterStyledDocument)textComponent.getDocument();
         synchronized ( document ) {
             int dot = textComponent.getCaret().getDot();
             int mark = textComponent.getCaret().getMark();
             textComponent.setDocument( emptyDocument );
+            ((SyntaxHighlighterStyledDocument)document).callWriteLock();
             try {
                 // clear
                 if ( DEBUG ) ep.start();
@@ -245,11 +246,12 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
                     if ( DEBUG ) logInfo( ep.getMessage( "Syntax Set:" + e.getName() ));
                 }
             } finally {
+                ((SyntaxHighlighterStyledDocument)document).callWriteUnlock();
                 textComponent.setDocument( document );
                 textComponent.getCaret().setDot( mark );
                 if ( mark!=dot)
                     textComponent.getCaret().moveDot( dot );
-                    
+                
             }
         }
     }
@@ -269,7 +271,7 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
                 start = matcher.start();
                 end = matcher.end();
             }
-            document.setCharacterAttributes( start, end - start, attr, true );
+            document.setCharacterAttributes( start, end - start, attr, false );
         }
     }
 

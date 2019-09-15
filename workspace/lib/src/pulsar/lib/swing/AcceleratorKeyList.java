@@ -72,27 +72,30 @@ public class AcceleratorKeyList {
         purgeKeyFromActionMap( c, action.getValue( Action.NAME ));
     }
 
-    public static void addActionToActionMap( JTextComponent c, Action action ) {
-        c.getActionMap().put((String)action.getValue( Action.NAME ), action );
+    public static void addActionToActionMap( JComponent c, Action action ) {
+        String name = (String)action.getValue( Action.NAME );
+        c.getActionMap().put(name, action );
+        logInfo( name );
     }
-    public static void addActionToInputMap( JTextComponent c, Action action ) {
+    public static void addActionToInputMap( JComponent c, Action action ) {
         Object name = action.getValue( Action.NAME );
         List<KeyStroke> keyStrokes =  (List<KeyStroke>)action.getValue( AcceleratorKeyList.ACCELERATOR_KEY_LIST );
         if ( keyStrokes == null ) {
             KeyStroke acceleratorKey = (KeyStroke)action.getValue( Action.ACCELERATOR_KEY );
             if (acceleratorKey == null ) {
                 // Ignore it.
+                logWarn( "Could not initialize keystrokes for " + action.toString() );
             } else {
                 c.getInputMap().put(acceleratorKey, name );
             }
         } else {
-            for ( int i=0; i<keyStrokes.size(); i++ ) {
-                c.getInputMap().put( keyStrokes.get(i), name );
+            for ( KeyStroke keyStroke : keyStrokes ) {
+                c.getInputMap().put( keyStroke, name );
             }
         }
     }
 
-    public static Action addAction( JTextComponent c, Action action ) {
+    public static Action addAction( JComponent c, Action action ) {
         purgeActionFromActionMap( c, action );
         addActionToActionMap( c, action );
         addActionToInputMap( c, action );
@@ -133,10 +136,10 @@ public class AcceleratorKeyList {
         System.err.println( "" );
     }
     
-    public static void processAcceleratorKeys( JTextComponent c ) {
-        List<Action> actionList = AutomatedActions.getActionList( c );
+    public static void processAcceleratorKeys( JComponent o ) {
+        List<Action> actionList = AutomatedActions.getActionList( o );
         for( Action action : actionList ) {
-            addAction( c, action );
+            addAction( o, action );
         }
     }
 
