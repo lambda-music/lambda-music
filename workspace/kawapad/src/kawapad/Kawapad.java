@@ -840,10 +840,6 @@ public class Kawapad extends JTextPane {
             AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl V" );
         }
     }
-    
-    {
-        kawapad.getActionMap().put( DefaultEditorKit.pasteAction , PASTE_ACTION );
-    }
 
     //////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -870,9 +866,26 @@ public class Kawapad extends JTextPane {
     {
         AcceleratorKeyList.putAcceleratorKeyList( DEFAULT_FORWARD_ACTION, "RIGHT", "ctrl F" );
     }
-    
-    
-    
+    @AutomatedActionField
+    public final Action DEFAULT_SELECT_BACKWARD_ACTION =  kawapad.getActionMap().get( DefaultEditorKit.selectionBackwardAction );
+    {
+        AcceleratorKeyList.putAcceleratorKeyList( DEFAULT_SELECT_BACKWARD_ACTION, "shift LEFT", "ctrl shift B" );
+    }
+    @AutomatedActionField
+    public final Action DEFAULT_SELECT_FORWARD_ACTION =  kawapad.getActionMap().get( DefaultEditorKit.selectionForwardAction   );
+    {
+        AcceleratorKeyList.putAcceleratorKeyList( DEFAULT_SELECT_FORWARD_ACTION, "shift RIGHT", "ctrl shift F" );
+    }
+    @AutomatedActionField
+    public final Action DEFAULT_SELECT_UP_ACTION =  kawapad.getActionMap().get( DefaultEditorKit.selectionUpAction );
+    {
+        AcceleratorKeyList.putAcceleratorKeyList( DEFAULT_SELECT_UP_ACTION, "shift UP", "ctrl shift P" );
+    }
+    @AutomatedActionField
+    public final Action DEFAULT_SELECT_DOWN_ACTION =  kawapad.getActionMap().get( DefaultEditorKit.selectionDownAction   );
+    {
+        AcceleratorKeyList.putAcceleratorKeyList( DEFAULT_SELECT_DOWN_ACTION, "shift DOWN", "ctrl shift N" );
+    }
     
     
     // INTEGRATED_ACTIONS_DEFAULT (Wed, 11 Sep 2019 08:26:57 +0900)
@@ -2455,9 +2468,10 @@ public class Kawapad extends JTextPane {
         }
         {
             putValue( Action2.CAPTION, "Open New" );
-            putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_N , KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK ));
+//            putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_N , KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK ));
             putValue( Action.MNEMONIC_KEY , (int) 'n' );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl shift N" );
+//            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl shift N" );
+            AcceleratorKeyList.putAcceleratorKeyList( this );
         }        
     };
 

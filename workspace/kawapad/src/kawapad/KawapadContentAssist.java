@@ -14,6 +14,8 @@ import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
