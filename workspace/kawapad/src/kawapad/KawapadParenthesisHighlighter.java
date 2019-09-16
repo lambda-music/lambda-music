@@ -28,8 +28,10 @@ import java.util.logging.Logger;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Document;
 import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Segment;
 
 import kawapad.SchemeParenthesisParser.ParserState;
 
@@ -78,7 +80,9 @@ public class KawapadParenthesisHighlighter {
     }
     
     static void highlightParentheses(JTextComponent tc, int open_pos, int close_pos) throws BadLocationException {
-        Highlighter highlighter = tc.getHighlighter();
+        logInfo( "highlightParentheses: " + open_pos + "/" + close_pos );
+        DefaultHighlighter highlighter = (DefaultHighlighter) tc.getHighlighter();
+        highlighter.setDrawsLayeredHighlights( false );
         {
             Object tag =  highlighter.addHighlight( open_pos, open_pos+1, new DefaultHighlighter.DefaultHighlightPainter( Color.GREEN ) );
             addClearQueue( highlighter, tag );
@@ -98,7 +102,9 @@ public class KawapadParenthesisHighlighter {
 
     public static void highlightMatchingParenthesis( JTextComponent component, int position ) throws BadLocationException {
         if ( Kawapad.ENABLED_SHOW_CORRESPONDING_PARENTHESES ) {
-            String text = component.getText();
+            Document document = component.getDocument();
+            Segment text = new Segment();
+            document.getText( 0, document.getLength(), text );
             ParserState parserState = 
                     SchemeParenthesisParser.lookupParenthesis( text, position );
             if ( parserState.isFound() )
