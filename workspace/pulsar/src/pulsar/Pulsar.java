@@ -583,7 +583,7 @@ public final class Pulsar extends Metro {
         };
     }
     
-    static void connectProc(Pulsar pulsar, Object[] args, ConnectProc proc ) {
+    static void connectProc(Pulsar pulsar, Object[] args, ConnectProc proc ) throws JackException {
         ArrayDeque<Object> deque = new ArrayDeque<>( Arrays.asList( args ) );
         while ( 0 < deque.size() ) {
             Object fromObj = deque.pop();
@@ -593,11 +593,7 @@ public final class Pulsar extends Metro {
             }
             String from = fromObj != null ? SchemeUtils.toString( fromObj ) : null;
             String to   = toObj   != null ? SchemeUtils.toString( toObj   ) : null;
-            try {
-                proc.apply(pulsar, from, to );
-            } catch ( JackException e  ) {
-                logError( "" , e );
-            }
+            proc.apply(pulsar, from, to );
         }
     }
 

@@ -218,7 +218,7 @@
                              ; Check special property value(s).
                              (cond
                                ; About ">>"
-                               ; Treat >>: as default parameter specifier.  We treat a parameter that
+                               ; Treat >>: as the default parameter specifier.  We treat a parameter that
                                ; was passed with a value >>: as "default-param-name"; when a non-note
                                ; value is specified in the note list, we treat the value as a
                                ; property value of the "default-param-name".  For further information,
@@ -230,7 +230,12 @@
                                                              (newline)))
                                 (loop (+ idx 1) (cdr args)                  params mapvals notes k target-notation?))
 
-                               ; About "<<"  TODO
+                               ; About "<<"  
+                               ; Treat <<: as the mapping value list specifier aka "mapvals". When <<: is specified,
+                               ; the process takes the next value of the current value, and set it as "vv" in this code 
+                               ; and treat it as a mapvals. The value should be a list; otherwise the result is unspecified.
+                               ; This should be checked before the execution, but it does not in the current state. todo.
+                               ; A mapvals is a cons cell which consists the key and the value list. (Mon, 16 Sep 2019 11:18:10 +0900)
                                ((and (keyword? v) (string=? (keyword->string v) "<<" ) )
                                 ; advance to next element, again.
                                 (set! args (cdr args))
@@ -307,13 +312,15 @@
 
                              (if (target-notation? note)
                                (set! note 
-                                 (sort-note-properties 
-                                   (cleanup-note-properties
-                                     (append 
-                                       ; duplicate each association. dont let it shared from multiple notes.
-                                       ; (Wed, 31 Jul 2019 16:19:53 +0900)
-                                       (ccons (reverse params))
-                                       note )))))
+                                 (notation-set-all! params note)
+                                 ;(sort-note-properties 
+                                 ;  (cleanup-note-properties
+                                 ;    (append 
+                                 ;      ; duplicate each association. dont let it shared from multiple notes.
+                                 ;      ; (Wed, 31 Jul 2019 16:19:53 +0900)
+                                 ;      (ccons (reverse params))
+                                 ;      note )))
+                                 ))
                              note)
                            notes))
 
@@ -344,11 +351,13 @@
                                           ;then
                                           (cons
                                             ; the current value
-                                            (sort-note-properties 
-                                              (cleanup-note-properties
-                                                (cons
-                                                  (cons prop-name a-prop-val)
-                                                  a-note)))
+
+                                            (notation-set! prop-name a-prop-val a-note)
+                                            ;(sort-note-properties 
+                                            ;  (cleanup-note-properties
+                                            ;    (cons
+                                            ;      (cons prop-name a-prop-val)
+                                            ;      a-note)))
                                             ; the next value
                                             (loop (cdr notes) (cdr prop-vals)))
                                           ;else
@@ -506,6 +515,46 @@
      (ccons (car c)) 
      (ccons (cdr c)))
     c))
+
+
+; This function tries to update the specified association list element.  If no
+; element which key is eq? to the passed key, it creates a new element with
+; the specified values.
+; (Mon, 16 Sep 2019 11:45:35 +0900)
+(define (alist-set! k v alist)
+  (let ((p (assq k alist)))
+    (if p
+      (begin
+        (if (procedure? v) 
+          (set-cdr! p (v (cdr p)))
+          (set-cdr! p  v))
+        alist)
+      (begin
+        (if (procedure? v) 
+          (cons
+            (cons k (v #f))
+            alist)
+          (cons
+            (cons k v)
+            alist))))))
+
+
+; Add a key-value entry to the specified notation object.  This procedure
+; maintains the notation object's consistency. (Mon, 16 Sep 2019 11:51:12 +0900)
+(define (notation-set! k v notation)
+  (sort-note-properties 
+    (cleanup-note-properties
+      (alist-set! k v notation))))
+
+(define (notation-set-all! pair-list notation)
+  (fold (lambda(curr-pair curr-notation)
+          (notation-set! 
+            (car curr-pair)
+            (cdr curr-pair) 
+            curr-notation))
+        notation
+        pair-list))
+
 
 ; === tie ===
 ; "t" stands for "tie"

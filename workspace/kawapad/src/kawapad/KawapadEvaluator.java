@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import javax.swing.SwingUtilities;
 
+import gnu.mapping.Values;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.SchemeUtils.ExecuteSchemeResult;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
@@ -40,26 +41,39 @@ public class KawapadEvaluator implements Runnable {
                     Kawapad.logWarn( "**KAWAPAD_PAGE**" );
                     SwingUtilities.invokeLater( new RunnableReplaceTextWithEntireBlockOnTextPane(
                         kawapad,
-                        "(" + result.result.replaceFirst( "\n$", "" ) +" )",
+                        "(" + result.valueAsString.replaceFirst( "\n$", "" ) +" )",
                         false,
                         doReset
                         ) );
                 } else {
-                    SwingUtilities.invokeLater( new RunnableReplaceTextOnTextPane(
-                        kawapad,
-                        result.result,
-                        doReset
-                        ) );
+                    if ( ! result.isEmpty() ) {
+                        SwingUtilities.invokeLater( new RunnableReplaceTextOnTextPane(
+                            kawapad,
+                            result.valueAsString,
+                            doReset
+                                ) );
+                    } else {
+                        // do not insert.
+                        Kawapad.logInfo( "KawapadEvaluator: do not insert (1). " + result.value );
+                    }
                 }
             } else {
-                String resultString = SchemeUtils.formatResult( result.result ); 
-                // We want to make sure the result string ends with "\n" to avoid to get an extra line.
-                if ( ! schemeScript.endsWith( "\n" ) ) {
-                    resultString = "\n" + SchemeUtils.formatResult( result.result ); 
+                if ( ! result.isEmpty() ) {
+                    String resultString = SchemeUtils.formatResult( result.valueAsString ); 
+                    // We want to make sure the result string ends with "\n" to avoid to get an extra line.
+                    if ( ! schemeScript.endsWith( "\n" ) ) {
+                        resultString = "\n" + SchemeUtils.formatResult( result.valueAsString ); 
+                    }
+                    Kawapad.logInfo( resultString );
+                    SwingUtilities.invokeLater( new RunnableInsertTextToTextPane( kawapad, resultString, true, doReset ) );
+                } else {
+                    // do not insert.
+                    Kawapad.logInfo( "KawapadEvaluator: do not insert (2). " + result.value );
                 }
-                Kawapad.logInfo( resultString );
-                SwingUtilities.invokeLater( new RunnableInsertTextToTextPane( kawapad, resultString, true, doReset ) );
             }
+        } else {
+            // do not insert.
+            Kawapad.logInfo( "KawapadEvaluator: do not insert (3). " + result.value );
         }
     }
 }

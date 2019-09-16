@@ -16,7 +16,8 @@
  (('pos . 24) ('velo . 0.6)) (('pos . 25) ('velo . 0.6)))
 |#
 
-
+(n note: (lambda(x) (* x 2) ) 
+       (n type: 'note note: >> 61 62 63 ))
 
 (+ 10 10 10)
 (tra! 10 1/2

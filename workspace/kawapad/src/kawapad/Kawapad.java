@@ -72,6 +72,7 @@ import gnu.lists.EmptyList;
 import gnu.lists.LList;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
+import gnu.mapping.Procedure0;
 import gnu.mapping.Procedure1;
 import gnu.mapping.Procedure2;
 import gnu.mapping.Procedure3;
@@ -2296,6 +2297,18 @@ public class Kawapad extends JTextPane {
                     throw new InternalError();
                 }
             });
+            SchemeUtils.defineVar(env, new Procedure0("pwd") {
+                @Override
+                public Object apply0() throws Throwable {
+                    return SchemeUtils.toSchemeString( getCurrent().filePath.getParent().toString() );
+                }
+            } );
+            SchemeUtils.defineVar(env, new Procedure0("current-file") {
+                @Override
+                public Object apply0() throws Throwable {
+                    return SchemeUtils.toSchemeString( getCurrent().filePath.toString() );
+                }
+            } );
 
             
             try {

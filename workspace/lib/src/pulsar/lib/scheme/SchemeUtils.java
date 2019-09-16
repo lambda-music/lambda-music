@@ -62,6 +62,7 @@ import gnu.mapping.NamedLocation;
 import gnu.mapping.Procedure;
 import gnu.mapping.SimpleSymbol;
 import gnu.mapping.Symbol;
+import gnu.mapping.Values;
 import gnu.math.DFloNum;
 import gnu.math.IntNum;
 import gnu.math.Quantity;
@@ -585,21 +586,26 @@ public class SchemeUtils {
     
     public static final class ExecuteSchemeResult {
         public final boolean isDocument;
-        public final String result;
+        public final Object value;
+        public final String valueAsString;
         public final Throwable error;
         public final boolean succeeded() {
             return error == null;
         }
-        public ExecuteSchemeResult(boolean isDocument, String result, Throwable error) {
+        public ExecuteSchemeResult( boolean isDocument, Object value, String valueAsString, Throwable error ) {
             super();
             this.isDocument = isDocument;
-            this.result = result;
+            this.value = value;
+            this.valueAsString = valueAsString;
             this.error = error;
         }
         public void throwIfError() {
             if ( ! succeeded() ) {
                 throw new RuntimeException( this.error );
             }
+        }
+        public boolean isEmpty() {
+            return this.error == null && ( this.value == null || Values.empty.equals( this.value ) );
         }
     }
     public static final String EXECUTE_SCHEME_DOCTAG_STRING = "**doc**".intern();
@@ -665,19 +671,20 @@ public class SchemeUtils {
                 }
                 
                  // {@link kawa.Shell#runFile(InputStream, Path, gnu.mapping.Environment, boolean, int) }
-                Object result = scheme.eval( new InPort( schemeScript, Path.valueOf( schemeScriptURI ) ) );
+                Object resultValue = scheme.eval( new InPort( schemeScript, Path.valueOf( schemeScriptURI ) ) );
                 // Object result = Shell.run( schemeScript, schemeScriptURI, scheme.getEnvironment(), true, 0 ); 
 
-                if ( result == null ) {
-                    return new ExecuteSchemeResult( false, "#!null", null );
+                if ( resultValue == null ) {
+                    return new ExecuteSchemeResult( false, null, "#!null", null );
                 } else {
-                    if ( result instanceof Pair &&
-                            EXECUTE_SCHEME_DOCTAG.equals( ((Pair) result).getCar() ) ) 
-                    {
-                        return new ExecuteSchemeResult( true, normalPrint(((Pair) result).getCdr()), null );
-                    } else {
-                        return new ExecuteSchemeResult( false, prettyPrint(result), null );
+                    if ( resultValue instanceof Pair ) {
+                        Pair pair = (Pair) resultValue;
+                        if ( EXECUTE_SCHEME_DOCTAG.equals( pair.getCar() ) ) {
+                            Object cdr = pair.getCdr();
+                            return new ExecuteSchemeResult( true, cdr, normalPrint(cdr), null );
+                        }
                     }
+                    return new ExecuteSchemeResult( false, resultValue, prettyPrint(resultValue), null );
                 }
             } catch (Throwable e) {
                 StringWriter sw = new StringWriter();
@@ -686,7 +693,7 @@ public class SchemeUtils {
                     e.printStackTrace( w );
                     w.flush();
                     sw.flush();
-                    return new ExecuteSchemeResult( false, sw.toString(), e );
+                    return new ExecuteSchemeResult( false, null, sw.toString(), e );
                 } finally {
                     try {
                         sw.close();
