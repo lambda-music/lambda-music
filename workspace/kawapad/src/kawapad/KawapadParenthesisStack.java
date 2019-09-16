@@ -33,6 +33,9 @@ public class KawapadParenthesisStack {
     public KawapadParenthesisStack.Element pop() {
         return stack.pop();
     }
+    public KawapadParenthesisStack.Element peek() {
+        return stack.peek();
+    }
     public void clear() {
         stack.clear();
     }
