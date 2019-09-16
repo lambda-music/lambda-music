@@ -79,16 +79,20 @@ public class KawapadParenthesisHighlighter {
         }
     }
     
+    public static transient Color parenthesisHighlightColor = Color.CYAN; 
+    
     static void highlightParentheses(JTextComponent tc, int open_pos, int close_pos) throws BadLocationException {
         logInfo( "highlightParentheses: " + open_pos + "/" + close_pos );
+        // See https://stackoverflow.com/questions/49818079/java-selected-text-over-highlighted-text
+        // (Mon, 16 Sep 2019 14:20:03 +0900)
         DefaultHighlighter highlighter = (DefaultHighlighter) tc.getHighlighter();
-        highlighter.setDrawsLayeredHighlights( false );
+        highlighter.setDrawsLayeredHighlights( true );
         {
-            Object tag =  highlighter.addHighlight( open_pos, open_pos+1, new DefaultHighlighter.DefaultHighlightPainter( Color.GREEN ) );
+            Object tag =  highlighter.addHighlight( open_pos, open_pos+1, new DefaultHighlighter.DefaultHighlightPainter( parenthesisHighlightColor ) );
             addClearQueue( highlighter, tag );
         }
         {
-            Object tag =  highlighter.addHighlight( close_pos, close_pos+1, new DefaultHighlighter.DefaultHighlightPainter( Color.GREEN ) );
+            Object tag =  highlighter.addHighlight( close_pos, close_pos+1, new DefaultHighlighter.DefaultHighlightPainter( parenthesisHighlightColor ) );
             addClearQueue( highlighter, tag );
         }
     }
@@ -107,6 +111,7 @@ public class KawapadParenthesisHighlighter {
             document.getText( 0, document.getLength(), text );
             ParserState parserState = 
                     SchemeParenthesisParser.lookupParenthesis( text, position );
+            logInfo( "highlightMatchingParenthesis:" + position + "=>"+ parserState.isFound() );
             if ( parserState.isFound() )
                 highlightParentheses( component, parserState.getIterator().getInitialIndex(), parserState.getIterator().getIndex() );
         }

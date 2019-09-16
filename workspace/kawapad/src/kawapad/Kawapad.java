@@ -170,8 +170,8 @@ public class Kawapad extends JTextPane {
 
     ////////////////////////////////////////////////////////////////////////////
 
-    private Kawapad kawapad=this;
-    private String instanceID = newUniqueID();
+    Kawapad kawapad=this;
+    String instanceID = newUniqueID();
     public String getInstanceID() {
         return instanceID;
     }
@@ -636,13 +636,11 @@ public class Kawapad extends JTextPane {
                         
                     case "(" :
                     case ")" :
-                        int pos = kawapad.getCaretPosition() -1;
-                        logInfo( "caret : " + pos );
-                        highlightMatchningParentheses( kawapad, pos );
-//                          KawapadHighlighter.highlightMatchingParenthesis( kawapad, pos ); 
-//                          SwingUtilities.invokeLater(hilightRunnable);
+                        kawapadListener.updateMatchingParentheses2(2);
+//                        kawapadListener.setCaretUpdateHighlightOffset(-1);
+//                        updateHighlightParenthesesLater( target, -1 );
+//                        highlightMatchningParentheses( kawapad, 0 );
                         break;
-                        
                     default :
                         break;
                 }
@@ -1033,17 +1031,35 @@ public class Kawapad extends JTextPane {
     //
     //
     //////////////////////////////////////////////////////////////////////////////////////////
+    
+    
+    
     private class KawapadListener implements CaretListener, DocumentListener  {
         KawapadListener() {
             super();
         }
-        
+        int offsetTTL = 0;
+        void updateMatchingParentheses2() {
+            int offset = 0;
+            if ( 0 < offsetTTL ) {
+                offsetTTL--;
+                offset = -1;
+            }
+            KawapadParenthesisHighlighter.forceClearHighlightedParenthesis();
+            highlightMatchningParentheses( kawapad, offset );
+        }
+        private void updateMatchingParentheses2(int i) {
+            this.offsetTTL = i;
+            updateMatchingParentheses2();
+        }
         // CaretListener
         public void caretUpdate(CaretEvent e) {
+            logInfo("PulsarScratchPadTextPaneController.caretUpdate()" + e );
+
             getParenthesisStack().checkSelectionStack();
-//              System.err.println("PulsarScratchPadTextPaneController.caretUpdate()");
+            updateMatchingParentheses2();
+            
             if ( ! kawapad.getUndoManager().isSuspended() ) {
-                updateHighlightParenthesesLater( kawapad, e.getDot() );
                 eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.CARET,   kawapad);
                 eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.CHANGE,  kawapad);
             }
@@ -1070,6 +1086,8 @@ public class Kawapad extends JTextPane {
         }
         //DocumentListener
         public void insertUpdate(DocumentEvent e) {
+            logInfo( "insert" );
+//            updateMatchingParentheses2(2);
             kawapad.fileModified = true;
 //              System.err.println("PulsarScratchPadTextPaneController.insertUpdate()");
             if ( ! kawapad.getUndoManager().isSuspended() ) {
@@ -1097,10 +1115,10 @@ public class Kawapad extends JTextPane {
 //            updatePopup( Kawapad.this.getCaret() );
         }
     }
-    private KawapadListener textPaneController = new KawapadListener();
+    private KawapadListener kawapadListener = new KawapadListener();
     {
-        this.getDocument().addDocumentListener( textPaneController );
-        this.addCaretListener( textPaneController );
+        this.getDocument().addDocumentListener( kawapadListener );
+        this.addCaretListener( kawapadListener );
     }
     
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -2626,17 +2644,18 @@ public class Kawapad extends JTextPane {
 
     private KawapadSyntaxHighlighter documentFilter; // See the constructor how this field is initialized.
 
-    private static void highlightMatchningParentheses( Kawapad kawapad, int pos ) {
+    static void highlightMatchningParentheses( Kawapad kawapad, int offset ) {
+        logInfo( "highlightMatchningParentheses offset=" + offset  );
         if ( ENABLED_PARENTHESIS_HIGHLIGHT )
             try {
                 Caret caret = kawapad.getCaret();
                 if ( caret.getDot() == caret.getMark() ) {
-                    KawapadParenthesisHighlighter.highlightMatchingParenthesis( kawapad, caret.getDot() );
+                    KawapadParenthesisHighlighter.highlightMatchingParenthesis( kawapad, caret.getDot() + offset );
                 } else {
                     if ( caret.getMark() < caret.getDot() ) {
-                        KawapadParenthesisHighlighter.highlightMatchingParenthesis( kawapad, caret.getDot() -1 );
+                        KawapadParenthesisHighlighter.highlightMatchingParenthesis( kawapad, caret.getDot() + offset -1 );
                     } else {
-                        KawapadParenthesisHighlighter.highlightMatchingParenthesis( kawapad, caret.getDot() );
+                        KawapadParenthesisHighlighter.highlightMatchingParenthesis( kawapad, caret.getDot() + offset  );
                     }
                 }
             } catch (BadLocationException e) {
@@ -2644,12 +2663,13 @@ public class Kawapad extends JTextPane {
             }
             ;
     }
-    private static void updateHighlightParenthesesLater( Kawapad kawapad, int pos ) {
+    static void highlightMatchingParenthesesLater( Kawapad kawapad, int offset ) {
+//        logError( "log", new Throwable() );
+
         if ( ENABLED_PARENTHESIS_HIGHLIGHT )
             SwingUtilities.invokeLater( new Runnable() {
                 public void run() {
-                    KawapadParenthesisHighlighter.forceClearHighlightedParenthesis();
-                    highlightMatchningParentheses( kawapad, pos );
+                    highlightMatchningParentheses( kawapad, offset );
                 }
             });
     }
