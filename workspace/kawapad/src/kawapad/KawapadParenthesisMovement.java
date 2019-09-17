@@ -196,7 +196,11 @@ public class KawapadParenthesisMovement {
     public static final int LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP = 1;
     public static final int LCP2_STRATEGY_CORRESPONDING_PARENTHESIS_JUMP = 2;
 
-    public static int lookupCorrespondingParenthesis2(CharSequence text, int currDot, int direction, int constantStrategy ) throws InternalError {
+    public static int lookupCorrespondingParenthesis(CharSequence text, int currDot, int direction ) {
+        return lookupCorrespondingParenthesis2( text, currDot, direction, LCP2_STRATEGY_DYNAMIC );
+    }
+
+    public static int lookupCorrespondingParenthesis2(CharSequence text, int currDot, int direction, int constantStrategy ) {
         if ( currDot < 0 ) 
             currDot = 0;
         if ( text.length() <= currDot )

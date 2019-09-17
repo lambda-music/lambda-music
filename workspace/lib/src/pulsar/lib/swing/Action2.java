@@ -53,7 +53,7 @@ public abstract interface Action2 extends Action {
     //
     ////////////////////////////////////////////////////////////////////////
     
-
+    public static final String MENU_CATEGORY = "menu-category";
     public static final String CAPTION = "CAPTION";
     public static void setCaption( Action action, String caption ) {
         action.putValue( CAPTION , caption );

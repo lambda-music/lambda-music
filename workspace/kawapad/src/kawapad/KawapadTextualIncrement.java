@@ -5,6 +5,7 @@ import java.awt.event.KeyEvent;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,12 +25,16 @@ import kawa.standard.Scheme;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.swing.AcceleratorKeyList;
 import pulsar.lib.swing.Action2;
+import pulsar.lib.swing.MenuInitializer;
 
-class KawapadTextualIncrement {
-    public void initGui( JMenu file, JMenu edit, JMenu view, JMenu scheme ) {
+class KawapadTextualIncrement implements MenuInitializer {
+    @Override
+    public void initMenu( Map<String,JMenu> menuMap ) {
+        JMenu edit = menuMap.get( "edit" );
         edit.add( TEXTUAL_INCREMENT_ACTION );
         edit.add( TEXTUAL_DECREMENT_ACTION );
     }
+
     
     public static void initScheme(Environment env) {
         SchemeUtils.defineVar( env, new Procedure2("add-incremental-keyword") {
@@ -345,7 +350,7 @@ class KawapadTextualIncrement {
         }
 
         {
-            putValue( Action2.CAPTION, "Increment the Nearest Number" );
+            putValue( Action2.CAPTION, "Increment" );
             putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_G , KeyEvent.CTRL_MASK ));
             putValue( Action.MNEMONIC_KEY , (int) 'i' );
             AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl G" );
@@ -370,7 +375,7 @@ class KawapadTextualIncrement {
             }
         }
         {
-            putValue( Action2.CAPTION, "Decrement the Nearest Number" );
+            putValue( Action2.CAPTION, "Decrement" );
             putValue( Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_D , KeyEvent.CTRL_MASK ));
             putValue( Action.MNEMONIC_KEY , (int) 'd' );
             AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl D" );

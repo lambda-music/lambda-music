@@ -31,6 +31,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -189,13 +190,23 @@ public class KawapadFrame extends JFrame {
             
             JMenu viewMenuItem = new JMenu( "View" );
             viewMenuItem.setMnemonic('v');
-            // menuBar.add( viewMenuItem );
+            menuBar.add( viewMenuItem );
+            
+            JMenu navigateMenuItem = new JMenu( "Navigate" );
+            navigateMenuItem.setMnemonic('n');
+            menuBar.add( navigateMenuItem );
             
             JMenu schemeMenuItem = new JMenu( "Scheme" );
             schemeMenuItem.setMnemonic('r');
             menuBar.add( schemeMenuItem );
             
-            kawapad.initMenu( fileMenuItem, editMenuItem, viewMenuItem, schemeMenuItem );
+            Map<String,JMenu> map = new HashMap<>();
+            map.put( "file"     , fileMenuItem );
+            map.put( "edit"     , editMenuItem );
+            map.put( "view"     , viewMenuItem );
+            map.put( "navigate" , navigateMenuItem );
+            map.put( "scheme"   , schemeMenuItem );
+            kawapad.initMenu( map );
             
             Action2.processMenuBar( menuBar );
             setJMenuBar( menuBar );

@@ -505,7 +505,6 @@ public class PulsarFrame extends KawapadFrame {
         {
             putValue( Action2.CAPTION, "New Scratchpad" );
             putValue( Action.MNEMONIC_KEY, (int)'n' );
-            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_F4, ActionEvent.SHIFT_MASK) );
             AcceleratorKeyList.putAcceleratorKeyList( this, "shift F4" );
         }
     };
@@ -520,7 +519,6 @@ public class PulsarFrame extends KawapadFrame {
         {
             putValue( Action2.CAPTION, "Reset the Sequencer" );
             putValue( Action.MNEMONIC_KEY, (int)'r' );
-//            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0 ) );
             AcceleratorKeyList.putAcceleratorKeyList( this, "F5" );
         }
     };
@@ -534,7 +532,6 @@ public class PulsarFrame extends KawapadFrame {
         {
             putValue( Action2.CAPTION, "Quit" );
             putValue( Action.MNEMONIC_KEY, (int)'q' );
-            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.CTRL_MASK) );
             AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl Q" );
         }
     };
@@ -548,7 +545,6 @@ public class PulsarFrame extends KawapadFrame {
         {
             putValue( Action2.CAPTION, "Play/Stop" );
             putValue( Action.MNEMONIC_KEY, (int)'P' );
-            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, ActionEvent.CTRL_MASK) );
             AcceleratorKeyList.putAcceleratorKeyList( this, "alt ENTER" );
         }
     };
@@ -561,7 +557,6 @@ public class PulsarFrame extends KawapadFrame {
         {
             putValue( Action2.CAPTION, "Reset" );
             putValue( Action.MNEMONIC_KEY, (int)'R' );
-            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_HOME, ActionEvent.ALT_MASK) );
             AcceleratorKeyList.putAcceleratorKeyList( this, "alt HOME" );
         }
     };
@@ -574,7 +569,6 @@ public class PulsarFrame extends KawapadFrame {
         {
             putValue( Action2.CAPTION, "Tap Tempo" );
             putValue( Action.MNEMONIC_KEY, (int)'T' );
-            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, ActionEvent.ALT_MASK ) );
             AcceleratorKeyList.putAcceleratorKeyList( this, "alt ESCAPE" );
         }
     };
