@@ -1650,9 +1650,9 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     };
 
     
-    private class LispWordSwapLeftAction extends TextAction2 {
+    private class LispWordSwapAction extends TextAction2 {
         int direction;
-        private LispWordSwapLeftAction(String name, int direction ) {
+        private LispWordSwapAction(String name, int direction ) {
             super( name );
             this.direction = direction;
         }
@@ -1672,7 +1672,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
-    public final Action LISPWORD_SWAP_LEFT_ACTION = new LispWordSwapLeftAction( KAWAPAD_LISPWORD_SWAP_LEFT, -1 ){
+    public final Action LISPWORD_SWAP_LEFT_ACTION = new LispWordSwapAction( KAWAPAD_LISPWORD_SWAP_LEFT, -1 ){
         {
             putValue( Action2.CAPTION, "Swap the Word on the Left." );
             AcceleratorKeyList.putAcceleratorKeyList( this, "alt shift LEFT", "alt shift B" );
@@ -1684,7 +1684,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
-    public final Action LISPWORD_SWAP_RIGHT_ACTION = new LispWordSwapLeftAction( KAWAPAD_LISPWORD_SWAP_RIGHT, +1 ){
+    public final Action LISPWORD_SWAP_RIGHT_ACTION = new LispWordSwapAction( KAWAPAD_LISPWORD_SWAP_RIGHT, +1 ){
         {
             putValue( Action2.CAPTION, "Swap the Word on the Right." );
             AcceleratorKeyList.putAcceleratorKeyList( this, "alt shift RIGHT", "alt shift F" );
