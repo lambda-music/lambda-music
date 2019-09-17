@@ -193,7 +193,7 @@ public class KawapadFrame extends JFrame {
             menuBar.add( viewMenuItem );
             
             JMenu navigateMenuItem = new JMenu( "Navigate" );
-            navigateMenuItem.setMnemonic('n');
+            navigateMenuItem.setMnemonic('a');
             menuBar.add( navigateMenuItem );
             
             JMenu schemeMenuItem = new JMenu( "Scheme" );
