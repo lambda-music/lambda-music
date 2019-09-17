@@ -474,6 +474,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         //  purgeKeyFromActionMap( textPane.getActionMap(), DefaultEditorKit.insertBreakAction );
         kawapad.getActionMap().put( DefaultEditorKit.insertBreakAction, KAWAPAD_INSERT_BREAK_ACTION );
     }
+
     final class NewInsertBreakTextAction extends TextAction2 {
         private NewInsertBreakTextAction(String name) {
             super( name );
@@ -1586,22 +1587,47 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         }
     };
     
-    public static final String KAWAPAD_LISPWORD_SELECT_RIGHT = "kawapad-select-right-lisp-word";
-
-    // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
-    @AutomatedActionField
-    public final Action LISPWORD_SELECT_RIGHT_ACTION = new TextAction2( KAWAPAD_LISPWORD_SELECT_RIGHT )
-    {
-        CaretTransformer transformer = new SelectRightLispWordTransformer();
+    class LispWordSelectAction extends TextAction2 {
+        CaretTransformer transformer;
+        private LispWordSelectAction( String name, CaretTransformer transformer ) {
+            super( name );
+            this.transformer = transformer;
+        }
+        
         @Override
         public void actionPerformed(ActionEvent e) {
             JTextComponent t = getTextComponent( e );
             Caret caret = t.getCaret();
             Document document = t.getDocument();
-            resetHorzScrollPos();
-            transformer.transform( getParenthesisStack(), document, caret );
-            moveToSelection();
+            boolean b=false;
+            try {
+                if ( caret.getDot() != caret.getMark() ) {
+                    b = false;
+                } else {
+                    char c = document.getText( caret.getDot(), 1 ).charAt( 0 );
+                    b = ( Character.isAlphabetic( c ) || Character.isDigit( c ) );
+                }
+            } catch (BadLocationException e1) {
+                logError( "safely ignored.", e1 );
+            }
+            if ( b ) {
+                LISPWORD_SELECT_CURRENT_ACTION.actionPerformed( e );
+            } else {
+                resetHorzScrollPos();
+                transformer.transform( getParenthesisStack(), document, caret );
+                moveToSelection();
+            }
         }
+    }
+
+    
+    public static final String KAWAPAD_LISPWORD_SELECT_RIGHT = "kawapad-select-right-lisp-word";
+
+    // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
+    @AutomatedActionField
+    public final Action LISPWORD_SELECT_RIGHT_ACTION = 
+        new LispWordSelectAction( KAWAPAD_LISPWORD_SELECT_RIGHT, new SelectRightLispWordTransformer() )
+    {
         {
             putValue( Action2.CAPTION, "Select the Word on the Cursor." );
             AcceleratorKeyList.putAcceleratorKeyList( this, "alt RIGHT", "alt F" );
@@ -1613,25 +1639,14 @@ public class Kawapad extends JTextPane implements MenuInitializer {
 
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
-    public final Action LISPWORD_SELECT_LEFT_ACTION =
-            new TextAction2( KAWAPAD_LISPWORD_SELECT_LEFT )
+    public final Action LISPWORD_SELECT_LEFT_ACTION = 
+        new LispWordSelectAction( KAWAPAD_LISPWORD_SELECT_LEFT, new SelectLeftLispWordTransformer() ) 
     {
-        CaretTransformer transformer = new SelectLeftLispWordTransformer();
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            JTextComponent t = getTextComponent( e );
-            Caret caret = t.getCaret();
-            Document document = t.getDocument();
-            resetHorzScrollPos();
-            transformer.transform( getParenthesisStack(), document, caret );
-            moveToSelection();
-        }
         {
             putValue( Action2.CAPTION, "Select the Word on the Cursor." );
             AcceleratorKeyList.putAcceleratorKeyList( this, "alt LEFT", "alt B" );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
-
     };
 
     //////////////////////////////////////////////////////////////////////////////////////////

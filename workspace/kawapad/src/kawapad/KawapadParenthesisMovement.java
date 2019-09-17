@@ -518,7 +518,7 @@ public class KawapadParenthesisMovement {
         @Override
         public boolean process(CharSequence text, CaretPos before, CaretPos after) {
             after.right = lookup( text, nagatedParenthesesSelector, before.left-1 , -1 );
-            after.left  = lookup( text, parenthesesSelector,        after.right   , -1 )+1;
+            after.left  = lookup( text, parenthesesSelector,        after.right  , -1 )+1;
             return true;
         }
     }

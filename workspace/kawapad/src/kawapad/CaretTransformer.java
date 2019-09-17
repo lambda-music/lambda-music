@@ -92,7 +92,8 @@ public abstract class CaretTransformer {
             synchronized ( stack ) {
                 try {
                     stack.setLocked( true );
-                    int correction = after.left == after.right ? 0 : KawapadParenthesisMovement.THE_FINAL_CORRECTION;
+//                  int correction = after.left == after.right ? 0 : KawapadParenthesisMovement.THE_FINAL_CORRECTION;
+                  int correction = KawapadParenthesisMovement.THE_FINAL_CORRECTION;
                     if ( 0 < after.direction ) {
                         caret.setDot(  after.left );
                         caret.moveDot( after.right + correction );
