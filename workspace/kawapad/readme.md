@@ -37,6 +37,7 @@ Set the main font of the editor. Kawapad can change its font-face.
 
 | ID | Description | Keybind |
 | :----- | :----- | :----- |
+|delete-previous|Backspace|  BACK_SPACE, CTRL-H  |
 |kawapad-undo-action|Undo|  CTRL-Z  |
 |kawapad-redo-action|Redo|  SHIFT-CTRL-Z  |
 |kawapad-debug|Debug|  CTRL-ALT-BACK_QUOTE  |
@@ -55,25 +56,25 @@ Set the main font of the editor. Kawapad can change its font-face.
 |kawapad-scroll-down|kawapad-scroll-down|  CTRL-DOWN  |
 |kawapad-disable-content-assist|Disable Content Assist|  ESCAPE  |
 |kawapad-enable-content-assist|Enable Content Assist|  CTRL-SPACE  |
-|kawapad-reset|Reset the Environment|    |
+|kawapad-reset|Reset the Environment|  SHIFT-CTRL-ALT-BACK_QUOTE  |
 |kawapad-select-evaluate|Select and Evaluate|  CTRL-ENTER  |
 |kawapad-evaluate|Select, Evaluate and Replace|  SHIFT-CTRL-ENTER  |
 |kawapad-evaluate|Evaluate|  CTRL-E  |
 |kawapad-run|Run|  CTRL-R  |
 |kawapad-interrupt|Interrupt|  CTRL-K  |
-|kawapad-simple-parenthesis-jump-left|Go to the Previous Parenthesis|  ALT-LEFT  |
-|kawapad-simple-parenthesis-jump-right|Go to the Next Parenthesis|  ALT-RIGHT  |
-|kawapad-parenthesis-sel-jump-left|Lookup the Pair of Parenthesis on the Left and Select|  SHIFT-CTRL-ALT-LEFT  |
-|kawapad-parenthesis-sel-jump-right|Lookup the Pair of Parenthesis on the Right and Select|  SHIFT-CTRL-ALT-RIGHT  |
-|kawapad-select-current-lisp-word|Select the Word on the Cursor.|  CTRL-ALT-UP  |
-|kawapad-select-right-lisp-word|Select the Word on the Cursor.|  CTRL-ALT-RIGHT  |
-|kawapad-select-left-lisp-word|Select the Word on the Cursor.|  CTRL-ALT-LEFT  |
-|kawapad-expand-parenthesis-selection|Select Inside the Current Parentheses|  SHIFT-ALT-UP, SHIFT-ALT-P  |
-|kawapad-select-left-parentheses|Select the Parentheses on the Left Side|  SHIFT-ALT-LEFT, SHIFT-ALT-B  |
-|kawapad-select-right-parentheses|Select the Parentheses on the Left Side|  SHIFT-ALT-RIGHT, SHIFT-ALT-F  |
-|kawapad-select-parentheses-shrink|Select Parentheses Inside the Current Selection|  SHIFT-ALT-DOWN, SHIFT-ALT-N  |
-|kawapad-format-inc|Increase Indentation|  TAB  |
-|kawapad-format-dec|Decrease Indentation|  SHIFT-TAB  |
+|kawapad-simple-parenthesis-jump-left|Go to the Previous Parenthesis|  ALT-UP, ALT-P  |
+|kawapad-simple-parenthesis-jump-right|Go to the Next Parenthesis|  ALT-DOWN, ALT-N  |
+|kawapad-parenthesis-sel-jump-left|Lookup the Pair of Parenthesis on the Left and Select|  SHIFT-CTRL-ALT-LEFT, SHIFT-CTRL-ALT-B  |
+|kawapad-parenthesis-sel-jump-right|Lookup the Pair of Parenthesis on the Right and Select|  SHIFT-CTRL-ALT-RIGHT, SHIFT-CTRL-ALT-F  |
+|kawapad-lispword-select-current|Select the Word on the Cursor.|    |
+|kawapad-select-right-lisp-word|Select the Word on the Cursor.|  ALT-RIGHT, ALT-F  |
+|kawapad-select-left-lisp-word|Select the Word on the Cursor.|  ALT-LEFT, ALT-B  |
+|kawapad-parenthesis-expand-selection|Select Inside the Current Parentheses|  CTRL-ALT-UP, CTRL-ALT-P  |
+|kawapad-select-left-parentheses|Select the Parentheses on the Left Side|  CTRL-ALT-LEFT, CTRL-ALT-B  |
+|kawapad-select-right-parentheses|Select the Parentheses on the Left Side|  CTRL-ALT-RIGHT, CTRL-ALT-F  |
+|kawapad-parenthesis-shrink-selection-dynamically|Deselect Inside the Current Parentheses|  CTRL-ALT-DOWN, CTRL-ALT-N  |
+|kawapad-shift-indent-right|Shift Left|  TAB  |
+|kawapad-shift-indent-left|Shift Right|  SHIFT-TAB  |
 |kawapad-prettify|Correct Indentation|  CTRL-I  |
 |kawapad-open-new|Open New|    |
 |kawapad-open-file|Open|  CTRL-O  |

@@ -1441,11 +1441,11 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         }
     };
     
-    public static final String KAWAPAD_SIMPLE_PARENTHESIS_SELECT_JUMP_LEFT="kawapad-simple-parenthesis-select-jump-left";
+    public static final String KAWAPAD_SIMPLE_PARENTHESIS_JUMP_SELECT_LEFT="kawapad-simple-parenthesis-select-jump-left";
     // NOT USED (Mon, 09 Sep 2019 07:03:07 +0900)
     // INTEGRATED_ACTIONS_DEPRECATED (Wed, 11 Sep 2019 08:26:57 +0900)
-    public final Action SIMPLE_PARENTHESIS_SELECT_JUMP_LEFT_ACTION =
-            new ParenthesisAction( KAWAPAD_SIMPLE_PARENTHESIS_SELECT_JUMP_LEFT, true, -1, KawapadParenthesisMovement.LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP )
+    public final Action SIMPLE_PARENTHESIS_JUMP_SELECT_LEFT_ACTION =
+            new ParenthesisAction( KAWAPAD_SIMPLE_PARENTHESIS_JUMP_SELECT_LEFT, true, -1, KawapadParenthesisMovement.LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP )
     {
         {
             putValue( Action2.CAPTION, "Select the Previous Parenthesis" );
@@ -1456,11 +1456,11 @@ public class Kawapad extends JTextPane implements MenuInitializer {
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
-    public static final String KAWAPAD_SIMPLE_PARENTHESIS_SELECT_JUMP_RIGHT = "kawapad-simple-parenthesis-select-jump-right";
+    public static final String KAWAPAD_SIMPLE_PARENTHESIS_JUMP_SELECT_RIGHT = "kawapad-simple-parenthesis-select-jump-right";
     // NOT USED (Mon, 09 Sep 2019 07:03:07 +0900)
     // INTEGRATED_ACTIONS_DEPRECATED (Wed, 11 Sep 2019 08:26:57 +0900)
-    public final Action SIMPLE_PARENTHESIS_SELECT_JUMP_RIGHT_ACTION =
-            new ParenthesisAction( KAWAPAD_SIMPLE_PARENTHESIS_SELECT_JUMP_RIGHT, true, +1, KawapadParenthesisMovement.LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP  )
+    public final Action SIMPLE_PARENTHESIS_JUMP_SELECT_RIGHT_ACTION =
+            new ParenthesisAction( KAWAPAD_SIMPLE_PARENTHESIS_JUMP_SELECT_RIGHT, true, +1, KawapadParenthesisMovement.LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP  )
     {
         {
             putValue( Action2.CAPTION, "Select the Next Parenthesis" );
@@ -1480,7 +1480,6 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     {
         {
             putValue( Action2.CAPTION, "Lookup the Corresponding Parenthesis on the Left" );
-            putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK ) );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
             // NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED
             AcceleratorKeyList.putAcceleratorKeyList( this, "alt ctrl LEFT" );
@@ -1497,7 +1496,6 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     {
         {
             putValue( Action2.CAPTION, "Lookup the Corresponding Parenthesis on the Right" );
-            putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK  ) );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
             // NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED
             AcceleratorKeyList.putAcceleratorKeyList( this, "alt ctrl RIGHT" );
@@ -1505,12 +1503,12 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         }
     };
     
-    public static final String KAWAPAD_PARENTHESIS_SELECT_JUMP_LEFT = "kawapad-parenthesis-sel-jump-left";
+    public static final String KAWAPAD_PARENTHESIS_JUMP_SELECT_LEFT = "kawapad-parenthesis-sel-jump-left";
     
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
-    public final Action PARENTHESIS_SELECT_JUMP_LEFT_ACTION =
-            new ParenthesisAction( KAWAPAD_PARENTHESIS_SELECT_JUMP_LEFT, true, -1, KawapadParenthesisMovement.LCP2_STRATEGY_DYNAMIC  )
+    public final Action PARENTHESIS_JUMP_SELECT_LEFT_ACTION =
+            new ParenthesisAction( KAWAPAD_PARENTHESIS_JUMP_SELECT_LEFT, true, -1, KawapadParenthesisMovement.LCP2_STRATEGY_DYNAMIC  )
     {
         {
             putValue( Action2.CAPTION, "Lookup the Pair of Parenthesis on the Left and Select" );
@@ -1519,12 +1517,12 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         }
     };
     
-    public static final String KAWAPAD_PARENTHESIS_SELECT_JUMP_RIGHT = "kawapad-parenthesis-sel-jump-right";
+    public static final String KAWAPAD_PARENTHESIS_JUMP_SELECT_RIGHT = "kawapad-parenthesis-sel-jump-right";
 
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
-    public final Action PARENTHESIS_SELECT_JUMP_RIGHT_ACTION =
-            new ParenthesisAction( KAWAPAD_PARENTHESIS_SELECT_JUMP_RIGHT, true, +1, KawapadParenthesisMovement.LCP2_STRATEGY_DYNAMIC  )
+    public final Action PARENTHESIS_JUMP_SELECT_RIGHT_ACTION =
+            new ParenthesisAction( KAWAPAD_PARENTHESIS_JUMP_SELECT_RIGHT, true, +1, KawapadParenthesisMovement.LCP2_STRATEGY_DYNAMIC  )
     {
         {
             putValue( Action2.CAPTION, "Lookup the Pair of Parenthesis on the Right and Select" );
@@ -1565,12 +1563,12 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         }
     }
 
-    public static final String KAWAPAD_SELECT_CURRENT_LISP_WORD = "kawapad-select-current-lisp-word";
+    public static final String KAWAPAD_LISPWORD_SELECT_CURRENT = "kawapad-lispword-select-current";
 
     
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
-    public final Action SELECT_CURRENT_LISP_WORD_ACTION = new TextAction2( KAWAPAD_SELECT_CURRENT_LISP_WORD ) {
+    public final Action LISPWORD_SELECT_CURRENT_ACTION = new TextAction2( KAWAPAD_LISPWORD_SELECT_CURRENT ) {
         CaretTransformer transformer = new SelectCurrentWordTransformer();
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -1588,12 +1586,11 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         }
     };
     
-    public static final String KAWAPAD_SELECT_RIGHT_LISP_WORD = "kawapad-select-right-lisp-word";
+    public static final String KAWAPAD_LISPWORD_SELECT_RIGHT = "kawapad-select-right-lisp-word";
 
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
-    public final Action SELECT_RIGHT_LISP_WORD_ACTION =
-            new TextAction2( KAWAPAD_SELECT_RIGHT_LISP_WORD )
+    public final Action LISPWORD_SELECT_RIGHT_ACTION = new TextAction2( KAWAPAD_LISPWORD_SELECT_RIGHT )
     {
         CaretTransformer transformer = new SelectRightLispWordTransformer();
         @Override
@@ -1612,12 +1609,12 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         }
     };
     
-    public static final String KAWAPAD_SELECT_LEFT_LISP_WORD = "kawapad-select-left-lisp-word";
+    public static final String KAWAPAD_LISPWORD_SELECT_LEFT = "kawapad-select-left-lisp-word";
 
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
-    public final Action SELECT_LEFT_LISP_WORD_ACTION =
-            new TextAction2( KAWAPAD_SELECT_LEFT_LISP_WORD )
+    public final Action LISPWORD_SELECT_LEFT_ACTION =
+            new TextAction2( KAWAPAD_LISPWORD_SELECT_LEFT )
     {
         CaretTransformer transformer = new SelectLeftLispWordTransformer();
         @Override
@@ -2056,11 +2053,11 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         }
     }
 
-    public static final String KAWAPAD_FORMAT_INC = "kawapad-format-inc";
+    public static final String KAWAPAD_SHIFT_INDENT_RIGHT = "kawapad-shift-indent-right";
 
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
-    public final Action INCREASE_INDENT_ACTION = new FormatAction( KAWAPAD_FORMAT_INC,  +2 ) {
+    public final Action SHIFT_INDENT_RIGHT_ACTION = new FormatAction( KAWAPAD_SHIFT_INDENT_RIGHT,  +2 ) {
         {
             putValue( Action2.CAPTION, "Shift Left" );
             putValue( Action.MNEMONIC_KEY , (int) 'c' );
@@ -2068,11 +2065,11 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         }
     };
 
-    public static final String KAWAPAD_FORMAT_DEC = "kawapad-format-dec";
+    public static final String KAWAPAD_SHIFT_INDENT_LEFT = "kawapad-shift-indent-left";
 
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
-    public final Action DECREASE_INDENT_ACTION = new FormatAction( KAWAPAD_FORMAT_DEC, -2 ) {
+    public final Action SHIFT_INDENT_LEFT_ACTION = new FormatAction( KAWAPAD_SHIFT_INDENT_LEFT, -2 ) {
         {
             putValue( Action2.CAPTION, "Shift Right" );
             putValue( Action.MNEMONIC_KEY , (int) 'd' );
@@ -2798,15 +2795,19 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         edit.addSeparator();
         
         edit.add( new JMenuItem( kawapad.getActionMap().get( DefaultEditorKit.deletePrevCharAction )  ));
-        edit.add( new JMenuItem( kawapad.INCREASE_INDENT_ACTION ) );
-        edit.add( new JMenuItem( kawapad.DECREASE_INDENT_ACTION ) );
+        edit.add( new JMenuItem( kawapad.SHIFT_INDENT_RIGHT_ACTION ) );
+        edit.add( new JMenuItem( kawapad.SHIFT_INDENT_LEFT_ACTION ) );
         edit.add( new JMenuItem( kawapad.PRETTIFY_ACTION ) );
         
         navigate.add( new JMenuItem( kawapad.PARENTHESIS_EXPAND_SELECTION_ACTION ) );
         navigate.add( new JMenuItem( kawapad.PARENTHESIS_SHRINK_SELECTION_DYNAMICALLY_ACTION ) );
-        navigate.add( new JMenuItem( kawapad.PARENTHESIS_SELECT_JUMP_LEFT_ACTION ) );
         navigate.add( new JMenuItem( kawapad.PARENTHESIS_SELECT_LEFT_ACTION ) );
         navigate.add( new JMenuItem( kawapad.PARENTHESIS_SELECT_RIGHT_ACTION ) );
+        navigate.add( new JMenuItem( kawapad.LISPWORD_SELECT_CURRENT_ACTION ) );
+        navigate.add( new JMenuItem( kawapad.LISPWORD_SELECT_LEFT_ACTION ) );
+        navigate.add( new JMenuItem( kawapad.LISPWORD_SELECT_RIGHT_ACTION ) );
+        navigate.add( new JMenuItem( kawapad.SIMPLE_PARENTHESIS_JUMP_LEFT_ACTION ) );
+        navigate.add( new JMenuItem( kawapad.SIMPLE_PARENTHESIS_JUMP_RIGHT_ACTION ) );
         
         
         // TEXTUAL_INCREMENT
