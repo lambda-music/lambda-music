@@ -238,7 +238,7 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
                 if ( DEBUG ) ep.end();
                 if ( DEBUG ) logInfo( ep.getMessage( "Syntax Clear" ));
                 // 
-                Segment text = KawapadParenthesisMovement.getText( document );
+                Segment text = KawapadSelection.getText( document );
                 for ( SyntaxElement e : getSyntaxElementList() ) {
                     if ( DEBUG ) ep.start();
                     updateTextStyles( document, text, e.getPattern(), defaultAttr, e.getAttributeSet() );

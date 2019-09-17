@@ -25,10 +25,12 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.Segment;
 
+import kawapad.CaretTransformer.CaretPos;
+
 /**
  *  October 3, 2018 at 9:52:22 PM
  */
-public class KawapadParenthesisMovement {
+public class KawapadSelection {
     public static Segment getText(Document document) throws InternalError {
         Segment text = new Segment();
         try {
@@ -506,7 +508,8 @@ public class KawapadParenthesisMovement {
             return true;
         }
     }
-    static class SelectRightLispWordTransformer extends LispWordSelectionTransformer {
+    static final CaretTransformer LISPWORD_SELECT_RIGHT_TRANSFORMER = new LispWordSelectRightTransformer();
+    static class LispWordSelectRightTransformer extends LispWordSelectionTransformer {
         @Override
         public boolean process(CharSequence text, CaretPos before, CaretPos after) {
             after.left  = lookup( text, nagatedParenthesesSelector, before.right+1, +1 );
@@ -514,12 +517,71 @@ public class KawapadParenthesisMovement {
             return true;
         }
     }
-    static class SelectLeftLispWordTransformer extends LispWordSelectionTransformer {
+    static final CaretTransformer LISPWORD_SELECT_LEFT_TRANSFORMER = new LispWordSelectLeftTransformer();
+    static class LispWordSelectLeftTransformer extends LispWordSelectionTransformer {
         @Override
         public boolean process(CharSequence text, CaretPos before, CaretPos after) {
             after.right = lookup( text, nagatedParenthesesSelector, before.left-1 , -1 );
             after.left  = lookup( text, parenthesesSelector,        after.right  , -1 )+1;
             return true;
+        }
+    }
+    
+    static void lispwordSwapWords( Document document, Caret caret, int direction ) {
+        Segment text = new Segment();
+        try {
+            document.getText( 0, document.getLength(), text );
+        } catch (BadLocationException e) {
+            Kawapad.logError( "", e );
+        }
+        CaretPos before = new CaretPos( caret );
+        CaretPos after = new CaretPos( before );
+        CaretTransformer transformer;
+        if ( direction < 0 ) {
+            transformer = LISPWORD_SELECT_LEFT_TRANSFORMER;
+        } else {
+            transformer = LISPWORD_SELECT_RIGHT_TRANSFORMER;
+        }
+        transformer.process( text, before, after );
+
+        CaretPos left;
+        CaretPos right;
+        if ( direction < 0 ) {
+            left = after;
+            right = before;
+        } else {
+            left = before;
+            right = after;
+        }
+        
+        // 1... | before text  | left word  | middle text | right word | after text |
+        // *** SWAP THESE WORDS ***
+        // 2... | before text  | right word | middle text | left word  | after text |
+        if ( CaretTransformer.isValidCaretPos( text, after ) ) {
+            try {
+                String leftString  = document.getText( left.left,  left.right - left.left + 1);
+                String rightString = document.getText( right.left, right.right - right.left + 1);
+                document.remove( right.left, right.right - right.left + 1);
+                document.insertString( right.left, leftString, null );
+                Kawapad.logInfo( String.format("L:'%s' R:'%s'" , leftString, rightString ));
+                document.remove( left.left, left.right - left.left + 1 );
+                document.insertString( left.left, rightString, null );
+                
+                CaretPos selectPos;
+                if ( direction < 0 ) {
+                    selectPos = new CaretPos( left );
+                    selectPos.right = selectPos.left + rightString.length() - 1;
+                } else {
+                    selectPos = new CaretPos( right ); 
+                    int diff = ( rightString.length() - leftString.length() );
+                    selectPos.left  += diff;
+                    selectPos.right = selectPos.left + leftString.length() -1;
+                }
+                selectPos.setCaret( caret );
+
+            } catch (BadLocationException e) {
+                Kawapad.logError( "", e );
+            }
         }
     }
 }
