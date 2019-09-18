@@ -1483,7 +1483,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
             putValue( Action2.CAPTION, "Lookup the Corresponding Parenthesis on the Left" );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
             // NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED
-            AcceleratorKeyList.putAcceleratorKeyList( this, "alt ctrl LEFT" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl alt LEFT" );
             // NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED
 
         }
@@ -1499,7 +1499,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
             putValue( Action2.CAPTION, "Lookup the Corresponding Parenthesis on the Right" );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
             // NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED
-            AcceleratorKeyList.putAcceleratorKeyList( this, "alt ctrl RIGHT" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl alt RIGHT" );
             // NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED
         }
     };
@@ -1514,7 +1514,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         {
             putValue( Action2.CAPTION, "Lookup the Pair of Parenthesis on the Left and Select" );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "alt ctrl shift LEFT", "shift alt ctrl B" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "alt shift UP", "alt shift P" );
         }
     };
     
@@ -1528,7 +1528,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         {
             putValue( Action2.CAPTION, "Lookup the Pair of Parenthesis on the Right and Select" );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "alt ctrl shift RIGHT", "shift alt ctrl F" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "alt shift DOWN", "alt shift N" );
         }
     };
     
@@ -1692,6 +1692,55 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         }
     };
     
+    
+    //////////////////////////////////////////////////////////////////////////////////////////
+
+    private class ParenthesisSwapAction extends TextAction2 {
+        int direction;
+        private ParenthesisSwapAction(String name, int direction ) {
+            super( name );
+            this.direction = direction;
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JTextComponent t = getTextComponent( e );
+            Caret caret = t.getCaret();
+            Document document = t.getDocument();
+            if ( caret.getDot() == caret.getMark() ) {
+                PARENTHESIS_EXPAND_SELECTION_ACTION.actionPerformed( e );
+            } else {
+                KawapadSelection.parenthesisSwapWords( document, caret, direction );
+            }
+        }
+    }
+    public static final String KAWAPAD_PARENTHESIS_SWAP_LEFT = "kawapad-parenthesis-swap-left";
+    
+    // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
+    @AutomatedActionField
+    public final Action PARENTHESIS_SWAP_LEFT_ACTION = new ParenthesisSwapAction( KAWAPAD_PARENTHESIS_SWAP_LEFT, -1 ){
+        {
+            putValue( Action2.CAPTION, "Swap the Left Parentesis Pair" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl alt shift LEFT", "ctrl alt shift B" );
+//              putValue( Action.MNEMONIC_KEY , (int) 'd' );
+        }
+    };
+
+    public static final String KAWAPAD_PARENTHESIS_SWAP_RIGHT = "kawapad-parenthesis-swap-right";
+    
+    // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
+    @AutomatedActionField
+    public final Action PARENTHESIS_SWAP_RIGHT_ACTION = new ParenthesisSwapAction( KAWAPAD_PARENTHESIS_SWAP_RIGHT, +1 ){
+        {
+            putValue( Action2.CAPTION, "Swap the Right Parentsis Pair" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl alt shift RIGHT", "ctrl alt shift F" );
+//              putValue( Action.MNEMONIC_KEY , (int) 'd' );
+        }
+    };
+    
+    
+    
+    
+    
     //////////////////////////////////////////////////////////////////////////////////////////
     //
     // Parenthesis Action 2
@@ -1724,7 +1773,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         {
             putValue( Action2.CAPTION, "Select Inside the Current Parentheses" );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "alt ctrl UP", "alt ctrl P" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl alt UP", "ctrl alt P" );
         }
     };
     
@@ -1848,7 +1897,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         {
             putValue( Action2.CAPTION, "Select the Parentheses on the Left Side" );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "alt ctrl LEFT", "alt ctrl B" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl alt LEFT", "ctrl alt B" );
         }
     };
 
@@ -1860,7 +1909,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         {
             putValue( Action2.CAPTION, "Select the Parentheses on the Left Side" );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "alt ctrl RIGHT", "alt ctrl F");
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl alt RIGHT", "ctrl alt F");
         }
     };
 
@@ -1900,7 +1949,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
             putValue( Action2.CAPTION, "Select Parentheses Inside the Current Selection" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke( KeyEvent.VK_DOWN, KeyEvent.SHIFT_MASK | KeyEvent.ALT_MASK ) );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "alt ctrl DOWN", "alt ctrl N");
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl alt DOWN", "ctrl alt N");
         }
     };
 
@@ -2000,7 +2049,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         {
             putValue( Action2.CAPTION, "Deselect Inside the Current Parentheses" );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "alt ctrl DOWN", "alt ctrl N" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl alt DOWN", "ctrl alt N" );
         }
     };
 
@@ -2861,6 +2910,9 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         navigate.add( new JMenuItem( kawapad.PARENTHESIS_SHRINK_SELECTION_DYNAMICALLY_ACTION ) );
         navigate.add( new JMenuItem( kawapad.PARENTHESIS_SELECT_LEFT_ACTION ) );
         navigate.add( new JMenuItem( kawapad.PARENTHESIS_SELECT_RIGHT_ACTION ) );
+        navigate.add( new JMenuItem( kawapad.PARENTHESIS_SWAP_LEFT_ACTION ) );
+        navigate.add( new JMenuItem( kawapad.PARENTHESIS_SWAP_RIGHT_ACTION ) );
+        navigate.addSeparator();
         navigate.add( new JMenuItem( kawapad.LISPWORD_SELECT_CURRENT_ACTION ) );
         navigate.add( new JMenuItem( kawapad.LISPWORD_SELECT_LEFT_ACTION ) );
         navigate.add( new JMenuItem( kawapad.LISPWORD_SELECT_RIGHT_ACTION ) );

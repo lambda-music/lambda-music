@@ -477,6 +477,8 @@ public class KawapadSelection {
             return true;
         }
     }
+    static final CaretTransformer PARENTHESIS_SELECT_LEFT_TRANSFORMER = new SideParenthesisSelector(-1);
+    static final CaretTransformer PARENTHESIS_SELECT_RIGHT_TRANSFORMER = new SideParenthesisSelector(+1);
     
     static abstract class LispWordSelectionTransformer extends CaretTransformer {
         static final CharSelector parenthesesSelector = new CharSelector() {
@@ -526,8 +528,18 @@ public class KawapadSelection {
             return true;
         }
     }
-    
+
+    static void parenthesisSwapWords( Document document, Caret caret, int direction ) {
+        lispwordSwapWords( document, caret, direction, PARENTHESIS_SELECT_LEFT_TRANSFORMER, PARENTHESIS_SELECT_RIGHT_TRANSFORMER );
+    }
+
     static void lispwordSwapWords( Document document, Caret caret, int direction ) {
+        lispwordSwapWords( document, caret, direction, LISPWORD_SELECT_LEFT_TRANSFORMER, LISPWORD_SELECT_RIGHT_TRANSFORMER );
+    }
+
+    static void lispwordSwapWords( Document document, Caret caret, int direction, 
+            CaretTransformer transLeft, CaretTransformer transRight ) 
+    {
         Segment text = new Segment();
         try {
             document.getText( 0, document.getLength(), text );
@@ -538,9 +550,9 @@ public class KawapadSelection {
         CaretPos after = new CaretPos( before );
         CaretTransformer transformer;
         if ( direction < 0 ) {
-            transformer = LISPWORD_SELECT_LEFT_TRANSFORMER;
+            transformer = transLeft;
         } else {
-            transformer = LISPWORD_SELECT_RIGHT_TRANSFORMER;
+            transformer = transRight;
         }
         transformer.process( text, before, after );
 

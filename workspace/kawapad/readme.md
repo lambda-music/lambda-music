@@ -64,11 +64,15 @@ Set the main font of the editor. Kawapad can change its font-face.
 |kawapad-interrupt|Interrupt|  CTRL-K  |
 |kawapad-simple-parenthesis-jump-left|Go to the Previous Parenthesis|  ALT-UP, ALT-P  |
 |kawapad-simple-parenthesis-jump-right|Go to the Next Parenthesis|  ALT-DOWN, ALT-N  |
-|kawapad-parenthesis-sel-jump-left|Lookup the Pair of Parenthesis on the Left and Select|  SHIFT-CTRL-ALT-LEFT, SHIFT-CTRL-ALT-B  |
-|kawapad-parenthesis-sel-jump-right|Lookup the Pair of Parenthesis on the Right and Select|  SHIFT-CTRL-ALT-RIGHT, SHIFT-CTRL-ALT-F  |
+|kawapad-parenthesis-sel-jump-left|Lookup the Pair of Parenthesis on the Left and Select|  SHIFT-ALT-UP, SHIFT-ALT-P  |
+|kawapad-parenthesis-sel-jump-right|Lookup the Pair of Parenthesis on the Right and Select|  SHIFT-ALT-DOWN, SHIFT-ALT-N  |
 |kawapad-lispword-select-current|Select the Word on the Cursor.|    |
-|kawapad-select-right-lisp-word|Select the Word on the Cursor.|  ALT-RIGHT, ALT-F  |
-|kawapad-select-left-lisp-word|Select the Word on the Cursor.|  ALT-LEFT, ALT-B  |
+|kawapad-lisp-word-select-right|Select the Word on the Cursor.|  ALT-RIGHT, ALT-F  |
+|kawapad-lisp-word-select-left|Select the Word on the Cursor.|  ALT-LEFT, ALT-B  |
+|kawapad-lisp-word-swap-left|Swap the Word on the Left.|  SHIFT-ALT-LEFT, SHIFT-ALT-B  |
+|kawapad-lisp-word-swap-right|Swap the Word on the Right.|  SHIFT-ALT-RIGHT, SHIFT-ALT-F  |
+|kawapad-parenthesis-swap-left|Swap the Left Parentesis Pair|  SHIFT-CTRL-ALT-LEFT, SHIFT-CTRL-ALT-B  |
+|kawapad-parenthesis-swap-right|Swap the Right Parentsis Pair|  SHIFT-CTRL-ALT-RIGHT, SHIFT-CTRL-ALT-F  |
 |kawapad-parenthesis-expand-selection|Select Inside the Current Parentheses|  CTRL-ALT-UP, CTRL-ALT-P  |
 |kawapad-select-left-parentheses|Select the Parentheses on the Left Side|  CTRL-ALT-LEFT, CTRL-ALT-B  |
 |kawapad-select-right-parentheses|Select the Parentheses on the Left Side|  CTRL-ALT-RIGHT, CTRL-ALT-F  |

@@ -256,10 +256,13 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
         }
     }
     
+    
     public static final String GROUP = "K";
     static void updateTextStyles( StyledDocument document, Segment text, Pattern pattern, AttributeSet defaultAttr, AttributeSet attr ) {
         // Look for tokens and highlight them
         Matcher matcher = pattern.matcher( text );
+        ElapsedTime ep = new ElapsedTime();
+        double t =0;
         while (matcher.find()) {
             // Change the color of recognized tokens
             int start;
@@ -271,8 +274,15 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
                 start = matcher.start();
                 end = matcher.end();
             }
+            if ( DEBUG )
+                ep.start();
             document.setCharacterAttributes( start, end - start, attr, true );
+            if ( DEBUG )
+                ep.end();
+            t+=ep.elapsedTime();
         }
+        if ( DEBUG )
+            logInfo( ElapsedTime.format( "set-total", t) );
     }
 
 }
