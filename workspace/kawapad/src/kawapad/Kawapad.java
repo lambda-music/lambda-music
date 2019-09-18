@@ -1533,6 +1533,27 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         }
     };
     
+    public static final String KAWAPAD_PARENTHESIS_JUMP = "kawapad-parenthesis-jump"; 
+    // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
+    @AutomatedActionField
+    public final Action PARENTHESIS_JUMP_ACTION = new TextAction2( KAWAPAD_PARENTHESIS_JUMP ) 
+    {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Kawapad textPane = (Kawapad) getTextComponent(e);
+            Caret caret = textPane.getCaret();
+            KawapadSelection.JUMP_TO_CORRESPONDING_PARENTHESIS.transform( getParenthesisStack(),
+                KawapadSelection.getText( textPane.getDocument() ),
+                caret );
+        }
+        {
+            putValue( Action2.CAPTION, "Lookup the Corresponding Parenthesis on the Left" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl J" );
+
+        }
+    };
+
+    
     public void resetHorzScrollPos() {
         if ( false ) {
             Container c = kawapad.getParent();

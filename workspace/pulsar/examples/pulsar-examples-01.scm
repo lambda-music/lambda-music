@@ -4,15 +4,16 @@
 
 ( a a )
 
-(mov! 10 (sca! 1/1
-      (notation velo: << (iota 16) pos: >> (cl 0.6 ) )))
+( mov! 0 (sca! 1/1
+      (velo: << notation (iota 16) pos: >> (cl 0.6 ) )))
 #|
-((('pos . 10) ('velo . 0.6)) (('pos . 11) ('velo . 0.6))
- (('pos . 12) ('velo . 0.6)) (('pos . 13) ('velo . 0.6))
+
+10 ' ( ( ('pos . 20) ( .   (('pos . 11) ('velo . 0.6))
+ ('velo . 0.6) (('pos . 12) ('velo . 0.6)) (('pos . 13) ('velo . 0.6))
  (('pos . 14) ('velo . 0.6)) (('pos . 15) ('velo . 0.6))
  (('pos . 16) ('velo . 0.6)) (('pos . 18) ('velo . 0.6))
  (('pos . 17) ('velo . 0.6)) (('pos . 19) ('velo . 0.6))
- (('pos . 20) ('velo . 0.6)) (('pos . 21) ('velo . 0.6))
+ (('velo . 0.6)) (('pos . 21) ('velo . 0.6))
  (('pos . 22) ('pos . 23)) (('velo . 0.6) ('velo . 0.6))
  (('pos . 24) ('velo . 0.6)) (('pos . 25) ('velo . 0.6)))
 |#

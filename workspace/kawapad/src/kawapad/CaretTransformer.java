@@ -124,8 +124,11 @@ public abstract class CaretTransformer {
                 (0<=caretPos.left) && 
                 (0<=caretPos.right ) && 
                 (caretPos.left  <  text.length() ) && 
-                (caretPos.right <= text.length() ) && 
-                (caretPos.left <= caretPos.right);
+                (caretPos.right <= text.length() );
+             // right pos can come to left when there's no selection 
+             // (Wed, 18 Sep 2019 14:22:22 +0900)
+             // commented out
+             // (caretPos.left <= caretPos.right);
     }
     protected abstract boolean process( CharSequence text,  CaretPos before, CaretPos after );
 }

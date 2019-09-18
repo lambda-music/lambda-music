@@ -528,6 +528,25 @@ public class KawapadSelection {
             return true;
         }
     }
+    
+    static class JumpToCorrespondingParenthesisTransformer extends CaretTransformer {
+        @Override
+        protected boolean process(CharSequence text, CaretPos before, CaretPos after) {
+            int p = SchemeParenthesisParser.lookupCorrespondingParenthesis( text, before.left );
+            if ( p<0 ) {
+                return false;
+            } else {
+                after.left = p;
+                after.right = p-1;
+                return true;
+            }
+            
+        }
+        
+    }
+    static final CaretTransformer JUMP_TO_CORRESPONDING_PARENTHESIS = new JumpToCorrespondingParenthesisTransformer();
+    
+    
 
     static void parenthesisSwapWords( Document document, Caret caret, int direction ) {
         lispwordSwapWords( document, caret, direction, PARENTHESIS_SELECT_LEFT_TRANSFORMER, PARENTHESIS_SELECT_RIGHT_TRANSFORMER );
@@ -589,6 +608,74 @@ public class KawapadSelection {
                     selectPos.left  += diff;
                     selectPos.right = selectPos.left + leftString.length() -1;
                 }
+                selectPos.setCaret( caret );
+
+            } catch (BadLocationException e) {
+                Kawapad.logError( "", e );
+            }
+        }
+    }
+    
+    // :( I think this is not what I want.
+    // (Wed, 18 Sep 2019 14:54:39 +0900)
+    static void lispwordJumpOverWords( Document document, Caret caret, int direction, 
+            CaretTransformer transLeft, CaretTransformer transRight ) 
+    {
+        Segment text = new Segment();
+        try {
+            document.getText( 0, document.getLength(), text );
+        } catch (BadLocationException e) {
+            Kawapad.logError( "", e );
+        }
+        CaretPos before = new CaretPos( caret );
+        CaretPos after = new CaretPos( before );
+        CaretTransformer transformer;
+        if ( direction < 0 ) {
+            transformer = transLeft;
+        } else {
+            transformer = transRight;
+        }
+        transformer.process( text, before, after );
+
+        CaretPos left;
+        CaretPos right;
+        if ( direction < 0 ) {
+            left = after;
+            right = before;
+        } else {
+            left = before;
+            right = after;
+        }
+        
+        if ( CaretTransformer.isValidCaretPos( text, after ) ) {
+            try {
+                String leftString  = document.getText( left.left,  left.right - left.left + 1);
+                String rightString = document.getText( right.left, right.right - right.left + 1);
+                
+//                document.remove( right.left, right.right - right.left + 1);
+//                document.insertString( right.left, leftString, null );
+//                Kawapad.logInfo( String.format("L:'%s' R:'%s'" , leftString, rightString ));
+//                document.remove( left.left, left.right - left.left + 1 );
+//                document.insertString( left.left, rightString, null );
+                
+                CaretPos selectPos;
+                if ( direction < 0 ) {
+                    document.remove( right.left, right.right - right.left + 2); // remove with the next space char.
+                    document.insertString( left.left, rightString + " ", null );
+                    selectPos = new CaretPos( 
+                        left.left, 
+                        left.left + rightString.length()-1, 
+                        right.direction );
+                } else {
+                    int leftLen = left.right - left.left + 2; // remove with the next space char.
+                    document.remove( left.left, leftLen ); 
+                    document.insertString( right.right - leftLen + 2, leftString + " ", null );
+                    selectPos = new CaretPos(
+                        right.right - leftLen + 2, 
+                        right.right - leftLen + 2 + leftString.length() -1 , 
+                        left.direction );
+                }
+                
                 selectPos.setCaret( caret );
 
             } catch (BadLocationException e) {
