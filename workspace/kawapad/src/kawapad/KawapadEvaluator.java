@@ -12,14 +12,19 @@ import pulsar.lib.scheme.scretary.SchemeSecretary;
 public class KawapadEvaluator implements Runnable {
     Kawapad kawapad;
     String schemeScript;
-    File schemeScriptFile;
+    File currentFile;
     boolean insertText;
     boolean replaceText;
     boolean doReset;
-    public KawapadEvaluator(Kawapad kawapad, String schemeScript, File schemeScriptFile, boolean insertText, boolean replaceText, boolean doReset ) {
+    private File currentDirectory;
+    public KawapadEvaluator(Kawapad kawapad, String schemeScript, File currentDirectory,
+            File currentFile, boolean insertText, boolean replaceText, boolean doReset ) 
+    {
         super();
         this.kawapad = kawapad;
         this.schemeScript = schemeScript;
+        this.currentDirectory = currentDirectory;
+        this.currentFile = currentFile;
         this.insertText = insertText;
         this.replaceText = replaceText;
         this.doReset = doReset;
@@ -32,7 +37,7 @@ public class KawapadEvaluator implements Runnable {
         ExecuteSchemeResult result = SchemeSecretary.evaluateScheme( 
             kawapad.schemeSecretary, 
             kawapad.getThreadInitializerList(), variables, 
-            schemeScript, schemeScriptFile, "scratchpad" );
+            schemeScript, currentDirectory, currentFile, "scratchpad" );
 
         if ( insertText || ! result.succeeded() ) {
             if ( replaceText && result.succeeded() ) {

@@ -111,7 +111,7 @@ public class SchemeHttp {
             if ( t.getRemoteAddress().getAddress().isLoopbackAddress() ) {
                 String requestString = readInputStream( t.getRequestBody() ); 
                 logInfo( requestString );
-                ExecuteSchemeResult result = SchemeSecretary.evaluateScheme( schemeSecretary, threadInitializers, null, requestString, null, "web-scratchpad" );
+                ExecuteSchemeResult result = SchemeSecretary.evaluateScheme( schemeSecretary, threadInitializers, null, requestString, null, null, "web-scratchpad" );
                 String responseString;
                 responseString = 
                         SchemeUtils.endWithLineFeed( requestString ) + 

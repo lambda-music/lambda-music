@@ -1233,7 +1233,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
             PARENTHESIS_EXPAND_SELECTION_ACTION.actionPerformed( e );
             kawapad.getThreadManager().startScratchPadThread(
                 new KawapadEvaluator(
-                    kawapad, getTextDefault(), filePath, true, false, false ) );
+                    kawapad, getTextDefault(), getCurrentDirectory(), getCurrentFile(), true, false, false ) );
         }
         {
             putValue( Action2.CAPTION, "Select and Evaluate" );
@@ -1267,13 +1267,13 @@ public class Kawapad extends JTextPane implements MenuInitializer {
                         public void run() {
                             String schemeScript2 = getSelectedText( kawapad );
                             kawapad.getThreadManager().startScratchPadThread(
-                                new KawapadEvaluator( kawapad, schemeScript2,  filePath, true, true, false ) );
+                                new KawapadEvaluator( kawapad, schemeScript2,  getCurrentDirectory(), getCurrentFile(), true, true, false ) );
                         }
                     });
 
                 } else {
                     kawapad.getThreadManager().startScratchPadThread( 
-                        new KawapadEvaluator( kawapad, schemeScript,  filePath, true, true, false ) );
+                        new KawapadEvaluator( kawapad, schemeScript, getCurrentDirectory(), getCurrentFile(), true, true, false ) );
                 }
             }
 
@@ -1296,7 +1296,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         public void actionPerformed(ActionEvent e) {
             //  JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
             kawapad.getThreadManager().startScratchPadThread( new KawapadEvaluator(
-                kawapad, getTextDefault(), filePath, true, false, false ) );
+                kawapad, getTextDefault(), getCurrentDirectory(), getCurrentFile(), true, false, false ) );
         }
         {
             putValue( Action2.CAPTION, "Evaluate" );
@@ -1318,7 +1318,8 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         @Override
         public void actionPerformed(ActionEvent e) {
             //  JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
-            kawapad.getThreadManager().startScratchPadThread( new KawapadEvaluator( kawapad, getTextDefault(), filePath, false, false, false ) );
+            kawapad.getThreadManager().startScratchPadThread( new KawapadEvaluator( kawapad, getTextDefault(), 
+                getCurrentDirectory(), getCurrentFile(), false, false, false ) );
         }
         {
             putValue( Action2.CAPTION, "Run" );
@@ -2249,7 +2250,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
                 SchemeUtils.evaluateScheme( 
                     scheme, null, null, 
                     new InputStreamReader( new FileInputStream( initFile ) ), 
-                    initFile, initFile.getPath() 
+                    initFile.getParentFile(), initFile, initFile.getPath() 
                     ).throwIfError();
             } else {
                 logInfo( "The " + fileType + " file \"" + initFile.getPath() + "\" does not exist. Ignored." );
@@ -2414,13 +2415,13 @@ public class Kawapad extends JTextPane implements MenuInitializer {
             SchemeUtils.defineVar(env, new Procedure0("pwd") {
                 @Override
                 public Object apply0() throws Throwable {
-                    return SchemeUtils.toSchemeString( getCurrent().filePath.getParent().toString() );
+                    return SchemeUtils.toSchemeString( getCurrent().getCurrentDirectory().toString() );
                 }
             } );
             SchemeUtils.defineVar(env, new Procedure0("current-file") {
                 @Override
                 public Object apply0() throws Throwable {
-                    return SchemeUtils.toSchemeString( getCurrent().filePath.toString() );
+                    return SchemeUtils.toSchemeString( getCurrent().getCurrentFile().toString() );
                 }
             } );
 
@@ -2458,7 +2459,26 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     boolean fileModified = false;
-    File filePath = null;
+    File currentFile = null;
+    public File getCurrentFile() {
+        return currentFile;
+    }
+    public File getCurrentDirectory() {
+        if ( currentFile == null ) {
+            if ( currentFile != null ) {
+                return currentFile.getParentFile();
+            } else {
+                try {
+                    return new File(".").getAbsoluteFile().getCanonicalFile();
+                } catch (IOException e) {
+                    throw new InternalError(e);
+                }
+            }
+        } else {
+            return currentFile;
+        }
+    }
+    
     static final FileFilter SCHEME_FILE_FILTER = new FileFilter() {
         @Override
         public String getDescription() {
@@ -2472,7 +2492,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     };
     public void openNewProc() {
         fileModified = false;
-        filePath = null;
+        currentFile = null;
         getUndoManager().discardAllEdits();
         kawapad.setText("");
 //          JOptionPane.showMessageDialog( this, "OPEN NEW" );
@@ -2498,7 +2518,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     void setTextProc( File filePath, String s ) {
 //          this.undoManager.discardAllEdits();
         this.kawapad.setText( s );
-        this.filePath = filePath;
+        this.currentFile = filePath;
         this.fileModified = false;
         
         /*
@@ -2523,8 +2543,8 @@ public class Kawapad extends JTextPane implements MenuInitializer {
             return;
         }
         JFileChooser fc = new JFileChooser();
-        if ( filePath != null )
-            fc.setCurrentDirectory( filePath.getParentFile() );
+        if ( currentFile != null )
+            fc.setCurrentDirectory( currentFile.getParentFile() );
         fc.addChoosableFileFilter( SCHEME_FILE_FILTER );
         fc.setMultiSelectionEnabled(false);
         int i = fc.showOpenDialog(this);
@@ -2537,7 +2557,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         kawapad.getThreadManager().startScratchPadThread( new KawapadEvaluator(
             kawapad,
             "(help about-intro)",
-            filePath, true, true, true ));
+            getCurrentDirectory(), getCurrentFile(), true, true, true ));
         
     }
 
@@ -2564,7 +2584,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
                     confirmType.caption,
                     confirmType.title , JOptionPane.YES_NO_CANCEL_OPTION  );
             if ( i == JOptionPane.YES_OPTION ) {
-                if ( filePath == null ) {
+                if ( currentFile == null ) {
                     return saveFileAs();
                 } else {
                     saveFile();
@@ -2583,13 +2603,13 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     private void saveFileProc(File filePath) throws IOException {
         Files.write(filePath.toPath(), kawapad.getText().getBytes( Charset.defaultCharset() ), StandardOpenOption.CREATE , StandardOpenOption.TRUNCATE_EXISTING );
         this.fileModified = false;
-        this.filePath = filePath;
+        this.currentFile = filePath;
 //          JOptionPane.showMessageDialog(this, "SAVE FILE!" + file );
     }
 
     public void saveFile() throws IOException {
-        if ( filePath != null )
-            saveFileProc( filePath );
+        if ( currentFile != null )
+            saveFileProc( currentFile );
         else
             saveFileAs();
     }

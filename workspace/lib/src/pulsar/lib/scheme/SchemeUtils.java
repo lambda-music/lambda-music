@@ -576,7 +576,7 @@ public class SchemeUtils {
             null, 
             null, 
             new InputStreamReader( parentClass.getResource( resourcePath ).openStream() ), 
-            null, resourcePath 
+            null, null, resourcePath 
             ).throwIfError();
     }
 
@@ -616,7 +616,8 @@ public class SchemeUtils {
 
     public static ExecuteSchemeResult evaluateScheme( 
             Scheme scheme, Collection<Runnable> threadInitializers, 
-            Map<String, Object> variables, Reader schemeScript, File currentFile, String schemeScriptURI ) 
+            Map<String, Object> variables, Reader schemeScript, 
+            File currentDirectory, File currentFile, String schemeScriptURI ) 
     {
         //              schemeSecretary.initializeSchemeForCurrentThread();
         SchemeSecretary.initializeSchemeForCurrentThreadStatic( scheme );
