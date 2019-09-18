@@ -638,7 +638,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
                         
                     case "(" :
                     case ")" :
-                        kawapadListener.updateMatchingParentheses2(2);
+                        kawapadListener.updateMatchingParentheses2(3);
 //                        kawapadListener.setCaretUpdateHighlightOffset(-1);
 //                        updateHighlightParenthesesLater( target, -1 );
 //                        highlightMatchningParentheses( kawapad, 0 );
@@ -2465,17 +2465,13 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     }
     public File getCurrentDirectory() {
         if ( currentFile == null ) {
-            if ( currentFile != null ) {
-                return currentFile.getParentFile();
-            } else {
-                try {
-                    return new File(".").getAbsoluteFile().getCanonicalFile();
-                } catch (IOException e) {
-                    throw new InternalError(e);
-                }
+            try {
+                return new File(".").getAbsoluteFile().getCanonicalFile();
+            } catch (IOException e) {
+                throw new InternalError(e);
             }
         } else {
-            return currentFile;
+            return currentFile.getParentFile();
         }
     }
     
