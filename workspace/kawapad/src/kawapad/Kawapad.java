@@ -8,6 +8,7 @@ package kawapad;
 // KeyStroke setting
 //    - putAcceleratorKeyList
 
+// The order of modifiers on KeyStroke is always as "ctrl", "alt" and then, "shift".
 
 import java.awt.Color;
 import java.awt.Component;
@@ -622,7 +623,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     ////////////////////////////////////////////////////////////////////////////
 
     // INTEGRATED_ACTIONS_DEFAULT (Wed, 11 Sep 2019 08:26:57 +0900)
-    public final Action DEFAULT_KEYMAP = new DefaultKeyTypedAction() {
+    public final Action DEFAULT_KEY_TYPE_ACTION = new DefaultKeyTypedAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
             super.actionPerformed(e);
@@ -663,7 +664,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
          * 
          * See the tag CREATING_KEYMAP .
          */
-        kawapad.getKeymap().setDefaultAction( DEFAULT_KEYMAP );
+        kawapad.getKeymap().setDefaultAction( DEFAULT_KEY_TYPE_ACTION );
         
     }
 
@@ -1549,6 +1550,26 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         {
             putValue( Action2.CAPTION, "Lookup the Corresponding Parenthesis on the Left" );
             AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl J" );
+
+        }
+    };
+
+    public static final String KAWAPAD_PARENTHESIS_SELECT_JUMP = "kawapad-parenthesis-select-jump"; 
+    // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
+    @AutomatedActionField
+    public final Action PARENTHESIS_SELECT_JUMP_ACTION = new TextAction2( KAWAPAD_PARENTHESIS_SELECT_JUMP ) 
+    {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Kawapad textPane = (Kawapad) getTextComponent(e);
+            Caret caret = textPane.getCaret();
+            KawapadSelection.JUMP_AND_SELECT_TO_CORRESPONDING_PARENTHESIS.transform( getParenthesisStack(),
+                KawapadSelection.getText( textPane.getDocument() ),
+                caret );
+        }
+        {
+            putValue( Action2.CAPTION, "Lookup the Corresponding Parenthesis on the Left" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl shift J" );
 
         }
     };

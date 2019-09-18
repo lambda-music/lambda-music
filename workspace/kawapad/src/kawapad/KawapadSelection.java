@@ -532,20 +532,42 @@ public class KawapadSelection {
     static class JumpToCorrespondingParenthesisTransformer extends CaretTransformer {
         @Override
         protected boolean process(CharSequence text, CaretPos before, CaretPos after) {
-            int p = SchemeParenthesisParser.lookupCorrespondingParenthesis( text, before.left );
-            if ( p<0 ) {
+            int beforeP = before.direction < 0 ? before.left : before.right;
+            int afterP = SchemeParenthesisParser.lookupCorrespondingParenthesis( text, beforeP );
+            if ( afterP<0 ) {
                 return false;
             } else {
-                after.left = p;
-                after.right = p-1;
+                after.left = afterP;
+                after.right = afterP-1;
                 return true;
             }
-            
         }
-        
     }
     static final CaretTransformer JUMP_TO_CORRESPONDING_PARENTHESIS = new JumpToCorrespondingParenthesisTransformer();
-    
+
+    static class JumpAndSelectToCorrespondingParenthesisTransformer extends CaretTransformer {
+        @Override
+        protected boolean process(CharSequence text, CaretPos before, CaretPos after) {
+            int beforeP = before.direction < 0 ? before.left : before.right;
+            int afterP = SchemeParenthesisParser.lookupCorrespondingParenthesis( text, beforeP );
+            if ( afterP<0 ) {
+                return false;
+            } else {
+                if ( beforeP < afterP ) { 
+                    after.left  = beforeP;
+                    after.right = afterP;
+                    after.direction = +1;
+                } else {
+                    after.left  = afterP;
+                    after.right = beforeP;
+                    after.direction = -1;
+                }
+                return true;
+            }
+        }
+    }
+    static final CaretTransformer JUMP_AND_SELECT_TO_CORRESPONDING_PARENTHESIS = new JumpAndSelectToCorrespondingParenthesisTransformer();
+
     
 
     static void parenthesisSwapWords( Document document, Caret caret, int direction ) {

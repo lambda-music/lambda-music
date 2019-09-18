@@ -66,6 +66,8 @@ Set the main font of the editor. Kawapad can change its font-face.
 |kawapad-simple-parenthesis-jump-right|Go to the Next Parenthesis|  ALT-DOWN, ALT-N  |
 |kawapad-parenthesis-sel-jump-left|Lookup the Pair of Parenthesis on the Left and Select|  SHIFT-ALT-UP, SHIFT-ALT-P  |
 |kawapad-parenthesis-sel-jump-right|Lookup the Pair of Parenthesis on the Right and Select|  SHIFT-ALT-DOWN, SHIFT-ALT-N  |
+|kawapad-parenthesis-jump|Lookup the Corresponding Parenthesis on the Left|  CTRL-J  |
+|kawapad-parenthesis-select-jump|Lookup the Corresponding Parenthesis on the Left|  SHIFT-CTRL-J  |
 |kawapad-lispword-select-current|Select the Word on the Cursor.|    |
 |kawapad-lisp-word-select-right|Select the Word on the Cursor.|  ALT-RIGHT, ALT-F  |
 |kawapad-lisp-word-select-left|Select the Word on the Cursor.|  ALT-LEFT, ALT-B  |
