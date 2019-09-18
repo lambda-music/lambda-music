@@ -1971,7 +1971,9 @@ public class Kawapad extends JTextPane implements MenuInitializer {
             int currDot  = caret.getDot();
             int currMark = caret.getMark();
             if ( currDot == currMark ) {
+                // This sequence effectively select the lower pair of parenthesis.
                 PARENTHESIS_EXPAND_SELECTION_ACTION.actionPerformed( e );
+                PARENTHESIS_SHRINK_SELECTION_BY_SEARCH_ACTION.actionPerformed( e );
                 return;
             }
             selector.transform( getParenthesisStack(), document, caret );
@@ -1984,6 +1986,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     
     public static final String KAWAPAD_PARENTHESIS_SHRINK_SELECTION = "kawapad-select-parentheses-shrink";
     
+    // THIS IS *USED* BUT NOT REGISTERED DIRECTLY AS AN ACCELERATOR (Thu, 19 Sep 2019 07:43:28 +0900)
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     public final Action PARENTHESIS_SHRINK_SELECTION_BY_SEARCH_ACTION = 
         new ParenthesisShrinkSelectionBySearchAction( KAWAPAD_PARENTHESIS_SHRINK_SELECTION)
@@ -1992,10 +1995,11 @@ public class Kawapad extends JTextPane implements MenuInitializer {
             putValue( Action2.CAPTION, "Select Parentheses Inside the Current Selection" );
             putValue( Action.ACCELERATOR_KEY, AcceleratorKeyList.getKeyStroke( KeyEvent.VK_DOWN, KeyEvent.SHIFT_MASK | KeyEvent.ALT_MASK ) );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
+//          NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED 
             AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl alt DOWN", "ctrl alt N");
+//          NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED NOT USED 
         }
     };
-
     
 
     class ParenthesisShrinkSelectionByStackAction extends TextAction2 {
@@ -2014,6 +2018,8 @@ public class Kawapad extends JTextPane implements MenuInitializer {
                             Caret caret = textComponent.getCaret();
                             caret.setDot( elem.mark );
                             caret.moveDot( elem.dot );
+                        } else {
+                            PARENTHESIS_SHRINK_SELECTION_BY_SEARCH_ACTION.actionPerformed( e );
                         }
                     } else {
                         getParenthesisStack().clear();
@@ -2027,7 +2033,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     
     public static final String KAWAPAD_PARENTHESIS_SHRINK_SELECTION_BY_STACK = "kawapad-parenthesis-deselect";
 
-    // NOT USED (Mon, 09 Sep 2019 09:40:08 +0900)
+    // THIS IS *USED* BUT NOT REGISTERED DIRECTLY AS AN ACCELERATOR (Thu, 19 Sep 2019 07:43:28 +0900)
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
 //    @AutomatedActionField
     public final Action PARENTHESIS_SHRINK_SELECTION_BY_STACK_ACTION = new ParenthesisShrinkSelectionByStackAction( KAWAPAD_PARENTHESIS_SHRINK_SELECTION_BY_STACK ) {
@@ -2077,6 +2083,8 @@ public class Kawapad extends JTextPane implements MenuInitializer {
                     } finally {
                         getParenthesisStack().setLocked( false );
                     }
+                } else {
+                    PARENTHESIS_SHRINK_SELECTION_BY_SEARCH_ACTION.actionPerformed( e );
                 }
             }
         }
