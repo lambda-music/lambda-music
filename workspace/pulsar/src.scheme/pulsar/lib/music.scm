@@ -1505,6 +1505,16 @@
 ;     ((type . len)  (val . 5/4)))
 
 (define (melody notes)
+  (if (string? notes)
+    (set! notes 
+      (call-with-input-string (string-append
+                                "("
+                                notes 
+                                " end)")
+                              read)
+      ))
+  (display notes)
+  (newline)
   (translate-notes (parse-notes (cor notes))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
