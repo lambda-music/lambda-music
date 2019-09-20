@@ -37,7 +37,8 @@ Set the main font of the editor. Kawapad can change its font-face.
 
 | ID | Description | Keybind |
 | :----- | :----- | :----- |
-|delete-previous|Backspace|  BACK_SPACE, CTRL-H  |
+|delete-previous|Delete|  SHIFT-DELETE  |
+|delete-next|delete-next|    |
 |kawapad-undo-action|Undo|  CTRL-Z  |
 |kawapad-redo-action|Redo|  SHIFT-CTRL-Z  |
 |kawapad-debug|Debug|  CTRL-ALT-BACK_QUOTE  |
@@ -85,6 +86,8 @@ Set the main font of the editor. Kawapad can change its font-face.
 |kawapad-surround-by-parentheses|Surround by Parentheses|    |
 |kawapad-open-parenthesis|Open Parenthesis|    |
 |kawapad-close-parenthesis|Close Parenthesis|    |
+|delete-next|Delete with the Corresponding Parenthesis|  DELETE  |
+|delete-previous|Delete Previous with the Corresponding Parenthesis|  BACK_SPACE  |
 |kawapad-open-new|Open New|    |
 |kawapad-open-file|Open|  CTRL-O  |
 |kawapad-save-file|Save|  CTRL-S  |

@@ -475,7 +475,6 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         kawapad.getActionMap().put( DefaultEditorKit.insertBreakAction, KAWAPAD_INSERT_BREAK_ACTION );
     }
 
-    
 
     final class NewInsertBreakTextAction extends TextAction2 {
         private NewInsertBreakTextAction(String name) {
@@ -709,9 +708,17 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     public final Action DEFAULT_DELETE_PREV_CHAR = getAction( DefaultEditorKit.deletePrevCharAction );
     {
         DEFAULT_DELETE_PREV_CHAR.putValue( Action2.CAPTION, "Backspace" );
-        AcceleratorKeyList.putAcceleratorKeyList( DEFAULT_DELETE_PREV_CHAR, "BACK_SPACE", "ctrl H" );
+        AcceleratorKeyList.putAcceleratorKeyList( DEFAULT_DELETE_PREV_CHAR, "shift BACK_SPACE", "ctrl shift H" );
     }
-        
+
+    
+    @AutomatedActionField
+    public final Action DEFAULT_DELETE_NEXT_CHAR = getAction( DefaultEditorKit.deleteNextCharAction );
+    {
+        DEFAULT_DELETE_PREV_CHAR.putValue( Action2.CAPTION, "Delete" );
+        AcceleratorKeyList.putAcceleratorKeyList( DEFAULT_DELETE_PREV_CHAR, "shift DELETE");
+    }
+
     
     //////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -2411,6 +2418,74 @@ public class Kawapad extends JTextPane implements MenuInitializer {
             AcceleratorKeyList.putAcceleratorKeyList( this );
         }
     };
+    
+    
+    class DeleteCharAction extends TextAction2 {
+        Action defaultAction;
+        int offset;
+        DeleteCharAction(String name, Action defaultAction, int offset ) {
+            super( name );
+            this.defaultAction = defaultAction;
+            this.offset = offset;
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Kawapad kawapad = (Kawapad) getTextComponent( e );
+            Caret caret = kawapad.getCaret();
+            int dot = caret.getDot();
+            int mark = caret.getMark();
+            Document document = kawapad.getDocument();
+            if ( dot != mark ) {
+                defaultAction.actionPerformed( e );
+            } else {
+                try {
+                    int dotWithOffset = dot + offset;
+                    char c = document.getText( dotWithOffset, 1 ).charAt( 0 );
+                    if ( c == '(' || c == ')' ) {
+                        Segment text = KawapadSelection.getText( document );
+                        int pos = KawapadSelection.lookupCorrespondingParenthesis1( text, dotWithOffset );
+                        if ( pos < 0 ) {
+                            
+                        } else {
+                            if ( dot < pos ) {
+                                document.remove( pos, 1 );
+                                document.remove( dotWithOffset , 1 );
+                            } else {
+                                document.remove( dotWithOffset, 1 );
+                                document.remove( pos, 1 );
+                            }
+                            if ( offset != 0 ) 
+                                caret.setDot( dotWithOffset -1 );
+                        }
+                    } else {
+                        defaultAction.actionPerformed( e );
+                    }
+                } catch (BadLocationException e1) {
+                    logError( "", e1 );
+                }
+            }
+        }
+    };
+    
+    @AutomatedActionField
+    public final Action DELETE_NEXT_CHAR = new DeleteCharAction( DefaultEditorKit.deleteNextCharAction, DEFAULT_DELETE_NEXT_CHAR,  0) {
+        {
+            putValue( Action2.CAPTION, "Delete with the Corresponding Parenthesis" );
+            putValue( Action.MNEMONIC_KEY , (int) 'c' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "DELETE" );
+        }
+    };
+    
+
+    @AutomatedActionField
+    public final Action DELETE_PREV_CHAR = new DeleteCharAction( DefaultEditorKit.deletePrevCharAction, DEFAULT_DELETE_PREV_CHAR, -1) {
+        {
+            putValue( Action2.CAPTION, "Delete Previous with the Corresponding Parenthesis" );
+            putValue( Action.MNEMONIC_KEY , (int) 'c' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "BACK_SPACE" );
+        }
+    };
+    
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 
