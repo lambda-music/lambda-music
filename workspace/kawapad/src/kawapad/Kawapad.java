@@ -1824,6 +1824,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
             Document document = t.getDocument();
             if ( caret.getDot() == caret.getMark() ) {
                 PARENTHESIS_EXPAND_SELECTION_ACTION.actionPerformed( e );
+                KawapadSelection.setCaretDirection( caret, direction );
             } else {
                 KawapadSelection.parenthesisExtendSelection( document, caret, direction );
             }

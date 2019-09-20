@@ -729,6 +729,32 @@ public class KawapadSelection {
             Kawapad.logError( "", e );
         }
         CaretPos before = new CaretPos( caret );
+        CaretPos beforeOrg = new CaretPos( before );
+
+        // This part is almost impossible to understand if you don't observe the 
+        // behavior of the cursor. Watch it at first. (Fri, 20 Sep 2019 19:33:23 +0900)
+        if ( before.direction < 0 ) {
+            int p = lookupCorrespondingParenthesis1( text, before.left );
+            if ( before.right == p && 0 < direction ) {
+                // if the current selection is same as the current pair of parentheses,
+                // reverse the direction.
+                setCaretDirection( caret, +1 );
+                return;
+            } else {
+                before.right = p; 
+            }
+        } else {
+            int p = lookupCorrespondingParenthesis1( text, before.right );
+            // if the current selection is same as the current pair of parentheses,
+            // reverse the direction.
+            if ( before.left == p && direction < 0 ) {
+                setCaretDirection( caret, -1 );
+                return;
+            } else {
+                before.left = p; 
+            }
+        }
+        
         CaretPos after = new CaretPos( before );
         CaretTransformer transformer;
         if ( direction < 0 ) {
@@ -737,17 +763,50 @@ public class KawapadSelection {
             transformer = transRight;
         }
         boolean result = transformer.process( text, before, after );
-
+        
         if ( result ) {
             CaretPos total = new CaretPos( after );
-            total.left  = Math.min( after.left , before.left );
-            total.right = Math.max( after.right , before.right );
-            
+            if( beforeOrg.direction < 0 ) {
+                if ( direction < 0 ) {
+                    total.left  = Math.min( after.left , before   .left );
+                    total.right = Math.max( after.right, beforeOrg.right );
+                } else {
+                    total.left  = after.left;
+                    total.right = Math.max( after.right, beforeOrg.right );
+                }
+            } else {
+                if ( direction < 0 ) {
+                    total.left  = Math.min( after.left , beforeOrg.left );
+                    total.right = after.right;
+                } else {
+                    total.left  = Math.min( after.left , beforeOrg.left );
+                    total.right = Math.max( after.right, before   .right );
+                }
+            }
+//            total.direction = direction;
             total.setCaret( caret );
         } else {
             
         }
-        
     }
+    
+    static void setCaretDirection(Caret caret, int direction) {
+        int dot = caret.getDot();
+        int mark = caret.getMark();
+        if ( direction < 0 ) {
+            if ( dot < mark ) {
+            } else {
+                caret.setDot( dot );
+                caret.moveDot( mark );
+            }
+        } else {
+            if ( dot < mark ) {
+                caret.setDot( dot );
+                caret.moveDot( mark );
+            } else {
+            }
+        }
+    }
+
 }
 
