@@ -192,7 +192,10 @@ public class KawapadSelection {
         }
         return -1;
     }
-    
+
+    static int lookupCorrespondingParenthesis1(CharSequence text, int currDot ) {
+        return SchemeParenthesisParser.lookupCorrespondingParenthesis( text, currDot  );
+    }
     
     public static final int LCP2_STRATEGY_DYNAMIC = -1024;
     public static final int LCP2_STRATEGY_SIMPLE_PARENTHESIS_JUMP = 1;
@@ -288,7 +291,7 @@ public class KawapadSelection {
             }
             case LCP2_STRATEGY_CORRESPONDING_PARENTHESIS_JUMP : { 
                 // strategy 0: a parenthesis is found under the cursor.
-                int pos = SchemeParenthesisParser.lookupCorrespondingParenthesis( text, currDot + totalOffset );
+                int pos = lookupCorrespondingParenthesis1( text, currDot );
                 if ( 0<=pos ) {
                     newDot = pos;
                 } else {
@@ -301,6 +304,7 @@ public class KawapadSelection {
         }
         return newDot;
     }
+
     
     public static int recursiveIndexOf( CharSequence text, int fromIndex, int direction, char descendChar, char ascendChar ) {
         if ( direction == 0 )

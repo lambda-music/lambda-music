@@ -70,6 +70,7 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.DefaultEditorKit.DefaultKeyTypedAction;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Segment;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
@@ -626,9 +627,29 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     public final Action DEFAULT_KEY_TYPE_ACTION = new DefaultKeyTypedAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            super.actionPerformed(e);
-            
+            boolean shouldProcess = true;
             Kawapad target = (Kawapad) getTextComponent(e);
+            if ((target != null) && (e != null)) {
+                String content = e.getActionCommand();
+                switch ( content ) {
+                    case " " :
+                        break;
+                    case "(" :
+                        OPEN_PARENTHESIS_ACTION.actionPerformed( e );
+                        shouldProcess= false;
+                        break;
+                    case ")" :
+                        CLOSE_PARENTHESIS_ACTION.actionPerformed( e );
+                        shouldProcess= false;
+                        break;
+                    default :
+                        break;
+                }
+            }
+
+            if ( shouldProcess )
+                super.actionPerformed(e);
+            
             if ((target != null) && (e != null)) {
                 String content = e.getActionCommand();
 //                  logInfo( "typed : " + content );
@@ -2270,7 +2291,126 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         }
     };
 
-    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private class SurroundByParenthesesAction extends TextAction2 {
+        public SurroundByParenthesesAction(String name) {
+            super( name );
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Kawapad kawapad = (Kawapad) getTextComponent( e );
+            Caret caret = kawapad.getCaret();
+            int dot = caret.getDot();
+            int mark = caret.getMark();
+            Document document = kawapad.getDocument();
+            if ( dot == mark ) { 
+                //
+            } else {
+                try {
+                    if ( dot < mark ) {
+                        document.insertString( mark, ")" , null );
+                        document.insertString( dot,  "(" , null );
+                    } else {
+                        document.insertString( dot,  ")" , null );
+                        document.insertString( mark, "(" , null );
+                    }
+                } catch (BadLocationException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public static final String KAWAPAD_SURROUND_BY_PARENTHESES = "kawapad-surround-by-parentheses";
+
+    // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
+    @AutomatedActionField
+    public final Action SURROUND_BY_PARENTHESES_ACTION = new SurroundByParenthesesAction( KAWAPAD_SURROUND_BY_PARENTHESES ) {
+        {
+            putValue( Action2.CAPTION, "Surround by Parentheses" );
+            putValue( Action.MNEMONIC_KEY , (int) 'o' );
+            AcceleratorKeyList.putAcceleratorKeyList( this );
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private class OpenCloseParenthesis extends TextAction2 {
+        private char objectParenthesis;
+        private char correspondingParenthesis;
+        public OpenCloseParenthesis(String name, char objectParenthesis, char correspondingParenthesis ) {
+            super( name );
+            this.objectParenthesis = objectParenthesis;
+            this.correspondingParenthesis = correspondingParenthesis;
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Kawapad kawapad = (Kawapad) getTextComponent( e );
+            Caret caret = kawapad.getCaret();
+            int dot = caret.getDot();
+            int mark = caret.getMark();
+            Document document = kawapad.getDocument();
+            try {
+                if ( dot == mark ) { 
+                    char c = document.getText( dot, 1 ).charAt( 0 );
+                    if ( c == objectParenthesis ) {
+                        Segment text = KawapadSelection.getText( document );
+                        int pos = KawapadSelection.lookupCorrespondingParenthesis1( text, dot );
+                        if ( pos < 0 ) {
+                            
+                        } else {
+                            if ( dot < pos ) {
+                                document.insertString( pos, String.valueOf( correspondingParenthesis ) , null );
+                                document.insertString( dot, String.valueOf( objectParenthesis        ) , null );
+                            } else {
+                                document.insertString( dot, String.valueOf( objectParenthesis        ) , null );
+                                document.insertString( pos, String.valueOf( correspondingParenthesis ) , null );
+                            }
+                        }
+                    } else if ( c == correspondingParenthesis ) {
+//                        String insertText = e.getActionCommand();
+                        document.insertString( dot, "()", null );
+                        caret.setDot( dot + 1 ); 
+                    } else {
+//                        String insertText = e.getActionCommand();
+                        document.insertString( dot, "()", null );
+                        caret.setDot( dot + 1 ); 
+                    }
+                } else {
+                    SURROUND_BY_PARENTHESES_ACTION.actionPerformed( e );
+                }
+            } catch (BadLocationException e1) {
+                logError( "", e1 );
+            }
+        }
+    }
+    public static final String KAWAPAD_OPEN_PARENTHESIS = "kawapad-open-parenthesis";
+
+    // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
+    @AutomatedActionField
+    public final Action OPEN_PARENTHESIS_ACTION = new OpenCloseParenthesis( KAWAPAD_OPEN_PARENTHESIS, '(',')') {
+        {
+            putValue( Action2.CAPTION, "Open Parenthesis" );
+            putValue( Action.MNEMONIC_KEY , (int) 'o' );
+            AcceleratorKeyList.putAcceleratorKeyList( this );
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+   
+    public static final String KAWAPAD_CLOSE_PARENTHESIS = "kawapad-close-parenthesis";
+
+    // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
+    @AutomatedActionField
+    public final Action CLOSE_PARENTHESIS_ACTION = new OpenCloseParenthesis( KAWAPAD_CLOSE_PARENTHESIS, ')', '(') {
+        {
+            putValue( Action2.CAPTION, "Close Parenthesis" );
+            putValue( Action.MNEMONIC_KEY , (int) 'c' );
+            AcceleratorKeyList.putAcceleratorKeyList( this );
+        }
+    };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 

@@ -1664,6 +1664,42 @@
                      ; loop list
                      proc-list)))))
 
+(define rep (lambda (total-length procedure notations . args )
+              (let ((total-count (fold (lambda (ls max-len)
+                                         (if (circular-list? ls)
+                                           max-len
+                                           (max max-len (length ls) ))
+                                         )
+                                       0
+                                       args)))
+                (append
+                  (apply fold (append 
+                                (list (lambda args2
+                                        (let ((current (first args2))
+                                              (result  (last  args2))
+                                              (target-args (drop-right 
+                                                             (drop args2 1)
+                                                             1)))
+                                          (display target-args)
+                                          (newline)
+                                          (append result
+                                                  (filter (lambda (x)
+                                                            (not (eq? 'len (cdar x))))
+                                                          (apply procedure (append 
+                                                                             (list 
+                                                                               (tra! 
+                                                                                 (/            total-length  total-count)
+                                                                                 (/ (* current total-length) total-count)
+                                                                                 (ccons notations)))
+                                                                             target-args))))))
+                                      '())
+                                (list
+                                  (iota total-count))
+                                args))              
+                  (list
+                    (n type: 'len val: total-length))))))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define lookup-notes (lambda (key value notes) 
                        (find (lambda(curr-val)

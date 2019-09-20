@@ -82,6 +82,9 @@ Set the main font of the editor. Kawapad can change its font-face.
 |kawapad-shift-indent-right|Shift Left|  TAB  |
 |kawapad-shift-indent-left|Shift Right|  SHIFT-TAB  |
 |kawapad-prettify|Correct Indentation|  CTRL-I  |
+|kawapad-surround-by-parentheses|Surround by Parentheses|    |
+|kawapad-open-parenthesis|Open Parenthesis|    |
+|kawapad-close-parenthesis|Close Parenthesis|    |
 |kawapad-open-new|Open New|    |
 |kawapad-open-file|Open|  CTRL-O  |
 |kawapad-save-file|Save|  CTRL-S  |
