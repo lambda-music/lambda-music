@@ -1746,7 +1746,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     public final Action LISPWORD_SWAP_LEFT_ACTION = new LispWordSwapAction( KAWAPAD_LISPWORD_SWAP_LEFT, -1 ){
         {
             putValue( Action2.CAPTION, "Swap the Word on the Left." );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "alt shift LEFT", "alt shift B" );
+            AcceleratorKeyList.putAcceleratorKeyList( this  );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
@@ -1758,7 +1758,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     public final Action LISPWORD_SWAP_RIGHT_ACTION = new LispWordSwapAction( KAWAPAD_LISPWORD_SWAP_RIGHT, +1 ){
         {
             putValue( Action2.CAPTION, "Swap the Word on the Right." );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "alt shift RIGHT", "alt shift F" );
+            AcceleratorKeyList.putAcceleratorKeyList( this  );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
@@ -1791,7 +1791,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     public final Action PARENTHESIS_SWAP_LEFT_ACTION = new ParenthesisSwapAction( KAWAPAD_PARENTHESIS_SWAP_LEFT, -1 ){
         {
             putValue( Action2.CAPTION, "Swap the Left Parentesis Pair" );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl alt shift LEFT", "ctrl alt shift B" );
+            AcceleratorKeyList.putAcceleratorKeyList( this  );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
@@ -1803,11 +1803,102 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     public final Action PARENTHESIS_SWAP_RIGHT_ACTION = new ParenthesisSwapAction( KAWAPAD_PARENTHESIS_SWAP_RIGHT, +1 ){
         {
             putValue( Action2.CAPTION, "Swap the Right Parentsis Pair" );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl alt shift RIGHT", "ctrl alt shift F" );
+            AcceleratorKeyList.putAcceleratorKeyList( this );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
     
+    
+    //////////////////////////////////////////////////////////////////////////////////////////
+
+    private class ParenthesisExtendSelectionAction extends TextAction2 {
+        int direction;
+        private ParenthesisExtendSelectionAction(String name, int direction ) {
+            super( name );
+            this.direction = direction;
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JTextComponent t = getTextComponent( e );
+            Caret caret = t.getCaret();
+            Document document = t.getDocument();
+            if ( caret.getDot() == caret.getMark() ) {
+                PARENTHESIS_EXPAND_SELECTION_ACTION.actionPerformed( e );
+            } else {
+                KawapadSelection.parenthesisExtendSelection( document, caret, direction );
+            }
+        }
+    }
+    public static final String KAWAPAD_PARENTHESIS_EXTEND_SELECTION_LEFT = "kawapad-parenthesis-extend-left";
+    
+    // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
+    @AutomatedActionField
+    public final Action PARENTHESIS_EXTEND_SELECTION_LEFT_ACTION = new ParenthesisExtendSelectionAction( KAWAPAD_PARENTHESIS_EXTEND_SELECTION_LEFT, -1 ){
+        {
+            putValue( Action2.CAPTION, "Extend the Left Parentesis Pair" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl alt shift LEFT", "ctrl alt shift B" );
+//              putValue( Action.MNEMONIC_KEY , (int) 'd' );
+        }
+    };
+
+    public static final String KAWAPAD_PARENTHESIS_EXTEND_SELECTION_RIGHT = "kawapad-parenthesis-extend-right";
+    
+    // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
+    @AutomatedActionField
+    public final Action PARENTHESIS_EXTEND_SELECTION_RIGHT_ACTION = new ParenthesisExtendSelectionAction( KAWAPAD_PARENTHESIS_EXTEND_SELECTION_RIGHT, +1 ){
+        {
+            putValue( Action2.CAPTION, "Extend the Right Parentsis Pair" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl alt shift RIGHT", "ctrl alt shift F" );
+//              putValue( Action.MNEMONIC_KEY , (int) 'd' );
+        }
+    };
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    
+    private class LispWordExtendSelectionAction extends TextAction2 {
+        int direction;
+        private LispWordExtendSelectionAction(String name, int direction ) {
+            super( name );
+            this.direction = direction;
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JTextComponent t = getTextComponent( e );
+            Caret caret = t.getCaret();
+            Document document = t.getDocument();
+            if ( caret.getDot() == caret.getMark() ) {
+                LISPWORD_SELECT_CURRENT_ACTION.actionPerformed( e );
+            } else {
+                KawapadSelection.lispwordExtendSelection( document, caret, direction );
+            }
+        }
+    }
+    public static final String KAWAPAD_LISPWORD_EXTEND_SELECTION_LEFT = "kawapad-lisp-word-extend-selection-left";
+    
+    // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
+    @AutomatedActionField
+    public final Action LISPWORD_EXTEND_SELECTION_LEFT_ACTION = new LispWordExtendSelectionAction( KAWAPAD_LISPWORD_EXTEND_SELECTION_LEFT, -1 ){
+        {
+            putValue( Action2.CAPTION, "Extend the Word on the Left." );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "alt shift LEFT", "alt shift B" );
+//              putValue( Action.MNEMONIC_KEY , (int) 'd' );
+        }
+    };
+
+    public static final String KAWAPAD_LISPWORD_EXTEND_SELECTION_RIGHT = "kawapad-lisp-word-extend-selection-right";
+    
+    // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
+    @AutomatedActionField
+    public final Action LISPWORD_EXTEND_SELECTION_RIGHT_ACTION = new LispWordExtendSelectionAction( KAWAPAD_LISPWORD_EXTEND_SELECTION_RIGHT, +1 ){
+        {
+            putValue( Action2.CAPTION, "Extend the Word on the Right." );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "alt shift RIGHT", "alt shift F" );
+//              putValue( Action.MNEMONIC_KEY , (int) 'd' );
+        }
+    };
+    
+    
+    //////////////////////////////////////////////////////////////////////////////////////////
     
     
     

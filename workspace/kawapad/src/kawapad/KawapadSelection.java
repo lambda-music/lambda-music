@@ -709,4 +709,45 @@ public class KawapadSelection {
             }
         }
     }
+    
+    static void parenthesisExtendSelection( Document document, Caret caret, int direction ) {
+        extendSelection( document, caret, direction, PARENTHESIS_SELECT_LEFT_TRANSFORMER, PARENTHESIS_SELECT_RIGHT_TRANSFORMER );
+    }
+
+    static void lispwordExtendSelection( Document document, Caret caret, int direction ) {
+        extendSelection( document, caret, direction, LISPWORD_SELECT_LEFT_TRANSFORMER, LISPWORD_SELECT_RIGHT_TRANSFORMER );
+    }
+
+
+    static void extendSelection( Document document, Caret caret, int direction, 
+            CaretTransformer transLeft, CaretTransformer transRight ) 
+    {
+        Segment text = new Segment();
+        try {
+            document.getText( 0, document.getLength(), text );
+        } catch (BadLocationException e) {
+            Kawapad.logError( "", e );
+        }
+        CaretPos before = new CaretPos( caret );
+        CaretPos after = new CaretPos( before );
+        CaretTransformer transformer;
+        if ( direction < 0 ) {
+            transformer = transLeft;
+        } else {
+            transformer = transRight;
+        }
+        boolean result = transformer.process( text, before, after );
+
+        if ( result ) {
+            CaretPos total = new CaretPos( after );
+            total.left  = Math.min( after.left , before.left );
+            total.right = Math.max( after.right , before.right );
+            
+            total.setCaret( caret );
+        } else {
+            
+        }
+        
+    }
 }
+

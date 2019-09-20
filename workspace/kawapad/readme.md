@@ -72,10 +72,14 @@ Set the main font of the editor. Kawapad can change its font-face.
 |kawapad-lispword-select-current|Select the Word on the Cursor.|    |
 |kawapad-lisp-word-select-right|Select the Word on the Cursor.|  ALT-RIGHT, ALT-F  |
 |kawapad-lisp-word-select-left|Select the Word on the Cursor.|  ALT-LEFT, ALT-B  |
-|kawapad-lisp-word-swap-left|Swap the Word on the Left.|  SHIFT-ALT-LEFT, SHIFT-ALT-B  |
-|kawapad-lisp-word-swap-right|Swap the Word on the Right.|  SHIFT-ALT-RIGHT, SHIFT-ALT-F  |
-|kawapad-parenthesis-swap-left|Swap the Left Parentesis Pair|  SHIFT-CTRL-ALT-LEFT, SHIFT-CTRL-ALT-B  |
-|kawapad-parenthesis-swap-right|Swap the Right Parentsis Pair|  SHIFT-CTRL-ALT-RIGHT, SHIFT-CTRL-ALT-F  |
+|kawapad-lisp-word-swap-left|Swap the Word on the Left.|    |
+|kawapad-lisp-word-swap-right|Swap the Word on the Right.|    |
+|kawapad-parenthesis-swap-left|Swap the Left Parentesis Pair|    |
+|kawapad-parenthesis-swap-right|Swap the Right Parentsis Pair|    |
+|kawapad-parenthesis-extend-left|Extend the Left Parentesis Pair|  SHIFT-CTRL-ALT-LEFT, SHIFT-CTRL-ALT-B  |
+|kawapad-parenthesis-extend-right|Extend the Right Parentsis Pair|  SHIFT-CTRL-ALT-RIGHT, SHIFT-CTRL-ALT-F  |
+|kawapad-lisp-word-extend-selection-left|Extend the Word on the Left.|  SHIFT-ALT-LEFT, SHIFT-ALT-B  |
+|kawapad-lisp-word-extend-selection-right|Extend the Word on the Right.|  SHIFT-ALT-RIGHT, SHIFT-ALT-F  |
 |kawapad-parenthesis-expand-selection|Select Inside the Current Parentheses|  CTRL-ALT-UP, CTRL-ALT-P  |
 |kawapad-select-left-parentheses|Select the Parentheses on the Left Side|  CTRL-ALT-LEFT, CTRL-ALT-B  |
 |kawapad-select-right-parentheses|Select the Parentheses on the Left Side|  CTRL-ALT-RIGHT, CTRL-ALT-F  |
