@@ -1674,40 +1674,75 @@
                      ; loop list
                      proc-list)))))
 
-(define rep (lambda (total-length procedure notations . args )
-              (let ((total-count (fold (lambda (ls max-len)
-                                         (if (circular-list? ls)
-                                           max-len
-                                           (max max-len (length ls) ))
-                                         )
-                                       0
-                                       args)))
-                (append
-                  (apply fold (append 
-                                (list (lambda args2
-                                        (let ((current (first args2))
-                                              (result  (last  args2))
-                                              (target-args (drop-right 
-                                                             (drop args2 1)
-                                                             1)))
-                                          (display target-args)
-                                          (newline)
-                                          (append result
-                                                  (filter (lambda (x)
-                                                            (not (eq? 'len (cdar x))))
-                                                          (apply procedure (append 
-                                                                             (list 
-                                                                               (tra! 
-                                                                                 (/            total-length  total-count)
-                                                                                 (/ (* current total-length) total-count)
-                                                                                 (ccons notations)))
-                                                                             target-args))))))
-                                      '())
-                                (list
-                                  (iota total-count))
-                                args))              
-                  (list
-                    (n type: 'len val: total-length))))))
+(define rep (lambda args
+              (let ((total-length (first  args   ))
+                    (repeat-type  (second args   ))
+                    (notations    (third  args   ))
+                    (args         (drop   args 3 )))
+
+                (set! repeat-type
+                  (let ((org-repeat-type repeat-type))
+                    (cond
+                      ((number? org-repeat-type)
+                       (set! args (cons (make-list org-repeat-type 1) args) )
+                       (lambda args (first args)))
+
+                      ((procedure? org-repeat-type)
+                       org-repeat-type)
+
+                      ((eq? org-repeat-type #f)
+                       (lambda args (first args)))
+
+                      ((keyword? org-repeat-type )
+                       (lambda (curr-note mag) 
+                         ; "org-repeat-type could be "velo:" "pos:" etc...
+                         (n org-repeat-type (lambda(v) (if v (* v mag) v)) curr-note )))
+
+                      ((pair?  org-repeat-type)
+                       (let ((target-keyword (car org-repeat-type))
+                             (op             (cdr org-repeat-type)))
+                         (lambda (curr-note mag) 
+                           ; "org-repeat-type could be "velo:" "pos:" etc...
+                           (n target-keyword (lambda(v) (if v (op v mag) v )) curr-note ))))
+
+                      (else
+                        org-repeat-type))))
+
+                (display args)
+                (newline)
+                (let ((total-count (fold (lambda (ls max-len)
+                                           (if (circular-list? ls)
+                                             max-len
+                                             (max max-len (length ls) ))
+                                           )
+                                         0
+                                         args)))
+                  (append
+                    (apply fold (append 
+                                  (list (lambda args2
+                                          (let ((current (first args2))
+                                                (result  (last  args2))
+                                                (target-args (drop-right 
+                                                               (drop args2 1)
+                                                               1)))
+                                            (display target-args)
+                                            (newline)
+                                            (append result
+                                                    (filter (lambda (x)
+                                                              (not (eq? 'len (cdar x))))
+                                                            (apply repeat-type (append 
+                                                                                 (list 
+                                                                                   (tra! 
+                                                                                     (/            total-length  total-count)
+                                                                                     (/ (* current total-length) total-count)
+                                                                                     (ccons notations)))
+                                                                                 target-args))))))
+                                        '())
+                                  (list
+                                    (iota total-count))
+                                  args))              
+                    (list
+                      (n type: 'len val: total-length)))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
