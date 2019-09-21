@@ -32,6 +32,7 @@ import javax.swing.text.DefaultStyledDocument;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CompoundEdit;
+import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
 
 /**
