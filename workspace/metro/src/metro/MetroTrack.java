@@ -656,16 +656,24 @@ public class MetroTrack implements MetroLock {
     }
     @Override
     public boolean equals(Object obj) {
-        if ( obj instanceof MetroTrack ) {
-            return  this.name ==     ((MetroTrack)obj).name ||
-                    this.name.equals(((MetroTrack)obj).name );
+        if ( false ) {
+            if ( obj instanceof MetroTrack ) {
+                return  this.name ==     ((MetroTrack)obj).name ||
+                        this.name.equals(((MetroTrack)obj).name );
+            } else {
+                return false;
+            }
         } else {
-            return false;
+            return super.equals( obj );
         }
     }
     @Override
     public int hashCode() {
-        return this.name.hashCode() * 2;
+        if ( false ) {
+            return this.name.hashCode() * 2;
+        } else {
+            return super.hashCode();
+        }
     }
     @Override
     public String toString() {

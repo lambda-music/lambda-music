@@ -409,10 +409,11 @@ public class PulsarSpecialNoteListParsers {
                             if ( syncSequenceId == null ) {
                                 syncTrack = null;
                             } else {
-                                syncTrack = pulsar.searchTrack( syncSequenceId );
-                                if ( syncTrack == null ) {
+                                Collection<MetroTrack> syncTrackList = pulsar.searchTrack( syncSequenceId );
+                                if ( syncTrackList.isEmpty() ) {
                                     logWarn( "PARSER_PUT : syncTrackId '" + syncSequenceId + "' was not found and it was ignored. " );
                                 }
+                                syncTrack = syncTrackList.iterator().next();
                             }
                         
                             try {
@@ -450,7 +451,7 @@ public class PulsarSpecialNoteListParsers {
                                 for ( Object v : argTrackList ) {
                                     v = SchemeUtils.schemeNullCheck(v);
                                     
-                                    MetroTrack track=null;
+                                    List<MetroTrack> trackList=null;
                                     // I think this is not correct anymore. 
                                     // MODIFIED >>> (Sun, 15 Sep 2019 11:16:06 +0900)
                                     // if ( v instanceof IString ) {
@@ -460,15 +461,17 @@ public class PulsarSpecialNoteListParsers {
                                     //     track = (MetroTrack) v ;
                                     // }
                                     if ( v instanceof MetroTrack ) {
-                                        track = (MetroTrack) v ;
+                                        trackList = Arrays.asList(  (MetroTrack) v );
                                     } else {
-                                        track = metro.searchTrack( v );
+                                        trackList = metro.searchTrack( v );
                                     }
                                     // MODIFIED <<< (Sun, 15 Sep 2019 11:16:06 +0900)
 
     
-                                    if ( track != null ) {
-                                        removeTrackProc( metro, track );
+                                    if ( ! trackList.isEmpty() ) {
+                                        for ( MetroTrack track : trackList ) {
+                                            removeTrackProc( metro, track );
+                                        }
                                     } else {
                                         logWarn( "PARSER_KILL : the passed value '"+v+"' was improper. We ignored it." );
                                     }

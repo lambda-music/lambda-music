@@ -377,7 +377,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
         return resultAllTracks;
     }
     
-    public MetroTrack searchTrack( Object name ) {
+    public List<MetroTrack> searchTrack( Object name ) {
         if ( name == null ) throw new NullPointerException( "name was null" );
         List<MetroTrack> list = searchTrack( new Invokable() {
             @Override
@@ -385,13 +385,10 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
                 return name.equals( args[0] );
             }
         });
-        if ( list.size() == 0 ) 
-            return null;
-        else
-            return list.remove(0);
+        return list;
     }
 
-    private Collection<MetroTrack> searchTracksByTagImpl( String tag, 
+    private List<MetroTrack> searchTracksByTagImpl( String tag, 
             List<MetroTrack> allTracks, 
             ArrayList<MetroTrack> resultTracks ) 
     {
@@ -679,7 +676,8 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
                     // remove specified tracks.
                     this.tracks.removeAll(this.unregisteredTracks );
                     // remove duplicated tracks.
-                    this.tracks.removeAll( this.registeredTracks );
+                    // DEACTAVATED (Mon, 23 Sep 2019 14:37:19 +0900)
+                    // this.tracks.removeAll( this.registeredTracks );
                     // add new tracks.  
                     this.tracks.addAll( this.registeredTracks );
                     
@@ -1067,24 +1065,27 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
             this.notifyTrackChange();
         }
     }
-    
+
+    private void removeFormerTrack(MetroTrack track, SyncType syncType, MetroTrack syncTrack, double syncOffset) {
+        removeTrack( searchTrack( track.getTrackName() ), syncType, syncTrack, syncOffset );
+    }
     public void putTrack( MetroTrack track, SyncType syncType, MetroTrack syncTrack, double syncOffset )  {
+        removeFormerTrack( track, syncType, syncTrack, syncOffset );
         registerTrack( track.setSyncStatus( syncType, syncTrack, syncOffset ) );
     }
     public void putTrack( Collection<MetroTrack> trackList, SyncType syncType, MetroTrack syncTrack, double syncOffset )  {
         for ( MetroTrack track : trackList ) {
             track.setSyncStatus( syncType, syncTrack, syncOffset );
+            removeFormerTrack( track, syncType, syncTrack, syncOffset );
         }
         registerTrack( trackList );
     }
     public void removeTrack( MetroTrack track, SyncType syncType, MetroTrack syncTrack, double syncOffset )  {
         switch ( syncType ) {
             case IMMEDIATE :
+            case PARALLEL :
                 unregisterTrack( track );
                 break;
-            case PARALLEL :
-                throw new UnsupportedOperationException();
-//              break;
             case SERIAL :
                 track.removeGracefully();
                 break;
@@ -1093,13 +1094,11 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
     public void removeTrack( Collection<MetroTrack> trackList, SyncType syncType, MetroTrack syncTrack, double syncOffset )  {
         switch ( syncType ) {
             case IMMEDIATE :
+            case PARALLEL :
                 for ( MetroTrack track : trackList ) {
                     unregisterTrack( track );
                 }
                 break;
-            case PARALLEL :
-                throw new UnsupportedOperationException();
-//              break;
             case SERIAL :
                 for ( MetroTrack track : trackList ) {
                     track.removeGracefully();

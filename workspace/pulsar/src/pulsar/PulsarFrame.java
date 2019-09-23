@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -234,7 +235,7 @@ public class PulsarFrame extends KawapadFrame {
             @Override
             public Object invoke(Object... args) {
                 if ( pulsar.isOpened() ) {
-                    MetroTrack track = pulsar.searchTrack( "main" );
+                    List<MetroTrack> trackList = pulsar.searchTrack( "main" );
                     
                     //  This happens quite often so let us ignore it. (Mon, 29 Jul 2019 12:21:50 +0900)
                     //  Additionally this code have never been executed. Just added this for describing the concept.
@@ -242,8 +243,9 @@ public class PulsarFrame extends KawapadFrame {
                     //      logWarn( "" );
                     //  }
                     
-                    if ( track != null && pb_position != null ) {
+                    if ( ! trackList.isEmpty() && pb_position != null ) {
                         double value=0;
+                        MetroTrack track = trackList.get( 0 ); 
                         synchronized ( track.getMetroTrackLock() ) {
                             value = track.getTrackPosition();
                         }
