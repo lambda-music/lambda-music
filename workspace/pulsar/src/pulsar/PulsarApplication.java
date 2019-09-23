@@ -152,7 +152,7 @@ public class PulsarApplication {
          */
 //      >>> VERSION INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
         SchemeSecretary schemeSecretary = new SchemeSecretary();
-        schemeSecretary.setDirectMeeting( false );
+        schemeSecretary.setDirectMeeting( true );
 
         DescriptiveHelp.registerGlobalSchemeInitializer( schemeSecretary );
         PulsarFrame.registerGlobalSchemeInitializers( schemeSecretary );
