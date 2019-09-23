@@ -131,6 +131,7 @@ public class SchemeSecretary extends Secretary<Scheme> implements ShutdownHook {
     private final Collection<Runnable> shutdownHookList = new LinkedList<>();
     @Override
     public Collection<Runnable> getShutdownHookList() {
+        // TODO COUNTERMEASURE_FOR_LOCKING (Mon, 23 Sep 2019 08:33:32 +0900)
         return shutdownHookList;
     }
     

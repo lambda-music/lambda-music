@@ -352,8 +352,13 @@ public class PulsarSpecialNoteListParsers {
     static { register( PARSER_PUT ); }
     
     static int tempNewIdCounter = 0;
-    synchronized static String createTempNewId() {
-        return "TEMPID-" + ( tempNewIdCounter++ );
+    static Object getTempNewIdCounterLock() {
+        return PulsarSpecialNoteListParsers.class;
+    }
+    static String createTempNewId() {
+        synchronized ( getTempNewIdCounterLock() ) {
+            return "TEMPID-" + ( tempNewIdCounter++ );
+        }
     }
     static final class PutEventParser extends SpecialNoteListParserElement {
 

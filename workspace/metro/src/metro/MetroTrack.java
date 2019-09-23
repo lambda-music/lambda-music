@@ -129,10 +129,6 @@ public class MetroTrack implements MetroLock {
     transient double endingLength = 0;
     transient Runnable endingProc = null;
     
-    public Object getLock() {
-        return buffers;
-    }
-    
     /**
      * Create a MetroTrack object with default synchronizing status.
      *
@@ -172,9 +168,13 @@ public class MetroTrack implements MetroLock {
     }
     
     private static Object uniqueTrackNameLock = new Object();
+    private static Object getUniqueTrackNameLock() {
+        // TODO COUNTERMEASURE_FOR_LOCKING (Mon, 23 Sep 2019 08:33:32 +0900)
+        return uniqueTrackNameLock;
+    }
     private static transient int uniqueTrackNameCounter = 0;
     private static String createUniqueTrackName() {
-        synchronized ( uniqueTrackNameLock ) {
+        synchronized ( getUniqueTrackNameLock() ) {
             return "track-" + ( uniqueTrackNameCounter ++ ); 
         }
     }
@@ -187,8 +187,15 @@ public class MetroTrack implements MetroLock {
         }
     }
     
+    public Object getMetroTrackLock() {
+        // TODO COUNTERMEASURE_FOR_LOCKING (Mon, 23 Sep 2019 08:33:32 +0900)
+        return this.metro.getMetroLock();
+//        return buffers;
+    }
+
     @Override
     public Object getMetroLock() {
+        // TODO COUNTERMEASURE_FOR_LOCKING (Mon, 23 Sep 2019 08:33:32 +0900)
         return this.metro.getMetroLock();
     }
     
@@ -343,7 +350,7 @@ public class MetroTrack implements MetroLock {
      * 
      */
     protected void progressCursor( int nframes, List<MetroAbstractMidiEvent> result ) throws JackException {
-        synchronized ( this.buffers ) {
+        synchronized ( this.getMetroTrackLock() ) {
             this.metro.clearAllPorts();
 
             int currentCursor = this.cursor;
@@ -462,7 +469,7 @@ public class MetroTrack implements MetroLock {
                     this.cursor = offset;
                     Logger.getLogger( Metro.class.getName()).log(Level.WARNING, "`serial` was specified but syncTrack was not passed." );
                 } else {
-                    synchronized ( this.syncTrack.buffers ) {
+                    synchronized ( this.syncTrack.getMetroTrackLock() ) {
                         this.cursor =
                                 this.syncTrack.cursor - 
                                 this.syncTrack.buffers.peek().getLengthInFrames() + 
@@ -479,7 +486,7 @@ public class MetroTrack implements MetroLock {
     void reprepare( Metro metro, JackClient client, JackPosition position, 
             double prevBeatsPerMinute, double beatsPerMinute ) throws JackException 
     {
-        synchronized ( this.buffers ) {
+        synchronized ( this.getMetroTrackLock() ) {
             int prevLengthInFrame = -1;
             int lengthInFrame = -1;
             {
@@ -533,7 +540,7 @@ public class MetroTrack implements MetroLock {
     private static final int MIN_UPDATE_THRESHOLD = 256;
     private static final int MAX_UPDATE_THRESHOLD = 44100*4;
     protected  void checkBuffer( Metro metro, JackClient client, JackPosition position, int barInFrames) throws JackException {
-        synchronized ( this.buffers ) { // << ADDED synchronided (Sun, 30 Sep 2018 11:45:13 +0900)
+        synchronized ( this.getMetroTrackLock() ) { // << ADDED synchronided (Sun, 30 Sep 2018 11:45:13 +0900)
 //          if ( this.buffers.size() < BUFFER_SIZE ) {
 //              this.offerNewBuffer( metro, client, position );
 //          }
@@ -575,20 +582,20 @@ public class MetroTrack implements MetroLock {
     }
     
     protected  void clearBuffer() {
-        synchronized ( this.buffers ) {
+        synchronized ( this.getMetroTrackLock() ) {
             this.buffers.clear();
             this.cursor =0;
         }
     }
 //  public void resetBuffer() {
-//      synchronized ( this.buffers ) {
+//      synchronized ( this.getMetroTrackLock() ) {
 //          this.buffers.clear();
 //          this.cursor =0;
 //      }
 //  }
 
     private void offerNewBuffer( Metro metro, JackClient client, JackPosition position ) throws JackException {
-        synchronized ( this.buffers ) {
+        synchronized ( this.getMetroTrackLock() ) {
 //          logInfo( "offerNewBuffer:" );
             if ( this.ending ) {
 //              logInfo( "offerNewBuffer:ending (" + this.name  + ")");

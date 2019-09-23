@@ -20,6 +20,9 @@
 
 package metro;
 
+// KEYQWORD LIST : 
+//     COUNTERMEASURE_FOR_LOCKING
+
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,6 +71,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
      */
     @Override
     public final Object getMetroLock() {
+        // TODO COUNTERMEASURE_FOR_LOCKING (Mon, 23 Sep 2019 08:33:32 +0900)
         return Metro.this.lock;
     }
     
@@ -1058,7 +1062,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
 
         if ( DEBUG )
             logInfo( "****** postMessage 1");
-        synchronized ( this.getMetroLock() ) {
+        synchronized ( getMetroLock() ) {
             this.messageQueue.add( runnable );
             this.notifyTrackChange();
         }

@@ -244,7 +244,7 @@ public class PulsarFrame extends KawapadFrame {
                     
                     if ( track != null && pb_position != null ) {
                         double value=0;
-                        synchronized ( track.getLock() ) {
+                        synchronized ( track.getMetroTrackLock() ) {
                             value = track.getTrackPosition();
                         }
                         pb_position.setValue((int) (value * PulsarFrame.PB_POSITION_MAX) );

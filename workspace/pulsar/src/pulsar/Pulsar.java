@@ -366,16 +366,21 @@ public final class Pulsar extends Metro {
      */
     final Collection<Runnable> cleanupHook = new LinkedList<>();
     
+    Object getCleanUpHookLock() {
+        // TODO COUNTERMEASURE_FOR_LOCKING (Mon, 23 Sep 2019 08:33:32 +0900)
+        return getMetroLock();
+    }
+    
     /**
      * Add a hook that will be invoked whenever reset() method is called.
      */
     public void addCleanupHook( Runnable runnable ) {
-        synchronized ( cleanupHook ) { 
+        synchronized ( getCleanUpHookLock() ) { 
             cleanupHook.add( runnable );
         }
     }
     public void execCleanupHook( ) {
-        synchronized ( cleanupHook ) {
+        synchronized ( getCleanUpHookLock() ) {
             for ( Iterator<Runnable> i =cleanupHook.iterator(); i.hasNext(); ) {
                 Runnable runnable = i.next();
                 try {
