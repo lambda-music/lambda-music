@@ -2539,15 +2539,17 @@ public class Kawapad extends JTextPane implements MenuInitializer {
                         if ( pos < 0 ) {
                             
                         } else {
-                            if ( dot < pos ) {
+                            if ( dotWithOffset < pos ) {
                                 document.remove( pos, 1 );
                                 document.remove( dotWithOffset , 1 );
+                                if ( offset != 0 ) 
+                                    caret.setDot( dotWithOffset );
                             } else {
                                 document.remove( dotWithOffset, 1 );
                                 document.remove( pos, 1 );
+                                if ( offset != 0 ) 
+                                    caret.setDot( dotWithOffset - 1);
                             }
-                            if ( offset != 0 ) 
-                                caret.setDot( dotWithOffset -1 );
                         }
                     } else {
                         defaultAction.actionPerformed( e );
