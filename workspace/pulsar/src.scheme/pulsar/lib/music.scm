@@ -1744,6 +1744,25 @@
                     (list
                       (n type: 'len val: total-length)))))))
 
+; (define (bret name len) 
+;   (let* ((old-tra (gett name ))
+;          (new-tra (putt (newt name (n (n type: 'len val: len ))) 'p name )))
+;     (putt old-tra 'serial name )))
+
+(define (bret name measure-len) 
+  (letrec* ((old-tra (gett name ))
+            (new-tra (newt name (n (n type: 'len val: measure-len ))))
+            (new-tra-listener 
+              (add-event-listener new-tra 'prepared (lambda (parent type)
+                                                      ; (display 'prepared)
+                                                      ; (newline)
+                                                      (schedule 0 (lambda ()
+                                                                    (display 'called)
+                                                                    (newline)
+                                                                    (putt old-tra 'serial   new-tra)
+                                                                    ))
+                                                      (remove-event-listener new-tra new-tra-listener)))))
+           (putt new-tra 'parallel old-tra)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define lookup-notes (lambda (key value notes) 

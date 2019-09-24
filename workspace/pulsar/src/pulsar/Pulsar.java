@@ -56,9 +56,11 @@ import gnu.mapping.Procedure2;
 import gnu.mapping.Procedure3;
 import gnu.mapping.Symbol;
 import gnu.mapping.Values;
+import gnu.mapping.WrongArguments;
 import gnu.math.DFloNum;
 import kawa.standard.Scheme;
 import kawapad.Kawapad.KawaVariableInitializer;
+import metro.EventListenable;
 import metro.Metro;
 import metro.MetroPort;
 import metro.MetroTrack;
@@ -435,30 +437,51 @@ public final class Pulsar extends Metro {
         return historyFile;
     }
 
+    static final java.util.Timer timer = new java.util.Timer("PulsarTimer", true );
+    static {
+//        addCleanupHook( new Runnable() {
+//            @Override
+//            public void run() {
+//                timer.cancel();
+//            }
+//        });
+    }
+    
     public static Runnable createTimer( Pulsar pulsar, long delay, long interval, Invokable invokable ) {
-        java.util.Timer timer = new java.util.Timer( true );
-        timer.scheduleAtFixedRate( new java.util.TimerTask() {
-            @Override
-            public void run() {
-                // The life cycle of timer threads may not be able to be controlled by users;
-                // therefore, we decided to initialize the environment every time we execute
-                // timer events. (Mon, 05 Aug 2019 00:38:14 +0900)
-                pulsar.getSchemeSecretary().initializeSchemeForCurrentThread();
-                
-                // Execute the specified process.
-                Object result = invokable.invoke();
-                if ( Boolean.FALSE.equals( result ) ) {
-                    timer.cancel();
+        if ( 0 < interval  ){
+            timer.scheduleAtFixedRate( new java.util.TimerTask() {
+                @Override
+                public void run() {
+                    Pulsar.currentObject.set( pulsar );
+                    
+                    // The life cycle of timer threads may not be able to be controlled by users;
+                    // therefore, we decided to initialize the environment every time we execute
+                    // timer events. (Mon, 05 Aug 2019 00:38:14 +0900)
+                    pulsar.getSchemeSecretary().initializeSchemeForCurrentThread();
+                    
+                    // Execute the specified process.
+                    Object result = invokable.invoke();
+                    if ( Boolean.FALSE.equals( result ) ) {
+                        timer.cancel();
+                    }
                 }
-            }
-        }, delay, interval );
+            }, delay, interval );
+        } else {
+            timer.schedule( new java.util.TimerTask() {
+                @Override
+                public void run() {
+                    Pulsar.currentObject.set( pulsar );
 
-        pulsar.addCleanupHook( new Runnable() {
-            @Override
-            public void run() {
-                timer.cancel();
-            }
-        });
+                    // The life cycle of timer threads may not be able to be controlled by users;
+                    // therefore, we decided to initialize the environment every time we execute
+                    // timer events. (Mon, 05 Aug 2019 00:38:14 +0900)
+                    pulsar.getSchemeSecretary().initializeSchemeForCurrentThread();
+                    
+                    // Execute the specified process.
+                    invokable.invoke();
+                }
+            }, delay );
+        }
         
         return new Runnable() {
             @Override
@@ -467,6 +490,7 @@ public final class Pulsar extends Metro {
             }
         };
     }
+
     private static final class TagSearchIsProcedure extends Procedure2 {
         private final Object value;
         TagSearchIsProcedure(Object value) {
@@ -606,6 +630,41 @@ public final class Pulsar extends Metro {
         return createTrack( name, tags, new SchemeSequence( createInvokable( procedure ) ) );
     }
 
+    static final class PulsarEventListener implements EventListenable.Listener {
+        private final Pulsar pulsar;
+        private final Procedure procedure;
+        PulsarEventListener( Pulsar pulsar, Procedure procedure) {
+            this.pulsar = pulsar;
+            this.procedure = procedure;
+        }
+        
+        @Override
+        public void occured(Object parent, Object type) {
+            Pulsar.currentObject.set( pulsar );
+            try {
+                procedure.apply2( parent, type );
+            } catch (Throwable e) {
+                logError( "ignored", e );
+            }
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if ( obj instanceof PulsarEventListener ) {
+                return this.procedure == ((PulsarEventListener)obj).procedure;
+            } else {
+                return false;
+            }
+        }
+        @Override
+        public int hashCode() {
+            return procedure.hashCode();
+        }
+        @Override
+        public String toString() {
+            return String.format( "#PulsarEventListener-%x#" , this.hashCode() );
+        }
+    }
     /**
      *  
      * @param object
@@ -1581,7 +1640,7 @@ public final class Pulsar extends Metro {
                 }
                 procTrack( trackList, syncType, syncTrack, syncOffset );
                 
-                return Invokable.NO_RESULT;
+                return Pair.makeList( trackList );
             }
         }
 
@@ -1808,7 +1867,20 @@ public final class Pulsar extends Metro {
         }} );
         
 
-        SchemeUtils.defineVar( env, new Procedure3("make-timer") {
+        SchemeUtils.defineVar( env, new SafeProcedureN( "schedule" ) {
+            public Object apply2(Object arg1, Object arg2) {
+                Runnable runnable = createTimer( getCurrent(), 
+                    SchemeUtils.toInteger( arg1 ), 
+                    -1, 
+                    getCurrent().createInvokable2( (Procedure)arg2 ) );
+                
+                return new Procedure0() {
+                    public Object apply0() throws Throwable {
+                        runnable.run();
+                        return Values.empty;
+                    };
+                };
+            };
             @Override
             public Object apply3(Object arg0, Object arg1,Object arg2 ) throws Throwable {
                 Runnable runnable = createTimer( getCurrent(), 
@@ -1823,7 +1895,18 @@ public final class Pulsar extends Metro {
                     };
                 };
             }
-        }, "make-timer" );
+            @Override
+            public Object applyN(Object[] args) throws Throwable {
+                if ( args.length == 2 ) {
+                    return apply2( args[0], args[1] );
+                } else if ( args.length == 3 ) {
+                    return apply3( args[0], args[1], args[2] );
+                } else {
+                    WrongArguments.checkArgCount( "schedure", 2, 3, args.length );
+                    return false;
+                }
+            }
+        }, "schedule", "make-timer" );
 
         PulsarDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames("make-timer" );
@@ -1842,6 +1925,71 @@ public final class Pulsar extends Metro {
                     + "" 
             );
         }} );
+        
+        
+
+        SchemeUtils.defineVar( env, new Procedure3("add-event-listener") {
+            @Override
+            public Object apply3(Object arg0, Object arg1, Object arg2 ) throws Throwable {
+                if ( arg0 instanceof EventListenable ) {
+                    EventListenable listenable = (EventListenable) arg0;
+                    Object type = SchemeUtils.schemeStringToJavaString( arg1 );
+                    Procedure procedure = (Procedure) arg2;
+                    PulsarEventListener listener = new PulsarEventListener( Pulsar.getCurrent(), procedure );
+                    listenable.addEventListener( type, listener);
+                    return listener;
+                } else {
+                    throw new IllegalArgumentException( "the target is not event-listenable " );
+                }
+            }
+        } );
+
+        PulsarDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
+            setNames( "add-event-listener" );
+            addParameter("target",     "object",    null, false , "" );
+            addParameter("event-type", "symbol",    null, false , "" );
+            addParameter("callback",   "procedure", null, false , "" );
+        
+            setReturnValueDescription( "::void" );
+            setShortDescription( "||<name/>|| registers the specified procedure as an event handler. " );
+            setLongDescription( ""
+                    + "" 
+            );
+        }} );
+
+        SchemeUtils.defineVar( env, new Procedure2( "remove-event-listener" ) {
+            @Override
+            public Object apply2(Object arg0, Object arg1 ) throws Throwable {
+                if ( arg0 instanceof EventListenable ) {
+                    EventListenable listenable = (EventListenable) arg0;
+                    EventListenable.Listener listener;
+                    
+                    if (arg1 instanceof EventListenable.Listener) {
+                        listener = (EventListenable.Listener)arg1;
+                    } else if (arg1 instanceof Procedure ) {
+                        listener = new PulsarEventListener( Pulsar.getCurrent(), (Procedure) arg1 );
+                    } else {
+                        throw new IllegalArgumentException( "the argument is not a listener object." );
+                    }
+                    listenable.removeEventListener( listener );
+                    return Values.empty;
+                } else {
+                    throw new IllegalArgumentException( "the target is not event-listenable " );
+                }
+            }
+        } );
+
+        PulsarDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean() {{
+            setNames( "remove-event-listener" );
+            addParameter( "target",     "object",    null, false , "" );
+            addParameter( "callback",   "procedure", null, false , "" );
+        
+            setReturnValueDescription( "::void" );
+            setShortDescription( "||<name/>|| unregisters the specified procedure as an event handler. " );
+            setLongDescription( ""
+                    + "" 
+            );
+        }});
 
         SchemeUtils.defineVar( env, new SafeProcedureN("random") {
             @Override
@@ -1930,9 +2078,6 @@ public final class Pulsar extends Metro {
         } catch ( Throwable t ) {
             logError( "", t );
         }
-        
-        
-        
     }
 }
     

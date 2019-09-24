@@ -728,6 +728,33 @@ procedure.
 
 --------------------------------------------------------
 
+ADD-EVENT-LISTENER
+====================
+
+#### SYNOPSIS ####
+    (add-event-listener target::object event-type::symbol callback::procedure)::void
+
+### DESCRIPTION ###
+||add-event-listener|| registers the specified procedure as an event handler.
+
+
+
+--------------------------------------------------------
+
+REMOVE-EVENT-LISTENER
+====================
+
+#### SYNOPSIS ####
+    (remove-event-listener target::object callback::procedure)::void
+
+### DESCRIPTION ###
+||remove-event-listener|| unregisters the specified procedure as an event
+handler.
+
+
+
+--------------------------------------------------------
+
 RANDOM
 ====================
 

@@ -45,7 +45,7 @@ import org.jaudiolibs.jnajack.JackPosition;
  * @author Ats Oka
  *
  */
-public class MetroTrack implements MetroLock {
+public class MetroTrack implements MetroLock, EventListenable {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -129,6 +129,55 @@ public class MetroTrack implements MetroLock {
     transient double endingLength = 0;
     transient Runnable endingProc = null;
     
+    
+    void reset() {
+        prepared = false;
+        enabled = true;
+        
+        syncType = null;
+        syncTrack = null;
+        syncOffset = 0.0d;
+        
+        buffers.clear();
+        cursor = 0;
+        lastLengthInFrames = 0;
+        lastAccumulatedLength = 0;
+        
+        ending = false;
+        endingDone = false;
+        endingLength = 0;
+        endingProc = null;
+        
+//        eventListenerable.clearEventListeners();
+    }
+    
+    public static final Object EVENT_PREPARED = "prepared"; 
+    
+    protected final EventListenable eventListenerable = new EventListenable.Default( this );
+    @Override
+    public void clearEventListeners() {
+        synchronized ( this.getMetroLock() ) {
+            eventListenerable.clearEventListeners();
+        }
+    }
+    @Override
+    public void addEventListener(Object type, Listener listener) {
+        synchronized ( this.getMetroLock() ) {
+            eventListenerable.addEventListener( type, listener );
+        }
+    }
+    @Override
+    public void removeEventListener(Listener listener) {
+        synchronized ( this.getMetroLock() ) {
+            eventListenerable.removeEventListener( listener );
+        }
+    }
+    @Override
+    public void invokeEventListener(Object type) {
+        synchronized ( this.getMetroLock() ) {
+            eventListenerable.invokeEventListener( type );
+        }
+    }
     /**
      * Create a MetroTrack object with default synchronizing status.
      *
@@ -244,6 +293,7 @@ public class MetroTrack implements MetroLock {
      * 
      */
     public MetroTrack setSyncStatus( SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
+        this.reset();
         this.prepared = false;
         this.syncType = syncType;
         this.syncTrack = syncTrack;
@@ -480,7 +530,8 @@ public class MetroTrack implements MetroLock {
             default :
                 throw new RuntimeException( "Internal Error" ); // this won't occur.
         }
-
+        
+        eventListenerable.invokeEventListener( EVENT_PREPARED );
     }
 
     void reprepare( Metro metro, JackClient client, JackPosition position, 

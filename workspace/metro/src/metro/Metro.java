@@ -682,7 +682,10 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
                     this.tracks.addAll( this.registeredTracks );
                     
                     if ( ! this.registeredTracks.isEmpty() ) {
-                        for ( MetroTrack track : this.registeredTracks ) {
+                        // duplicate the list since the "prepare" method possiblly modify the 
+                        // "registeredTrack" in its event handlers.
+                        ArrayList<MetroTrack> arrayList = new ArrayList<>( this.registeredTracks );
+                        for ( MetroTrack track : arrayList ) {
                             track.prepare( barInFrames );
                             // ADDED (Sun, 30 Sep 2018 12:39:32 +0900)
                             track.checkBuffer( this,  this.client, this.position, barInFrames );
