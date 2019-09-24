@@ -111,7 +111,8 @@ public class KawapadParenthesisHighlighter {
             document.getText( 0, document.getLength(), text );
             ParserState parserState = 
                     SchemeParenthesisParser.lookupParenthesis( text, position );
-            logInfo( "highlightMatchingParenthesis:" + position + "=>"+ parserState.isFound() );
+            if ( Kawapad.DEBUG_PARENTHESIS )
+                logInfo( "highlightMatchingParenthesis:" + position + "=>"+ parserState.isFound() );
             if ( parserState.isFound() )
                 highlightParentheses( component, parserState.getIterator().getInitialIndex(), parserState.getIterator().getIndex() );
         }

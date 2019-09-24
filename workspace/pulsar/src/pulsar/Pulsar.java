@@ -58,6 +58,7 @@ import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import gnu.mapping.WrongArguments;
 import gnu.math.DFloNum;
+import gnu.math.IntNum;
 import kawa.standard.Scheme;
 import kawapad.Kawapad.KawaVariableInitializer;
 import metro.EventListenable;
@@ -503,8 +504,8 @@ public final class Pulsar extends Metro {
     }
 
     final static class TrackProcedure extends Procedure0 {
-        final Pair pair;
-        TrackProcedure( Pair pair ) {
+        final LList pair;
+        TrackProcedure( LList pair ) {
             this.pair = pair;
         }
 
@@ -788,11 +789,20 @@ public final class Pulsar extends Metro {
             return (Procedure) arg;
         } else if ( arg  instanceof Pair ) {
             return new TrackProcedure((Pair)arg);
+        } else if ( arg  instanceof Number ) {
+            return new TrackProcedure( createRestBar(((Number)arg).intValue() ) );
         } else {
             throw new IllegalArgumentException( "unsupported type of the argument" );
         }
     }
 
+    private static LList createRestBar(int intValue) {
+        return 
+                LList.makeList( Arrays.asList( 
+                    LList.makeList( Arrays.asList(
+                        Pair.make( Symbol.valueOf( "type" ),  Symbol.valueOf( "len" ) ),
+                        Pair.make( Symbol.valueOf( "val" ),   IntNum.valueOf( intValue ))))));
+    }
     protected static List<Object> readParamPortName( Object arg ) {
         if ( arg instanceof Pair ) {
             return ((Pair)arg);
@@ -1991,6 +2001,15 @@ public final class Pulsar extends Metro {
             );
         }});
 
+        
+        SchemeUtils.defineVar( env, new Procedure1( "track?" ) {
+            @Override
+            public Object apply1(Object arg0 ) throws Throwable {
+                return arg0 instanceof MetroTrack;
+            }
+        });
+        
+        
         SchemeUtils.defineVar( env, new SafeProcedureN("random") {
             @Override
             public Object applyN(Object[] args) throws Throwable {

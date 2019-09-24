@@ -152,6 +152,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     private static final boolean DEBUG_UNDO_BUFFER = true;
     @SuppressWarnings("unused")
     private static final boolean DEBUG = false;
+    static final boolean DEBUG_PARENTHESIS = false;
     private static final boolean ENABLED_PARENTHESIS_HIGHLIGHT = true;
     static final boolean ENABLED_SHOW_CORRESPONDING_PARENTHESES = true;
 
@@ -1081,7 +1082,8 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         }
         // CaretListener
         public void caretUpdate(CaretEvent e) {
-            logInfo("PulsarScratchPadTextPaneController.caretUpdate()" + e );
+            if ( DEBUG_PARENTHESIS )
+                logInfo("PulsarScratchPadTextPaneController.caretUpdate()" + e );
 
             getParenthesisStack().checkSelectionStack();
             updateMatchingParentheses2();
@@ -3115,7 +3117,8 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     private KawapadSyntaxHighlighter documentFilter; // See the constructor how this field is initialized.
 
     static void highlightMatchningParentheses( Kawapad kawapad, int offset ) {
-        logInfo( "highlightMatchningParentheses offset=" + offset  );
+        if ( DEBUG_PARENTHESIS ) 
+            logInfo( "highlightMatchningParentheses offset=" + offset  );
         if ( ENABLED_PARENTHESIS_HIGHLIGHT )
             try {
                 Caret caret = kawapad.getCaret();

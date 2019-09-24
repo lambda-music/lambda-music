@@ -1749,19 +1749,33 @@
 ;          (new-tra (putt (newt name (n (n type: 'len val: len ))) 'p name )))
 ;     (putt old-tra 'serial name )))
 
-(define (bret name measure-len) 
+(define (bret name fill-in-track next-track) 
   (letrec* ((old-tra (gett name ))
-            (new-tra (newt name (n (n type: 'len val: measure-len ))))
-            (new-tra-listener 
-              (add-event-listener new-tra 'prepared (lambda (parent type)
-                                                      ; (display 'prepared)
-                                                      ; (newline)
-                                                      (schedule 0 (lambda ()
-                                                                    (display 'called)
-                                                                    (newline)
-                                                                    (putt old-tra 'serial   new-tra)
-                                                                    ))
-                                                      (remove-event-listener new-tra new-tra-listener)))))
+            (new-tra (if (track? fill-in-track)
+                       fill-in-track
+                       (newt name fill-in-track)))
+            (next-tra (cond
+                        ((eq? next-track #t) 
+                         old-tra)
+                        ((eq? next-track #f) 
+                         #f)
+                        (else
+                          (if (track? next-track)
+                            next-track
+                            (newt name next-track))))))
+           (if next-tra
+             (letrec ((new-tra-listener 
+                        (add-event-listener new-tra 'prepared (lambda (parent type)
+                                                                ; (display 'prepared)
+                                                                ; (newline)
+                                                                (schedule 0 (lambda ()
+                                                                              (display 'called)
+                                                                              (newline)
+                                                                              (putt next-tra 'serial   new-tra)
+                                                                              ))
+                                                                (remove-event-listener new-tra new-tra-listener)))))
+               #f)
+             #t)
            (putt new-tra 'parallel old-tra)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

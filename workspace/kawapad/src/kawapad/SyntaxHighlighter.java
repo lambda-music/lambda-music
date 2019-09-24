@@ -31,7 +31,7 @@ import javax.swing.text.StyledDocument;
  * is the correct anser. This should be accepted and deserves more likes.
  */
 public abstract class SyntaxHighlighter extends DocumentFilter {
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
