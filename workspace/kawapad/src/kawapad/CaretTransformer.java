@@ -74,8 +74,24 @@ public abstract class CaretTransformer {
                 return String.format( "CaretPos %d==%d", left,right );
             }
         }
+        @Override
+        public boolean equals(Object obj) {
+            if ( obj instanceof CaretPos ) {
+                CaretPos target = ((CaretPos)obj);
+                return  ( this.left      == target.left      ) &&
+                        ( this.right     == target.right     ) &&
+                        ( this.direction == target.direction );
+            } else {
+                return false;
+            }
+        }
         public CaretPos duplicate() {
             return new CaretPos( this );
+        }
+        public void set(CaretPos c) {
+            this.left = c.left;
+            this.right = c.right;
+            this.direction = c.direction;
         }
     }
     public final void transform( KawapadParenthesisStack stack, Document text, Caret caret ) {

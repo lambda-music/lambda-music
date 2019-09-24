@@ -506,6 +506,7 @@ public class KawapadSelection {
             }
         };
     }
+    static final CaretTransformer LISPWORD_SELECT_CURRENT_TRANSFORMER = new SelectCurrentWordTransformer();
     static class SelectCurrentWordTransformer extends LispWordSelectionTransformer {
         @Override
         public boolean process(CharSequence text, CaretPos before, CaretPos after) {
@@ -518,8 +519,25 @@ public class KawapadSelection {
     static class LispWordSelectRightTransformer extends LispWordSelectionTransformer {
         @Override
         public boolean process(CharSequence text, CaretPos before, CaretPos after) {
-            after.left  = lookup( text, nagatedParenthesesSelector, before.right+1, +1 );
+            int p;
+            if ( before.direction < 0 ) {
+                CaretPos before1 = new CaretPos( before.left, before.left,-1 );
+                CaretPos after1  = new CaretPos( before1 );
+                LISPWORD_SELECT_CURRENT_TRANSFORMER.process( text, before1, after1 );
+                p = after1.right +1;
+                after1.direction = before.direction;
+                if ( after1.equals( before ) ) {
+                    after.set( after1 );
+                    after.direction = +1;
+                    return true;
+                }
+            } else {
+                p = before.right+1;
+            }
+
+            after.left  = lookup( text, nagatedParenthesesSelector, p,              +1 );
             after.right = lookup( text, parenthesesSelector,        after.left    , +1 )-1;
+//            after.direction = +1;
             return true;
         }
     }
@@ -527,8 +545,26 @@ public class KawapadSelection {
     static class LispWordSelectLeftTransformer extends LispWordSelectionTransformer {
         @Override
         public boolean process(CharSequence text, CaretPos before, CaretPos after) {
-            after.right = lookup( text, nagatedParenthesesSelector, before.left-1 , -1 );
+            int p;
+            if ( before.direction < 0 ) {
+                p = before.left-1;
+            } else {
+                CaretPos before1 = new CaretPos( before.right, before.right,-1 );
+                CaretPos after1  = new CaretPos( before1 );
+                LISPWORD_SELECT_CURRENT_TRANSFORMER.process( text, before1, after1 );
+                p = after1.left -1; 
+
+                after1.direction = before.direction;
+                if ( after1.equals( before ) ) {
+                    after.set( after1 );
+                    after.direction = -1;
+                    return true;
+                }
+            }
+            
+            after.right = lookup( text, nagatedParenthesesSelector, p            , -1 );
             after.left  = lookup( text, parenthesesSelector,        after.right  , -1 )+1;
+//            after.direction = -1;
             return true;
         }
     }
@@ -711,16 +747,12 @@ public class KawapadSelection {
     }
     
     static void parenthesisExtendSelection( Document document, Caret caret, int direction ) {
-        extendSelection( document, caret, direction, PARENTHESIS_SELECT_LEFT_TRANSFORMER, PARENTHESIS_SELECT_RIGHT_TRANSFORMER );
-    }
-
-    static void lispwordExtendSelection( Document document, Caret caret, int direction ) {
-        extendSelection( document, caret, direction, LISPWORD_SELECT_LEFT_TRANSFORMER, LISPWORD_SELECT_RIGHT_TRANSFORMER );
+        extendSelection( document, caret, direction, true, PARENTHESIS_SELECT_LEFT_TRANSFORMER, PARENTHESIS_SELECT_RIGHT_TRANSFORMER );
     }
 
 
     static void extendSelection( Document document, Caret caret, int direction, 
-            CaretTransformer transLeft, CaretTransformer transRight ) 
+            boolean execSwapSelection, CaretTransformer transLeft, CaretTransformer transRight ) 
     {
         Segment text = new Segment();
         try {
@@ -733,25 +765,27 @@ public class KawapadSelection {
 
         // This part is almost impossible to understand if you don't observe the 
         // behavior of the cursor. Watch it at first. (Fri, 20 Sep 2019 19:33:23 +0900)
-        if ( before.direction < 0 ) {
-            int p = lookupCorrespondingParenthesis1( text, before.left );
-            if ( before.right == p && 0 < direction ) {
+        if ( execSwapSelection ) { 
+            if ( before.direction < 0 ) {
+                int p = lookupCorrespondingParenthesis1( text, before.left );
+                if ( before.right == p && 0 < direction ) {
+                    // if the current selection is same as the current pair of parentheses,
+                    // reverse the direction.
+                    setCaretDirection( caret, +1 );
+                    return;
+                } else {
+                    before.right = p; 
+                }
+            } else {
+                int p = lookupCorrespondingParenthesis1( text, before.right );
                 // if the current selection is same as the current pair of parentheses,
                 // reverse the direction.
-                setCaretDirection( caret, +1 );
-                return;
-            } else {
-                before.right = p; 
-            }
-        } else {
-            int p = lookupCorrespondingParenthesis1( text, before.right );
-            // if the current selection is same as the current pair of parentheses,
-            // reverse the direction.
-            if ( before.left == p && direction < 0 ) {
-                setCaretDirection( caret, -1 );
-                return;
-            } else {
-                before.left = p; 
+                if ( before.left == p && direction < 0 ) {
+                    setCaretDirection( caret, -1 );
+                    return;
+                } else {
+                    before.left = p; 
+                }
             }
         }
         
@@ -788,6 +822,10 @@ public class KawapadSelection {
         } else {
             
         }
+    }
+
+    static void lispwordExtendSelection( Document document, Caret caret, int direction ) {
+        extendSelection( document, caret, direction, false, LISPWORD_SELECT_LEFT_TRANSFORMER, LISPWORD_SELECT_RIGHT_TRANSFORMER );
     }
     
     static void setCaretDirection(Caret caret, int direction) {

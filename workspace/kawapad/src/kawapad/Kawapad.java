@@ -87,7 +87,6 @@ import gnu.mapping.Values;
 import gnu.mapping.WrongArguments;
 import kawa.standard.Scheme;
 import kawapad.KawapadSelection.ExpandParenthesisSelector;
-import kawapad.KawapadSelection.SelectCurrentWordTransformer;
 import kawapad.KawapadSelection.ShrinkParenthesisSelector;
 import kawapad.KawapadSelection.SideParenthesisSelector;
 import kawapad.KawapadSyntaxHighlighter.KawapadSyntaxElementType;
@@ -1641,7 +1640,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
     public final Action LISPWORD_SELECT_CURRENT_ACTION = new TextAction2( KAWAPAD_LISPWORD_SELECT_CURRENT ) {
-        CaretTransformer transformer = new SelectCurrentWordTransformer();
+        CaretTransformer transformer = KawapadSelection.LISPWORD_SELECT_CURRENT_TRANSFORMER;
         @Override
         public void actionPerformed(ActionEvent e) {
             JTextComponent t = getTextComponent( e );
