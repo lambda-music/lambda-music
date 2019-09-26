@@ -1674,7 +1674,135 @@
                      ; loop list
                      proc-list)))))
 
+
+(define parse-named-arguments (lambda (lst)
+                                (let ((result-alist (fold (lambda (v result)
+                                                            ; (display result)
+                                                            ; (newline)
+                                                            (if (keyword? v)
+                                                              ;then
+                                                              (let ((found (assq v result)))
+                                                                (if found
+                                                                  ;then
+                                                                  (raise (string-append (symbol->string found) "is already defined" ))
+                                                                  ;else
+                                                                  (cons (cons v '())
+                                                                        result)))
+                                                              ;else
+                                                              (begin
+                                                                (if (null? result)
+                                                                  (raise "no keyword is found.")
+                                                                  (let ((list-value (car result)))
+                                                                    (set-cdr! list-value (cons v (cdr list-value)))
+                                                                    result)))))
+                                                          '()
+                                                          lst)))
+                                  (map (lambda (x)
+                                         (cons 
+                                           ; the first element is a key
+                                           (begin   (car x ))
+                                           ; reverse the value as it is list
+                                           (reverse (cdr x))))
+                                       result-alist))))
+
+; (rep size: 3 repeat: 5 offset: -1/10 pattern: 0 velo: * 1 1 1 pos: + 1 1 1 )
 (define rep (lambda args
+              (let* ((parsed-args  (parse-named-arguments args))
+                     (total-length (cadr (or (assq 'length:  parsed-args  )
+                                             (cons 'length:    (list 1)  ))))
+                     (repeat-count (cadr (or (assq 'repeat:  parsed-args  )
+                                             (cons 'repeat:    (list 1)  ))))
+                     (offset       (cadr (or (assq 'offset:  parsed-args  )
+                                             (cons 'offset:    (list 0) ))))
+                     (notations    (cadr (or (assq 'pattern: parsed-args  )
+                                             (cons 'pattern:   (list 1) ))))
+
+                     (args         (cons* 
+                                     ; add a special argument, pos:
+                                     (cons* 'pos: +  (iota repeat-count offset (/ total-length repeat-count )))
+
+                                     ; remove all already refered parameters.
+                                     (fold (lambda (x result)
+                                             (if (memv (car x) (list 'length: 'repeat: 'offset: 'pattern: )) 
+                                               result
+                                               (cons x result )))
+                                           '()
+                                           parsed-args)))
+                     (arg-keys     (map first  args))
+                     (arg-ops      (map second args))
+                     (arg-values   (map cddr   args))
+                     (final-result-notations #f ))
+
+                ; convert a number to the default notation.
+                (if (number? notations)
+                  (set! notations 
+                    (n
+                      (n type: 'note velo: 1 pos: notations  )
+                      (n type: 'len val: 1 ))))
+
+                ; shrink the notation to the proper size.
+                (set! notations 
+                  (sca! (/ total-length repeat-count) 
+                        notations ))
+
+                ; (display (format "notations:: ~s\n" notations ))
+                ; (newline)
+                ; (display (format "arg-keys ~s\narg-ops ~s\narg-values ~s\n" arg-keys arg-ops arg-values ))
+                ; (newline)
+
+                ; READ THIS!
+                ; typical input data is as
+                ;    (arg-values '((note: +   0   1   2   3 )
+                ;                  (velo: * 1/2 1/2 1/2 1/2 )))
+                ; and the first  element of every list is mapped to the list arg-keys
+                ; and the second element of every list is mapped to the list arg-ops 
+                ; and the third and following elements of every list is mapped to the list arg-values
+                ;      fold 1
+                (set! final-result-notations (apply fold (cons* 
+                                                           ; proc
+                                                           (lambda inner-args
+                                                             (let* ((pos-val          (first            inner-args ))
+                                                                    (result-notations (last             inner-args ))
+                                                                    (inner-args       (drop-right (drop inner-args 1 ) 1))
+
+                                                                    ; Create moved and scaled notations
+                                                                    ;                    fold 2
+                                                                    (new-notations    (fold (lambda (arg-key arg-op arg-value current-notation) 
+                                                                                              (display (format "arg-key ~s\narg-op ~s\narg-value ~s\n" arg-key arg-op arg-value ))
+                                                                                              (newline)
+                                                                                              (newline)
+
+                                                                                              (apply n arg-key 
+                                                                                                     (lambda (curr-value) (arg-op curr-value arg-value)) 
+                                                                                                     current-notation))
+                                                                                            ;initial value for the current-notation
+                                                                                            (mov! pos-val (ccons notations))
+                                                                                            ; skip the first one element.
+                                                                                            (cdr arg-keys)
+                                                                                            ; skip the first one element.
+                                                                                            (cdr arg-ops)
+                                                                                            ; skip the first one element.
+                                                                                            inner-args)))
+                                                               (append 
+                                                                 new-notations
+                                                                 result-notations)))
+
+                                                           ; the initial value
+                                                           '()
+                                                           ; Append arg-values to the argument list.
+                                                           ; That is, process every list in the arg-values .
+                                                           arg-values)))
+                (set! final-result-notations (filter (lambda(x) 
+                                                       (not (eq? 'len 
+                                                                 (cdr (or (assq 'type x)
+                                                                          (cons 'type 'unknown))))))
+                                                     final-result-notations))
+                (set! final-result-notations (n 
+                                               (n type: 'len val: total-length)
+                                               final-result-notations ))
+                (reverse final-result-notations))))
+
+(define rep2 (lambda args
               (let ((total-length (first  args   ))
                     (repeat-type  (second args   ))
                     (notations    (third  args   ))
