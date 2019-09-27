@@ -68,6 +68,7 @@ import javax.swing.event.ChangeListener;
 import org.jaudiolibs.jnajack.JackException;
 
 import gnu.mapping.Environment;
+import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import kawa.standard.Scheme;
 import kawapad.KawapadFrame;
@@ -232,10 +233,18 @@ public class PulsarFrame extends KawapadFrame {
     
     private void initPulsarGui() {
         Pulsar.createTimer(pulsar, 1000, 20, new Invokable() {
+            transient boolean lastPlaying= false;
+            List<MetroTrack> trackList;
             @Override
             public Object invoke(Object... args) {
                 if ( pulsar.isOpened() ) {
-                    List<MetroTrack> trackList = pulsar.searchTrack( "main" );
+                    boolean playing = pulsar.getPlaying();
+                    if ( playing != lastPlaying ) {
+                        if ( playing ) {
+                            trackList = pulsar.searchTrack( Symbol.valueOf( "main" ) );
+                        }
+                        lastPlaying = playing;
+                    }
                     
                     //  This happens quite often so let us ignore it. (Mon, 29 Jul 2019 12:21:50 +0900)
                     //  Additionally this code have never been executed. Just added this for describing the concept.
@@ -243,7 +252,7 @@ public class PulsarFrame extends KawapadFrame {
                     //      logWarn( "" );
                     //  }
                     
-                    if ( ! trackList.isEmpty() && pb_position != null ) {
+                    if ( (trackList!= null ) && (! trackList.isEmpty()) && (pb_position != null) ) {
                         double value=0;
                         MetroTrack track = trackList.get( 0 ); 
                         synchronized ( track.getMetroTrackLock() ) {
