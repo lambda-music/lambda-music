@@ -763,17 +763,17 @@ public class PulsarFrame extends KawapadFrame {
         @Override
         public Dimension getPreferredSize() {
             Dimension s = super.getPreferredSize();
-            s.height = 40;
+            s.height = 10;
             return s;
         }
     };
     void initGuiProgressBar() {
         PulsarFrame.this.pb_position = pb_position; 
         add( pb_position , BorderLayout.PAGE_END );
-        pb_position.setBorder( BorderFactory.createCompoundBorder(
-            BorderFactory.createEmptyBorder(10,10,10,10),
-            pb_position.getBorder()) );
-        //              pb_position.setBorder( BorderFactory.createEmptyBorder(0,0,0,0) );
+//        pb_position.setBorder( BorderFactory.createCompoundBorder(
+//            BorderFactory.createEmptyBorder(10,10,10,10),
+//            pb_position.getBorder()) );
+        pb_position.setBorder( BorderFactory.createEmptyBorder(0,0,0,0) );
         pb_position.setMaximum( PB_POSITION_MAX );
         pb_position.setMinimum(0);
     }
