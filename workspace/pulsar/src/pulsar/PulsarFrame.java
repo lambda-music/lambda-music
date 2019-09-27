@@ -88,7 +88,9 @@ import pulsar.lib.swing.JNamedPanel;
 
 public class PulsarFrame extends KawapadFrame {
     private static final String PULSAR_DEFAULT_CAPTION = "Pulsar - a Lisp Scheme Music Sequencer";
-
+    private static final boolean ENABLED_USER_PANE = false; // (Fri, 27 Sep 2019 12:18:01 +0900)
+    private static final boolean ENABLED_TEMPO_TITLE = false; // (Fri, 27 Sep 2019 12:18:01 +0900)
+    
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
@@ -192,6 +194,7 @@ public class PulsarFrame extends KawapadFrame {
     //////////////////////////////////////////////////////////////////////////////////
 
     public static final CurrentObject<PulsarFrame> currentObject = new CurrentObject<>();
+
     public final CurrentObject.ThreadInitializer<PulsarFrame> threadInializer = 
             new CurrentObject.ThreadInitializer<PulsarFrame>( currentObject, this );
     public static PulsarFrame getCurrent() {
@@ -683,9 +686,10 @@ public class PulsarFrame extends KawapadFrame {
         staticPane = new JPanel() {
             @Override
             public Dimension getPreferredSize() {
-                return new Dimension(500,180);
+                return new Dimension(500,110);
             }
         };
+//        staticPane.setBorder( BorderFactory.createEmptyBorder() );
         
         PulsarFramePackage.guiBorderLayout( staticPane );
         
@@ -705,11 +709,13 @@ public class PulsarFrame extends KawapadFrame {
         //          userPaneOuter.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED );
         userPaneOuter.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
         userPaneOuter.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER );
+        
         // SEE TAG_PACK_TWICE
         
         pulsarRootPane  = new JPanel( new BorderLayout() );
         pulsarRootPane.add( staticPaneOuter, BorderLayout.PAGE_START);
-        pulsarRootPane.add( userPaneOuter, BorderLayout.CENTER );
+        if ( ENABLED_USER_PANE ) 
+            pulsarRootPane.add( userPaneOuter, BorderLayout.CENTER );
         pulsarRootPane.setMaximumSize( new Dimension( 500, 400 ));
         
         this.scratchPadRoot.remove( this.scrollPane );
@@ -718,7 +724,7 @@ public class PulsarFrame extends KawapadFrame {
         this.scratchPadRoot.revalidate();
         
         // Tempo Button
-        staticPane.add( new JPusarFilePanel(), BorderLayout.PAGE_START );
+        staticPane.add( createFilePanel(),  BorderLayout.PAGE_START );
         staticPane.add( createStartStopButton(), BorderLayout.LINE_END );
         staticPane.add( createTempoTapButton(), BorderLayout.CENTER );
         staticPane.add( createRewindButton(), BorderLayout.LINE_START );
@@ -810,6 +816,10 @@ public class PulsarFrame extends KawapadFrame {
      */
 
 
+    JPusarFilePanel createFilePanel() {
+        return new JPusarFilePanel();
+    }
+
     // XXX REMOVE THIS
     private class JPusarFilePanel extends JPanel {
         public JPusarFilePanel() {
@@ -836,9 +846,9 @@ public class PulsarFrame extends KawapadFrame {
                 sl_tempoSlider.setMaximum(1000);
                 sl_tempoSlider.setPaintTicks(true);
                 sl_tempoSlider.setPaintTrack( true);
-                sl_tempoSlider.setMajorTickSpacing(100);
+                sl_tempoSlider.setMajorTickSpacing(50);
                 sl_tempoSlider.setMinorTickSpacing(25);
-                sl_tempoSlider.setPreferredSize( new Dimension(500, 80));
+                sl_tempoSlider.setPreferredSize( new Dimension(500, 50));
                 Dictionary<Integer,JLabel> labelTables = new Hashtable<>();
                 labelTables.put(10, new JLabel( "10" ));
                 labelTables.put(50, new JLabel( "50" ));
@@ -865,12 +875,15 @@ public class PulsarFrame extends KawapadFrame {
                     }
                 });
                 
-                sl_tempoSlider.setBorder(
-                        BorderFactory.createCompoundBorder(
-                                BorderFactory.createTitledBorder("TEMPO"),
-                                sl_tempoSlider.getBorder()
-                                )
-                        );
+//                sl_tempoSlider.setBorder(
+//                        BorderFactory.createCompoundBorder(
+//                                BorderFactory.createTitledBorder("TEMPO"),
+//                                sl_tempoSlider.getBorder()
+//                                )
+//                        );
+                
+                if ( ENABLED_TEMPO_TITLE )
+                    sl_tempoSlider.setBorder( BorderFactory.createTitledBorder("TEMPO") );
                 
                 // InitializeTempoSlider
                 pulsar.tempoTapper.registerNotifier( new TempoTapperTempoNotifier() {
