@@ -1716,7 +1716,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     {
         {
             putValue( Action2.CAPTION, "Select the Word on the Cursor." );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "alt RIGHT", "alt F" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl RIGHT", "alt F" );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
@@ -1730,7 +1730,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     {
         {
             putValue( Action2.CAPTION, "Select the Word on the Cursor." );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "alt LEFT", "alt B" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl LEFT", "alt B" );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
@@ -1896,7 +1896,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     public final Action LISPWORD_EXTEND_SELECTION_LEFT_ACTION = new LispWordExtendSelectionAction( KAWAPAD_LISPWORD_EXTEND_SELECTION_LEFT, -1 ){
         {
             putValue( Action2.CAPTION, "Extend the Word on the Left." );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "alt shift LEFT", "alt shift B" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl shift LEFT", "alt shift B" );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
@@ -1908,7 +1908,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     public final Action LISPWORD_EXTEND_SELECTION_RIGHT_ACTION = new LispWordExtendSelectionAction( KAWAPAD_LISPWORD_EXTEND_SELECTION_RIGHT, +1 ){
         {
             putValue( Action2.CAPTION, "Extend the Word on the Right." );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "alt shift RIGHT", "alt shift F" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl shift RIGHT", "alt shift F" );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
