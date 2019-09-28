@@ -1260,8 +1260,20 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         @Override
         public void actionPerformed(ActionEvent e) {
             JTextComponent textComponent  = getTextComponent( e );
+            Caret caret = textComponent.getCaret();
+            boolean goBackward=true;
+            try {
+                char c = textComponent.getDocument().getText( caret.getDot(), 1 ).charAt( 0 );
+                if ( c == '(' ) {
+                    goBackward = false;
+                }
+            } catch (BadLocationException e1) {
+                e1.printStackTrace();
+            }
             
-            DEFAULT_BACKWARD_ACTION.actionPerformed( e );
+            if ( goBackward )
+                DEFAULT_BACKWARD_ACTION.actionPerformed( e );
+            
             PARENTHESIS_EXPAND_SELECTION_ACTION.actionPerformed( e );
             kawapad.getThreadManager().startScratchPadThread(
                 new KawapadEvaluator(
