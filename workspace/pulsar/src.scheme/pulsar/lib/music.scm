@@ -1731,6 +1731,19 @@
                      (arg-keys     (map first  args))
                      (arg-ops      (map second args))
                      (arg-values   (map cddr   args))
+                     ; Process all element except the first element because the
+                     ; first element is the basic value list which is generated
+                     ; by (iota) procedure; therefore, "cdr" to the arg-values
+                     ; to skip the first element, and then connect it to the
+                     ; result list.
+
+                     (arg-values   (cons (car arg-values)
+                                         (map 
+                                           (lambda (x)
+                                             (take (apply circular-list x) 100))
+                                           (cdr arg-values))))
+                     ; (arg-values   (cons (car arg-values)
+                     ;                     (cdr arg-values)))
                      (final-result-notations #f ))
 
                 ; convert a number to the default notation.
@@ -1773,8 +1786,12 @@
                                                                                               (newline)
 
                                                                                               (apply n arg-key 
-                                                                                                     (lambda (curr-value) (arg-op curr-value arg-value)) 
+                                                                                                     (lambda (curr-value) 
+                                                                                                       (display (format "arg-op:~a curr-value:~a arg-value:~a" arg-op curr-value arg-value ))
+                                                                                                       (newline)
+                                                                                                       (arg-op curr-value arg-value)) 
                                                                                                      current-notation))
+
                                                                                             ;initial value for the current-notation
                                                                                             (mov! pos-val (ccons notations))
                                                                                             ; skip the first one element.
@@ -1783,6 +1800,7 @@
                                                                                             (cdr arg-ops)
                                                                                             ; skip the first one element.
                                                                                             inner-args)))
+
                                                                (append 
                                                                  new-notations
                                                                  result-notations)))

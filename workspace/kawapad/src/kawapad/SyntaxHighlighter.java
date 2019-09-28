@@ -262,6 +262,7 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
         // Look for tokens and highlight them
         Matcher matcher = pattern.matcher( text );
         ElapsedTime ep = new ElapsedTime();
+        @SuppressWarnings("unused")
         double t =0;
         while (matcher.find()) {
             // Change the color of recognized tokens

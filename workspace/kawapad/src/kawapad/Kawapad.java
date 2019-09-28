@@ -1259,6 +1259,8 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         }
         @Override
         public void actionPerformed(ActionEvent e) {
+            JTextComponent textComponent  = getTextComponent( e );
+            
             DEFAULT_BACKWARD_ACTION.actionPerformed( e );
             PARENTHESIS_EXPAND_SELECTION_ACTION.actionPerformed( e );
             kawapad.getThreadManager().startScratchPadThread(
