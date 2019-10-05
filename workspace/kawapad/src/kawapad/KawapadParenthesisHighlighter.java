@@ -79,7 +79,7 @@ public class KawapadParenthesisHighlighter {
         }
     }
     
-    public static transient Color parenthesisHighlightColor = Color.CYAN; 
+    public static transient Color parenthesisHighlightColor = new Color( 0x00, 0x88, 0x88, 0xff );
     
     static void highlightParentheses(JTextComponent tc, int open_pos, int close_pos) throws BadLocationException {
         logInfo( "highlightParentheses: " + open_pos + "/" + close_pos );

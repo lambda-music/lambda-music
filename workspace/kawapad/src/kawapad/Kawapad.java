@@ -457,8 +457,10 @@ public class Kawapad extends JTextPane implements MenuInitializer {
                         return;
                     }
                     if (isVisible()) {
-                        g.setXORMode(Color.MAGENTA );
-                        g.fillRect(r.x, r.y , r.width+5, r.height);
+//                        g.setXORMode( Color.WHITE );
+                        g.setColor( Color.WHITE );
+                        g.fillRect(r.x, r.y , 1, r.height);
+//                      g.fillRect(r.x, r.y , r.width+5, r.height);
                     }
                 }
             }
