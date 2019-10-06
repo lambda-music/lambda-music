@@ -2656,11 +2656,16 @@ public class Kawapad extends JTextPane implements MenuInitializer {
             Document document = c.getDocument();
             Segment text = KawapadSelection.getText( document );
             Caret caret = c.getCaret();
-            SearchNextWordTransformer transformer = 
-                    new SearchNextWordTransformer( 
-                        KawapadTemporarySearchHighlighter.getCurrentWord( text, caret ), 
-                        wordSearch, direction );
-            transformer.transform( getParenthesisStack(), text, caret );
+            String word = KawapadTemporarySearchHighlighter.getCurrentWord( text, caret );
+            if ( word == null ) {
+                return;
+            } else {
+                SearchNextWordTransformer transformer = 
+                        new SearchNextWordTransformer( 
+                            word, 
+                            wordSearch, direction );
+                transformer.transform( getParenthesisStack(), text, caret );
+            }
         }
     }
 
