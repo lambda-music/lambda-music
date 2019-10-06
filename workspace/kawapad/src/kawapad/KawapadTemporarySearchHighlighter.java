@@ -70,8 +70,10 @@ public class KawapadTemporarySearchHighlighter extends KawapadTemporaryHighlight
     public static final String GROUP_ID = "HELLO";
 
     static String searchStringToPattern( String searchString, boolean wordSearch ) {
+        logInfo( "searchStringToPattern=" +  wordSearch );
         if ( wordSearch ) {
-            return "(?:^|\\s|\\(|\\))" + "(?<=$|\\s|\\(|\\))" + "(?<"+GROUP_ID+">" + Pattern.quote( searchString ) + ")" ;
+            return "(?:\\s|\\(|\\))" + "(?<"+GROUP_ID+">" + Pattern.quote( searchString ) + ")" + "(?=$|\\s|\\(|\\))"  ;
+//            return "(?=^|\\s?|\\(?|\\)?)" + "(?<"+GROUP_ID+">" + Pattern.quote( searchString ) + ")"; // + "(?<=$|\\s|\\(|\\))"  ;
         } else {
             return "(?<" + GROUP_ID + ">" + Pattern.quote( searchString ) +")";
         }

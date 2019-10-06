@@ -1018,14 +1018,14 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     @AutomatedActionField
     public final Action KAWAPAD_SCROLL_UP_ACTION   = new KawapadScrollAction( KAWAPAD_SCROLL_UP,   -12 );
     {
-        AcceleratorKeyList.putAcceleratorKeyList( KAWAPAD_SCROLL_UP_ACTION, "ctrl UP" );
+        AcceleratorKeyList.putAcceleratorKeyList( KAWAPAD_SCROLL_UP_ACTION /* , "ctrl UP" */ );
     }
     
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
     public final Action KAWAPAD_SCROLL_DOWN_ACTION = new KawapadScrollAction( KAWAPAD_SCROLL_DOWN, +12 );
     {
-        AcceleratorKeyList.putAcceleratorKeyList( KAWAPAD_SCROLL_DOWN_ACTION, "ctrl DOWN" );
+        AcceleratorKeyList.putAcceleratorKeyList( KAWAPAD_SCROLL_DOWN_ACTION /*, "ctrl DOWN" */ );
     }
     
     public static final String KAWAPAD_DISABLE_CONTENT_ASSIST = "kawapad-disable-content-assist";
@@ -2643,9 +2643,11 @@ public class Kawapad extends JTextPane implements MenuInitializer {
 
     private class SearchTextAction extends TextAction2 {
         int direction;
-        private SearchTextAction(String name, int direction ) {
+        boolean wordSearch;
+        private SearchTextAction(String name, int direction, boolean wordSearch ) {
             super( name );
             this.direction = direction;
+            this.wordSearch = wordSearch;
         }
         
         @Override
@@ -2654,7 +2656,6 @@ public class Kawapad extends JTextPane implements MenuInitializer {
             Document document = c.getDocument();
             Segment text = KawapadSelection.getText( document );
             Caret caret = c.getCaret();
-            boolean wordSearch = caret.getDot() == caret.getMark();
             SearchNextWordTransformer transformer = 
                     new SearchNextWordTransformer( 
                         KawapadTemporarySearchHighlighter.getCurrentWord( text, caret ), 
@@ -2667,10 +2668,10 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     
     // INTEGRATED_ACTIONS 
     @AutomatedActionField
-    public final Action SEARCH_NEXT_ACTION = new SearchTextAction( KAWAPAD_SEARCH_NEXT, +1 ) {
+    public final Action SEARCH_NEXT_ACTION = new SearchTextAction( KAWAPAD_SEARCH_NEXT, +1, true ) {
         {
             putValue( Action2.CAPTION, "Unselect" );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "control 8" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "control DOWN",  "control 8", "control L" );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
@@ -2679,10 +2680,10 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     
     // INTEGRATED_ACTIONS 
     @AutomatedActionField
-    public final Action SEARCH_PREV_ACTION = new SearchTextAction( KAWAPAD_SEARCH_PREV, -1 ) {
+    public final Action SEARCH_PREV_ACTION = new SearchTextAction( KAWAPAD_SEARCH_PREV, -1, true  ) {
         {
             putValue( Action2.CAPTION, "Unselect" );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "control 3" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "control UP", "control 3", "control shift L" );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
@@ -3227,33 +3228,32 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         if ( DEBUG_PARENTHESIS ) 
             logInfo( "highlightMatchningParentheses offset=" + offset  );
         if ( ENABLED_PARENTHESIS_HIGHLIGHT )
+            // highlight the corresponding parentheses.
             try {
-                // highlight the current word.
-                {
-                    Caret caret = kawapad.getCaret();
-                    String searchString = KawapadTemporarySearchHighlighter.getCurrentWord(
-                        KawapadSelection.getText( kawapad.getDocument() ), caret );
-                    boolean wordSearch = caret.getDot() == caret.getMark();
-                    KawapadTemporarySearchHighlighter.highlightSearchPatterns( kawapad, searchString, wordSearch );
-                }
-
-                // highlight the corresponding parentheses.
-                {
-                    Caret caret = kawapad.getCaret();
-                    if ( caret.getDot() == caret.getMark() ) {
-                        KawapadTemporaryParenthesisHighlighter.highlightMatchingParenthesis( kawapad, caret.getDot() + offset );
+                Caret caret = kawapad.getCaret();
+                if ( caret.getDot() == caret.getMark() ) {
+                    KawapadTemporaryParenthesisHighlighter.highlightMatchingParenthesis( kawapad, caret.getDot() + offset );
+                } else {
+                    if ( caret.getMark() < caret.getDot() ) {
+                        KawapadTemporaryParenthesisHighlighter.highlightMatchingParenthesis( kawapad, caret.getDot() + offset -1 );
                     } else {
-                        if ( caret.getMark() < caret.getDot() ) {
-                            KawapadTemporaryParenthesisHighlighter.highlightMatchingParenthesis( kawapad, caret.getDot() + offset -1 );
-                        } else {
-                            KawapadTemporaryParenthesisHighlighter.highlightMatchingParenthesis( kawapad, caret.getDot() + offset  );
-                        }
+                        KawapadTemporaryParenthesisHighlighter.highlightMatchingParenthesis( kawapad, caret.getDot() + offset  );
                     }
                 }
             } catch (BadLocationException e) {
                 logError( "", e );
             }
-            ;
+
+        // highlight the current word.
+        try {
+            Caret caret = kawapad.getCaret();
+            String searchString = KawapadTemporarySearchHighlighter.getCurrentWord(
+                KawapadSelection.getText( kawapad.getDocument() ), caret );
+            KawapadTemporarySearchHighlighter.highlightSearchPatterns( kawapad, searchString, true );
+        } catch (BadLocationException e) {
+            logError( "", e );
+        }
+
     }
     static void highlightMatchingParenthesesLater( Kawapad kawapad, int offset ) {
 //        logError( "log", new Throwable() );
