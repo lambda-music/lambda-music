@@ -53,8 +53,8 @@ Set the main font of the editor. Kawapad can change its font-face.
 |caret-down|caret-down|  DOWN, CTRL-N  |
 |page-up|page-up|    |
 |page-down|page-down|    |
-|kawapad-scroll-up|kawapad-scroll-up|  CTRL-UP  |
-|kawapad-scroll-down|kawapad-scroll-down|  CTRL-DOWN  |
+|kawapad-scroll-up|kawapad-scroll-up|    |
+|kawapad-scroll-down|kawapad-scroll-down|    |
 |kawapad-disable-content-assist|Disable Content Assist|    |
 |kawapad-enable-content-assist|Enable Content Assist|  CTRL-SPACE  |
 |kawapad-reset|Reset the Environment|  SHIFT-CTRL-ALT-BACK_QUOTE  |
@@ -94,8 +94,8 @@ Set the main font of the editor. Kawapad can change its font-face.
 |kawapad-close-parenthesis|Close Parenthesis|    |
 |delete-next|Delete with the Corresponding Parenthesis|  DELETE  |
 |delete-previous|Delete Previous with the Corresponding Parenthesis|  BACK_SPACE  |
-|kawapad-search-next|Unselect|  CTRL-8  |
-|kawapad-search-prev|Unselect|  CTRL-3  |
+|kawapad-search-next|Unselect|  CTRL-DOWN, CTRL-8, CTRL-L  |
+|kawapad-search-prev|Unselect|  CTRL-UP, CTRL-3, SHIFT-CTRL-L  |
 |kawapad-open-new|Open New|    |
 |kawapad-open-file|Open|  CTRL-O  |
 |kawapad-save-file|Save|  CTRL-S  |

@@ -494,6 +494,7 @@ public class KawapadSelection {
                 return Character.isWhitespace( ch ) ||
                         ch == '(' ||
                         ch == ')' ||
+                        ch == '"' ||
                         false;                        
             }
         };
@@ -504,6 +505,7 @@ public class KawapadSelection {
                         Character.isWhitespace( ch ) ||
                         ch == '(' ||
                         ch == ')' ||
+                        ch == '"' ||
                         false
                         );                        
             }
