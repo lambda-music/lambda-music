@@ -26,6 +26,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import javax.swing.text.Highlighter.HighlightPainter;
 import javax.swing.text.JTextComponent;
@@ -53,6 +54,7 @@ public class KawapadTemporaryHighlighter {
 
     protected static ArrayDeque<ClearingPosition> clearQueue = new ArrayDeque<>();
     protected static void addClearingHighlightQueue(Highlighter highlighter, Object tag ) {
+        ((DefaultHighlighter)highlighter).setDrawsLayeredHighlights( true );
         synchronized ( clearQueue ) {
             ClearingPosition cp = new ClearingPosition( highlighter, tag );
             clearQueue.push(cp);

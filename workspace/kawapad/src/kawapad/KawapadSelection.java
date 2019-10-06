@@ -513,8 +513,8 @@ public class KawapadSelection {
     static class SelectCurrentWordTransformer extends LispWordSelectionTransformer {
         @Override
         public boolean process(CharSequence text, CaretPos before, CaretPos after) {
-            after.right = lookup( text, parenthesesSelector, before.right, +1 )-1;
-            after.left  = lookup( text, parenthesesSelector, before.left , -1 )+1;
+            after.right = lookup( text, parenthesesSelector, before.right + 1, +1 )-1;
+            after.left  = lookup( text, parenthesesSelector, before.left  + 0, -1 )+1;
             return true;
         }
     }
@@ -582,6 +582,7 @@ public class KawapadSelection {
             this.wordSearch = wordSearch;
             this.direction = direction;
         }
+        private static final String ID = KawapadTemporarySearchHighlighter.GROUP_ID;
         @Override
         public boolean process(CharSequence text, CaretPos before, CaretPos after) {
             Pattern p = Pattern.compile( 
@@ -590,15 +591,15 @@ public class KawapadSelection {
             Matcher m = p.matcher( text );
             if ( 0 < direction ) {
                 // search forward.
-                if ( m.find( before.right ) ) {
-                    after.left  = m.start();
-                    after.right = m.end() - 1;
+                if ( m.find( before.right +1 ) ) {
+                    after.left  = m.start(ID);
+                    after.right = m.end(ID) - 1;
                     return true;
                 } else {
                     // if not found, restart from the first position.
                     if ( m.reset().find() ) {
-                        after.left  = m.start();
-                        after.right = m.end() - 1;
+                        after.left  = m.start(ID);
+                        after.right = m.end(ID) - 1;
                         return true;
                     } else {
                         return false;
@@ -608,9 +609,9 @@ public class KawapadSelection {
                 // search backward.
                 int s0=-1;
                 int e0=-1;
-                while ( m.find() && m.end() < before.left  ) {
-                    s0= m.start();
-                    e0= m.end();
+                while ( m.find() && m.end(ID) < before.left  ) {
+                    s0= m.start(ID);
+                    e0= m.end(ID);
                 }
                 
                 // if found , return the result.
@@ -624,8 +625,8 @@ public class KawapadSelection {
                     s0=-1;
                     e0=-1;
                     while ( m.find() ) {
-                        s0= m.start();
-                        e0= m.end();
+                        s0= m.start(ID);
+                        e0= m.end(ID);
                     }
                     
                     // if found, then return it.

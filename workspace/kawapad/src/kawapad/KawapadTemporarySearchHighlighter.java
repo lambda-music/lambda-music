@@ -28,8 +28,8 @@ public class KawapadTemporarySearchHighlighter extends KawapadTemporaryHighlight
     public static void highlightSearchPatterns( JTextComponent component, CharSequence text, Pattern pattern ) throws BadLocationException {
         for ( Matcher m = pattern.matcher( text ); m.find(); ) {
             addHighlight( component, 
-                m.start(),
-                m.end(),
+                m.start(GROUP_ID),
+                m.end(GROUP_ID),
                 searchHighlightPainter );
         }
     }
@@ -49,7 +49,7 @@ public class KawapadTemporarySearchHighlighter extends KawapadTemporaryHighlight
         CaretPos before = caret.duplicate();
         CaretPos after = before.duplicate();
         KawapadSelection.LISPWORD_SELECT_CURRENT_TRANSFORMER.process( text, before, after );
-        if ( after.left < after.right ) {
+        if ( after.left <= after.right ) {
             return text.subSequence( after.left, after.right + 1 ).toString();
         } else {
             return null;
@@ -66,12 +66,14 @@ public class KawapadTemporarySearchHighlighter extends KawapadTemporaryHighlight
                 searchStringToPattern( searchString, wordSearch ) ) );
         }
     }
+    
+    public static final String GROUP_ID = "HELLO";
 
     static String searchStringToPattern( String searchString, boolean wordSearch ) {
         if ( wordSearch ) {
-            return "\\b" + Pattern.quote( searchString ) + "\\b";
+            return "(?:^|\\s|\\(|\\))" + "(?<=$|\\s|\\(|\\))" + "(?<"+GROUP_ID+">" + Pattern.quote( searchString ) + ")" ;
         } else {
-            return Pattern.quote( searchString );
+            return "(?<" + GROUP_ID + ">" + Pattern.quote( searchString ) +")";
         }
     }
 }
