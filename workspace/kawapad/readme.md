@@ -55,7 +55,7 @@ Set the main font of the editor. Kawapad can change its font-face.
 |page-down|page-down|    |
 |kawapad-scroll-up|kawapad-scroll-up|  CTRL-UP  |
 |kawapad-scroll-down|kawapad-scroll-down|  CTRL-DOWN  |
-|kawapad-disable-content-assist|Disable Content Assist|  ESCAPE  |
+|kawapad-disable-content-assist|Disable Content Assist|    |
 |kawapad-enable-content-assist|Enable Content Assist|  CTRL-SPACE  |
 |kawapad-reset|Reset the Environment|  SHIFT-CTRL-ALT-BACK_QUOTE  |
 |kawapad-select-evaluate|Select and Evaluate|  CTRL-ENTER  |
@@ -74,7 +74,8 @@ Set the main font of the editor. Kawapad can change its font-face.
 |kawapad-lisp-word-select-left|Select the Word on the Cursor.|  CTRL-LEFT, ALT-B  |
 |kawapad-lisp-word-swap-left|Swap the Word on the Left.|    |
 |kawapad-lisp-word-swap-right|Swap the Word on the Right.|    |
-|kawapad-unselect|Unselect|  ESCAPE  |
+|kawapad-unselect|Unselect|    |
+|kawapad-escape|Unselect|  ESCAPE  |
 |kawapad-parenthesis-swap-left|Swap the Left Parentesis Pair|    |
 |kawapad-parenthesis-swap-right|Swap the Right Parentsis Pair|    |
 |kawapad-parenthesis-extend-left|Extend the Left Parentesis Pair|  SHIFT-CTRL-ALT-LEFT, SHIFT-CTRL-ALT-B  |
@@ -93,6 +94,8 @@ Set the main font of the editor. Kawapad can change its font-face.
 |kawapad-close-parenthesis|Close Parenthesis|    |
 |delete-next|Delete with the Corresponding Parenthesis|  DELETE  |
 |delete-previous|Delete Previous with the Corresponding Parenthesis|  BACK_SPACE  |
+|kawapad-search-next|Unselect|  CTRL-8  |
+|kawapad-search-prev|Unselect|  CTRL-3  |
 |kawapad-open-new|Open New|    |
 |kawapad-open-file|Open|  CTRL-O  |
 |kawapad-save-file|Save|  CTRL-S  |

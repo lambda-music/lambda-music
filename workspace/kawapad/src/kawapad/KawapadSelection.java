@@ -20,6 +20,9 @@
 
 package kawapad;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
@@ -569,6 +572,76 @@ public class KawapadSelection {
         }
     }
     
+ 
+    static class SearchNextWordTransformer extends CaretTransformer {
+        String word;
+        boolean wordSearch;
+        int direction;
+        public SearchNextWordTransformer( String word, boolean wordSearch, int direction ) {
+            this.word = word;
+            this.wordSearch = wordSearch;
+            this.direction = direction;
+        }
+        @Override
+        public boolean process(CharSequence text, CaretPos before, CaretPos after) {
+            Pattern p = Pattern.compile( 
+                KawapadTemporarySearchHighlighter.searchStringToPattern( word, wordSearch ));
+            
+            Matcher m = p.matcher( text );
+            if ( 0 < direction ) {
+                // search forward.
+                if ( m.find( before.right ) ) {
+                    after.left  = m.start();
+                    after.right = m.end() - 1;
+                    return true;
+                } else {
+                    // if not found, restart from the first position.
+                    if ( m.reset().find() ) {
+                        after.left  = m.start();
+                        after.right = m.end() - 1;
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            } else {
+                // search backward.
+                int s0=-1;
+                int e0=-1;
+                while ( m.find() && m.end() < before.left  ) {
+                    s0= m.start();
+                    e0= m.end();
+                }
+                
+                // if found , return the result.
+                if ( 0<= s0 && 0<=e0 ) {
+                    after.left  = s0;
+                    after.right = e0-1;
+                    return true;
+                } else {
+                    // if not found, restart the search to go to
+                    // the last match string.
+                    s0=-1;
+                    e0=-1;
+                    while ( m.find() ) {
+                        s0= m.start();
+                        e0= m.end();
+                    }
+                    
+                    // if found, then return it.
+                    if ( 0<= s0 && 0<=e0 ) {
+                        after.left  = s0;
+                        after.right = e0-1;
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+
+ 
     static class JumpToCorrespondingParenthesisTransformer extends CaretTransformer {
         @Override
         protected boolean process(CharSequence text, CaretPos before, CaretPos after) {

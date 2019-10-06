@@ -68,6 +68,7 @@ import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.DefaultEditorKit.DefaultKeyTypedAction;
+import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Segment;
@@ -87,6 +88,7 @@ import gnu.mapping.Values;
 import gnu.mapping.WrongArguments;
 import kawa.standard.Scheme;
 import kawapad.KawapadSelection.ExpandParenthesisSelector;
+import kawapad.KawapadSelection.SearchNextWordTransformer;
 import kawapad.KawapadSelection.ShrinkParenthesisSelector;
 import kawapad.KawapadSelection.SideParenthesisSelector;
 import kawapad.KawapadSyntaxHighlighter.KawapadSyntaxElementType;
@@ -234,6 +236,10 @@ public class Kawapad extends JTextPane implements MenuInitializer {
 
         // init font
         kawapad.setFont( new Font("monospaced", Font.PLAIN, 12));
+        
+        // See https://stackoverflow.com/questions/49818079/java-selected-text-over-highlighted-text
+        // (Mon, 16 Sep 2019 14:20:03 +0900)
+        ((DefaultHighlighter)this.getHighlighter()).setDrawsLayeredHighlights( true );
         
         /*
          * (Sun, 07 Oct 2018 23:50:37 +0900) CREATING_KEYMAP
@@ -476,6 +482,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         //  purgeKeyFromActionMap( textPane.getActionMap(), DefaultEditorKit.insertBreakAction );
         kawapad.getActionMap().put( DefaultEditorKit.insertBreakAction, KAWAPAD_INSERT_BREAK_ACTION );
     }
+
 
 
     final class NewInsertBreakTextAction extends TextAction2 {
@@ -1075,7 +1082,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
                 offsetTTL--;
                 offset = -1;
             }
-            KawapadParenthesisHighlighter.forceClearHighlightedParenthesis();
+            KawapadTemporaryParenthesisHighlighter.forceClearHighlightedParenthesis();
             highlightMatchningParentheses( kawapad, offset );
         }
         private void updateMatchingParentheses2(int i) {
@@ -2631,7 +2638,56 @@ public class Kawapad extends JTextPane implements MenuInitializer {
             AcceleratorKeyList.putAcceleratorKeyList( this, "BACK_SPACE" );
         }
     };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private class SearchTextAction extends TextAction2 {
+        int direction;
+        private SearchTextAction(String name, int direction ) {
+            super( name );
+            this.direction = direction;
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JTextComponent c = getTextComponent( e );
+            Document document = c.getDocument();
+            Segment text = KawapadSelection.getText( document );
+            Caret caret = c.getCaret();
+            boolean wordSearch = caret.getDot() == caret.getMark();
+            SearchNextWordTransformer transformer = 
+                    new SearchNextWordTransformer( 
+                        KawapadTemporarySearchHighlighter.getCurrentWord( text, caret ), 
+                        wordSearch, direction );
+            transformer.transform( getParenthesisStack(), text, caret );
+        }
+    }
+
+    public static final String KAWAPAD_SEARCH_NEXT = "kawapad-search-next";
     
+    // INTEGRATED_ACTIONS 
+    @AutomatedActionField
+    public final Action SEARCH_NEXT_ACTION = new SearchTextAction( KAWAPAD_SEARCH_NEXT, +1 ) {
+        {
+            putValue( Action2.CAPTION, "Unselect" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "control 8" );
+//              putValue( Action.MNEMONIC_KEY , (int) 'd' );
+        }
+    };
+    
+    public static final String KAWAPAD_SEARCH_PREV = "kawapad-search-prev";
+    
+    // INTEGRATED_ACTIONS 
+    @AutomatedActionField
+    public final Action SEARCH_PREV_ACTION = new SearchTextAction( KAWAPAD_SEARCH_PREV, -1 ) {
+        {
+            putValue( Action2.CAPTION, "Unselect" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "control 3" );
+//              putValue( Action.MNEMONIC_KEY , (int) 'd' );
+        }
+    };
+
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 
@@ -3172,14 +3228,26 @@ public class Kawapad extends JTextPane implements MenuInitializer {
             logInfo( "highlightMatchningParentheses offset=" + offset  );
         if ( ENABLED_PARENTHESIS_HIGHLIGHT )
             try {
-                Caret caret = kawapad.getCaret();
-                if ( caret.getDot() == caret.getMark() ) {
-                    KawapadParenthesisHighlighter.highlightMatchingParenthesis( kawapad, caret.getDot() + offset );
-                } else {
-                    if ( caret.getMark() < caret.getDot() ) {
-                        KawapadParenthesisHighlighter.highlightMatchingParenthesis( kawapad, caret.getDot() + offset -1 );
+                // highlight the current word.
+                {
+                    Caret caret = kawapad.getCaret();
+                    String searchString = KawapadTemporarySearchHighlighter.getCurrentWord(
+                        KawapadSelection.getText( kawapad.getDocument() ), caret );
+                    boolean wordSearch = caret.getDot() == caret.getMark();
+                    KawapadTemporarySearchHighlighter.highlightSearchPatterns( kawapad, searchString, wordSearch );
+                }
+
+                // highlight the corresponding parentheses.
+                {
+                    Caret caret = kawapad.getCaret();
+                    if ( caret.getDot() == caret.getMark() ) {
+                        KawapadTemporaryParenthesisHighlighter.highlightMatchingParenthesis( kawapad, caret.getDot() + offset );
                     } else {
-                        KawapadParenthesisHighlighter.highlightMatchingParenthesis( kawapad, caret.getDot() + offset  );
+                        if ( caret.getMark() < caret.getDot() ) {
+                            KawapadTemporaryParenthesisHighlighter.highlightMatchingParenthesis( kawapad, caret.getDot() + offset -1 );
+                        } else {
+                            KawapadTemporaryParenthesisHighlighter.highlightMatchingParenthesis( kawapad, caret.getDot() + offset  );
+                        }
                     }
                 }
             } catch (BadLocationException e) {
