@@ -507,7 +507,7 @@ public class KawapadSelection {
                         ch == ')' ||
                         ch == '"' ||
                         false
-                        );                        
+                        );
             }
         };
     }
