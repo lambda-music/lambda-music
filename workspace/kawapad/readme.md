@@ -74,6 +74,7 @@ Set the main font of the editor. Kawapad can change its font-face.
 |kawapad-lisp-word-select-left|Select the Word on the Cursor.|  CTRL-LEFT, ALT-B  |
 |kawapad-lisp-word-swap-left|Swap the Word on the Left.|    |
 |kawapad-lisp-word-swap-right|Swap the Word on the Right.|    |
+|kawapad-unselect|Unselect|  ESCAPE  |
 |kawapad-parenthesis-swap-left|Swap the Left Parentesis Pair|    |
 |kawapad-parenthesis-swap-right|Swap the Right Parentsis Pair|    |
 |kawapad-parenthesis-extend-left|Extend the Left Parentesis Pair|  SHIFT-CTRL-ALT-LEFT, SHIFT-CTRL-ALT-B  |

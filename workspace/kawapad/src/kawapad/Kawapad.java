@@ -1026,7 +1026,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
-    public final Action KAWAPAD_DISABLE_CONTENT_ASSIST_ACTION = new TextAction2(KAWAPAD_DISABLE_CONTENT_ASSIST) {
+    public final Action DISABLE_CONTENT_ASSIST_ACTION = new TextAction2(KAWAPAD_DISABLE_CONTENT_ASSIST) {
         @Override
         public void actionPerformed(ActionEvent e) {
             if ( contentAssistEnabled ) {
@@ -1037,13 +1037,13 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         {
             putValue( Action2.CAPTION, "Disable Content Assist" );
             putValue( Action.MNEMONIC_KEY, (int)'d' );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "ESCAPE" );
+//            AcceleratorKeyList.putAcceleratorKeyList( this, "ESCAPE" );
         }
     };
 
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
-    public final Action KAWAPAD_ENABLE_CONTENT_ASSIST_ACTION = new TextAction2( KAWAPAD_ENABLE_CONTENT_ASSIST ) {
+    public final Action ENABLE_CONTENT_ASSIST_ACTION = new TextAction2( KAWAPAD_ENABLE_CONTENT_ASSIST ) {
         @Override
         public void actionPerformed(ActionEvent e) {
             contentAssistEnabled = true;
@@ -1779,8 +1779,43 @@ public class Kawapad extends JTextPane implements MenuInitializer {
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
+
+    public static final String KAWAPAD_UNSELECT = "kawapad-unselect";
     
+    // INTEGRATED_ACTIONS 
+    @AutomatedActionField
+    public final Action UNSELECT_ACTION = new TextAction2(KAWAPAD_UNSELECT) {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JTextComponent textComponent = getTextComponent( e );
+            Caret caret = textComponent.getCaret();
+            caret.setDot( caret.getDot() );
+        }
+        {
+            putValue( Action2.CAPTION, "Unselect" );
+//            AcceleratorKeyList.putAcceleratorKeyList( this, "ESCAPE" );
+//              putValue( Action.MNEMONIC_KEY , (int) 'd' );
+        }
+    };
+
+
+    public static final String KAWAPAD_ESCAPE = "kawapad-escape";
     
+    // INTEGRATED_ACTIONS 
+    @AutomatedActionField
+    public final Action UNSELECT_ESCAPE = new TextAction2(KAWAPAD_ESCAPE) {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            UNSELECT_ACTION.actionPerformed( e );
+            DISABLE_CONTENT_ASSIST_ACTION.actionPerformed( e );
+        }
+        {
+            putValue( Action2.CAPTION, "Unselect" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ESCAPE" );
+//              putValue( Action.MNEMONIC_KEY , (int) 'd' );
+        }
+    };
+
     //////////////////////////////////////////////////////////////////////////////////////////
 
     private class ParenthesisSwapAction extends TextAction2 {
