@@ -102,7 +102,7 @@ class KawapadSyntaxHighlighter extends SyntaxHighlighter {
             defaultBlockCommentColor )); 
         list.add( SyntaxHighlighter.createSyntaxElement(
             KawapadSyntaxElementType.LINE_COMMENT,
-            Pattern.compile( ";.*$" ),
+            Pattern.compile( ";.*$" , Pattern.MULTILINE ),
             defaultLineCommentColor ));
         return list;
     }
