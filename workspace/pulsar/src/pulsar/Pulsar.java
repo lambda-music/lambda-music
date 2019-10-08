@@ -44,6 +44,7 @@ import javax.swing.JComboBox;
 
 import org.jaudiolibs.jnajack.JackException;
 
+import gnu.kawa.functions.RunProcess;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.LList;
@@ -64,6 +65,7 @@ import kawapad.Kawapad.KawaVariableInitializer;
 import metro.EventListenable;
 import metro.Metro;
 import metro.MetroPort;
+import metro.MetroSequence;
 import metro.MetroTrack;
 import metro.MetroTrack.SyncType;
 import pulsar.lib.CurrentObject;
@@ -2008,7 +2010,78 @@ public final class Pulsar extends Metro {
                 return arg0 instanceof MetroTrack;
             }
         });
+
+        SchemeUtils.defineVar( env, new Procedure1( "track->procedure" ) {
+            @Override
+            public Object apply1(Object arg0 ) throws Throwable {
+                if ( arg0 instanceof MetroTrack ) {
+                    return ((MetroTrack)arg0).getSequence();
+                } else {
+                    throw new IllegalArgumentException( "the argument is not a track object." );
+                }
+            }
+        });
         
+        SchemeUtils.defineVar( env, new SafeProcedureN( "apply-track" ) {
+            @Override
+            public Object applyN(Object[] args) throws Throwable {
+                if ( args.length < 1 ) {
+                    throw new IllegalArgumentException("insufficient argument length (length<1)" );
+                }
+                Object arg0 = args[0];
+                Object[] restArgs = Arrays.copyOfRange( args, 1, args.length );
+                if ( arg0 instanceof MetroTrack ) {
+                    MetroSequence track = ((MetroTrack)arg0).getSequence();
+                    Invokable procedure = ((SchemeSequence)track).getProcedure();
+                    return procedure.invoke( restArgs );
+                } else {
+                    throw new IllegalArgumentException( "the argument is not a track object." );
+                }
+            }
+        });
+
+        SchemeUtils.defineVar( env, new SafeProcedureN( "create-process" ) {
+            @Override
+            public Object applyN(Object[] args) throws Throwable {
+                return RunProcess.instance.applyN( args );
+            }
+        }, "create-process", "newp" );
+
+        SchemeUtils.defineVar( env, new SafeProcedureN( "destroy-process" ) {
+            @Override
+            public Object applyN(Object[] args) throws Throwable {
+                for ( int i=0; i<args.length; i++ ) {
+                    if ( args[i] instanceof Process ) {
+                        ((Process)args[i]).destroy();
+                    } else {
+                        logWarn( "warning : the value of the arguments no " + i + " is not a process object." );
+                    }
+                }
+                return Values.empty;
+            }
+        }, "destroy-process", "kilp" ); 
+        
+        SchemeUtils.defineVar( env, new SafeProcedureN( "kill-process" ) {
+            @Override
+            public Object applyN(Object[] args) throws Throwable {
+                for ( int i=0; i<args.length; i++ ) {
+                    if ( args[i] instanceof Process ) {
+                        ((Process)args[i]).destroyForcibly();
+                    } else {
+                        logWarn( "warning : the value of the arguments no " + i + " is not a process object." );
+                    }
+                }
+                return Values.empty;
+            }
+        }, "kill-process", "fkilp" );
+
+        SchemeUtils.defineVar( env, new Procedure1( "sleep" ) {
+            @Override
+            public Object apply1(Object arg1) throws Throwable {
+                Thread.sleep( SchemeUtils.toInteger( arg1 ));
+                return Values.empty;
+            }
+        } );
         
         SchemeUtils.defineVar( env, new SafeProcedureN("random") {
             @Override

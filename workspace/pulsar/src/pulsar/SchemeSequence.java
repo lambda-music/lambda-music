@@ -71,6 +71,9 @@ public class SchemeSequence extends MetroSequence {
     public SchemeSequence ( Invokable procedure ) {
         this.procedure = procedure;
     }
+    public Invokable getProcedure() {
+        return procedure;
+    }
 
     @Override
     public void processDirect(Metro metro, List<MetroAbstractMidiEvent> in, List<MetroAbstractMidiEvent> out) {
