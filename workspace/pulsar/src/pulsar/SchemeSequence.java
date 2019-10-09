@@ -33,6 +33,7 @@ import metro.MetroAbstractMidiEvent;
 import metro.MetroEventBuffer;
 import metro.MetroSequence;
 import metro.MetroTrack;
+import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.Invokable;
 
 public class SchemeSequence extends MetroSequence {
@@ -98,6 +99,10 @@ public class SchemeSequence extends MetroSequence {
     }
     private static final NoteListParser PARSER = PulsarNoteListParser.getInstance();
     public static boolean scheme2buf( Metro metro, MetroTrack track, Invokable procedure, MetroEventBuffer buf) {
+        SchemeSecretary.initializeSchemeForCurrentThreadStatic( ((Pulsar)metro).getSchemeSecretary().getExecutive() );
+        ((Pulsar)metro).threadInializer.run();
+
+        
         // Call the invokable to get a note list of the next measure.
         AbstractSequence<Object> pattern = (AbstractSequence<Object>)procedure.invoke();
         

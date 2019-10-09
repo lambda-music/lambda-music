@@ -1652,7 +1652,19 @@ public final class Pulsar extends Metro {
                 }
                 procTrack( trackList, syncType, syncTrack, syncOffset );
                 
-                return Pair.makeList( trackList );
+                
+                /*
+                 * (Wed, 09 Oct 2019 17:35:14 +0900) RETURNING_LISTS_CAUSE_ERROR
+                 * 
+                 * Returning a list which is created by Java DOES cause 
+                 * a problem in Scheme code. It will miraculously be merged with the
+                 * values which are returned by following code. The merged mysterious value
+                 * cannot be checked its type. The exact reason why this happens is unknown.
+                 * Googling this gives me no result.
+                 *  
+                 */
+//                return Pair.makeList( trackList );
+                return Values.empty;
             }
         }
 
@@ -1748,6 +1760,7 @@ public final class Pulsar extends Metro {
                     list.add( track );
                 }
                 Collections.reverse(list);
+                
                 return Pair.makeList(list);
 
             }
