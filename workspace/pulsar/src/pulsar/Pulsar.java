@@ -298,6 +298,10 @@ public final class Pulsar extends Metro {
     public Runnable createRunnableAndInvocable( Procedure procedure, Object... args) {
         return new InvokablyRunnable( getSchemeSecretary().createSecretarillyInvokable( procedure ), args );
     }
+    
+    public SchemeSequence asSequence( Procedure procedure ) {
+        return new SchemeSequence( createInvokable( procedure ) );
+    }
 
 //  public static InvokableSchemeProcedure createInvocable(
 //          Procedure invokable) {

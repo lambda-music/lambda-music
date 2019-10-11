@@ -497,7 +497,8 @@ public class MetroTrack implements MetroLock, EventListenable {
             case IMMEDIATE :
             {
                 this.cursor = offset;
-                logInfo( "prepare(immediate):" + this.cursor );
+                if ( DEBUG )
+                    logInfo( "prepare(immediate):" + this.cursor );
                 if ( this.syncTrack != null ) {
                     Logger.getLogger( Metro.class.getName()).log(Level.WARNING, "syncTrack was passed but ignored by the process because syncType was `immediate`." );
                 }
@@ -609,15 +610,19 @@ public class MetroTrack implements MetroLock, EventListenable {
                 String message = "" + updateThreshold +"=" + barInFrames + "*" + metroUpdateThreshold +" (updateThreshold = barInFrames * metroUpdateThreshold)";
                 
                 if ( updateThreshold  < MIN_UPDATE_THRESHOLD ) {
-                    logWarn( "Too small update-threshold value causes system to become unstable. " + message );
+                    if ( DEBUG )
+                        logWarn( "Too small update-threshold value causes system to become unstable. " + message );
                     updateThreshold = 256;
-                    logWarn( "We ignored the specified update-threshold value; reset to " + updateThreshold  + "." );
+                    if ( DEBUG )
+                        logWarn( "We ignored the specified update-threshold value; reset to " + updateThreshold  + "." );
                 } else if ( MAX_UPDATE_THRESHOLD < updateThreshold ) {
-                    logWarn( "Too large update-threshold value causes system to become unstable. " + message );
+                    if ( DEBUG )
+                        logWarn( "Too large update-threshold value causes system to become unstable. " + message );
                     updateThreshold = MAX_UPDATE_THRESHOLD;
                 } else {
                     cacheUpdateThreshold = updateThreshold;
-                    logWarn( "We set updateThreshold value. " + message );
+                    if ( DEBUG )
+                        logWarn( "We set updateThreshold value. " + message );
                 }
             }
 
@@ -652,21 +657,24 @@ public class MetroTrack implements MetroLock, EventListenable {
 //              logInfo( "offerNewBuffer:ending (" + this.name  + ")");
 
                 if ( this.endingDone ) {
-                    logInfo( "offerNewBuffer(): endingDone is true" );
+                    if ( DEBUG )
+                        logInfo( "offerNewBuffer(): endingDone is true" );
                     MetroEventBuffer buf = new MetroEventBuffer();
                     buf.setLength( 1.0 );
                     buf.prepare( metro, client, position, true );
                     this.buffers.offer( buf );
                     
                 } else {
-                    logInfo( "offerNewBuffer(" + name + ") setting true endingDone " );
+                    if ( DEBUG )
+                        logInfo( "offerNewBuffer(" + name + ") setting true endingDone " );
                     this.endingDone = true;
 
                     MetroEventBuffer buf = new MetroEventBuffer();
                     buf.exec( this.endingLength , new Runnable() {
                         @Override
                         public void run() {
-                            logInfo( "offerNewBuffer(" +name + ") UNREGISTER THIS" );
+                            if ( DEBUG )
+                                logInfo( "offerNewBuffer(" +name + ") UNREGISTER THIS" );
                             synchronized ( metro.getMetroLock() ) {
                                 try {
                                     metro.unregisterTrack( MetroTrack.this );
@@ -693,9 +701,11 @@ public class MetroTrack implements MetroLock, EventListenable {
                 this.buffers.offer( buf );
                 
                 if ( result ) {
-                    logInfo( "offerNewBuffer(" +name + ") CONTINUE" );
+                    if ( DEBUG )
+                        logInfo( "offerNewBuffer(" +name + ") CONTINUE" );
                 } else {
-                    logInfo( "offerNewBuffer(" +name + ") ENDING started");
+                    if ( DEBUG )
+                        logInfo( "offerNewBuffer(" +name + ") ENDING started");
                     this.ending = true;
                     this.endingLength = buf.getActualLength();
                     if ( this.endingLength < 1 )

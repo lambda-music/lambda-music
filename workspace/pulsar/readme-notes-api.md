@@ -57,11 +57,24 @@ total measure length of the current notation object set.
 
 --------------------------------------------------------
 
-ADD-TRACK
+PUT-TRACK
 ====================
 
 #### SYNOPSIS ####
-    (n type: '[add-track|add])
+    (n type: '[put-track|putt])
+
+### DESCRIPTION ###
+ 
+
+
+
+--------------------------------------------------------
+
+REMOVE-TRACK
+====================
+
+#### SYNOPSIS ####
+    (n type: '[remove-track|remt])
 
 ### DESCRIPTION ###
  

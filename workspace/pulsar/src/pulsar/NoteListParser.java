@@ -209,7 +209,7 @@ public class NoteListParser {
         String type      = map.containsKey( ID_TYPE ) ? SchemeUtils.schemeSymbolToJavaString(  map.get( ID_TYPE ) ) : "";
         NoteListParserElement parser = get( type );
         if ( parser == null ) {
-            logWarn( "unknown type (" +  type + ")" );
+            logError( "Error : Unknown notation type was given. (" +  type + ")", new Exception() );
             return result;
         } else {
             return parser.parseEvent( metro, track, receiver, map, result );

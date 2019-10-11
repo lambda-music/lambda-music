@@ -27,7 +27,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import gnu.lists.AbstractSequence;
+import gnu.lists.LList;
 import gnu.lists.Pair;
+import gnu.mapping.Procedure;
 import metro.Metro;
 import metro.MetroAbstractMidiEvent;
 import metro.MetroEventBuffer;
@@ -48,6 +50,17 @@ public class SchemeSequence extends MetroSequence {
         LOGGER.log(Level.WARNING, msg);
     }
     
+    public static Procedure asProcedure(Object v) {
+        if ( v instanceof Procedure ) {
+            return (Procedure)v;
+        } else if ( v instanceof LList ) {
+            return new SchemeSequenceDefaultProcedure( (LList)v );
+        } else {
+            logWarn( "An invalid object was passed to the track procedure parameter. We ignored it. " );
+            return null;
+        }
+    }
+
     /*
      * (list
      *     (cons 1.0  (lambda() ... ))

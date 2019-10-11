@@ -1084,6 +1084,9 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
         registerTrack( trackList );
     }
     public void removeTrack( MetroTrack track, SyncType syncType, MetroTrack syncTrack, double syncOffset )  {
+        if ( track == null )
+            return;
+        
         switch ( syncType ) {
             case IMMEDIATE :
             case PARALLEL :
