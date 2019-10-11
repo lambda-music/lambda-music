@@ -1993,5 +1993,243 @@
                                                (raise (format "unknown command ~a" cmd )))))))))
 
 
+; =======================================================
+;
+; ADDED (Fri, 11 Oct 2019 22:34:35 +0900)
+;
+; =======================================================
+;
+; make-song and other routines.
+;
+; =======================================================
+(define (song-from next-label)
+        (let ((count 0 ))
+          (lambda args
+            (if (= (length args) 0 )
+                ;then
+                (if (= count 0)
+                    (begin
+                     (set! count (+ count 1))
+                     next-label)
+                    (begin
+                     #f))
+                ;else
+                (let ((command (first args)))
+                 (cond
+                  ((eq? command 'reset )
+                   (set! count 0))
+                  (else
+                   (raise (format "unknown command ~a" command) )))
+                 #f)))))
+
+(define (song-to next-label)
+        (let ((count 0 ))
+          (lambda args
+            (if (= (length args) 0 )
+                ;then
+                (if (= count 0)
+                    (begin
+                     (set! count (+ count 1))
+                     #f)
+                    (begin
+                     next-label))
+                ;else
+                (let ((command (first args)))
+                 (cond
+                  ((eq? command 'reset )
+                   (set! count 0))
+                  (else
+                   (raise (format "unknown command ~a" command) )))
+                 #f)))))
+
+(define (song-conv song-data)
+        (reverse (fold (lambda (x result)
+                         (cond ((number? x)
+                                (if (< 0 x )
+                                    (let ((lst (make-list (+ x 1) #f)))
+                                      (set-cdr! (last-pair lst) result )
+                                      lst)
+                                    (raise (format "~a is not a valid number." x ))))
+                               (else 
+                                (cons x result)))) '() song-data )))
+
+
+; (song-conv (list 'hello #t 4  #t #f ))
+
+(define (song-exec song-head song-current measure-length)
+        (let loop-song ((song-next-pos song-current)
+                        (measure-length measure-length ))
+          (if (null? song-next-pos)
+              ;then 
+              (begin
+               (display-warn 'end-of-song )
+               (newline-warn)
+               ; *RETURN* return null for the next position to indicate the song is finished.
+               (values (n (n type: 'len val: measure-length)(n type: 'end)) '() measure-length ))
+              ;else
+              (begin
+               (let ((song-next-val (car song-next-pos)))
+                 (cond
+                  ; === NOTATION DATA ===
+                  ((pair? song-next-val)
+                   ; *RETURN* return the current value
+                   (values song-next-val (cdr song-next-pos) measure-length ))
+                  
+                  ; === COMMAND PROCEDURE ===
+                  ((procedure? song-next-val)
+                   (let* ((dummy #f)
+                          ; get the procedure .
+                          (proc          song-next-val)
+                          ; execute the procedure .                          
+                          (proc-val     (proc))
+                         
+                          ; check for the default values and convert it to a pair. 
+                          ; otherwise treat it as a locator and jump to there.                     
+                          (proc-result  (cond
+                                         ((pair? proc-val)
+                                          ; do nothing
+                                          proc-val)
+                                         ((number? proc-val)
+                                          (cons 'length proc-val))
+                                         ((symbol? proc-val)
+                                          (cons 'goto proc-val))
+
+                                         ; if proc-val is #f, go to next;
+                                         ((eq? proc-val #f )
+                                          (cons 'next #f))
+                                         (else
+                                          (raise (format "an unsupported value was returned ~a" proc-val )))))
+                          
+                          ; parse the proc-result
+                          (proc-command          (car proc-result))
+                          (proc-command-argument (cdr proc-result)))
+                         
+                         ; the car value of the proc-result is a command 
+                         ; and the cdr value of the proc-result is an argument.
+                         (cond
+                          ; goto command
+                          ((eq? proc-command 'goto )
+                           (let ((this-pair (memq proc-command-argument song-head )))
+                             (if (eq? this-pair #f)
+                                 (raise (format "cannot find ~a" proc-result )))
+                             (loop-song this-pair measure-length)))
+                          ; length command
+                          ((eq? proc-command 'length )
+                           (loop-song (cdr song-next-pos) proc-command-argument ))
+                          ; next command
+                          ((eq? proc-command 'next )
+                           (loop-song (cdr song-next-pos) measure-length)))))
+                  
+                  ; === LABEL ===
+                  ((symbol? song-next-val)
+                   ; skip the label value.
+                   (loop-song (cdr song-next-pos) measure-length ))
+                  ; === SKIP ===
+                  ((number? song-next-val)                   
+                   ; *RETURN* if the current value is a number, treat it as measure length 
+                   ; and return the current location.
+                   (set! measure-length song-next-val )
+                   (values (n (n type: 'len val: measure-length)) (cdr song-next-pos) measure-length ))
+                  ((eq? song-next-val #f)
+                   ; *RETURN* return the current location
+                   (values (n (n type: 'len val: measure-length)) (cdr song-next-pos) measure-length ))
+                  (else
+                   (raise (format "an unsupported value was found ~a" song-next-val )))))))))
+
+
+
+
+(define (make-song . args)  
+        (let* ((notation-list  '())
+               (song-head      (if (< 0 (length args)) (first args ) (raise "no song was specified" )))
+               (song-current   (if (< 1 (length args)) (second args) song-head ))
+               (measure-length (if (< 2 (length args)) (third args ) 1         )))
+              
+              (lambda args
+                (if (= (length args) 0)
+                    ; then
+                    ; return execute the song and return a notation-list . 
+                    (let-values ((( ret-notation-list ret-song-current ret-measure-length ) (song-exec song-head song-current measure-length)))
+                                (set! notation-list  ret-notation-list )
+                                (set! song-current   ret-song-current)
+                                (set! measure-length ret-measure-length)                      
+                                ; *RETURN* return a notation-list .
+                                notation-list    
+                                )
+              
+                    ; else
+                    ; execute special command
+                    (let ((command (first args)))
+                      (cond
+                       ((eq? command 'head)
+                        (set! song-current song-head))
+                       ((eq? command 'goto)
+                        (let ((goto-target (second args) ))
+                          (set! song-current (memq goto-target song-head))))
+                       ((eq? command 'reset)
+                        (set! song-current song-head)
+                        (for-each (lambda(x)
+                                    (if (procedure? x)
+                                        (x 'reset )))
+                                  song-head))
+                       (else
+                        (raise (format "unknown command ~a " command ))))
+                      ; *RETURN*
+                      #f)))))
+
+
+
+; example
+(if #f (putt (newt 'a 
+                   ; This makes a song closure which plays the passed notation
+                   ; lists sequencially. It has some functionarities to
+                   ; implement label jumping.
+                   (make-song 
+                     ; List of Notation lists.
+                     (list
+                       ; This is a label.
+                       'segno
+
+                       ; A notation list
+                       (n port: "fluidsynth" chan: 1 
+                          (melody "do re mi fi")
+                          (n type: 'putt id: 'hello2 syty: 'i pos: 0 
+                             proc: (n port: "h2" chan: 0 (melody "do re mi")) )
+                          (n type: 'len val: 2))
+
+                       ; A notation list
+                       (n port: "fluidsynth" chan: 1 
+                          (melody "do re mi fi")
+                          (n type: 'exec proc: (lambda() (display 'hello)(newline) )))
+
+                       ; Creating a clousure to jump to the specified label.
+                       (song-from 'segno)
+
+                       'coda
+                       ; A notation list to play coda.
+                       (n port: "fluidsynth" chan: 1 
+                          (melody "sol fi , mi , re , "))
+
+                       ; A notation list to clean up.
+                       (n (n type: 'remt id: 'hello   pos: 1 )
+                          (n type: 'remt id: 'hello2  pos: 1 )
+                          (n type: 'len val: 2)
+                          )
+                       )))))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ; vim: filetype=scheme expandtab :
