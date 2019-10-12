@@ -380,6 +380,29 @@
                                 ))
                             notes 
                             mapvals))
+
+                    ; Eliminate the duplicate len-notes except the last len-note.
+                    ; Search len-notes (n type: 'len ) and then append the last len-note
+                    ; to the other notes.
+                    (set! notes (let* ((notes notes)
+                                       (len-notes   (filter (lambda(note) 
+                                                              (begin
+                                                                (eq? 'len (cdr (or (assq 'type note)
+                                                                                   (cons 'type #f)))))) 
+                                                            notes))
+                                       (other-notes (filter (lambda(note) 
+                                                              (not 
+                                                                (eq? 'len (cdr (or (assq 'type note)
+                                                                                   (cons 'type #f)))))) 
+                                                            notes)))
+                                  (display len-notes)
+                                  (newline)
+                                  (if (= 0 (length len-notes))
+                                    ;then *RETURN*
+                                    notes
+                                    ;else *RETURN*
+                                    (append other-notes
+                                            (last-pair len-notes)))))
                     notes)))
               ))
 
