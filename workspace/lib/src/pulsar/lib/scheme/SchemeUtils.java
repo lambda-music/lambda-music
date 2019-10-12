@@ -459,8 +459,10 @@ public class SchemeUtils {
                 return Pair.make(
                     prettyPrintReconstruction0( stack, p.getCar()),
                     prettyPrintReconstruction0( stack, p.getCdr()));
-            } else if ( o instanceof Symbol ) {
-                return toSchemeString( "'" + schemeSymbolToJavaString( (Symbol)o ) );
+//            // REMOVED >>> (Sat, 12 Oct 2019 21:46:04 +0900)
+//            } else if ( o instanceof Symbol ) {
+//                return toSchemeString( "'" + schemeSymbolToJavaString( (Symbol)o ) );
+//            // REMOVED <<< (Sat, 12 Oct 2019 21:46:04 +0900)    
             } else if ( o instanceof IString || o instanceof FString ) {
                 return toSchemeString( "\"" + anyToString( o ) + "\"" );
             } else {
