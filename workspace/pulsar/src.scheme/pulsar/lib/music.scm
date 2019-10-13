@@ -2025,45 +2025,53 @@
 ; make-song and other routines.
 ;
 ; =======================================================
-(define (song-from next-label)
-        (let ((count 0 ))
-          (lambda args
-            (if (= (length args) 0 )
-                ;then
-                (if (= count 0)
-                    (begin
-                     (set! count (+ count 1))
-                     next-label)
-                    (begin
-                     #f))
-                ;else
-                (let ((command (first args)))
-                 (cond
-                  ((eq? command 'reset )
-                   (set! count 0))
-                  (else
-                   (raise (format "unknown command ~a" command) )))
-                 #f)))))
+(define (song-from next-label . args )
+  (let ((limit-count (if (< 0 (length args)) 
+                       (first args) 
+                       1 ))
+        (count 0 ))
+    (lambda args
+      (if (= (length args) 0 )
+        ;then
+        (begin 
+          (set! count (+ count 1))
+          (if (< count limit-count)
+            (begin
+              next-label)
+            (begin
+              #f)))
+        ;else
+        (let ((command (first args)))
+          (cond
+            ((eq? command 'reset )
+             (set! count 0))
+            (else
+              (raise (format "unknown command ~a" command) )))
+          #f)))))
 
-(define (song-to next-label)
-        (let ((count 0 ))
-          (lambda args
-            (if (= (length args) 0 )
-                ;then
-                (if (= count 0)
-                    (begin
-                     (set! count (+ count 1))
-                     #f)
-                    (begin
-                     next-label))
-                ;else
-                (let ((command (first args)))
-                 (cond
-                  ((eq? command 'reset )
-                   (set! count 0))
-                  (else
-                   (raise (format "unknown command ~a" command) )))
-                 #f)))))
+(define (song-to next-label . args )
+  (let ((limit-count (if (< 0 (length args)) 
+                       (first args) 
+                       1 ))
+        (count 0 ))
+    (lambda args
+      (if (= (length args) 0 )
+        ;then
+        (begin 
+          (set! count (+ count 1))
+          (if (< count limit-count)
+            (begin
+              #f)
+            (begin
+              next-label)))
+        ;else
+        (let ((command (first args)))
+          (cond
+            ((eq? command 'reset )
+             (set! count 0))
+            (else
+              (raise (format "unknown command ~a" command) )))
+          #f)))))
 
 (define (song-conv song-data)
         (reverse (fold (lambda (x result)
