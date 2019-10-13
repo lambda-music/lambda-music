@@ -3294,7 +3294,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
             }
         }
     }
-    private static final List<String> DEFAULT_LISP_WORDS = Arrays.asList( "let", "lambda" );
+    private static final List<String> DEFAULT_LISP_WORDS = Arrays.asList( "let", "lambda", "define" );
     ArrayList<String> lispKeywordList = new ArrayList<>( DEFAULT_LISP_WORDS );
     public List<String> getLispKeywordList() {
         return Collections.unmodifiableList( this.lispKeywordList );
