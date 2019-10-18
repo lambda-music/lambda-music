@@ -2060,7 +2060,7 @@ public final class Pulsar extends Metro {
         SchemeUtils.defineVar( env, new SafeProcedureN( "create-process" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                return RunProcess.instance.applyN( args );
+                return new PulsarProcessWrapper( (Process)RunProcess.instance.applyN( args ) );
             }
         }, "create-process", "newp" );
 
@@ -2070,6 +2070,8 @@ public final class Pulsar extends Metro {
                 for ( int i=0; i<args.length; i++ ) {
                     if ( args[i] instanceof Process ) {
                         ((Process)args[i]).destroy();
+                    } else if ( args[i] instanceof PulsarProcessWrapper ) {
+                            ((PulsarProcessWrapper)args[i]).destroy();
                     } else {
                         logWarn( "warning : the value of the arguments no " + i + " is not a process object." );
                     }
@@ -2084,6 +2086,8 @@ public final class Pulsar extends Metro {
                 for ( int i=0; i<args.length; i++ ) {
                     if ( args[i] instanceof Process ) {
                         ((Process)args[i]).destroyForcibly();
+                    } else if ( args[i] instanceof PulsarProcessWrapper ) {
+                        ((PulsarProcessWrapper)args[i]).destroyForcibly();
                     } else {
                         logWarn( "warning : the value of the arguments no " + i + " is not a process object." );
                     }
