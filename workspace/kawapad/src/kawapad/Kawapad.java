@@ -204,6 +204,9 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     public void addThreadInitializer( Runnable r ) {
         threadInitializerList.add( r );
     }
+    public void addAllThreadInitializer( Collection<Runnable> rs ) {
+        threadInitializerList.addAll( rs );
+    }
     public void deleteThreadInitializer( Runnable r ) {
         threadInitializerList.remove( r );
     }
@@ -3212,11 +3215,17 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         };
     }
     
-    public KawapadFrame createKawapadFrame( File f) throws IOException {
+    public KawapadFrame createKawapadFrame( File f ) throws IOException {
         KawapadFrame kawapadFrame = new KawapadFrame( this.kawapad.schemeSecretary, "Kawapad" );
+        Kawapad newKawapad = kawapadFrame.getKawapad();
+        Kawapad thisKawapad = this;
+        newKawapad.addAllThreadInitializer( thisKawapad.getThreadInitializerList() );
+        newKawapad.addAllVariableInitializer( thisKawapad.getVariableInitializerList() );
+        newKawapad.removeVariableInitializer( thisKawapad.currentInstanceVariableInitializer );
+        
         kawapadFrame.init();
         if ( f != null )
-            kawapadFrame.getKawapad().openFile( f );
+            newKawapad.openFile( f );
         return kawapadFrame; 
     }
 
@@ -3340,12 +3349,17 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         void initializeVariable( Map<String, Object> variables ); 
     }
     List<KawaVariableInitializer> kawaVariableInitializerList = new ArrayList<>();
-
     public void addVariableInitializer( KawaVariableInitializer i ){
         this.kawaVariableInitializerList.add( i );
     }
+    public void addAllVariableInitializer( Collection<KawaVariableInitializer> is ){
+        this.kawaVariableInitializerList.addAll( is );
+    }
     public void removeVariableInitializer( KawaVariableInitializer i ){
         this.kawaVariableInitializerList.remove( i );
+    }
+    public List<KawaVariableInitializer> getVariableInitializerList() {
+        return Collections.unmodifiableList( this.kawaVariableInitializerList );
     }
     public void initVariables(HashMap<String, Object> variables) {
         for ( KawaVariableInitializer i : this.kawaVariableInitializerList ){
@@ -3356,15 +3370,23 @@ public class Kawapad extends JTextPane implements MenuInitializer {
             }
         }
     }
-    
+
+    KawaVariableInitializer currentInstanceVariableInitializer = new KawaVariableInitializer() {
+        @Override
+        public void initializeVariable(Map<String, Object> variables ) {
+            variables.put( "kawapad", this );
+        }
+    };
+    KawaVariableInitializer instanceIDVariableInitializer = new KawaVariableInitializer() {
+        @Override
+        public void initializeVariable(Map<String, Object> variables ) {
+            variables.put( instanceID, this );
+        }
+    };
+
     {
-        addVariableInitializer( new KawaVariableInitializer() {
-            @Override
-            public void initializeVariable(Map<String, Object> variables ) {
-                variables.put( "kawapad", this );
-                variables.put( instanceID, this );
-            }
-        });
+        addVariableInitializer( currentInstanceVariableInitializer);
+        addVariableInitializer( instanceIDVariableInitializer);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////

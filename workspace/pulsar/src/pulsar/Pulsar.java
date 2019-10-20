@@ -2060,6 +2060,10 @@ public final class Pulsar extends Metro {
         SchemeUtils.defineVar( env, new SafeProcedureN( "create-process" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
+//                List l =  new ArrayList( Arrays.asList( args ) );
+//                l.add( 0, Keyword.make( "directory" ) );
+//                l.add( 1, new File( System.getProperty( "user.dir" ) ) );
+//                args = l.toArray();                
                 return new PulsarProcessWrapper( (Process)RunProcess.instance.applyN( args ) );
             }
         }, "create-process", "newp" );
