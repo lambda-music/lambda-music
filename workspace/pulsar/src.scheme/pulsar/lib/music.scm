@@ -2352,7 +2352,23 @@
 
 
 
-
+; ADDED (Fri, 25 Oct 2019 02:17:25 +0900)
+(define (make-counting-voice beat-count bar-count)
+  (append 
+    (apply append (map (lambda (current-bar)
+                         (map (lambda (current-beat) 
+                                (n type: 'note 
+                                   note: (+ (if (= current-beat 0 ) 
+                                              current-bar 
+                                              current-beat) 
+                                            60) 
+                                   velo: 0.75 
+                                   pos: (+ current-bar 
+                                           (/ current-beat beat-count))
+                                   len: 1/4 ))
+                              (iota beat-count)))
+                       (iota bar-count)))
+    (list (n type: 'len val: bar-count ))))
 
 
 

@@ -83,7 +83,7 @@ public class SchemeUtils {
     static void logWarn(String msg) {
         LOGGER.log(Level.WARNING, msg);
     }
-
+    private static final boolean DEBUG = false;
 
     public static Map<String,Object> list2map( AbstractSequence<Object> list, 
             Function<Object,Function<Integer,String>> idx2nameGenerator ) 
@@ -119,7 +119,9 @@ public class SchemeUtils {
                         }
                     }
                 } else {
-                    System.out.println( e.getClass().getName() );
+                    if (DEBUG)
+                        logInfo( e.getClass().getName() );
+                    
                     String key = idx2name.apply( index );
                     Object value = e;
                     map.put( key , value );

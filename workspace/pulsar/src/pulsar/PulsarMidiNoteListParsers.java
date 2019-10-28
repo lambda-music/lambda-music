@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import gnu.kawa.slib.srfi1;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroMidi;
