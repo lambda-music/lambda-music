@@ -702,7 +702,7 @@ public interface MetroMidiReceiver<T> {
         }
         @Override
         public T cc_rpnMsb( int channel, int value ) {
-            return format( "cc_rpnMsb", " int channel, int value ",channel,value  );
+            return format( "cc_rpnMsb", " int channel, int value ", channel, value  );
         }
     }
     public static class LoggingToError extends Formatter<String> {

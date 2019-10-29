@@ -2,7 +2,7 @@ package metro;
 
 import java.util.Iterator;
 
-public class MetroRecordingEventBuffer extends MidiReceiverDelegator<byte[]> implements Iterable<MetroEvent>, MetroMidiBufferedReceiver {
+public class MetroRecordingEventBuffer  implements Iterable<MetroEvent>, MetroMidiBufferedReceiver {
     public MetroRecordingEventBuffer(MetroMidiReceiver<byte[]> receiver) {
         super( receiver );
     }
@@ -14,6 +14,5 @@ public class MetroRecordingEventBuffer extends MidiReceiverDelegator<byte[]> imp
 
     @Override
     public void midiEvent(String id, double offset, MetroPort outputPort, byte[] data) {
-        
     }
 }

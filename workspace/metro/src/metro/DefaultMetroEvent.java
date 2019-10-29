@@ -43,10 +43,18 @@ package metro;
  */
 public abstract class DefaultMetroEvent implements MetroEvent {
     private String id;
+    public String getId() {
+        return id;
+    }
     public DefaultMetroEvent( String id, double barOffset ) {
         super();
         this.id = id == null ? super.toString() : id;
         this.barOffset = barOffset;
+    }
+    public DefaultMetroEvent( String id, int barOffsetInFrames ) {
+        super();
+        this.id = id == null ? super.toString() : id;
+        this.barOffsetInFrames = barOffsetInFrames;
     }
 
     private double barOffset;
@@ -59,6 +67,10 @@ public abstract class DefaultMetroEvent implements MetroEvent {
         this.barOffset = barOffset;
     }
     @Override
+    public final void calcBarOffset( int barLengthInFrames ){
+        this.barOffset = this.barOffsetInFrames / barLengthInFrames;
+    }
+    @Override
     public final boolean isBetween( double from, double to) {
         return from <= this.barOffset && this.barOffset < to;
     }
@@ -67,6 +79,10 @@ public abstract class DefaultMetroEvent implements MetroEvent {
     @Override
     public final int getBarOffsetInFrames() {
         return barOffsetInFrames;
+    }
+    @Override
+    public void setBarOffsetInFrames(int barOffsetInFrames) {
+        this.barOffsetInFrames = barOffsetInFrames;
     }
     @Override
     public final void calcBarOffsetInFrames( int barLengthInFrames ){
@@ -78,11 +94,6 @@ public abstract class DefaultMetroEvent implements MetroEvent {
     }
     
     @Override
-    public final String dump(String prefix) {
-        StringBuilder sb = new StringBuilder();
-        dumpProc(prefix, sb);
-        return sb.toString();
-    }
     public void dumpProc( String prefix, StringBuilder sb ) {
         sb.append(prefix).append( "                id: " + id                ).append( "\n" );
         sb.append(prefix).append( "            offset: " + barOffset         ).append( "\n" );

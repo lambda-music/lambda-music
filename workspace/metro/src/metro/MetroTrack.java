@@ -421,11 +421,9 @@ public class MetroTrack implements MetroLock, EventListenable {
                     
                     if ( e.isBetweenInFrames( actualCursor, actualNextCursor ) ) {
                         found = true;
-                        e.calcMidiOffset( actualCursor );
-                        e.process( metro );
-                        if ( e instanceof MetroMidiEvent ) {
-                            result.add( (MetroMidiEvent)e );
-                        }
+                        MetroMidiEvent me = e.process( metro, actualCursor );
+                        if ( me != null )
+                            result.add( me );
                     } else {
                         if ( found ) // SEE COMMENT_A (Fri, 02 Aug 2019 19:20:40 +0900)
                             break;

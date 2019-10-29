@@ -31,10 +31,8 @@ import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 import metro.Metro;
-import metro.MetroMidiEvent;
 import metro.MetroEventBuffer;
-import metro.MetroMidi;
-import metro.MetroMidiReceiver;
+import metro.MetroMidiEvent;
 import metro.MetroSequence;
 import metro.MetroTrack;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
@@ -94,7 +92,7 @@ public class SchemeSequence extends MetroSequence {
     @Override
     public void processDirect(Metro metro, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
         // out.addAll( in ); TODO ******************************
-        MetroMidi.receiveMidiMessage( MetroMidiReceiver.LoggingToError.getInstance(), in );
+//        MetroMidi.receiveMidiMessage( MetroMidiReceiver.LoggingToError.getInstance(), in );
 //        System.err.println( "in.size()" + in.size());
 //        System.err.println( "out.size()" + out.size());
     }

@@ -837,7 +837,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
                     int size = this.midiEvent.size();
                     byte[] data = new byte[size];
                     this.midiEvent.read( data );
-                    this.inputMidiEventList.add( new MetroStaticMidiEvent( inputPort, this.midiEvent.time(), data ) );
+                    this.inputMidiEventList.add( new DefaultMetroMidiEvent( this.midiEvent.time(), inputPort, data ) );
 
 //                    this.sb.setLength(0);
 //                    this.sb.append(this.midiEvent.time());

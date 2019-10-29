@@ -68,9 +68,10 @@ public interface MetroEvent {
             }
         }
     };
-    void setBarOffset(double barOffset);
-    double getBarOffset();
     boolean isBetween(double from, double to);
+    void setBarOffset(double barOffset);
+    void calcBarOffset(int barLengthInFrames);
+    double getBarOffset();
     
     /**
      * Check if the position of this event is inside the duration specified in the
@@ -93,11 +94,12 @@ public interface MetroEvent {
     boolean isBetweenInFrames(int from, int to);
     void calcBarOffsetInFrames(int barLengthInFrames);
     int getBarOffsetInFrames();
+    void setBarOffsetInFrames( int barOffsetInFrames );
 
     /*
      *  This method effectively converts MetroEvent into MetroMidiEvent.
      */
-    void      calcMidiOffset( int from );
+//    void      calcMidiOffset( int cursor );
 
     /**
      * Defines the procedure to execute when this event is activated. This method is
@@ -111,6 +113,7 @@ public interface MetroEvent {
      * 
      * @param metro
      *            The Metro instance which is the owner of this event.
+     * @param cursor TODO
      * @param from
      *            the value of <code>from</code> when {@link #between(int, int)}
      *            returns <code>true</code>.
@@ -121,7 +124,7 @@ public interface MetroEvent {
      *            the current
      * @param eventList
      */
-    void process(Metro metro);
+    MetroMidiEvent process(Metro metro, int cursor);
     
     
     /**
@@ -129,5 +132,11 @@ public interface MetroEvent {
      * @param prefix
      * @return
      */
-    String dump(String prefix);
+    public default String dump(String prefix) {
+        StringBuilder sb = new StringBuilder();
+        dumpProc(prefix, sb);
+        return sb.toString();
+    }
+
+    void dumpProc(String prefix, StringBuilder sb);
 }

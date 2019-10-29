@@ -210,7 +210,7 @@ public abstract class MetroMidi {
     }
     
     public abstract <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message );
-    public abstract void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event );
+    public abstract void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event );
      
     static final Logger LOGGER = Logger.getLogger( MetroMidi.class.getName() );
 
@@ -293,13 +293,13 @@ public abstract class MetroMidi {
             return midi.receiveMidi( receiver, event.getMidiData() );
         }
     }
-    public static <T> void receiveMidiMessage( MetroMidiBufferedReceiver receiver, List<MetroStaticMidiEvent> in) {
-        for ( MetroStaticMidiEvent e : in ) {
+    public static <T> void receiveMidiMessage( MetroMidiBufferedReceiver receiver, List<MetroMidiEvent> in) {
+        for ( MetroMidiEvent e : in ) {
             receiveBufferedMidiMessage( receiver, e );
         }
     }
 
-    public static void receiveBufferedMidiMessage( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+    public static void receiveBufferedMidiMessage( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
         MetroMidi midi = lookupMidi( event );
         if ( midi == null ) {
             return;
@@ -346,7 +346,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0] >> 4, MASK_7BIT & message[1], MASK_7BIT & message[2] );
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset() , event.getOutputPort(), MASK_4BIT & message[0] >> 4, MASK_7BIT & message[1], MASK_7BIT & message[2] );
         }
@@ -379,7 +379,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0], MASK_7BIT & message[1], MASK_7BIT & message[2] );
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset() , event.getOutputPort(), 
                 MASK_4BIT & message[0] >> 4, MASK_7BIT & message[1], MASK_7BIT & message[2] );
@@ -423,7 +423,7 @@ public abstract class MetroMidi {
                 MASK_4BIT & message[0], MASK_7BIT & message[1], MASK_7BIT & message[2] );
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                 MASK_4BIT & message[0], MASK_7BIT & message[1], MASK_7BIT & message[2] );
@@ -458,7 +458,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0], MASK_7BIT & message[1], MASK_7BIT & message[2] );
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     MASK_4BIT & message[0], MASK_7BIT & message[1], MASK_7BIT & message[2] );
@@ -493,7 +493,7 @@ public abstract class MetroMidi {
                     MASK_4BIT & message[0], MASK_7BIT & message[1]  );
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     MASK_4BIT & message[0], MASK_7BIT & message[1]  );
@@ -532,7 +532,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0], MASK_7BIT & message[1]  );
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     MASK_4BIT & message[0], MASK_7BIT & message[1]  );
@@ -569,7 +569,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0], MASK_7BIT & message[1]  );
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     MASK_4BIT & message[0], MASK_7BIT & message[1]  );
@@ -606,7 +606,7 @@ public abstract class MetroMidi {
             throw new UnsupportedOperationException();
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort() );
         }
     }
@@ -655,7 +655,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0] );
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     MASK_4BIT & message[0] );
@@ -691,7 +691,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0]  );
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     MASK_4BIT & message[0]  );
@@ -727,7 +727,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0], (MASK_7BIT & message[2] ) != 0 );
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     MASK_4BIT & message[0], (MASK_7BIT & message[2] ) != 0 );
@@ -763,7 +763,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0]);
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     MASK_4BIT & message[0]);
@@ -798,7 +798,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0]);
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     MASK_4BIT & message[0]);
@@ -833,7 +833,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0]);
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     MASK_4BIT & message[0]);
@@ -868,7 +868,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0] );
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(), 
                 MASK_4BIT & message[0]);
@@ -904,7 +904,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0]);
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     MASK_4BIT & message[0]);
@@ -953,7 +953,7 @@ public abstract class MetroMidi {
             throw new UnsupportedOperationException();
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort() );
         }
     }
@@ -996,7 +996,7 @@ public abstract class MetroMidi {
             return null;
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             // TODO
         }
     }
@@ -1032,7 +1032,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, (MASK_7BIT & message[2] ) << 7 | ( MASK_7BIT & message[1] ) );
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     (MASK_7BIT & message[2] ) << 7 | ( MASK_7BIT & message[1] ) );
@@ -1067,7 +1067,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, message[1] ); 
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     message[1] ); 
@@ -1110,7 +1110,7 @@ public abstract class MetroMidi {
             return callMidi( receiver ); 
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort() );
         }
     }
@@ -1143,7 +1143,7 @@ public abstract class MetroMidi {
             return callMidi( receiver ); 
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort() ); 
         }
     }
@@ -1176,7 +1176,7 @@ public abstract class MetroMidi {
             return callMidi( receiver ); 
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort() ); 
         }
     }
@@ -1210,7 +1210,7 @@ public abstract class MetroMidi {
             return callMidi( receiver ); 
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort() ); 
         }
     }
@@ -1243,7 +1243,7 @@ public abstract class MetroMidi {
             return callMidi( receiver ); 
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort() ); 
         }
     }
@@ -1276,7 +1276,7 @@ public abstract class MetroMidi {
             return callMidi( receiver ); 
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort() ); 
         }
     }
@@ -1315,7 +1315,7 @@ public abstract class MetroMidi {
             return callMidi( receiver ); 
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort() ); 
         }
     }
@@ -1348,7 +1348,7 @@ public abstract class MetroMidi {
             return callMidi( receiver ); 
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort() ); 
         }
     }
@@ -1365,7 +1365,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0], MASK_7BIT & message[1]  );
         }
         @Override
-        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),  MASK_4BIT & message[0], MASK_7BIT & message[1]  );
         }

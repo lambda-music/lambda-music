@@ -30,10 +30,8 @@ public class MetroMessageEvent extends DefaultMetroEvent {
         metro.postMessage( message );
     }
     @Override
-    public void process(Metro metro) {
-        execute( metro );       
-    }
-    @Override
-    public void calcMidiOffset(int from) {
+    public MetroMidiEvent process(Metro metro, int cursor) {
+        execute( metro );
+        return null;
     }
 }
