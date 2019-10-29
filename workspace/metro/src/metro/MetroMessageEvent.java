@@ -20,9 +20,7 @@
 
 package metro;
 
-import java.util.List;
-
-public class MetroMessageEvent extends MetroEvent {
+public class MetroMessageEvent extends DefaultMetroEvent {
     private final Runnable message;
     public MetroMessageEvent( String id, double offset, Runnable message ) {
         super(id, offset);
@@ -32,7 +30,10 @@ public class MetroMessageEvent extends MetroEvent {
         metro.postMessage( message );
     }
     @Override
-    public void process(Metro metro, int from, int to, int nframes, List<MetroAbstractMidiEvent> eventList) {
+    public void process(Metro metro) {
         execute( metro );       
+    }
+    @Override
+    public void calcMidiOffset(int from) {
     }
 }

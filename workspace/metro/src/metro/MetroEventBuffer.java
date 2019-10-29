@@ -62,8 +62,8 @@ public class MetroEventBuffer implements Iterable<MetroEvent>, MetroBufferedMidi
     public double getActualLength() {
         double max = 0;
         for ( MetroEvent e : this )
-            if ( max < e.barOffset ) 
-                max = e.barOffset;
+            if ( max < e.getBarOffset() ) 
+                max = e.getBarOffset();
         
         return max;
     }
@@ -80,15 +80,15 @@ public class MetroEventBuffer implements Iterable<MetroEvent>, MetroBufferedMidi
     
     public void prepare( Metro metro, JackClient client, JackPosition position, boolean doSort ) throws JackException {
         if ( doSort )
-            this.list.sort( MetroMidiEvent.comparator );
-        int barInFrames = Metro.calcBarInFrames( metro, client, position );
-        this.calcInFrames( barInFrames );
+            this.list.sort( MetroEvent.BAR_OFFSET_COMPARATOR );
+        int barLengthInFrames = Metro.calcBarInFrames( metro, client, position );
+        this.calcBarOffsetInFrames( barLengthInFrames );
     }
     
-    private void calcInFrames( int barLengthInFrames ) {
+    private void calcBarOffsetInFrames( int barLengthInFrames ) {
 //      System.out.println("MetroMidiEventBuffer.calcInFrames() barInFrames="  + barInFrames );
         for ( MetroEvent e : this ) {
-            e.calcInFrames( barLengthInFrames );
+            e.calcBarOffsetInFrames( barLengthInFrames );
         }
 //      System.out.println( "this.length " + this.length  );
         this.barLengthInFrames = barLengthInFrames;
@@ -115,7 +115,7 @@ public class MetroEventBuffer implements Iterable<MetroEvent>, MetroBufferedMidi
     
     public final void midiEvent( String id, double offset, MetroPort outputPort, byte[] data ) {
         // Create an event object.
-        MetroMidiEvent event = new MetroMidiEvent( id, offset, outputPort, data );
+        DefaultMetroMidiEvent event = new DefaultMetroMidiEvent( id, offset, outputPort, data );
         
         // Add it to the list.
         this.list.add(event);

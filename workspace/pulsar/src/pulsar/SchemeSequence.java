@@ -31,7 +31,7 @@ import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 import metro.Metro;
-import metro.MetroAbstractMidiEvent;
+import metro.MetroMidiEvent;
 import metro.MetroEventBuffer;
 import metro.MetroMidi;
 import metro.MetroMidiReceiver;
@@ -92,7 +92,7 @@ public class SchemeSequence extends MetroSequence {
     }
 
     @Override
-    public void processDirect(Metro metro, List<MetroAbstractMidiEvent> in, List<MetroAbstractMidiEvent> out) {
+    public void processDirect(Metro metro, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
         // out.addAll( in ); TODO ******************************
         MetroMidi.receiveMidiMessage( MetroMidiReceiver.LoggingToError.getInstance(), in );
 //        System.err.println( "in.size()" + in.size());

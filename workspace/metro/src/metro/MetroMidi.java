@@ -246,7 +246,7 @@ public abstract class MetroMidi {
         midiControlChange8bitMap[ midi.getControlChange8bit() ] = midi;
     }
     
-    private static MetroMidi lookupMidi( MetroAbstractMidiEvent event ) {
+    private static MetroMidi lookupMidi( MetroMidiEvent event ) {
         byte[] message = event.getMidiData();
         int command  = ( (0b011110000 & message[0] ) >> 4 );
         int channel  = ( (0b000001111 & message[0] )      );
@@ -279,13 +279,13 @@ public abstract class MetroMidi {
         return midi;
     }
     
-    public static <T> void receiveMidiMessage( MetroMidiReceiver<T> receiver, List<MetroAbstractMidiEvent> in) {
-        for ( MetroAbstractMidiEvent e : in ) {
+    public static <T> void receiveMidiMessage( MetroMidiReceiver<T> receiver, List<MetroMidiEvent> in) {
+        for ( MetroMidiEvent e : in ) {
             System.err.println( receiveMidiMessage( receiver, e ) );
         }
     }
 
-    public static <T> T receiveMidiMessage( MetroMidiReceiver<T> receiver, MetroAbstractMidiEvent event ) {
+    public static <T> T receiveMidiMessage( MetroMidiReceiver<T> receiver, MetroMidiEvent event ) {
         MetroMidi midi = lookupMidi( event );
         if ( midi == null ) {
             return null;
@@ -363,7 +363,7 @@ public abstract class MetroMidi {
             receiver.noteOff( offset, port, ch, note, velocity );
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver,  int ch, int note, double velocity ) {
-            return receiver.noteOff(ch, note, velocity );
+            return receiver.noteOff(ch, note, velocity);
         }
         public byte[] createMidi( int ch, int note, double velocity ) {
             return MESSAGE_GEN.noteOff(ch, note, velocity );
@@ -419,13 +419,14 @@ public abstract class MetroMidi {
         }
         @Override
         public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver, MASK_4BIT & message[0], MASK_7BIT & message[1], MASK_7BIT & message[2] );
+            return callMidi( receiver, 
+                MASK_4BIT & message[0], MASK_7BIT & message[1], MASK_7BIT & message[2] );
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
-                    MASK_4BIT & message[0], MASK_7BIT & message[1], MASK_7BIT & message[2] );
+                MASK_4BIT & message[0], MASK_7BIT & message[1], MASK_7BIT & message[2] );
         }
     }
     public static final MetroMidiControlChange MIDI_CONTROL_CHANGE = new MetroMidiControlChange();

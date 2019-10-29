@@ -399,7 +399,7 @@ public class MetroTrack implements MetroLock, EventListenable {
      * as offset value of the current frame.  
      * 
      */
-    protected void progressCursor( int nframes, List<MetroAbstractMidiEvent> result ) throws JackException {
+    protected void progressCursor( int nframes, List<MetroMidiEvent> result ) throws JackException {
         synchronized ( this.getMetroTrackLock() ) {
             this.metro.clearAllPorts();
 
@@ -419,9 +419,13 @@ public class MetroTrack implements MetroLock, EventListenable {
                 for ( Iterator<MetroEvent> ie = buf.iterator(); ie.hasNext();  ) {
                     MetroEvent e = ie.next();
                     
-                    if ( e.between( actualCursor, actualNextCursor ) ) {
+                    if ( e.isBetweenInFrames( actualCursor, actualNextCursor ) ) {
                         found = true;
-                        e.process( metro, actualCursor, actualNextCursor, nframes, result );
+                        e.calcMidiOffset( actualCursor );
+                        e.process( metro );
+                        if ( e instanceof MetroMidiEvent ) {
+                            result.add( (MetroMidiEvent)e );
+                        }
                     } else {
                         if ( found ) // SEE COMMENT_A (Fri, 02 Aug 2019 19:20:40 +0900)
                             break;
