@@ -32,7 +32,7 @@ import java.util.logging.Logger;
 
 import gnu.kawa.slib.srfi1;
 import metro.Metro;
-import metro.MetroBufferedMidiReceiver;
+import metro.MetroMidiBufferedReceiver;
 import metro.MetroMidi;
 import metro.MetroMidi.MetroMidiAllNoteOff;
 import metro.MetroMidi.MetroMidiAllSoundOff;
@@ -167,7 +167,7 @@ public class PulsarMidiNoteListParsers {
         protected MIDI midi;
         protected List<NoteListParserElementParameter> parameters;
         
-        public abstract boolean parseEvent( Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String,Object> map, boolean result );
+        public abstract boolean parseEvent( Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String,Object> map, boolean result );
         @Override
         public String getShortName() {
             return this.midi.getShortName();
@@ -207,7 +207,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             boolean enabled      = map.containsKey( ID_ENABLED     ) ? SchemeUtils.toBoolean(       map.get(ID_ENABLED      ) ) : true;
             if ( ! enabled )
                 return result;
@@ -237,7 +237,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             boolean enabled      = map.containsKey( ID_ENABLED     ) ? SchemeUtils.toBoolean(       map.get(ID_ENABLED      ) ) : true;
             if ( ! enabled )
                 return result;
@@ -267,7 +267,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -293,7 +293,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -319,7 +319,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -344,7 +344,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -369,7 +369,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -397,7 +397,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -421,7 +421,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -445,7 +445,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0;
@@ -470,7 +470,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -494,7 +494,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -518,7 +518,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -543,7 +543,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -567,7 +567,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -593,7 +593,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
 //          int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -619,7 +619,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
 //          int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -644,7 +644,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -668,7 +668,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -693,7 +693,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -717,7 +717,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -741,7 +741,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -765,7 +765,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -789,7 +789,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -814,7 +814,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -839,7 +839,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -864,7 +864,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -889,7 +889,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -914,7 +914,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -939,7 +939,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -964,7 +964,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -989,7 +989,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1014,7 +1014,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1039,7 +1039,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1064,7 +1064,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1089,7 +1089,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1114,7 +1114,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1139,7 +1139,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1164,7 +1164,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1189,7 +1189,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1214,7 +1214,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1239,7 +1239,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1264,7 +1264,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1289,7 +1289,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1314,7 +1314,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1339,7 +1339,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1364,7 +1364,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1389,7 +1389,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1414,7 +1414,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1439,7 +1439,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1464,7 +1464,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1489,7 +1489,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1514,7 +1514,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1539,7 +1539,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1564,7 +1564,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1589,7 +1589,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1614,7 +1614,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1639,7 +1639,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1664,7 +1664,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1689,7 +1689,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1714,7 +1714,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1739,7 +1739,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1764,7 +1764,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1789,7 +1789,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1814,7 +1814,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1839,7 +1839,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
@@ -1865,7 +1865,7 @@ public class PulsarMidiNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String, Object> map, boolean result) {
             double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
             MetroPort port   = PulsarSpecialNoteListParsers.getPort(metro, map);
             int ch           = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 

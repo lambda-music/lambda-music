@@ -210,7 +210,7 @@ public abstract class MetroMidi {
     }
     
     public abstract <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message );
-    public abstract void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event );
+    public abstract void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event );
      
     static final Logger LOGGER = Logger.getLogger( MetroMidi.class.getName() );
 
@@ -293,13 +293,13 @@ public abstract class MetroMidi {
             return midi.receiveMidi( receiver, event.getMidiData() );
         }
     }
-    public static <T> void receiveMidiMessage( MetroBufferedMidiReceiver receiver, List<MetroStaticMidiEvent> in) {
+    public static <T> void receiveMidiMessage( MetroMidiBufferedReceiver receiver, List<MetroStaticMidiEvent> in) {
         for ( MetroStaticMidiEvent e : in ) {
             receiveBufferedMidiMessage( receiver, e );
         }
     }
 
-    public static void receiveBufferedMidiMessage( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+    public static void receiveBufferedMidiMessage( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
         MetroMidi midi = lookupMidi( event );
         if ( midi == null ) {
             return;
@@ -326,7 +326,7 @@ public abstract class MetroMidi {
             this.statusHigher4bit = 0b01000;
             registerCommon4bit( this );
         }
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int ch, int note, double velocity ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int ch, int note, double velocity ) {
             receiver.noteOn( offset, port, ch, note, velocity );
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver, int ch, int note, double velocity ) {
@@ -346,7 +346,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0] >> 4, MASK_7BIT & message[1], MASK_7BIT & message[2] );
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset() , event.getOutputPort(), MASK_4BIT & message[0] >> 4, MASK_7BIT & message[1], MASK_7BIT & message[2] );
         }
@@ -359,7 +359,7 @@ public abstract class MetroMidi {
             this.statusHigher4bit = 0b01001;
             registerCommon4bit( this );
         }
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver,  double offset, MetroPort port, int ch, int note, double velocity ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver,  double offset, MetroPort port, int ch, int note, double velocity ) {
             receiver.noteOff( offset, port, ch, note, velocity );
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver,  int ch, int note, double velocity ) {
@@ -379,7 +379,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0], MASK_7BIT & message[1], MASK_7BIT & message[2] );
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset() , event.getOutputPort(), 
                 MASK_4BIT & message[0] >> 4, MASK_7BIT & message[1], MASK_7BIT & message[2] );
@@ -396,7 +396,7 @@ public abstract class MetroMidi {
             registerCommon4bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int ch, int note, double value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int ch, int note, double value ) {
             receiver.keyPressure( offset, port, ch, note, value );
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver, int ch, int note, double value ) {
@@ -423,7 +423,7 @@ public abstract class MetroMidi {
                 MASK_4BIT & message[0], MASK_7BIT & message[1], MASK_7BIT & message[2] );
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                 MASK_4BIT & message[0], MASK_7BIT & message[1], MASK_7BIT & message[2] );
@@ -438,7 +438,7 @@ public abstract class MetroMidi {
             this.statusHigher4bit = STATUS_HIGHER_4BIT_CONTROL_CHANGE;
             registerCommon4bit( this );
         }
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int ch, int controlNumber, int controlValue ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int ch, int controlNumber, int controlValue ) {
             receiver.controlChange( offset, port, ch, controlNumber, controlValue );
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver, int ch, int controlNumber, int controlValue ) {
@@ -458,7 +458,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0], MASK_7BIT & message[1], MASK_7BIT & message[2] );
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     MASK_4BIT & message[0], MASK_7BIT & message[1], MASK_7BIT & message[2] );
@@ -472,7 +472,7 @@ public abstract class MetroMidi {
             this.statusHigher4bit = 0b01100;
             registerCommon4bit( this );
         }
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int ch, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int ch, int value ) {
             receiver.programChange( offset, port, ch, value );
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver,  int ch, int value ) {
@@ -493,7 +493,7 @@ public abstract class MetroMidi {
                     MASK_4BIT & message[0], MASK_7BIT & message[1]  );
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     MASK_4BIT & message[0], MASK_7BIT & message[1]  );
@@ -507,7 +507,7 @@ public abstract class MetroMidi {
             this.statusHigher4bit = 0b01101;
             registerCommon4bit( this );
         }
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int ch, double value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int ch, double value ) {
             receiver.channelPressure( offset, port, ch, value );
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver,  int ch, double value ) {
@@ -532,7 +532,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0], MASK_7BIT & message[1]  );
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     MASK_4BIT & message[0], MASK_7BIT & message[1]  );
@@ -546,7 +546,7 @@ public abstract class MetroMidi {
             this.statusHigher4bit = 0b01110;
             registerCommon4bit( this );
         }
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int ch, double value) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int ch, double value) {
             receiver.pitchBend( offset, port, ch, value );
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver, int ch, double value) {
@@ -569,7 +569,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0], MASK_7BIT & message[1]  );
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     MASK_4BIT & message[0], MASK_7BIT & message[1]  );
@@ -587,7 +587,7 @@ public abstract class MetroMidi {
             registerCommon4bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver , double offset, MetroPort port ) {
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver , int value ) {
             throw new UnsupportedOperationException();
@@ -606,7 +606,7 @@ public abstract class MetroMidi {
             throw new UnsupportedOperationException();
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort() );
         }
     }
@@ -635,7 +635,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int ch) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver , double offset, MetroPort port,int ch) {
             receiver.cc_allSoundOff ( offset, port, ch );
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver ,int ch) {
@@ -655,7 +655,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0] );
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     MASK_4BIT & message[0] );
@@ -671,7 +671,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int ch) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver , double offset, MetroPort port,int ch) {
             receiver.cc_resetAllControllers ( offset, port, ch );
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver ,int ch) {
@@ -691,7 +691,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0]  );
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     MASK_4BIT & message[0]  );
@@ -707,7 +707,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int ch,boolean value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver , double offset, MetroPort port,int ch,boolean value ) {
             receiver.cc_localControls ( offset, port, ch, value );
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver ,int ch, boolean value ) {
@@ -727,7 +727,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0], (MASK_7BIT & message[2] ) != 0 );
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     MASK_4BIT & message[0], (MASK_7BIT & message[2] ) != 0 );
@@ -743,7 +743,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int ch) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver , double offset, MetroPort port,int ch) {
             receiver.cc_allNoteOff ( offset, port, ch );
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver ,int ch) {
@@ -763,7 +763,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0]);
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     MASK_4BIT & message[0]);
@@ -778,7 +778,7 @@ public abstract class MetroMidi {
             this.controlChange8bit = CC_OMNI_MODE_OFF;
             registerControlChange8bit( this );
         }
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int ch) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver , double offset, MetroPort port,int ch) {
             receiver.cc_omniModeOff ( offset, port, ch );
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver ,int ch) {
@@ -798,7 +798,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0]);
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     MASK_4BIT & message[0]);
@@ -813,7 +813,7 @@ public abstract class MetroMidi {
             this.controlChange8bit = CC_OMNI_MODE_ON;
             registerControlChange8bit( this );
         }
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int ch) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver , double offset, MetroPort port,int ch) {
             receiver.cc_omniModeOn ( offset, port, ch );
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver ,int ch) {
@@ -833,7 +833,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0]);
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     MASK_4BIT & message[0]);
@@ -848,7 +848,7 @@ public abstract class MetroMidi {
             this.controlChange8bit = CC_MONO_MODE_ON;
             registerControlChange8bit( this );
         }
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port, int ch) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver , double offset, MetroPort port, int ch) {
             receiver.cc_monoModeOn ( offset, port, ch );
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver ,int ch) {
@@ -868,7 +868,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0] );
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(), 
                 MASK_4BIT & message[0]);
@@ -884,7 +884,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int ch) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver , double offset, MetroPort port,int ch) {
             receiver.cc_polyModeOn ( offset, port, ch );
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver ,int ch) {
@@ -904,7 +904,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, MASK_4BIT & message[0]);
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     MASK_4BIT & message[0]);
@@ -927,7 +927,7 @@ public abstract class MetroMidi {
             // registerSystemCommon4bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver , double offset, MetroPort port ) {
             // TODO
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver , int value ) {
@@ -953,7 +953,7 @@ public abstract class MetroMidi {
             throw new UnsupportedOperationException();
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort() );
         }
     }
@@ -970,7 +970,7 @@ public abstract class MetroMidi {
             // registerSystemCommon4bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver , double offset, MetroPort port, int value ) {
             // TODO
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver , int value ) {
@@ -996,7 +996,7 @@ public abstract class MetroMidi {
             return null;
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             // TODO
         }
     }
@@ -1012,7 +1012,7 @@ public abstract class MetroMidi {
             registerSystemCommon4bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver , double offset, MetroPort port, int value ) {
             receiver.songPositionPointer ( offset, port, value );
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver , int value ) {
@@ -1032,7 +1032,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, (MASK_7BIT & message[2] ) << 7 | ( MASK_7BIT & message[1] ) );
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     (MASK_7BIT & message[2] ) << 7 | ( MASK_7BIT & message[1] ) );
@@ -1047,7 +1047,7 @@ public abstract class MetroMidi {
             registerSystemCommon4bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int value) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver , double offset, MetroPort port,int value) {
             receiver.songSelect ( offset, port, value );
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver ,int value) {
@@ -1067,7 +1067,7 @@ public abstract class MetroMidi {
             return callMidi( receiver, message[1] ); 
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),
                     message[1] ); 
@@ -1085,7 +1085,7 @@ public abstract class MetroMidi {
             // registerSystemCommon4bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver , double offset, MetroPort port ) {
             // TODO
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver ) {
@@ -1110,7 +1110,7 @@ public abstract class MetroMidi {
             return callMidi( receiver ); 
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort() );
         }
     }
@@ -1123,7 +1123,7 @@ public abstract class MetroMidi {
             this.statusLower4bit   = 0b0111;
             registerSystemCommon4bit( this );
         }
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver , double offset, MetroPort port ) {
             receiver.endOfExclusive ( offset, port );
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver ) {
@@ -1143,7 +1143,7 @@ public abstract class MetroMidi {
             return callMidi( receiver ); 
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort() ); 
         }
     }
@@ -1156,7 +1156,7 @@ public abstract class MetroMidi {
             this.statusLower4bit   = 0b01000;
             registerSystemCommon4bit( this );
         }
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver , double offset, MetroPort port ) {
             receiver.clock ( offset, port );
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver ) {
@@ -1176,7 +1176,7 @@ public abstract class MetroMidi {
             return callMidi( receiver ); 
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort() ); 
         }
     }
@@ -1190,7 +1190,7 @@ public abstract class MetroMidi {
             this.statusLower4bit   = 0b01001;
             registerSystemCommon4bit( this );
         }
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver , double offset, MetroPort port ) {
             receiver.start ( offset, port );
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver ) {
@@ -1210,7 +1210,7 @@ public abstract class MetroMidi {
             return callMidi( receiver ); 
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort() ); 
         }
     }
@@ -1223,7 +1223,7 @@ public abstract class MetroMidi {
             this.statusLower4bit   = 0b01011;
             registerSystemCommon4bit( this );
         }
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver , double offset, MetroPort port ) {
             receiver.cont( offset, port );
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver ) {
@@ -1243,7 +1243,7 @@ public abstract class MetroMidi {
             return callMidi( receiver ); 
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort() ); 
         }
     }
@@ -1256,7 +1256,7 @@ public abstract class MetroMidi {
             this.statusLower4bit   = 0b01100;
             registerSystemCommon4bit( this );
         }
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver , double offset, MetroPort port ) {
             receiver.stop ( offset, port );
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver ) {
@@ -1276,7 +1276,7 @@ public abstract class MetroMidi {
             return callMidi( receiver ); 
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort() ); 
         }
     }
@@ -1291,7 +1291,7 @@ public abstract class MetroMidi {
             // TODO
             // registerSystemCommon4bit( this );
         }
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver , double offset, MetroPort port ) {
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver ) {
           // TODO
@@ -1315,7 +1315,7 @@ public abstract class MetroMidi {
             return callMidi( receiver ); 
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort() ); 
         }
     }
@@ -1328,7 +1328,7 @@ public abstract class MetroMidi {
             this.statusLower4bit   = 0b01111;
             registerSystemCommon4bit( this );
         }
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver , double offset, MetroPort port ) {
             receiver.reset ( offset, port );
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver ) {
@@ -1348,7 +1348,7 @@ public abstract class MetroMidi {
             return callMidi( receiver ); 
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort() ); 
         }
     }
@@ -1359,13 +1359,13 @@ public abstract class MetroMidi {
     // Define an abstract class for the control change classes.
     public static abstract class MetroControlChangeMidi extends MetroMidi {
         public abstract <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value );
-        public abstract void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value );
+        public abstract void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value );
         @Override
         public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
             return callMidi( receiver, MASK_4BIT & message[0], MASK_7BIT & message[1]  );
         }
         @Override
-        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroStaticMidiEvent event ) {
+        public void receiveBufferedMidi( MetroMidiBufferedReceiver receiver, MetroStaticMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset(), event.getOutputPort(),  MASK_4BIT & message[0], MASK_7BIT & message[1]  );
         }
@@ -1383,7 +1383,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_bankSelect ( offset, port, channel, value );
         }
         @Override
@@ -1409,7 +1409,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_modulation ( offset, port, channel, value );
         }
         @Override
@@ -1435,7 +1435,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_breathController ( offset, port, channel, value );
         }
         @Override
@@ -1461,7 +1461,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_footController ( offset, port, channel, value );
         }
         @Override
@@ -1487,7 +1487,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
        }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_portamentoTime ( offset, port, channel, value );
         }
         @Override
@@ -1513,7 +1513,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_dataEntryMsb ( offset, port, channel, value );
         }
         @Override
@@ -1539,7 +1539,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_volume ( offset, port, channel, value );
         }
         @Override
@@ -1565,7 +1565,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_balance ( offset, port, channel, value );
         }
         @Override
@@ -1591,7 +1591,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_pan ( offset, port, channel, value );
         }
         @Override
@@ -1617,7 +1617,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_expression ( offset, port, channel, value );
         }
         @Override
@@ -1643,7 +1643,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_effectController1 ( offset, port, channel, value );
         }
         @Override
@@ -1669,7 +1669,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_effectController2 ( offset, port, channel, value );
         }
         @Override
@@ -1695,7 +1695,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_sustainPedal ( offset, port, channel, value );
         }
         @Override
@@ -1721,7 +1721,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_portamentoSwitch ( offset, port, channel, value );
         }
         @Override
@@ -1747,7 +1747,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_sostenutoSwitch ( offset, port, channel, value );
         }
         @Override
@@ -1773,7 +1773,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_pedalSwitch ( offset, port, channel, value );
         }
         @Override
@@ -1799,7 +1799,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_legatoSwitch ( offset, port, channel, value );
         }
         @Override
@@ -1825,7 +1825,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_hold2 ( offset, port, channel, value );
         }
         @Override
@@ -1851,7 +1851,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_soundController1 ( offset, port, channel, value );
         }
         @Override
@@ -1877,7 +1877,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_soundController2 ( offset, port, channel, value );
         }
         @Override
@@ -1903,7 +1903,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_soundController3 ( offset, port, channel, value );
         }
         @Override
@@ -1929,7 +1929,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_soundController4 ( offset, port, channel, value );
         }
         @Override
@@ -1955,7 +1955,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_soundController5 ( offset, port, channel, value );
         }
         @Override
@@ -1981,7 +1981,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_soundController6 ( offset, port, channel, value );
         }
         @Override
@@ -2007,7 +2007,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_soundController7 ( offset, port, channel, value );
         }
         @Override
@@ -2033,7 +2033,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_soundController8 ( offset, port, channel, value );
         }
         @Override
@@ -2059,7 +2059,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_soundController9 ( offset, port, channel, value );
         }
         @Override
@@ -2085,7 +2085,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_soundController10 ( offset, port, channel, value );
         }
         @Override
@@ -2111,7 +2111,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_generalPurpose01 ( offset, port, channel, value );
         }
         @Override
@@ -2137,7 +2137,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_generalPurpose02 ( offset, port, channel, value );
         }
         @Override
@@ -2163,7 +2163,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_generalPurpose03 ( offset, port, channel, value );
         }
         @Override
@@ -2189,7 +2189,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_generalPurpose04 ( offset, port, channel, value );
         }
         @Override
@@ -2215,7 +2215,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_portamento ( offset, port, channel, value );
         }
         @Override
@@ -2241,7 +2241,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_effect1 ( offset, port, channel, value );
         }
         @Override
@@ -2267,7 +2267,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_effect2 ( offset, port, channel, value );
         }
         @Override
@@ -2293,7 +2293,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_effect3 ( offset, port, channel, value );
         }
         @Override
@@ -2319,7 +2319,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_effect4 ( offset, port, channel, value );
         }
         @Override
@@ -2345,7 +2345,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_effect5 ( offset, port, channel, value );
         }
         @Override
@@ -2371,7 +2371,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_dataIncrement ( offset, port, channel, value );
         }
         @Override
@@ -2397,7 +2397,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_dataDecrement ( offset, port, channel, value );
         }
         @Override
@@ -2423,7 +2423,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_nrpnLsb ( offset, port, channel, value );
         }
         @Override
@@ -2449,7 +2449,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_nrpnMsb ( offset, port, channel, value );
         }
         @Override
@@ -2475,7 +2475,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_rpnLsb ( offset, port, channel, value );
         }
         @Override
@@ -2501,7 +2501,7 @@ public abstract class MetroMidi {
             registerControlChange8bit( this );
         }
 
-        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value ) {
+        public void callBufferedMidi( MetroMidiBufferedReceiver receiver, double offset, MetroPort port, int channel, int value ) {
             receiver.cc_rpnMsb ( offset, port, channel, value );
         }
         @Override

@@ -23,7 +23,7 @@ package metro;
  * @see MetroMidiReceiver .
  * @author Ats Oka
  */
-public interface MetroBufferedMidiReceiver {
+public interface MetroMidiBufferedReceiver {
     // basic 
     public void noteOn( double offset, MetroPort port, int channel, int note, double velocity );
     public void noteOn( double offset, MetroPort port, int channel, int note, int velocity );
