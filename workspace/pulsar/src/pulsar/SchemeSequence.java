@@ -90,7 +90,7 @@ public class SchemeSequence extends MetroSequence {
     }
 
     @Override
-    public void processDirect(Metro metro, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
+    public void processDirect( Metro metro, int nframes, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
         // out.addAll( in ); TODO ******************************
 //        MetroMidi.receiveMidiMessage( MetroMidiReceiver.LoggingToError.getInstance(), in );
 //        System.err.println( "in.size()" + in.size());

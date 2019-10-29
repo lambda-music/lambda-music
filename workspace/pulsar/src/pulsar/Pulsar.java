@@ -66,8 +66,8 @@ import metro.EventListenable;
 import metro.Metro;
 import metro.MetroPort;
 import metro.MetroSequence;
+import metro.MetroSyncType;
 import metro.MetroTrack;
-import metro.MetroTrack.SyncType;
 import pulsar.lib.CurrentObject;
 import pulsar.lib.scheme.ProceduralDescriptiveBean;
 import pulsar.lib.scheme.SafeProcedureN;
@@ -780,12 +780,12 @@ public final class Pulsar extends Metro {
     static double readParamSyncOffset(Object object) {
         return SchemeUtils.toDouble( object );
     }
-    static SyncType readParamSyncType(Object object) {
+    static MetroSyncType readParamSyncType(Object object) {
         object = SchemeUtils.schemeNullCheck(object);
         if ( object == null ) {
-            return SyncType.IMMEDIATE;
+            return MetroSyncType.IMMEDIATE;
         } else {
-            return SyncType.toSyncType( SchemeUtils.toString( object ) );
+            return MetroSyncType.toSyncType( SchemeUtils.toString( object ) );
         }
     }
     static Procedure readParamProcedure(Object arg) {
@@ -1608,12 +1608,12 @@ public final class Pulsar extends Metro {
             TrackManagementProcedure( String name ) {
                 super(name);
             }
-            abstract void procTrack( List<MetroTrack> trackList, SyncType syncType, MetroTrack syncTrack, double syncOffset );
+            abstract void procTrack( List<MetroTrack> trackList, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset );
             
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 List<MetroTrack> trackList;
-                SyncType syncType;
+                MetroSyncType syncType;
                 List<MetroTrack> syncTrackList;
                 double syncOffset;
                 Pulsar pulsar = getCurrent();
@@ -1622,7 +1622,7 @@ public final class Pulsar extends Metro {
                         throw new IllegalArgumentException();
                     case 1 :
                         trackList     = pulsar.readParamTrack( args[0] );
-                        syncType      = SyncType.IMMEDIATE;
+                        syncType      = MetroSyncType.IMMEDIATE;
                         syncTrackList = Collections.EMPTY_LIST;
                         syncOffset    = 0.0d;
                         break;
@@ -1676,7 +1676,7 @@ public final class Pulsar extends Metro {
 
         Procedure putTrack = new TrackManagementProcedure( "put-track" ) {
             @Override
-            void procTrack( List<MetroTrack> trackList, SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
+            void procTrack( List<MetroTrack> trackList, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset ) {
                 getCurrent().putTrack(trackList, syncType, syncTrack, syncOffset);
             }
         };
@@ -1717,7 +1717,7 @@ public final class Pulsar extends Metro {
 
         Procedure removeTrack = new TrackManagementProcedure( "remove-track" ) {
             @Override
-            void procTrack( List<MetroTrack> trackList, SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
+            void procTrack( List<MetroTrack> trackList, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset ) {
                 getCurrent().removeTrack(trackList, syncType, syncTrack, syncOffset);
             }
         };

@@ -27,6 +27,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -50,7 +51,6 @@ import org.jaudiolibs.jnajack.JackStatus;
 import org.jaudiolibs.jnajack.JackTimebaseCallback;
 import org.jaudiolibs.jnajack.JackTransportState;
 
-import metro.MetroTrack.SyncType;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.Invokable;
 
@@ -857,7 +857,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
             synchronized ( this.getMetroLock() ) {
                 if ( 0 < this.inputMidiEventList.size() )
                     for ( MetroTrack track : this.tracks ) {
-                        track.sequence.processDirect( this, this.inputMidiEventList, this.outputMidiEventList );
+                        track.sequence.processDirect( this, nframes, this.inputMidiEventList, this.outputMidiEventList );
                     }
                 
                 if ( true )
@@ -865,11 +865,13 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
                         track.progressCursor( nframes, this.outputMidiEventList );
                     }
                 
-                this.outputMidiEventList.sort( MetroMidiEvent.COMPARATOR );
+                // sort the every event 
+                this.outputMidiEventList.sort( (Comparator) MetroEvent.BAR_OFFSET_COMPARATOR );
                 
                 if ( ! this.outputMidiEventList.isEmpty() )
                     if ( DEBUG ) logInfo( this.outputMidiEventList.toString() );
 
+                // output the events
                 for ( MetroMidiEvent e : this.outputMidiEventList ) {
                     JackMidi.eventWrite(
                             e.getOutputPort().jackPort, 
@@ -1069,21 +1071,21 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
         }
     }
 
-    private void removeFormerTrack(MetroTrack track, SyncType syncType, MetroTrack syncTrack, double syncOffset) {
+    private void removeFormerTrack(MetroTrack track, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset) {
         removeTrack( searchTrack( track.getTrackName() ), syncType, syncTrack, syncOffset );
     }
-    public void putTrack( MetroTrack track, SyncType syncType, MetroTrack syncTrack, double syncOffset )  {
+    public void putTrack( MetroTrack track, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset )  {
         removeFormerTrack( track, syncType, syncTrack, syncOffset );
         registerTrack( track.setSyncStatus( syncType, syncTrack, syncOffset ) );
     }
-    public void putTrack( Collection<MetroTrack> trackList, SyncType syncType, MetroTrack syncTrack, double syncOffset )  {
+    public void putTrack( Collection<MetroTrack> trackList, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset )  {
         for ( MetroTrack track : trackList ) {
             track.setSyncStatus( syncType, syncTrack, syncOffset );
             removeFormerTrack( track, syncType, syncTrack, syncOffset );
         }
         registerTrack( trackList );
     }
-    public void removeTrack( MetroTrack track, SyncType syncType, MetroTrack syncTrack, double syncOffset )  {
+    public void removeTrack( MetroTrack track, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset )  {
         if ( track == null )
             return;
         
@@ -1097,7 +1099,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
                 break;
         }
     }
-    public void removeTrack( Collection<MetroTrack> trackList, SyncType syncType, MetroTrack syncTrack, double syncOffset )  {
+    public void removeTrack( Collection<MetroTrack> trackList, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset )  {
         switch ( syncType ) {
             case IMMEDIATE :
             case PARALLEL :

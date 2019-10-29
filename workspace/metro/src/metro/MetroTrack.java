@@ -45,37 +45,12 @@ import org.jaudiolibs.jnajack.JackPosition;
  * @author Ats Oka
  *
  */
-public class MetroTrack implements MetroLock, EventListenable {
+public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, MetroNamedTrack {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
-
-    public enum SyncType {
-        IMMEDIATE, PARALLEL, SERIAL;
-        public static SyncType toSyncType( String value ) {
-            if ( value == null ) throw new IllegalArgumentException();
-            if ( "para".equals( value ) )
-                return PARALLEL;
-            else if ( "p".equals( value ) )
-                return SyncType.PARALLEL;
-            else if ( "seri".equals( value ) )
-                return SyncType.SERIAL;
-            else if ( "s".equals( value ) )
-                return SyncType.SERIAL;
-            else if ( "imme".equals( value ) )
-                return SyncType.IMMEDIATE;
-            else if ( "i".equals( value ) )
-                return SyncType.IMMEDIATE;
-            else if ( "immediately".equals( value ) )
-                return SyncType.IMMEDIATE;
-            else
-                return SyncType.valueOf( value.toUpperCase() );
-        }
-    }
-    
-    
     private static final boolean DEBUG = false;
 
     /*
@@ -106,6 +81,11 @@ public class MetroTrack implements MetroLock, EventListenable {
     protected final Collection<Object> tags;
     protected final MetroSequence sequence;
 
+    @Override
+    public Object getName() {
+        return name;
+    }
+    
     protected transient boolean prepared = false;
     protected transient boolean enabled = true;
 
@@ -116,10 +96,11 @@ public class MetroTrack implements MetroLock, EventListenable {
 // MODIFIED <<< 
 
 
-    private transient SyncType syncType;
-    private transient MetroTrack syncTrack;
+    private transient MetroSyncType syncType;
+    private transient MetroSyncTrack syncTrack;
     private transient double syncOffset=0.0d;
     private BlockingQueue<MetroEventBuffer> buffers = new LinkedBlockingQueue<>();
+    protected transient int totalCursor = 0;
     protected transient int cursor = 0;
     protected transient int lastLengthInFrames = 0;
     protected transient int lastAccumulatedLength = 0;
@@ -129,6 +110,25 @@ public class MetroTrack implements MetroLock, EventListenable {
     transient double endingLength = 0;
     transient Runnable endingProc = null;
     
+    @Override
+    public int getCursor() {
+        return cursor;
+    }
+    @Override
+    public void setCursor(int cursor) {
+        this.cursor = cursor;
+        this.totalCursor = cursor;
+    }
+    
+    /*
+     * This must be used with synchronization.
+     * synchronized ( this.getMetroTrackLock() ) {
+     *    ... getBuffers() ...
+     * }
+     */
+    public BlockingQueue<MetroEventBuffer> getBuffers() {
+        return buffers;
+    }
     
     void reset() {
         prepared = false;
@@ -182,7 +182,7 @@ public class MetroTrack implements MetroLock, EventListenable {
      * Create a MetroTrack object with default synchronizing status.
      *
      * This constructor is <code>public</code> but this is usually called only from
-     * {@link Metro#createTrack(String, Collection, MetroSequence, SyncType, MetroTrack, double)}
+     * {@link Metro#createTrack(String, Collection, MetroSequence, MetroSyncType, MetroTrack, double)}
      * and users should not call this constructor directory. Though it is still left public
      * for further hacking.
      * 
@@ -211,7 +211,7 @@ public class MetroTrack implements MetroLock, EventListenable {
         this.metro = metro;
         this.sequence = sequence;
         
-        this.syncType = SyncType.IMMEDIATE;
+        this.syncType = MetroSyncType.IMMEDIATE;
         this.syncTrack = null;
         this.syncOffset = 0.0d;
     }
@@ -283,7 +283,7 @@ public class MetroTrack implements MetroLock, EventListenable {
     /**
      * @param syncType
      *            Specifying the way to synchronize with the syncTrack object. See
-     *            {@link SyncType}
+     *            {@link MetroSyncType}
      * @param syncTrack
      *            Specifying the track object to synchronize with.
      * @param syncOffset
@@ -292,7 +292,7 @@ public class MetroTrack implements MetroLock, EventListenable {
      * @return this object
      * 
      */
-    public MetroTrack setSyncStatus( SyncType syncType, MetroTrack syncTrack, double syncOffset ) {
+    public MetroTrack setSyncStatus( MetroSyncType syncType, MetroSyncTrack syncTrack, double syncOffset ) {
         this.reset();
         this.prepared = false;
         this.syncType = syncType;
@@ -300,16 +300,29 @@ public class MetroTrack implements MetroLock, EventListenable {
         this.syncOffset = syncOffset;
         return this;
     }
-    public SyncType getSyncType() {
+    @Override
+    public MetroSyncType getSyncType() {
         return syncType;
     }
-    public MetroTrack getSyncTrack() {
+    @Override
+    public MetroSyncTrack  getSyncTrack() {
         return syncTrack;
     }
+    @Override
     public double getSyncOffset() {
         return syncOffset;
     }
     
+    @Override
+    public int getLatestLengthInFrames() {
+        synchronized ( this.getMetroTrackLock() ) {
+            BlockingQueue<MetroEventBuffer> bufs = this.getBuffers();
+            if ( bufs.size() == 0 )
+                return 0;
+            else
+                return bufs.peek().getLengthInFrames(); 
+        }
+    }
 //  @Override
 //  public boolean equals(Object obj) {
 //      try {
@@ -473,6 +486,7 @@ public class MetroTrack implements MetroLock, EventListenable {
                     metro.notifyTrackChange();
 
                 this.cursor = nextCursor;
+                this.totalCursor += nframes;
                 this.lastLengthInFrames = lengthInFrame;
                 this.lastAccumulatedLength = accumulatedLength;
             }
@@ -486,53 +500,14 @@ public class MetroTrack implements MetroLock, EventListenable {
      * This method will be called only once by the Metro messaging thread when
      * MetroTrack is added to registered Track.
      * 
-     * @param barInFrames
+     * @param barLengthInFrames
      */
-    void prepare( int barInFrames ) {
+    void prepare( int barLengthInFrames ) {
         if ( prepared ) 
             throw new IllegalStateException();
         this.prepared = true;
-        
-        int offset = (int) (-1.0d * this.syncOffset * barInFrames);
 
-        switch ( this.syncType ) {
-            case IMMEDIATE :
-            {
-                this.cursor = offset;
-                if ( DEBUG )
-                    logInfo( "prepare(immediate):" + this.cursor );
-                if ( this.syncTrack != null ) {
-                    Logger.getLogger( Metro.class.getName()).log(Level.WARNING, "syncTrack was passed but ignored by the process because syncType was `immediate`." );
-                }
-            }
-            break;
-            case PARALLEL :
-            {
-                if ( this.syncTrack == null ) {
-                    this.cursor = offset;
-                    Logger.getLogger( Metro.class.getName()).log(Level.WARNING, "`parallel` was specified but syncTrack was not passed." );
-                } else {
-                    this.cursor = this.syncTrack.cursor + offset ;
-                }
-
-            }
-            break;
-            case SERIAL :
-                if ( this.syncTrack == null ) {
-                    this.cursor = offset;
-                    Logger.getLogger( Metro.class.getName()).log(Level.WARNING, "`serial` was specified but syncTrack was not passed." );
-                } else {
-                    synchronized ( this.syncTrack.getMetroTrackLock() ) {
-                        this.cursor =
-                                this.syncTrack.cursor - 
-                                this.syncTrack.buffers.peek().getLengthInFrames() + 
-                                offset;
-                    }
-                }
-                break;
-            default :
-                throw new RuntimeException( "Internal Error" ); // this won't occur.
-        }
+        MetroSyncTrack.setSyncStatus( this, barLengthInFrames );
         
         eventListenerable.invokeEventListener( EVENT_PREPARED );
     }
@@ -560,11 +535,21 @@ public class MetroTrack implements MetroLock, EventListenable {
                     lengthInFrame = headBuffer.getLengthInFrames();
             }
             
-            double ratio = (double)lengthInFrame / (double)prevLengthInFrame; 
+            double ratio = (double)lengthInFrame / (double)prevLengthInFrame;
+            
             if ( 0< ratio && 1.0d!= ratio ) {
                 // System.out.println( "ratio: " + ratio );
                 // System.out.println( "prev cursor: " + cursor );
-                this.cursor = (int) Math.round( ((double)this.cursor)            * ratio );
+                
+                this.cursor      = (int) Math.round( ((double)this.cursor)            * ratio );
+                
+                // NOTE : (Wed, 30 Oct 2019 05:35:28 +0900)
+                // multiplying by ratio on `this.totalCursor` may not work as expected 
+                // but since changing tempo while recording is an improper action so
+                // we ignore the risk for now.
+                this.totalCursor = (int) Math.round( ((double)this.totalCursor)       * ratio );
+                
+                
                 // System.out.println( "after cursor: " + cursor );
                 // System.out.println( "lengthInFrame    : " + lengthInFrame );
                 // System.out.println( "prevLengthInFrame: " + prevLengthInFrame );
@@ -643,6 +628,7 @@ public class MetroTrack implements MetroLock, EventListenable {
         synchronized ( this.getMetroTrackLock() ) {
             this.buffers.clear();
             this.cursor =0;
+            this.totalCursor = 0;
         }
     }
 //  public void resetBuffer() {

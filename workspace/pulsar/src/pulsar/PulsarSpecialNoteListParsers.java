@@ -40,8 +40,8 @@ import metro.Metro;
 import metro.MetroMidiBufferedReceiver;
 import metro.MetroEventBuffer;
 import metro.MetroPort;
+import metro.MetroSyncType;
 import metro.MetroTrack;
-import metro.MetroTrack.SyncType;
 import pulsar.lib.scheme.SchemeUtils;
 
 /**
@@ -377,7 +377,7 @@ public class PulsarSpecialNoteListParsers {
 //            String id             = getValue( map, "id",   null, (v)-> SchemeUtils.anyToString(    SchemeUtils.schemeNullCheck( v ) ) );
             Object _id            = getValue( map, "id",   null, (v)-> v );
             List<Object> tags     = getValue( map, "tags", el,   (v)-> new ArrayList<Object>( (Pair)v ) );
-            SyncType syty         = getValue( map, "syty", SyncType.SERIAL, (v)-> SyncType.toSyncType( SchemeUtils.schemeSymbolToJavaString( SchemeUtils.schemeNullCheck( v ) ) ) );
+            MetroSyncType syty         = getValue( map, "syty", MetroSyncType.SERIAL, (v)-> MetroSyncType.toSyncType( SchemeUtils.schemeSymbolToJavaString( SchemeUtils.schemeNullCheck( v ) ) ) );
             String syid           = getValue( map, "syid", null, (v)-> SchemeUtils.anyToString(    SchemeUtils.schemeNullCheck( v ) ) );
             double syof           = getValue( map, "syof", 0.0d, (v)-> SchemeUtils.toDouble( v )   );
             Procedure procedure   = getValue( map, ID_PROCEDURE, null, (v)->{
@@ -411,7 +411,7 @@ public class PulsarSpecialNoteListParsers {
         }
 
         abstract void processTrack( Pulsar pulsar, Object id, List<Object> tags, Procedure procedure,
-                SyncType syncType, String syncTrackId, double syncOffset );
+                MetroSyncType syncType, String syncTrackId, double syncOffset );
     }
     
 //  private static final Procedure SCHEME_NOP = new ProcedureN() {
@@ -428,7 +428,7 @@ public class PulsarSpecialNoteListParsers {
         }
         @Override
         void processTrack( Pulsar pulsar, Object id, List<Object> tags, Procedure procedure,
-                SyncType syncType, String syncTrackId, double syncOffset ) {
+                MetroSyncType syncType, String syncTrackId, double syncOffset ) {
             System.out.println( "putt id:" + id );
             
             // if the target procedure is null, just ignore it.
@@ -466,7 +466,7 @@ public class PulsarSpecialNoteListParsers {
         }
         @Override
         void processTrack( Pulsar pulsar, Object id, List<Object> tags, Procedure procedure,
-                SyncType syncType, String syncTrackId, double syncOffset ) {
+                MetroSyncType syncType, String syncTrackId, double syncOffset ) {
             System.out.println( "remt id:" + id );
             synchronized ( pulsar.getMetroLock() ) {
                 List<MetroTrack> trackList;

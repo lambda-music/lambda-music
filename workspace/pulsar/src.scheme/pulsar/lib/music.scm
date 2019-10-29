@@ -395,8 +395,8 @@
                                                                 (eq? 'len (cdr (or (assq 'type note)
                                                                                    (cons 'type #f)))))) 
                                                             notes)))
-                                  (display len-notes)
-                                  (newline)
+                                  ; (display len-notes)
+                                  ; (newline)
                                   (if (= 0 (length len-notes))
                                     ;then *RETURN*
                                     notes
@@ -1536,8 +1536,8 @@
                                 " end)")
                               read)
       ))
-  (display notes)
-  (newline)
+  ; (display notes)
+  ; (newline)
   (translate-notes (parse-notes (cor notes))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

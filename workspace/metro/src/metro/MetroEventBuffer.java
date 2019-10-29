@@ -80,8 +80,9 @@ public class MetroEventBuffer extends MidiReceiverDelegator<byte[]> implements I
     }
     
     public void prepare( Metro metro, JackClient client, JackPosition position, boolean doSort ) throws JackException {
-        if ( doSort )
+        if ( doSort && false )
             this.list.sort( MetroEvent.BAR_OFFSET_COMPARATOR );
+        
         int barLengthInFrames = Metro.calcBarInFrames( metro, client, position );
         this.calcBarOffsetInFrames( barLengthInFrames );
     }

@@ -38,7 +38,7 @@ import java.util.List;
  * @author Ats Oka
  */
 public interface MetroEvent {
-    public static final Comparator<? super MetroEvent> BAR_OFFSET_COMPARATOR = new Comparator<MetroEvent>() {
+    public static final Comparator<MetroEvent> BAR_OFFSET_COMPARATOR = new Comparator<MetroEvent>() {
         @Override
         public int compare( MetroEvent o1, MetroEvent o2) {
             int i;
@@ -50,20 +50,31 @@ public interface MetroEvent {
                 MetroMidiEvent mo1 = (MetroMidiEvent) o1;
                 MetroMidiEvent mo2 = (MetroMidiEvent) o2;
 
-                // FIXME ??? 111100000? not 11110000? why five zeros?
-                // FIXED BE CAREFUL (Tue, 29 Oct 2019 08:16:33 +0900)
-                byte b1 = (byte) ( 0b011110000 & mo1.getMidiData()[0] );
-                byte b2 = (byte) ( 0b011110000 & mo2.getMidiData()[0] );
+                byte[] b1 = mo1.getMidiData();
+                byte[] b2 = mo2.getMidiData();
+
+                byte m1_channel = (byte) ( 0b01111 & b1[0] );
+                byte m2_channel = (byte) ( 0b01111 & b2[0] );
+                if ( m1_channel != m2_channel ) {
+                    if ( m1_channel < m2_channel ) {
+                        return -1;
+                    } else {
+                        return 1;
+                    }
+                }
+
+                byte m1_status = (byte) ( 0b011110000 & b1[0] );
+                byte m2_status = (byte) ( 0b011110000 & b2[0] );
+                if ( m1_status != m2_status ) {
+                    // 0b1000xxxx == Note Off
+                    // 0b1001xxxx == Note On
+                    if ( m1_status == 0b10010000 )
+                        return -1;
+                    else 
+                        return 1;
+                }
                 
-                if ( b1 == b2 )
-                    return 0;
-                
-                // 0b1000xxxx == Note Off
-                // 0b1001xxxx == Note On
-                if ( b1 == 0b10010000 )
-                    return -1;
-                else 
-                    return 1;
+                return 0;
                         
             } else {
                 return 0;
