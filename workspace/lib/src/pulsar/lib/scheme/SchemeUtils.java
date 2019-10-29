@@ -860,5 +860,7 @@ public class SchemeUtils {
         });
     }
     
-    
+    public static final String bytesToString( byte[] bs ) {
+        return javax.xml.bind.DatatypeConverter.printHexBinary( bs );
+    }
 }

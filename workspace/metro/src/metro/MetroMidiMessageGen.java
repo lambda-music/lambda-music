@@ -56,23 +56,24 @@ final class MetroMidiMessageGen {
     
     // A helper function
     public static byte[] noteOn( int ch, int note, double velo ) {
+//        System.err.println( "noteOn:" + velo );
         return new byte[] {
                 (byte) ( 0b10010000 | ( 0b00001111 & ch )), 
                 (byte) ( note ), 
-                (byte) ( 127d * velo ), }; 
+                (byte) (0b01111111 & (int)( 127d * velo ) ), }; 
     }
     public static byte[] noteOff( int ch, int note, int velo ) {
         return new byte[] {
                 (byte) ( 0b10000000 | ( 0b00001111 & ch )), 
                 (byte) ( note ), 
-                (byte) ( velo ), }; 
+                (byte) ( 0b01111111 & velo ), }; 
     }
     // A helper function
     public static byte[] noteOff( int ch, int note, double velo ) {
         return new byte[] {
                 (byte) ( 0b10000000 | ( 0b00001111 & ch )), 
                 (byte) ( note ), 
-                (byte) ( 127d * velo ), }; 
+                (byte) ( 0b01111111 & (int)( 127d * velo )), }; 
     }
     
     public static byte[] keyPressure( int ch, int note, int pressure ) {

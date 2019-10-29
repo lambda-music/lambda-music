@@ -52,16 +52,18 @@ public interface MetroEvent {
 
                 // FIXME ??? 111100000? not 11110000? why five zeros?
                 // FIXED BE CAREFUL (Tue, 29 Oct 2019 08:16:33 +0900)
-                byte b1 = (byte) ( mo1.getMidiData()[0] & 0b11110000 );
-                byte b2 = (byte) ( mo2.getMidiData()[0] & 0b11110000 );
+                byte b1 = (byte) ( 0b011110000 & mo1.getMidiData()[0] );
+                byte b2 = (byte) ( 0b011110000 & mo2.getMidiData()[0] );
                 
                 if ( b1 == b2 )
                     return 0;
                 
+                // 0b1000xxxx == Note Off
+                // 0b1001xxxx == Note On
                 if ( b1 == 0b10010000 )
-                    return 1;
-                else 
                     return -1;
+                else 
+                    return 1;
                         
             } else {
                 return 0;

@@ -1804,14 +1804,14 @@
                                                                     ; Create moved and scaled notations
                                                                     ;                    fold 2
                                                                     (new-notations    (fold (lambda (arg-key arg-op arg-value current-notation) 
-                                                                                              (display (format "arg-key ~s\narg-op ~s\narg-value ~s\n" arg-key arg-op arg-value ))
-                                                                                              (newline)
-                                                                                              (newline)
+                                                                                              ; (display (format "arg-key ~s\narg-op ~s\narg-value ~s\n" arg-key arg-op arg-value ))
+                                                                                              ; (newline)
+                                                                                              ; (newline)
 
                                                                                               (apply n arg-key 
                                                                                                      (lambda (curr-value) 
-                                                                                                       (display (format "arg-op:~a curr-value:~a arg-value:~a" arg-op curr-value arg-value ))
-                                                                                                       (newline)
+                                                                                                       ; (display (format "arg-op:~a curr-value:~a arg-value:~a" arg-op curr-value arg-value ))
+                                                                                                       ; (newline)
                                                                                                        (arg-op curr-value arg-value)) 
                                                                                                      current-notation))
 

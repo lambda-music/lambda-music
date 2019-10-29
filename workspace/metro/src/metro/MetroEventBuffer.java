@@ -116,6 +116,7 @@ public class MetroEventBuffer extends MidiReceiverDelegator<byte[]> implements I
     
     @Override
     public final void midiEvent( String id, double offset, MetroPort outputPort, byte[] data ) {
+//        logInfo( "midiEvent:" + SchemeUtils.bytesToString( data ) );
         // Create an event object.
         DefaultMetroEventMidiEvent event = new DefaultMetroEventMidiEvent( id, offset, outputPort, data );
         
