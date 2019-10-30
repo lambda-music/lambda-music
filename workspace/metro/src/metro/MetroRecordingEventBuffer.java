@@ -2,17 +2,15 @@ package metro;
 
 import java.util.Iterator;
 
-public class MetroRecordingEventBuffer  implements Iterable<MetroEvent>, MetroMidiBufferedReceiver {
-    public MetroRecordingEventBuffer(MetroMidiReceiver<byte[]> receiver) {
+import gnu.lists.LList;
+
+public class MetroRecordingEventBuffer extends MetroNonBufferedToBufferedMidiReceiver<byte[],LList> implements Iterable<MetroEvent> {
+    public MetroRecordingEventBuffer(MetroBufferedMidiReceiver<LList> receiver) {
         super( receiver );
     }
     @Override
     public Iterator<MetroEvent> iterator() {
-        // TODO Auto-generated method stub
         return null;
     }
 
-    @Override
-    public void midiEvent(String id, double offset, MetroPort outputPort, byte[] data) {
-    }
 }

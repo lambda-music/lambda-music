@@ -27,7 +27,7 @@ import java.util.List;
  * 
  * @author ats
  */
-public abstract class MetroSequence {
-    public abstract void    processDirect(    Metro metro, int nframes, List<MetroMidiEvent> in, List<MetroMidiEvent> out );
+public abstract interface MetroSequence {
+    public abstract void    processDirect(    Metro metro, int totalCursor, List<MetroMidiEvent> in, List<MetroMidiEvent> out );
     public abstract boolean processBuffered(  Metro metro, MetroTrack track, MetroEventBuffer buf );
 }

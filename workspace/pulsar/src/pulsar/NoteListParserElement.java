@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import metro.Metro;
-import metro.MetroMidiBufferedReceiver;
+import metro.MetroBufferedMidiReceiver;
 import metro.MetroEventBuffer;
 import metro.MetroTrack;
 
@@ -73,7 +73,7 @@ public abstract class NoteListParserElement {
      * {@link NoteListParser#parseNote(Metro, MetroTrack, MetroEventBuffer, boolean, gnu.lists.AbstractSequence) }
      * </li>
      * <li>
-     * {@link NoteListParser#parse(Metro, MetroTrack, gnu.lists.AbstractSequence, MetroMidiBufferedReceiver, boolean) }
+     * {@link NoteListParser#parse(Metro, MetroTrack, gnu.lists.AbstractSequence, MetroBufferedMidiReceiver, boolean) }
      * </li>
      * </ul>
      * 
@@ -97,5 +97,5 @@ public abstract class NoteListParserElement {
      *         continue or not, returning the value of <code>result</code> parameter
      *         is sufficient.
      */
-    public abstract boolean parseEvent( Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, Map<String,Object> map, boolean result );
+    public abstract boolean parseEvent( Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String,Object> map, boolean result );
 }

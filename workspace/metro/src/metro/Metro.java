@@ -857,7 +857,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
             synchronized ( this.getMetroLock() ) {
                 if ( 0 < this.inputMidiEventList.size() )
                     for ( MetroTrack track : this.tracks ) {
-                        track.sequence.processDirect( this, nframes, this.inputMidiEventList, this.outputMidiEventList );
+                        track.sequence.processDirect( this, track.totalCursor, this.inputMidiEventList, this.outputMidiEventList );
                     }
                 
                 if ( true )
@@ -874,7 +874,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
                 // output the events
                 for ( MetroMidiEvent e : this.outputMidiEventList ) {
                     JackMidi.eventWrite(
-                            e.getOutputPort().jackPort, 
+                            e.getPort().jackPort, 
                             e.getMidiOffset(), 
                             e.getMidiData(), 
                             e.getMidiData().length 

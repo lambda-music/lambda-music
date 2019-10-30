@@ -43,17 +43,21 @@ public class DefaultMetroEventMidiEvent extends DefaultMetroEvent implements Met
     public final void setMidiOffset(int midiOffset) {
         this.midiOffset = midiOffset;
     }
+    @Override
+    public void moveMidiOffset(int offset) {
+        this.midiOffset += offset;
+    }
     public void calcMidiOffset( int cursor ) {
         this.setMidiOffset( this.getBarOffsetInFrames() - cursor );
     }
 
     MetroPort outputPort;
     @Override
-    public final MetroPort getOutputPort() {
+    public final MetroPort getPort() {
         return outputPort;
     }
     @Override
-    public void setOutputPort(MetroPort outputPort) {
+    public void setPort(MetroPort outputPort) {
         this.outputPort = outputPort;
     }
 

@@ -35,10 +35,11 @@ import metro.MetroEventBuffer;
 import metro.MetroMidiEvent;
 import metro.MetroSequence;
 import metro.MetroTrack;
+import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.Invokable;
 
-public class SchemeSequence extends MetroSequence {
+public class SchemeSequence implements MetroSequence, ReadableSchemeSequence {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
@@ -50,6 +51,17 @@ public class SchemeSequence extends MetroSequence {
         LOGGER.log(Level.WARNING, msg);
     }
     
+    static final class SchemeSequenceDefaultProcedure extends SafeProcedureN {
+        private final LList notations;
+        SchemeSequenceDefaultProcedure(LList notations) {
+            this.notations = notations;
+        }
+        
+        @Override
+        public Object applyN(Object[] args) throws Throwable {
+            return notations;
+        }
+    }
     public static Procedure asProcedure(Object v) {
         if ( v instanceof Procedure ) {
             return (Procedure)v;
@@ -90,7 +102,7 @@ public class SchemeSequence extends MetroSequence {
     }
 
     @Override
-    public void processDirect( Metro metro, int nframes, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
+    public void processDirect( Metro metro, int totalCursor, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
         // out.addAll( in ); TODO ******************************
 //        MetroMidi.receiveMidiMessage( MetroMidiReceiver.LoggingToError.getInstance(), in );
 //        System.err.println( "in.size()" + in.size());
@@ -126,5 +138,9 @@ public class SchemeSequence extends MetroSequence {
 //      return SchemeNoteParser1.parse(metro, scheme, pattern, buf, true );
 //      return PulsarNoteParser2.parse(metro, track, pattern, buf, true );
         return PARSER.parse( metro, track, pattern, buf, true );
+    }
+    @Override
+    public LList readMusic() {
+        throw new UnsupportedOperationException();
     }
 }

@@ -66,6 +66,7 @@ import metro.EventListenable;
 import metro.Metro;
 import metro.MetroPort;
 import metro.MetroSequence;
+import metro.MetroSequenceRecorder;
 import metro.MetroSyncType;
 import metro.MetroTrack;
 import pulsar.lib.CurrentObject;
@@ -636,6 +637,12 @@ public final class Pulsar extends Metro {
     public MetroTrack createTrack( Object name, Collection<Object> tags, Procedure procedure ) {
         return createTrack( name, tags, new SchemeSequence( createInvokable( procedure ) ) );
     }
+    
+    public MetroTrack createRecordingTrack( Object name, Collection<Object> tags, MetroPort inputPort, MetroPort outputPort,
+            int recordLength, boolean looper ) 
+    {
+        return createTrack( name, tags, new MetroSequenceRecorder( recordLength, looper, inputPort, outputPort ) );
+    }
 
     static final class PulsarEventListener implements EventListenable.Listener {
         private final Pulsar pulsar;
@@ -816,17 +823,17 @@ public final class Pulsar extends Metro {
             return Arrays.asList( arg );
         }
     }
-    protected List<MetroPort> readParamPort( Object arg ) {
+    protected List<MetroPort> readParamPort( Object arg, List<MetroPort> portList ) {
         if ( arg instanceof Pair ) {
             List<MetroPort> list = new ArrayList<>();
             for ( Object o : ((Pair)arg) ) {
-                list.addAll( readParamPort( o ) );
+                list.addAll( readParamPort( o, portList ) );
             }
             return list;
         } else if ( arg instanceof MetroPort ) {
             return Arrays.asList( (MetroPort)arg );
         } else if ( arg instanceof IString || arg instanceof Symbol ) {
-            MetroPort port = readParamNameToPort( getInputPorts(), arg );
+            MetroPort port = readParamNameToPort( portList, arg );
             if ( port == null ) {
                 logWarn( "unsupported type of a value (" + arg + ")" );
                 return Collections.EMPTY_LIST;
@@ -1005,7 +1012,7 @@ public final class Pulsar extends Metro {
             public Object applyN(Object[] args) throws Throwable {
                 Pulsar pulsar = getCurrent();
                 for ( Object o : args ) {
-                    for ( MetroPort p : pulsar.readParamPort( o ) ) {
+                    for ( MetroPort p : pulsar.readParamPort( o, pulsar.getOutputPorts() ) ) {
                         pulsar.destroyOutputPort( p );
                     }
                 }
@@ -1022,7 +1029,7 @@ public final class Pulsar extends Metro {
             public Object applyN(Object[] args) throws Throwable {
                 Pulsar pulsar = getCurrent();
                 for ( Object o : args ) {
-                    for ( MetroPort p : pulsar.readParamPort( o ) ) {
+                    for ( MetroPort p : pulsar.readParamPort( o, pulsar.getInputPorts() ) ) {
                         pulsar.destroyInputPort( p );
                     }
                 }
@@ -1565,6 +1572,80 @@ public final class Pulsar extends Metro {
                                 + "" 
                                 + THROWS_AN_ERROR_IF_NOT_OPEN );
         }} );
+
+        
+        
+        Procedure newRecordingTrack = new SafeProcedureN( "new-recording-track" ) {
+            @Override
+            public Object applyN(Object[] args) throws Throwable {
+                Pulsar current = getCurrent();
+                Object name;
+                List<Object> tags;
+                MetroPort inputPort;
+                MetroPort outputPort;
+                int recordLength;
+                boolean looper;
+
+                switch ( args.length  ){
+                    case 0 :
+                    case 1 : 
+                    case 2 : 
+                        throw new IllegalArgumentException();
+                    case 3 : 
+                    case 4 : 
+                    case 5 : 
+                    {
+                        List<Object> lst = readParamTrackName( args[0] );
+                        name = lst.remove(0);
+                        tags = null;
+                        {
+                            List<MetroPort> ports = current.readParamPort( args[1], current.getInputPorts() );
+                            if ( ports.size() == 0 )
+                                throw new IllegalArgumentException("could not find input port " + args[1] );
+                            inputPort = ports.get( 0 ); 
+                        }
+                        {
+                            List<MetroPort> ports = current.readParamPort( args[1], current.getOutputPorts() );
+                            if ( ports.size() == 0 )
+                                throw new IllegalArgumentException("could not find output port " + args[2] );
+                            outputPort = ports.get( 0 ); 
+                        }
+                        
+                        if ( 3< args.length ) {
+                            recordLength = SchemeUtils.toInteger( args[3] );
+                        } else {
+                            recordLength = -1;
+                        }
+                        if ( 4< args.length ) {
+                            looper = SchemeUtils.toBoolean( args[4] );
+                        } else {
+                            looper = true;
+                        }
+                        break;
+                    }
+                    
+                    default :
+                        throw new IllegalArgumentException();
+                }
+                return getCurrent().createRecordingTrack( name, tags, inputPort, outputPort, recordLength, looper );
+            }
+        };
+        SchemeUtils.defineVar( env, newRecordingTrack, "new-recording-track", "rect" );
+        PulsarDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
+            setNames( "new-recording-track" , "rect" );
+            setParameterDescription( "[procedure/(list notation)]..." );
+            addParameter( "notations", "procedure/(list notation)", null, true, "The contents of the track. " );
+            setReturnValueDescription( "::MetroTrack" );
+            setShortDescription( "<name/> creates a new track." );
+            setLongDescription( ""
+                                + "" 
+                                + THROWS_AN_ERROR_IF_NOT_OPEN );
+        }} );
+        
+        
+        
+        
+        
         
         /////////////////////////////////////////////////////////////////
         // ( canonical )
@@ -2056,6 +2137,21 @@ public final class Pulsar extends Metro {
                 }
             }
         });
+        
+        SchemeUtils.defineVar( env, new SafeProcedureN( "read-track" ) {
+            @Override
+            public Object applyN(Object[] args) throws Throwable {
+                if ( args.length < 1 ) {
+                    throw new IllegalArgumentException("insufficient argument length (length<1)" );
+                }
+                Object arg0 = args[0];
+                if ( arg0 instanceof ReadableSchemeSequence ) {
+                    return ((ReadableSchemeSequence)arg0).readMusic();
+                } else {
+                    throw new IllegalArgumentException( "the argument is not a readable track." );
+                }
+            }
+        }, "read-track", "reat" );
 
         SchemeUtils.defineVar( env, new SafeProcedureN( "create-process" ) {
             @Override

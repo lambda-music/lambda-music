@@ -22,7 +22,7 @@ package metro;
 
 /**
  * 
- * @see MetroMidiBufferedReceiver
+ * @see MetroBufferedMidiReceiver
  * 
  * @author Ats Oka
  * @param <T>

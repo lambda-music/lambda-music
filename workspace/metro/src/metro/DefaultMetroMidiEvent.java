@@ -17,13 +17,18 @@ public class DefaultMetroMidiEvent implements MetroMidiEvent {
     public final void setMidiOffset(int midiOffset) {
         this.midiOffset = midiOffset;
     }
+    @Override
+    public void moveMidiOffset(int offset) {
+        this.midiOffset += offset;
+    }
+
     MetroPort outputPort;
     @Override
-    public final MetroPort getOutputPort() {
+    public final MetroPort getPort() {
         return outputPort;
     }
     @Override
-    public void setOutputPort(MetroPort outputPort) {
+    public void setPort(MetroPort outputPort) {
         this.outputPort = outputPort;
     }
 

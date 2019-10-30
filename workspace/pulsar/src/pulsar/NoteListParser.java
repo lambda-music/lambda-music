@@ -34,7 +34,7 @@ import gnu.lists.AbstractSequence;
 import gnu.lists.Pair;
 import gnu.mapping.Symbol;
 import metro.Metro;
-import metro.MetroMidiBufferedReceiver;
+import metro.MetroBufferedMidiReceiver;
 import metro.MetroEventBuffer;
 import metro.MetroTrack;
 import pulsar.lib.scheme.SchemeUtils;
@@ -174,9 +174,9 @@ public class NoteListParser {
      *         continue or not, returning the value of <code>result</code> parameter
      *         is sufficient.
      * @see pulsar.NoteListParserElement#parseEvent(Metro, MetroTrack,
-     *      MetroMidiBufferedReceiver, Map, boolean)
+     *      MetroBufferedMidiReceiver, Map, boolean)
      */
-    public boolean parse( Metro metro, MetroTrack track, AbstractSequence<Object> inputList, MetroMidiBufferedReceiver receiver, boolean result ) {
+    public boolean parse( Metro metro, MetroTrack track, AbstractSequence<Object> inputList, MetroBufferedMidiReceiver receiver, boolean result ) {
         // boolean result = true;
         try {
             if ( inputList != null ) {
@@ -204,7 +204,7 @@ public class NoteListParser {
         return result;
     }
 
-    private boolean parseNote( Metro metro, MetroTrack track, MetroMidiBufferedReceiver receiver, boolean result, AbstractSequence list ) {
+    private boolean parseNote( Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, boolean result, AbstractSequence list ) {
         Map<String,Object> map = SchemeUtils.list2map(list, null );
         String type      = map.containsKey( ID_TYPE ) ? SchemeUtils.schemeSymbolToJavaString(  map.get( ID_TYPE ) ) : "";
         NoteListParserElement parser = get( type );

@@ -38,7 +38,7 @@ import org.jaudiolibs.jnajack.JackPosition;
  * 
  * @author Ats Oka
  */
-public class MetroEventBuffer extends MidiReceiverDelegator<byte[]> implements Iterable<MetroEvent>, MetroMidiBufferedReceiver {
+public class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroMidiEvent,byte[]> implements Iterable<MetroEvent> {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -116,13 +116,15 @@ public class MetroEventBuffer extends MidiReceiverDelegator<byte[]> implements I
     }
     
     @Override
-    public final void midiEvent( String id, double offset, MetroPort outputPort, byte[] data ) {
+    public final MetroMidiEvent convertResult( String id, double offset, MetroPort outputPort, byte[] data ) {
 //        logInfo( "midiEvent:" + SchemeUtils.bytesToString( data ) );
         // Create an event object.
         DefaultMetroEventMidiEvent event = new DefaultMetroEventMidiEvent( id, offset, outputPort, data );
         
         // Add it to the list.
         this.list.add(event);
+        
+        return event;
     }
     
     public void noteHit( double offset, MetroPort outputPort, int channel, int note, double velocity ) {
