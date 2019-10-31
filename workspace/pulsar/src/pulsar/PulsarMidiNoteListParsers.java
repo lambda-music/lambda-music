@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import gnu.kawa.slib.srfi1;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroMidi;
@@ -1878,4 +1877,12 @@ public class PulsarMidiNoteListParsers {
     }
     static { register( PARSER_RPN_MSB ); }
 
+    public static void main(String[] args) {
+        String name = PulsarMidiNoteListParsers.class.getName();
+        for( java.lang.reflect.Field f : PulsarMidiNoteListParsers.class.getFields() ) {
+            if ( java.lang.reflect.Modifier.isStatic( f.getModifiers() ) )  {
+                System.out.println( name + "." +  f.getName() );
+            }
+        }
+    }
 }
