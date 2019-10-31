@@ -31,6 +31,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import gnu.lists.AbstractSequence;
+import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Symbol;
 import metro.Metro;
@@ -91,14 +92,14 @@ public class NoteListParser {
         return false;
     }
 
-    public static final String ID_TYPE      = "type";
-    private static final boolean DEBUG = false;
+    public static final String ID_TYPE  = "type";
+    private static final boolean DEBUG  = false;
     
-    private ArrayList<NoteListParserElement> allElements = new ArrayList<>();
+    private ArrayList<NoteListParserElement>      allElements  = new ArrayList<>();
     private HashMap<String,NoteListParserElement> shortNameMap = new HashMap<String,NoteListParserElement>();
-    private HashMap<String,NoteListParserElement> longNameMap = new HashMap<String,NoteListParserElement>();
+    private HashMap<String,NoteListParserElement> longNameMap  = new HashMap<String,NoteListParserElement>();
 
-    private void putProc(HashMap<String, NoteListParserElement> map, String key, NoteListParserElement value ) {
+    private void putProc( HashMap<String, NoteListParserElement> map, String key, NoteListParserElement value ) {
         if (DEBUG)
             logInfo( shortNameMap.size() + " : putParser( " + key + " )" );
         if ( key == null || key.equals( "" ) ) {
@@ -117,7 +118,7 @@ public class NoteListParser {
      */
     public void put( NoteListParserElement e ) {
         putProc( shortNameMap, e.getShortName(), e );
-        putProc( longNameMap, e.getLongName(), e );
+        putProc( longNameMap,  e.getLongName(), e );
         allElements.add( e );
     }
     /**
@@ -182,8 +183,8 @@ public class NoteListParser {
             if ( inputList != null ) {
                 for ( Iterator<Object> i = inputList.iterator(); i.hasNext(); ) {
                     Object obj = i.next();
-                    if ( obj instanceof Pair ) {
-                        Pair record = (Pair)obj;
+                    if ( obj instanceof LList ) {
+                        LList record = (LList)obj;
                         result = parseNote( metro, track, receiver, result, record );
                     } else if ( obj instanceof Boolean ) {
                         continue;
@@ -203,8 +204,9 @@ public class NoteListParser {
         }
         return result;
     }
+    
 
-    private boolean parseNote( Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, boolean result, AbstractSequence list ) {
+    private boolean parseNote( Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, boolean result, LList list ) {
         Map<String,Object> map = SchemeUtils.list2map(list, null );
         String type      = map.containsKey( ID_TYPE ) ? SchemeUtils.schemeSymbolToJavaString(  map.get( ID_TYPE ) ) : "";
         NoteListParserElement parser = get( type );

@@ -48,6 +48,7 @@ import gnu.expr.Language;
 import gnu.kawa.io.InPort;
 import gnu.kawa.io.OutPort;
 import gnu.kawa.io.Path;
+import gnu.kawa.slib.srfi1;
 import gnu.lists.AbstractSequence;
 import gnu.lists.Consumer;
 import gnu.lists.EmptyList;
@@ -555,7 +556,7 @@ public class SchemeUtils {
         }
         return sb.toString();
     }
-    public static void main(String[] args) {
+    public static void main2(String[] args) {
         Matcher m = Pattern.compile("\\s+").matcher("sasdfasad ffsaddfsa\n\nssadfsd fa");
         System.out.println( m.find() );
         System.out.println( m.start() );
@@ -863,4 +864,28 @@ public class SchemeUtils {
     public static final String bytesToString( byte[] bs ) {
         return javax.xml.bind.DatatypeConverter.printHexBinary( bs );
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////////////
+    // alist
+    /////////////////////////////////////////////////////////////////////////////////////////
+    private static final Procedure assq = (Procedure) srfi1.assq.get();
+    public static Object alistGet( Object key, LList alist, Object defaultValue ) {
+        try {
+            Object value = assq.apply2( key, alist );
+            if ( Boolean.FALSE == value ) {
+                return defaultValue;
+            } else {
+                return ((Pair)value).getCdr();
+            }
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public static void main(String[] args) throws Throwable {
+        LList alist = LList.makeList( Arrays.asList( 
+            Pair.make( Symbol.valueOf( "a" ), Symbol.valueOf( "HELLO" ) ),
+            Pair.make( Symbol.valueOf( "b" ), Symbol.valueOf( "WORLD" ) ) ) );
+        System.out.println( alistGet( Symbol.valueOf( "a" ), alist, "NOT FOUND" ) );   
+    }
+
 }
