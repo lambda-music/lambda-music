@@ -248,7 +248,7 @@ public class PulsarSpecialNoteListParsers {
             if ( ! enabled )
                 return result;
 
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int channel      = readMapChannel( map ); 
             double offset    = readMapOffset( map );  
             int note         = readMapNote( map );   
@@ -383,9 +383,9 @@ public class PulsarSpecialNoteListParsers {
             double offset         = readMapOffset( map );
             Object id             = readMapNewId( map );
             List<Object> tags     = readMapCollection( ID_TAGS, map ); 
-            MetroSyncType syty    = readMapSyncType( map );
-            Object syid           = map.get( ID_SYNC_TRACK_ID );
-            double syof           = map.get( ID_SYNC_OFFSET, S2J_DOUBLE, DEFAULT_VALUE_DOUBLE_0 );
+            MetroSyncType styp    = readMapSyncType( map );
+            Object stra           = map.get( ID_SYNC_TRACK_ID, THRU, NULL );
+            double soff           = map.get( ID_SYNC_OFFSET, S2J_DOUBLE, DEFAULT_VALUE_DOUBLE_0 );
             Procedure procedure   = map.get( ID_PROCEDURE, S2J_PROCEDURE, (NoteListValueGenerator<Procedure>)NoteListValueGenerator.NULL );
 
 //            List<Object> el = Collections.emptyList();
@@ -416,7 +416,7 @@ public class PulsarSpecialNoteListParsers {
                     
                     // synchronized block added at (Mon, 29 Jul 2019 13:36:52 +0900)
                     synchronized ( metro.getMetroLock() ) {                       
-                        processTrack( pulsar, id, tags, procedure, syty, syid, syof );
+                        processTrack( pulsar, id, tags, procedure, styp, stra, soff );
                     }
                 }
             });

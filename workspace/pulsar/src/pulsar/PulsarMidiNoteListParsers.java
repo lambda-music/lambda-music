@@ -190,7 +190,7 @@ public class PulsarMidiNoteListParsers {
             if ( ! enabled )
                 return result;
 
-            MetroPort port   = ((Pulsar)metro).getPort( ID_PORT, map);
+            MetroPort port   = readMapPort( ID_PORT, map );
             int channel      = readMapChannel( map ); 
             double offset    = readMapOffset( map );  
             int note         = readMapNote( map );  
@@ -219,7 +219,7 @@ public class PulsarMidiNoteListParsers {
             if ( ! enabled )
                 return result;
 
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int channel      = readMapChannel( map ); 
             double offset    = readMapOffset( map );  
             int note         = readMapNote( map );  
@@ -245,7 +245,7 @@ public class PulsarMidiNoteListParsers {
         @Override
         public boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int note         = readMapNote( map );  
             double value     = readMapDoubleValue( map );
@@ -271,7 +271,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int key          = readMapKey( map ); 
             int value        = readMapIntegerValueDefault0( map ); 
@@ -297,7 +297,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map );
             int value        = readMapIntegerValueDefault0( map );
 //            int value        = map.get( ID_VALUE, S2J_INTEGER, DEFAULT_VALUE_INTEGER_0 );
@@ -323,7 +323,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             double value     = readMapDoubleValue( map );
 
@@ -348,7 +348,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             double value     = readMapDoubleValue( map );
 
@@ -376,7 +376,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
 
             receiver.cc_allSoundOff( offset , port, ch );
@@ -400,7 +400,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
 
             receiver.cc_resetAllControllers( offset , port, ch );
@@ -424,7 +424,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map );
             boolean on       = readMapBooleanValueDefaultFalse( map );
 //            boolean on       = map.get( ID_VALUE , S2J_BOOLEAN, DEFAULT_VALUE_FALSE );
@@ -451,7 +451,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
 
             receiver.cc_allNoteOff( offset , port, ch );
@@ -475,7 +475,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
 
             receiver.cc_omniModeOff( offset , port, ch );
@@ -499,7 +499,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
 
             receiver.cc_omniModeOn( offset , port, ch );
@@ -524,7 +524,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
 
             receiver.cc_monoModeOn( offset , port, ch );
@@ -548,7 +548,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
 
             receiver.cc_polyModeOn( offset , port, ch );
@@ -574,7 +574,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
 //          int ch           = readMapChannel( map );
             int value        = map.get( ID_VALUE, S2J_INTEGER, DEFAULT_VALUE_INTEGER_0 );
 //            int value        = readMapIntegerValueDefault0( map );
@@ -601,7 +601,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
 //          int ch           = readMapChannel( map );
             int value        = readMapIntegerValueDefault0( map );
 //            int value        = readMapIntegerValueDefault0( map );
@@ -627,7 +627,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
 
             receiver.endOfExclusive( offset , port );
@@ -651,7 +651,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
 
             receiver.clock( offset , port );
@@ -676,7 +676,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
 
             receiver.start( offset , port );
@@ -700,7 +700,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
 
             receiver.cont( offset , port );
@@ -724,7 +724,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
 
             receiver.stop( offset , port );
@@ -748,7 +748,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
 
             receiver.reset( offset , port );
@@ -772,7 +772,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -797,7 +797,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -822,7 +822,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -847,7 +847,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -872,7 +872,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -897,7 +897,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -922,7 +922,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -947,7 +947,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -972,7 +972,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -997,7 +997,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1022,7 +1022,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1047,7 +1047,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1072,7 +1072,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1097,7 +1097,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1122,7 +1122,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1147,7 +1147,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1172,7 +1172,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1197,7 +1197,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1222,7 +1222,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1247,7 +1247,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1272,7 +1272,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1297,7 +1297,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1322,7 +1322,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1347,7 +1347,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1372,7 +1372,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1397,7 +1397,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1422,7 +1422,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1447,7 +1447,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1472,7 +1472,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1497,7 +1497,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1522,7 +1522,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1547,7 +1547,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1572,7 +1572,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1597,7 +1597,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1622,7 +1622,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1647,7 +1647,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1672,7 +1672,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1697,7 +1697,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1722,7 +1722,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1747,7 +1747,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1772,7 +1772,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1797,7 +1797,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1822,7 +1822,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
@@ -1848,7 +1848,7 @@ public class PulsarMidiNoteListParsers {
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( metro, map );
+            MetroPort port   = readMapPort( ID_PORT, map );
             int ch           = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 

@@ -20,6 +20,8 @@
 
 package pulsar;
 
+import static pulsar.NoteListCommon.*;
+
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -157,13 +159,18 @@ public class NoteListParser {
     public List<NoteListParserElement> getAllElements() {
         return new ArrayList<>( this.allElements );
     }
-    
+
+
     /**
      * This method parses the specified note list. 
      * 
      * Refer
      * {@linkplain pulsar.SchemeSequence#processBuffered(Metro, MetroTrack, MetroEventBuffer) processBuffered}
      * to see how this method is called.
+     * 
+     * (Fri, 01 Nov 2019 11:24:28 +0900)
+     * Note that {@link Pulsar#currentObject} sets the default Pulsar 
+     * object as a current object. See {@link NoteListCommon#S2J_PORT}.
      * 
      * @param metro
      *            The instance of the current {@link Metro}.
@@ -185,7 +192,9 @@ public class NoteListParser {
      *      MetroBufferedMidiReceiver, Map, boolean)
      */
     public boolean parse( Metro metro, MetroTrack track, AbstractSequence<Object> inputList, MetroBufferedMidiReceiver receiver, boolean result ) {
-        // boolean result = true;
+        // This is it.
+        Pulsar.currentObject.set( (Pulsar) metro );
+        
         try {
             if ( inputList != null ) {
                 for ( Iterator<Object> i = inputList.iterator(); i.hasNext(); ) {
@@ -215,7 +224,7 @@ public class NoteListParser {
 
     private boolean parseNote( Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, boolean result, LList list ) {
         NoteListMap           map    = NoteListMap.createAlist( list );
-        Symbol                type   = map.get( ID_TYPE );
+        Symbol                type   = map.get( ID_TYPE, SYMBOL_THRU, SYMBOL_NULL );
         if ( type == null ) {
             logError( "Error : notation type was not specified.", new Exception() );
             return result;

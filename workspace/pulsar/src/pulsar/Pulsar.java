@@ -2294,47 +2294,5 @@ public final class Pulsar extends Metro {
     }
     
     
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // COMMON CONVERTERS
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * @see NoteListCommon
-     */
-    MetroPort getPort( Symbol id, NoteListMap map ) {
-        return map.get( id, GET_PORT_CONVERTER, GET_PORT_DEFAULT_GENERATOR );
-    }
-    
-    final NoteListValueConverter<MetroPort> GET_PORT_CONVERTER = new NoteListValueConverter<MetroPort>() {
-        Pulsar pulsar = Pulsar.this;
-        @Override
-        public MetroPort convert(Object o) {
-            if ( o instanceof MetroPort ) {
-                return (MetroPort)o;
-            } else if ( o instanceof Number ) {
-                int i = ((Number)o).intValue();
-                List<MetroPort> list = pulsar.getOutputPorts();
-                if ( i<0  ||  list.size() <= i )
-                    throw new IllegalStateException( i + " is not proper. list size=" + list.size() );
-                return list.get(i);
-            } else {
-                List<MetroPort> portList = pulsar.searchOutputPort( o );
-                if ( portList.isEmpty() ) {
-                    throw new IllegalArgumentException( "'" + o + "' does not exists" );
-                }
-                return portList.get( 0 );
-            }
-        }
-    };
-    final NoteListValueGenerator GET_PORT_DEFAULT_GENERATOR = new NoteListValueGenerator<MetroPort>() {
-        Pulsar pulsar = Pulsar.this;
-        @Override
-        public MetroPort generate() {
-            List<MetroPort> list = pulsar.getOutputPorts();
-            if ( list.isEmpty() )
-                throw new IllegalStateException();
-            return list.get(0);
-        }
-    };
 }
     

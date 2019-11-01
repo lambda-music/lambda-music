@@ -10,9 +10,6 @@ import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 
 public abstract class NoteListMap {
-    public final <T> T get( Symbol key ) {
-        return (T) get( key, NoteListValueConverter.THRU, NoteListValueGenerator.NULL );
-    };
     public abstract <T> T get( Symbol key, NoteListValueConverter<T> converter, NoteListValueGenerator<T> defaultValue );
     
     public static final NoteListMap createAlist( LList notation ) {

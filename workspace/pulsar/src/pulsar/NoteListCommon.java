@@ -9,7 +9,6 @@ import java.util.List;
 import gnu.lists.LList;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
-import metro.Metro;
 import metro.MetroPort;
 import metro.MetroSyncType;
 import pulsar.lib.scheme.SchemeUtils;
@@ -24,13 +23,18 @@ import pulsar.lib.scheme.SchemeUtils;
  * There are some dependencies which is very difficult to trace.
  * 
  * {@link Pulsar#getPort(Symbol, NoteListMap)} is one of them. And another dependency is 
- * {@link pulsar.PulsarSpecialNoteListParsers#PARSER_EXEC} 
+ * {@link pulsar.PulsarSpecialNoteListParsers#PARSER_EXEC}
+ * 
+ *  (Fri, 01 Nov 2019 11:15:31 +0900)
+ *  Dependency from NoteListMap is resolved.
+ *  
  */
 public class NoteListCommon {
     static Symbol s( String name ) {
         //      SchemeUtils.schemeSymbol
         return Symbol.valueOf( name );
     }
+    
     
     /**
      * if the `enab` field of a note is set to #f, the note will not be played.
@@ -52,11 +56,11 @@ public class NoteListCommon {
      * Hopefully this eases the learning Pulsar for beginners.
      */
 
-    public static final Symbol ID_ID            = s( "id" );
+    public static final Symbol ID_ID            = s( "id"   );
     public static final Symbol ID_TAGS          = s( "tags" );
-    public static final Symbol ID_SYNC_TYPE     = s( "syty" );
-    public static final Symbol ID_SYNC_TRACK_ID = s( "syid" );
-    public static final Symbol ID_SYNC_OFFSET   = s( "syof" );
+    public static final Symbol ID_SYNC_TYPE     = s( "styp" );
+    public static final Symbol ID_SYNC_TRACK_ID = s( "stra" );
+    public static final Symbol ID_SYNC_OFFSET   = s( "soff" );
     
 
     /*
@@ -71,7 +75,14 @@ public class NoteListCommon {
 //  public static final Symbol ID_MIN       = s( "min" );
 //  public static final Symbol ID_MAX       = s( "max" );
     public static final Symbol ID_VALUE     = s( "val" );
+
     
+    public static final NoteListValueConverter THRU = NoteListValueConverter.THRU;
+    public static final NoteListValueGenerator NULL = NoteListValueGenerator.NULL;
+
+    public static final NoteListValueConverter<Symbol> SYMBOL_THRU = NoteListValueConverter.THRU;
+    public static final NoteListValueGenerator<Symbol> SYMBOL_NULL = (NoteListValueGenerator<Symbol>) NoteListValueGenerator.NULL;
+
     static final NoteListValueConverter<Boolean> S2J_BOOLEAN = new NoteListValueConverter<Boolean>() {
         @Override
         public Boolean convert(Object value) {
@@ -88,9 +99,16 @@ public class NoteListCommon {
             return SchemeUtils.toInteger( value );
         }
     };
+
     static final NoteListValueGenerator<Integer> DEFAULT_VALUE_INTEGER_0  = new NoteListValueGenerator.Default<Integer>( 0 ) ;
-    static final NoteListValueGenerator<Integer> DEFAULT_VALUE_INTEGER_63 = new NoteListValueGenerator.Default<Integer>( 63 ) ;
-    static final NoteListValueGenerator<Integer> DEFAULT_VALUE_INTEGER_60 = new NoteListValueGenerator.Default<Integer>( 60 ) ;
+
+    /**
+     * in some code it used to default to 63 now it defaults to 60;
+     * https://en.scratch-wiki.info/wiki/MIDI_Notes
+     * Note that C4 is 60.
+     */
+    static final NoteListValueGenerator<Integer> DEFAULT_VALUE_NOTE = new NoteListValueGenerator.Default<Integer>( 60 ) ;
+    
     static final NoteListValueConverter<Double> S2J_DOUBLE = new NoteListValueConverter<Double>() {
         @Override
         public Double convert(Object value) {
@@ -135,7 +153,44 @@ public class NoteListCommon {
         public List generate() {
             return el;
         }
-    };    
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
+    // ** SPECIAL** the converter and the default generator for MetroPort
+    ///////////////////////////////////////////////////////////////////////////
+    static final NoteListValueConverter<MetroPort> S2J_PORT = new NoteListValueConverter<MetroPort>() {
+        @Override
+        public MetroPort convert(Object o) {
+            // See Notel
+            Pulsar pulsar = Pulsar.getCurrent();
+            if ( o instanceof MetroPort ) {
+                return (MetroPort)o;
+            } else if ( o instanceof Number ) {
+                int i = ((Number)o).intValue();
+                List<MetroPort> list = pulsar.getOutputPorts();
+                if ( i<0  ||  list.size() <= i )
+                    throw new IllegalStateException( i + " is not proper. list size=" + list.size() );
+                return list.get(i);
+            } else {
+                List<MetroPort> portList = pulsar.searchOutputPort( o );
+                if ( portList.isEmpty() ) {
+                    throw new IllegalArgumentException( "'" + o + "' does not exists" );
+                }
+                return portList.get( 0 );
+            }
+        }
+    };
+    static final NoteListValueGenerator DEFAULT_VALUE_PORT = new NoteListValueGenerator<MetroPort>() {
+        @Override
+        public MetroPort generate() {
+            Pulsar pulsar = Pulsar.getCurrent();
+            List<MetroPort> list = pulsar.getOutputPorts();
+            if ( list.isEmpty() )
+                throw new IllegalStateException();
+            return list.get(0);
+        }
+    };
+
     
     static boolean readMapEnabled( NoteListMap map ) {
         return map.get( ID_ENABLED, S2J_BOOLEAN, DEFAULT_VALUE_TRUE );
@@ -147,10 +202,7 @@ public class NoteListCommon {
         return map.get( ID_OFFSET, S2J_DOUBLE, DEFAULT_VALUE_DOUBLE_0 );
     }
     static int readMapNote( NoteListMap map ) {
-        // in some code it used to default to 63 now it defaults to 60;
-        // https://en.scratch-wiki.info/wiki/MIDI_Notes
-        // Note that C4 is 60.
-        return map.get( ID_NOTE, S2J_INTEGER, DEFAULT_VALUE_INTEGER_60 );
+        return map.get( ID_NOTE, S2J_INTEGER, DEFAULT_VALUE_NOTE );
     }
     static double readMapVelocity( NoteListMap map ) {
         // This used to default to 1.0d now it defaults to 0.5d.
@@ -171,8 +223,11 @@ public class NoteListCommon {
     static boolean readMapBooleanValueDefaultFalse( NoteListMap map ) {
         return map.get( ID_VALUE, S2J_BOOLEAN, DEFAULT_VALUE_FALSE );
     }
-    static MetroPort readMapPort(Metro metro, NoteListMap map) {
-        return ((Pulsar)metro).getPort( ID_PORT, map );
+    /**
+     * @see NoteListParser#parse(metro.Metro, metro.MetroTrack, gnu.lists.AbstractSequence, metro.MetroBufferedMidiReceiver, boolean)
+     */
+    static MetroPort readMapPort( Symbol id ,  NoteListMap map) {
+        return map.get( id, S2J_PORT, DEFAULT_VALUE_PORT );
     }
     static double readMapNoteLength( NoteListMap map ) {
         return map.get( ID_LENGTH, S2J_DOUBLE, DEFAULT_VALUE_DOUBLE_NOTE_LENGTH );
