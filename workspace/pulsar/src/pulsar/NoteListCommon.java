@@ -226,8 +226,8 @@ public class NoteListCommon {
     /**
      * @see NoteListParser#parse(metro.Metro, metro.MetroTrack, gnu.lists.AbstractSequence, metro.MetroBufferedMidiReceiver, boolean)
      */
-    static MetroPort readMapPort( Symbol id ,  NoteListMap map) {
-        return map.get( id, S2J_PORT, DEFAULT_VALUE_PORT );
+    static MetroPort readMapPort( NoteListMap map) {
+        return map.get( ID_PORT, S2J_PORT, DEFAULT_VALUE_PORT );
     }
     static double readMapNoteLength( NoteListMap map ) {
         return map.get( ID_LENGTH, S2J_DOUBLE, DEFAULT_VALUE_DOUBLE_NOTE_LENGTH );

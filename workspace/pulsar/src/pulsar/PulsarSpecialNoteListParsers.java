@@ -248,7 +248,7 @@ public class PulsarSpecialNoteListParsers {
             if ( ! enabled )
                 return result;
 
-            MetroPort port   = readMapPort( ID_PORT, map );
+            MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             double offset    = readMapOffset( map );  
             int note         = readMapNote( map );   
