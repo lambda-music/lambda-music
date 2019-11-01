@@ -20,7 +20,7 @@
 
 package pulsar;
 
-import static pulsar.PulsarMidiNoteListParsers.*;
+import static pulsar.NoteListCommon.*;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
@@ -33,9 +33,8 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import gnu.lists.LList;
-import gnu.lists.Pair;
 import gnu.mapping.Procedure;
+import gnu.mapping.Symbol;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroEventBuffer;
@@ -66,9 +65,10 @@ public class PulsarSpecialNoteListParsers {
      */
     public static final String SEQ_BASE = "seq-base";
 
-    static MetroPort getPort( Metro metro, Map<String, Object> map ) {
+
+    static MetroPort getPortOld( Metro metro, Map<Symbol,Object> map ) {
         if ( map.containsKey( ID_PORT ) ) {
-            Object o = map.get(ID_PORT );
+            Object o = map.get( ID_PORT );
             if ( o instanceof MetroPort ) {
                 return (MetroPort)o;
             } else if ( o instanceof Number ) {
@@ -92,7 +92,6 @@ public class PulsarSpecialNoteListParsers {
         }
     }
 
-    
     /**
      * Returns a collection object which contains parser elements defined in this class. 
      * @return
@@ -115,17 +114,17 @@ public class PulsarSpecialNoteListParsers {
     }
     
     static abstract class SpecialNoteListParserElement extends NoteListParserElement {
-        String shortName;
-        String longName;
+        Symbol shortName;
+        Symbol longName;
         String shortDescription;
         String longDescription;
         List<NoteListParserElementParameter> parameters = Collections.EMPTY_LIST;
         @Override
-        public String getShortName() {
+        public Symbol getShortName() {
             return shortName;
         }
         @Override
-        public String getLongName() {
+        public Symbol getLongName() {
             return longName;
         }
         @Override
@@ -150,8 +149,8 @@ public class PulsarSpecialNoteListParsers {
     public static final class VoidEventParser extends SpecialNoteListParserElement {
         {
             // RENAMED (Thu, 01 Aug 2019 13:09:08 +0900)
-            this.shortName = "nop";
-            this.longName = "no-operation";
+            this.shortName  = s( "nop" );
+            this.longName   = s( "no-operation" );
             this.parameters = Arrays.asList(
 //              new NoteListParserElementParameter.Default(
 //                  "","","","",
@@ -161,13 +160,16 @@ public class PulsarSpecialNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             return result;
         }
     }
     
     static String code( String s ) {
         return "`" + s + "`";
+    }
+    static String code( Symbol s ) {
+        return "`" + SchemeUtils.schemeSymbolToJavaString( s ) + "`";
     }
     
     static final String ABOUT_MEASURE_LENGTH = "The number should be a real number which unit is a measure length. ";
@@ -176,8 +178,8 @@ public class PulsarSpecialNoteListParsers {
     static { register( PARSER_NOTE ); }
     public static class NoteEventParser extends SpecialNoteListParserElement {
         {
-            this.shortName = "note";
-            this.longName  = "note-on-off";
+            this.shortName = s( "note" );
+            this.longName  = s( "note-on-off" );
             this.parameters = Arrays.asList(
 //              new NoteListParserElementParameter.Default(
 //                  "","","","",
@@ -240,24 +242,32 @@ public class PulsarSpecialNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
-            boolean enabled      = map.containsKey( PulsarMidiNoteListParsers.ID_ENABLED     ) ? SchemeUtils.toBoolean( map.get( PulsarMidiNoteListParsers.ID_ENABLED ) ) : true;
+        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
+            boolean enabled      = readMapEnabled( map );
+//          boolean enabled      = map.containsKey( ID_ENABLED     ) ? SchemeUtils.toBoolean( map.get( ID_ENABLED ) ) : true;
             if ( ! enabled )
                 return result;
 
-            MetroPort port   = getPort(metro, map);
-            int channel      = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
-            double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
-            int note         = map.containsKey( ID_NOTE     ) ? SchemeUtils.toInteger(      map.get(ID_NOTE      ) ) : 60;  
-            double velocity  = map.containsKey( ID_VELOCITY ) ? SchemeUtils.toDouble(       map.get(ID_VELOCITY  ) ) : 1d;
-            double length    = map.containsKey( ID_LENGTH   ) ? SchemeUtils.toDouble(       map.get(ID_LENGTH    ) ) : -1d; // this becomes the default value.
+            MetroPort port   = readMapPort( metro, map );
+            int channel      = readMapChannel( map ); 
+            double offset    = readMapOffset( map );  
+            int note         = readMapNote( map );   
+            double velocity  = readMapVelocity( map );
+            double length    = readMapNoteLength( map );
+
+//            int channel      = map.containsKey( ID_CHANNEL  ) ? SchemeUtils.toInteger(      map.get(ID_CHANNEL   ) ) : 0; 
+//            double offset    = map.containsKey( ID_OFFSET   ) ? SchemeUtils.toDouble(       map.get(ID_OFFSET    ) ) : 0.0d;  
+//            int note         = map.containsKey( ID_NOTE     ) ? SchemeUtils.toInteger(      map.get(ID_NOTE      ) ) : 60;  
+//            double velocity  = map.containsKey( ID_VELOCITY ) ? SchemeUtils.toDouble(       map.get(ID_VELOCITY  ) ) : 1d;
+//            double length    = map.containsKey( ID_LENGTH   ) ? SchemeUtils.toDouble(       map.get(ID_LENGTH    ) ) : -1d; // this becomes the default value.
             
 //          System.err.println("velocity");
 //          System.err.println(velocity);
 //          System.err.println ( map );
-            
-            if ( length < 0 )
-                length = DEFAULT_NOTE_LENGTH;
+
+            // This is not necessary anymore.
+//            if ( length < 0 )
+//                length = DEFAULT_NOTE_LENGTH;
 
             receiver.noteOn( offset            , port, channel, note, velocity );
             receiver.noteOff( offset + length  , port, channel, note, velocity );
@@ -270,8 +280,8 @@ public class PulsarSpecialNoteListParsers {
     static { register( PARSER_BAR ); } 
     static final class BarEventParser extends SpecialNoteListParserElement {
         {
-            this.shortName = "len";
-            this.longName  = "length";
+            this.shortName = s( "len" );
+            this.longName  = s( "length" );
             this.parameters = Arrays.asList(
 //              new NoteListParserElementParameter.Default(
 //                  "","","","",
@@ -293,12 +303,16 @@ public class PulsarSpecialNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
-            double value    = map.containsKey( ID_VALUE ) ? SchemeUtils.toDouble( map.get( ID_VALUE ) ) : -1.0d;
-            if ( value < 0 ) {
-                LOGGER.log( Level.WARNING, "a len note was found but 'val was missing; this probably a bug. " );
-                value = 0.0d;
-            }
+        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
+//            double value    =  map.containsKey( ID_VALUE ) ? SchemeUtils.toDouble( map.get( ID_VALUE ) ) : -1.0d;
+//            if ( value <= 0 ) {
+//                LOGGER.log( Level.WARNING, "a `len` note was found but 'val was missing; this probably a bug. " );
+//                value = 0.0d;
+//            }
+            
+            // (Fri, 01 Nov 2019 06:02:11 +0900) 
+            // Now the bar length default to 1.0d. See the comment of DEFAULT_BAR_LENGTH.  
+            double value    =  readMapDoubleValueBarLength( map );
 
             // LOGGER.log( Level.INFO, "a len note = " + value );
             ((MetroEventBuffer) receiver).setLength( value );
@@ -311,13 +325,14 @@ public class PulsarSpecialNoteListParsers {
     static { register( PARSER_EXEC ); } 
     static final class ExecEventParser extends SpecialNoteListParserElement {
         {
-            this.shortName = "exec";
-            this.longName = "execute";
+            this.shortName = s( "exec" );
+            this.longName  = s( "execute" );
             this.parameters = Arrays.asList(
 //              new NoteListParserElementParameter.Default(
 //                  "","","","",
 //                      "") 
                 );
+            
             this.shortDescription = "<name/> invokes the specific procedure. ";
             this.longDescription = "This notation object specifies the total measure length of the current notation object set. ";
             
@@ -335,11 +350,13 @@ public class PulsarSpecialNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
+            double offset        = readMapOffset( map );
+            Procedure procedure0 = readMapProcedure( map );
+//            double offset        = map.containsKey( ID_OFFSET   )  ? SchemeUtils.toDouble(     map.get( ID_OFFSET    ) ) : 0.0d;
+//            Procedure procedure0 = map.containsKey( ID_PROCEDURE ) ?                (Procedure)map.get( ID_PROCEDURE )   : null;
+            
             Pulsar pulsar = ((Pulsar)metro);
-
-            double offset        = map.containsKey( ID_OFFSET   )  ? SchemeUtils.toDouble(     map.get( ID_OFFSET    ) ) : 0.0d;
-            Procedure procedure0 = map.containsKey( ID_PROCEDURE ) ?                (Procedure)map.get( ID_PROCEDURE )   : null;
             // See the note ... XXX_SYNC_01
             ((MetroEventBuffer) receiver).exec( offset, 
                     pulsar.createRunnableAndInvocable( procedure0 ));
@@ -347,15 +364,7 @@ public class PulsarSpecialNoteListParsers {
         }
     }
 
-    static int tempNewIdCounter = 0;
-    static Object getTempNewIdCounterLock() {
-        return PulsarSpecialNoteListParsers.class;
-    }
-    static String createTempNewId() {
-        synchronized ( getTempNewIdCounterLock() ) {
-            return "TEMPID-" + ( tempNewIdCounter++ );
-        }
-    }
+    
     static abstract class TrackEventParser extends SpecialNoteListParserElement {
         MetroTrack searchSyncTrack( Pulsar pulsar, Object id ) {
             List<MetroTrack> trackList = pulsar.searchTrack( id );
@@ -369,29 +378,34 @@ public class PulsarSpecialNoteListParsers {
         
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             Pulsar pulsar = ((Pulsar)metro);
-            List<Object> el = Collections.emptyList();
+            double offset         = readMapOffset( map );
+            Object id             = readMapNewId( map );
+            List<Object> tags     = readMapCollection( ID_TAGS, map ); 
+            MetroSyncType syty    = readMapSyncType( map );
+            Object syid           = map.get( ID_SYNC_TRACK_ID );
+            double syof           = map.get( ID_SYNC_OFFSET, S2J_DOUBLE, DEFAULT_VALUE_DOUBLE_0 );
+            Procedure procedure   = map.get( ID_PROCEDURE, S2J_PROCEDURE, (NoteListValueGenerator<Procedure>)NoteListValueGenerator.NULL );
 
-            double offset         = getValue( map, ID_OFFSET, 0.0d, (v)-> SchemeUtils.toDouble( v )   );
-//            String id             = getValue( map, "id",   null, (v)-> SchemeUtils.anyToString(    SchemeUtils.schemeNullCheck( v ) ) );
-            Object _id            = getValue( map, "id",   null, (v)-> v );
-            List<Object> tags     = getValue( map, "tags", el,   (v)-> new ArrayList<Object>( (Pair)v ) );
-            MetroSyncType syty         = getValue( map, "syty", MetroSyncType.SERIAL, (v)-> MetroSyncType.toSyncType( SchemeUtils.schemeSymbolToJavaString( SchemeUtils.schemeNullCheck( v ) ) ) );
-            String syid           = getValue( map, "syid", null, (v)-> SchemeUtils.anyToString(    SchemeUtils.schemeNullCheck( v ) ) );
-            double syof           = getValue( map, "syof", 0.0d, (v)-> SchemeUtils.toDouble( v )   );
-            Procedure procedure   = getValue( map, ID_PROCEDURE, null, (v)->{
-                return SchemeSequence.asProcedure( v );
-            });
-
-            if ( _id == null ) {
-                // MODIFIED (Tue, 23 Jul 2019 05:55:01 +0900)
-                // id = createDefaultId( pulsar.getScheme() );
-                _id = createTempNewId();
-            }
+//            List<Object> el = Collections.emptyList();
+//            double offset         = getValue( map, ID_OFFSET, 0.0d, (v)-> SchemeUtils.toDouble( v )   );
+////            String id             = getValue( map, "id",   null, (v)-> SchemeUtils.anyToString(    SchemeUtils.schemeNullCheck( v ) ) );
+//            Object _id            = getValue( map, "id",   null, (v)-> v );
+//            List<Object> tags     = getValue( map, "tags", el,   (v)-> new ArrayList<Object>( (Pair)v ) );
+//            MetroSyncType syty         = getValue( map, "syty", MetroSyncType.SERIAL, (v)-> MetroSyncType.toSyncType( SchemeUtils.schemeSymbolToJavaString( SchemeUtils.schemeNullCheck( v ) ) ) );
+//            String syid           = getValue( map, "syid", null, (v)-> SchemeUtils.anyToString(    SchemeUtils.schemeNullCheck( v ) ) );
+//            double syof           = getValue( map, "syof", 0.0d, (v)-> SchemeUtils.toDouble( v )   );
+//            Procedure procedure   = getValue( map, ID_PROCEDURE, null, (v)->{
+//                return SchemeSequence.asProcedure( v );
+//            });
+//            if ( _id == null ) {
+//                // MODIFIED (Tue, 23 Jul 2019 05:55:01 +0900)
+//                // id = createDefaultId( pulsar.getScheme() );
+//                _id = createTempNewId();
+//            }
             
-            // avoid the compile error.
-            Object id = _id;
+            
             logInfo( "NoteListParserElement: id=" + id );
             
             // See the note ... XXX_SYNC_01
@@ -405,13 +419,13 @@ public class PulsarSpecialNoteListParsers {
                         processTrack( pulsar, id, tags, procedure, syty, syid, syof );
                     }
                 }
-                
             });
             return result;
         }
 
+
         abstract void processTrack( Pulsar pulsar, Object id, List<Object> tags, Procedure procedure,
-                MetroSyncType syncType, String syncTrackId, double syncOffset );
+                MetroSyncType syncType, Object syncTrackId, double syncOffset );
     }
     
 //  private static final Procedure SCHEME_NOP = new ProcedureN() {
@@ -422,13 +436,13 @@ public class PulsarSpecialNoteListParsers {
         {
             // RENAMED (Thu, 01 Aug 2019 13:09:08 +0900)
             // RENAMED AGAIN (Thu, 10 Oct 2019 04:55:11 +0900)
-            this.shortName = "putt";
-            this.longName  = "put-track";
+            this.shortName = s( "putt" );
+            this.longName  = s( "put-track" );
             this.parameters = Arrays.asList();
         }
         @Override
         void processTrack( Pulsar pulsar, Object id, List<Object> tags, Procedure procedure,
-                MetroSyncType syncType, String syncTrackId, double syncOffset ) {
+                MetroSyncType syncType, Object syncTrackId, double syncOffset ) {
             System.out.println( "putt id:" + id );
             
             // if the target procedure is null, just ignore it.
@@ -460,13 +474,14 @@ public class PulsarSpecialNoteListParsers {
         {
             // RENAMED (Thu, 01 Aug 2019 13:09:08 +0900)
             // RENAMED AGAIN (Thu, 10 Oct 2019 04:55:11 +0900)
-            this.shortName = "remt";
-            this.longName  = "remove-track";
+            this.shortName = s( "remt" );
+            this.longName  = s( "remove-track" );
             this.parameters = Arrays.asList();
         }
         @Override
         void processTrack( Pulsar pulsar, Object id, List<Object> tags, Procedure procedure,
-                MetroSyncType syncType, String syncTrackId, double syncOffset ) {
+                MetroSyncType syncType, Object syncTrackId, double syncOffset ) {
+
             System.out.println( "remt id:" + id );
             synchronized ( pulsar.getMetroLock() ) {
                 List<MetroTrack> trackList;
@@ -506,12 +521,15 @@ public class PulsarSpecialNoteListParsers {
         abstract void removeTrackProc( Metro metro, MetroTrack track );
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
-            List<String> el = Collections.emptyList();
+        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
+            double offset            = readMapOffset( map );
+            Collection argTrackList  = readMapCollection( ID_ID , map );
+            Collection<String> tags  = readMapCollection( ID_TAGS, map );
 
-            double offset            = getValue( map, ID_OFFSET, 0.0d, (v)-> SchemeUtils.toDouble( v )   );
-            Collection argTrackList  = getValue( map, "id",   null, (v)-> v instanceof Pair ? (Collection)v : (Collection)LList.makeList(Arrays.asList( v ) ));
-            Collection<String> tags  = getValue( map, "tags", el,   (v)-> SchemeUtils.symbolListToStringList((Pair)v ) );
+//            List<String> el = Collections.emptyList();
+//            double offset            = getValue( map, ID_OFFSET, 0.0d, (v)-> SchemeUtils.toDouble( v )   );
+//            Collection argTrackList  = getValue( map, "id",   null, (v)-> v instanceof Pair ? (Collection)v : (Collection)LList.makeList(Arrays.asList( v ) ));
+//            Collection<String> tags  = getValue( map, "tags", el,   (v)-> SchemeUtils.symbolListToStringList((Pair)v ) );
             
             if ( ( argTrackList != null ) && ! argTrackList.isEmpty() ) {
                 ((MetroEventBuffer) receiver).exec( offset, new Runnable() {
@@ -580,8 +598,8 @@ public class PulsarSpecialNoteListParsers {
     static final class KillEventParser extends AbstractRemoveEventParser {
         {
             // RENAMED (Thu, 01 Aug 2019 13:09:08 +0900)
-            this.shortName = "kil";
-            this.longName  = "kill-track";
+            this.shortName = s( "kil" );
+            this.longName  = s( "kill-track" );
             this.parameters = Arrays.asList(
 //              new NoteListParserElementParameter.Default(
 //                  "","","","",
@@ -605,8 +623,8 @@ public class PulsarSpecialNoteListParsers {
     static { register( PARSER_DELETE ); }
     static final class DeleteEventParser extends AbstractRemoveEventParser {
         {
-            this.shortName = "del";
-            this.longName = "delete-track";
+            this.shortName = s( "del" );
+            this.longName = s( "delete-track" );
             this.parameters = Arrays.asList();
         }
         @Override
@@ -619,8 +637,8 @@ public class PulsarSpecialNoteListParsers {
     static { register( PARSER_END ); } 
     static final class EndEventParser extends SpecialNoteListParserElement {
         {
-            this.shortName = "end";
-            this.longName  = "end-track";
+            this.shortName = s( "end" );
+            this.longName  = s( "end-track" );
             this.parameters = Arrays.asList(
 //              new NoteListParserElementParameter.Default(
 //                  "","","","",
@@ -629,7 +647,7 @@ public class PulsarSpecialNoteListParsers {
         }
         @Override
         public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String, Object> map, boolean result) {
+        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             return false;
         }
     }

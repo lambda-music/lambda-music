@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import gnu.mapping.Symbol;
+
 public abstract class DescriptiveBean implements DescriptiveBeanSynopsisFormatter, Cloneable {
     public static class Param implements Cloneable {
         List<String> names;
@@ -218,8 +220,9 @@ public abstract class DescriptiveBean implements DescriptiveBeanSynopsisFormatte
     String interporlate( String msg ) {
         return msg.replaceAll( "<name/>",  this.getName() );
     }
-    
 
-
+    public void setNames(Symbol ... names ) {
+        setNames( SchemeUtils.symbolsToStrings( names ) );
+    }
 
 }

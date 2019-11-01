@@ -21,6 +21,7 @@
 package metro;
 
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -206,7 +207,7 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
         if ( tags == null )
             this.tags = Collections.EMPTY_LIST;
         else
-            this.tags = tags;
+            this.tags = new ArrayList( tags );
 
         this.metro = metro;
         this.sequence = sequence;

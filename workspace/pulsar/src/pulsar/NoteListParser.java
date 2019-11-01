@@ -92,20 +92,22 @@ public class NoteListParser {
         return false;
     }
 
-    public static final String ID_TYPE  = "type";
+    public static final Symbol ID_TYPE  = Symbol.valueOf( "type" );
+    public static final Symbol ID_NULL  = Symbol.valueOf( ""     );
     private static final boolean DEBUG  = false;
     
     private ArrayList<NoteListParserElement>      allElements  = new ArrayList<>();
-    private HashMap<String,NoteListParserElement> shortNameMap = new HashMap<String,NoteListParserElement>();
-    private HashMap<String,NoteListParserElement> longNameMap  = new HashMap<String,NoteListParserElement>();
+    private HashMap<Symbol,NoteListParserElement> shortNameMap = new HashMap<Symbol,NoteListParserElement>();
+    private HashMap<Symbol,NoteListParserElement> longNameMap  = new HashMap<Symbol,NoteListParserElement>();
 
-    private void putProc( HashMap<String, NoteListParserElement> map, String key, NoteListParserElement value ) {
+    private void putProc( HashMap<Symbol, NoteListParserElement> map, Symbol key, NoteListParserElement value ) {
         if (DEBUG)
             logInfo( shortNameMap.size() + " : putParser( " + key + " )" );
-        if ( key == null || key.equals( "" ) ) {
+        
+        if ( key == null || key.equals( ID_NULL ) ) {
             throw new RuntimeException( "internal error : " + value.getClass().getName() + " has no name. "  );
         }
-        if ( shortNameMap.containsKey(key) )
+        if ( shortNameMap.containsKey( key ) )
             throw new RuntimeException( "internal error : id (" + key + ") is already registered." );
         
         map.put( key, value );
@@ -143,8 +145,13 @@ public class NoteListParser {
      * @return
      *     The element or null if not found.
      */
-    public NoteListParserElement get( String name ) {
-        return shortNameMap.containsKey( name ) ? shortNameMap.get(name) : longNameMap.get(name); 
+    public NoteListParserElement get( Symbol name ) {
+        NoteListParserElement result;
+        result = shortNameMap.get( name );
+        if ( result != null ) return result;
+        result = longNameMap.get( name );
+        if ( result != null ) return result;
+        return null;
     }
     
     public List<NoteListParserElement> getAllElements() {
@@ -207,14 +214,19 @@ public class NoteListParser {
     
 
     private boolean parseNote( Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, boolean result, LList list ) {
-        Map<String,Object> map = SchemeUtils.list2map(list, null );
-        String type      = map.containsKey( ID_TYPE ) ? SchemeUtils.schemeSymbolToJavaString(  map.get( ID_TYPE ) ) : "";
-        NoteListParserElement parser = get( type );
-        if ( parser == null ) {
-            logError( "Error : Unknown notation type was given. (" +  type + ")", new Exception() );
+        NoteListMap           map    = NoteListMap.createAlist( list );
+        Symbol                type   = map.get( ID_TYPE );
+        if ( type == null ) {
+            logError( "Error : notation type was not specified.", new Exception() );
             return result;
         } else {
-            return parser.parseEvent( metro, track, receiver, map, result );
+            NoteListParserElement parser = get( type );
+            if ( parser == null ) {
+                logError( "Error : Unknown notation type was given. (" +  type + ")", new Exception() );
+                return result;
+            } else {
+                return parser.parseEvent( metro, track, receiver, map, result );
+            }
         }
     }
 }

@@ -1,5 +1,8 @@
 package pulsar;
 
+import gnu.mapping.Symbol;
+import pulsar.lib.scheme.SchemeUtils;
+
 public abstract class NoteListParserElementParameter {
     public abstract String getShortName();
     public abstract String getLongName();
@@ -14,6 +17,12 @@ public abstract class NoteListParserElementParameter {
         private String defaultValue;
         private String description;
         public Default() {
+        }
+        public Default(Symbol shortName, Symbol longName, String type, String defaultValue, String description) {
+            this( 
+                SchemeUtils.schemeSymbolToJavaString( shortName ),
+                SchemeUtils.schemeSymbolToJavaString( longName ),
+                type, defaultValue, description );
         }
         public Default(String shortName, String longName, String type, String defaultValue, String description) {
             super();

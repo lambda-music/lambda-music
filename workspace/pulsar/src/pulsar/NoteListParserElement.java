@@ -23,6 +23,7 @@ package pulsar;
 import java.util.List;
 import java.util.Map;
 
+import gnu.mapping.Symbol;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroEventBuffer;
@@ -47,7 +48,7 @@ public abstract class NoteListParserElement {
      * @return
      *   The note type name.
      */
-    public abstract String getLongName();
+    public abstract Symbol getLongName();
     
     /**
      * Returns its short name of the target notes. The name should be equal or
@@ -59,7 +60,7 @@ public abstract class NoteListParserElement {
      * @return
      *   The note type name in a short form.
      */
-    public abstract String getShortName();
+    public abstract Symbol getShortName();
     
     public abstract String getShortDescription();
     public abstract String getLongDescription();
@@ -97,5 +98,5 @@ public abstract class NoteListParserElement {
      *         continue or not, returning the value of <code>result</code> parameter
      *         is sufficient.
      */
-    public abstract boolean parseEvent( Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, Map<String,Object> map, boolean result );
+    public abstract boolean parseEvent( Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result );
 }

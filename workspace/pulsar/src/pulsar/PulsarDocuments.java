@@ -38,7 +38,7 @@ public class PulsarDocuments {
                 bean.setNames( element.getShortName() );
             }
         } else {
-            if ( element.getShortName() ==null ) {
+            if ( element.getShortName() == null ) {
                 bean.setNames( element.getLongName() );
             } else {
                 bean.setNames(  element.getLongName(), element.getShortName() );

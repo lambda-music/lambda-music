@@ -140,6 +140,20 @@ public class SchemeUtils {
         return map;
     }
 
+    public static Map<Symbol,Object> list2map2( LList list ) {
+        HashMap<Symbol,Object> result = new HashMap<Symbol,Object>();
+        for ( Iterator<Object> i = list.iterator(); i.hasNext();  ) {
+            Object e = i.next();
+            if ( e instanceof Pair ) {
+                Pair p = (Pair)e;
+                Symbol key   = (Symbol)p.getCar();
+                Object value =         p.getCdr();
+                result.put( key, value );
+            }
+        }
+        return result;
+    }
+    
     public static LList ls(Object... vals) {
         LList result = LList.Empty;
         for (int i = vals.length;  --i >= 0; ) {
@@ -886,6 +900,13 @@ public class SchemeUtils {
             Pair.make( Symbol.valueOf( "a" ), Symbol.valueOf( "HELLO" ) ),
             Pair.make( Symbol.valueOf( "b" ), Symbol.valueOf( "WORLD" ) ) ) );
         System.out.println( alistGet( Symbol.valueOf( "a" ), alist, "NOT FOUND" ) );   
+    }
+    public static String[] symbolsToStrings(Symbol... symbols) {
+        String[] strings = new String[ symbols.length ];
+        for ( int i=0; i< strings.length; i++ ) {
+            strings[i] = schemeSymbolToJavaString( symbols[i] );
+        }
+        return strings;
     }
 
 }
