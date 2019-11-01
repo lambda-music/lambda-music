@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import gnu.lists.LList;
 import gnu.mapping.Symbol;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
@@ -200,6 +201,24 @@ public class PulsarMidiNoteListParsers {
             
             return result;
         }
+        public LList noteOn(double offset, MetroPort port, int channel, int note, double velocity) {
+            return list(
+                writeMapPort( port ),
+                writeMapChannel( channel ), 
+                writeMapOffset( offset ), 
+                writeMapNote( note ),
+                writeMapVelocity( velocity )
+            );
+        }
+        public LList noteOn(double offset, MetroPort port, int channel, int note, int velocity ) {
+            return list(
+                writeMapPort( port ),
+                writeMapChannel( channel ), 
+                writeMapOffset( offset ), 
+                writeMapNote( note ),
+                writeMapIntegerVelocity( velocity )
+            );
+        }
     }
     static { register( PARSER_NOTE_ON ); }
 
@@ -229,6 +248,20 @@ public class PulsarMidiNoteListParsers {
             
             return result;
         }
+        public LList noteOff(double offset, MetroPort port, int channel, int note, double velocity) {
+            return list(
+                writeMapPort( port ),
+                writeMapChannel( channel ), 
+                writeMapOffset( offset ),
+                writeMapNote( note ),  
+                writeMapVelocity( velocity )
+                );
+        }
+        public LList noteOff(double offset, MetroPort port, int channel, int note, int velocity) {
+            return list(
+                // TODO
+            );
+        }
     }
     static { register( PARSER_NOTE_OFF ); }
 
@@ -253,6 +286,16 @@ public class PulsarMidiNoteListParsers {
             receiver.keyPressure( offset , port, ch, note, value );
 
             return result;
+        }
+        public LList keyPressure(double offset, MetroPort port, int channel, int note, double pressure) {
+            return list(
+                // TODO
+            );
+        }
+        public LList keyPressure(double offset, MetroPort port, int channel, int note, int pressure) {
+            return list(
+                // TODO
+            );
         }
     }
     static { register( PARSER_KEY_PRESSURE ); }
@@ -280,6 +323,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList controlChange(double offset, MetroPort port, int channel, int controlNumber, int controlValue) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_CONTROL_CHANGE ); }
 
@@ -306,6 +354,11 @@ public class PulsarMidiNoteListParsers {
             receiver.programChange( offset , port, ch, value );
             return result;
         }
+        public LList programChange(double offset, MetroPort port, int ch, int programNumber) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_PROGRAM_CHANGE ); }
 
@@ -331,6 +384,16 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList channelPressure(double offset, MetroPort port, int ch, double pressureValue) {
+            return list(
+                    // TODO
+                    );
+        }
+        public LList channelPressure(double offset, MetroPort port, int ch, int pressureValue) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_CHANNEL_PRESSURE ); }
 
@@ -355,6 +418,16 @@ public class PulsarMidiNoteListParsers {
             receiver.pitchBend( offset , port, ch, value );
 
             return result;
+        }
+        public LList pitchBend(double offset, MetroPort port, int ch, double pitchBendValue) {
+            return list(
+                    // TODO
+                    );
+        }
+        public LList pitchBend(double offset, MetroPort port, int ch, int pitchBendValue) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_PITCH_BEND ); }
@@ -383,6 +456,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_allSoundOff(double offset, MetroPort port, int ch) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_ALL_SOUND_OFF ); }
 
@@ -406,6 +484,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_resetAllControllers( offset , port, ch );
 
             return result;
+        }
+        public LList cc_resetAllControllers(double offset, MetroPort port, int ch) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_RESET_ALL_CONTROLLERS ); }
@@ -434,6 +517,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_localControls(double offset, MetroPort port, int ch, boolean on) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_LOCAL_CONTROLS ); }
 
@@ -457,6 +545,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_allNoteOff( offset , port, ch );
 
             return result;
+        }
+        public LList cc_allNoteOff(double offset, MetroPort port, int ch) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_ALL_NOTE_OFF ); }
@@ -482,6 +575,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_omniModeOff(double offset, MetroPort port, int ch) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_OMNI_MODE_OFF ); }
 
@@ -505,6 +603,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_omniModeOn( offset , port, ch );
 
             return result;
+        }
+        public LList cc_omniModeOn(double offset, MetroPort port, int ch) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_OMNI_MODE_ON ); }
@@ -531,6 +634,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_monoModeOn(double offset, MetroPort port, int ch) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_MONO_MODE_OFF ); }
 
@@ -554,6 +662,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_polyModeOn( offset , port, ch );
 
             return result;
+        }
+        public LList cc_polyModeOn(double offset, MetroPort port, int ch) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_POLY_MODE_ON ); }
@@ -583,6 +696,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList songPositionPointer(double offset, MetroPort port, int pos) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_SONG_POSITION_POINTER ); }
 
@@ -610,6 +728,10 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList songSelect(double offset, MetroPort port, int songNumber) {
+            // TODO Auto-generated method stub
+            return null;
+        }
     }
     static { register( PARSER_SONG_SELECT ); }
 
@@ -634,6 +756,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList endOfExclusive(double offset, MetroPort port) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_END_OF_EXCLUSIVE ); }
 
@@ -657,6 +784,11 @@ public class PulsarMidiNoteListParsers {
             receiver.clock( offset , port );
 
             return result;
+        }
+        public LList clock(double offset, MetroPort port) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_CLOCK ); }
@@ -683,6 +815,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList start(double offset, MetroPort port) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_START ); }
 
@@ -706,6 +843,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cont( offset , port );
 
             return result;
+        }
+        public LList cont(double offset, MetroPort port) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_CONTINUE ); }
@@ -731,6 +873,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList stop(double offset, MetroPort port) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_STOP ); }
 
@@ -754,6 +901,11 @@ public class PulsarMidiNoteListParsers {
             receiver.reset( offset , port );
 
             return result;
+        }
+        public LList reset(double offset, MetroPort port) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_RESET ); }
@@ -780,6 +932,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_bankSelect(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_BANK_SELECT ); }
 
@@ -804,6 +961,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_modulation( offset, port, ch, value );
 
             return result;
+        }
+        public LList cc_modulation(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_MODULATION ); }
@@ -830,6 +992,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_breathController(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_BREATH_CTRL ); }
 
@@ -854,6 +1021,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_footController( offset, port, ch, value );
 
             return result;
+        }
+        public LList cc_footController(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_FOOT_CTRL ); }
@@ -880,6 +1052,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_portamentoTime(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_PORTAMENTO_TIME ); }
 
@@ -904,6 +1081,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_dataEntryMsb( offset, port, ch, value );
 
             return result;
+        }
+        public LList cc_dataEntryMsb(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_DATA_ENTRY_MSB ); }
@@ -930,6 +1112,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_volume(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_VOLUME ); }
 
@@ -954,6 +1141,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_balance( offset, port, ch, value );
 
             return result;
+        }
+        public LList cc_balance(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_BALANCE ); }
@@ -980,6 +1172,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_pan(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_PAN ); }
 
@@ -1004,6 +1201,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_expression( offset, port, ch, value );
 
             return result;
+        }
+        public LList cc_expression(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_EXPRESSION ); }
@@ -1030,6 +1232,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_effectController1(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_EFFECT_CTRL_1 ); }
 
@@ -1054,6 +1261,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_effectController2( offset, port, ch, value );
 
             return result;
+        }
+        public LList cc_effectController2(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_EFFECT_CTRL_2 ); }
@@ -1080,6 +1292,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_sustainPedal(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_SUSTAIN_PEDAL ); }
 
@@ -1104,6 +1321,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_portamentoSwitch( offset, port, ch, value );
 
             return result;
+        }
+        public LList cc_portamentoSwitch(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_PORTAMENTO_SWITCH ); }
@@ -1130,6 +1352,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_sostenutoSwitch(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_SOSTENUTO_SWITCH ); }
 
@@ -1154,6 +1381,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_pedalSwitch( offset, port, ch, value );
 
             return result;
+        }
+        public LList cc_pedalSwitch(double offset, MetroPort port, int channel, int value) {
+            return list(
+                // TODO
+                        );
         }
     }
     static { register( PARSER_SOFT_PEDAL_SWITCH ); }
@@ -1180,6 +1412,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_legatoSwitch(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_LEGATO_FOOTSWITCH ); }
 
@@ -1204,6 +1441,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_hold2( offset, port, ch, value );
 
             return result;
+        }
+        public LList cc_hold2(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_HOLD_2 ); }
@@ -1230,6 +1472,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_soundController1(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_SOUND_CTRL_01 ); }
 
@@ -1254,6 +1501,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_soundController2( offset, port, ch, value );
 
             return result;
+        }
+        public LList cc_soundController2(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_SOUND_CTRL_02 ); }
@@ -1280,6 +1532,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_soundController3(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_SOUND_CTRL_03 ); }
 
@@ -1304,6 +1561,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_soundController4( offset, port, ch, value );
 
             return result;
+        }
+        public LList cc_soundController4(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_SOUND_CTRL_04 ); }
@@ -1330,6 +1592,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_soundController5(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_SOUND_CTRL_05 ); }
 
@@ -1354,6 +1621,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_soundController6( offset, port, ch, value );
 
             return result;
+        }
+        public LList cc_soundController6(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_SOUND_CTRL_06 ); }
@@ -1380,6 +1652,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_soundController7(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_SOUND_CTRL_07 ); }
 
@@ -1404,6 +1681,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_soundController8( offset, port, ch, value );
 
             return result;
+        }
+        public LList cc_soundController8(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_SOUND_CTRL_08 ); }
@@ -1430,6 +1712,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_soundController9(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_SOUND_CTRL_09 ); }
 
@@ -1454,6 +1741,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_soundController10( offset, port, ch, value );
 
             return result;
+        }
+        public LList cc_soundController10(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_SOUND_CTRL_10 ); }
@@ -1480,6 +1772,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_generalPurpose01(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_GENERAL_PURPOSE_01 ); }
 
@@ -1504,6 +1801,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_generalPurpose02( offset, port, ch, value );
 
             return result;
+        }
+        public LList cc_generalPurpose02(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_GENERAL_PURPOSE_02 ); }
@@ -1530,6 +1832,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_generalPurpose03(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_GENERAL_PURPOSE_03 ); }
 
@@ -1554,6 +1861,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_generalPurpose04( offset, port, ch, value );
 
             return result;
+        }
+        public LList cc_generalPurpose04(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_GENERAL_PURPOSE_04 ); }
@@ -1580,6 +1892,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_portamento(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_PORTAMENTO_CC_CTRL ); }
 
@@ -1604,6 +1921,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_effect1( offset, port, ch, value );
 
             return result;
+        }
+        public LList cc_effect1(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_EFFECT_1_DEPTH ); }
@@ -1630,6 +1952,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_effect2(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_EFFECT_2_DEPTH ); }
 
@@ -1654,6 +1981,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_effect3( offset, port, ch, value );
 
             return result;
+        }
+        public LList cc_effect3(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_EFFECT_3_DEPTH ); }
@@ -1680,6 +2012,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_effect4(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_EFFECT_4_DEPTH ); }
 
@@ -1704,6 +2041,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_effect5( offset, port, ch, value );
 
             return result;
+        }
+        public LList cc_effect5(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_EFFECT_5_DEPTH ); }
@@ -1730,6 +2072,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_dataIncrement(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_DATA_INCREMENT ); }
 
@@ -1754,6 +2101,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_dataDecrement( offset, port, ch, value );
 
             return result;
+        }
+        public LList cc_dataDecrement(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_DATA_DECREMENT ); }
@@ -1780,6 +2132,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_nrpnLsb(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_NRPN_LSB ); }
 
@@ -1804,6 +2161,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_nrpnMsb( offset, port, ch, value );
 
             return result;
+        }
+        public LList cc_nrpnMsb(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_NRPN_MSB ); }
@@ -1830,6 +2192,11 @@ public class PulsarMidiNoteListParsers {
 
             return result;
         }
+        public LList cc_rpnLsb(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
+        }
     }
     static { register( PARSER_RPN_LSB ); }
 
@@ -1855,6 +2222,11 @@ public class PulsarMidiNoteListParsers {
             receiver.cc_rpnMsb( offset, port, ch, value );
 
             return result;
+        }
+        public LList cc_rpnMsb(double offset, MetroPort port, int channel, int value) {
+            return list(
+                    // TODO
+                    );
         }
     }
     static { register( PARSER_RPN_MSB ); }

@@ -2326,7 +2326,7 @@
                        ; A notation list
                        (n port: "fluidsynth" chan: 1 
                           (melody "do re mi fi")
-                          (n type: 'putt id: 'hello2 syty: 'i pos: 0 
+                          (n type: 'putt id: 'hello2 styp: 'i pos: 0 
                              proc: (n port: "h2" chan: 0 (melody "do re mi")) )
                           (n type: 'len val: 2))
 

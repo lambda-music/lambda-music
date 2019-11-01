@@ -6,9 +6,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import gnu.lists.EmptyList;
 import gnu.lists.LList;
+import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
+import gnu.math.IntNum;
+import gnu.math.RealNum;
 import metro.MetroPort;
 import metro.MetroSyncType;
 import pulsar.lib.scheme.SchemeUtils;
@@ -99,6 +103,12 @@ public class NoteListCommon {
             return SchemeUtils.toInteger( value );
         }
     };
+    static final NoteListValueConverter<IntNum> J2S_INTEGER = new NoteListValueConverter<IntNum>() {
+        @Override
+        public IntNum convert(Object value) {
+            return SchemeUtils.toSchemeNumber( (int)value );
+        }
+    };
 
     static final NoteListValueGenerator<Integer> DEFAULT_VALUE_INTEGER_0  = new NoteListValueGenerator.Default<Integer>( 0 ) ;
 
@@ -115,6 +125,13 @@ public class NoteListCommon {
             return SchemeUtils.toDouble( value );
         }
     };
+    static final NoteListValueConverter<RealNum> J2S_DOUBLE = new NoteListValueConverter<RealNum>() {
+        @Override
+        public RealNum convert(Object value) {
+            return SchemeUtils.toSchemeNumber( (double)value );
+        }
+    };
+
     static final NoteListValueGenerator<Double> DEFAULT_VALUE_DOUBLE_0 = new NoteListValueGenerator.Default<Double>( 0.0d ) ;
     static final NoteListValueGenerator<Double> DEFAULT_VALUE_DOUBLE_NOTE_LENGTH = new NoteListValueGenerator.Default<Double>( DEFAULT_NOTE_LENGTH ) ;
     static final NoteListValueGenerator<Double> DEFAULT_VALUE_DOUBLE_BAR_LENGTH  = new NoteListValueGenerator.Default<Double>( DEFAULT_BAR_LENGTH ) ;
@@ -143,6 +160,18 @@ public class NoteListCommon {
                     return new ArrayList( (Collection)value );
             } else {
                 return new ArrayList( Arrays.asList( value ) );
+            }
+        }
+    };
+    static final NoteListValueConverter<List> J2S_LIST = new NoteListValueConverter<List>() {
+        @Override
+        public List convert(Object value) {
+            if ( value instanceof List ) { 
+                return LList.makeList( (List)value );
+            } else if ( value instanceof Collection ) { 
+                return LList.makeList( new ArrayList<>( (Collection)value  ) );
+            } else {
+                return Pair.make( value, EmptyList.emptyList ) ;
             }
         }
     };
@@ -180,6 +209,13 @@ public class NoteListCommon {
             }
         }
     };
+    static final NoteListValueConverter<Object> J2S_PORT = new NoteListValueConverter<Object>() {
+        @Override
+        public Object convert( Object o ) {
+            return ((MetroPort)o).getName();
+        }
+    };
+    
     static final NoteListValueGenerator DEFAULT_VALUE_PORT = new NoteListValueGenerator<MetroPort>() {
         @Override
         public MetroPort generate() {
@@ -191,52 +227,101 @@ public class NoteListCommon {
         }
     };
 
+    static final LList list( Pair ... pairs ) {
+        return LList.makeList( Arrays.asList( pairs ) );
+    }
     
     static boolean readMapEnabled( NoteListMap map ) {
         return map.get( ID_ENABLED, S2J_BOOLEAN, DEFAULT_VALUE_TRUE );
     }
+    static Pair writeMapEnabled( boolean value ) {
+        return Pair.make( ID_ENABLED, J2S_BOOLEAN.convert( value ) );
+    }
+    
     static int readMapChannel( NoteListMap map ) {
         return map.get( ID_CHANNEL, S2J_INTEGER, DEFAULT_VALUE_INTEGER_0 );
     }
+    static Pair writeMapChannel( int value ) {
+        return Pair.make( ID_CHANNEL, J2S_INTEGER.convert( value ));
+    }
+
+    
     static double readMapOffset( NoteListMap map ) {
         return map.get( ID_OFFSET, S2J_DOUBLE, DEFAULT_VALUE_DOUBLE_0 );
     }
+    static Pair writeMapOffset( double value) {
+        return Pair.make( ID_OFFSET, J2S_DOUBLE.convert( value ) );
+    }
     static int readMapNote( NoteListMap map ) {
         return map.get( ID_NOTE, S2J_INTEGER, DEFAULT_VALUE_NOTE );
+    }
+    static Pair writeMapNote( int value ) {
+        return Pair.make( ID_NOTE, J2S_INTEGER.convert( value ) );
     }
     static double readMapVelocity( NoteListMap map ) {
         // This used to default to 1.0d now it defaults to 0.5d.
         return map.get( ID_VELOCITY, S2J_DOUBLE, DEFAULT_VALUE_DOUBLE_5_10 );
     }
+    static Pair writeMapVelocity( double value ) {
+        // This used to default to 1.0d now it defaults to 0.5d.
+        return Pair.make( ID_VELOCITY, J2S_DOUBLE.convert( value ));
+    }
     static Integer readMapKey(NoteListMap map) {
         return map.get( ID_KEY,   S2J_INTEGER, DEFAULT_VALUE_INTEGER_0 );
+    }
+    static Pair writeMapKey(int value ) {
+        return Pair.make( ID_KEY,   J2S_INTEGER.convert( value ) );
     }
     static double readMapDoubleValue( NoteListMap map ) {
         return map.get( ID_VALUE, S2J_DOUBLE, DEFAULT_VALUE_DOUBLE_0 );
     }
+    static Pair writeMapDoubleValue( double value ) {
+        return Pair.make( ID_VALUE, J2S_DOUBLE.convert( value ) );
+    }
     static double readMapDoubleValueBarLength( NoteListMap map ) {
         return map.get( ID_VALUE, S2J_DOUBLE, DEFAULT_VALUE_DOUBLE_BAR_LENGTH );
+    }
+    static Pair writeMapDoubleValueBarLength( double value ) {
+        return Pair.make( ID_VALUE, J2S_DOUBLE.convert( value ) );
     }
     static int readMapIntegerValueDefault0( NoteListMap map ) {
         return map.get( ID_VALUE, S2J_INTEGER, DEFAULT_VALUE_INTEGER_0 );
     }
+    static Pair writeMapIntegerValueDefault0( int value ) {
+        return Pair.make( ID_VALUE, J2S_INTEGER.convert( value ) );
+    }
     static boolean readMapBooleanValueDefaultFalse( NoteListMap map ) {
         return map.get( ID_VALUE, S2J_BOOLEAN, DEFAULT_VALUE_FALSE );
+    }
+    static Pair writeMapBooleanValueDefaultFalse( boolean value ) {
+        return Pair.make( ID_VALUE, J2S_BOOLEAN.convert( value ) );
     }
     /**
      * @see NoteListParser#parse(metro.Metro, metro.MetroTrack, gnu.lists.AbstractSequence, metro.MetroBufferedMidiReceiver, boolean)
      */
-    static MetroPort readMapPort( NoteListMap map) {
+    static MetroPort readMapPort( NoteListMap map ) {
         return map.get( ID_PORT, S2J_PORT, DEFAULT_VALUE_PORT );
+    }
+    static Pair writeMapPort( MetroPort value ) {
+        return Pair.make( ID_PORT, J2S_PORT.convert( value ) );
     }
     static double readMapNoteLength( NoteListMap map ) {
         return map.get( ID_LENGTH, S2J_DOUBLE, DEFAULT_VALUE_DOUBLE_NOTE_LENGTH );
     }
+    static Pair writeMapNoteLength( double value ) {
+        return Pair.make( ID_LENGTH, J2S_DOUBLE.convert( value ) );
+    }
     static Procedure readMapProcedure( NoteListMap map ) {
         return map.get( ID_PROCEDURE, CAST_PROCEDURE, (NoteListValueGenerator<Procedure>)NoteListValueGenerator.NULL );
     }
+//    static Pair writeMapProcedure( Object value ) {
+//        return Pair.make( ID_PROCEDURE, J2S_PROCEDURE.convert( value ) );
+//    }
     static List readMapList( Symbol id, NoteListMap map ) {
         return map.get( id, S2J_LIST, DEFAULT_VALUE_EMPTY_LIST );
+    }
+    static Pair writeMapList( Symbol id, Object value ) {
+        return Pair.make( id, J2S_LIST.convert( value ) );
     }
     
     static final NoteListValueGenerator<MetroSyncType> DEFAULT_VALUE_SYNC_TYPE = 
@@ -245,6 +330,12 @@ public class NoteListCommon {
         @Override
         public MetroSyncType convert(Object value) {
             return MetroSyncType.toSyncType( SchemeUtils.schemeSymbolToJavaString( SchemeUtils.schemeNullCheck( value ) ) );
+        }
+    };
+    static final NoteListValueConverter<Symbol> J2S_SYNC_TYPE = new NoteListValueConverter<Symbol>() {
+        @Override
+        public Symbol convert(Object value) {
+            return SchemeUtils.toSchemeSymbol( ((MetroSyncType)value ).name().toLowerCase() );
         }
     };
     
@@ -258,6 +349,13 @@ public class NoteListCommon {
             return SchemeSequence.asProcedure( value );
         }
     };
+
+//    static final NoteListValueConverter<Procedure> J2S_PROCEDURE = new NoteListValueConverter<Procedure>() {
+//        @Override
+//        public Procedure convert(Object value) {
+//            return SchemeSequence.asProcedure( value );
+//        }
+//    };
 
     
     ////////////////////////////////////////////////////////////////////////////////////
