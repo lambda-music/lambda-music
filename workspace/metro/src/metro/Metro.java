@@ -728,15 +728,22 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
             }
         }
     }
-    
-    public List<String> getAllOutputPorts() throws JackException {
+
+    private String[] getAvailableOutputPorts_impl() throws JackException {
+        return this.jack.getPorts( this.client, "", JackPortType.MIDI, EnumSet.of( JackPortFlags.JackPortIsOutput ) );
+    }
+    private String[] getAvailableInputPorts_impl() throws JackException {
+        return this.jack.getPorts( this.client, "", JackPortType.MIDI, EnumSet.of( JackPortFlags.JackPortIsInput ) );
+    }
+
+    public List<String> getAvailableOutputPorts() throws JackException {
         checkState();
-        String[] ports = this.jack.getPorts( this.client, "", JackPortType.MIDI, EnumSet.of( JackPortFlags.JackPortIsOutput ) );
+        String[] ports = getAvailableOutputPorts_impl();
         return new ArrayList<String>( Arrays.asList( ports ) );
     }
-    public List<String> getAllInputPorts() throws JackException {
+    public List<String> getAvailableInputPorts() throws JackException {
         checkState();
-        String[] ports = this.jack.getPorts( this.client, "", JackPortType.MIDI, EnumSet.of( JackPortFlags.JackPortIsInput ) );
+        String[] ports = getAvailableInputPorts_impl();
         return new ArrayList<String>( Arrays.asList( ports ) );
     }
 
@@ -750,14 +757,14 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
         logInfo( "a list of all Jack ports" );
         logInfo( "// INPUT //");
         {
-            String[] ports = this.jack.getPorts( this.client, "", JackPortType.MIDI, EnumSet.of( JackPortFlags.JackPortIsInput ) );
+            String[] ports = getAvailableInputPorts_impl();
             for ( String s : ports ) {
                 logInfo( s );
             }
         }
         logInfo( "// OUTPUT //");
         {
-            String[] ports = this.jack.getPorts( this.client, "", JackPortType.MIDI, EnumSet.of( JackPortFlags.JackPortIsOutput ) );
+            String[] ports = getAvailableOutputPorts_impl();
             for ( String s : ports ) {
                 logInfo( s );
             }

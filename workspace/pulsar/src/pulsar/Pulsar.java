@@ -1146,7 +1146,7 @@ public final class Pulsar extends Metro {
         SchemeUtils.defineVar( env, new SafeProcedureN("list-all-output") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                return Pair.makeList( getCurrent().getAllOutputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
+                return Pair.makeList( getCurrent().getAvailableOutputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
                     .collect( Collectors.toList() ) );
             }
         } , "list-all-output", "lao" );
@@ -1158,7 +1158,7 @@ public final class Pulsar extends Metro {
         SchemeUtils.defineVar( env, new SafeProcedureN("list-all-input") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                return Pair.makeList( getCurrent().getAllInputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
+                return Pair.makeList( getCurrent().getAvailableInputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
                     .collect( Collectors.toList() ) );
             }
         } , "list-all-input", "lai" );
@@ -1228,7 +1228,7 @@ public final class Pulsar extends Metro {
                 }
                 return Invokable.NO_RESULT;
             }
-        }, "set-playing" );
+        }, "set-playing", "p" );
 
         PulsarDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames("set-playing" );
@@ -1753,7 +1753,11 @@ public final class Pulsar extends Metro {
                  *  
                  */
 //                return Pair.makeList( trackList );
-                return Values.empty;
+////              return Values.empty;
+                
+                // I want it to get back (Sun, 03 Nov 2019 04:56:43 +0900)
+//                return Values.empty;
+                return LList.makeList( trackList );
             }
         }
 
