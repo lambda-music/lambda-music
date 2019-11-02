@@ -197,7 +197,7 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
      * @param sequence
      *            Specifying the sequence object to play.
      */
-    MetroTrack( Metro metro, Object name, Collection<Object> tags, MetroSequence sequence ) {
+    public MetroTrack( Metro metro, Object name, Collection<Object> tags, MetroSequence sequence ) {
         if ( name == null )
             this.name = createUniqueTrackName();
         else

@@ -318,6 +318,25 @@ public abstract class MetroMidi {
 
     
     static final MetroMidiMessage MESSAGE_GEN = MetroMidiMessage.getInstance();
+    public static final MetroMidiError MIDI_ERROR = new MetroMidiError();
+    public static final class MetroMidiError extends MetroMidi {
+        public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, String message ) {
+            receiver.error( offset, port, message );
+        }
+        public <T> T callMidi( MetroMidiReceiver<T> receiver, String message ) {
+            return receiver.error( message );
+        }
+        @Override
+        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
+            return callMidi( receiver, "unknown error" );
+        }
+        @Override
+        public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
+            callBufferedMidi( receiver, event.getMidiOffset() , event.getPort(), "unknown error" );
+        }
+    }
+
+    
     public static final MetroMidiNoteOn MIDI_NOTE_ON = new MetroMidiNoteOn();
     public static final class MetroMidiNoteOn extends MetroMidi {
         {

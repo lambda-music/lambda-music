@@ -103,6 +103,7 @@ import metro.MetroMidi.MetroMidiSongPositionPointer;
 import metro.MetroMidi.MetroMidiSongSelect;
 import metro.MetroMidi.MetroMidiStart;
 import metro.MetroMidi.MetroMidiStop;
+import metro.MetroMidiMessageGen;
 import metro.MetroPort;
 import metro.MetroTrack;
 
@@ -114,7 +115,6 @@ import metro.MetroTrack;
  * @author ats
  *
  */
-@SuppressWarnings("unused")
 public class PulsarMidiNoteListParsers {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
@@ -168,12 +168,36 @@ public class PulsarMidiNoteListParsers {
         public void setParameters(List<NoteListParserElementParameter> parameters) {
             this.parameters = parameters;
         }
+        
+        public Symbol name() {
+            return getShortName();
+        }
     }
     
 
     
     //////////////////////////////////////////////////////////////////////////////////////////
-    
+
+    public static final MetroNoteParserError PARSER_ERROR = new MetroNoteParserError();
+    public static final class MetroNoteParserError extends MidiNoteListParserElement<MetroMidiNoteOn> {
+        @Override
+        public boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
+            double offset    = readMapOffset( map );  
+            MetroPort port   = readMapPort( map );
+            receiver.error( offset, port, "unknown error" );
+            return result;
+        }
+
+        public LList error(double offset, MetroPort port, String message) {
+            return list(
+                writeMapType( name() ),
+                writeMapOffset( offset ),
+                writeMapPort( port ),
+                writeMapString( ID_MESSAGE, message )
+            );
+        }
+    }
+
     public static final MetroNoteParserNoteOn PARSER_NOTE_ON = new MetroNoteParserNoteOn();
     public static final class MetroNoteParserNoteOn extends MidiNoteListParserElement<MetroMidiNoteOn> {
         {
@@ -191,9 +215,9 @@ public class PulsarMidiNoteListParsers {
             if ( ! enabled )
                 return result;
 
+            double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
-            double offset    = readMapOffset( map );  
             int note         = readMapNote( map );  
             double velocity  = readMapVelocity( map );
             
@@ -203,20 +227,22 @@ public class PulsarMidiNoteListParsers {
         }
         public LList noteOn(double offset, MetroPort port, int channel, int note, double velocity) {
             return list(
+                writeMapType( name() ),
+                writeMapOffset( offset ), 
                 writeMapPort( port ),
                 writeMapChannel( channel ), 
-                writeMapOffset( offset ), 
                 writeMapNote( note ),
                 writeMapVelocity( velocity )
             );
         }
         public LList noteOn(double offset, MetroPort port, int channel, int note, int velocity ) {
             return list(
+                writeMapType( name() ),
+                writeMapOffset( offset ), 
                 writeMapPort( port ),
                 writeMapChannel( channel ), 
-                writeMapOffset( offset ), 
                 writeMapNote( note ),
-                writeMapIntegerVelocity( velocity )
+                writeMapVelocity( MetroMidiMessageGen.i2dVelocity( velocity ) )
             );
         }
     }
@@ -238,9 +264,9 @@ public class PulsarMidiNoteListParsers {
             if ( ! enabled )
                 return result;
 
+            double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
-            double offset    = readMapOffset( map );  
             int note         = readMapNote( map );  
             double velocity  = readMapVelocity( map );
             
@@ -250,17 +276,23 @@ public class PulsarMidiNoteListParsers {
         }
         public LList noteOff(double offset, MetroPort port, int channel, int note, double velocity) {
             return list(
+                writeMapType( name() ),
+                writeMapOffset( offset ),
                 writeMapPort( port ),
                 writeMapChannel( channel ), 
-                writeMapOffset( offset ),
                 writeMapNote( note ),  
                 writeMapVelocity( velocity )
                 );
         }
         public LList noteOff(double offset, MetroPort port, int channel, int note, int velocity) {
             return list(
-                // TODO
-            );
+                writeMapType( name() ),
+                writeMapOffset( offset ),
+                writeMapPort( port ),
+                writeMapChannel( channel ), 
+                writeMapNote( note ),  
+                writeMapVelocity( MetroMidiMessageGen.i2dVelocity( velocity ) )
+                );
         }
     }
     static { register( PARSER_NOTE_OFF ); }
@@ -279,22 +311,32 @@ public class PulsarMidiNoteListParsers {
         public boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int note         = readMapNote( map );  
-            double value     = readMapDoubleValue( map );
+            double pressure  = readMapDoubleValue( map );
 
-            receiver.keyPressure( offset , port, ch, note, value );
+            receiver.keyPressure( offset , port, channel, note, pressure );
 
             return result;
         }
         public LList keyPressure(double offset, MetroPort port, int channel, int note, double pressure) {
             return list(
-                // TODO
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapNote(note),
+                writeMapDoubleValue(pressure)
             );
         }
         public LList keyPressure(double offset, MetroPort port, int channel, int note, int pressure) {
             return list(
-                // TODO
+                writeMapType( name() ),
+                writeMapOffset(offset), 
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapNote(note),  
+                writeMapDoubleValue( MetroMidiMessageGen.i2dPressure( pressure ))
             );
         }
     }
@@ -313,20 +355,25 @@ public class PulsarMidiNoteListParsers {
         @Override
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
-            double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
-            int key          = readMapKey( map ); 
-            int value        = readMapIntegerValueDefault0( map ); 
+            double offset     = readMapOffset( map );  
+            MetroPort port    = readMapPort( map );
+            int channel       = readMapChannel( map ); 
+            int controlNumber = readMapKey( map ); 
+            int controlValue  = readMapIntegerValueDefault0( map ); 
 
-            receiver.controlChange( offset, port, ch, key, value );
+            receiver.controlChange( offset, port, channel, controlNumber, controlValue );
 
             return result;
         }
         public LList controlChange(double offset, MetroPort port, int channel, int controlNumber, int controlValue) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapKey(controlNumber), 
+                writeMapIntegerValueDefault0(controlValue)
+            );
         }
     }
     static { register( PARSER_CONTROL_CHANGE ); }
@@ -346,18 +393,22 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map );
+            int channel      = readMapChannel( map );
             int value        = readMapIntegerValueDefault0( map );
 //            int value        = map.get( ID_VALUE, S2J_INTEGER, DEFAULT_VALUE_INTEGER_0 );
 //            int value        = readMapIntegerValueDefault0( map );
 
-            receiver.programChange( offset , port, ch, value );
+            receiver.programChange( offset , port, channel, value );
             return result;
         }
-        public LList programChange(double offset, MetroPort port, int ch, int programNumber) {
+        public LList programChange(double offset, MetroPort port, int channel, int programNumber) {
             return list(
-                    // TODO
-                    );
+                    writeMapType( name() ),
+                    writeMapOffset(offset),  
+                    writeMapPort(port),
+                    writeMapChannel(channel),
+                    writeMapIntegerValueDefault0(programNumber)
+                );
         }
     }
     static { register( PARSER_PROGRAM_CHANGE ); }
@@ -377,22 +428,30 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
-            double value     = readMapDoubleValue( map );
+            int channel      = readMapChannel( map ); 
+            double pressureValue     = readMapDoubleValue( map );
 
-            receiver.channelPressure( offset , port, ch, value );
+            receiver.channelPressure( offset , port, channel, pressureValue );
 
             return result;
         }
-        public LList channelPressure(double offset, MetroPort port, int ch, double pressureValue) {
+        public LList channelPressure(double offset, MetroPort port, int channel, double pressureValue) {
             return list(
-                    // TODO
-                    );
+                    writeMapType( name() ),
+                    writeMapOffset(offset),  
+                    writeMapPort(port),
+                    writeMapChannel(channel), 
+                    writeMapDoubleValue(pressureValue)
+                );
         }
-        public LList channelPressure(double offset, MetroPort port, int ch, int pressureValue) {
+        public LList channelPressure(double offset, MetroPort port, int channel, int pressureValue) {
             return list(
-                    // TODO
-                    );
+                    writeMapType( name() ),
+                    writeMapOffset(offset),  
+                    writeMapPort(port),
+                    writeMapChannel(channel), 
+                    writeMapDoubleValue( MetroMidiMessageGen.i2dPressure( pressureValue ))
+                );
         }
     }
     static { register( PARSER_CHANNEL_PRESSURE ); }
@@ -410,24 +469,32 @@ public class PulsarMidiNoteListParsers {
         @Override
         public
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
-            double offset    = readMapOffset( map );  
-            MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
-            double value     = readMapDoubleValue( map );
+            double offset         = readMapOffset( map );  
+            MetroPort port        = readMapPort( map );
+            int channel           = readMapChannel( map ); 
+            double pitchBendValue = readMapDoubleValue( map );
 
-            receiver.pitchBend( offset , port, ch, value );
+            receiver.pitchBend( offset , port, channel, pitchBendValue );
 
             return result;
         }
-        public LList pitchBend(double offset, MetroPort port, int ch, double pitchBendValue) {
+        public LList pitchBend(double offset, MetroPort port, int channel, double pitchBendValue) {
             return list(
-                    // TODO
-                    );
+                    writeMapType( name() ),
+                    writeMapOffset(offset),  
+                    writeMapPort(port),
+                    writeMapChannel(channel), 
+                    writeMapDoubleValue(pitchBendValue)
+                );
         }
-        public LList pitchBend(double offset, MetroPort port, int ch, int pitchBendValue) {
+        public LList pitchBend(double offset, MetroPort port, int channel, int pitchBendValue) {
             return list(
-                    // TODO
-                    );
+                    writeMapType( name() ),
+                    writeMapOffset(offset),  
+                    writeMapPort(port),
+                    writeMapChannel(channel), 
+                    writeMapDoubleValue( MetroMidiMessageGen.i2dPitchBend( pitchBendValue ))
+                );
         }
     }
     static { register( PARSER_PITCH_BEND ); }
@@ -450,16 +517,19 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
 
-            receiver.cc_allSoundOff( offset , port, ch );
+            receiver.cc_allSoundOff( offset , port, channel );
 
             return result;
         }
-        public LList cc_allSoundOff(double offset, MetroPort port, int ch) {
+        public LList cc_allSoundOff(double offset, MetroPort port, int channel) {
             return list(
-                    // TODO
-                    );
+                    writeMapType( name() ),
+                    writeMapOffset(offset),
+                    writeMapPort(port),
+                    writeMapChannel(channel)
+                );
         }
     }
     static { register( PARSER_ALL_SOUND_OFF ); }
@@ -479,16 +549,19 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
 
-            receiver.cc_resetAllControllers( offset , port, ch );
+            receiver.cc_resetAllControllers( offset , port, channel );
 
             return result;
         }
-        public LList cc_resetAllControllers(double offset, MetroPort port, int ch) {
+        public LList cc_resetAllControllers(double offset, MetroPort port, int channel) {
             return list(
-                    // TODO
-                    );
+                    writeMapType( name() ),
+                    writeMapOffset(offset),
+                    writeMapPort(port),
+                    writeMapChannel(channel)
+                );
         }
     }
     static { register( PARSER_RESET_ALL_CONTROLLERS ); }
@@ -508,19 +581,23 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map );
+            int channel      = readMapChannel( map );
             boolean on       = readMapBooleanValueDefaultFalse( map );
 //            boolean on       = map.get( ID_VALUE , S2J_BOOLEAN, DEFAULT_VALUE_FALSE );
 //          boolean on       = map.containsKey( ID_VALUE    ) ? SchemeUtils.toBoolean(      map.get(ID_VALUE     ) ) : false; 
 
-            receiver.cc_localControls( offset , port, ch, on );
+            receiver.cc_localControls( offset , port, channel, on );
 
             return result;
         }
-        public LList cc_localControls(double offset, MetroPort port, int ch, boolean on) {
+        public LList cc_localControls(double offset, MetroPort port, int channel, boolean on) {
             return list(
-                    // TODO
-                    );
+                    writeMapType( name() ),
+                    writeMapOffset(offset),  
+                    writeMapPort(port),
+                    writeMapChannel(channel),
+                    writeMapBooleanValueDefaultFalse(on)
+                );
         }
     }
     static { register( PARSER_LOCAL_CONTROLS ); }
@@ -540,16 +617,19 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
 
-            receiver.cc_allNoteOff( offset , port, ch );
+            receiver.cc_allNoteOff( offset , port, channel );
 
             return result;
         }
-        public LList cc_allNoteOff(double offset, MetroPort port, int ch) {
+        public LList cc_allNoteOff(double offset, MetroPort port, int channel) {
             return list(
-                    // TODO
-                    );
+                    writeMapType( name() ),
+                    writeMapOffset(offset),
+                    writeMapPort(port),
+                    writeMapChannel(channel)
+                );
         }
     }
     static { register( PARSER_ALL_NOTE_OFF ); }
@@ -569,16 +649,19 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
 
-            receiver.cc_omniModeOff( offset , port, ch );
+            receiver.cc_omniModeOff( offset , port, channel );
 
             return result;
         }
-        public LList cc_omniModeOff(double offset, MetroPort port, int ch) {
+        public LList cc_omniModeOff(double offset, MetroPort port, int channel) {
             return list(
-                    // TODO
-                    );
+                    writeMapType( name() ),
+                    writeMapOffset(offset),
+                    writeMapPort(port),
+                    writeMapChannel(channel)
+                );
         }
     }
     static { register( PARSER_OMNI_MODE_OFF ); }
@@ -598,16 +681,19 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
 
-            receiver.cc_omniModeOn( offset , port, ch );
+            receiver.cc_omniModeOn( offset , port, channel );
 
             return result;
         }
-        public LList cc_omniModeOn(double offset, MetroPort port, int ch) {
+        public LList cc_omniModeOn(double offset, MetroPort port, int channel) {
             return list(
-                    // TODO
-                    );
+                    writeMapType( name() ),
+                    writeMapOffset(offset),
+                    writeMapPort(port),
+                    writeMapChannel(channel)
+                );
         }
     }
     static { register( PARSER_OMNI_MODE_ON ); }
@@ -628,16 +714,19 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
 
-            receiver.cc_monoModeOn( offset , port, ch );
+            receiver.cc_monoModeOn( offset , port, channel );
 
             return result;
         }
-        public LList cc_monoModeOn(double offset, MetroPort port, int ch) {
+        public LList cc_monoModeOn(double offset, MetroPort port, int channel) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel)
+                );
         }
     }
     static { register( PARSER_MONO_MODE_OFF ); }
@@ -657,16 +746,19 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
 
-            receiver.cc_polyModeOn( offset , port, ch );
+            receiver.cc_polyModeOn( offset , port, channel );
 
             return result;
         }
-        public LList cc_polyModeOn(double offset, MetroPort port, int ch) {
+        public LList cc_polyModeOn(double offset, MetroPort port, int channel) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),
+                writeMapPort(port),
+                writeMapChannel(channel)
+                );
         }
     }
     static { register( PARSER_POLY_MODE_ON ); }
@@ -688,18 +780,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-//          int ch           = readMapChannel( map );
-            int value        = map.get( ID_VALUE, S2J_INTEGER, DEFAULT_VALUE_INTEGER_0 );
+//          int channel      = readMapChannel( map );
+            int pos        = readMapIntegerValueDefault0( map );
 //            int value        = readMapIntegerValueDefault0( map );
 
-            receiver.songPositionPointer( offset , port, value );
+            receiver.songPositionPointer( offset , port, pos );
 
             return result;
         }
         public LList songPositionPointer(double offset, MetroPort port, int pos) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapIntegerValueDefault0(pos)
+            );
         }
     }
     static { register( PARSER_SONG_POSITION_POINTER ); }
@@ -720,17 +815,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-//          int ch           = readMapChannel( map );
-            int value        = readMapIntegerValueDefault0( map );
+//          int channel      = readMapChannel( map );
+            int songNumber        = readMapIntegerValueDefault0( map );
 //            int value        = readMapIntegerValueDefault0( map );
 
-            receiver.songSelect( offset , port, value );
+            receiver.songSelect( offset , port, songNumber );
 
             return result;
         }
         public LList songSelect(double offset, MetroPort port, int songNumber) {
-            // TODO Auto-generated method stub
-            return null;
+            return list(
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapIntegerValueDefault0(songNumber)
+            );
         }
     }
     static { register( PARSER_SONG_SELECT ); }
@@ -750,7 +849,7 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+//            int channel      = readMapChannel( map ); 
 
             receiver.endOfExclusive( offset , port );
 
@@ -758,8 +857,10 @@ public class PulsarMidiNoteListParsers {
         }
         public LList endOfExclusive(double offset, MetroPort port) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),
+                writeMapPort(port)
+                );
         }
     }
     static { register( PARSER_END_OF_EXCLUSIVE ); }
@@ -779,7 +880,7 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+//            int channel      = readMapChannel( map ); 
 
             receiver.clock( offset , port );
 
@@ -787,8 +888,10 @@ public class PulsarMidiNoteListParsers {
         }
         public LList clock(double offset, MetroPort port) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),
+                writeMapPort(port)
+            );
         }
     }
     static { register( PARSER_CLOCK ); }
@@ -809,7 +912,7 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+//            int channel      = readMapChannel( map ); 
 
             receiver.start( offset , port );
 
@@ -817,8 +920,10 @@ public class PulsarMidiNoteListParsers {
         }
         public LList start(double offset, MetroPort port) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),
+                writeMapPort(port)
+                );
         }
     }
     static { register( PARSER_START ); }
@@ -838,7 +943,7 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+//            int channel      = readMapChannel( map ); 
 
             receiver.cont( offset , port );
 
@@ -846,8 +951,10 @@ public class PulsarMidiNoteListParsers {
         }
         public LList cont(double offset, MetroPort port) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port)
+                );
         }
     }
     static { register( PARSER_CONTINUE ); }
@@ -867,7 +974,7 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+//            int channel      = readMapChannel( map ); 
 
             receiver.stop( offset , port );
 
@@ -875,8 +982,10 @@ public class PulsarMidiNoteListParsers {
         }
         public LList stop(double offset, MetroPort port) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port)
+                );
         }
     }
     static { register( PARSER_STOP ); }
@@ -896,7 +1005,7 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+//            int channel      = readMapChannel( map ); 
 
             receiver.reset( offset , port );
 
@@ -904,8 +1013,10 @@ public class PulsarMidiNoteListParsers {
         }
         public LList reset(double offset, MetroPort port) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port)
+                );
         }
     }
     static { register( PARSER_RESET ); }
@@ -925,17 +1036,20 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_bankSelect( offset, port, ch, value );
+            receiver.cc_bankSelect( offset, port, channel, value );
 
             return result;
         }
         public LList cc_bankSelect(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value));
         }
     }
     static { register( PARSER_BANK_SELECT ); }
@@ -955,17 +1069,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_modulation( offset, port, ch, value );
+            receiver.cc_modulation( offset, port, channel, value );
 
             return result;
         }
         public LList cc_modulation(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+                );
         }
     }
     static { register( PARSER_MODULATION ); }
@@ -985,17 +1103,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_breathController( offset, port, ch, value );
+            receiver.cc_breathController( offset, port, channel, value );
 
             return result;
         }
         public LList cc_breathController(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+                );
         }
     }
     static { register( PARSER_BREATH_CTRL ); }
@@ -1015,17 +1137,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_footController( offset, port, ch, value );
+            receiver.cc_footController( offset, port, channel, value );
 
             return result;
         }
         public LList cc_footController(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+                );
         }
     }
     static { register( PARSER_FOOT_CTRL ); }
@@ -1045,17 +1171,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_portamentoTime( offset, port, ch, value );
+            receiver.cc_portamentoTime( offset, port, channel, value );
 
             return result;
         }
         public LList cc_portamentoTime(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_PORTAMENTO_TIME ); }
@@ -1075,17 +1205,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_dataEntryMsb( offset, port, ch, value );
+            receiver.cc_dataEntryMsb( offset, port, channel, value );
 
             return result;
         }
         public LList cc_dataEntryMsb(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_DATA_ENTRY_MSB ); }
@@ -1105,17 +1239,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_volume( offset, port, ch, value );
+            receiver.cc_volume( offset, port, channel, value );
 
             return result;
         }
         public LList cc_volume(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_VOLUME ); }
@@ -1135,17 +1273,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_balance( offset, port, ch, value );
+            receiver.cc_balance( offset, port, channel, value );
 
             return result;
         }
         public LList cc_balance(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_BALANCE ); }
@@ -1165,17 +1307,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_pan( offset, port, ch, value );
+            receiver.cc_pan( offset, port, channel, value );
 
             return result;
         }
         public LList cc_pan(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_PAN ); }
@@ -1195,17 +1341,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_expression( offset, port, ch, value );
+            receiver.cc_expression( offset, port, channel, value );
 
             return result;
         }
         public LList cc_expression(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_EXPRESSION ); }
@@ -1225,17 +1375,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_effectController1( offset, port, ch, value );
+            receiver.cc_effectController1( offset, port, channel, value );
 
             return result;
         }
         public LList cc_effectController1(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_EFFECT_CTRL_1 ); }
@@ -1255,17 +1409,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_effectController2( offset, port, ch, value );
+            receiver.cc_effectController2( offset, port, channel, value );
 
             return result;
         }
         public LList cc_effectController2(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_EFFECT_CTRL_2 ); }
@@ -1285,17 +1443,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_sustainPedal( offset, port, ch, value );
+            receiver.cc_sustainPedal( offset, port, channel, value );
 
             return result;
         }
         public LList cc_sustainPedal(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_SUSTAIN_PEDAL ); }
@@ -1315,17 +1477,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_portamentoSwitch( offset, port, ch, value );
+            receiver.cc_portamentoSwitch( offset, port, channel, value );
 
             return result;
         }
         public LList cc_portamentoSwitch(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_PORTAMENTO_SWITCH ); }
@@ -1345,17 +1511,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_sostenutoSwitch( offset, port, ch, value );
+            receiver.cc_sostenutoSwitch( offset, port, channel, value );
 
             return result;
         }
         public LList cc_sostenutoSwitch(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_SOSTENUTO_SWITCH ); }
@@ -1375,17 +1545,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_pedalSwitch( offset, port, ch, value );
+            receiver.cc_pedalSwitch( offset, port, channel, value );
 
             return result;
         }
         public LList cc_pedalSwitch(double offset, MetroPort port, int channel, int value) {
             return list(
-                // TODO
-                        );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+                );
         }
     }
     static { register( PARSER_SOFT_PEDAL_SWITCH ); }
@@ -1405,17 +1579,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_legatoSwitch( offset, port, ch, value );
+            receiver.cc_legatoSwitch( offset, port, channel, value );
 
             return result;
         }
         public LList cc_legatoSwitch(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_LEGATO_FOOTSWITCH ); }
@@ -1435,17 +1613,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_hold2( offset, port, ch, value );
+            receiver.cc_hold2( offset, port, channel, value );
 
             return result;
         }
         public LList cc_hold2(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_HOLD_2 ); }
@@ -1465,17 +1647,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_soundController1( offset, port, ch, value );
+            receiver.cc_soundController1( offset, port, channel, value );
 
             return result;
         }
         public LList cc_soundController1(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_SOUND_CTRL_01 ); }
@@ -1495,17 +1681,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_soundController2( offset, port, ch, value );
+            receiver.cc_soundController2( offset, port, channel, value );
 
             return result;
         }
         public LList cc_soundController2(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_SOUND_CTRL_02 ); }
@@ -1525,17 +1715,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_soundController3( offset, port, ch, value );
+            receiver.cc_soundController3( offset, port, channel, value );
 
             return result;
         }
         public LList cc_soundController3(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_SOUND_CTRL_03 ); }
@@ -1555,17 +1749,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_soundController4( offset, port, ch, value );
+            receiver.cc_soundController4( offset, port, channel, value );
 
             return result;
         }
         public LList cc_soundController4(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_SOUND_CTRL_04 ); }
@@ -1585,17 +1783,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_soundController5( offset, port, ch, value );
+            receiver.cc_soundController5( offset, port, channel, value );
 
             return result;
         }
         public LList cc_soundController5(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_SOUND_CTRL_05 ); }
@@ -1615,17 +1817,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_soundController6( offset, port, ch, value );
+            receiver.cc_soundController6( offset, port, channel, value );
 
             return result;
         }
         public LList cc_soundController6(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_SOUND_CTRL_06 ); }
@@ -1645,17 +1851,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_soundController7( offset, port, ch, value );
+            receiver.cc_soundController7( offset, port, channel, value );
 
             return result;
         }
         public LList cc_soundController7(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_SOUND_CTRL_07 ); }
@@ -1675,17 +1885,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_soundController8( offset, port, ch, value );
+            receiver.cc_soundController8( offset, port, channel, value );
 
             return result;
         }
         public LList cc_soundController8(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_SOUND_CTRL_08 ); }
@@ -1705,17 +1919,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_soundController9( offset, port, ch, value );
+            receiver.cc_soundController9( offset, port, channel, value );
 
             return result;
         }
         public LList cc_soundController9(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_SOUND_CTRL_09 ); }
@@ -1735,17 +1953,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_soundController10( offset, port, ch, value );
+            receiver.cc_soundController10( offset, port, channel, value );
 
             return result;
         }
         public LList cc_soundController10(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_SOUND_CTRL_10 ); }
@@ -1765,17 +1987,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_generalPurpose01( offset, port, ch, value );
+            receiver.cc_generalPurpose01( offset, port, channel, value );
 
             return result;
         }
         public LList cc_generalPurpose01(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_GENERAL_PURPOSE_01 ); }
@@ -1795,17 +2021,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_generalPurpose02( offset, port, ch, value );
+            receiver.cc_generalPurpose02( offset, port, channel, value );
 
             return result;
         }
         public LList cc_generalPurpose02(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_GENERAL_PURPOSE_02 ); }
@@ -1825,17 +2055,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_generalPurpose03( offset, port, ch, value );
+            receiver.cc_generalPurpose03( offset, port, channel, value );
 
             return result;
         }
         public LList cc_generalPurpose03(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_GENERAL_PURPOSE_03 ); }
@@ -1855,17 +2089,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_generalPurpose04( offset, port, ch, value );
+            receiver.cc_generalPurpose04( offset, port, channel, value );
 
             return result;
         }
         public LList cc_generalPurpose04(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_GENERAL_PURPOSE_04 ); }
@@ -1885,17 +2123,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_portamento( offset, port, ch, value );
+            receiver.cc_portamento( offset, port, channel, value );
 
             return result;
         }
         public LList cc_portamento(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_PORTAMENTO_CC_CTRL ); }
@@ -1915,17 +2157,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_effect1( offset, port, ch, value );
+            receiver.cc_effect1( offset, port, channel, value );
 
             return result;
         }
         public LList cc_effect1(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_EFFECT_1_DEPTH ); }
@@ -1945,17 +2191,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_effect2( offset, port, ch, value );
+            receiver.cc_effect2( offset, port, channel, value );
 
             return result;
         }
         public LList cc_effect2(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_EFFECT_2_DEPTH ); }
@@ -1975,17 +2225,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_effect3( offset, port, ch, value );
+            receiver.cc_effect3( offset, port, channel, value );
 
             return result;
         }
         public LList cc_effect3(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_EFFECT_3_DEPTH ); }
@@ -2005,17 +2259,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_effect4( offset, port, ch, value );
+            receiver.cc_effect4( offset, port, channel, value );
 
             return result;
         }
         public LList cc_effect4(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_EFFECT_4_DEPTH ); }
@@ -2035,17 +2293,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_effect5( offset, port, ch, value );
+            receiver.cc_effect5( offset, port, channel, value );
 
             return result;
         }
         public LList cc_effect5(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_EFFECT_5_DEPTH ); }
@@ -2065,17 +2327,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_dataIncrement( offset, port, ch, value );
+            receiver.cc_dataIncrement( offset, port, channel, value );
 
             return result;
         }
         public LList cc_dataIncrement(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_DATA_INCREMENT ); }
@@ -2095,17 +2361,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_dataDecrement( offset, port, ch, value );
+            receiver.cc_dataDecrement( offset, port, channel, value );
 
             return result;
         }
         public LList cc_dataDecrement(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_DATA_DECREMENT ); }
@@ -2125,17 +2395,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_nrpnLsb( offset, port, ch, value );
+            receiver.cc_nrpnLsb( offset, port, channel, value );
 
             return result;
         }
         public LList cc_nrpnLsb(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_NRPN_LSB ); }
@@ -2155,17 +2429,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_nrpnMsb( offset, port, ch, value );
+            receiver.cc_nrpnMsb( offset, port, channel, value );
 
             return result;
         }
         public LList cc_nrpnMsb(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_NRPN_MSB ); }
@@ -2185,17 +2463,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_rpnLsb( offset, port, ch, value );
+            receiver.cc_rpnLsb( offset, port, channel, value );
 
             return result;
         }
         public LList cc_rpnLsb(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_RPN_LSB ); }
@@ -2216,17 +2498,21 @@ public class PulsarMidiNoteListParsers {
         boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            int ch           = readMapChannel( map ); 
+            int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            receiver.cc_rpnMsb( offset, port, ch, value );
+            receiver.cc_rpnMsb( offset, port, channel, value );
 
             return result;
         }
         public LList cc_rpnMsb(double offset, MetroPort port, int channel, int value) {
             return list(
-                    // TODO
-                    );
+                writeMapType( name() ),
+                writeMapOffset(offset),  
+                writeMapPort(port),
+                writeMapChannel(channel), 
+                writeMapIntegerValueDefault0(value)
+            );
         }
     }
     static { register( PARSER_RPN_MSB ); }

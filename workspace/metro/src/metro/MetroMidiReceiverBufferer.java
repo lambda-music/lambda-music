@@ -1,8 +1,21 @@
 package metro;
 
-public abstract class MetroNonBufferedToBufferedMidiReceiver<OUTER,INNER> implements MetroMidiReceiver<OUTER> {
+public abstract class MetroMidiReceiverBufferer<OUTER,INNER> implements MetroMidiReceiver<OUTER> {
+    public static class Default<T> extends MetroMidiReceiverBufferer<T,T> {
+        public Default(MetroBufferedMidiReceiver<T> receiver) {
+            super( receiver );
+        }
+        @Override
+        protected T convertResult(T result) {
+            return result;
+        }
+    }
+    public static <T> MetroMidiReceiverBufferer<T,T> createRecorder( MetroBufferedMidiReceiver<T> receiver ) {
+        return new MetroMidiReceiverBufferer.Default<T>( receiver );
+    }
+
     private final MetroBufferedMidiReceiver<INNER> receiver;
-    public MetroNonBufferedToBufferedMidiReceiver( MetroBufferedMidiReceiver<INNER> receiver ) {
+    public MetroMidiReceiverBufferer( MetroBufferedMidiReceiver<INNER> receiver ) {
         this.receiver = receiver;
     }
     private transient MetroPort port;

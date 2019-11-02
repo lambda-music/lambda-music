@@ -5,10 +5,13 @@ import metro.MetroBufferedMidiReceiver;
 import metro.MetroPort;
 
 public class SchemeBufferedMidiReceiver implements MetroBufferedMidiReceiver<LList> {
+    public static final SchemeBufferedMidiReceiver INSTANCE = new SchemeBufferedMidiReceiver();
+    public static SchemeBufferedMidiReceiver getInstance() {
+        return INSTANCE;
+    }
     @Override
     public LList error(double offset, MetroPort port, String message) {
-        // NoteListParserElement element = pulsar.PulsarMidiNoteListParsers.PARSER_NOTE_ON;
-        return null;
+        return pulsar.PulsarMidiNoteListParsers.PARSER_ERROR.error(offset, port, message );
     }
 
     @Override
@@ -47,68 +50,68 @@ public class SchemeBufferedMidiReceiver implements MetroBufferedMidiReceiver<LLi
     }
 
     @Override
-    public LList programChange(double offset, MetroPort port, int ch, int programNumber) {
-        return pulsar.PulsarMidiNoteListParsers.PARSER_PROGRAM_CHANGE.programChange(offset, port, ch, programNumber);
+    public LList programChange(double offset, MetroPort port, int channel, int programNumber) {
+        return pulsar.PulsarMidiNoteListParsers.PARSER_PROGRAM_CHANGE.programChange(offset, port, channel, programNumber);
     }
 
     @Override
-    public LList channelPressure(double offset, MetroPort port, int ch, double pressureValue) {
-        return pulsar.PulsarMidiNoteListParsers.PARSER_CHANNEL_PRESSURE.channelPressure(offset, port, ch, pressureValue);
+    public LList channelPressure(double offset, MetroPort port, int channel, double pressureValue) {
+        return pulsar.PulsarMidiNoteListParsers.PARSER_CHANNEL_PRESSURE.channelPressure(offset, port, channel, pressureValue);
     }
 
     @Override
-    public LList channelPressure(double offset, MetroPort port, int ch, int pressureValue) {
-        return pulsar.PulsarMidiNoteListParsers.PARSER_CHANNEL_PRESSURE.channelPressure(offset, port, ch, pressureValue);
+    public LList channelPressure(double offset, MetroPort port, int channel, int pressureValue) {
+        return pulsar.PulsarMidiNoteListParsers.PARSER_CHANNEL_PRESSURE.channelPressure(offset, port, channel, pressureValue);
     }
 
     @Override
-    public LList pitchBend(double offset, MetroPort port, int ch, double pitchBendValue) {
-        return pulsar.PulsarMidiNoteListParsers.PARSER_PITCH_BEND.pitchBend(offset, port, ch, pitchBendValue);
+    public LList pitchBend(double offset, MetroPort port, int channel, double pitchBendValue) {
+        return pulsar.PulsarMidiNoteListParsers.PARSER_PITCH_BEND.pitchBend(offset, port, channel, pitchBendValue);
     }
 
     @Override
-    public LList pitchBend(double offset, MetroPort port, int ch, int pitchBendValue) {
-        return pulsar.PulsarMidiNoteListParsers.PARSER_PITCH_BEND.pitchBend(offset, port, ch, pitchBendValue);
+    public LList pitchBend(double offset, MetroPort port, int channel, int pitchBendValue) {
+        return pulsar.PulsarMidiNoteListParsers.PARSER_PITCH_BEND.pitchBend(offset, port, channel, pitchBendValue);
     }
 
     @Override
-    public LList cc_allSoundOff(double offset, MetroPort port, int ch) {
-        return pulsar.PulsarMidiNoteListParsers.PARSER_ALL_SOUND_OFF.cc_allSoundOff(offset, port, ch);
+    public LList cc_allSoundOff(double offset, MetroPort port, int channel) {
+        return pulsar.PulsarMidiNoteListParsers.PARSER_ALL_SOUND_OFF.cc_allSoundOff(offset, port, channel);
     }
 
     @Override
-    public LList cc_resetAllControllers(double offset, MetroPort port, int ch) {
-        return pulsar.PulsarMidiNoteListParsers.PARSER_RESET_ALL_CONTROLLERS.cc_resetAllControllers(offset, port, ch);
+    public LList cc_resetAllControllers(double offset, MetroPort port, int channel) {
+        return pulsar.PulsarMidiNoteListParsers.PARSER_RESET_ALL_CONTROLLERS.cc_resetAllControllers(offset, port, channel);
     }
 
     @Override
-    public LList cc_localControls(double offset, MetroPort port, int ch, boolean on) {
-        return pulsar.PulsarMidiNoteListParsers.PARSER_LOCAL_CONTROLS.cc_localControls(offset, port, ch, on);
+    public LList cc_localControls(double offset, MetroPort port, int channel, boolean on) {
+        return pulsar.PulsarMidiNoteListParsers.PARSER_LOCAL_CONTROLS.cc_localControls(offset, port, channel, on);
     }
 
     @Override
-    public LList cc_allNoteOff(double offset, MetroPort port, int ch) {
-        return pulsar.PulsarMidiNoteListParsers.PARSER_ALL_NOTE_OFF.cc_allNoteOff(offset, port, ch);
+    public LList cc_allNoteOff(double offset, MetroPort port, int channel) {
+        return pulsar.PulsarMidiNoteListParsers.PARSER_ALL_NOTE_OFF.cc_allNoteOff(offset, port, channel);
     }
 
     @Override
-    public LList cc_omniModeOff(double offset, MetroPort port, int ch) {
-        return pulsar.PulsarMidiNoteListParsers.PARSER_OMNI_MODE_OFF.cc_omniModeOff(offset, port, ch);
+    public LList cc_omniModeOff(double offset, MetroPort port, int channel) {
+        return pulsar.PulsarMidiNoteListParsers.PARSER_OMNI_MODE_OFF.cc_omniModeOff(offset, port, channel);
     }
 
     @Override
-    public LList cc_omniModeOn(double offset, MetroPort port, int ch) {
-        return pulsar.PulsarMidiNoteListParsers.PARSER_OMNI_MODE_ON.cc_omniModeOn(offset, port, ch);
+    public LList cc_omniModeOn(double offset, MetroPort port, int channel) {
+        return pulsar.PulsarMidiNoteListParsers.PARSER_OMNI_MODE_ON.cc_omniModeOn(offset, port, channel);
     }
 
     @Override
-    public LList cc_monoModeOn(double offset, MetroPort port, int ch) {
-        return pulsar.PulsarMidiNoteListParsers.PARSER_MONO_MODE_OFF.cc_monoModeOn(offset, port, ch);
+    public LList cc_monoModeOn(double offset, MetroPort port, int channel) {
+        return pulsar.PulsarMidiNoteListParsers.PARSER_MONO_MODE_OFF.cc_monoModeOn(offset, port, channel);
     }
 
     @Override
-    public LList cc_polyModeOn(double offset, MetroPort port, int ch) {
-        return pulsar.PulsarMidiNoteListParsers.PARSER_POLY_MODE_ON.cc_polyModeOn(offset, port, ch);
+    public LList cc_polyModeOn(double offset, MetroPort port, int channel) {
+        return pulsar.PulsarMidiNoteListParsers.PARSER_POLY_MODE_ON.cc_polyModeOn(offset, port, channel);
     }
 
     @Override

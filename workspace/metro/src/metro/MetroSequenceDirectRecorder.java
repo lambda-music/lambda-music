@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class MetroSequenceRecorder implements MetroSequence, MetroLock {
-    public MetroSequenceRecorder( int recordLength, boolean looper, MetroPort inputPort, MetroPort outputPort ) {
+public class MetroSequenceDirectRecorder implements MetroSequence, MetroLock {
+    public MetroSequenceDirectRecorder( int recordLength, boolean looper, MetroPort inputPort, MetroPort outputPort ) {
         this.recordLength = recordLength;
         this.looper = looper;
         this.inputPort = inputPort;

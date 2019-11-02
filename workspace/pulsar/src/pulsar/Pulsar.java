@@ -66,7 +66,6 @@ import metro.EventListenable;
 import metro.Metro;
 import metro.MetroPort;
 import metro.MetroSequence;
-import metro.MetroSequenceRecorder;
 import metro.MetroSyncType;
 import metro.MetroTrack;
 import pulsar.lib.CurrentObject;
@@ -633,15 +632,20 @@ public final class Pulsar extends Metro {
             proc.apply(pulsar, from, to );
         }
     }
+    
+    @Override
+    public MetroTrack createTrack(Object name, Collection<Object> tags, MetroSequence sequence) {
+        return new PulsarTrack( this, name, tags, sequence );
+    }
 
     public MetroTrack createTrack( Object name, Collection<Object> tags, Procedure procedure ) {
-        return createTrack( name, tags, new SchemeSequence( createInvokable( procedure ) ) );
+        return this.createTrack( name, tags, new SchemeSequence( createInvokable( procedure ) ) );
     }
     
     public MetroTrack createRecordingTrack( Object name, Collection<Object> tags, MetroPort inputPort, MetroPort outputPort,
             int recordLength, boolean looper ) 
     {
-        return createTrack( name, tags, new MetroSequenceRecorder( recordLength, looper, inputPort, outputPort ) );
+        return this.createTrack( name, tags, new SchemeSequenceRecorder( inputPort, outputPort, recordLength, looper ) );
     }
 
     static final class PulsarEventListener implements EventListenable.Listener {
@@ -1605,7 +1609,7 @@ public final class Pulsar extends Metro {
                             inputPort = ports.get( 0 ); 
                         }
                         {
-                            List<MetroPort> ports = current.readParamPort( args[1], current.getOutputPorts() );
+                            List<MetroPort> ports = current.readParamPort( args[2], current.getOutputPorts() );
                             if ( ports.size() == 0 )
                                 throw new IllegalArgumentException("could not find output port " + args[2] );
                             outputPort = ports.get( 0 ); 
@@ -2147,8 +2151,8 @@ public final class Pulsar extends Metro {
                 Object arg0 = args[0];
                 if ( arg0 instanceof ReadableSchemeSequence ) {
                     return ((ReadableSchemeSequence)arg0).readMusic();
-                } else {
-                    throw new IllegalArgumentException( "the argument is not a readable track." );
+                } else { 
+                    throw new IllegalArgumentException( "the argument is not a readable track. " + arg0 );
                 }
             }
         }, "read-track", "reat" );

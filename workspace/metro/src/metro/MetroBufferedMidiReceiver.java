@@ -34,20 +34,20 @@ public interface MetroBufferedMidiReceiver<T> {
     public T keyPressure( double offset, MetroPort port, int channel, int note, double pressure);
     public T keyPressure( double offset, MetroPort port, int channel, int note, int pressure);
     public T controlChange( double offset, MetroPort port, int channel, int controlNumber, int controlValue );
-    public T programChange(  double offset, MetroPort port, int ch, int programNumber );
-    public T channelPressure(  double offset, MetroPort port, int ch, double pressureValue );
-    public T channelPressure(  double offset, MetroPort port, int ch, int pressureValue );
-    public T pitchBend(  double offset, MetroPort port, int ch, double pitchBendValue );
-    public T pitchBend(  double offset, MetroPort port, int ch, int pitchBendValue );
+    public T programChange(  double offset, MetroPort port, int channel, int programNumber );
+    public T channelPressure(  double offset, MetroPort port, int channel, double pressureValue );
+    public T channelPressure(  double offset, MetroPort port, int channel, int pressureValue );
+    public T pitchBend(  double offset, MetroPort port, int channel, double pitchBendValue );
+    public T pitchBend(  double offset, MetroPort port, int channel, int pitchBendValue );
 
-    public T cc_allSoundOff(  double offset, MetroPort port, int ch ); 
-    public T cc_resetAllControllers(  double offset, MetroPort port, int ch ); 
-    public T cc_localControls(  double offset, MetroPort port, int ch, boolean on ); 
-    public T cc_allNoteOff(  double offset, MetroPort port, int ch ); 
-    public T cc_omniModeOff(  double offset, MetroPort port, int ch ); 
-    public T cc_omniModeOn(  double offset, MetroPort port, int ch ); 
-    public T cc_monoModeOn(  double offset, MetroPort port, int ch ); 
-    public T cc_polyModeOn(  double offset, MetroPort port, int ch ); 
+    public T cc_allSoundOff(  double offset, MetroPort port, int channel ); 
+    public T cc_resetAllControllers(  double offset, MetroPort port, int channel ); 
+    public T cc_localControls(  double offset, MetroPort port, int channel, boolean on ); 
+    public T cc_allNoteOff(  double offset, MetroPort port, int channel ); 
+    public T cc_omniModeOff(  double offset, MetroPort port, int channel ); 
+    public T cc_omniModeOn(  double offset, MetroPort port, int channel ); 
+    public T cc_monoModeOn(  double offset, MetroPort port, int channel ); 
+    public T cc_polyModeOn(  double offset, MetroPort port, int channel ); 
 
     // system
     public T songPositionPointer( double offset, MetroPort port, int pos ); 

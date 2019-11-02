@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 import gnu.lists.EmptyList;
+import gnu.lists.IString;
 import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
@@ -52,6 +53,9 @@ public class NoteListCommon {
     
     public static final double DEFAULT_NOTE_LENGTH = 0.0025d;
     public static final double DEFAULT_BAR_LENGTH = 1.0d;
+
+    public static final Symbol ID_TYPE  = s( "type" );
+    public static final Symbol ID_NULL  = s( "" );
     
     /*
      * (Fri, 01 Nov 2019 06:02:11 +0900) 
@@ -80,12 +84,16 @@ public class NoteListCommon {
 //  public static final Symbol ID_MAX       = s( "max" );
     public static final Symbol ID_VALUE     = s( "val" );
 
+    public static final Symbol ID_MESSAGE   = s( "msg" );
     
     public static final NoteListValueConverter THRU = NoteListValueConverter.THRU;
     public static final NoteListValueGenerator NULL = NoteListValueGenerator.NULL;
 
     public static final NoteListValueConverter<Symbol> SYMBOL_THRU = NoteListValueConverter.THRU;
     public static final NoteListValueGenerator<Symbol> SYMBOL_NULL = (NoteListValueGenerator<Symbol>) NoteListValueGenerator.NULL;
+
+    static final NoteListValueGenerator<Symbol> DEFAULT_VALUE_TYPE = 
+            new NoteListValueGenerator.Default<Symbol>( SchemeUtils.toSchemeSymbol( "note" ) ) ;
 
     static final NoteListValueConverter<Boolean> S2J_BOOLEAN = new NoteListValueConverter<Boolean>() {
         @Override
@@ -163,9 +171,9 @@ public class NoteListCommon {
             }
         }
     };
-    static final NoteListValueConverter<List> J2S_LIST = new NoteListValueConverter<List>() {
+    static final NoteListValueConverter<LList> J2S_LIST = new NoteListValueConverter<LList>() {
         @Override
-        public List convert(Object value) {
+        public LList convert(Object value) {
             if ( value instanceof List ) { 
                 return LList.makeList( (List)value );
             } else if ( value instanceof Collection ) { 
@@ -183,6 +191,21 @@ public class NoteListCommon {
             return el;
         }
     };
+
+    
+    static final NoteListValueConverter<IString> J2S_STRING = new NoteListValueConverter<IString>() {
+        @Override
+        public IString convert(Object value) {
+            return SchemeUtils.toSchemeString( value.toString() );
+        }
+    };
+    static final NoteListValueConverter<String> S2J_STRING = new NoteListValueConverter<String>() {
+        @Override
+        public String convert(Object value) {
+            return SchemeUtils.schemeStringToJavaString( value.toString() );
+        }
+    };
+
 
     ///////////////////////////////////////////////////////////////////////////
     // ** SPECIAL** the converter and the default generator for MetroPort
@@ -226,9 +249,17 @@ public class NoteListCommon {
             return list.get(0);
         }
     };
+    
 
     static final LList list( Pair ... pairs ) {
         return LList.makeList( Arrays.asList( pairs ) );
+    }
+
+    static Symbol readMapType( NoteListMap map ) {
+        return map.get( ID_TYPE, SYMBOL_THRU, DEFAULT_VALUE_TYPE );
+    }
+    static Pair writeMapType( Symbol value ) {
+        return Pair.make( ID_TYPE, SYMBOL_THRU.convert( value ) );
     }
     
     static boolean readMapEnabled( NoteListMap map ) {
@@ -263,7 +294,6 @@ public class NoteListCommon {
         return map.get( ID_VELOCITY, S2J_DOUBLE, DEFAULT_VALUE_DOUBLE_5_10 );
     }
     static Pair writeMapVelocity( double value ) {
-        // This used to default to 1.0d now it defaults to 0.5d.
         return Pair.make( ID_VELOCITY, J2S_DOUBLE.convert( value ));
     }
     static Integer readMapKey(NoteListMap map) {
@@ -322,6 +352,12 @@ public class NoteListCommon {
     }
     static Pair writeMapList( Symbol id, Object value ) {
         return Pair.make( id, J2S_LIST.convert( value ) );
+    }
+    static String readMapString( Symbol id, NoteListMap map ) {
+        return map.get( id, S2J_STRING, NULL );
+    }
+    static Pair writeMapString( Symbol id, Object value ) {
+        return Pair.make( id, J2S_STRING.convert( value ) );
     }
     
     static final NoteListValueGenerator<MetroSyncType> DEFAULT_VALUE_SYNC_TYPE = 

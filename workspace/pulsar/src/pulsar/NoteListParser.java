@@ -94,8 +94,6 @@ public class NoteListParser {
         return false;
     }
 
-    public static final Symbol ID_TYPE  = Symbol.valueOf( "type" );
-    public static final Symbol ID_NULL  = Symbol.valueOf( ""     );
     private static final boolean DEBUG  = false;
     
     private ArrayList<NoteListParserElement>      allElements  = new ArrayList<>();

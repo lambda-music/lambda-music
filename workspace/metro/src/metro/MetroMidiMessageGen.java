@@ -24,7 +24,7 @@ package metro;
  * https://www.midi.org/specifications-old/item/table-1-summary-of-midi-message
  * @author ats
  */
-final class MetroMidiMessageGen {
+public final class MetroMidiMessageGen {
     //  NOTEOFF,
     //  NOTEON,
     //  KEYPRESSURE, // AKA AFTERTOUCH
@@ -36,8 +36,8 @@ final class MetroMidiMessageGen {
     public static byte[] noteOn( int ch, int note, int velo ) {
         return new byte[] {
                 (byte) ( 0b10010000 | ( 0b00001111 & ch )), 
-                (byte) ( note ), 
-                (byte) ( velo ), }; 
+                (byte) ( 0b01111111 & note ), 
+                (byte) ( 0b01111111 & velo ), }; 
     }
     public static String toString( byte[] b ) {
         StringBuilder sb = new StringBuilder();
@@ -53,14 +53,36 @@ final class MetroMidiMessageGen {
 //      System.out.println( toString( noteOn( 5,64, 1 ) )  ) ;
 //      System.out.println( 0b1111 & 4 );
 //  }
-    
+
+    // (Sat, 02 Nov 2019 05:09:25 +0900)
+    // hopefully following four methods are inlined at compile time. 
+    private static final int d2i_7bit(double velo) {
+        return 0b01111111 & (int)(127d * velo);
+    }
+    private static double i2d_7bit(int velo) {
+        return (((double)velo) / 127d);
+    }
+    private static final int d2i_14bit(double pitchBendValue) {
+        return 0x2000  + (int)(((double)0x2000) * pitchBendValue);
+    }
+    // not tested yet (Sat, 02 Nov 2019 05:21:53 +0900)
+    private static final double i2d_14bit(int pitchBendValue) {
+        return  (((double)pitchBendValue) / ((double)0x2000) ) - 1.0d;
+    }
+
+    public static final int d2iVelocity( double velo ) {
+        return d2i_7bit( velo ); 
+    }
+    public static final double i2dVelocity( int velo ) {
+        return i2d_7bit( velo ); 
+    }
     // A helper function
     public static byte[] noteOn( int ch, int note, double velo ) {
 //        System.err.println( "noteOn:" + velo );
         return new byte[] {
                 (byte) ( 0b10010000 | ( 0b00001111 & ch )), 
                 (byte) ( note ), 
-                (byte) (0b01111111 & (int)( 127d * velo ) ), }; 
+                (byte) d2i_7bit( velo ), }; 
     }
     public static byte[] noteOff( int ch, int note, int velo ) {
         return new byte[] {
@@ -73,27 +95,34 @@ final class MetroMidiMessageGen {
         return new byte[] {
                 (byte) ( 0b10000000 | ( 0b00001111 & ch )), 
                 (byte) ( note ), 
-                (byte) ( 0b01111111 & (int)( 127d * velo )), }; 
+                (byte) d2i_7bit( velo ), }; 
     }
-    
+
+    public static final int d2iPressure( double velo ) {
+        return d2i_7bit( velo ); 
+    }
+    public static final double i2dPressure( int velo ) {
+        return i2d_7bit( velo ); 
+    }
+
     public static byte[] keyPressure( int ch, int note, int pressure ) {
         return new byte[] {
                 (byte) ( 0b10100000 | ( 0b00001111 & ch )), 
                 (byte) ( note ), 
-                (byte) ( pressure ), }; 
+                (byte) ( 0b01111111 & pressure ), }; 
     }
     public static byte[] keyPressure( int ch, int note, double pressure ) {
         return new byte[] {
                 (byte) ( 0b10100000 | ( 0b00001111 & ch )), 
                 (byte) ( note ), 
-                (byte) ( 255d * pressure ), }; 
+                (byte) d2i_7bit( pressure ), }; 
     }
     
     public static byte[] controlChange( int ch, int controlNumber, int controlValue ) {
         return new byte[] {
                 (byte) ( 0b10110000 | ( 0b00001111 & ch )), 
-                (byte) ( controlNumber ), 
-                (byte) ( controlValue ), }; 
+                (byte) ( 0b01111111 & controlNumber ), 
+                (byte) ( 0b01111111 & controlValue  ), }; 
     }
     public static byte[] programChange( int ch, int programNumber ) {
         return new byte[] {
@@ -104,13 +133,13 @@ final class MetroMidiMessageGen {
     public static byte[] channelPressure( int ch, int pressureValue ) {
         return new byte[] {
                 (byte) ( 0b11010000 | ( 0b00001111 & ch )), 
-                (byte) ( pressureValue ), 
+                (byte) ( 0b01111111 & pressureValue ), 
                 };
     }
     public static byte[] channelPressure( int ch, double pressureValue ) {
         return new byte[] {
                 (byte) ( 0b11010000 | ( 0b00001111 & ch )), 
-                (byte) ( 255d * pressureValue ), 
+                (byte) d2i_7bit( pressureValue ), 
                 };
     }
     public static byte[] pitchBend( int ch, int pitchBendValue ) {
@@ -122,16 +151,24 @@ final class MetroMidiMessageGen {
                 (byte) ( 0b01111111 & ( pitchBendValue >>> 7 ) ), 
                 }; 
     }
-    
+
+    public static final int d2iPitchBend(double pitchBendValue) {
+        return d2i_14bit( pitchBendValue );
+    }
+    public static final double i2dPitchBend(int pitchBendValue) {
+        return i2d_14bit( pitchBendValue );
+    }
+
     /**
-     * Specifying pitch bend value by a double-float numeric value. The resolution
-     * relies on only fourteen bits; thus any value change less than 0.0001 
-     * ( 1.0d/8192 ≒ 0.0001 ) will not have any effect on output values.
+     * Specifying pitch bend value by a double-float numeric value. 
+     * Range is ( -1 <= pitchBendValue <= 1 ) 
+     * The resolution relies on only fourteen bits; thus any value change 
+     * less than 0.0001 ( 1.0d/8192 ≒ 0.0001 ) will not have any effect 
+     * on the output value.
      */
     public static byte[] pitchBend( int ch, double pitchBendValue ) {
-        return pitchBend( ch, 0x2000  + (int)((double)0x2000 * pitchBendValue) ); 
+        return pitchBend( ch, d2i_14bit( pitchBendValue ) ); 
     }
-    
     public static byte[] cc_allSoundOff( int ch ) {
         return controlChange(ch, 120, 0 ); 
     }
