@@ -40,6 +40,7 @@ import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroEventBuffer;
 import metro.MetroTrack;
+import pulsar.lib.scheme.SchemePrinter;
 import pulsar.lib.scheme.SchemeUtils;
 
 /**
@@ -210,7 +211,7 @@ public class NoteListParser {
             }
         } catch ( RuntimeException e ) {
             try {
-                logWarn( SchemeUtils.prettyPrint(inputList) );
+                logWarn( SchemePrinter.printSchemeValue(inputList) );
             } catch (Throwable e1) {
                 e1.printStackTrace();
             }

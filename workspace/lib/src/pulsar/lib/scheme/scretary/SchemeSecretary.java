@@ -18,7 +18,7 @@ import gnu.expr.Language;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import kawa.standard.Scheme;
-import pulsar.lib.scheme.SchemeUtils;
+import pulsar.lib.scheme.SchemeExecutor;
 import pulsar.lib.secretary.Invokable;
 import pulsar.lib.secretary.SecretariallyInvokable;
 import pulsar.lib.secretary.Secretary;
@@ -360,7 +360,7 @@ public class SchemeSecretary extends Secretary<Scheme> implements ShutdownHook {
             throw new RuntimeException(e);
         }
     }
-    public static SchemeUtils.ExecuteSchemeResult evaluateScheme( SchemeSecretary schemeSecretary,
+    public static SchemeExecutor.Result evaluateScheme( SchemeSecretary schemeSecretary,
             Collection<Runnable> threadInitializers, 
             Map<String,Object> variables, 
             String schemeScript, File currentDirectory, File schemeScriptFile, String schemeScriptURI ) 
@@ -370,14 +370,14 @@ public class SchemeSecretary extends Secretary<Scheme> implements ShutdownHook {
             new StringReader( schemeScript ), currentDirectory, schemeScriptFile, schemeScriptURI );
     }
 
-    public static SchemeUtils.ExecuteSchemeResult evaluateScheme( SchemeSecretary schemeSecretary, 
+    public static SchemeExecutor.Result evaluateScheme( SchemeSecretary schemeSecretary, 
             Collection<Runnable> threadInitializers, 
             Map<String,Object> variables, 
             Reader schemeScript, File currentDirectory, File schemeScriptFile, String schemeScriptURI ) {
-        return schemeSecretary.executeSecretarially( new SecretaryMessage.NoThrow<Scheme,SchemeUtils.ExecuteSchemeResult>() {
+        return schemeSecretary.executeSecretarially( new SecretaryMessage.NoThrow<Scheme,SchemeExecutor.Result>() {
             @Override
-            public SchemeUtils.ExecuteSchemeResult execute0(Scheme scheme, Object[] args) {
-                return SchemeUtils.evaluateScheme(scheme, threadInitializers, variables, schemeScript, currentDirectory, schemeScriptFile, schemeScriptURI);
+            public SchemeExecutor.Result execute0(Scheme scheme, Object[] args) {
+                return SchemeExecutor.evaluateScheme(scheme, threadInitializers, variables, schemeScript, currentDirectory, schemeScriptFile, schemeScriptURI);
             }
         }, Invokable.NOARG );
     }

@@ -21,18 +21,11 @@
 package pulsar.lib.scheme;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -45,31 +38,22 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import gnu.expr.Language;
-import gnu.kawa.io.InPort;
-import gnu.kawa.io.OutPort;
-import gnu.kawa.io.Path;
 import gnu.kawa.slib.srfi1;
 import gnu.lists.AbstractSequence;
-import gnu.lists.Consumer;
 import gnu.lists.EmptyList;
-import gnu.lists.FString;
 import gnu.lists.IString;
 import gnu.lists.LList;
 import gnu.lists.Pair;
-import gnu.mapping.CallContext;
 import gnu.mapping.Environment;
 import gnu.mapping.LocationEnumeration;
 import gnu.mapping.NamedLocation;
 import gnu.mapping.Procedure;
 import gnu.mapping.SimpleSymbol;
 import gnu.mapping.Symbol;
-import gnu.mapping.Values;
 import gnu.math.DFloNum;
 import gnu.math.IntNum;
 import gnu.math.Quantity;
-import kawa.Shell;
 import kawa.standard.Scheme;
-import kawa.standard.load;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.SecretaryMessage;
 
@@ -460,61 +444,6 @@ public class SchemeUtils {
         }
     }
     
-    public static Object prettyPrintReconstruction( Object o ) {
-        return prettyPrintReconstruction0( new ArrayDeque<>(), o );
-    }
-    private static Object prettyPrintReconstruction0(ArrayDeque stack, Object o) {
-        if ( stack.contains(o) ) {
-            return o;
-        }
-        try {
-            stack.push( o );
-            if ( o instanceof EmptyList ) {
-                return o;
-            } else if ( o instanceof Pair ) {
-                Pair p = (Pair)o;
-                return Pair.make(
-                    prettyPrintReconstruction0( stack, p.getCar()),
-                    prettyPrintReconstruction0( stack, p.getCdr()));
-//            // REMOVED >>> (Sat, 12 Oct 2019 21:46:04 +0900)
-//            } else if ( o instanceof Symbol ) {
-//                return toSchemeString( "'" + schemeSymbolToJavaString( (Symbol)o ) );
-//            // REMOVED <<< (Sat, 12 Oct 2019 21:46:04 +0900)    
-            } else if ( o instanceof IString || o instanceof FString ) {
-                return toSchemeString( "\"" + anyToString( o ) + "\"" );
-            } else {
-                return o;
-            }
-        } finally {
-            stack.pop();
-        }
-    }
-    
-    public static String normalPrint(Object resultObject) throws Throwable {
-        return printProc( kawa.lib.ports.display, resultObject );
-    }
-
-    /*
-     * moved from Kawapad.java (Mon, 29 Jul 2019 19:31:42 +0900)
-     */
-    // TODO integrate all prettyPrint things.
-    public static String prettyPrint(Object resultObject) throws Throwable {
-        return printProc(
-            kawa.lib.kawa.pprint.pprint,
-            prettyPrintReconstruction( resultObject ));
-    }
-    private static String printProc(Procedure print, Object resultObject) throws Throwable {
-        StringWriter out = new StringWriter();
-        try {
-            OutPort outPort = new OutPort( out, true, true );
-            SchemeUtils.toString( print.apply2( resultObject, outPort ) );
-//          SchemeUtils.toString( kawa.lib.ports.write.apply2( resultObject, outPort ) );
-            outPort.flush();
-            return out.toString();
-        } finally {
-            out.close();
-        }
-    }
     static Pattern IS_INDENTED= Pattern.compile( "^\\s+" );
     public static String wrapMultiLine( String s, int width ) {
         StringBuilder sb = new StringBuilder();
@@ -589,196 +518,6 @@ public class SchemeUtils {
     //
     ////////////////////////////////////////////////////////////////////////////////////////////
     
-    public static void execSchemeFromResource( Scheme scheme, Class parentClass, String resourcePath ) throws IOException {
-        evaluateScheme( 
-            scheme, 
-            null, 
-            null, 
-            new InputStreamReader( parentClass.getResource( resourcePath ).openStream() ), 
-            null, null, resourcePath 
-            ).throwIfError();
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    ////////////////////////////////////////////////////////////////////////////////////////////
-    
-    public static final class ExecuteSchemeResult {
-        public final boolean isDocument;
-        public final Object value;
-        public final String valueAsString;
-        public final Throwable error;
-        public final boolean succeeded() {
-            return error == null;
-        }
-        public ExecuteSchemeResult( boolean isDocument, Object value, String valueAsString, Throwable error ) {
-            super();
-            this.isDocument = isDocument;
-            this.value = value;
-            this.valueAsString = valueAsString;
-            this.error = error;
-        }
-        public void throwIfError() {
-            if ( ! succeeded() ) {
-                throw new RuntimeException( this.error );
-            }
-        }
-        public boolean isEmpty() {
-            return this.error == null && ( this.value == null || Values.empty.equals( this.value ) );
-        }
-    }
-    public static final String EXECUTE_SCHEME_DOCTAG_STRING = "**doc**".intern();
-    public static final Symbol EXECUTE_SCHEME_DOCTAG = Symbol.valueOf( EXECUTE_SCHEME_DOCTAG_STRING );
-    public static Object executeSchemePageWrapper( Object o ) {
-        return Pair.make( EXECUTE_SCHEME_DOCTAG, o );
-    }
-
-    public static ExecuteSchemeResult evaluateScheme( 
-            Scheme scheme, Collection<Runnable> threadInitializers, 
-            Map<String, Object> variables, Reader schemeScript, 
-            File currentDirectory, File currentFile, String schemeScriptURI ) 
-    {
-        //              schemeSecretary.initializeSchemeForCurrentThread();
-        SchemeSecretary.initializeSchemeForCurrentThreadStatic( scheme );
-        synchronized ( scheme ) {
-            Environment env = scheme.getEnvironment();
-            
-            if ( threadInitializers != null )
-                initializeThread( threadInitializers );
-            if ( variables != null )
-                initializeVariables( env, variables );
-            
-            putVar( env , "scheme", scheme );
-            
-            // Set current directory to the default load path.
-            // Note that <i>Shell.currentLoadPath</i> is not documented in the official documentation.
-            // The variable Shell.currentLoadPath is only referred in kawa.standard.load and 
-            // this is the only way to affect the //load//'s behavior.
-            
-            // FIXME
-            // Now I realized that currentLoadPath only affect to (load-relative) and
-            // it will by no means affect to (load) sigh. 
-            // This code effectively makes (load-relative) current directory aware.
-            // But I think it is cumbersome to ask users to use load-relative procedure in
-            // every situation. IMO load-relative supposed to be default.
-            // I'm thinking about it.  (Thu, 15 Aug 2019 16:21:22 +0900)
-            
-            
-            Path savedPath = (Path) Shell.currentLoadPath.get();
-            try {
-                File parentDirectory;
-                if ( currentFile != null ) {
-                    parentDirectory = currentFile.getParentFile();
-                } else {
-                    parentDirectory = new File(".").getAbsoluteFile().getCanonicalFile();
-                }
-
-                Shell.currentLoadPath.set( Path.valueOf( parentDirectory ) );
-
-                // I feel overriding "load" by "load-relative" is too risky. It
-                // may destroy the compatibility inside the kawa library; we
-                // decide to call it "source".  Usually ,this kind of
-                // initialization process should be done in staticInitScheme()
-                // method.  But we want to make it visible here that "source"
-                // is available in this way.  (Mon, 09 Sep 2019 04:31:19 +0900)
-                SchemeUtils.defineVar(env, load.loadRelative , "source" );
-
-
-                CallContext ctx = CallContext.getInstance();
-                Consumer out = Shell.getOutputConsumer(OutPort.outDefault());
-                if (out != null) {
-                    ctx.consumer = out;
-                }
-                
-                 // {@link kawa.Shell#runFile(InputStream, Path, gnu.mapping.Environment, boolean, int) }
-                Object resultValue = scheme.eval( new InPort( schemeScript, Path.valueOf( schemeScriptURI ) ) );
-                // Object result = Shell.run( schemeScript, schemeScriptURI, scheme.getEnvironment(), true, 0 ); 
-
-                if ( resultValue == null ) {
-                    return new ExecuteSchemeResult( false, null, "#!null", null );
-                } else {
-                    if ( resultValue instanceof Pair ) {
-                        Pair pair = (Pair) resultValue;
-                        if ( EXECUTE_SCHEME_DOCTAG.equals( pair.getCar() ) ) {
-                            Object cdr = pair.getCdr();
-                            return new ExecuteSchemeResult( true, cdr, normalPrint(cdr), null );
-                        }
-                    }
-                    return new ExecuteSchemeResult( false, resultValue, prettyPrint(resultValue), null );
-                }
-            } catch (Throwable e) {
-                StringWriter sw = new StringWriter();
-                PrintWriter w = new PrintWriter( sw );
-                try {
-                    e.printStackTrace( w );
-                    w.flush();
-                    sw.flush();
-                    return new ExecuteSchemeResult( false, null, sw.toString(), e );
-                } finally {
-                    try {
-                        sw.close();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                    w.close();
-                }
-            } finally {
-                putVar( env , "scheme", false );
-                
-                if ( variables != null )
-                    for ( Map.Entry<String, Object> e : variables.entrySet() )
-                        putVar( env , e.getKey(), false );
-                
-                try {
-                    schemeScript.close();
-                } catch (IOException e1) {
-                    logError( "failed to close the stream" , e1 );
-                }
-                
-                Shell.currentLoadPath.set( savedPath );
-            }
-        }
-    }
-    public static void initializeThread( Collection<Runnable> threadInitializers ) {
-        if ( threadInitializers != null )
-            for ( Runnable r : threadInitializers ) {
-                try {
-                    r.run();
-                } catch ( Throwable t ) {
-                    logError( "", t );
-                }
-            }
-    }
-    public static void initializeVariables(Environment env, Map<String, Object> variables) {
-        if ( variables != null )
-            for ( Map.Entry<String, Object> e : variables.entrySet() )
-                putVar( env , e.getKey(), e.getValue() );
-    }
-    public static void finalizeVariables(Environment env, Map<String, Object> variables) {
-        if ( variables != null )
-            for ( Map.Entry<String, Object> e : variables.entrySet() )
-                putVar( env , e.getKey(), false );
-    }
-        
-    public static String endWithLineFeed(String s) {
-        if ( s == null )
-            return null;
-        else if ( s.equals( "" ) )
-            return "";
-        else if ( s.endsWith("\n" ) )
-            return s;
-        else
-            return s + "\n"; 
-    }
-    public static String formatResult( String s ) {
-        if ( s == null )
-            return null;
-        else if ( s.equals( "" ) )
-            return "";
-        else
-            return "#|\n" + endWithLineFeed( s ) + "|#\n";
-    }
-    
     public static byte[] readAll( InputStream in ) throws IOException {
         ByteArrayOutputStream result = new ByteArrayOutputStream();
         byte[] buf = new byte[1024];
@@ -789,14 +528,14 @@ public class SchemeUtils {
         return result.toByteArray();
     }
     public static Object makePage( Object o ) {
-        return executeSchemePageWrapper( o );
+        return SchemeExecutor.executeSchemePageWrapper( o );
     }
     public static Object makePage( String message, int textWidth ) {
         message = SchemeUtils.wrapMultiLine( message, textWidth ).trim() + "\n";
         message = 
-                "#|\n"+
+                "\n"+
                 SchemeUtils.prefixMultiLine( message, "   " )+
-                "  |# help about-intro";
+                "  (help about-intro)";
         return SchemeUtils.makePage( SchemeUtils.toSchemeString( message ) );
     }
 

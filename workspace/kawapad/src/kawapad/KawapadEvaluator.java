@@ -5,8 +5,7 @@ import java.util.HashMap;
 
 import javax.swing.SwingUtilities;
 
-import pulsar.lib.scheme.SchemeUtils;
-import pulsar.lib.scheme.SchemeUtils.ExecuteSchemeResult;
+import pulsar.lib.scheme.SchemeExecutor;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 
 public class KawapadEvaluator implements Runnable {
@@ -34,7 +33,7 @@ public class KawapadEvaluator implements Runnable {
         Kawapad.logInfo( schemeScript );
         HashMap<String,Object> variables = new HashMap<>();
         kawapad.initVariables( variables );
-        ExecuteSchemeResult result = SchemeSecretary.evaluateScheme( 
+        SchemeExecutor.Result result = SchemeSecretary.evaluateScheme( 
             kawapad.schemeSecretary, 
             kawapad.getThreadInitializerList(), variables, 
             schemeScript, currentDirectory, currentFile, "scratchpad" );
@@ -63,10 +62,10 @@ public class KawapadEvaluator implements Runnable {
                 }
             } else {
                 if ( ! result.isEmpty() ) {
-                    String resultString = SchemeUtils.formatResult( result.valueAsString ); 
+                    String resultString = SchemeExecutor.formatResult( result.valueAsString ); 
                     // We want to make sure the result string ends with "\n" to avoid to get an extra line.
                     if ( ! schemeScript.endsWith( "\n" ) ) {
-                        resultString = "\n" + SchemeUtils.formatResult( result.valueAsString ); 
+                        resultString = "\n" + SchemeExecutor.formatResult( result.valueAsString ); 
                     }
                     Kawapad.logInfo( resultString );
                     SwingUtilities.invokeLater( new RunnableInsertTextToTextPane( kawapad, resultString, true, doReset ) );

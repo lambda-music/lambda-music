@@ -12,6 +12,7 @@ import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import kawa.standard.Scheme;
+import pulsar.lib.scheme.SchemeExecutor;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.SecretaryMessage;
 
@@ -112,7 +113,7 @@ public class KawapadEventHandlers {
                     @Override
                     public void run() {
                         kawapad.schemeSecretary.initializeSchemeForCurrentThread();
-                        SchemeUtils.initializeThread( kawapad.getThreadInitializerList() );
+                        SchemeExecutor.initializeThread( kawapad.getThreadInitializerList() );
                         
                         synchronized ( scheme ) {
                             //  logInfo( "eventHandlers.invokeEventHandler(inner)" );
@@ -121,7 +122,7 @@ public class KawapadEventHandlers {
                             try {
                                 SchemeUtils.putVar( env, "scheme", scheme );
                                 kawapad.initVariables( variables );
-                                SchemeUtils.initializeVariables( env, variables );
+                                SchemeExecutor.initializeVariables( env, variables );
                                 
                                 for( Entry<Symbol,SchemeProcedure> e :  getEventType(eventTypeID).entrySet() ) {
                                     try {
@@ -133,7 +134,7 @@ public class KawapadEventHandlers {
                                 
                             } finally {
                                 SchemeUtils.putVar( env, "scheme", false );
-                                SchemeUtils.finalizeVariables( env, variables );
+                                SchemeExecutor.finalizeVariables( env, variables );
                             }
                             
                         }

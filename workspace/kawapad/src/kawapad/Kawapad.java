@@ -98,6 +98,8 @@ import pulsar.lib.CurrentObject;
 import pulsar.lib.scheme.DescriptiveActions;
 import pulsar.lib.scheme.ProceduralDescriptiveBean;
 import pulsar.lib.scheme.SafeProcedureN;
+import pulsar.lib.scheme.SchemeExecutor;
+import pulsar.lib.scheme.SchemePrinter;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.SecretaryMessage;
@@ -2723,7 +2725,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         try {
             logInfo( "Loading " + initFile.getName() );
             if ( initFile.exists() ) {
-                SchemeUtils.evaluateScheme( 
+                SchemeExecutor.evaluateScheme( 
                     scheme, null, null, 
                     new InputStreamReader( new FileInputStream( initFile ) ), 
                     initFile.getParentFile(), initFile, initFile.getPath() 
@@ -2784,7 +2786,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
             SchemeUtils.defineVar(env, new Procedure1() {
                 @Override
                 public Object apply1(Object arg1 ) throws Throwable {
-                    return Kawapad.prettify( getCurrent(), SchemeUtils.anyToString(SchemeUtils.prettyPrint(arg1)));
+                    return Kawapad.prettify( getCurrent(), SchemeUtils.anyToString(SchemePrinter.printSchemeValue(arg1)));
                 }
             }, "pretty-print");
             // deprecated?
@@ -2906,7 +2908,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
             if ( false ) {
                 try {
                     logInfo( "Loading [Kawapad internal]/kawapad-extension.scm" );
-                    SchemeUtils.execSchemeFromResource( scheme, Kawapad.class, "kawapad-extension.scm" );
+                    SchemeExecutor.execSchemeFromResource( scheme, Kawapad.class, "kawapad-extension.scm" );
                 } catch (Throwable e) {
                     logError( "Ignored an error : ", e);
                 }

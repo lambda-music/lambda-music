@@ -18,8 +18,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
-import pulsar.lib.scheme.SchemeUtils;
-import pulsar.lib.scheme.SchemeUtils.ExecuteSchemeResult;
+import pulsar.lib.scheme.SchemeExecutor;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 
 
@@ -111,11 +110,11 @@ public class SchemeHttp {
             if ( t.getRemoteAddress().getAddress().isLoopbackAddress() ) {
                 String requestString = readInputStream( t.getRequestBody() ); 
                 logInfo( requestString );
-                ExecuteSchemeResult result = SchemeSecretary.evaluateScheme( schemeSecretary, threadInitializers, null, requestString, null, null, "web-scratchpad" );
+                SchemeExecutor.Result result = SchemeSecretary.evaluateScheme( schemeSecretary, threadInitializers, null, requestString, null, null, "web-scratchpad" );
                 String responseString;
                 responseString = 
-                        SchemeUtils.endWithLineFeed( requestString ) + 
-                        SchemeUtils.formatResult( result.valueAsString );
+                        SchemeExecutor.endWithLineFeed( requestString ) + 
+                        SchemeExecutor.formatResult( result.valueAsString );
                 logInfo( result.valueAsString );
                 t.sendResponseHeaders(200, responseString.length());
                 t.getResponseHeaders().put( "Content-Type",  Arrays.asList( "text/plain; charset=utf-8" ) );
