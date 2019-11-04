@@ -28,7 +28,7 @@ public class SchemePrinter {
                 return SchemePrinter.prettyPrint( value );
             } catch (Throwable e) {
                 e.printStackTrace();
-                return "Failed to print the object (" +  e.getMessage() + ")";
+                return "Internal Error : failed to print the object (" +  e.getMessage() + ")";
             }
         }
     };
@@ -39,7 +39,7 @@ public class SchemePrinter {
                 return SchemePrinter.normalPrint( value );
             } catch (Throwable e) {
                 e.printStackTrace();
-                return "Failed to print the object (" +  e.getMessage() + ")";
+                return "Internal Error : failed to print the object (" +  e.getMessage() + ")";
             }
         }
     };

@@ -133,7 +133,7 @@ public class DescriptiveDocumentCategory {
     public static Object defineDoc0(Environment env, DescriptiveDocumentCategory type, Object target, DescriptiveBean bean) {
         synchronized ( Language.getDefaultLanguage() ) {
             Object actualTarget = defineDoc0( env, type, target, bean.format(), bean.getName(), bean.getNames() );
-            SchemeUtils.setDescriptionBean( actualTarget, bean );
+            Descriptive.setDescriptionBean( actualTarget, bean );
             return target;
         }
     }
@@ -158,7 +158,7 @@ public class DescriptiveDocumentCategory {
             logInfo( "setting description on '" + name + "'" + " " + actualTarget.toString() );
         //          logInfo( "description" );
         //          logInfo( description );
-        SchemeUtils.setDescription( actualTarget, description );
+        Descriptive.setDescription( actualTarget, description );
         addDocumentList(
             env,
             type,

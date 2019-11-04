@@ -444,61 +444,6 @@ public class SchemeUtils {
         }
     }
     
-    static Pattern IS_INDENTED= Pattern.compile( "^\\s+" );
-    public static String wrapMultiLine( String s, int width ) {
-        StringBuilder sb = new StringBuilder();
-//      String[] a = s.split("\\r\\n\\r\\n|\\n\\r\\n\\r|\\n\\n|\\r\\r" );
-        String[] a = s.split( "\n\n" );
-        for ( int i=0; i<a.length; i++ ) {
-            // if the line starts with blank characters (that is, the line is indented),
-            // then leave it as it is; otherwise, wrap it with the specified length.
-            // (Thu, 29 Aug 2019 05:58:14 +0900)
-            if ( IS_INDENTED.matcher( a[i] ).find()) {
-                sb.append(      a[i]               ).append( "\n\n" );
-            } else {
-//              System.err.println( "SDDDD" );
-                sb.append( wrap(a[i],width).trim() ).append( "\n\n" );
-            }
-        }
-        return sb.toString();
-    }
-    
-    public static String prefixMultiLine( String s, String prefix ) {
-        StringBuilder sb = new StringBuilder();
-        String[] a = s.split( "\n" );
-        for ( int i=0; i<a.length; i++ ) {
-             sb.append(prefix).append( a[i] ).append( "\n" );
-        }
-        return sb.toString();
-    }
-    
-    public static String wrap( String s, int width ) {
-        Matcher m = Pattern.compile( "\\s+" ).matcher(s);
-        StringBuilder sb = new StringBuilder();
-        int head=0;
-        int last=head;
-        while ( m.find() ) {
-            int curr = m.start();
-            String stringToAdd = s.substring(last,curr);
-            if ( ( curr-head ) < width ) {
-                sb.append(' ');
-                sb.append( stringToAdd );
-                last = curr + m.group().length();
-            } else {
-                sb.append('\n');
-                sb.append( stringToAdd );
-                last = curr + m.group().length();
-                head = last;
-            }
-        }
-        {
-            String stringToAdd = s.substring(last,s.length());
-            sb.append(' ');
-            sb.append( stringToAdd );
-            sb.append('\n');
-        }
-        return sb.toString();
-    }
     public static void main2(String[] args) {
         Matcher m = Pattern.compile("\\s+").matcher("sasdfasad ffsaddfsa\n\nssadfsd fa");
         System.out.println( m.find() );
@@ -527,51 +472,6 @@ public class SchemeUtils {
         }
         return result.toByteArray();
     }
-    public static Object makePage( Object o ) {
-        return SchemeExecutor.executeSchemePageWrapper( o );
-    }
-    public static Object makePage( String message, int textWidth ) {
-        message = SchemeUtils.wrapMultiLine( message, textWidth ).trim() + "\n";
-        message = 
-                "\n"+
-                SchemeUtils.prefixMultiLine( message, "   " )+
-                "  (help about-intro)";
-        return SchemeUtils.makePage( SchemeUtils.toSchemeString( message ) );
-    }
-
-    public static <T> T procedureGet( Object proc, Object key, Object defaultValue ) {
-        if ( proc instanceof Procedure ) {
-            return (T)((Procedure)proc).getProperty( key, defaultValue );
-        } else {
-            logWarn( "procedureGet(): WARNING:" + proc + " is not procedure" );
-            return null;
-        }
-    }
-    public static void procedureSet( Object proc, SimpleSymbol key, Object value ) {
-        if ( proc instanceof Procedure ) {
-            ((Procedure)proc).setProperty( key, value );
-        } else {
-            logWarn( "procedureSet(): WARNING:" + proc + " is not procedure" );
-        }
-    }
-
-    
-    public static final SimpleSymbol DESCRIPTION  = Symbol.valueOf( "pulsar-description" );
-    public static String getDescription( Object proc ) {
-        return (String)procedureGet( proc, SchemeUtils.DESCRIPTION, null );
-    }
-    public static void setDescription( Object proc, String description ) {
-        procedureSet( proc, SchemeUtils.DESCRIPTION, description );
-    }
-    
-    public static final SimpleSymbol DESCRIPTION_BEAN  = Symbol.valueOf( "pulsar-description-bean" );
-    public static DescriptiveBean getDescriptionBean( Object proc ) {
-        return procedureGet( proc, SchemeUtils.DESCRIPTION_BEAN, null );
-    }
-    public static void setDescriptionBean( Object proc, DescriptiveBean bean ) {
-        procedureSet( proc, SchemeUtils.DESCRIPTION_BEAN, bean );
-    }
-
 
     final Procedure reverse = (Procedure)gnu.kawa.slib.srfi1.reverse.get();
     final Procedure map = (Procedure)gnu.kawa.slib.srfi1.map.get();

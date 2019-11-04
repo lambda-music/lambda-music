@@ -28,6 +28,44 @@ public class KawapadEvaluator implements Runnable {
         this.replaceText = replaceText;
         this.doReset = doReset;
     }
+    private void procDocument(SchemeExecutor.Result result) {
+        Kawapad.logWarn( "**KAWAPAD_PAGE**" );
+        SwingUtilities.invokeLater( new RunnableReplaceTextWithEntireBlockOnTextPane(
+            kawapad,
+            result.valueAsString.replaceFirst( "\n$", "" ),
+            false,
+            doReset
+            ));
+    }
+    private void procInsert(SchemeExecutor.Result result) {
+        if ( ! result.isEmpty() ) {
+            String resultString = SchemeExecutor.formatResult( result.valueAsString ); 
+            // We want to make sure the result string ends with "\n" to avoid to get an extra line.
+            if ( ! schemeScript.endsWith( "\n" ) ) {
+                resultString = "\n" + SchemeExecutor.formatResult( result.valueAsString ); 
+            }
+            Kawapad.logInfo( resultString );
+            SwingUtilities.invokeLater( new RunnableInsertTextToTextPane( kawapad, resultString, true, doReset ) );
+        } else {
+            // do not insert.
+            Kawapad.logInfo( "KawapadEvaluator: do not insert (2). " + result.value );
+        }
+    }
+
+    private void procReplace(SchemeExecutor.Result result) {
+        if ( ! result.isEmpty() ) {
+            SwingUtilities.invokeLater( new RunnableReplaceTextOnTextPane(
+                kawapad,
+                result.valueAsString,
+                doReset
+                    ));
+        } else {
+            // do not insert.
+            Kawapad.logInfo( "KawapadEvaluator: do not insert (1). " + result.value );
+        }
+    }
+    
+    
     @Override
     public void run() {
         Kawapad.logInfo( schemeScript );
@@ -38,45 +76,22 @@ public class KawapadEvaluator implements Runnable {
             kawapad.getThreadInitializerList(), variables, 
             schemeScript, currentDirectory, currentFile, "scratchpad" );
 
-        if ( insertText || ! result.succeeded() ) {
-            if ( replaceText && result.succeeded() ) {
-                if ( result.isDocument )  {
-                    Kawapad.logWarn( "**KAWAPAD_PAGE**" );
-                    SwingUtilities.invokeLater( new RunnableReplaceTextWithEntireBlockOnTextPane(
-                        kawapad,
-                        "(" + result.valueAsString.replaceFirst( "\n$", "" ) +" )",
-                        false,
-                        doReset
-                        ) );
+        if ( result.succeeded() ) {
+            if ( result.isDocument ) {
+                procDocument( result );
+            } else if ( insertText ) {
+                if ( replaceText ) {
+                    procReplace( result );
                 } else {
-                    if ( ! result.isEmpty() ) {
-                        SwingUtilities.invokeLater( new RunnableReplaceTextOnTextPane(
-                            kawapad,
-                            result.valueAsString,
-                            doReset
-                                ) );
-                    } else {
-                        // do not insert.
-                        Kawapad.logInfo( "KawapadEvaluator: do not insert (1). " + result.value );
-                    }
+                    procInsert( result );
                 }
             } else {
-                if ( ! result.isEmpty() ) {
-                    String resultString = SchemeExecutor.formatResult( result.valueAsString ); 
-                    // We want to make sure the result string ends with "\n" to avoid to get an extra line.
-                    if ( ! schemeScript.endsWith( "\n" ) ) {
-                        resultString = "\n" + SchemeExecutor.formatResult( result.valueAsString ); 
-                    }
-                    Kawapad.logInfo( resultString );
-                    SwingUtilities.invokeLater( new RunnableInsertTextToTextPane( kawapad, resultString, true, doReset ) );
-                } else {
-                    // do not insert.
-                    Kawapad.logInfo( "KawapadEvaluator: do not insert (2). " + result.value );
-                }
+                // do not insert if `insertText` is false.
+                Kawapad.logInfo( "KawapadEvaluator: do not insert (3). " + result.value );
             }
         } else {
-            // do not insert.
-            Kawapad.logInfo( "KawapadEvaluator: do not insert (3). " + result.value );
+            // if error, insert anyway. 
+            procInsert( result );
         }
     }
 }

@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 
-public class MarkdownDescriptive {
+public class MarkdownDescriptive extends Descriptive {
     MarkdownDescriptive() {
     }
     public static String createMarkdownHelp( List<Object> list ) {
@@ -53,7 +53,7 @@ public class MarkdownDescriptive {
         }
         
         message.append( "### DESCRIPTION ###\n" );
-        message.append( SchemeUtils.wrapMultiLine( msg1 + " " + msg2 , 80 ) );
+        message.append( wrapMultiLine( msg1 + " " + msg2 , 80 ) );
         message.append( "\n\n" );
         message.append( "--------------------------------------------------------" );
         message.append( "" );
@@ -61,6 +61,6 @@ public class MarkdownDescriptive {
         return message.toString();  
     }
     public static String formatForMarkdown( Procedure p ) {
-        return formatForMarkdown( SchemeUtils.getDescriptionBean( p ) );
+        return formatForMarkdown( getDescriptionBean( p ) );
     }
 }

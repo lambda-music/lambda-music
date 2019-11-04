@@ -13,10 +13,8 @@ import gnu.kawa.io.InPort;
 import gnu.kawa.io.OutPort;
 import gnu.kawa.io.Path;
 import gnu.lists.Consumer;
-import gnu.lists.Pair;
 import gnu.mapping.CallContext;
 import gnu.mapping.Environment;
-import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import kawa.Shell;
 import kawa.standard.Scheme;
@@ -49,12 +47,6 @@ public class SchemeExecutor {
         }
     }
 
-    public static final String EXECUTE_SCHEME_DOCTAG_STRING = "**doc**".intern();
-    public static final Symbol EXECUTE_SCHEME_DOCTAG = Symbol.valueOf( EXECUTE_SCHEME_DOCTAG_STRING );
-    public static Object executeSchemePageWrapper( Object o ) {
-        return Pair.make( EXECUTE_SCHEME_DOCTAG, o );
-    }
-    
     public static void execSchemeFromResource( Scheme scheme, Class parentClass, String resourcePath ) throws IOException {
         SchemeExecutor.evaluateScheme( 
             scheme, 
@@ -129,14 +121,12 @@ public class SchemeExecutor {
                 if ( resultValue == null ) {
                     return new Result( false, null, "#!null", null );
                 } else {
-                    if ( resultValue instanceof Pair ) {
-                        Pair pair = (Pair) resultValue;
-                        if ( EXECUTE_SCHEME_DOCTAG.equals( pair.getCar() ) ) {
-                            Object cdr = pair.getCdr();
-                            return new Result( true, cdr, SchemePrinter.printDocument( cdr), null );
-                        }
+                    if ( Descriptive.isSchemeDocument( resultValue ) ) {
+                        Object doc = Descriptive.getSchemeDocument(resultValue);
+                        return new Result( true, doc, SchemePrinter.printDocument(doc), null );
+                    } else {
+                        return new Result( false, resultValue, SchemePrinter.printSchemeValue(resultValue), null );
                     }
-                    return new Result( false, resultValue, SchemePrinter.printSchemeValue(resultValue), null );
                 }
             } catch (Throwable e) {
                 StringWriter sw = new StringWriter();
@@ -171,6 +161,7 @@ public class SchemeExecutor {
             }
         }
     }
+
 
     public static void initializeThread( Collection<Runnable> threadInitializers ) {
         if ( threadInitializers != null )

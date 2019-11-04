@@ -69,7 +69,9 @@ public class DescriptiveHelp {
         SchemeUtils.defineVar( env, new Procedure1("make-page") {
             @Override
             public Object apply1(Object arg1) throws Throwable {
-                return SchemeUtils.makePage( SchemeUtils.anyToString(arg1), helpTextWidth ); 
+                return Descriptive.makeSchemeDocument( 
+                            SchemeUtils.toSchemeString( 
+                                Descriptive.formatKawapad( SchemeUtils.anyToString(arg1), helpTextWidth ) )); 
             }
         }, "make-page");
         
@@ -122,7 +124,7 @@ public class DescriptiveHelp {
                 this.index = index;
             }
             
-            public LList availableProcedures( DescriptiveDocumentCategory category ) throws Throwable {
+            LList getAvailableProcedures( DescriptiveDocumentCategory category ) throws Throwable {
                 Procedure1 proc1 = new Procedure1() {
                     @Override
                     public Object apply1(Object arg1) throws Throwable {
@@ -145,23 +147,16 @@ public class DescriptiveHelp {
                                 reverse.apply1( 
                                     category.getDocumentList( this.environment )));
             }
-            public ArrayList allAvailableProcedures() throws Throwable {
+            ArrayList getAllAvailableProcedures() throws Throwable {
                 ArrayList list = new ArrayList();
                 for ( DescriptiveDocumentCategory category : DescriptiveDocumentCategory.getAll() ) {
-                    list.addAll( availableProcedures( category ) );
+                    list.addAll( getAvailableProcedures( category ) );
                 }
                 return list;
             }
 
-            LList allAvailable() throws Throwable {
-                return LList.makeList( allAvailableProcedures() );
-            }
-
-            public Object apply0() throws Throwable {
-                return SchemeUtils.makePage( helpList( allAvailable() ) );
- 
-//              result = String.join( " ", (List)result ); 
-//              return SchemeUtils.makePage(  result.toString(), helpTextWidth );
+            LList getAllAvailableProcedureLList() throws Throwable {
+                return LList.makeList( getAllAvailableProcedures() );
             }
 
             Object helpList( LList list ) throws Throwable {
@@ -174,29 +169,38 @@ public class DescriptiveHelp {
                 
                 Object result = kawa.standard.append.append.apply2(
                                     Pair.make( 
-                                        SchemeUtils.toSchemeString( "#| === The list of all available procedures ===\n\n" ), 
+                                        SchemeUtils.toSchemeString( "(#| === The list of all available procedures ===\n\n" ), 
                                         map.apply2( proc1, list )),
-                                    Pair.make( SchemeUtils.toSchemeString( "|#" ), EmptyList.emptyList ));
+                                    Pair.make( SchemeUtils.toSchemeString( "|#)" ), EmptyList.emptyList ));
                 return result;
             }; 
-            
+
+            public Object apply0() throws Throwable {
+                return Descriptive.makeSchemeDocument( helpList( getAllAvailableProcedureLList() ) );
+            }
+
+
             String MSG_NO_DOCUMENTATION = "No documentation is available.";
             SimpleSymbol ALL_AVAILABLE = Symbol.valueOf( "all" );
             public Object apply1(Object arg1) throws Throwable {
                 if ( ALL_AVAILABLE.equals( arg1 ) ) {
-                    return allAvailable();
+                    return getAllAvailableProcedureLList();
                 } else  {
                     if ( arg1 instanceof Symbol ) {
                         DescriptiveDocumentCategory t = 
                                 DescriptiveDocumentCategory.valueOf( (Symbol)arg1 );
-                        return SchemeUtils.makePage( helpList( availableProcedures( t ) ) );
+                        return Descriptive.makeSchemeDocument( 
+                            helpList( getAvailableProcedures( t ) ) );
                     } else {
-                        String message = SchemeUtils.getDescription( arg1 );
+                        String message = Descriptive.getDescription( arg1 );
                         if ( message == null ) {
                             message = MSG_NO_DOCUMENTATION;
                         }
                         System.err.println( message );
-                        return SchemeUtils.makePage( message, helpTextWidth );
+                        return Descriptive.makeSchemeDocument( 
+                                    SchemeUtils.toSchemeString( 
+                                        Descriptive.formatKawapad( message, helpTextWidth )));
+                                
                     }
                 }
             }
@@ -213,6 +217,7 @@ public class DescriptiveHelp {
 
             }
         }
+        
         SchemeUtils.defineVar( env, new ProcedureHelp( env, "help", 1 ) , "help", "he" );
         DescriptiveHelp.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "help", "he" );

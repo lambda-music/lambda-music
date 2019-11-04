@@ -13,7 +13,7 @@ public class DescriptiveHelpProcedure extends Procedure0 {
                    "#| (%1$s) is a documentation procedure.\n "
                  + " | Execute (help %1$s) for further information. \n"
                  + "  |# help %1$s \n",  name );
-        return SchemeExecutor.executeSchemePageWrapper( SchemeUtils.toSchemeString( s ));
+        return Descriptive.makeSchemeDocument( SchemeUtils.toSchemeString( s ));
     }
 }
 
