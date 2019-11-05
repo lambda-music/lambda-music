@@ -3,6 +3,8 @@ package pulsar;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.regex.Pattern;
 
 import kawapad.Kawapad;
 import kawapad.KawapadDocuments;
@@ -10,6 +12,7 @@ import pulsar.lib.GC;
 import pulsar.lib.PulsarLogger;
 import pulsar.lib.scheme.DescriptiveDocumentCategory;
 import pulsar.lib.scheme.DescriptiveHelp;
+import pulsar.lib.scheme.SchemePrinter;
 import pulsar.lib.scheme.http.SchemeHttp;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 
@@ -219,9 +222,36 @@ public class PulsarApplication {
     public static Pulsar start() throws IOException {
         return start(true, true, 8192, null );
     }
+    
+    static final Pattern REMOVE_LINE_BREAKS = Pattern.compile( "(\n\r|\r\n|\r|\n)", Pattern.MULTILINE );
+    public static void initObjectPrinter() {
+        SchemePrinter.setSchemeValuePrinter( new SchemePrinter.Formatter() {
+            @Override
+            public String format(Object value) {
+                if ( NoteListParser.isNotationList( value ) ) {
+//                    gnu.kawa.io.PrettyWriter.lineLengthLoc.set( 1000 );
+                    StringBuilder sb = new StringBuilder();
+                    sb.append( "(" );
+                    for ( Object o : ((Collection)value) ) {
+                        sb.append( REMOVE_LINE_BREAKS.matcher( SchemePrinter.prettyPrintProc( o ) ).replaceAll( "" ) );
+                        sb.append( "\n" );
+                    }
+                    if ( 0 < sb.length() ) 
+                        sb.setLength( sb.length() -1 );
+                    sb.append( ")");
+                    return sb.toString();
+                } else  {
+//                    gnu.kawa.io.PrettyWriter.lineLengthLoc.set( 1000 );
+                    return SchemePrinter.prettyPrintProc( value );
+//                    return SchemePrinter.DEFAULT_SCHEME_VALUE_PRINTER.format( value );
+                }
+            }
+        } );
+    }
 
     public static void main(String[] args) throws IOException {
         PulsarLogger.init();
+        initObjectPrinter();
         parseArgsAndStartPulsar(args);
     }
 

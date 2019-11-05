@@ -1,5 +1,7 @@
 package pulsar.lib.scheme;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import gnu.kawa.io.OutPort;
@@ -25,7 +27,7 @@ public class SchemePrinter {
         @Override
         public String format(Object value) {
             try {
-                return SchemePrinter.prettyPrint( value );
+                return SchemePrinter.prettyPrintProc( value );
             } catch (Throwable e) {
                 e.printStackTrace();
                 return "Internal Error : failed to print the object (" +  e.getMessage() + ")";
@@ -36,7 +38,7 @@ public class SchemePrinter {
         @Override
         public String format(Object value) {
             try {
-                return SchemePrinter.normalPrint( value );
+                return SchemePrinter.normalPrintProc( value );
             } catch (Throwable e) {
                 e.printStackTrace();
                 return "Internal Error : failed to print the object (" +  e.getMessage() + ")";
@@ -66,22 +68,37 @@ public class SchemePrinter {
     }
 
     
-    static String normalPrint(Object resultObject) throws Throwable {
+    public static String normalPrintProc(Object resultObject)  {
         return SchemePrinter.printProc( kawa.lib.ports.display, resultObject );
     }
-    static String prettyPrint(Object resultObject) throws Throwable {
+    public static String prettyPrintProc(Object resultObject) {
         return SchemePrinter.printProc( kawa.lib.ports.write, resultObject );
     }
     
-    private static String printProc( Procedure print_proc, Object resultObject ) throws Throwable {
+    private static String printProc( Procedure print_proc, Object resultObject ) {
         StringWriter out = new StringWriter();
         try {
-            OutPort outPort = new OutPort( out, true, true );
+            OutPort outPort = new OutPort( out, false, true );
             SchemeUtils.toString( print_proc.apply2( resultObject, outPort ) );
             outPort.flush();
             return out.toString();
+        } catch (Throwable e) {
+            e.printStackTrace();
+            return t2s( e );
         } finally {
-            out.close();
+            try {
+                out.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+    }
+    static String t2s(Throwable e) {
+        StringWriter w = new StringWriter();
+        PrintWriter p = new PrintWriter( w );
+        e.printStackTrace( p );
+        p.flush();
+        String s = w.toString();
+        return s;
     }
 }
