@@ -622,22 +622,22 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
     }
     
     
-    // ???
-    public void refreshTracks() {
-        checkState();
-        synchronized ( this.getMetroLock() ) {
-            for ( MetroTrack s : this.tracks ) {
-                s.clearBuffer();
-            }
-            for ( MetroTrack track : this.tracks  ) {
-                try {
-                    track.checkBuffer( this,  this.client, this.position, 0 /* XXX */ );
-                } catch (JackException e) {
-                    logError("", e);
-                }
-            }
-        }
-    }
+//    // ???
+//    public void refreshTracks() {
+//        checkState();
+//        synchronized ( this.getMetroLock() ) {
+//            for ( MetroTrack s : this.tracks ) {
+//                s.clearBuffer();
+//            }
+//            for ( MetroTrack track : this.tracks  ) {
+//                try {
+//                    track.checkBuffer( this,  0 /* XXX */, this.client, this.position );
+//                } catch (JackException e) {
+//                    logError("", e);
+//                }
+//            }
+//        }
+//    }
     public void clearTracks() {
         checkState();
         synchronized ( this.getMetroLock() ) {
@@ -658,10 +658,10 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
     //          System.err.println( s );
                 
                 synchronized ( this.getMetroLock() ) {
-                    int barInFrames = Metro.calcBarInFrames( this, client, position );
+                    int barLengthInFrames = Metro.calc1BarLengthInFrames( this, client, position );
 
                     for ( MetroTrack track : this.tracks  ) {
-                        track.checkBuffer( this,  this.client, this.position, barInFrames );
+                        track.checkBuffer( this,  barLengthInFrames, this.client, this.position );
                     }
 
                     for ( Runnable r : this.messageQueue ) {
@@ -686,9 +686,9 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
                         // "registeredTrack" in its event handlers.
                         ArrayList<MetroTrack> arrayList = new ArrayList<>( this.registeredTracks );
                         for ( MetroTrack track : arrayList ) {
-                            track.prepare( barInFrames );
+                            track.prepare( barLengthInFrames );
                             // ADDED (Sun, 30 Sep 2018 12:39:32 +0900)
-                            track.checkBuffer( this,  this.client, this.position, barInFrames );
+                            track.checkBuffer( this,  barLengthInFrames, this.client, this.position );
                         }
                     }       
                     this.unregisteredTracks.clear();
@@ -722,9 +722,10 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
     
     void reprepareTrack(double prevBeatsPerMinute, double beatsPerMinute) throws JackException {
         synchronized ( this.getMetroLock() ) {
+            int barLengthInFrames = Metro.calc1BarLengthInFrames( this, client, position );
             // int barInFrames = Metro.calcBarInFrames( this, this.client, this.position );
             for ( MetroTrack track : this.tracks ) {
-                track.reprepare( this, this.client, this.position, prevBeatsPerMinute, beatsPerMinute );
+                track.reprepare( this, barLengthInFrames, this.client, this.position, prevBeatsPerMinute, beatsPerMinute );
             }
         }
     }
@@ -1134,7 +1135,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
         
     }
 
-    public static int calcBarInFrames( Metro metro, JackClient client, JackPosition position) throws JackException {
+    public static int calc1BarLengthInFrames( Metro metro, JackClient client, JackPosition position) throws JackException {
         // logInfo("Metro.offerNewBuffer()" + this.buffers.size() );
         // beat per minute
         double bpm;

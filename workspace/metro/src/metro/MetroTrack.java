@@ -513,8 +513,8 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
         eventListenerable.invokeEventListener( EVENT_PREPARED );
     }
 
-    void reprepare( Metro metro, JackClient client, JackPosition position, 
-            double prevBeatsPerMinute, double beatsPerMinute ) throws JackException 
+    void reprepare( Metro metro, int barLengthInFrames, JackClient client, 
+            JackPosition position, double prevBeatsPerMinute, double beatsPerMinute ) throws JackException 
     {
         synchronized ( this.getMetroTrackLock() ) {
             int prevLengthInFrame = -1;
@@ -527,7 +527,7 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
                 
             // double ratio = magnifyCursorPosition( prevBeatsPerMinute, beatsPerMinute );
             for ( MetroEventBuffer buffer : this.buffers ) {
-                buffer.prepare(metro, client, position, false);
+                buffer.prepare(metro, barLengthInFrames, client, position, false);
             }
             
             {
@@ -579,7 +579,7 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
     private int cacheUpdateThreshold = -1;
     private static final int MIN_UPDATE_THRESHOLD = 256;
     private static final int MAX_UPDATE_THRESHOLD = 44100*4;
-    protected  void checkBuffer( Metro metro, JackClient client, JackPosition position, int barInFrames) throws JackException {
+    protected  void checkBuffer( Metro metro, int barLengthInFrames, JackClient client, JackPosition position) throws JackException {
         synchronized ( this.getMetroTrackLock() ) { // << ADDED synchronided (Sun, 30 Sep 2018 11:45:13 +0900)
 //          if ( this.buffers.size() < BUFFER_SIZE ) {
 //              this.offerNewBuffer( metro, client, position );
@@ -594,8 +594,8 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
             if ( updateThreshold < 0 ) {
                 double metroUpdateThreshold = metro.getUpdateSequenceThreshold();
                 
-                updateThreshold = (int)((double)barInFrames * metroUpdateThreshold);
-                String message = "" + updateThreshold +"=" + barInFrames + "*" + metroUpdateThreshold +" (updateThreshold = barInFrames * metroUpdateThreshold)";
+                updateThreshold = (int)((double)barLengthInFrames * metroUpdateThreshold);
+                String message = "" + updateThreshold +"=" + barLengthInFrames + "*" + metroUpdateThreshold +" (updateThreshold = barInFrames * metroUpdateThreshold)";
                 
                 if ( updateThreshold  < MIN_UPDATE_THRESHOLD ) {
                     if ( DEBUG )
@@ -619,7 +619,7 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
                 logInfo( "checkBuffer(" + name + "):thre:" + updateThreshold  );
             
             while ( getTotalBufferLength() < updateThreshold ) {
-                this.offerNewBuffer( metro, client, position );
+                this.offerNewBuffer( metro, barLengthInFrames, client, position );
             }
 //          MODIFIED <<< (Fri, 02 Aug 2019 16:52:08 +0900)
         }
@@ -639,7 +639,7 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
 //      }
 //  }
 
-    private void offerNewBuffer( Metro metro, JackClient client, JackPosition position ) throws JackException {
+    private void offerNewBuffer( Metro metro, int barLengthInFrames, JackClient client, JackPosition position ) throws JackException {
         synchronized ( this.getMetroTrackLock() ) {
 //          logInfo( "offerNewBuffer:" );
             if ( this.ending ) {
@@ -650,7 +650,7 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
                         logInfo( "offerNewBuffer(): endingDone is true" );
                     MetroEventBuffer buf = new MetroEventBuffer();
                     buf.setLength( 1.0 );
-                    buf.prepare( metro, client, position, true );
+                    buf.prepare( metro, barLengthInFrames, client, position, true );
                     this.buffers.offer( buf );
                     
                 } else {
@@ -674,7 +674,7 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
                         }
                     });
                     buf.setLength( this.endingLength  );
-                    buf.prepare( metro, client, position, true );
+                    buf.prepare( metro, barLengthInFrames, client, position, true );
                     this.buffers.offer( buf );
                 }
                 
@@ -682,7 +682,7 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
 //              logInfo( "offerNewBuffer:normal (" + this.name  + ")");
                 MetroEventBuffer buf = new MetroEventBuffer();
                 boolean result = this.sequence.processBuffered( metro, this, buf );
-                buf.prepare( metro, client, position, true );
+                buf.prepare( metro, barLengthInFrames, client, position, true );
 
                 if ( DEBUG && ( buf.size() >0 ) )
                     buf.dump();

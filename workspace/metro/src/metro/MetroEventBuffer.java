@@ -79,11 +79,11 @@ public class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<Met
         return lengthInFrames;
     }
     
-    public void prepare( Metro metro, JackClient client, JackPosition position, boolean doSort ) throws JackException {
+    public void prepare( Metro metro, int barLengthInFrames, JackClient client, JackPosition position, boolean doSort ) throws JackException {
         if ( doSort && false )
             this.list.sort( MetroEvent.BAR_OFFSET_COMPARATOR );
         
-        int barLengthInFrames = Metro.calcBarInFrames( metro, client, position );
+//        int barLengthInFrames = Metro.calcBarInFrames( metro, client, position );
         this.calcBarOffsetInFrames( barLengthInFrames );
     }
     
