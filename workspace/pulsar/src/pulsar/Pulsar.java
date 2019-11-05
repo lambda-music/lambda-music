@@ -69,9 +69,9 @@ import metro.MetroSequence;
 import metro.MetroSyncType;
 import metro.MetroTrack;
 import pulsar.lib.CurrentObject;
-import pulsar.lib.scheme.SchemeExecutor;
 import pulsar.lib.scheme.ProceduralDescriptiveBean;
 import pulsar.lib.scheme.SafeProcedureN;
+import pulsar.lib.scheme.SchemeExecutor;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.Invokable;
@@ -643,10 +643,10 @@ public final class Pulsar extends Metro {
         return this.createTrack( name, tags, new SchemeSequence( createInvokable( procedure ) ) );
     }
     
-    public MetroTrack createRecordingTrack( Object name, Collection<Object> tags, MetroPort inputPort, MetroPort outputPort,
+    public MetroTrack createRecordingTrack( Object name, Collection<Object> tags, List<MetroPort> inputPorts, List<MetroPort> outputPorts,
             int recordLength, boolean looper ) 
     {
-        return this.createTrack( name, tags, new SchemeSequenceRecorder( inputPort, outputPort, recordLength, looper ) );
+        return this.createTrack( name, tags, SchemeSequenceRecorder.createSchemeSequenceRecorder( inputPorts, outputPorts, recordLength, looper ) );
     }
 
     static final class PulsarEventListener implements EventListenable.Listener {
@@ -1586,8 +1586,8 @@ public final class Pulsar extends Metro {
                 Pulsar current = getCurrent();
                 Object name;
                 List<Object> tags;
-                MetroPort inputPort;
-                MetroPort outputPort;
+                List<MetroPort> inputPorts;
+                List<MetroPort> outputPorts;
                 int recordLength;
                 boolean looper;
 
@@ -1607,13 +1607,13 @@ public final class Pulsar extends Metro {
                             List<MetroPort> ports = current.readParamPort( args[1], current.getInputPorts() );
                             if ( ports.size() == 0 )
                                 throw new IllegalArgumentException("could not find input port " + args[1] );
-                            inputPort = ports.get( 0 ); 
+                            inputPorts = ports; 
                         }
                         {
                             List<MetroPort> ports = current.readParamPort( args[2], current.getOutputPorts() );
                             if ( ports.size() == 0 )
                                 throw new IllegalArgumentException("could not find output port " + args[2] );
-                            outputPort = ports.get( 0 ); 
+                            outputPorts = ports; 
                         }
                         
                         if ( 3< args.length ) {
@@ -1632,7 +1632,7 @@ public final class Pulsar extends Metro {
                     default :
                         throw new IllegalArgumentException();
                 }
-                return getCurrent().createRecordingTrack( name, tags, inputPort, outputPort, recordLength, looper );
+                return getCurrent().createRecordingTrack( name, tags, inputPorts, outputPorts, recordLength, looper );
             }
         };
         SchemeUtils.defineVar( env, newRecordingTrack, "new-recording-track", "rect" );
