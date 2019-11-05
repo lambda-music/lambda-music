@@ -31,9 +31,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.jaudiolibs.jnajack.JackClient;
 import org.jaudiolibs.jnajack.JackException;
-import org.jaudiolibs.jnajack.JackPosition;
 
 /*
  * To acquire further understanding about buffering of this Metro framework,
@@ -513,8 +511,7 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
         eventListenerable.invokeEventListener( EVENT_PREPARED );
     }
 
-    void reprepare( Metro metro, int barLengthInFrames, JackClient client, 
-            JackPosition position, double prevBeatsPerMinute, double beatsPerMinute ) throws JackException 
+    void reprepare( int barLengthInFrames, double prevBeatsPerMinute, double beatsPerMinute ) throws JackException 
     {
         synchronized ( this.getMetroTrackLock() ) {
             int prevLengthInFrame = -1;
@@ -527,7 +524,7 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
                 
             // double ratio = magnifyCursorPosition( prevBeatsPerMinute, beatsPerMinute );
             for ( MetroEventBuffer buffer : this.buffers ) {
-                buffer.prepare(metro, barLengthInFrames, client, position, false);
+                buffer.prepare(barLengthInFrames, false);
             }
             
             {
@@ -579,7 +576,7 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
     private int cacheUpdateThreshold = -1;
     private static final int MIN_UPDATE_THRESHOLD = 256;
     private static final int MAX_UPDATE_THRESHOLD = 44100*4;
-    protected  void checkBuffer( Metro metro, int barLengthInFrames, JackClient client, JackPosition position) throws JackException {
+    protected  void checkBuffer( Metro metro, int barLengthInFrames) throws JackException {
         synchronized ( this.getMetroTrackLock() ) { // << ADDED synchronided (Sun, 30 Sep 2018 11:45:13 +0900)
 //          if ( this.buffers.size() < BUFFER_SIZE ) {
 //              this.offerNewBuffer( metro, client, position );
@@ -619,7 +616,7 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
                 logInfo( "checkBuffer(" + name + "):thre:" + updateThreshold  );
             
             while ( getTotalBufferLength() < updateThreshold ) {
-                this.offerNewBuffer( metro, barLengthInFrames, client, position );
+                this.offerNewBuffer( metro, barLengthInFrames );
             }
 //          MODIFIED <<< (Fri, 02 Aug 2019 16:52:08 +0900)
         }
@@ -639,7 +636,7 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
 //      }
 //  }
 
-    private void offerNewBuffer( Metro metro, int barLengthInFrames, JackClient client, JackPosition position ) throws JackException {
+    private void offerNewBuffer( Metro metro, int barLengthInFrames ) throws JackException {
         synchronized ( this.getMetroTrackLock() ) {
 //          logInfo( "offerNewBuffer:" );
             if ( this.ending ) {
@@ -650,7 +647,7 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
                         logInfo( "offerNewBuffer(): endingDone is true" );
                     MetroEventBuffer buf = new MetroEventBuffer();
                     buf.setLength( 1.0 );
-                    buf.prepare( metro, barLengthInFrames, client, position, true );
+                    buf.prepare( barLengthInFrames, true );
                     this.buffers.offer( buf );
                     
                 } else {
@@ -674,7 +671,7 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
                         }
                     });
                     buf.setLength( this.endingLength  );
-                    buf.prepare( metro, barLengthInFrames, client, position, true );
+                    buf.prepare( barLengthInFrames, true );
                     this.buffers.offer( buf );
                 }
                 
@@ -682,7 +679,7 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
 //              logInfo( "offerNewBuffer:normal (" + this.name  + ")");
                 MetroEventBuffer buf = new MetroEventBuffer();
                 boolean result = this.sequence.processBuffered( metro, this, buf );
-                buf.prepare( metro, barLengthInFrames, client, position, true );
+                buf.prepare( barLengthInFrames, true );
 
                 if ( DEBUG && ( buf.size() >0 ) )
                     buf.dump();

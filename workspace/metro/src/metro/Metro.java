@@ -99,7 +99,6 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
     
     private ArrayList<MetroMidiEvent> inputMidiEventList = new ArrayList<MetroMidiEvent>();
     private ArrayList<MetroMidiEvent> outputMidiEventList = new ArrayList<MetroMidiEvent>();
-    private JackPosition position = new JackPosition();
 
     // zero means that to get the current bpm from Jack Transport.
     private double beatsPerMinute = 60;
@@ -652,16 +651,17 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
     public void run()  {
         try {
             logInfo("Metro.run()");
+            
             while ( true ) {
     //          logInfo("Metro.run()");
     //          String s = this.debugQueue.take();
     //          System.err.println( s );
                 
                 synchronized ( this.getMetroLock() ) {
-                    int barLengthInFrames = Metro.calc1BarLengthInFrames( this, client, position );
+                    int barLengthInFrames = this.getOneBarLengthInFrames();
 
                     for ( MetroTrack track : this.tracks  ) {
-                        track.checkBuffer( this,  barLengthInFrames, this.client, this.position );
+                        track.checkBuffer( this,  barLengthInFrames );
                     }
 
                     for ( Runnable r : this.messageQueue ) {
@@ -688,7 +688,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
                         for ( MetroTrack track : arrayList ) {
                             track.prepare( barLengthInFrames );
                             // ADDED (Sun, 30 Sep 2018 12:39:32 +0900)
-                            track.checkBuffer( this,  barLengthInFrames, this.client, this.position );
+                            track.checkBuffer( this,  barLengthInFrames );
                         }
                     }       
                     this.unregisteredTracks.clear();
@@ -721,11 +721,20 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
     }
     
     void reprepareTrack(double prevBeatsPerMinute, double beatsPerMinute) throws JackException {
-        synchronized ( this.getMetroLock() ) {
-            int barLengthInFrames = Metro.calc1BarLengthInFrames( this, client, position );
-            // int barInFrames = Metro.calcBarInFrames( this, this.client, this.position );
-            for ( MetroTrack track : this.tracks ) {
-                track.reprepare( this, barLengthInFrames, this.client, this.position, prevBeatsPerMinute, beatsPerMinute );
+        // Note (Wed, 06 Nov 2019 05:47:26 +0900)
+        // This method could be called by setting tempo procedures and 
+        // that time could be at the time when it is not opened.
+        // In that case, we should ignore the request and should not 
+        // raise execptions.
+        if ( isOpened ) {
+            synchronized ( this.getMetroLock() ) {
+                if ( ! tracks.isEmpty() ) {
+                    int barLengthInFrames = this.getOneBarLengthInFrames();
+                    // int barInFrames = Metro.calcBarInFrames( this, this.client, this.position );
+                    for ( MetroTrack track : this.tracks ) {
+                        track.reprepare( barLengthInFrames, prevBeatsPerMinute, beatsPerMinute );
+                    }
+                }
             }
         }
     }
@@ -1135,7 +1144,14 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
         
     }
 
-    public static int calc1BarLengthInFrames( Metro metro, JackClient client, JackPosition position) throws JackException {
+    private final JackPosition jackPosition = new JackPosition();
+    public int getOneBarLengthInFrames() throws JackException {
+        synchronized ( this.getMetroLock() ) {
+            return calcOneBarLengthInFrames( this, this.client, this.jackPosition );
+        }
+    }
+
+    public static int calcOneBarLengthInFrames( Metro metro, JackClient client, JackPosition position) throws JackException {
         // logInfo("Metro.offerNewBuffer()" + this.buffers.size() );
         // beat per minute
         double bpm;

@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.jaudiolibs.jnajack.JackException;
+
 import gnu.lists.EmptyList;
 import gnu.lists.LList;
 import gnu.lists.Pair;
@@ -27,7 +29,8 @@ public class SchemeSequenceRecorder implements MetroSequence, ReadableSchemeSequ
     static void logWarn (String msg             ) { LOGGER.log(Level.WARNING,  msg      ); }
 
     public static SchemeSequenceRecorder createSchemeSequenceRecorder(
-            List<MetroPort> inputPorts, List<MetroPort> outputPorts, int recordLength, boolean loop) {
+            List<MetroPort> inputPorts, List<MetroPort> outputPorts, 
+            int recordLength, boolean loop ) {
         return new SchemeSequenceRecorder( inputPorts, outputPorts, recordLength, loop );
     }
 
@@ -66,13 +69,18 @@ public class SchemeSequenceRecorder implements MetroSequence, ReadableSchemeSequ
 
     @Override
     public void processDirect(Metro metro, int totalCursor, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
-        for ( MetroMidiEvent e : in ) {
-            if ( inputPorts.contains( e.getPort() ) ) {
-                this.receiver.setOffset( ( (double)(totalCursor + e.getMidiOffset() ) / 44100.0d ) );
-                LList list = MetroMidiMessageGen.receive( receiver, e.getMidiData() );
-                this.data = Pair.make( list, data );
-                logInfo( list );
+        try {
+            int oneBarLengthInFrames = metro.getOneBarLengthInFrames();
+            for ( MetroMidiEvent e : in ) {
+                if ( inputPorts.contains( e.getPort() ) ) {
+                    this.receiver.setOffset( ( (double)(totalCursor + e.getMidiOffset() ) / (double)oneBarLengthInFrames ) );
+                    LList list = MetroMidiMessageGen.receive( receiver, e.getMidiData() );
+                    this.data = Pair.make( list, data );
+                    logInfo( list );
+                }
             }
+        } catch (JackException e) {
+            logError( "could not get bar length : failed to send midi messages.", e );
         }
     }
 

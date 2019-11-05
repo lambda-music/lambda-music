@@ -29,9 +29,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.jaudiolibs.jnajack.JackClient;
 import org.jaudiolibs.jnajack.JackException;
-import org.jaudiolibs.jnajack.JackPosition;
 
 /**
  * This class represents all events which should be processed in a bar. 
@@ -79,7 +77,7 @@ public class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<Met
         return lengthInFrames;
     }
     
-    public void prepare( Metro metro, int barLengthInFrames, JackClient client, JackPosition position, boolean doSort ) throws JackException {
+    public void prepare( int barLengthInFrames, boolean doSort ) throws JackException {
         if ( doSort && false )
             this.list.sort( MetroEvent.BAR_OFFSET_COMPARATOR );
         
