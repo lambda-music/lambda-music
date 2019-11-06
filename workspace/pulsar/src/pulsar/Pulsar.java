@@ -644,7 +644,7 @@ public final class Pulsar extends Metro {
     }
     
     public MetroTrack createRecordingTrack( Object name, Collection<Object> tags, List<MetroPort> inputPorts, List<MetroPort> outputPorts,
-            int recordLength, boolean looper ) 
+            double recordLength, boolean looper ) 
     {
         return this.createTrack( name, tags, SchemeSequenceRecorder.createSchemeSequenceRecorder( inputPorts, outputPorts, recordLength, looper ) );
     }
@@ -701,24 +701,6 @@ public final class Pulsar extends Metro {
     }
     
     /**
-     * XXX 
-     * 
-     * @param object
-     * @return
-     */
-    static Procedure readParamTrackSearcher( Object object ) { 
-        object = SchemeUtils.schemeNullCheck( object );
-        // TAG SEARCH
-        if ( object instanceof Procedure ) {
-            return (Procedure) object;
-        } else if ( object instanceof Symbol || object instanceof IString ) {
-            return new TagSearchIsProcedure(object);
-        } else {
-            throw new IllegalArgumentException();
-        }
-    }
-    
-    /**
      * Wrap another invokable object in order to filter the undesirable arguments for
      * readParamTrackSearcher().
      * 
@@ -763,7 +745,32 @@ public final class Pulsar extends Metro {
         };
     }
     
-    List<MetroTrack> searchTrackCombo(Object arg) {
+    /**
+     * XXX 
+     * 
+     * @param object
+     * @return
+     */
+    static Procedure readParamTrackSearcher( Object object ) { 
+        object = SchemeUtils.schemeNullCheck( object );
+        // TAG SEARCH
+        if ( object instanceof Procedure ) {
+            return (Procedure) object;
+        } else if ( object instanceof Symbol || object instanceof IString ) {
+            return new TagSearchIsProcedure(object);
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
+    
+    
+    /**
+     * This method used be `searchTrackCombo()`.
+     * This was renamed at (Wed, 06 Nov 2019 07:38:28 +0900). 
+     * @param arg
+     * @return
+     */
+    List<MetroTrack> readParamSearchTrack(Object arg) {
         return 
                 searchTrack(
                     readParamSearchTrackFilter(
@@ -772,7 +779,7 @@ public final class Pulsar extends Metro {
     }
 
     // TODO
-    List<MetroTrack> readParamTrack( Object object ) {
+    List<MetroTrack> readParamCreateTrack( Object object ) {
         if ( object instanceof MetroTrack ) {
             return Arrays.<MetroTrack>asList((MetroTrack)object);
         } else if ( object instanceof Procedure ) {
@@ -783,12 +790,13 @@ public final class Pulsar extends Metro {
             } else if ( NoteListParser.isNotationList(object) ) {
                 return Arrays.asList( createTrack( null, null, new TrackProcedure( (Pair) object ) ) );
             } else {
-                return searchTrackCombo( object );
+                return readParamSearchTrack( object );
             }
         } else {
-            return searchTrackCombo( object );
+            return readParamSearchTrack( object );
         }
     }
+    
     static double readParamSyncOffset(Object object) {
         return SchemeUtils.toDouble( object );
     }
@@ -1485,7 +1493,7 @@ public final class Pulsar extends Metro {
                 ArrayList<MetroTrack> t = new ArrayList<>();
                 for ( int i=0; i<args.length; i++ ) {
                     Object arg = args[i];
-                    t.addAll( current.searchTrackCombo( arg ) );
+                    t.addAll( current.readParamSearchTrack( arg ) );
                 }
                 return Pair.makeList( t );
             }
@@ -1588,7 +1596,7 @@ public final class Pulsar extends Metro {
                 List<Object> tags;
                 List<MetroPort> inputPorts;
                 List<MetroPort> outputPorts;
-                int recordLength;
+                double recordLength;
                 boolean looper;
 
                 switch ( args.length  ){
@@ -1617,7 +1625,7 @@ public final class Pulsar extends Metro {
                         }
                         
                         if ( 3< args.length ) {
-                            recordLength = SchemeUtils.toInteger( args[3] );
+                            recordLength = SchemeUtils.toDouble( args[3] );
                         } else {
                             recordLength = -1;
                         }
@@ -1707,27 +1715,27 @@ public final class Pulsar extends Metro {
                     case 0 :
                         throw new IllegalArgumentException();
                     case 1 :
-                        trackList     = pulsar.readParamTrack( args[0] );
+                        trackList     = pulsar.readParamCreateTrack( args[0] );
                         syncType      = MetroSyncType.IMMEDIATE;
                         syncTrackList = Collections.EMPTY_LIST;
                         syncOffset    = 0.0d;
                         break;
                     case 2 :
-                        trackList     = pulsar.readParamTrack( args[0] );
+                        trackList     = pulsar.readParamCreateTrack( args[0] );
                         syncType      = readParamSyncType( args[1] );
                         syncTrackList = Collections.EMPTY_LIST;
                         syncOffset    = 0.0d;
                         break;
                     case 3 :
-                        trackList     = pulsar.readParamTrack( args[0] );
+                        trackList     = pulsar.readParamCreateTrack( args[0] );
                         syncType      = readParamSyncType( args[1] );
-                        syncTrackList = pulsar.readParamTrack( args[2] );
+                        syncTrackList = pulsar.readParamCreateTrack( args[2] );
                         syncOffset    = 0.0d;
                         break;
                     case 4 :
-                        trackList     = pulsar.readParamTrack( args[0] );
+                        trackList     = pulsar.readParamCreateTrack( args[0] );
                         syncType      = readParamSyncType( args[1] );
-                        syncTrackList = pulsar.readParamTrack( args[2] );
+                        syncTrackList = pulsar.readParamCreateTrack( args[2] );
                         syncOffset    = readParamSyncOffset( args[3] );
                         break;
                     default :
@@ -2137,15 +2145,13 @@ public final class Pulsar extends Metro {
                 }
                 Object arg0 = args[0];
                 Object[] restArgs = Arrays.copyOfRange( args, 1, args.length );
-                if ( arg0 instanceof MetroTrack ) {
-                    MetroSequence track = ((MetroTrack)arg0).getSequence();
-                    Invokable procedure = ((SchemeSequence)track).getProcedure();
-                    return procedure.invoke( restArgs );
+                if ( arg0 instanceof Invokable ) {
+                    return ((Invokable)arg0).invoke( restArgs );
                 } else {
-                    throw new IllegalArgumentException( "the argument is not a track object." );
+                    throw new IllegalArgumentException( "the argument is not an invokable object." );
                 }
             }
-        });
+        }, "apply-track", "appt" );
         
         SchemeUtils.defineVar( env, new SafeProcedureN( "read-track" ) {
             @Override
@@ -2154,8 +2160,8 @@ public final class Pulsar extends Metro {
                     throw new IllegalArgumentException("insufficient argument length (length<1)" );
                 }
                 Object arg0 = args[0];
-                if ( arg0 instanceof ReadableSchemeSequence ) {
-                    return ((ReadableSchemeSequence)arg0).readMusic();
+                if ( arg0 instanceof SchemeSequenceReadable ) {
+                    return ((SchemeSequenceReadable)arg0).readMusic();
                 } else { 
                     throw new IllegalArgumentException( "the argument is not a readable track. " + arg0 );
                 }

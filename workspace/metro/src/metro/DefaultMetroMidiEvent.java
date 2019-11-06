@@ -28,8 +28,8 @@ public class DefaultMetroMidiEvent implements MetroMidiEvent {
         return outputPort;
     }
     @Override
-    public void setPort(MetroPort outputPort) {
-        this.outputPort = outputPort;
+    public void setPort(MetroPort port) {
+        this.outputPort = port;
     }
 
     byte[] midiData;

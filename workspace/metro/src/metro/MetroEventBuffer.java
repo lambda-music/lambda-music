@@ -83,6 +83,8 @@ public class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<Met
         
 //        int barLengthInFrames = Metro.calcBarInFrames( metro, client, position );
         this.calcBarOffsetInFrames( barLengthInFrames );
+
+        this.prepared = true;
     }
     
     private void calcBarOffsetInFrames( int barLengthInFrames ) {
@@ -93,7 +95,6 @@ public class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<Met
 //      System.out.println( "this.length " + this.length  );
         this.barLengthInFrames = barLengthInFrames;
         this.lengthInFrames = (int) (this.length * (double)barLengthInFrames);
-        this.prepared = true;
         
         if ( DEBUG ) 
             logInfo( "MetroMidiEventBuffer.calcInFrames() barInFrames="  + barLengthInFrames + " / lengthInFrames=" + this.lengthInFrames  + "/ length=" + this.length);

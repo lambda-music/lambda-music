@@ -39,7 +39,7 @@ import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.Invokable;
 
-public class SchemeSequence implements MetroSequence, ReadableSchemeSequence {
+public class SchemeSequence implements MetroSequence, SchemeSequenceReadable, Invokable {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
@@ -93,12 +93,13 @@ public class SchemeSequence implements MetroSequence, ReadableSchemeSequence {
      * It is necessary because 
      * 
      */
-    final Invokable procedure;
+    final Invokable invokable;
     public SchemeSequence ( Invokable procedure ) {
-        this.procedure = procedure;
+        this.invokable = procedure;
     }
-    public Invokable getProcedure() {
-        return procedure;
+    @Override
+    public Object invoke(Object... args) {
+        return invoke( args );
     }
 
     @Override
@@ -116,7 +117,7 @@ public class SchemeSequence implements MetroSequence, ReadableSchemeSequence {
 //      buf.humanize( 0.0d, 3 );
         boolean result = false;
         try {
-            result = scheme2buf(metro, track, procedure, buf);
+            result = scheme2buf(metro, track, invokable, buf);
         } catch ( RuntimeException e ) {
             System.err.println(e );
             LOGGER.log(Level.SEVERE, "", e);

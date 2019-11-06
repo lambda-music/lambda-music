@@ -42,7 +42,7 @@ public interface MetroMidiEvent extends Comparable<MetroMidiEvent> {
     void      moveMidiOffset( int offset );
 
     MetroPort getPort();
-    void      setPort( MetroPort outputPort );
+    void      setPort( MetroPort port );
     
     byte[]    getMidiData();
     void      setMidiData( byte[] midiData );

@@ -9,6 +9,8 @@ public class SchemeBufferedMidiReceiver implements MetroBufferedMidiReceiver<LLi
     public static SchemeBufferedMidiReceiver getInstance() {
         return INSTANCE;
     }
+    private SchemeBufferedMidiReceiver() {
+    }
     @Override
     public LList error(double offset, MetroPort port, String message) {
         return pulsar.PulsarMidiNoteListParsers.PARSER_ERROR.error(offset, port, message );

@@ -57,8 +57,8 @@ public class DefaultMetroEventMidiEvent extends DefaultMetroEvent implements Met
         return outputPort;
     }
     @Override
-    public void setPort(MetroPort outputPort) {
-        this.outputPort = outputPort;
+    public void setPort(MetroPort port) {
+        this.outputPort = port;
     }
 
     byte[] midiData;
