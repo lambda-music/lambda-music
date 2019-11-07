@@ -20,6 +20,7 @@
 
 package pulsar;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -74,7 +75,7 @@ public abstract class NoteListParserElement {
      * {@link NoteListParser#parseNote(Metro, MetroTrack, MetroEventBuffer, boolean, gnu.lists.AbstractSequence) }
      * </li>
      * <li>
-     * {@link NoteListParser#parse(Metro, MetroTrack, gnu.lists.AbstractSequence, MetroBufferedMidiReceiver, boolean) }
+     * {@link NoteListParser#parse(Metro, MetroTrack, Collection, MetroBufferedMidiReceiver, boolean) }
      * </li>
      * </ul>
      * 

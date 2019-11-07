@@ -33,9 +33,48 @@ public interface MetroMidiEvent extends Comparable<MetroMidiEvent> {
     public static final Comparator<? super MetroMidiEvent> COMPARATOR = new Comparator<MetroMidiEvent>() {
         @Override
         public int compare(MetroMidiEvent o1, MetroMidiEvent o2) {
-            return o1.compareTo( o2 );
+            return MetroMidiEvent.compare( o1, o2 );
+//            return o1.compareTo( o2 );
         }
     };
+    
+    public static int compare( MetroMidiEvent o1, MetroMidiEvent o2 ) {
+        int of1 = o1.getMidiOffset();
+        int of2 = o2.getMidiOffset();
+        if ( of1 != of2 ) {
+            if ( of1 < of2 ) {
+                return -1;
+            } else {
+                return 1;
+            }
+        }
+        
+        byte[] b1 = o1.getMidiData();
+        byte[] b2 = o2.getMidiData();
+        
+        byte m1_channel = (byte) ( 0b01111 & b1[0] );
+        byte m2_channel = (byte) ( 0b01111 & b2[0] );
+        if ( m1_channel != m2_channel ) {
+            if ( m1_channel < m2_channel ) {
+                return -1;
+            } else {
+                return 1;
+            }
+        }
+        
+        byte m1_status = (byte) ( 0b011110000 & b1[0] );
+        byte m2_status = (byte) ( 0b011110000 & b2[0] );
+        if ( m1_status != m2_status ) {
+            // 0b1000xxxx == Note Off
+            // 0b1001xxxx == Note On
+            if ( m1_status == 0b10010000 )
+                return -1;
+            else 
+                return 1;
+        }
+        
+        return 0;
+    }
 
     int       getMidiOffset();
     void      setMidiOffset( int midiOffset );

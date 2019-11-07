@@ -59,7 +59,7 @@ public class MetroSequenceDirectRecorder implements MetroSequence, MetroLock {
     private Iterator<MetroMidiFrame> player = null;
 
     @Override
-    public void processDirect(Metro metro, int totalCursor, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
+    public void processDirect(Metro metro, int nframes, int totalCursor, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
         switch ( this.mode ) {
             case PLAY:
                 if ( player == null ) {

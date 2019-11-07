@@ -27,7 +27,6 @@ import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -874,7 +873,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
             synchronized ( this.getMetroLock() ) {
                 if ( 0 < this.inputMidiEventList.size() )
                     for ( MetroTrack track : this.tracks ) {
-                        track.sequence.processDirect( this, track.totalCursor, this.inputMidiEventList, this.outputMidiEventList );
+                        track.sequence.processDirect( this, nframes, track.totalCursor, this.inputMidiEventList, this.outputMidiEventList );
                     }
                 
                 if ( true )
@@ -883,11 +882,13 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
                     }
                 
                 // sort the every event 
-                this.outputMidiEventList.sort( (Comparator) MetroEvent.BAR_OFFSET_COMPARATOR );
+                this.outputMidiEventList.sort( MetroMidiEvent.COMPARATOR );
                 
                 if ( ! this.outputMidiEventList.isEmpty() )
                     if ( DEBUG ) logInfo( this.outputMidiEventList.toString() );
 
+//                logInfo( "output count : "+ this.outputMidiEventList.size() );
+                
                 // output the events
                 for ( MetroMidiEvent e : this.outputMidiEventList ) {
                     JackMidi.eventWrite(

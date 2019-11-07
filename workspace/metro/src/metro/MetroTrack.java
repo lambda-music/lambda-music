@@ -428,14 +428,15 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
                 int actualNextCursor = nextCursor    - cursorOffset;
                 
                 boolean found= false;
-                for ( Iterator<MetroEvent> ie = buf.iterator(); ie.hasNext();  ) {
+                for ( Iterator<MetroEvent> ie = buf.getMetroEventList().iterator(); ie.hasNext();  ) {
                     MetroEvent e = ie.next();
                     
                     if ( e.isBetweenInFrames( actualCursor, actualNextCursor ) ) {
                         found = true;
-                        MetroMidiEvent me = e.process( metro, actualCursor );
-                        if ( me != null )
-                            result.add( me );
+                        e.process( metro, actualCursor );
+                        if ( e instanceof MetroMidiEvent ) {
+                            result.add( (MetroMidiEvent)e );
+                        }
                     } else {
                         if ( found ) // SEE COMMENT_A (Fri, 02 Aug 2019 19:20:40 +0900)
                             break;
@@ -645,7 +646,7 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
                 if ( this.endingDone ) {
                     if ( DEBUG )
                         logInfo( "offerNewBuffer(): endingDone is true" );
-                    MetroEventBuffer buf = new MetroEventBuffer();
+                    MetroEventBuffer buf = DefaultMetroEventBuffer.create();
                     buf.setLength( 1.0 );
                     buf.prepare( barLengthInFrames, true );
                     this.buffers.offer( buf );
@@ -655,7 +656,7 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
                         logInfo( "offerNewBuffer(" + name + ") setting true endingDone " );
                     this.endingDone = true;
 
-                    MetroEventBuffer buf = new MetroEventBuffer();
+                    MetroEventBuffer buf = DefaultMetroEventBuffer.create();
                     buf.exec( this.endingLength , new Runnable() {
                         @Override
                         public void run() {
@@ -677,27 +678,27 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
                 
             } else {
 //              logInfo( "offerNewBuffer:normal (" + this.name  + ")");
-                MetroEventBuffer buf = new MetroEventBuffer();
-                boolean result = this.sequence.processBuffered( metro, this, buf );
+                MetroEventBuffer buf = DefaultMetroEventBuffer.create();
+                this.sequence.processBuffered( metro, this, buf );
                 buf.prepare( barLengthInFrames, true );
 
                 if ( DEBUG && ( buf.size() >0 ) )
-                    buf.dump();
+                    logInfo( buf.dump("") );
                 
                 this.buffers.offer( buf );
                 
-                if ( result ) {
-                    if ( DEBUG )
-                        logInfo( "offerNewBuffer(" +name + ") CONTINUE" );
-                } else {
+                if ( buf.endCalled() ) {
                     if ( DEBUG )
                         logInfo( "offerNewBuffer(" +name + ") ENDING started");
                     this.ending = true;
                     this.endingLength = buf.getActualLength();
                     if ( this.endingLength < 1 )
                         this.endingLength = 1;
+                    // buf.dump();
+                } else {
+                    if ( DEBUG )
+                        logInfo( "offerNewBuffer(" +name + ") CONTINUE" );
                 }
-                // buf.dump();
             }
         }
     }

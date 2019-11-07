@@ -24,6 +24,9 @@ package metro;
  * @author Ats Oka
  */
 public interface MetroBufferedMidiReceiver<T> {
+    // system
+    public boolean endCalled();
+    public T end();
     public T error( double offset, MetroPort port, String message );
 
     // basic 

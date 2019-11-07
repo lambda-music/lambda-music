@@ -11,11 +11,23 @@ public class SchemeBufferedMidiReceiver implements MetroBufferedMidiReceiver<LLi
     }
     private SchemeBufferedMidiReceiver() {
     }
+    // system
+    private boolean endCalled=false;
+    @Override
+    public boolean endCalled() {
+        return endCalled;
+    }
+    @Override
+    public LList end() {
+        this.endCalled = true;
+        return null;
+    }
     @Override
     public LList error(double offset, MetroPort port, String message) {
         return pulsar.PulsarMidiNoteListParsers.PARSER_ERROR.error(offset, port, message );
     }
 
+    // basic
     @Override
     public LList noteOn(double offset, MetroPort port, int channel, int note, double velocity) {
         return pulsar.PulsarMidiNoteListParsers.PARSER_NOTE_ON.noteOn(offset, port, channel, note, velocity);

@@ -22,7 +22,7 @@ package metro;
 
 import java.util.Arrays;
 
-public class DefaultMetroEventMidiEvent extends DefaultMetroEvent implements MetroMidiEvent {
+public class DefaultMetroEventMidiEvent extends DefaultMetroEvent implements MetroMidiEvent, MetroEvent {
     public DefaultMetroEventMidiEvent( String id, double offset, MetroPort outputPort, byte[] data ) {
         super( id, offset );
         this.outputPort = outputPort;
@@ -72,9 +72,8 @@ public class DefaultMetroEventMidiEvent extends DefaultMetroEvent implements Met
     }
     
     @Override
-    public MetroMidiEvent process(Metro metro, int cursor) {
+    public void process(Metro metro, int cursor) {
         calcMidiOffset( cursor );
-        return this;
     }
     
 //    @Override

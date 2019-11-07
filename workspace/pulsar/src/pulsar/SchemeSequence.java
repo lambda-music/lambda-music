@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import gnu.lists.AbstractSequence;
 import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
@@ -36,7 +35,6 @@ import metro.MetroMidiEvent;
 import metro.MetroSequence;
 import metro.MetroTrack;
 import pulsar.lib.scheme.SafeProcedureN;
-import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.Invokable;
 
 public class SchemeSequence implements MetroSequence, SchemeSequenceReadable, Invokable {
@@ -103,7 +101,7 @@ public class SchemeSequence implements MetroSequence, SchemeSequenceReadable, In
     }
 
     @Override
-    public void processDirect( Metro metro, int totalCursor, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
+    public void processDirect( Metro metro, int nframes, int totalCursor, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
         // out.addAll( in ); TODO ******************************
 //        MetroMidi.receiveMidiMessage( MetroMidiReceiver.LoggingToError.getInstance(), in );
 //        System.err.println( "in.size()" + in.size());
@@ -117,29 +115,14 @@ public class SchemeSequence implements MetroSequence, SchemeSequenceReadable, In
 //      buf.humanize( 0.0d, 3 );
         boolean result = false;
         try {
-            result = scheme2buf(metro, track, invokable, buf);
+            result = PulsarNoteListParser.invokable2buf(metro, track, invokable, buf);
         } catch ( RuntimeException e ) {
             System.err.println(e );
             LOGGER.log(Level.SEVERE, "", e);
         }
         return result;
     }
-    private static final NoteListParser PARSER = PulsarNoteListParser.getInstance();
-    public static boolean scheme2buf( Metro metro, MetroTrack track, Invokable procedure, MetroEventBuffer buf) {
-        SchemeSecretary.initializeSchemeForCurrentThreadStatic( ((Pulsar)metro).getSchemeSecretary().getExecutive() );
-        ((Pulsar)metro).threadInializer.run();
 
-        
-        // Call the invokable to get a note list of the next measure.
-        AbstractSequence<Object> pattern = (AbstractSequence<Object>)procedure.invoke();
-        
-        // Parse the retrieved list to execute.
-        
-//      return SchemeNoteParser0.parse(metro, scheme, pattern, buf, true );
-//      return SchemeNoteParser1.parse(metro, scheme, pattern, buf, true );
-//      return PulsarNoteParser2.parse(metro, track, pattern, buf, true );
-        return PARSER.parse( metro, track, pattern, buf, true );
-    }
     @Override
     public LList readMusic() {
         throw new UnsupportedOperationException();

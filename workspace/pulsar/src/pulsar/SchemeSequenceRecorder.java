@@ -15,11 +15,11 @@ import gnu.mapping.Symbol;
 import metro.Metro;
 import metro.MetroEventBuffer;
 import metro.MetroMidiEvent;
-import metro.MetroMidiMessageGen;
-import metro.MetroMidiReceiverBufferer;
 import metro.MetroPort;
 import metro.MetroSequence;
 import metro.MetroTrack;
+import metro.SimpleMetroEventBuffer;
+import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.Invokable;
 
 
@@ -36,20 +36,20 @@ public class SchemeSequenceRecorder implements MetroSequence, SchemeSequenceRead
         return new SchemeSequenceRecorder( inputPorts, outputPorts, recordLength, loop );
     }
 
-    final MetroMidiReceiverBufferer<LList,LList> midi2schemeReceiver;
+    final SchemeSimpleMidiReceiver receiver;
     private List<MetroPort>  inputPorts;
     private List<MetroPort>  outputPorts;
     private double recordLength;
     private boolean loop;
-    private transient LList data = EmptyList.emptyList;
+    private transient LList notations = EmptyList.emptyList;
     private SchemeSequenceRecorder( List<MetroPort> inputPorts, List<MetroPort> outputPorts, double recordLength, boolean loop ) {
         this.inputPorts = inputPorts;
         this.outputPorts = outputPorts;
         this.recordLength = recordLength;
         this.loop = loop;
-        this.midi2schemeReceiver =  SchemeMidiRecorder.create();
+        this.receiver = new SchemeSimpleMidiReceiver(); 
         if ( 0 < outputPorts.size() )
-            this.midi2schemeReceiver.setPort( outputPorts.get(0) );
+            this.receiver.setPort( outputPorts.get(0) );
     }
     public List<MetroPort> getInputPorts() {
         return inputPorts;
@@ -57,12 +57,14 @@ public class SchemeSequenceRecorder implements MetroSequence, SchemeSequenceRead
     public List<MetroPort> getOutputPorts() {
         return outputPorts;
     }
+    
+    SimpleMetroEventBuffer eventBuffer = new SimpleMetroEventBuffer();
 
     static final Procedure reverse = (Procedure) gnu.kawa.slib.srfi1.reverse.get();
     @Override
     public LList readMusic() {
         try {
-            return (LList)reverse.apply1( data );
+            return (LList)reverse.apply1( notations );
         } catch (Throwable e) {
             throw new RuntimeException( e );
         }
@@ -83,7 +85,7 @@ public class SchemeSequenceRecorder implements MetroSequence, SchemeSequenceRead
         this.playing = playing;
     }
     @Override
-    public void processDirect(Metro metro, int totalCursor, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
+    public void processDirect(Metro metro, int nframes, int totalCursor, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
         try {
             int oneBarLengthInFrames = metro.getOneBarLengthInFrames();
             
@@ -98,16 +100,33 @@ public class SchemeSequenceRecorder implements MetroSequence, SchemeSequenceRead
             if ( recording ) {
                 for ( MetroMidiEvent e : in ) {
                     if ( inputPorts.contains( e.getPort() ) ) {
-                        this.midi2schemeReceiver.setOffset( ( (double)(currentPos + e.getMidiOffset() ) / (double)oneBarLengthInFrames ) );
-                        LList list = MetroMidiMessageGen.receive( midi2schemeReceiver, e.getMidiData() );
-                        this.data = Pair.make( list, data );
+                        LList list = this.receiver.receive( e, currentPos, oneBarLengthInFrames );
+                        this.notations = Pair.make( list, notations );
                         logInfo( list );
                     }
                 }
             }
             
             if ( playing ) {
+                double from = ((double)totalCursor           ) / (double)oneBarLengthInFrames;
+                double to   = ((double)totalCursor + nframes ) / (double)oneBarLengthInFrames;
                 
+                this.eventBuffer.setCursorOffset( totalCursor );
+                this.eventBuffer.setOneBarLengthInFrames( oneBarLengthInFrames );
+                this.eventBuffer.setResultList( out );
+                
+                for ( Object notation : this.notations ) {
+                    Object a = SchemeUtils.alistGet( NoteListCommon.ID_OFFSET , (LList)notation, Boolean.FALSE );
+                    if ( a instanceof Boolean ) {
+                        
+                    } else {
+                        double d = SchemeUtils.toDouble( a );
+                        if ( from <= d && d < to ) {
+                            System.out.println( from );
+                            PulsarNoteListParser.notation2buf( metro, null, this.eventBuffer, (LList)notation);
+                        }
+                    }
+                }
             }
         } catch (JackException e) {
             logError( "could not get bar length : failed to send midi messages.", e );

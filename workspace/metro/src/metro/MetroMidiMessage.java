@@ -140,7 +140,24 @@ public class MetroMidiMessage implements MetroMidiReceiver<byte[]> {
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
+
+    // system
+    private boolean endCalled=false;
+    @Override
+    public boolean endCalled() {
+        return endCalled;
+    }
+    @Override
+    public byte[] end() {
+        this.endCalled = true;
+        return null;
+    }
+    @Override
+    public byte[] error(String string) {
+        return null;
+    }
     
+    // basic
     public byte[] noteOn( int channel, int note, double velocity ) {
         return MetroMidiMessageGen.noteOn (channel, note, velocity );
     }
@@ -416,9 +433,5 @@ public class MetroMidiMessage implements MetroMidiReceiver<byte[]> {
     public static final int CC_RPN_MSB                                = 101;
     public byte[] cc_rpnMsb( int channel, int controlValue ) {
         return MetroMidiMessageGen.controlChange( channel, CC_RPN_MSB, controlValue );
-    }
-    @Override
-    public byte[] error(String string) {
-        return null;
     }
 }

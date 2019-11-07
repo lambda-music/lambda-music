@@ -629,7 +629,7 @@ public class PulsarSpecialNoteListParsers {
         }
         @Override
         void removeTrackProc(Metro metro, MetroTrack track) {
-            track.removeGracefully( );
+            track.removeGracefully();
         }
     }
 
@@ -646,8 +646,8 @@ public class PulsarSpecialNoteListParsers {
                 );
         }
         @Override
-        public
-        boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
+        public boolean parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result) {
+            receiver.end();
             return false;
         }
     }

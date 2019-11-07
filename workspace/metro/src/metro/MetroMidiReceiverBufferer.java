@@ -35,6 +35,16 @@ public abstract class MetroMidiReceiverBufferer<OUTER,INNER> implements MetroMid
 
     protected abstract OUTER convertResult( INNER result );
     
+    private boolean endCalled=false;
+    @Override
+    public boolean endCalled() {
+        return endCalled;
+    }
+    @Override
+    public OUTER end() {
+        this.endCalled = true;
+        return convertResult( receiver.end() );
+    }
     public OUTER error(String string) {
         return convertResult( receiver.error( offset, port, string ));
     }

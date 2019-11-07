@@ -28,8 +28,11 @@ package metro;
  * @param <T>
  */
 public interface MetroMidiReceiver<T> {
-    // basic
+    // system
+    public boolean endCalled();
+    public T end();
     public T error( String string );
+    // basic
     public T noteOn(int channel, int note, double velocity );
     public T noteOn(int channel, int note, int velocity );
     public T noteOff(int channel, int note, double velocity);
@@ -110,6 +113,16 @@ public interface MetroMidiReceiver<T> {
     
     static abstract class Default<T> implements MetroMidiReceiver<T> {
         protected abstract T defaultValue();
+        private boolean endCalled=false;
+        @Override
+        public boolean endCalled() {
+            return endCalled;
+        }
+        @Override
+        public T end() {
+            this.endCalled = true;
+            return defaultValue();
+        }
         @Override
         public T error(String string) {
             return defaultValue();
@@ -409,6 +422,16 @@ public interface MetroMidiReceiver<T> {
     
     static abstract class Formatter<T> implements MetroMidiReceiver<T> {
         protected abstract T format( String method, String params, Object ... args );
+        private boolean endCalled=false;
+        @Override
+        public boolean endCalled() {
+            return endCalled;
+        }
+        @Override
+        public T end() {
+            this.endCalled = true;
+            return format("end" , "" );
+        }
         @Override
         public T error(String string) {
             return format("error" , "String string", string );

@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import gnu.lists.AbstractSequence;
 import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Symbol;
@@ -190,8 +189,8 @@ public class NoteListParser {
      * @see pulsar.NoteListParserElement#parseEvent(Metro, MetroTrack,
      *      MetroBufferedMidiReceiver, Map, boolean)
      */
-    public boolean parse( Metro metro, MetroTrack track, AbstractSequence<Object> inputList, MetroBufferedMidiReceiver receiver, boolean result ) {
-        // This is it.
+    public <T> boolean parse( Metro metro, MetroTrack track, Collection<Object> inputList, MetroBufferedMidiReceiver<T> receiver, boolean result ) {
+        // This is it. See comment above.
         Pulsar.currentObject.set( (Pulsar) metro );
         
         try {
@@ -199,8 +198,7 @@ public class NoteListParser {
                 for ( Iterator<Object> i = inputList.iterator(); i.hasNext(); ) {
                     Object obj = i.next();
                     if ( obj instanceof LList ) {
-                        LList record = (LList)obj;
-                        result = parseNote( metro, track, receiver, result, record );
+                        result = parseNotationProc( metro, track, (LList)obj, receiver, result );
                     } else if ( obj instanceof Boolean ) {
                         continue;
                     } else {
@@ -220,15 +218,29 @@ public class NoteListParser {
         return result;
     }
     
+    public <T> boolean parseNotation( Metro metro, MetroTrack track, LList notation, MetroBufferedMidiReceiver<T> receiver, boolean result ) {
+        // This is it. See comment above.
+        Pulsar.currentObject.set( (Pulsar) metro );
+        try {
+            return parseNotationProc( metro, track, notation, receiver, result );
+        } catch ( RuntimeException e ) {
+            try {
+                logWarn( SchemePrinter.printSchemeValue(notation) );
+            } catch (Throwable e1) {
+                e1.printStackTrace();
+            }
+        }
+        return result;
+    }
 
-    private boolean parseNote( Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, boolean result, LList list ) {
-        NoteListMap           map    = NoteListMap.createAlist( list );
+    private <T> boolean parseNotationProc( Metro metro, MetroTrack track, LList notation, MetroBufferedMidiReceiver<T> receiver, boolean result ) {
+        NoteListMap           map    = NoteListMap.createAlist( notation );
         Symbol                type   = map.get( ID_TYPE, SYMBOL_THRU, SYMBOL_NULL );
         if ( type == null ) {
             logError( "Error : notation type was not specified.", new Exception() );
             return result;
         } else {
-            NoteListParserElement parser = get( type );
+            NoteListParserElement parser = this.get( type );
             if ( parser == null ) {
                 logError( "Error : Unknown notation type was given. (" +  type + ")", new Exception() );
                 return result;

@@ -6,7 +6,22 @@ public abstract  class MetroBufferedToNonBufferedMidiReceiver<OUTER,INNER> imple
         this.receiver = receiver;
     }
     public abstract OUTER convertResult( String id, double offset, MetroPort outputPort, INNER data );
-    
+
+    // system
+    private boolean endCalled=false;
+    @Override
+    public boolean endCalled() {
+        return endCalled;
+    }
+    @Override
+    public OUTER end() {
+        this.endCalled = true;
+        return this.convertResult( "end", 0, null, this.receiver.end() );
+    }
+    public OUTER error( double offset, MetroPort port, String string) {
+        return this.convertResult( "error", offset, port, receiver.error(string));
+    }
+
     // basic 
     public OUTER noteOn( double offset, MetroPort port, int channel, int note, double velocity) {
         return this.convertResult( "noteOn", offset, port, receiver.noteOn(channel, note, velocity));
@@ -223,8 +238,5 @@ public abstract  class MetroBufferedToNonBufferedMidiReceiver<OUTER,INNER> imple
     }
     public OUTER cc_rpnMsb( double offset, MetroPort port, int channel, int controlValue) {
         return this.convertResult( "cc_rpnMsb", offset, port, receiver.cc_rpnMsb(channel, controlValue));
-    }
-    public OUTER error( double offset, MetroPort port, String string) {
-        return this.convertResult( "error", offset, port, receiver.error(string));
     }
 }

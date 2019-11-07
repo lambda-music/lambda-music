@@ -20,6 +20,15 @@
 
 package pulsar;
 
+import java.util.Collection;
+
+import gnu.lists.LList;
+import metro.Metro;
+import metro.MetroBufferedMidiReceiver;
+import metro.MetroTrack;
+import pulsar.lib.scheme.scretary.SchemeSecretary;
+import pulsar.lib.secretary.Invokable;
+
 public class PulsarNoteListParser extends NoteListParser {
     private static final PulsarNoteListParser INSTANCE = new PulsarNoteListParser();
     private PulsarNoteListParser() {
@@ -29,4 +38,30 @@ public class PulsarNoteListParser extends NoteListParser {
     public static final PulsarNoteListParser getInstance() {
         return INSTANCE;
     }
+    
+    // MOVED FROM SchemeSequence (Wed, 06 Nov 2019 17:07:05 +0900)
+    public static <T> boolean invokable2buf( Metro metro, MetroTrack track, Invokable invokable, MetroBufferedMidiReceiver<T> buf) {
+        SchemeSecretary.initializeSchemeForCurrentThreadStatic( ((Pulsar)metro).getSchemeSecretary().getExecutive() );
+        ((Pulsar)metro).threadInializer.run();
+        
+        // Call the invokable to get a note list of the next measure.
+        Collection<Object> notations = (Collection<Object>)invokable.invoke();
+        
+        // Parse the retrieved list to execute.
+        return notations2buf( metro, track, buf, notations );
+    }
+
+    // MOVED FROM SchemeSequence (Wed, 06 Nov 2019 17:07:05 +0900)
+    public static <T> boolean notations2buf(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buf, Collection<Object> notations ) {
+//      return SchemeNoteParser0.parse(metro, scheme, pattern, buf, true );
+//      return SchemeNoteParser1.parse(metro, scheme, pattern, buf, true );
+//      return PulsarNoteParser2.parse(metro, track, pattern, buf, true );
+        return INSTANCE.parse( metro, track, notations, buf, true );
+    }
+
+    // MOVED FROM SchemeSequence (Wed, 06 Nov 2019 17:07:05 +0900)
+    public static <T> boolean notation2buf(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buf, LList notation ) {
+        return INSTANCE.parseNotation( metro, track, notation, buf, true );
+    }
+
 }
