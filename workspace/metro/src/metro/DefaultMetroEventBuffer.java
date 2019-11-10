@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 
 import org.jaudiolibs.jnajack.JackException;
 
-public class DefaultMetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroMidiEvent,byte[]> implements MetroEventBuffer {
+public class DefaultMetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroEvent,byte[]> implements MetroEventBuffer {
     public static MetroEventBuffer create() {
         return new DefaultMetroEventBuffer();
     }
@@ -101,7 +101,7 @@ public class DefaultMetroEventBuffer extends MetroBufferedToNonBufferedMidiRecei
     }
     
     @Override
-    public final MetroMidiEvent convertResult( String id, double offset, MetroPort outputPort, byte[] data ) {
+    public final MetroEvent convertResult( String id, double offset, MetroPort outputPort, byte[] data ) {
 //        logInfo( "midiEvent:" + SchemeUtils.bytesToString( data ) );
         // Create an event object.
         DefaultMetroEventMidiEvent event = new DefaultMetroEventMidiEvent( id, offset, outputPort, data );

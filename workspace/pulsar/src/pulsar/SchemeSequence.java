@@ -30,7 +30,8 @@ import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 import metro.Metro;
-import metro.MetroEventBuffer;
+import metro.MetroBufferedMidiReceiver;
+import metro.MetroEvent;
 import metro.MetroMidiEvent;
 import metro.MetroSequence;
 import metro.MetroTrack;
@@ -111,11 +112,11 @@ public class SchemeSequence implements MetroSequence, SchemeSequenceReadable, In
 
 
     @Override
-    public void processBuffered( Metro metro, MetroTrack track, MetroEventBuffer buf ) {
+    public void processBuffered( Metro metro, MetroTrack track, MetroBufferedMidiReceiver<MetroEvent> receiver ) {
         // System.out.println("Metro.sequence.new MetroSequence() {...}.initBuffer()" );
 //      buf.humanize( 0.0d, 3 );
         try {
-            PulsarNoteListParser.invokable2buf(metro, track, invokable, buf, NullList.NULL_LIST ) ;
+            PulsarNoteListParser.invokable2receiver(metro, track, invokable, receiver, NullList.NULL_LIST ) ;
         } catch ( RuntimeException e ) {
             System.err.println(e );
             LOGGER.log(Level.SEVERE, "", e);

@@ -163,7 +163,7 @@ public class NoteListParser {
      * This method parses the specified note list. 
      * 
      * Refer
-     * {@linkplain pulsar.SchemeSequence#processBuffered(Metro, MetroTrack, MetroEventBuffer) processBuffered}
+     * {@linkplain pulsar.SchemeSequence#processBuffered(Metro, MetroTrack, MetroBufferedMidiReceiver) processBuffered}
      * to see how this method is called.
      * 
      * (Fri, 01 Nov 2019 11:24:28 +0900)

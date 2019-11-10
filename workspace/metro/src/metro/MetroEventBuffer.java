@@ -29,7 +29,7 @@ import org.jaudiolibs.jnajack.JackException;
  * 
  * @author Ats Oka
  */
-public interface MetroEventBuffer extends MetroBufferedMidiReceiver<MetroMidiEvent>, MetroDumper {
+public interface MetroEventBuffer extends MetroBufferedMidiReceiver<MetroEvent>, MetroDumper {
     double getLength();
     void setLength(double length);
     int getLengthInFrames();

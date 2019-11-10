@@ -97,6 +97,6 @@ public class MetroSequenceDirectRecorder implements MetroSequence, MetroLock {
     }
 
     @Override
-    public void processBuffered( Metro metro, MetroTrack track, MetroEventBuffer buf ) {
+    public void processBuffered( Metro metro, MetroTrack track, MetroBufferedMidiReceiver<MetroEvent> receiver ) {
     }
 }
