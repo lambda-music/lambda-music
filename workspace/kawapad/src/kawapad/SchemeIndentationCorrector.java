@@ -29,7 +29,7 @@ import java.util.List;
  * October 3, 2018 at 9:52:28 PM
  * @author ats
  */
-public class SchemePrettifier {
+public class SchemeIndentationCorrector {
     static enum TokenType { BEGIN, END, ID }
     static class Token {
         TokenType type;
@@ -121,7 +121,7 @@ public class SchemePrettifier {
         }
     }
     
-    public static String prettify( Collection<String> lispWords, String text ) {
+    public static String correctIndentation( Collection<String> lispWords, String text ) {
         /*
          * In this function, we always presume that ( lines.length == tokenizedLines ).
          */
@@ -299,15 +299,15 @@ public class SchemePrettifier {
 
         List<String> lispWords = Arrays.asList("lambda" );
         
-        System.out.println( prettify( lispWords, "(lambda()\nhello world \n foo)" ));
+        System.out.println( correctIndentation( lispWords, "(lambda()\nhello world \n foo)" ));
 
-        System.out.println( prettify( lispWords, "(lambda args\nhello world \n foo)" ) );
-        System.out.println( prettify( lispWords, "(lambda* args\nhello world \n foo)" ) );
-        System.out.println( prettify( lispWords, "(lambda*  () aa \nhello world \n foo)" ) );
-        System.out.println( prettify( lispWords, "(\n'foo\n 'bar\n 'bum\n )" ) );
-        System.out.println( prettify( lispWords, "('foo\n 'bar\n 'bum\n )" ) );
-        System.out.println( prettify( lispWords, "(\n(\n(\n(\n(\n)\n)\n)\n)\n)\n" ) );
-        System.out.println( prettify( lispWords, "(\n(\n(\n(\n(\n)\n)\n)\n)\n)\n         )\n         )\n(\n(\n" ) );
+        System.out.println( correctIndentation( lispWords, "(lambda args\nhello world \n foo)" ) );
+        System.out.println( correctIndentation( lispWords, "(lambda* args\nhello world \n foo)" ) );
+        System.out.println( correctIndentation( lispWords, "(lambda*  () aa \nhello world \n foo)" ) );
+        System.out.println( correctIndentation( lispWords, "(\n'foo\n 'bar\n 'bum\n )" ) );
+        System.out.println( correctIndentation( lispWords, "('foo\n 'bar\n 'bum\n )" ) );
+        System.out.println( correctIndentation( lispWords, "(\n(\n(\n(\n(\n)\n)\n)\n)\n)\n" ) );
+        System.out.println( correctIndentation( lispWords, "(\n(\n(\n(\n(\n)\n)\n)\n)\n)\n         )\n         )\n(\n(\n" ) );
 
     }
 }

@@ -525,7 +525,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         }
     }
     public static final String calculateIndentSize( String text, int pos, Collection<String> lispWords ) {
-        return SchemePrettifier.calculateIndentSize( text, pos, lispWords );
+        return SchemeIndentationCorrector.calculateIndentSize( text, pos, lispWords );
     }
     
     
@@ -2419,8 +2419,8 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         }
     };
     
-    private class PrettifyAction extends TextAction2 {
-        public PrettifyAction(String name) {
+    private class IndentationCorrectorAction extends TextAction2 {
+        public IndentationCorrectorAction(String name) {
             super( name );
         }
         @Override
@@ -2429,24 +2429,21 @@ public class Kawapad extends JTextPane implements MenuInitializer {
             formatProc( kawapad, new TextFilter() {
                 @Override
                 String process(String text) {
-                    return prettify( kawapad, text );
+                    return correctIndentation( kawapad, text );
                 }
             });
         }
     }
     
-    public static final String prettify( Collection<String> lispWords, String text  ) {
-        return SchemePrettifier.prettify( lispWords, text );
-    }
-    public static final String prettify( Kawapad kawapad, String text ) {
-        return prettify( kawapad.getLispKeywordList(), text );
+    public static final String correctIndentation( Kawapad kawapad, String text ) {
+        return SchemeIndentationCorrector.correctIndentation( kawapad.getLispKeywordList(), text );
     }
 
-    public static final String KAWAPAD_PRETTIFY = "kawapad-prettify";
+    public static final String KAWAPAD_INDENTATION_CORRECTOR = "kawapad-indentation-corrector";
 
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
-    public final Action PRETTIFY_ACTION = new PrettifyAction( KAWAPAD_PRETTIFY ) {
+    public final Action INDENTATION_CORRECTOR_ACTION = new IndentationCorrectorAction( KAWAPAD_INDENTATION_CORRECTOR ) {
         {
             putValue( Action2.CAPTION, "Correct Indentation" );
             putValue( Action.MNEMONIC_KEY , (int) 'i' );
@@ -2782,20 +2779,20 @@ public class Kawapad extends JTextPane implements MenuInitializer {
             }, "unregister-event-handler");
 
             
-            // deprecated? 
             SchemeUtils.defineVar(env, new Procedure1() {
                 @Override
                 public Object apply1(Object arg1 ) throws Throwable {
-                    return Kawapad.prettify( getCurrent(), SchemeUtils.anyToString(SchemePrinter.printSchemeValue(arg1)));
+                    return Kawapad.correctIndentation( getCurrent(), SchemePrinter.printSchemeValue( arg1 ));
                 }
-            }, "pretty-print");
-            // deprecated?
-            SchemeUtils.defineVar(env, new Procedure1() {
-                @Override
-                public Object apply1(Object arg1 ) throws Throwable {
-                    return Kawapad.prettify( getCurrent(), SchemeUtils.anyToString(arg1));
-                }
-            }, "prettify");
+            }, "prettify", "pre" );
+            
+//            // deprecated?
+//            SchemeUtils.defineVar(env, new Procedure1() {
+//                @Override
+//                public Object apply1(Object arg1 ) throws Throwable {
+//                    return Kawapad.correctIndentation( getCurrent(), SchemeUtils.anyToString(arg1));
+//                }
+//            }, "prettify" );
 
             KawapadTextualIncrement.initScheme( env );
             
@@ -3429,7 +3426,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         edit.add( new JMenuItem( kawapad.getActionMap().get( DefaultEditorKit.deletePrevCharAction )  ));
         edit.add( new JMenuItem( kawapad.SHIFT_INDENT_RIGHT_ACTION ) );
         edit.add( new JMenuItem( kawapad.SHIFT_INDENT_LEFT_ACTION ) );
-        edit.add( new JMenuItem( kawapad.PRETTIFY_ACTION ) );
+        edit.add( new JMenuItem( kawapad.INDENTATION_CORRECTOR_ACTION ) );
         
         navigate.add( new JMenuItem( kawapad.PARENTHESIS_EXPAND_SELECTION_ACTION ) );
         navigate.add( new JMenuItem( kawapad.PARENTHESIS_SHRINK_SELECTION_DYNAMICALLY_ACTION ) );
