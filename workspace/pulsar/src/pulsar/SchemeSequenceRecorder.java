@@ -19,6 +19,7 @@ import metro.MetroPort;
 import metro.MetroSequence;
 import metro.MetroTrack;
 import metro.SimpleMetroEventBuffer;
+import pulsar.lib.NullList;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.Invokable;
 
@@ -123,7 +124,7 @@ public class SchemeSequenceRecorder implements MetroSequence, SchemeSequenceRead
                         double d = SchemeUtils.toDouble( a );
                         if ( from <= d && d < to ) {
                             System.out.println( from );
-                            PulsarNoteListParser.notation2buf( metro, null, this.eventBuffer, (LList)notation);
+                            PulsarNoteListParser.notation2buf( metro, null, this.eventBuffer, (LList)notation, NullList.NULL_LIST );
                         }
                     }
                 }
@@ -134,8 +135,7 @@ public class SchemeSequenceRecorder implements MetroSequence, SchemeSequenceRead
     }
 
     @Override
-    public boolean processBuffered(Metro metro, MetroTrack track, MetroEventBuffer buf) {
-        return true;
+    public void processBuffered(Metro metro, MetroTrack track, MetroEventBuffer buf) {
     }
     
     static final Symbol recordingOn  = Symbol.valueOf( "rec-on" );

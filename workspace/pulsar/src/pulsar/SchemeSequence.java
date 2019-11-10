@@ -34,6 +34,7 @@ import metro.MetroEventBuffer;
 import metro.MetroMidiEvent;
 import metro.MetroSequence;
 import metro.MetroTrack;
+import pulsar.lib.NullList;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.secretary.Invokable;
 
@@ -110,17 +111,15 @@ public class SchemeSequence implements MetroSequence, SchemeSequenceReadable, In
 
 
     @Override
-    public boolean processBuffered( Metro metro, MetroTrack track, MetroEventBuffer buf ) {
+    public void processBuffered( Metro metro, MetroTrack track, MetroEventBuffer buf ) {
         // System.out.println("Metro.sequence.new MetroSequence() {...}.initBuffer()" );
 //      buf.humanize( 0.0d, 3 );
-        boolean result = false;
         try {
-            result = PulsarNoteListParser.invokable2buf(metro, track, invokable, buf);
+            PulsarNoteListParser.invokable2buf(metro, track, invokable, buf, NullList.NULL_LIST ) ;
         } catch ( RuntimeException e ) {
             System.err.println(e );
             LOGGER.log(Level.SEVERE, "", e);
         }
-        return result;
     }
 
     @Override

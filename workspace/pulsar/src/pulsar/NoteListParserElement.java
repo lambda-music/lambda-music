@@ -90,14 +90,9 @@ public abstract class NoteListParserElement {
      * @param map
      *            An instance of {@link Map} that contains the contents of Scheme's
      *            association list.
+     * @param result TODO
      * @param result
      *            The result of the previous parser element.
-     * @return Boolean value <code>true</code> if the current measure should
-     *         continue to play; otherwise return <code>false</code>.
-     *         <p>
-     *         If the parser does not have specific opinion whether it should
-     *         continue or not, returning the value of <code>result</code> parameter
-     *         is sufficient.
      */
-    public abstract boolean parseEvent( Metro metro, MetroTrack track, MetroBufferedMidiReceiver receiver, NoteListMap map, boolean result );
+    public abstract <T> void parseEvent( Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> receiver, NoteListMap map, Collection<T> result );
 }

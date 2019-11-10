@@ -40,7 +40,7 @@ public class PulsarNoteListParser extends NoteListParser {
     }
     
     // MOVED FROM SchemeSequence (Wed, 06 Nov 2019 17:07:05 +0900)
-    public static <T> boolean invokable2buf( Metro metro, MetroTrack track, Invokable invokable, MetroBufferedMidiReceiver<T> buf) {
+    public static <T> void invokable2buf( Metro metro, MetroTrack track, Invokable invokable, MetroBufferedMidiReceiver<T> buf, Collection<T> result ) {
         SchemeSecretary.initializeSchemeForCurrentThreadStatic( ((Pulsar)metro).getSchemeSecretary().getExecutive() );
         ((Pulsar)metro).threadInializer.run();
         
@@ -48,20 +48,19 @@ public class PulsarNoteListParser extends NoteListParser {
         Collection<Object> notations = (Collection<Object>)invokable.invoke();
         
         // Parse the retrieved list to execute.
-        return notations2buf( metro, track, buf, notations );
+        notations2buf( metro, track, buf, notations, result );
     }
 
     // MOVED FROM SchemeSequence (Wed, 06 Nov 2019 17:07:05 +0900)
-    public static <T> boolean notations2buf(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buf, Collection<Object> notations ) {
+    public static <T> void notations2buf(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buf, Collection<Object> notations, Collection<T> result ) {
 //      return SchemeNoteParser0.parse(metro, scheme, pattern, buf, true );
 //      return SchemeNoteParser1.parse(metro, scheme, pattern, buf, true );
 //      return PulsarNoteParser2.parse(metro, track, pattern, buf, true );
-        return INSTANCE.parse( metro, track, notations, buf, true );
+        INSTANCE.parse( metro, track, notations, buf, result );
     }
 
     // MOVED FROM SchemeSequence (Wed, 06 Nov 2019 17:07:05 +0900)
-    public static <T> boolean notation2buf(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buf, LList notation ) {
-        return INSTANCE.parseNotation( metro, track, notation, buf, true );
+    public static <T> void notation2buf(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buf, LList notation, Collection<T> result ) {
+        INSTANCE.parseNotation( metro, track, notation, buf, result );
     }
-
 }
