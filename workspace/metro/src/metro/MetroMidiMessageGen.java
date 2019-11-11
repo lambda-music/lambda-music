@@ -241,6 +241,13 @@ public final class MetroMidiMessageGen {
         }; 
     }
     
+    /**
+     * Note that receivers' methods could return null.
+     * 
+     * @param receiver
+     * @param message
+     * @return
+     */
     public static <T> T receive( MetroMidiReceiver<T> receiver, byte[] message ) {
         if ( message == null || message.length == 0 ) {
             return receiver.error( "no data" );

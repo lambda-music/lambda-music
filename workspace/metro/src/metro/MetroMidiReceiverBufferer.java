@@ -46,7 +46,7 @@ public abstract class MetroMidiReceiverBufferer<OUTER,INNER> implements MetroMid
         return convertResult( receiver.end() );
     }
     public OUTER error(String string) {
-        return convertResult( receiver.error( offset, port, string ));
+        return convertResult( receiver.error( offset, port, string ) );
     }
     public OUTER noteOn(int channel, int note, double velocity) {
         return convertResult( receiver.noteOn( offset, port, channel, note, velocity ));

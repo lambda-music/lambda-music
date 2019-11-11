@@ -150,11 +150,11 @@ public class MetroMidiMessage implements MetroMidiReceiver<byte[]> {
     @Override
     public byte[] end() {
         this.endCalled = true;
-        return null;
+        return voidValue( "end" );
     }
     @Override
     public byte[] error(String string) {
-        return null;
+        return voidValue( string );
     }
     
     // basic

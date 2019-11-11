@@ -27,7 +27,7 @@ import java.util.Map;
 import gnu.mapping.Symbol;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
-import metro.MetroEventBuffer;
+import metro.MetroCollector;
 import metro.MetroTrack;
 
 /**
@@ -84,7 +84,7 @@ public abstract class NoteListParserElement {
      * @param track
      *            The instance of the current {@link MetroTrack} which generated the
      *            note.
-     * @param receiver
+     * @param buffer
      *            The instance of the current {@link MetroEventBuffer} to output
      *            into as a result of the processing.
      * @param map
@@ -94,5 +94,5 @@ public abstract class NoteListParserElement {
      * @param result
      *            The result of the previous parser element.
      */
-    public abstract <T> void parseEvent( Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> receiver, NoteListMap map, Collection<T> result );
+    public abstract <T> void parseEvent( Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer, NoteListMap map, MetroCollector<T> result );
 }

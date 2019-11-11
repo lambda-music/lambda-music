@@ -12,7 +12,6 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 public class NullList<E> implements List<E> {
-    @SuppressWarnings("rawtypes")
     public static final List NULL_LIST = new NullList<>();
 
     private final List<E> list = Collections.EMPTY_LIST;

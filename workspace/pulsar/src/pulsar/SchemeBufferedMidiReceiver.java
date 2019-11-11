@@ -22,6 +22,27 @@ public class SchemeBufferedMidiReceiver implements MetroBufferedMidiReceiver<LLi
         this.endCalled = true;
         return null;
     }
+    
+    @Override
+    public LList event(double offset, LList event) {
+        // (Mon, 11 Nov 2019 10:48:35 +0900) currently this method is not used; only for future compatibilities.
+        // return pulsar.PulsarSpecialNoteListParsers.PARSER_EVENT((Runnable) event );
+        // This method cannot be achieved.
+        return null;
+    }
+    @Override
+    public LList exec(double offset, Runnable runnable) {
+        // (Mon, 11 Nov 2019 10:48:35 +0900) currently this method is not used; only for future compatibilities.
+        // This method cannot be achieved.
+        // return pulsar.PulsarSpecialNoteListParsers.PARSER_EXEC.exec( offset, runnable );
+        return null;
+    }
+    @Override
+    public LList length(double length) {
+        // (Mon, 11 Nov 2019 10:48:35 +0900) currently this method is not used; only for future compatibilities.
+        return pulsar.PulsarSpecialNoteListParsers.PARSER_BAR.length( length );
+    }
+    
     @Override
     public LList error(double offset, MetroPort port, String message) {
         return pulsar.PulsarMidiNoteListParsers.PARSER_ERROR.error(offset, port, message );

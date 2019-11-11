@@ -35,6 +35,7 @@ import gnu.lists.LList;
 import gnu.mapping.Symbol;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
+import metro.MetroCollector;
 import metro.MetroMidi;
 import metro.MetroMidi.MetroMidiAllNoteOff;
 import metro.MetroMidi.MetroMidiAllSoundOff;
@@ -144,7 +145,7 @@ public class PulsarMidiNoteListParsers {
         protected MIDI midi;
         protected List<NoteListParserElementParameter> parameters;
         
-//        public abstract boolean parseEvent( Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map  );
+//        public abstract boolean parseEvent( Metro metro, MetroTrack track, MetroEventBuffer<T>  receiver, NoteListMap map  );
         @Override
         public Symbol getShortName() {
             return s( this.midi.getShortName() );
@@ -181,10 +182,10 @@ public class PulsarMidiNoteListParsers {
     public static final MetroNoteParserError PARSER_ERROR = new MetroNoteParserError();
     public static final class MetroNoteParserError extends MidiNoteListParserElement<MetroMidiNoteOn> {
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            result.add( receiver.error( offset, port, "unknown error" ) );
+            result.add( buffer.error( offset, port, "unknown error" ) );
         }
 
         public LList error(double offset, MetroPort port, String message) {
@@ -197,6 +198,8 @@ public class PulsarMidiNoteListParsers {
         }
     }
 
+    //////////////////////////////////////////////////////////////////////////////////////////
+    
     public static final MetroNoteParserNoteOn PARSER_NOTE_ON = new MetroNoteParserNoteOn();
     public static final class MetroNoteParserNoteOn extends MidiNoteListParserElement<MetroMidiNoteOn> {
         {
@@ -208,7 +211,7 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             boolean enabled      = readMapEnabled( map );
             if ( ! enabled )
                 return;
@@ -219,7 +222,7 @@ public class PulsarMidiNoteListParsers {
             int note         = readMapNote( map );  
             double velocity  = readMapVelocity( map );
             
-            result.add( receiver.noteOn( offset, port, channel, note, velocity ) );
+            result.add( buffer.noteOn( offset, port, channel, note, velocity ) );
         }
         public LList noteOn(double offset, MetroPort port, int channel, int note, double velocity) {
             return list(
@@ -255,7 +258,7 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             boolean enabled      = readMapEnabled( map );
             if ( ! enabled )
                 return;
@@ -266,7 +269,7 @@ public class PulsarMidiNoteListParsers {
             int note         = readMapNote( map );  
             double velocity  = readMapVelocity( map );
             
-            result.add( receiver.noteOff( offset, port, channel, note, velocity ) );
+            result.add( buffer.noteOff( offset, port, channel, note, velocity ) );
         }
         public LList noteOff(double offset, MetroPort port, int channel, int note, double velocity) {
             return list(
@@ -302,14 +305,14 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int note         = readMapNote( map );  
             double pressure  = readMapDoubleValue( map );
 
-            result.add( receiver.keyPressure( offset , port, channel, note, pressure ) );
+            result.add( buffer.keyPressure( offset , port, channel, note, pressure ) );
         }
         public LList keyPressure(double offset, MetroPort port, int channel, int note, double pressure) {
             return list(
@@ -345,14 +348,14 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset     = readMapOffset( map );  
             MetroPort port    = readMapPort( map );
             int channel       = readMapChannel( map ); 
             int controlNumber = readMapKey( map ); 
             int controlValue  = readMapIntegerValueDefault0( map ); 
 
-            result.add( receiver.controlChange( offset, port, channel, controlNumber, controlValue ) );
+            result.add( buffer.controlChange( offset, port, channel, controlNumber, controlValue ) );
         }
         public LList controlChange(double offset, MetroPort port, int channel, int controlNumber, int controlValue) {
             return list(
@@ -378,7 +381,7 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map );
@@ -386,7 +389,7 @@ public class PulsarMidiNoteListParsers {
 //            int value        = map.get( ID_VALUE, S2J_INTEGER, DEFAULT_VALUE_INTEGER_0 );
 //            int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.programChange( offset , port, channel, value ) );
+            result.add( buffer.programChange( offset , port, channel, value ) );
         }
         public LList programChange(double offset, MetroPort port, int channel, int programNumber) {
             return list(
@@ -411,13 +414,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             double pressureValue     = readMapDoubleValue( map );
 
-            result.add( receiver.channelPressure( offset , port, channel, pressureValue ) );
+            result.add( buffer.channelPressure( offset , port, channel, pressureValue ) );
         }
         public LList channelPressure(double offset, MetroPort port, int channel, double pressureValue) {
             return list(
@@ -451,13 +454,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset         = readMapOffset( map );  
             MetroPort port        = readMapPort( map );
             int channel           = readMapChannel( map ); 
             double pitchBendValue = readMapDoubleValue( map );
 
-            result.add( receiver.pitchBend( offset , port, channel, pitchBendValue ) );
+            result.add( buffer.pitchBend( offset , port, channel, pitchBendValue ) );
         }
         public LList pitchBend(double offset, MetroPort port, int channel, double pitchBendValue) {
             return list(
@@ -494,12 +497,12 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
 
-            result.add( receiver.cc_allSoundOff( offset , port, channel ) );
+            result.add( buffer.cc_allSoundOff( offset , port, channel ) );
         }
         public LList cc_allSoundOff(double offset, MetroPort port, int channel) {
             return list(
@@ -523,12 +526,12 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
 
-            result.add( receiver.cc_resetAllControllers( offset , port, channel ) );
+            result.add( buffer.cc_resetAllControllers( offset , port, channel ) );
         }
         public LList cc_resetAllControllers(double offset, MetroPort port, int channel) {
             return list(
@@ -552,7 +555,7 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map );
@@ -560,7 +563,7 @@ public class PulsarMidiNoteListParsers {
 //            boolean on       = map.get( ID_VALUE , S2J_BOOLEAN, DEFAULT_VALUE_FALSE );
 //          boolean on       = map.containsKey( ID_VALUE    ) ? SchemeUtils.toBoolean(      map.get(ID_VALUE     ) ) : false; 
 
-            result.add( receiver.cc_localControls( offset , port, channel, on ) );
+            result.add( buffer.cc_localControls( offset , port, channel, on ) );
         }
         public LList cc_localControls(double offset, MetroPort port, int channel, boolean on) {
             return list(
@@ -585,12 +588,12 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
 
-            result.add( receiver.cc_allNoteOff( offset , port, channel ) );
+            result.add( buffer.cc_allNoteOff( offset , port, channel ) );
         }
         public LList cc_allNoteOff(double offset, MetroPort port, int channel) {
             return list(
@@ -614,12 +617,12 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
 
-            result.add( receiver.cc_omniModeOff( offset , port, channel ) );
+            result.add( buffer.cc_omniModeOff( offset , port, channel ) );
         }
         public LList cc_omniModeOff(double offset, MetroPort port, int channel) {
             return list(
@@ -643,12 +646,12 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
 
-            result.add( receiver.cc_omniModeOn( offset , port, channel ) );
+            result.add( buffer.cc_omniModeOn( offset , port, channel ) );
         }
         public LList cc_omniModeOn(double offset, MetroPort port, int channel) {
             return list(
@@ -673,12 +676,12 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
 
-            result.add( receiver.cc_monoModeOn( offset , port, channel ) );
+            result.add( buffer.cc_monoModeOn( offset , port, channel ) );
         }
         public LList cc_monoModeOn(double offset, MetroPort port, int channel) {
             return list(
@@ -702,12 +705,12 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
 
-            result.add( receiver.cc_polyModeOn( offset , port, channel ) );
+            result.add( buffer.cc_polyModeOn( offset , port, channel ) );
         }
         public LList cc_polyModeOn(double offset, MetroPort port, int channel) {
             return list(
@@ -733,14 +736,14 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
 //          int channel      = readMapChannel( map );
             int pos        = readMapIntegerValueDefault0( map );
 //            int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.songPositionPointer( offset , port, pos ) );
+            result.add( buffer.songPositionPointer( offset , port, pos ) );
         }
         public LList songPositionPointer(double offset, MetroPort port, int pos) {
             return list(
@@ -765,14 +768,14 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
 //          int channel      = readMapChannel( map );
             int songNumber        = readMapIntegerValueDefault0( map );
 //            int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.songSelect( offset , port, songNumber ) );
+            result.add( buffer.songSelect( offset , port, songNumber ) );
         }
         public LList songSelect(double offset, MetroPort port, int songNumber) {
             return list(
@@ -796,12 +799,12 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
 //            int channel      = readMapChannel( map ); 
 
-            result.add( receiver.endOfExclusive( offset , port ) );
+            result.add( buffer.endOfExclusive( offset , port ) );
         }
         public LList endOfExclusive(double offset, MetroPort port) {
             return list(
@@ -824,12 +827,12 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
 //            int channel      = readMapChannel( map ); 
 
-            result.add( receiver.clock( offset , port ) );
+            result.add( buffer.clock( offset , port ) );
         }
         public LList clock(double offset, MetroPort port) {
             return list(
@@ -853,12 +856,12 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
 //            int channel      = readMapChannel( map ); 
 
-            result.add( receiver.start( offset , port ) );
+            result.add( buffer.start( offset , port ) );
         }
         public LList start(double offset, MetroPort port) {
             return list(
@@ -881,12 +884,12 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
 //            int channel      = readMapChannel( map ); 
 
-            result.add( receiver.cont( offset , port ) );
+            result.add( buffer.cont( offset , port ) );
         }
         public LList cont(double offset, MetroPort port) {
             return list(
@@ -909,12 +912,12 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
 //            int channel      = readMapChannel( map ); 
 
-            result.add( receiver.stop( offset , port ) );
+            result.add( buffer.stop( offset , port ) );
         }
         public LList stop(double offset, MetroPort port) {
             return list(
@@ -937,12 +940,12 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
 //            int channel      = readMapChannel( map ); 
 
-            result.add( receiver.reset( offset , port ) );
+            result.add( buffer.reset( offset , port ) );
         }
         public LList reset(double offset, MetroPort port) {
             return list(
@@ -965,13 +968,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_bankSelect( offset, port, channel, value ) );
+            result.add( buffer.cc_bankSelect( offset, port, channel, value ) );
         }
         public LList cc_bankSelect(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -995,13 +998,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_modulation( offset, port, channel, value ) );
+            result.add( buffer.cc_modulation( offset, port, channel, value ) );
         }
         public LList cc_modulation(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1026,13 +1029,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_breathController( offset, port, channel, value ) );
+            result.add( buffer.cc_breathController( offset, port, channel, value ) );
         }
         public LList cc_breathController(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1057,13 +1060,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_footController( offset, port, channel, value ) );
+            result.add( buffer.cc_footController( offset, port, channel, value ) );
         }
         public LList cc_footController(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1088,13 +1091,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_portamentoTime( offset, port, channel, value ) );
+            result.add( buffer.cc_portamentoTime( offset, port, channel, value ) );
         }
         public LList cc_portamentoTime(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1119,13 +1122,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_dataEntryMsb( offset, port, channel, value ) );
+            result.add( buffer.cc_dataEntryMsb( offset, port, channel, value ) );
         }
         public LList cc_dataEntryMsb(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1150,13 +1153,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_volume( offset, port, channel, value ) );
+            result.add( buffer.cc_volume( offset, port, channel, value ) );
         }
         public LList cc_volume(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1181,13 +1184,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_balance( offset, port, channel, value ) );
+            result.add( buffer.cc_balance( offset, port, channel, value ) );
         }
         public LList cc_balance(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1212,13 +1215,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_pan( offset, port, channel, value ) );
+            result.add( buffer.cc_pan( offset, port, channel, value ) );
         }
         public LList cc_pan(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1243,13 +1246,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_expression( offset, port, channel, value ) );
+            result.add( buffer.cc_expression( offset, port, channel, value ) );
         }
         public LList cc_expression(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1274,13 +1277,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_effectController1( offset, port, channel, value ) );
+            result.add( buffer.cc_effectController1( offset, port, channel, value ) );
         }
         public LList cc_effectController1(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1305,13 +1308,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_effectController2( offset, port, channel, value ) );
+            result.add( buffer.cc_effectController2( offset, port, channel, value ) );
         }
         public LList cc_effectController2(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1336,13 +1339,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_sustainPedal( offset, port, channel, value ) );
+            result.add( buffer.cc_sustainPedal( offset, port, channel, value ) );
         }
         public LList cc_sustainPedal(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1367,13 +1370,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_portamentoSwitch( offset, port, channel, value ) );
+            result.add( buffer.cc_portamentoSwitch( offset, port, channel, value ) );
         }
         public LList cc_portamentoSwitch(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1398,13 +1401,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_sostenutoSwitch( offset, port, channel, value ) );
+            result.add( buffer.cc_sostenutoSwitch( offset, port, channel, value ) );
         }
         public LList cc_sostenutoSwitch(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1429,13 +1432,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_pedalSwitch( offset, port, channel, value ) );
+            result.add( buffer.cc_pedalSwitch( offset, port, channel, value ) );
         }
         public LList cc_pedalSwitch(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1460,13 +1463,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_legatoSwitch( offset, port, channel, value ) );
+            result.add( buffer.cc_legatoSwitch( offset, port, channel, value ) );
         }
         public LList cc_legatoSwitch(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1491,13 +1494,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_hold2( offset, port, channel, value ) );
+            result.add( buffer.cc_hold2( offset, port, channel, value ) );
         }
         public LList cc_hold2(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1522,13 +1525,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_soundController1( offset, port, channel, value ) );
+            result.add( buffer.cc_soundController1( offset, port, channel, value ) );
         }
         public LList cc_soundController1(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1553,13 +1556,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_soundController2( offset, port, channel, value ) );
+            result.add( buffer.cc_soundController2( offset, port, channel, value ) );
         }
         public LList cc_soundController2(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1584,13 +1587,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_soundController3( offset, port, channel, value ) );
+            result.add( buffer.cc_soundController3( offset, port, channel, value ) );
         }
         public LList cc_soundController3(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1615,13 +1618,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_soundController4( offset, port, channel, value ) );
+            result.add( buffer.cc_soundController4( offset, port, channel, value ) );
         }
         public LList cc_soundController4(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1646,13 +1649,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_soundController5( offset, port, channel, value ) );
+            result.add( buffer.cc_soundController5( offset, port, channel, value ) );
         }
         public LList cc_soundController5(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1677,13 +1680,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_soundController6( offset, port, channel, value ) );
+            result.add( buffer.cc_soundController6( offset, port, channel, value ) );
         }
         public LList cc_soundController6(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1708,13 +1711,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_soundController7( offset, port, channel, value ) );
+            result.add( buffer.cc_soundController7( offset, port, channel, value ) );
         }
         public LList cc_soundController7(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1739,13 +1742,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_soundController8( offset, port, channel, value ) );
+            result.add( buffer.cc_soundController8( offset, port, channel, value ) );
         }
         public LList cc_soundController8(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1770,13 +1773,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_soundController9( offset, port, channel, value ) );
+            result.add( buffer.cc_soundController9( offset, port, channel, value ) );
         }
         public LList cc_soundController9(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1801,13 +1804,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_soundController10( offset, port, channel, value ) );
+            result.add( buffer.cc_soundController10( offset, port, channel, value ) );
         }
         public LList cc_soundController10(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1832,13 +1835,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_generalPurpose01( offset, port, channel, value ) );
+            result.add( buffer.cc_generalPurpose01( offset, port, channel, value ) );
         }
         public LList cc_generalPurpose01(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1863,13 +1866,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_generalPurpose02( offset, port, channel, value ) );
+            result.add( buffer.cc_generalPurpose02( offset, port, channel, value ) );
         }
         public LList cc_generalPurpose02(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1894,13 +1897,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_generalPurpose03( offset, port, channel, value ) );
+            result.add( buffer.cc_generalPurpose03( offset, port, channel, value ) );
         }
         public LList cc_generalPurpose03(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1925,13 +1928,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_generalPurpose04( offset, port, channel, value ) );
+            result.add( buffer.cc_generalPurpose04( offset, port, channel, value ) );
         }
         public LList cc_generalPurpose04(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1956,13 +1959,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_portamento( offset, port, channel, value ) );
+            result.add( buffer.cc_portamento( offset, port, channel, value ) );
         }
         public LList cc_portamento(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1987,13 +1990,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_effect1( offset, port, channel, value ) );
+            result.add( buffer.cc_effect1( offset, port, channel, value ) );
         }
         public LList cc_effect1(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -2018,13 +2021,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_effect2( offset, port, channel, value ) );
+            result.add( buffer.cc_effect2( offset, port, channel, value ) );
         }
         public LList cc_effect2(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -2049,13 +2052,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_effect3( offset, port, channel, value ) );
+            result.add( buffer.cc_effect3( offset, port, channel, value ) );
         }
         public LList cc_effect3(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -2080,13 +2083,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_effect4( offset, port, channel, value ) );
+            result.add( buffer.cc_effect4( offset, port, channel, value ) );
         }
         public LList cc_effect4(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -2111,13 +2114,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_effect5( offset, port, channel, value ) );
+            result.add( buffer.cc_effect5( offset, port, channel, value ) );
         }
         public LList cc_effect5(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -2142,13 +2145,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_dataIncrement( offset, port, channel, value ) );
+            result.add( buffer.cc_dataIncrement( offset, port, channel, value ) );
         }
         public LList cc_dataIncrement(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -2173,13 +2176,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_dataDecrement( offset, port, channel, value ) );
+            result.add( buffer.cc_dataDecrement( offset, port, channel, value ) );
         }
         public LList cc_dataDecrement(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -2204,13 +2207,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_nrpnLsb( offset, port, channel, value ) );
+            result.add( buffer.cc_nrpnLsb( offset, port, channel, value ) );
         }
         public LList cc_nrpnLsb(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -2235,13 +2238,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_nrpnMsb( offset, port, channel, value ) );
+            result.add( buffer.cc_nrpnMsb( offset, port, channel, value ) );
         }
         public LList cc_nrpnMsb(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -2266,13 +2269,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_rpnLsb( offset, port, channel, value ) );
+            result.add( buffer.cc_rpnLsb( offset, port, channel, value ) );
         }
         public LList cc_rpnLsb(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -2298,13 +2301,13 @@ public class PulsarMidiNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> receiver, NoteListMap map, Collection<T> result ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( receiver.cc_rpnMsb( offset, port, channel, value ) );
+            result.add( buffer.cc_rpnMsb( offset, port, channel, value ) );
         }
         public LList cc_rpnMsb(double offset, MetroPort port, int channel, int value) {
             return list(

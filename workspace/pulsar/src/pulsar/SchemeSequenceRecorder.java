@@ -14,13 +14,12 @@ import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
-import metro.MetroEvent;
+import metro.MetroCollector;
 import metro.MetroMidiEvent;
 import metro.MetroPort;
 import metro.MetroSequence;
 import metro.MetroTrack;
 import metro.SimpleMetroEventBuffer;
-import pulsar.lib.NullList;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.Invokable;
 
@@ -103,7 +102,9 @@ public class SchemeSequenceRecorder implements MetroSequence, SchemeSequenceRead
                 for ( MetroMidiEvent e : in ) {
                     if ( inputPorts.contains( e.getPort() ) ) {
                         LList list = this.receiver.receive( e, currentPos, oneBarLengthInFrames );
-                        this.notations = Pair.make( list, notations );
+                        if ( list != null ) {
+                            this.notations = Pair.make( list, notations );
+                        }
                         logInfo( list );
                     }
                 }
@@ -125,7 +126,7 @@ public class SchemeSequenceRecorder implements MetroSequence, SchemeSequenceRead
                         double d = SchemeUtils.toDouble( a );
                         if ( from <= d && d < to ) {
                             System.out.println( from );
-                            PulsarNoteListParser.notation2receiver( metro, null, this.eventBuffer, (LList)notation, NullList.NULL_LIST );
+                            PulsarNoteListParser.notation2receiver( metro, null, this.eventBuffer, (LList)notation, MetroCollector.NULL );
                         }
                     }
                 }
@@ -136,7 +137,7 @@ public class SchemeSequenceRecorder implements MetroSequence, SchemeSequenceRead
     }
 
     @Override
-    public void processBuffered(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<MetroEvent> receiver) {
+    public <T> void processBuffered(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer) {
     }
     
     static final Symbol recordingOn  = Symbol.valueOf( "rec-on" );

@@ -37,7 +37,7 @@ import gnu.lists.Pair;
 import gnu.mapping.Symbol;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
-import metro.MetroEventBuffer;
+import metro.MetroCollector;
 import metro.MetroTrack;
 import pulsar.lib.scheme.SchemePrinter;
 import pulsar.lib.scheme.SchemeUtils;
@@ -163,7 +163,7 @@ public class NoteListParser {
      * This method parses the specified note list. 
      * 
      * Refer
-     * {@linkplain pulsar.SchemeSequence#processBuffered(Metro, MetroTrack, MetroBufferedMidiReceiver) processBuffered}
+     * {@linkplain pulsar.SchemeSequence#processBuffered(Metro, MetroTrack, MetroEventBuffer<T>) processBuffered}
      * to see how this method is called.
      * 
      * (Fri, 01 Nov 2019 11:24:28 +0900)
@@ -175,7 +175,7 @@ public class NoteListParser {
      * @param track
      *            The instance of the current {@link MetroTrack} which generated the
      *            note.
-     * @param receiver
+     * @param buffer
      *            The instance of the current {@link MetroEventBuffer} to output
      *            into as a result of the processing.
      * @param result
@@ -187,9 +187,9 @@ public class NoteListParser {
      *         continue or not, returning the value of <code>result</code> parameter
      *         is sufficient.
      * @see pulsar.NoteListParserElement#parseEvent(Metro, MetroTrack,
-     *      MetroBufferedMidiReceiver, Map, boolean)
+     *      MetroBufferedMidiReceiver, Map, MetroCollector)
      */
-    public <T> void parse( Metro metro, MetroTrack track, Collection<Object> inputList, MetroBufferedMidiReceiver<T> receiver, Collection<T> result ) {
+    public <T> void parse( Metro metro, MetroTrack track, Collection<Object> inputList, MetroBufferedMidiReceiver<T> buffer, MetroCollector<T> result ) {
         
         // This is it. See comment above.
         Pulsar.currentObject.set( (Pulsar) metro );
@@ -199,7 +199,7 @@ public class NoteListParser {
                 for ( Iterator<Object> i = inputList.iterator(); i.hasNext(); ) {
                     Object obj = i.next();
                     if ( obj instanceof LList ) {
-                        parseNotationProc( metro, track, (LList)obj, receiver, result );
+                        parseNotationProc( metro, track, (LList)obj, buffer, result );
                     } else if ( obj instanceof Boolean ) {
                         continue;
                     } else {
@@ -218,11 +218,11 @@ public class NoteListParser {
         }
     }
     
-    public <T> void parseNotation( Metro metro, MetroTrack track, LList notation, MetroBufferedMidiReceiver<T> receiver, Collection<T> result ) {
+    public <T> void parseNotation( Metro metro, MetroTrack track, LList notation, MetroBufferedMidiReceiver<T> buffer, MetroCollector<T> result ) {
         // This is it. See comment above.
         Pulsar.currentObject.set( (Pulsar) metro );
         try {
-            parseNotationProc( metro, track, notation, receiver, result );
+            parseNotationProc( metro, track, notation, buffer, result );
         } catch ( RuntimeException e ) {
             try {
                 logWarn( SchemePrinter.printSchemeValue(notation) );
@@ -232,7 +232,7 @@ public class NoteListParser {
         }
     }
 
-    private <T> void parseNotationProc( Metro metro, MetroTrack track, LList notation, MetroBufferedMidiReceiver<T> receiver, Collection<T> result ) {
+    private <T> void parseNotationProc( Metro metro, MetroTrack track, LList notation, MetroBufferedMidiReceiver<T> buffer, MetroCollector<T> result ) {
         NoteListMap           map    = NoteListMap.createAlist( notation );
         Symbol                type   = map.get( ID_TYPE, SYMBOL_THRU, SYMBOL_NULL );
         if ( type == null ) {
@@ -242,7 +242,7 @@ public class NoteListParser {
             if ( parser == null ) {
                 logError( "Error : Unknown notation type was given. (" +  type + ")", new Exception() );
             } else {
-                parser.parseEvent( metro, track, receiver, map, result );
+                parser.parseEvent( metro, track, buffer, map, result );
             }
         }
     }

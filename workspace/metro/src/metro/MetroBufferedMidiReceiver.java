@@ -29,6 +29,11 @@ public interface MetroBufferedMidiReceiver<T> {
     public T end();
     public T error( double offset, MetroPort port, String message );
 
+    // special 
+    public T exec(  double offset, Runnable runnable );
+    public T event( double offset, T event );
+    public T length( double length );
+    
     // basic 
     public T noteOn( double offset, MetroPort port, int channel, int note, double velocity );
     public T noteOn( double offset, MetroPort port, int channel, int note, int velocity );
@@ -107,4 +112,5 @@ public interface MetroBufferedMidiReceiver<T> {
     public T cc_nrpnMsb( double offset, MetroPort port,  int channel, int value ) ;
     public T cc_rpnLsb( double offset, MetroPort port,  int channel, int value ) ;
     public T cc_rpnMsb( double offset, MetroPort port,  int channel, int value ) ;
+
 }

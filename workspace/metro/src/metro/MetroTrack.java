@@ -646,17 +646,17 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
                 if ( this.endingDone ) {
                     if ( DEBUG )
                         logInfo( "offerNewBuffer(): endingDone is true" );
-                    MetroEventBuffer buf = DefaultMetroEventBuffer.create();
-                    buf.setLength( 1.0 );
-                    buf.prepare( barLengthInFrames, true );
-                    this.buffers.offer( buf );
+                    MetroEventBuffer receiver = MetroEventBuffer.create();
+                    receiver.length( 1.0 );
+                    receiver.prepare( barLengthInFrames, true );
+                    this.buffers.offer( receiver );
                     
                 } else {
                     if ( DEBUG )
                         logInfo( "offerNewBuffer(" + name + ") setting true endingDone " );
                     this.endingDone = true;
 
-                    MetroEventBuffer buf = DefaultMetroEventBuffer.create();
+                    MetroEventBuffer buf = MetroEventBuffer.create();
                     buf.exec( this.endingLength , new Runnable() {
                         @Override
                         public void run() {
@@ -671,14 +671,14 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
                             }
                         }
                     });
-                    buf.setLength( this.endingLength  );
+                    buf.length( this.endingLength  );
                     buf.prepare( barLengthInFrames, true );
                     this.buffers.offer( buf );
                 }
                 
             } else {
 //              logInfo( "offerNewBuffer:normal (" + this.name  + ")");
-                MetroEventBuffer buf = DefaultMetroEventBuffer.create();
+                MetroEventBuffer buf = MetroEventBuffer.create();
                 this.sequence.processBuffered( metro, this, buf );
                 buf.prepare( barLengthInFrames, true );
 

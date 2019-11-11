@@ -31,11 +31,10 @@ import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
-import metro.MetroEvent;
+import metro.MetroCollector;
 import metro.MetroMidiEvent;
 import metro.MetroSequence;
 import metro.MetroTrack;
-import pulsar.lib.NullList;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.secretary.Invokable;
 
@@ -112,13 +111,12 @@ public class SchemeSequence implements MetroSequence, SchemeSequenceReadable, In
 
 
     @Override
-    public void processBuffered( Metro metro, MetroTrack track, MetroBufferedMidiReceiver<MetroEvent> receiver ) {
+    public <T> void processBuffered( Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer ) {
         // System.out.println("Metro.sequence.new MetroSequence() {...}.initBuffer()" );
 //      buf.humanize( 0.0d, 3 );
         try {
-            PulsarNoteListParser.invokable2receiver(metro, track, invokable, receiver, NullList.NULL_LIST ) ;
+            PulsarNoteListParser.invokable2receiver(metro, track, invokable, buffer, MetroCollector.NULL ) ;
         } catch ( RuntimeException e ) {
-            System.err.println(e );
             LOGGER.log(Level.SEVERE, "", e);
         }
     }

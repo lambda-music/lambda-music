@@ -20,14 +20,22 @@
 
 package metro;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class represents all events which should be processed in a bar. 
  * 
  * @author Ats Oka
  */
-public class SimpleMetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroMidiEvent,byte[]> implements MetroBufferedMidiReceiver<MetroMidiEvent> {
+public class SimpleMetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroMidiEvent,byte[]>  {
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+    static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
+    static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
+
     int cursorOffset=0;
     public int getCursorOffset() {
         return cursorOffset;
@@ -63,13 +71,36 @@ public class SimpleMetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiv
     }
 
     @Override
-    public final MetroMidiEvent convertResult( String id, double offset, MetroPort outputPort, byte[] data ) {
+    public final MetroMidiEvent receive( String id, double offset, MetroPort outputPort, byte[] data ) {
+        if ( data == null )
+            return null;
+        
         int midiOffset = ((int)(offset * (double)this.oneBarLengthInFrames)) - this.cursorOffset;
         // Create an event object.
         DefaultMetroMidiEvent event = new DefaultMetroMidiEvent( midiOffset, outputPort, data );
+        
         if ( resultList != null )
             resultList.add( event );
+        
         return event;
+    }
+
+    @Override
+    public MetroMidiEvent exec(double offset, Runnable runnable) {
+        logWarn( "called an unimplemented method - exec" );
+        return null;
+    }
+
+    @Override
+    public MetroMidiEvent event(double offset, MetroMidiEvent event) {
+        logWarn( "called an unimplemented method - event" );
+        return null;
+    }
+
+    @Override
+    public MetroMidiEvent length(double length) {
+        logWarn( "called an unimplemented method - length" );
+        return null;
     }
 }
 

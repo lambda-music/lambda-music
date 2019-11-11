@@ -25,6 +25,7 @@ import java.util.Collection;
 import gnu.lists.LList;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
+import metro.MetroCollector;
 import metro.MetroTrack;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.Invokable;
@@ -40,7 +41,7 @@ public class PulsarNoteListParser extends NoteListParser {
     }
     
     // MOVED FROM SchemeSequence (Wed, 06 Nov 2019 17:07:05 +0900)
-    public static <T> void invokable2receiver( Metro metro, MetroTrack track, Invokable invokable, MetroBufferedMidiReceiver<T> receiver, Collection<T> result ) {
+    public static <T> void invokable2receiver( Metro metro, MetroTrack track, Invokable invokable, MetroBufferedMidiReceiver<T> buffer, MetroCollector<T> result ) {
         SchemeSecretary.initializeSchemeForCurrentThreadStatic( ((Pulsar)metro).getSchemeSecretary().getExecutive() );
         ((Pulsar)metro).threadInializer.run();
         
@@ -48,19 +49,19 @@ public class PulsarNoteListParser extends NoteListParser {
         Collection<Object> notations = (Collection<Object>)invokable.invoke();
         
         // Parse the retrieved list to execute.
-        notations2receiver( metro, track, receiver, notations, result );
+        notations2receiver( metro, track, buffer, notations, result );
     }
 
     // MOVED FROM SchemeSequence (Wed, 06 Nov 2019 17:07:05 +0900)
-    public static <T> void notations2receiver(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> receiver, Collection<Object> notations, Collection<T> result ) {
+    public static <T> void notations2receiver(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer, Collection<Object> notations, MetroCollector<T> result ) {
 //      return SchemeNoteParser0.parse(metro, scheme, pattern, buf, true );
 //      return SchemeNoteParser1.parse(metro, scheme, pattern, buf, true );
 //      return PulsarNoteParser2.parse(metro, track, pattern, buf, true );
-        INSTANCE.parse( metro, track, notations, receiver, result );
+        INSTANCE.parse( metro, track, notations, buffer, result );
     }
 
     // MOVED FROM SchemeSequence (Wed, 06 Nov 2019 17:07:05 +0900)
-    public static <T> void notation2receiver(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> receiver, LList notation, Collection<T> result ) {
-        INSTANCE.parseNotation( metro, track, notation, receiver, result );
+    public static <T> void notation2receiver(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer, LList notation, MetroCollector<T> result ) {
+        INSTANCE.parseNotation( metro, track, notation, buffer, result );
     }
 }

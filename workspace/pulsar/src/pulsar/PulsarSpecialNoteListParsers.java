@@ -33,11 +33,12 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import gnu.lists.LList;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
-import metro.MetroEventBuffer;
+import metro.MetroCollector;
 import metro.MetroPort;
 import metro.MetroSyncType;
 import metro.MetroTrack;
@@ -142,6 +143,9 @@ public class PulsarSpecialNoteListParsers {
         public void setParameters( NoteListParserElementParameter ... params ) {
             this.parameters = new ArrayList<>( Arrays.asList( params ) );
         }
+        public Symbol name() {
+            return getShortName();
+        }
     }
 
     public static final VoidEventParser PARSER_VOID = new VoidEventParser();
@@ -159,7 +163,7 @@ public class PulsarSpecialNoteListParsers {
 
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> receiver, NoteListMap map, Collection<T> result) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer, NoteListMap map, MetroCollector<T> result) {
         }
     }
     
@@ -239,7 +243,7 @@ public class PulsarSpecialNoteListParsers {
 
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> receiver, NoteListMap map, Collection<T> result) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer, NoteListMap map, MetroCollector<T> result) {
             boolean enabled      = readMapEnabled( map );
 //          boolean enabled      = map.containsKey( ID_ENABLED     ) ? SchemeUtils.toBoolean( map.get( ID_ENABLED ) ) : true;
             if ( ! enabled )
@@ -266,8 +270,8 @@ public class PulsarSpecialNoteListParsers {
 //            if ( length < 0 )
 //                length = DEFAULT_NOTE_LENGTH;
 
-            result.add( receiver.noteOn( offset            , port, channel, note, velocity ) );
-            result.add( receiver.noteOff( offset + length  , port, channel, note, velocity ) );
+            result.add( buffer.noteOn( offset            , port, channel, note, velocity ) );
+            result.add( buffer.noteOff( offset + length  , port, channel, note, velocity ) );
         }
     }
 
@@ -297,7 +301,7 @@ public class PulsarSpecialNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> receiver, NoteListMap map, Collection<T> result) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer, NoteListMap map, MetroCollector<T> result) {
 //            double value    =  map.containsKey( ID_VALUE ) ? SchemeUtils.toDouble( map.get( ID_VALUE ) ) : -1.0d;
 //            if ( value <= 0 ) {
 //                LOGGER.log( Level.WARNING, "a `len` note was found but 'val was missing; this probably a bug. " );
@@ -309,7 +313,13 @@ public class PulsarSpecialNoteListParsers {
             double value    =  readMapDoubleValueBarLength( map );
 
             // LOGGER.log( Level.INFO, "a len note = " + value );
-            ((MetroEventBuffer) receiver).setLength( value );
+            result.add(((MetroBufferedMidiReceiver<T>)buffer).length( value ));
+        }
+        public LList length(double value ) {
+            return list(
+                writeMapType( name() ),
+                writeMapDoubleValue( value )
+            );
         }
     }
     
@@ -342,7 +352,7 @@ public class PulsarSpecialNoteListParsers {
 
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> receiver, NoteListMap map, Collection<T> result) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer, NoteListMap map, MetroCollector<T> result) {
             double offset        = readMapOffset( map );
             Procedure procedure0 = readMapProcedure( map );
 //            double offset        = map.containsKey( ID_OFFSET   )  ? SchemeUtils.toDouble(     map.get( ID_OFFSET    ) ) : 0.0d;
@@ -350,8 +360,12 @@ public class PulsarSpecialNoteListParsers {
             
             Pulsar pulsar = ((Pulsar)metro);
             // See the note ... XXX_SYNC_01
-            ((MetroEventBuffer) receiver).exec( offset, 
+            ((MetroBufferedMidiReceiver<T>) buffer).exec( offset, 
                     pulsar.createRunnableAndInvocable( procedure0 ));
+        }
+        
+        public LList exec(double offset, Runnable runnable) {
+            throw new UnsupportedOperationException();
         }
     }
 
@@ -368,7 +382,7 @@ public class PulsarSpecialNoteListParsers {
         }
         
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> receiver, NoteListMap map, Collection<T> result) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer, NoteListMap map, MetroCollector<T> result) {
             Pulsar pulsar = ((Pulsar)metro);
             double offset         = readMapOffset( map );
             Object id             = readMapNewId( map );
@@ -399,7 +413,7 @@ public class PulsarSpecialNoteListParsers {
             logInfo( "NoteListParserElement: id=" + id );
             
             // See the note ... XXX_SYNC_01
-            ((MetroEventBuffer) receiver).exec( offset, new Runnable() {
+            ((MetroBufferedMidiReceiver<T>) buffer).exec( offset, new Runnable() {
                 @Override
                 public void run() {
                     logInfo( "NoteListParserElement: exec" );
@@ -509,7 +523,7 @@ public class PulsarSpecialNoteListParsers {
     static abstract class AbstractRemoveEventParser extends SpecialNoteListParserElement {
         abstract void removeTrackProc( Metro metro, MetroTrack track );
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> receiver, NoteListMap map, Collection<T> result) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer, NoteListMap map, MetroCollector<T> result) {
             double offset            = readMapOffset( map );
             Collection argTrackList  = readMapCollection( ID_ID , map );
             Collection<String> tags  = readMapCollection( ID_TAGS, map );
@@ -520,7 +534,7 @@ public class PulsarSpecialNoteListParsers {
 //            Collection<String> tags  = getValue( map, "tags", el,   (v)-> SchemeUtils.symbolListToStringList((Pair)v ) );
             
             if ( ( argTrackList != null ) && ! argTrackList.isEmpty() ) {
-                ((MetroEventBuffer) receiver).exec( offset, new Runnable() {
+                ((MetroBufferedMidiReceiver<T>) buffer).exec( offset, new Runnable() {
                     @Override
                     public void run() {
                         // synchronized block added at (Mon, 29 Jul 2019 13:36:52 +0900)
@@ -563,7 +577,7 @@ public class PulsarSpecialNoteListParsers {
             }
 
             if ( tags != null ) {
-                ((MetroEventBuffer) receiver).exec( offset, new Runnable() {
+                ((MetroBufferedMidiReceiver<T>) buffer).exec( offset, new Runnable() {
                     @Override
                     public void run() {
                         // synchronized block added at (Mon, 29 Jul 2019 13:36:52 +0900)
@@ -632,8 +646,8 @@ public class PulsarSpecialNoteListParsers {
                 );
         }
         @Override
-        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> receiver, NoteListMap map, Collection<T> result) {
-            receiver.end();
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer, NoteListMap map, MetroCollector<T> result) {
+            buffer.end();
         }
     }
 }

@@ -28,10 +28,15 @@ package metro;
  * @param <T>
  */
 public interface MetroMidiReceiver<T> {
-    // system
+    public default T voidValue( String message ) {
+        return null;
+    };
+    
+    // special
     public boolean endCalled();
     public T end();
     public T error( String string );
+    
     // basic
     public T noteOn(int channel, int note, double velocity );
     public T noteOn(int channel, int note, int velocity );
@@ -121,11 +126,11 @@ public interface MetroMidiReceiver<T> {
         @Override
         public T end() {
             this.endCalled = true;
-            return defaultValue();
+            return voidValue( "end" );
         }
         @Override
-        public T error(String string) {
-            return defaultValue();
+        public T error( String string ) {
+            return voidValue( string );
         }
         @Override
         public T noteOn(int channel, int note, int velocity) {
