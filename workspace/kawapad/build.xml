@@ -6,6 +6,8 @@
     <property name="dir.buildfile" value="."/>
     <property name="dir.workspace" value="${dir.buildfile}/.."/>
     <property name="dir.jarfile" value="${dir.buildfile}"/>
+    <property name="file.pulsar.version" value="${dir.workspace}/pulsar/src/pulsar/version.txt" />
+    <property name="file.kawapad.version" value="${dir.workspace}/kawapad/src/kawapad/version.txt" />
     <target name="create_run_jar">
         <jar destfile="${dir.jarfile}/kawapad.jar" filesetmanifest="mergewithoutmain">
             <manifest>
@@ -17,6 +19,7 @@
             <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/lib/lib/kawa.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/lib/lib/JTattoo-1.6.11.jar" /> <!-- ADDED -->
             <fileset dir="${dir.jarfile}/bin.scheme"/>
+            <fileset file="${file.kawapad.version}" />
         </jar>
     </target>
             

@@ -10,6 +10,7 @@ import kawapad.Kawapad;
 import kawapad.KawapadDocuments;
 import pulsar.lib.GC;
 import pulsar.lib.PulsarLogger;
+import pulsar.lib.Version;
 import pulsar.lib.scheme.DescriptiveDocumentCategory;
 import pulsar.lib.scheme.DescriptiveHelp;
 import pulsar.lib.scheme.SchemePrinter;
@@ -36,8 +37,12 @@ public class PulsarApplication {
         String  argFileName = null;
         for ( int i=0; i<args.length; i++ ) {
             String s = args[i];
-
-            if ( s.startsWith( "--http=" ) ) {
+            
+            
+            if ( s.equals( "--version" ) ) {
+                System.out.println( Version.get( PulsarApplication.class ) );
+                return null;
+            } else if ( s.startsWith( "--http=" ) ) {
                 argHttp = true;
                 argHttpPort = Integer.parseInt( s.substring( "--http=".length() ) );
                 break;
@@ -250,9 +255,10 @@ public class PulsarApplication {
     }
 
     public static void main(String[] args) throws IOException {
+        System.err.println( "*** WELCOME TO PULSAR ***" );
+        System.err.println( "VERSION : " + Version.get( PulsarApplication.class ) );
         PulsarLogger.init();
         initObjectPrinter();
         parseArgsAndStartPulsar(args);
     }
-
 }

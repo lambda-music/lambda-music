@@ -504,6 +504,20 @@ connection to the JACK, it throws an exception.
 
 --------------------------------------------------------
 
+NEW-RECORDING-TRACK
+====================
+
+#### SYNOPSIS ####
+    (new-recording-track|rect [notations::procedure/(list notation)]...)::MetroTrack
+
+### DESCRIPTION ###
+new-recording-track creates a new track. In case the current sequencer system
+has not established any connection to the JACK, it throws an exception.
+
+
+
+--------------------------------------------------------
+
 ABOUT-NOTATION
 ====================
 

@@ -1,7 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project default="build-all" name="Create Runnable Jar for Project pulsar">
+    <tstamp>
+        <format property="BUILD_DATE" pattern="yyyyMMdd-HHmmss"  locale="en,UK" />
+    </tstamp>
+    <property name="dir.buildfile" value="." />
+    <property name="dir.workspace" value="${dir.buildfile}/.." />
+    <property name="file.pulsar.version" value="${dir.workspace}/pulsar/src/pulsar/version.txt" />
+    <property name="file.kawapad.version" value="${dir.workspace}/kawapad/src/kawapad/version.txt" />
+    <echo message="${BUILD_DATE}" file="${file.kawapad.version}" />
+    <echo message="${BUILD_DATE}" file="${file.pulsar.version}" />
+
     <target name="build-all" >
         <ant antfile="../kawapad/build.xml" target="build_all" dir="../kawapad/" />
         <ant antfile="./build.xml" target="build_all" dir="./" />
     </target>
+    
 </project>

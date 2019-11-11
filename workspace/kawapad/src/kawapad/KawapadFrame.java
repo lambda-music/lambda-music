@@ -49,6 +49,7 @@ import javax.swing.SwingUtilities;
 
 import kawapad.Kawapad.KawaVariableInitializer;
 import pulsar.lib.PulsarLogger;
+import pulsar.lib.Version;
 import pulsar.lib.scheme.DescriptiveDocumentCategory;
 import pulsar.lib.scheme.DescriptiveHelp;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
@@ -292,9 +293,14 @@ public class KawapadFrame extends JFrame {
         return kawapadFrame;
     }
     public static void main(String[] args) throws IOException {
+        System.err.println( "*** Welcome to Kawapad *** " );
+        System.err.println( "VERSION : " + Version.get( KawapadFrame.class ) );
         PulsarLogger.init();
         if ( 0 < args.length  ) {
-            if ( args[0].equals( "--output-reference" ) ) {
+            if ( args[0].equals( "--version" ) ) {
+                System.out.println( Version.get( KawapadFrame.class ) );
+                return;
+            } else if ( args[0].equals( "--output-reference" ) ) {
                 outputDocument();
             } else if ( args[0].equals( "--output-keystroke-reference" ) ) {
                 outputKeyStrokeReference();

@@ -6,6 +6,8 @@
     <property name="dir.buildfile" value="." />
     <property name="dir.workspace" value="${dir.buildfile}/.." />
     <property name="dir.jarfile" value="${dir.buildfile}" />
+    <property name="file.pulsar.version" value="${dir.workspace}/pulsar/src/pulsar/version.txt" />
+    <property name="file.kawapad.version" value="${dir.workspace}/kawapad/src/kawapad/version.txt" />
     <target name="create_run_jar">
         <jar destfile="${dir.jarfile}/pulsar.jar" filesetmanifest="mergewithoutmain">
             <manifest>
@@ -23,6 +25,7 @@
             <fileset dir="${dir.workspace}/kawapad/bin" />
             <fileset dir="${dir.workspace}/kawapad/bin.scheme" />
             <fileset dir="${dir.jarfile}/bin.scheme" />
+            <fileset file="${file.pulsar.version}" />
         </jar>
     </target>
     <target name="create_api_reference" depends="create_run_jar" >

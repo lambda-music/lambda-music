@@ -88,7 +88,7 @@ Set the main font of the editor. Kawapad can change its font-face.
 |kawapad-parenthesis-shrink-selection-dynamically|Deselect Inside the Current Parentheses|  CTRL-ALT-DOWN, CTRL-ALT-N  |
 |kawapad-shift-indent-right|Shift Left|  TAB  |
 |kawapad-shift-indent-left|Shift Right|  SHIFT-TAB  |
-|kawapad-prettify|Correct Indentation|  CTRL-I  |
+|kawapad-indentation-corrector|Correct Indentation|  CTRL-I  |
 |kawapad-surround-by-parentheses|Surround by Parentheses|    |
 |kawapad-open-parenthesis|Open Parenthesis|    |
 |kawapad-close-parenthesis|Close Parenthesis|    |
