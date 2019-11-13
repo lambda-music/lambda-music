@@ -20,6 +20,7 @@ import gnu.mapping.Procedure;
 import kawa.standard.Scheme;
 import pulsar.lib.scheme.SchemeExecutor;
 import pulsar.lib.secretary.Invokable;
+import pulsar.lib.secretary.InvokablyRunnable;
 import pulsar.lib.secretary.SecretariallyInvokable;
 import pulsar.lib.secretary.Secretary;
 import pulsar.lib.secretary.SecretaryMessage;
@@ -34,6 +35,13 @@ public class SchemeSecretary extends Secretary<Scheme> implements ShutdownHook {
     public Invokable createSecretarillyInvokable( Procedure procedure ) {
         return new SecretariallyInvokable( this, new InvokableSchemeProcedure( procedure ) );  
     }
+    
+    
+    public Runnable createRunnableAndInvocable( Procedure procedure, Object... args) {
+        return new InvokablyRunnable( this.createSecretarillyInvokable( procedure ), args );
+    }
+
+    
     Scheme getScheme() {
         return getExecutive();
     }

@@ -673,14 +673,14 @@ public class PulsarFrame extends KawapadFrame {
     @Override
     protected void onCloseWindow() {
         pulsar.close();
-        //          System.exit(0);
+        // System.exit(0);
     }
     
     JComponent pulsarRootPane;
     JPanel staticPane;
     JNamedPanel userPane;
     void initGui() {
-        //          this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        // this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setDefaultCloseOperation( JFrame.DO_NOTHING_ON_CLOSE );
         
         staticPane = new JPanel() {

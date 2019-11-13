@@ -359,9 +359,10 @@ public class PulsarSpecialNoteListParsers {
 //            Procedure procedure0 = map.containsKey( ID_PROCEDURE ) ?                (Procedure)map.get( ID_PROCEDURE )   : null;
             
             Pulsar pulsar = ((Pulsar)metro);
+            Object[] args = {};
             // See the note ... XXX_SYNC_01
             ((MetroBufferedMidiReceiver<T>) buffer).exec( offset, 
-                    pulsar.createRunnableAndInvocable( procedure0 ));
+                    pulsar.getSchemeSecretary().createRunnableAndInvocable( procedure0, args ));
         }
         
         public LList exec(double offset, Runnable runnable) {

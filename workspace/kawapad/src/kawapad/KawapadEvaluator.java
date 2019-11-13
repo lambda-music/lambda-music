@@ -9,6 +9,15 @@ import pulsar.lib.scheme.SchemeExecutor;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 
 public class KawapadEvaluator implements Runnable {
+    public static KawapadEvaluator create(
+            Kawapad kawapad, String schemeScript, File currentDirectory, File currentFile,
+            boolean insertText, boolean replaceText, boolean doReset) 
+    {
+        return new KawapadEvaluator( kawapad, schemeScript, currentDirectory, currentFile, 
+            insertText, replaceText, doReset );
+    }
+
+
     Kawapad kawapad;
     String schemeScript;
     File currentFile;
@@ -16,7 +25,7 @@ public class KawapadEvaluator implements Runnable {
     boolean replaceText;
     boolean doReset;
     private File currentDirectory;
-    public KawapadEvaluator(Kawapad kawapad, String schemeScript, File currentDirectory,
+    private KawapadEvaluator(Kawapad kawapad, String schemeScript, File currentDirectory,
             File currentFile, boolean insertText, boolean replaceText, boolean doReset ) 
     {
         super();

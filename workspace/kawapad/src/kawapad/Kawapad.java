@@ -437,6 +437,16 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     //
     //////////////////////////////////////////////////////////////////////////////////////////
 
+    void evaluate( String text,  boolean insertText, boolean replaceText, boolean doReset) {
+        if ( text != null ) {
+            kawapad.getThreadManager().startScratchPadThread( 
+                KawapadEvaluator.create( 
+                    kawapad, text, getCurrentDirectory(), getCurrentFile(), 
+                    insertText, replaceText, doReset ) );
+        } else {
+            logWarn( "Ignored because currently no text is selected. " );
+        }
+    }
     
     
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -1191,13 +1201,15 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     //////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * getSelectedText() which treats its endpoint as inclusive-like.
+     * getSelectedText()
+     * 
+     * A method to get selected text which treats its endpoint as inclusive-like.
      * The endpoint of the current selection is to move one unit to the left.    
      * 
      * @param c
      * @return
      */
-    String getSelectedText( JTextComponent c ) {
+    static String getSelectedText( JTextComponent c ) {
         Caret caret = c.getCaret();
         
         String text = c.getText();
@@ -1254,9 +1266,9 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         String schemeScript;
         {
             schemeScript = getSelectedText( this );
-            if ( schemeScript == null ) {
-                schemeScript =  this.getText();
-            }
+//            if ( schemeScript == null ) {
+//                schemeScript =  this.getText();
+//            }
         }
         return schemeScript;
     }
@@ -1289,9 +1301,13 @@ public class Kawapad extends JTextPane implements MenuInitializer {
                 DEFAULT_BACKWARD_ACTION.actionPerformed( e );
             
             PARENTHESIS_EXPAND_SELECTION_ACTION.actionPerformed( e );
-            kawapad.getThreadManager().startScratchPadThread(
-                new KawapadEvaluator(
-                    kawapad, getTextDefault(), getCurrentDirectory(), getCurrentFile(), true, false, false ) );
+            
+            // >>> (Wed, 13 Nov 2019 17:08:52 +0900) 
+//            kawapad.getThreadManager().startScratchPadThread(
+//                KawapadEvaluator.create( kawapad, getTextDefault(), getCurrentDirectory(), getCurrentFile(), true, false, false ) );
+            evaluate( getTextDefault(), true, false, false );
+            // <<< (Wed, 13 Nov 2019 17:08:52 +0900) 
+
         }
         {
             putValue( Action2.CAPTION, "Select and Evaluate" );
@@ -1316,22 +1332,29 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         public void actionPerformed(ActionEvent event) {
             String schemeScript;
             {
-                schemeScript = getSelectedText( kawapad );
+                schemeScript = getSelectedText();
                 if ( schemeScript == null ) {
                     DEFAULT_BACKWARD_ACTION.actionPerformed( event );
                     PARENTHESIS_EXPAND_SELECTION_ACTION.actionPerformed( event );
                     SwingUtilities.invokeLater( new Runnable() {
                         @Override
                         public void run() {
-                            String schemeScript2 = getSelectedText( kawapad );
-                            kawapad.getThreadManager().startScratchPadThread(
-                                new KawapadEvaluator( kawapad, schemeScript2,  getCurrentDirectory(), getCurrentFile(), true, true, false ) );
+                            String schemeScript2 = getSelectedText();
+                            // >>> (Wed, 13 Nov 2019 17:08:52 +0900) 
+                            // kawapad.getThreadManager().startScratchPadThread(
+                            //    KawapadEvaluator.create( kawapad, schemeScript2, getCurrentDirectory(), getCurrentFile(), true, true, false ) );
+                            evaluate( schemeScript2, true, true, false );
+                            // <<< (Wed, 13 Nov 2019 17:08:52 +0900) 
+
                         }
                     });
 
                 } else {
-                    kawapad.getThreadManager().startScratchPadThread( 
-                        new KawapadEvaluator( kawapad, schemeScript, getCurrentDirectory(), getCurrentFile(), true, true, false ) );
+                    // >>> (Wed, 13 Nov 2019 17:08:52 +0900) 
+                    // kawapad.getThreadManager().startScratchPadThread( 
+                    //   KawapadEvaluator.create( kawapad, schemeScript, getCurrentDirectory(), getCurrentFile(), true, true, false ) );
+                    evaluate( schemeScript, true, true, false  );
+                    // <<< (Wed, 13 Nov 2019 17:08:52 +0900) 
                 }
             }
 
@@ -1353,8 +1376,11 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         @Override
         public void actionPerformed(ActionEvent e) {
             //  JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
-            kawapad.getThreadManager().startScratchPadThread( new KawapadEvaluator(
-                kawapad, getTextDefault(), getCurrentDirectory(), getCurrentFile(), true, false, false ) );
+            // >>> (Wed, 13 Nov 2019 17:08:52 +0900) 
+            // kawapad.getThreadManager().startScratchPadThread( KawapadEvaluator.create( kawapad, getTextDefault(), 
+            //                          getCurrentDirectory(), getCurrentFile(), true, false, false ) );
+            evaluate( getTextDefault(), true, false, false );
+            // <<< (Wed, 13 Nov 2019 17:08:52 +0900) 
         }
         {
             putValue( Action2.CAPTION, "Evaluate" );
@@ -1376,8 +1402,12 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         @Override
         public void actionPerformed(ActionEvent e) {
             //  JOptionPane.showMessageDialog( JPulsarScratchPad.this, "", "AAAA" , JOptionPane.INFORMATION_MESSAGE  );
-            kawapad.getThreadManager().startScratchPadThread( new KawapadEvaluator( kawapad, getTextDefault(), 
-                getCurrentDirectory(), getCurrentFile(), false, false, false ) );
+            
+            // >>> (Wed, 13 Nov 2019 17:08:52 +0900) 
+            // kawapad.getThreadManager().startScratchPadThread( KawapadEvaluator.create( kawapad, getTextDefault(), getCurrentDirectory(), 
+            //     getCurrentFile(), false, false, false ) );
+            evaluate( getTextDefault(), false, false, false  );
+            // <<< (Wed, 13 Nov 2019 17:08:52 +0900) 
         }
         {
             putValue( Action2.CAPTION, "Run" );
@@ -3025,10 +3055,11 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     }
     public void openIntro() {
         setCaretPosition( 0 );
-        kawapad.getThreadManager().startScratchPadThread( new KawapadEvaluator(
-            kawapad,
-            "(help about-intro)",
-            getCurrentDirectory(), getCurrentFile(), true, true, true ));
+        // >>> (Wed, 13 Nov 2019 17:08:52 +0900) 
+        // kawapad.getThreadManager().startScratchPadThread( KawapadEvaluator.create( kawapad, "(help about-intro)", 
+        // getCurrentDirectory(), getCurrentFile(), true, true, true ));
+        evaluate( "(help about-intro)", true, true, true );
+        // <<< (Wed, 13 Nov 2019 17:08:52 +0900) 
         
     }
 
