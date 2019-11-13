@@ -576,7 +576,7 @@ public class PulsarFrame extends KawapadFrame {
     public final Action TAP_TEMPO_ACTION = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            pulsar.tempoTapper.tap();
+            pulsar.getTempoTapper().tap();
         }
         {
             putValue( Action2.CAPTION, "Tap Tempo" );
@@ -868,7 +868,7 @@ public class PulsarFrame extends KawapadFrame {
                     public void stateChanged(ChangeEvent e) {
                         try {
                             //                      logInfo( "TempoSlider : " + ((JSlider)e.getSource()).getValue() );
-                            pulsar.tempoTapper.setBeatsPerMinute( ((JSlider)e.getSource()).getValue() );
+                            pulsar.getTempoTapper().setBeatsPerMinute( ((JSlider)e.getSource()).getValue() );
                         } catch (JackException e1) {
                             logError("", e1);
                         }
@@ -886,7 +886,7 @@ public class PulsarFrame extends KawapadFrame {
                     sl_tempoSlider.setBorder( BorderFactory.createTitledBorder("TEMPO") );
                 
                 // InitializeTempoSlider
-                pulsar.tempoTapper.registerNotifier( new TempoTapperTempoNotifier() {
+                pulsar.getTempoTapper().registerNotifier( new TempoTapperTempoNotifier() {
                     @Override
                     public void notifyTempo(double beatPerMinute) {
                         sl_tempoSlider.setValue( (int)beatPerMinute );
@@ -943,11 +943,11 @@ public class PulsarFrame extends KawapadFrame {
         tempoTapButton.addActionListener( new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                pulsar.tempoTapper.tap();
+                pulsar.getTempoTapper().tap();
             }
         });
 
-        pulsar.tempoTapper.registerNotifier( new TempoTapperTempoNotifier() {
+        pulsar.getTempoTapper().registerNotifier( new TempoTapperTempoNotifier() {
             @Override
             public void notifyTempo(double beatPerMinute) {
                 tempoTapButton.setText( String.format( "Tempo=%.2f", beatPerMinute  ) );

@@ -602,8 +602,11 @@ public final class Pulsar extends Metro {
             }
         }
     }
-    final TempoTapper tempoTapper = new TempoTapper();
-
+    private final TempoTapper tempoTapper = new TempoTapper();
+    public TempoTapper getTempoTapper() {
+        return tempoTapper;
+    }
+    
     interface ConnectProc {
         void apply( Pulsar pulsar, String from, String to ) throws JackException;
         ConnectProc CONNECT = new ConnectProc() {
