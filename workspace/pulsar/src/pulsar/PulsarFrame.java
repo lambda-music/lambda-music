@@ -71,6 +71,7 @@ import gnu.mapping.Environment;
 import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import kawa.standard.Scheme;
+import kawapad.KawapadEvaluator;
 import kawapad.KawapadFrame;
 import metro.MetroTrack;
 import pulsar.Pulsar.TempoTapperTempoNotifier;
@@ -104,11 +105,11 @@ public class PulsarFrame extends KawapadFrame {
 
     PulsarFrame frame = this;
     
-    public static PulsarFrame start(Pulsar pulsar) {
-        return new PulsarFrame( pulsar, false, PULSAR_DEFAULT_CAPTION );
+    public static PulsarFrame start(Pulsar pulsar, KawapadEvaluator evaluator ) {
+        return new PulsarFrame( pulsar, evaluator, false, PULSAR_DEFAULT_CAPTION );
     }
-    public static PulsarFrame start(Pulsar pulsar, boolean shutdownWhenClose ) {
-        return new PulsarFrame( pulsar, shutdownWhenClose, PULSAR_DEFAULT_CAPTION );
+    public static PulsarFrame start(Pulsar pulsar, KawapadEvaluator evaluator, boolean shutdownWhenClose ) {
+        return new PulsarFrame( pulsar, evaluator, shutdownWhenClose, PULSAR_DEFAULT_CAPTION );
     }
 
     static final int PB_POSITION_MAX = 1024;
@@ -208,8 +209,8 @@ public class PulsarFrame extends KawapadFrame {
     boolean shutdownWhenClose;
 
     Pulsar pulsar;
-    PulsarFrame( Pulsar pulsar, boolean shutdownWhenClose, String caption ) {
-        super( pulsar.getSchemeSecretary(), caption );
+    PulsarFrame( Pulsar pulsar, KawapadEvaluator evaluator, boolean shutdownWhenClose, String caption ) {
+        super( pulsar.getSchemeSecretary(), evaluator, caption );
         
         this.pulsar = pulsar;
         this.shutdownWhenClose = shutdownWhenClose;

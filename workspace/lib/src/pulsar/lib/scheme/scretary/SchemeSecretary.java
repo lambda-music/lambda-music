@@ -19,6 +19,7 @@ import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import kawa.standard.Scheme;
 import pulsar.lib.scheme.SchemeExecutor;
+import pulsar.lib.scheme.SchemeResult;
 import pulsar.lib.secretary.Invokable;
 import pulsar.lib.secretary.InvokablyRunnable;
 import pulsar.lib.secretary.SecretariallyInvokable;
@@ -368,7 +369,7 @@ public class SchemeSecretary extends Secretary<Scheme> implements ShutdownHook {
             throw new RuntimeException(e);
         }
     }
-    public static SchemeExecutor.Result evaluateScheme( SchemeSecretary schemeSecretary,
+    public static SchemeResult evaluateScheme( SchemeSecretary schemeSecretary,
             Collection<Runnable> threadInitializers, 
             Map<String,Object> variables, 
             String schemeScript, File currentDirectory, File schemeScriptFile, String schemeScriptURI ) 
@@ -378,13 +379,13 @@ public class SchemeSecretary extends Secretary<Scheme> implements ShutdownHook {
             new StringReader( schemeScript ), currentDirectory, schemeScriptFile, schemeScriptURI );
     }
 
-    public static SchemeExecutor.Result evaluateScheme( SchemeSecretary schemeSecretary, 
+    public static SchemeResult evaluateScheme( SchemeSecretary schemeSecretary, 
             Collection<Runnable> threadInitializers, 
             Map<String,Object> variables, 
             Reader schemeScript, File currentDirectory, File schemeScriptFile, String schemeScriptURI ) {
-        return schemeSecretary.executeSecretarially( new SecretaryMessage.NoThrow<Scheme,SchemeExecutor.Result>() {
+        return schemeSecretary.executeSecretarially( new SecretaryMessage.NoThrow<Scheme,SchemeResult>() {
             @Override
-            public SchemeExecutor.Result execute0(Scheme scheme, Object[] args) {
+            public SchemeResult execute0(Scheme scheme, Object[] args) {
                 return SchemeExecutor.evaluateScheme(scheme, threadInitializers, variables, schemeScript, currentDirectory, schemeScriptFile, schemeScriptURI);
             }
         }, Invokable.NOARG );

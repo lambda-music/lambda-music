@@ -232,9 +232,10 @@ public class Kawapad extends JTextPane implements MenuInitializer {
 
     ////////////////////////////////////////////////////////////////////////////
     static ArrayList<Kawapad> kawapadList = new ArrayList<>();
-    public Kawapad( SchemeSecretary schemeSecretary ) {
+    public Kawapad( SchemeSecretary schemeSecretary, KawapadEvaluator evaluator ) {
         super();
         this.schemeSecretary = schemeSecretary;
+        this.evaluator = evaluator;
         
         // initialization
         registerLocalSchemeInitializers( schemeSecretary, this );
@@ -437,15 +438,14 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     //
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    void evaluate( String text,  boolean insertText, boolean replaceText, boolean doReset) {
+    final KawapadEvaluator evaluator;
+    public void evaluate( String text,  boolean doInsertText, boolean doReplaceText, boolean doReset) {
         if ( text != null ) {
-            kawapad.getThreadManager().startScratchPadThread( 
-                KawapadEvaluator.create( 
-                    kawapad, text, getCurrentDirectory(), getCurrentFile(), 
-                    insertText, replaceText, doReset ) );
+            this.evaluator.evaluate( kawapad, text, doInsertText, doReplaceText, doReset );
         } else {
-            logWarn( "Ignored because currently no text is selected. " );
+            Kawapad.logWarn( "Ignored because currently no text is selected. " );
         }
+
     }
     
     
@@ -3246,7 +3246,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     }
     
     public KawapadFrame createKawapadFrame( File f ) throws IOException {
-        KawapadFrame kawapadFrame = new KawapadFrame( this.kawapad.schemeSecretary, "Kawapad" );
+        KawapadFrame kawapadFrame = new KawapadFrame( this.kawapad.schemeSecretary, this.kawapad.evaluator, "Kawapad" );
         Kawapad newKawapad = kawapadFrame.getKawapad();
         Kawapad thisKawapad = this;
         newKawapad.addAllThreadInitializer( thisKawapad.getThreadInitializerList() );

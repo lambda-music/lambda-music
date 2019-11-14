@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 
 import kawapad.Kawapad;
 import kawapad.KawapadDocuments;
+import kawapad.KawapadEvaluator;
 import pulsar.lib.GC;
 import pulsar.lib.PulsarLogger;
 import pulsar.lib.Version;
@@ -177,7 +178,8 @@ public class PulsarApplication {
         
         PulsarFrame pulsarFrame;
         if ( guiEnabled )
-            pulsarFrame = PulsarFrame.start( pulsar, true );
+            pulsarFrame = PulsarFrame.start( pulsar, KawapadEvaluator.getRemote( "http://localhost:8192/pulsar" )  ,true );
+//        pulsarFrame = PulsarFrame.start( pulsar, KawapadEvaluator.getLocal()  ,true );
         else
             pulsarFrame = null;
         

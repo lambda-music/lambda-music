@@ -3,9 +3,7 @@ package pulsar.lib.scheme;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.io.Reader;
-import java.io.StringWriter;
 import java.util.Collection;
 import java.util.Map;
 
@@ -15,38 +13,12 @@ import gnu.kawa.io.Path;
 import gnu.lists.Consumer;
 import gnu.mapping.CallContext;
 import gnu.mapping.Environment;
-import gnu.mapping.Values;
 import kawa.Shell;
 import kawa.standard.Scheme;
 import kawa.standard.load;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 
 public class SchemeExecutor {
-    public static final class Result {
-        public final boolean isDocument;
-        public final Object value;
-        public final String valueAsString;
-        public final Throwable error;
-        public final boolean succeeded() {
-            return error == null;
-        }
-        public Result( boolean isDocument, Object value, String valueAsString, Throwable error ) {
-            super();
-            this.isDocument = isDocument;
-            this.value = value;
-            this.valueAsString = valueAsString;
-            this.error = error;
-        }
-        public void throwIfError() {
-            if ( ! succeeded() ) {
-                throw new RuntimeException( this.error );
-            }
-        }
-        public boolean isEmpty() {
-            return this.error == null && ( this.value == null || Values.empty.equals( this.value ) );
-        }
-    }
-
     public static void execSchemeFromResource( Scheme scheme, Class parentClass, String resourcePath ) throws IOException {
         SchemeExecutor.evaluateScheme( 
             scheme, 
@@ -57,7 +29,7 @@ public class SchemeExecutor {
             ).throwIfError();
     }
 
-    public static Result evaluateScheme( 
+    public static SchemeResult evaluateScheme( 
             Scheme scheme, Collection<Runnable> threadInitializers, 
             Map<String, Object> variables, Reader schemeScript, 
             File currentDirectory, File currentFile, String schemeScriptURI )
@@ -119,31 +91,17 @@ public class SchemeExecutor {
                 // Object result = Shell.run( schemeScript, schemeScriptURI, scheme.getEnvironment(), true, 0 ); 
     
                 if ( resultValue == null ) {
-                    return new Result( false, null, "#!null", null );
+                    return SchemeResult.createNull();
                 } else {
                     if ( Descriptive.isSchemeDocument( resultValue ) ) {
                         Object doc = Descriptive.getSchemeDocument(resultValue);
-                        return new Result( true, doc, SchemePrinter.printDocument(doc), null );
+                        return SchemeResult.createSucceeded( true, doc, SchemePrinter.printDocument(doc) );
                     } else {
-                        return new Result( false, resultValue, SchemePrinter.printSchemeValue(resultValue), null );
+                        return SchemeResult.createSucceeded( false, resultValue, SchemePrinter.printSchemeValue(resultValue)  );
                     }
                 }
             } catch (Throwable e) {
-                StringWriter sw = new StringWriter();
-                PrintWriter w = new PrintWriter( sw );
-                try {
-                    e.printStackTrace( w );
-                    w.flush();
-                    sw.flush();
-                    return new Result( false, null, sw.toString(), e );
-                } finally {
-                    try {
-                        sw.close();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                    w.close();
-                }
+                return SchemeResult.createError( e );
             } finally {
                 SchemeUtils.putVar( env , "scheme", false );
                 

@@ -109,7 +109,7 @@ public class KawapadFrame extends JFrame {
     };
 
 
-    public KawapadFrame( SchemeSecretary schemeSecretary, String title ) throws HeadlessException {
+    public KawapadFrame( SchemeSecretary schemeSecretary, KawapadEvaluator evaluator, String title ) throws HeadlessException {
         super(title);
         this.setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
         
@@ -117,7 +117,7 @@ public class KawapadFrame extends JFrame {
 //      invokeLocalSchemeInitializers( schemeSecretary, this);
 //      DELETED <<< INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
         
-        kawapad = new Kawapad( schemeSecretary ) {
+        kawapad = new Kawapad( schemeSecretary, evaluator ) {
             // Special thanks go to tips4java
             // https://tips4java.wordpress.com/2009/01/25/no-wrap-text-pane/
             public boolean getScrollableTracksViewportWidth() {
@@ -288,7 +288,8 @@ public class KawapadFrame extends JFrame {
         Kawapad.registerGlobalIntroSchemeInitializer( schemeSecretary );
         Kawapad.registerGlobalSchemeInitializer( schemeSecretary );
         schemeSecretary.newScheme();
-        KawapadFrame kawapadFrame = new KawapadFrame( schemeSecretary, "Scheme Scratch Pad" );
+        KawapadEvaluator evaluator = KawapadEvaluator.getLocal();
+        KawapadFrame kawapadFrame = new KawapadFrame( schemeSecretary, evaluator,  "Scheme Scratch Pad" );
         kawapadFrame.init();
         return kawapadFrame;
     }

@@ -19,6 +19,7 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 import pulsar.lib.scheme.SchemeExecutor;
+import pulsar.lib.scheme.SchemeResult;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 
 
@@ -35,7 +36,7 @@ import pulsar.lib.scheme.scretary.SchemeSecretary;
  * This class uses {@link com.sun.net.httpserver.HttpServer} class. Usually
  * these com.sun.* classes should not be used by non-system applications. But I
  * believe that it is allowed to use these class because it is marked
- * as @jdk.Exported. 
+ * as @jdk.Exported.
  * 
  * @see <a href="https://www.google.com/search?q=jdk.Exported">https://www.google.com/search?q=jdk.Exported</a> 
  * 
@@ -110,12 +111,12 @@ public class SchemeHttp {
             if ( t.getRemoteAddress().getAddress().isLoopbackAddress() ) {
                 String requestString = readInputStream( t.getRequestBody() ); 
                 logInfo( requestString );
-                SchemeExecutor.Result result = SchemeSecretary.evaluateScheme( schemeSecretary, threadInitializers, null, requestString, null, null, "web-scratchpad" );
+                SchemeResult schemeResult = SchemeSecretary.evaluateScheme( schemeSecretary, threadInitializers, null, requestString, null, null, "web-scratchpad" );
                 String responseString;
                 responseString = 
                         SchemeExecutor.endWithLineFeed( requestString ) + 
-                        SchemeExecutor.formatResult( result.valueAsString );
-                logInfo( result.valueAsString );
+                        SchemeExecutor.formatResult( schemeResult.valueAsString );
+                logInfo( schemeResult.valueAsString );
                 t.sendResponseHeaders(200, responseString.length());
                 t.getResponseHeaders().put( "Content-Type",  Arrays.asList( "text/plain; charset=utf-8" ) );
                 OutputStream os = t.getResponseBody();
