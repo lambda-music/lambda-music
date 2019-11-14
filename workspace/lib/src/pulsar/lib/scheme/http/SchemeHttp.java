@@ -24,15 +24,6 @@ import pulsar.lib.scheme.scretary.SchemeSecretary;
 
 
 /**
- * This class enables you to execute scripts from your editor. For example, in
- * vim you can achieve it by creating a new keybind as following :
- * 
- * > xmap <Return> :!curl -sSd "`cat`" http://localhost:8192/pulsar^M^M
- * 
- * After creating the keybind, press enter after entering visual-mode in vim to
- * execute the selection as scheme program in the current Pulsar application
- * instance.
- * 
  * This class uses {@link com.sun.net.httpserver.HttpServer} class. Usually
  * these com.sun.* classes should not be used by non-system applications. But I
  * believe that it is allowed to use these class because it is marked
@@ -67,7 +58,10 @@ public class SchemeHttp {
     }
     private void init( int port ) throws IOException {
         httpServer = HttpServer.create(new InetSocketAddress( port ), 0);
-        httpServer.createContext("/pulsar", new PulsarHttpHandler() );
+        httpServer.createContext( "/pulsar", new VimSchemeEvaluation() );
+        httpServer.createContext( "/vim",   new VimSchemeEvaluation() );
+        httpServer.createContext( "/eval", new PlainSchemeEvaluation() );
+        
         httpServer.setExecutor(null); // creates a default executor
         httpServer.start();
         schemeSecretary.addShutdownHook( new Runnable() {
@@ -101,27 +95,19 @@ public class SchemeHttp {
             return buf.toString();
         }
     }
+    
+    static void logHandle(HttpExchange t, Class<?> c ) {
+        logInfo( "=========" + c.getSimpleName() + "========" );
+        logInfo( t.getRemoteAddress().toString() );
+    }
 
-    class PulsarHttpHandler implements HttpHandler {
+    abstract class SchemeHttpHandler implements HttpHandler {
+        public abstract void handleProc(HttpExchange exchange) throws IOException;
         @Override
-        public void handle(HttpExchange t) throws IOException {
-            logInfo( "=========PulsarHttp========" );
-            logInfo( t.getRemoteAddress().toString() );
-
+        public final void handle(HttpExchange t) throws IOException {
+            logHandle( t, this.getClass() );
             if ( t.getRemoteAddress().getAddress().isLoopbackAddress() ) {
-                String requestString = readInputStream( t.getRequestBody() ); 
-                logInfo( requestString );
-                SchemeResult schemeResult = SchemeSecretary.evaluateScheme( schemeSecretary, threadInitializers, null, requestString, null, null, "web-scratchpad" );
-                String responseString;
-                responseString = 
-                        SchemeExecutor.endWithLineFeed( requestString ) + 
-                        SchemeExecutor.formatResult( schemeResult.valueAsString );
-                logInfo( schemeResult.valueAsString );
-                t.sendResponseHeaders(200, responseString.length());
-                t.getResponseHeaders().put( "Content-Type",  Arrays.asList( "text/plain; charset=utf-8" ) );
-                OutputStream os = t.getResponseBody();
-                os.write(responseString.getBytes());
-                os.close();
+                handleProc( t );
             } else {
                 // forbidden
                 String response = "";
@@ -132,6 +118,53 @@ public class SchemeHttp {
                 os.close();
             }
         }
+        
+    }
 
+    /*
+     * This class enables you to execute scripts from your editor. For example, in
+     * vim you can achieve it by creating a new keybind as following :
+     * 
+     * > xmap <Return> :!curl -sSd "`cat`" http://localhost:8192/pulsar^M^M
+     * 
+     * After creating the keybind, press enter after entering visual-mode in vim to
+     * execute the selection as scheme program in the current Pulsar application
+     * instance.
+     * 
+     */
+    class VimSchemeEvaluation extends SchemeHttpHandler {
+        @Override
+        public void handleProc(HttpExchange t) throws IOException {
+            String requestString = readInputStream( t.getRequestBody() ); 
+            logInfo( requestString );
+            SchemeResult schemeResult = SchemeSecretary.evaluateScheme( schemeSecretary, threadInitializers, null, requestString, null, null, "web-scratchpad" );
+            String responseString;
+            responseString = 
+                    SchemeExecutor.endWithLineFeed( requestString ) + 
+                    SchemeExecutor.formatResult( schemeResult.valueAsString );
+            logInfo( schemeResult.valueAsString );
+            t.sendResponseHeaders(200, responseString.length());
+            t.getResponseHeaders().put( "Content-Type",  Arrays.asList( "text/plain; charset=utf-8" ) );
+            OutputStream os = t.getResponseBody();
+            os.write(responseString.getBytes());
+            os.close();
+        }
+    }
+
+    class PlainSchemeEvaluation extends SchemeHttpHandler {
+        @Override
+        public void handleProc(HttpExchange t) throws IOException {
+            String requestString = readInputStream( t.getRequestBody() ); 
+            logInfo( requestString );
+            SchemeResult schemeResult = SchemeSecretary.evaluateScheme( schemeSecretary, threadInitializers, null, requestString, null, null, "web-scratchpad" );
+            String responseString;
+            responseString = schemeResult.valueAsString;
+            logInfo( schemeResult.valueAsString );
+            t.sendResponseHeaders(200, responseString.length());
+            t.getResponseHeaders().put( "Content-Type",  Arrays.asList( "text/plain; charset=utf-8" ) );
+            OutputStream os = t.getResponseBody();
+            os.write(responseString.getBytes());
+            os.close();
+        }
     }
 }

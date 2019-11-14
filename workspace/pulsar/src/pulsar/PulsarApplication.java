@@ -178,7 +178,7 @@ public class PulsarApplication {
         
         PulsarFrame pulsarFrame;
         if ( guiEnabled )
-            pulsarFrame = PulsarFrame.start( pulsar, KawapadEvaluator.getRemote( "http://localhost:8192/pulsar" )  ,true );
+            pulsarFrame = PulsarFrame.start( pulsar, KawapadEvaluator.getRemote( "http://localhost:8192/eval" )  ,true );
 //        pulsarFrame = PulsarFrame.start( pulsar, KawapadEvaluator.getLocal()  ,true );
         else
             pulsarFrame = null;
