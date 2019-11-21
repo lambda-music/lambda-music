@@ -178,6 +178,8 @@ public final class Pulsar extends Metro {
         schemeSecretary.registerSchemeInitializer( pulsar, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
             public void execute0( Scheme scheme, Object[] args ) {
+                // FIXME this should depend on the current Pulsar instance.
+                // (Wed, 20 Nov 2019 18:32:11 +0900)
                 PulsarFramePackage.initScheme( pulsar, scheme );
             }
         });

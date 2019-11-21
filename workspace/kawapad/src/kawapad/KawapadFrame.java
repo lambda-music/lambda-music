@@ -31,6 +31,8 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -109,7 +111,7 @@ public class KawapadFrame extends JFrame {
     };
 
 
-    public KawapadFrame( SchemeSecretary schemeSecretary, KawapadEvaluator evaluator, String title ) throws HeadlessException {
+    public KawapadFrame( SchemeSecretary schemeSecretary, KawapadEvaluator evaluator, Collection<KawapadEvaluator> evaluatorList, String title ) throws HeadlessException {
         super(title);
         this.setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
         
@@ -180,40 +182,47 @@ public class KawapadFrame extends JFrame {
 
         {
             menuBar = new JMenuBar();
-            JMenu fileMenuItem = new JMenu( "File" );
-            fileMenuItem.setMnemonic('f');
-            menuBar.add( fileMenuItem );
-            fileMenuItem.add( new JMenuItem( NEW_SCRATCHPAD_ACTION ) );
+            JMenu fileMenu = new JMenu( "File" );
+            fileMenu.setMnemonic('f');
+            menuBar.add( fileMenu );
+            fileMenu.add( new JMenuItem( NEW_SCRATCHPAD_ACTION ) );
             
-            JMenu editMenuItem = new JMenu( "Edit" );
-            editMenuItem.setMnemonic('e');
-            menuBar.add( editMenuItem );
+            JMenu editMenu = new JMenu( "Edit" );
+            editMenu.setMnemonic('e');
+            menuBar.add( editMenu );
             
-            JMenu viewMenuItem = new JMenu( "View" );
-            viewMenuItem.setMnemonic('v');
-            menuBar.add( viewMenuItem );
+            JMenu viewMenu = new JMenu( "View" );
+            viewMenu.setMnemonic('v');
+            menuBar.add( viewMenu );
             
-            JMenu navigateMenuItem = new JMenu( "Navigate" );
-            navigateMenuItem.setMnemonic('a');
-            menuBar.add( navigateMenuItem );
+            JMenu navigateMenu = new JMenu( "Navigate" );
+            navigateMenu.setMnemonic('a');
+            menuBar.add( navigateMenu );
             
-            JMenu schemeMenuItem = new JMenu( "Scheme" );
-            schemeMenuItem.setMnemonic('r');
-            menuBar.add( schemeMenuItem );
+            JMenu schemeMenu = new JMenu( "Scheme" );
+            schemeMenu.setMnemonic('r');
+            menuBar.add( schemeMenu );
+
+            JMenu serverMenu = new JMenu( "Server" );
+            serverMenu.setMnemonic('i');
+            menuBar.add( serverMenu );
             
             Map<String,JMenu> map = new HashMap<>();
-            map.put( "file"     , fileMenuItem );
-            map.put( "edit"     , editMenuItem );
-            map.put( "view"     , viewMenuItem );
-            map.put( "navigate" , navigateMenuItem );
-            map.put( "scheme"   , schemeMenuItem );
+            map.put( "file"     , fileMenu );
+            map.put( "edit"     , editMenu );
+            map.put( "view"     , viewMenu );
+            map.put( "navigate" , navigateMenu );
+            map.put( "scheme"   , schemeMenu );
+            map.put( "server"   , serverMenu );
             kawapad.initMenu( map );
             
             Action2.processMenuBar( menuBar );
             setJMenuBar( menuBar );
+            
+            // (Wed, 20 Nov 2019 11:51:41 +0900)
+            this.kawapad.setEvaluatorList( evaluatorList, serverMenu );
         }
 
-        
         {
             setSize( new Dimension( 640, 480 ) );
             setDefaultCloseOperation( JFrame.DO_NOTHING_ON_CLOSE );
@@ -282,14 +291,13 @@ public class KawapadFrame extends JFrame {
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
-    public static KawapadFrame createStaticInstance() {
+    public static KawapadFrame createStaticInstance( KawapadEvaluator evaluator, Collection<KawapadEvaluator> evaluatorList ) {
         SchemeSecretary schemeSecretary = new SchemeSecretary();
         DescriptiveHelp.registerGlobalSchemeInitializer( schemeSecretary );
         Kawapad.registerGlobalIntroSchemeInitializer( schemeSecretary );
         Kawapad.registerGlobalSchemeInitializer( schemeSecretary );
         schemeSecretary.newScheme();
-        KawapadEvaluator evaluator = KawapadEvaluator.getLocal();
-        KawapadFrame kawapadFrame = new KawapadFrame( schemeSecretary, evaluator,  "Scheme Scratch Pad" );
+        KawapadFrame kawapadFrame = new KawapadFrame( schemeSecretary, evaluator, evaluatorList, "Scheme Scratch Pad" );
         kawapadFrame.init();
         return kawapadFrame;
     }
@@ -314,7 +322,7 @@ public class KawapadFrame extends JFrame {
     }
     
     public static void outputKeyStrokeReference() throws IOException {
-        KawapadFrame kawapadFrame = createStaticInstance();
+        KawapadFrame kawapadFrame = createStaticInstance( KawapadEvaluator.getLocal(), Collections.EMPTY_LIST );
         try {
             Thread.sleep( 2048 );
         } catch ( InterruptedException e ) {
@@ -325,7 +333,7 @@ public class KawapadFrame extends JFrame {
     }
 
     public static void outputDocument() throws IOException {
-        KawapadFrame kawapadFrame = createStaticInstance();
+        KawapadFrame kawapadFrame = createStaticInstance( KawapadEvaluator.getLocal(), Collections.EMPTY_LIST );
         try {
             Thread.sleep( 2048 );
         } catch ( InterruptedException e ) {
@@ -333,15 +341,24 @@ public class KawapadFrame extends JFrame {
         DescriptiveDocumentCategory.outputReference( kawapadFrame.kawapad.getSchemeSecretary(), "kawapad-procedures", null );
         kawapadFrame.quit();
     }
-    public static void start(File f) throws IOException {
-        KawapadFrame kawapadFrame = createStaticInstance();
+    
+    public static void start(File f, KawapadEvaluator evaluator, Collection<KawapadEvaluator> evaluatorList ) throws IOException {
+        KawapadFrame kawapadFrame = createStaticInstance( evaluator, evaluatorList );
         if ( f != null )
             kawapadFrame.kawapad.openFile( f );
         else
             kawapadFrame.kawapad.openIntro();
     }
+    public static void start( KawapadEvaluator evaluator, Collection<KawapadEvaluator> evaluatorList ) throws IOException {
+        start( null, evaluator, evaluatorList );
+    }
+    public static void start( Collection<KawapadEvaluator> evaluatorList ) throws IOException {
+        start( null, KawapadEvaluator.getLocal(), evaluatorList );
+    }
     public static void start() throws IOException {
-        start( null );
-        
+        start( null, KawapadEvaluator.getLocal(), Collections.EMPTY_LIST  );
+    }
+    public static void start( File f ) throws IOException {
+        start( f, KawapadEvaluator.getLocal(), Collections.EMPTY_LIST );
     }
 }

@@ -8,16 +8,18 @@ import pulsar.lib.scheme.SchemeResult;
 public abstract class KawapadEvaluatorRunnable implements Runnable {
     Kawapad kawapad;
     String schemeScript;
-    boolean insertText;
-    boolean replaceText;
-    boolean doReset;
-    KawapadEvaluatorRunnable( Kawapad kawapad, String schemeScript, boolean insertText, boolean replaceText, boolean doReset ) {
+    boolean doInsertText;
+    boolean doReplaceText;
+    private boolean doReportError;
+    boolean doResetFileModified;
+    KawapadEvaluatorRunnable( Kawapad kawapad, String schemeScript, boolean doInsertText, boolean doReplaceText, boolean doReportError, boolean doResetFileModified ) {
         super();
         this.kawapad = kawapad;
         this.schemeScript = schemeScript;
-        this.insertText = insertText;
-        this.replaceText = replaceText;
-        this.doReset = doReset;
+        this.doInsertText = doInsertText;
+        this.doReplaceText = doReplaceText;
+        this.doResetFileModified = doResetFileModified;
+        this.doReportError = doReportError;
     }
     private void procDocument(SchemeResult schemeResult) {
         Kawapad.logWarn( "**KAWAPAD_PAGE**" );
@@ -25,7 +27,7 @@ public abstract class KawapadEvaluatorRunnable implements Runnable {
             kawapad,
             schemeResult.valueAsString.replaceFirst( "\n$", "" ),
             false,
-            doReset
+            doResetFileModified
                 ));
     }
     private void procInsert(SchemeResult schemeResult) {
@@ -36,7 +38,7 @@ public abstract class KawapadEvaluatorRunnable implements Runnable {
                 resultString = "\n" + SchemeExecutor.formatResult( schemeResult.valueAsString ); 
             }
             Kawapad.logInfo( resultString );
-            SwingUtilities.invokeLater( new RunnableInsertTextToTextPane( kawapad, resultString, true, doReset ) );
+            SwingUtilities.invokeLater( new RunnableInsertTextToTextPane( kawapad, resultString, true, doResetFileModified ) );
         } else {
             // do not insert.
             Kawapad.logInfo( "KawapadEvaluator: do not insert (2). " + schemeResult.value );
@@ -48,7 +50,7 @@ public abstract class KawapadEvaluatorRunnable implements Runnable {
             SwingUtilities.invokeLater( new RunnableReplaceTextOnTextPane(
                 kawapad,
                 schemeResult.valueAsString,
-                doReset
+                doResetFileModified
                     ));
         } else {
             // do not insert.
@@ -66,8 +68,8 @@ public abstract class KawapadEvaluatorRunnable implements Runnable {
         if ( schemeResult.succeeded() ) {
             if ( schemeResult.isDocument ) {
                 procDocument( schemeResult );
-            } else if ( insertText ) {
-                if ( replaceText ) {
+            } else if ( doInsertText ) {
+                if ( doReplaceText ) {
                     procReplace( schemeResult );
                 } else {
                     procInsert( schemeResult );
@@ -77,8 +79,9 @@ public abstract class KawapadEvaluatorRunnable implements Runnable {
                 Kawapad.logInfo( "KawapadEvaluator: do not insert (3). " + schemeResult.value );
             }
         } else {
-            // if error, insert anyway. 
-            procInsert( schemeResult );
+            // if error, insert anyway unless doReportError is false;
+            if ( doResetFileModified ) 
+                procInsert( schemeResult );
         }
     }
     public abstract SchemeResult evaluate();

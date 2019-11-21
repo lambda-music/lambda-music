@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
@@ -105,12 +106,6 @@ public class PulsarFrame extends KawapadFrame {
 
     PulsarFrame frame = this;
     
-    public static PulsarFrame start(Pulsar pulsar, KawapadEvaluator evaluator ) {
-        return new PulsarFrame( pulsar, evaluator, false, PULSAR_DEFAULT_CAPTION );
-    }
-    public static PulsarFrame start(Pulsar pulsar, KawapadEvaluator evaluator, boolean shutdownWhenClose ) {
-        return new PulsarFrame( pulsar, evaluator, shutdownWhenClose, PULSAR_DEFAULT_CAPTION );
-    }
 
     static final int PB_POSITION_MAX = 1024;
     
@@ -206,11 +201,20 @@ public class PulsarFrame extends KawapadFrame {
     //
     //////////////////////////////////////////////////////////////////////////////////
     
+    public static PulsarFrame create(
+            Pulsar pulsar, 
+            KawapadEvaluator evaluator, 
+            Collection<KawapadEvaluator> evaluatorList, 
+            boolean shutdownWhenClose,
+            String caption ) {
+        return new PulsarFrame( pulsar, evaluator, evaluatorList, shutdownWhenClose, caption );
+    }
+
     boolean shutdownWhenClose;
 
     Pulsar pulsar;
-    PulsarFrame( Pulsar pulsar, KawapadEvaluator evaluator, boolean shutdownWhenClose, String caption ) {
-        super( pulsar.getSchemeSecretary(), evaluator, caption );
+    PulsarFrame( Pulsar pulsar, KawapadEvaluator evaluator, Collection<KawapadEvaluator> evaluatorList, boolean shutdownWhenClose, String caption ) {
+        super( pulsar.getSchemeSecretary(), evaluator, evaluatorList, caption == null ? PULSAR_DEFAULT_CAPTION : caption );
         
         this.pulsar = pulsar;
         this.shutdownWhenClose = shutdownWhenClose;
@@ -915,7 +919,8 @@ public class PulsarFrame extends KawapadFrame {
         b.addActionListener( new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                pulsar.togglePlaying();
+//                pulsar.togglePlaying();
+                kawapad.evaluate( "", false, false, false );
             }
         });
         return b;

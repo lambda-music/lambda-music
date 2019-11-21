@@ -18,6 +18,7 @@ import java.awt.Graphics;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
 import java.awt.event.KeyEvent;
@@ -51,6 +52,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
@@ -232,10 +234,10 @@ public class Kawapad extends JTextPane implements MenuInitializer {
 
     ////////////////////////////////////////////////////////////////////////////
     static ArrayList<Kawapad> kawapadList = new ArrayList<>();
-    public Kawapad( SchemeSecretary schemeSecretary, KawapadEvaluator evaluator ) {
+    public Kawapad( SchemeSecretary schemeSecretary, KawapadEvaluator currentEvaluator ) {
         super();
         this.schemeSecretary = schemeSecretary;
-        this.evaluator = evaluator;
+        this.currentEvaluator = currentEvaluator;
         
         // initialization
         registerLocalSchemeInitializers( schemeSecretary, this );
@@ -250,7 +252,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         /*
          * (Sun, 07 Oct 2018 23:50:37 +0900) CREATING_KEYMAP
          * 
-         * THIS IS VERY IMPORTANT. I SPEND THREE SLEEPLESS NIGHTS TO FIND THIS OPERATION
+         * THIS IS VERY IMPORTANT. I SPENT THREE SLEEPLESS NIGHTS TO FIND THIS OPERATION
          * IS NECESSARY. This keymap object is SHARED as default! Those key handlers on
          * a keymap object will be definitely overridden unless you explicitly create a
          * new keymap object.
@@ -438,14 +440,103 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     //
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    final KawapadEvaluator evaluator;
+    KawapadEvaluator currentEvaluator;
+    public KawapadEvaluator getCurrentEvaluator() {
+        return currentEvaluator;
+    }
+    public void setCurrentEvaluator(KawapadEvaluator currentEvaluator) {
+        this.currentEvaluator = currentEvaluator;
+    }
+    List<KawapadEvaluator> evaluatorList = new ArrayList<>();
+    public KawapadEvaluator getLocalEvaluator() {
+        return evaluatorList.get( 0 );
+    }
+    public List<KawapadEvaluator> getEvaluatorList() {
+        return Collections.unmodifiableList( this.evaluatorList );
+    }
+    public void addEvaluator( KawapadEvaluator evaluator ) {
+        this.evaluatorList.add( evaluator );
+        updateEvaluatorList();
+    }
+    public void removeEvaluator( KawapadEvaluator evaluator ) {
+        this.evaluatorList.remove( evaluator );
+        updateEvaluatorList();
+    }
+    public void addAllEvaluator( Collection<KawapadEvaluator> evaluatorList ) {
+        this.evaluatorList.addAll( evaluatorList );
+        updateEvaluatorList();
+    }
+    public void removeAllEvaluator( Collection<KawapadEvaluator> evaluatorList ) {
+        this.evaluatorList.removeAll( evaluatorList );
+        updateEvaluatorList();
+    }
+    private JMenu serverMenu=null;
+    public JMenu getServerMenu() {
+        return serverMenu;
+    }
+    public void setServerMenu(JMenu serverMenuItem) {
+        this.serverMenu = serverMenuItem;
+    }
+    void updateEvaluatorList() {
+        if ( serverMenu != null ) {
+            serverMenu.removeAll();
+            int i=0;
+            boolean found = false;
+            for ( KawapadEvaluator evaluator : evaluatorList ) {
+                if ( evaluator == this.currentEvaluator ) {
+                    found = true;
+                }
+                JMenuItem menuItem = createServerMenuItem( evaluator );
+                menuItem.setMnemonic( '0' + i );
+                serverMenu.add( menuItem );
+                i++;
+            }
+            if ( ! found ) {
+                JMenuItem menuItem = createServerMenuItem( this.currentEvaluator );
+                serverMenu.add( menuItem );
+            }
+        }
+    }
+    private JMenuItem createServerMenuItem( KawapadEvaluator evaluator ) {
+        JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem( KawapadName.getCaption( evaluator) );
+        menuItem.addActionListener( new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                setCurrentEvaluator( evaluator );
+                updateEvaluatorList();
+            }
+        });
+        menuItem.setSelected( evaluator == this.currentEvaluator );
+        return menuItem;
+    }
+    /**
+     * (Wed, 20 Nov 2019 11:21:28 +0900)
+     * @param evaluatorList
+     * @param serverMenu
+     * @return
+     *          this
+     */
+    public Kawapad setEvaluatorList( Collection<KawapadEvaluator> evaluatorList, JMenu serverMenu ) {
+        this.evaluatorList.clear();
+        this.evaluatorList.addAll( evaluatorList );
+        this.serverMenu = serverMenu;
+        this.updateEvaluatorList();
+        return this;
+    }
+    
     public void evaluate( String text,  boolean doInsertText, boolean doReplaceText, boolean doReset) {
         if ( text != null ) {
-            this.evaluator.evaluate( kawapad, text, doInsertText, doReplaceText, doReset );
+            this.getCurrentEvaluator().evaluate( kawapad, text, doInsertText, doReplaceText, doReset );
         } else {
             Kawapad.logWarn( "Ignored because currently no text is selected. " );
         }
-
+    }
+    public void locallyEvaluate( String text,  boolean doInsertText, boolean doReplaceText, boolean doReset) {
+        if ( text != null ) {
+            this.getLocalEvaluator().evaluate( kawapad, text, doInsertText, doReplaceText, doReset );
+        } else {
+            Kawapad.logWarn( "Ignored because currently no text is selected. " );
+        }
     }
     
     
@@ -3246,7 +3337,11 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     }
     
     public KawapadFrame createKawapadFrame( File f ) throws IOException {
-        KawapadFrame kawapadFrame = new KawapadFrame( this.kawapad.schemeSecretary, this.kawapad.evaluator, "Kawapad" );
+        KawapadFrame kawapadFrame = new KawapadFrame( 
+                                        this.kawapad.schemeSecretary, 
+                                        this.kawapad.getCurrentEvaluator(), 
+                                        this.kawapad.getEvaluatorList(), 
+                                        "Kawapad" );
         Kawapad newKawapad = kawapadFrame.getKawapad();
         Kawapad thisKawapad = this;
         newKawapad.addAllThreadInitializer( thisKawapad.getThreadInitializerList() );

@@ -145,6 +145,10 @@ public class PulsarApplication {
     }
     
     public static Pulsar start( boolean guiEnabled, boolean httpEnabled, int httpPort, String filename ) throws IOException {
+        return start2( guiEnabled, httpEnabled, httpPort, filename );
+    }
+    
+    public static Pulsar start2( boolean guiEnabled, boolean httpEnabled, int httpPort, String filename ) throws IOException {
 //      >>> VERSION 1 
 //      this.schemeSecretary = new SchemeSecretary();
 //      this.schemeSecretary.setDirectMeeting( false );
@@ -167,8 +171,8 @@ public class PulsarApplication {
         PulsarFrame.registerGlobalSchemeInitializers( schemeSecretary );
         Pulsar pulsar = new Pulsar( schemeSecretary );
 
-        if ( guiEnabled )
-            Kawapad.registerGlobalSchemeInitializer( schemeSecretary );
+//        if ( guiEnabled )
+//            Kawapad.registerGlobalSchemeInitializer( schemeSecretary );
         
         Pulsar.registerLocalSchemeInitializers( schemeSecretary, pulsar );
         Pulsar.registerFinalSchemeInitializers( schemeSecretary, pulsar );
@@ -177,11 +181,19 @@ public class PulsarApplication {
 //      <<< VERSION INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
         
         PulsarFrame pulsarFrame;
-        if ( guiEnabled )
-            pulsarFrame = PulsarFrame.start( pulsar, KawapadEvaluator.getRemote( "http://localhost:8192/eval" )  ,true );
-//        pulsarFrame = PulsarFrame.start( pulsar, KawapadEvaluator.getLocal()  ,true );
-        else
+        if ( guiEnabled ) {
+            Kawapad.registerGlobalSchemeInitializer( schemeSecretary );
+            
+            KawapadEvaluator local = KawapadEvaluator.getLocal();
+            KawapadEvaluator remote = KawapadEvaluator.getRemote( "http://localhost:8191/eval" );
+            pulsarFrame = PulsarFrame.create( 
+                pulsar, 
+                local,
+                Arrays.asList( local, remote ),
+                true , null );
+        } else {
             pulsarFrame = null;
+        }
         
         @SuppressWarnings("unused")
         SchemeHttp schemeHttp;
