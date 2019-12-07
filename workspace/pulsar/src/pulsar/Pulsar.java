@@ -231,11 +231,16 @@ public final class Pulsar extends Metro {
      * file. When a user creates an object by this constructor, the sequencer
      * remains closed after the application boots up. The user must explicitly
      * open a file to use the application.
-     * @throws IOException 
+     * 
+     * (Sun, 24 Nov 2019 12:45:26 +0900) This comment is extremely outdated.
+     * 
      */
-    public Pulsar( SchemeSecretary schemeSecretary ) throws IOException {
+    public Pulsar( SchemeSecretary schemeSecretary ) {
         super();
         this.schemeSecretary = schemeSecretary;
+    }
+    
+    public void init() {
     }
 
     

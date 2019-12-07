@@ -110,7 +110,6 @@ public class KawapadFrame extends JFrame {
         }
     };
 
-
     public KawapadFrame( SchemeSecretary schemeSecretary, KawapadEvaluator evaluator, Collection<KawapadEvaluator> evaluatorList, String title ) throws HeadlessException {
         super(title);
         this.setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );

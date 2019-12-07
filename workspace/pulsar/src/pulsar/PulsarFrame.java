@@ -526,7 +526,6 @@ public class PulsarFrame extends KawapadFrame {
         }
     };
 
-
     @AutomatedActionField
     public final Action RESET_SEQUENCER = new AbstractAction() {
         @Override

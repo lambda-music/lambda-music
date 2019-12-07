@@ -524,7 +524,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         return this;
     }
     
-    public void evaluate( String text,  boolean doInsertText, boolean doReplaceText, boolean doReset) {
+    public void evaluate( String text,  boolean doInsertText, boolean doReplaceText, boolean doReset ) {
         if ( text != null ) {
             this.getCurrentEvaluator().evaluate( kawapad, text, doInsertText, doReplaceText, doReset );
         } else {

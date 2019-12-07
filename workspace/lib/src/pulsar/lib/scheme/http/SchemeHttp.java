@@ -7,10 +7,15 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.invoke.MethodHandles;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.URLDecoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -45,22 +50,75 @@ public class SchemeHttp {
         LOGGER.log(Level.WARNING, msg);
     }
 
+    private static String decode(String value) {
+        try {
+            return URLDecoder.decode(value, StandardCharsets.UTF_8.toString());
+        } catch (UnsupportedEncodingException e) {
+            throw new InternalError( e );
+        }
+    }
+    public static final Map<String, String> decodeQuery(String query) {
+        HashMap<String,String> map = new HashMap<>();
+        String[] elems = query.split("&");
+        for ( String e : elems ) {
+            String[] keyValue = e.split( "=" );
+            map.put( decode( keyValue[0] ), decode( keyValue[1] ) );  
+        }
+        return map;
+    }
 
+    public interface UserAuthentication {
+        UserAuthentication ONLY_LOOPBACK = new UserAuthentication() {
+            @Override
+            public boolean check(HttpExchange httpExchange) {
+                InetAddress remoteAddress = httpExchange.getRemoteAddress().getAddress();
+                return remoteAddress.isLoopbackAddress();
+            }
+        };
+        public static UserAuthentication createAddressRestricted( String userToken, InetAddress ... userAddresses  ) {
+            return new UserAuthentication() {
+                List<InetAddress> addresses = Arrays.asList( userAddresses );
+                @Override
+                public boolean check( HttpExchange httpExchange) {
+                    InetAddress remoteAddress = httpExchange.getRemoteAddress().getAddress();
+                    Map<String, String> query = decodeQuery( httpExchange.getRequestURI().getQuery() );
+
+                    boolean found = false;
+                    for ( InetAddress a : addresses ) { 
+                        if ( remoteAddress.equals( a ) ) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    String token = query.get( "token"  );
+                    
+                    return ( found && token != null && token.equals( userToken ) );
+                }
+            };
+        }
+        boolean check( HttpExchange httpExchange );
+    }
+
+
+    int port;
     SchemeSecretary schemeSecretary;
     HttpServer httpServer;
     Charset charset = Charset.forName( "UTF-8" );
     List<Runnable> threadInitializers;
-    public SchemeHttp( SchemeSecretary schemeSecretary, int port, List<Runnable> threadInitializers ) throws IOException {
+    UserAuthentication authentication;
+    public SchemeHttp( int port, UserAuthentication authentication, SchemeSecretary schemeSecretary, List<Runnable> threadInitializers ) throws IOException {
         super();
+        this.port = port;
+        this.authentication = authentication;
         this.schemeSecretary = schemeSecretary;
         this.threadInitializers = threadInitializers;
-        this.init( port );
+        this.initialize();
     }
-    private void init( int port ) throws IOException {
+    private void initialize() throws IOException {
         httpServer = HttpServer.create(new InetSocketAddress( port ), 0);
-        httpServer.createContext( "/pulsar", new VimSchemeEvaluation() );
-        httpServer.createContext( "/vim",   new VimSchemeEvaluation() );
-        httpServer.createContext( "/eval", new PlainSchemeEvaluation() );
+        httpServer.createContext( "/pulsar", new VimSchemeEvaluation(this.authentication) );
+        httpServer.createContext( "/vim",    new VimSchemeEvaluation(this.authentication) );
+        httpServer.createContext( "/eval",   new PlainSchemeEvaluation(this.authentication) );
         
         httpServer.setExecutor(null); // creates a default executor
         httpServer.start();
@@ -102,11 +160,18 @@ public class SchemeHttp {
     }
 
     abstract class SchemeHttpHandler implements HttpHandler {
+        final UserAuthentication authentication;
+        public SchemeHttpHandler(UserAuthentication authentication) {
+            super();
+            this.authentication = authentication;
+        }
+
         public abstract void handleProc(HttpExchange exchange) throws IOException;
+        
         @Override
         public final void handle(HttpExchange t) throws IOException {
             logHandle( t, this.getClass() );
-            if ( t.getRemoteAddress().getAddress().isLoopbackAddress() ) {
+            if ( authentication.check( t ) ) {
                 handleProc( t );
             } else {
                 // forbidden
@@ -118,7 +183,6 @@ public class SchemeHttp {
                 os.close();
             }
         }
-        
     }
 
     /*
@@ -133,11 +197,19 @@ public class SchemeHttp {
      * 
      */
     class VimSchemeEvaluation extends SchemeHttpHandler {
+        public VimSchemeEvaluation(UserAuthentication authentication) {
+            super( authentication );
+        }
+
         @Override
         public void handleProc(HttpExchange t) throws IOException {
             String requestString = readInputStream( t.getRequestBody() ); 
             logInfo( requestString );
-            SchemeResult schemeResult = SchemeSecretary.evaluateScheme( schemeSecretary, threadInitializers, null, requestString, null, null, "web-scratchpad" );
+            SchemeResult schemeResult = 
+                    SchemeSecretary.evaluateScheme( 
+                        schemeSecretary, 
+                        threadInitializers, 
+                        null, requestString, null, null, "web-scratchpad" );
             String responseString;
             responseString = 
                     SchemeExecutor.endWithLineFeed( requestString ) + 
@@ -152,6 +224,10 @@ public class SchemeHttp {
     }
 
     class PlainSchemeEvaluation extends SchemeHttpHandler {
+        public PlainSchemeEvaluation(UserAuthentication authentication) {
+            super( authentication );
+        }
+
         @Override
         public void handleProc(HttpExchange t) throws IOException {
             String requestString = readInputStream( t.getRequestBody() ); 
@@ -166,5 +242,8 @@ public class SchemeHttp {
             os.write(responseString.getBytes());
             os.close();
         }
+    }
+
+    public void init() {
     }
 }

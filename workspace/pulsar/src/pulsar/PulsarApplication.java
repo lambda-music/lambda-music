@@ -2,20 +2,24 @@ package pulsar;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import kawapad.Kawapad;
 import kawapad.KawapadDocuments;
-import kawapad.KawapadEvaluator;
+import kawapad.KawapadFrame;
 import pulsar.lib.GC;
 import pulsar.lib.PulsarLogger;
 import pulsar.lib.Version;
 import pulsar.lib.scheme.DescriptiveDocumentCategory;
 import pulsar.lib.scheme.DescriptiveHelp;
-import pulsar.lib.scheme.SchemePrinter;
 import pulsar.lib.scheme.http.SchemeHttp;
+import pulsar.lib.scheme.http.SchemeHttp.UserAuthentication;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 
 public class PulsarApplication {
@@ -28,7 +32,7 @@ public class PulsarApplication {
      * passed to the method, only the first argument is taken. 
      * @throws IOException 
      */
-    static Pulsar parseArgsAndStartPulsar( String[] args ) throws IOException {
+    static Pulsar parseArgs01( String[] args ) throws IOException {
         boolean argSpecialOutputReference = false;
         String  argSpecialOutputReferenceName = null;
         boolean argSpecialAllAvailableReferences = false;
@@ -94,7 +98,336 @@ public class PulsarApplication {
             return start(argGui, argHttp, argHttpPort, argFileName);
         }
     }
-    static void forceLoad( Class c ) {
+    static class ArgumentParser {
+        ArrayDeque<SchemeSecretary> schemeSecretaryStack = new ArrayDeque<>();
+        ArrayDeque<Pulsar> pulsarStack= new ArrayDeque<>();
+        ArrayDeque<PulsarFrame> pulsarFrameStack= new ArrayDeque<>();
+        ArrayDeque<KawapadFrame> kawapadFrameStack= new ArrayDeque<>();
+        ArrayDeque<SchemeHttp> schemeHttpStack= new ArrayDeque<>();
+        ArrayDeque<Runnable> runnableStack = new ArrayDeque<>();
+        void deploy() {
+            for ( SchemeSecretary i : schemeSecretaryStack ) {
+                i.newScheme();
+            }
+            for ( Pulsar i : pulsarStack ) {
+                i.init();
+            }
+            for ( PulsarFrame i : pulsarFrameStack ) {
+                i.init();
+            }
+            for ( KawapadFrame i : kawapadFrameStack ) {
+                i.init();
+            }
+            for ( SchemeHttp i : schemeHttpStack ) {
+                i.init();
+            }
+            for ( Runnable i : runnableStack ) {
+                i.run();
+            }
+
+            runnableStack.clear();
+            schemeSecretaryStack.clear();
+            pulsarStack.clear();
+            pulsarFrameStack.clear();
+            kawapadFrameStack.clear();
+            schemeHttpStack.clear();
+        }
+        static final Pattern parseArgPattern = Pattern.compile( "^--([a-zA-Z0-9\\_\\-]+)\\=(.*)$" );
+        class NamedArgument {
+            String key;
+            String value;
+            public NamedArgument( String s ) {
+                Matcher m = parseArgPattern.matcher( s );
+                if ( m.matches() ) {
+                    this.key = m.group( 1 );
+                    this.value = m.group( 2 );
+                } else {
+                   this.key = s;
+                   this.value = null;
+                }
+            }
+        }
+        abstract class Element {
+            abstract Element notifyArg( String s );
+            abstract void notifyEnd();
+        }
+        abstract class ElementFactory {
+            abstract Element create();
+        }
+        HashMap<String,ElementFactory> factoryMap = new HashMap<>();
+        {
+            factoryMap.put( "default", new ElementFactory() {
+                @Override
+                Element create() {
+                    return new Element() {
+                        @Override
+                        Element notifyArg(String s) {
+                            ElementFactory f = factoryMap.get( s );
+                            if ( f == null ) {
+                                throw new RuntimeException( "unknown command \"" + s + "\"" );
+                            } else {
+                                return f.create(); 
+                            }
+                        }
+                        @Override
+                        void notifyEnd() {
+                        }
+                    };
+                }
+            });
+            factoryMap.put( "scheme", new ElementFactory() {
+                @Override
+                Element create() {
+                    return new Element() {
+                        SchemeSecretary schemeSecretary = new SchemeSecretary();
+                        boolean directMeeting = true;
+                        @Override
+                        Element notifyArg(String s) {
+                            if ( s.startsWith( "--"  ) ) {
+                                NamedArgument a = new NamedArgument( s );
+                                if ( "parallel".equals( a.key ) ) {
+                                    this.directMeeting =  true ;
+                                } else if ( "serial".equals( a.key) ) {
+                                    this.directMeeting =  false ;
+                                } else {
+                                    throw new RuntimeException( "unknown argument " + s );
+                                }
+                            } else {
+                                throw new RuntimeException( "unknown command " + s );
+                            }
+                            return this;
+                        }
+                        @Override
+                        void notifyEnd() {
+                            schemeSecretaryStack.push( this.schemeSecretary );
+                            runnableStack.push( new Runnable() {
+                                @Override
+                                public void run() {
+                                    schemeSecretary.setDirectMeeting( directMeeting );
+                                    schemeSecretary.newScheme();
+                                }
+                            });
+                        }
+                    };
+                }
+            });
+            factoryMap.put( "pulsar", new ElementFactory() {
+                @Override
+                Element create() {
+                    return new Element() {
+                        @Override
+                        Element notifyArg(String s) {
+                            throw new RuntimeException( "unknown parameter : " + s);
+                        }
+                        @Override
+                        void notifyEnd() {
+                            if ( schemeSecretaryStack.isEmpty() ) {
+                                throw new RuntimeException( "no scheme is defined." );
+                            }
+                            SchemeSecretary schemeSecretary = schemeSecretaryStack.peek();
+                            Pulsar pulsar = PulsarApplicationLibrary.createPulsar( schemeSecretary );
+                            pulsarStack.push( pulsar );
+
+                            runnableStack.push( new Runnable() {
+                                @Override
+                                public void run() {
+                                    pulsar.init();
+                                }
+                            });
+}
+                    };
+                }
+            });
+            
+            factoryMap.put( "gui", new ElementFactory() {
+                @Override
+                Element create() {
+                    return new Element() {
+                        int httpPort = 8192;
+                        List<String> fileNameList = new ArrayList<>();
+                        @Override
+                        Element notifyArg(String s) {
+                            if ( s.startsWith( "--" ) ) {
+                                NamedArgument a = new NamedArgument(s);
+                                switch ( a.key ) {
+                                    case "port" : 
+                                        this.httpPort = Integer.parseInt( a.value );
+                                        break;
+                                    default :
+                                        throw new RuntimeException( "unknown parameter : " + a.key );
+                                }
+                            } else {
+                                fileNameList.add(s);
+                            }
+                            return this;
+                        }
+                        @Override
+                        void notifyEnd() {
+                            if ( schemeSecretaryStack.isEmpty() ) {
+                                throw new RuntimeException( "no scheme is defined." );
+                            }
+                            SchemeSecretary schemeSecretary = schemeSecretaryStack.peek();
+                            if ( pulsarStack.isEmpty() ) {
+                                throw new RuntimeException( "no pulsar is defined." );
+                            }
+                            Pulsar pulsar = pulsarStack.peek();
+                            
+                            PulsarFrame pulsarFrame = PulsarApplicationLibrary.createPulsarGui( schemeSecretary, pulsar, "http://localhost:"+httpPort+"/eval" );
+                            
+                            pulsarFrameStack.push( pulsarFrame );
+                            
+                            runnableStack.push( new Runnable() {
+                                @Override
+                                public void run() {
+                                    pulsarFrame.init();
+                                    boolean first=true;
+                                    for ( String s : fileNameList ) {
+                                        try {
+                                            if ( first ) { 
+                                                pulsarFrame.openFile( new File(s) );
+                                            } else {
+                                                pulsarFrame.getKawapad().createKawapadFrame( new File(s) );
+                                            }
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                        first=false;
+                                    }
+                                    if ( first ) {
+                                        try {
+                                            pulsarFrame.openIntro();
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    };
+                }
+            });
+            
+
+            factoryMap.put( "http", new ElementFactory() {
+                @Override
+                Element create() {
+                    return new Element() {
+                        private int httpPort = 8192;
+                        UserAuthentication userAuthentication = UserAuthentication.ONLY_LOOPBACK;
+                        @Override
+                        Element notifyArg(String s) {
+                            if (s.startsWith( "--" ) ) {
+                                NamedArgument a = new NamedArgument(s);
+                                switch ( a.key ) {
+                                    case "port" : 
+                                        this.httpPort = Integer.parseInt( a.value );
+                                        break;
+                                    case "auth" : 
+                                        if ( "only-loopback".equals( a.value )  ) {
+                                            this.userAuthentication = UserAuthentication.ONLY_LOOPBACK;
+                                        // } else if ( "only-loopback".equals( a.value )  ) {
+                                        // TODO
+                                        } else {
+                                            throw new RuntimeException( "unknown authentication type : " + a.key );
+                                        }
+                                        break;
+                                    default :
+                                        throw new RuntimeException( "unknown parameter : " + a.key );
+                                }
+                            } else {
+                                throw new RuntimeException( "unknown parameter : " + s );
+                            }
+                            return this;
+                        }
+                        @Override
+                        void notifyEnd() {
+                            if ( schemeSecretaryStack.isEmpty() ) {
+                                throw new RuntimeException( "no scheme is defined." );
+                            }
+                            SchemeSecretary schemeSecretary = schemeSecretaryStack.peek();
+                            if ( pulsarStack.isEmpty() ) {
+                                throw new RuntimeException( "no pulsar is defined." );
+                            }
+                            Pulsar pulsar = pulsarStack.peek();
+                            
+                            try {
+                                SchemeHttp schemeHttp = PulsarApplicationLibrary.createPulsarHttpServer( 
+                                    schemeSecretary, httpPort, userAuthentication, pulsar );
+                                schemeHttpStack.push( schemeHttp );
+                            } catch (IOException e) {
+                                throw new RuntimeException( e );
+                            }
+                        }
+                    };
+                }
+            });
+        }
+        Element defaultElement = factoryMap.get( "default" ).create();
+        Element currentElement = defaultElement;
+        private void notifyEnd() {
+            if ( currentElement != null ) {
+                // If currentElement is default element, notifyEnd() does not do anything;
+                // otherwise calling notifyEnd() does its clean up process.
+                // (Thu, 05 Dec 2019 15:32:18 +0900)
+                currentElement.notifyEnd();
+            }
+        }
+        private void notifyArg(String s) {
+            Element nextElement;
+            if ( "+".equals( s ) ) {
+                nextElement = defaultElement;
+            } else {
+                nextElement = currentElement.notifyArg( s );
+            }
+            if ( nextElement != currentElement ) {
+                notifyEnd();
+            }
+            currentElement=nextElement;
+        }
+
+        public void parse( String[] args ) {
+            for ( String s : args ) {
+                notifyArg( s );
+            }
+            notifyEnd();
+            notifyAllEnd();
+        }
+        private void notifyAllEnd() {
+            ArrayList<Runnable> list = new ArrayList<Runnable>( this.runnableStack );
+            Collections.reverse( list );
+            for ( Runnable r : list ) {
+                try {
+                    System.err.println( "invoke:"+ r  );
+                    r.run();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    static void parseArgs02( String[] args ) throws IOException {
+        
+        ArgumentParser argumentParser = new ArgumentParser();
+        argumentParser.parse( args );
+    }
+    
+    private static void invalidArgs() {
+        System.err.println( "pulsar : missing arguments." );
+        System.err.println( "pulsar [scheme|pulsar|http|gui|token|print-all-available-reference|print-reference] ... " );
+    }
+    
+    static void parseArgs( String[] args ) throws IOException {
+        if ( args.length == 0 ) {
+            invalidArgs();
+        }
+        if ( args[0].equals( "advanced" ) ) {
+            parseArgs02( Arrays.copyOfRange( args , 1, args.length ) );
+        } else {
+            parseArgs01( args );
+        }
+    }
+
+    private static void forceLoad( Class c ) {
         try {
             Class.forName( c.getName(), true, c.getClassLoader() );
         } catch (ClassNotFoundException e) {
@@ -102,7 +435,7 @@ public class PulsarApplication {
         }
     }
     
-    static void loadAllAvailableHelps() {
+    private static void loadAllAvailableHelps() {
         forceLoad( PulsarDocuments.class );
         forceLoad( PulsarFramePackage.class );
         forceLoad( KawapadDocuments.class );
@@ -125,7 +458,7 @@ public class PulsarApplication {
         return pulsar;
     }
     static void quitPulsarSafely(Pulsar pulsar) {
-        // Pause for the safe shutdown; at this moment, other initializers are still
+        // Pause for the safe shutdown; at the moment when it runs here, other initializers are still
         // working and they somehow remain on the AWT-eventqueue and prevent JVM to
         // shutdown. (Mon, 26 Aug 2019 14:11:31 +0900)
         try {
@@ -149,130 +482,44 @@ public class PulsarApplication {
     }
     
     public static Pulsar start2( boolean guiEnabled, boolean httpEnabled, int httpPort, String filename ) throws IOException {
-//      >>> VERSION 1 
-//      this.schemeSecretary = new SchemeSecretary();
-//      this.schemeSecretary.setDirectMeeting( false );
-//      Kawapad.registerGlobalSchemeInitializer( schemeSecretary );
-//      this.schemeSecretary.newScheme();
-//
-//      Pulsar.registerLocalSchemeInitializers( schemeSecretary, this );
-//      Pulsar.invokeLocalSchemeInitializers( schemeSecretary, this );
-//      <<< VERSION 1
-
-        /*
-         * Search INIT_02 inside the entire workspace to know the modification of the
-         * order of Pulsar's initialization.
-         */
-//      >>> VERSION INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
-        SchemeSecretary schemeSecretary = new SchemeSecretary();
-        schemeSecretary.setDirectMeeting( true );
-
-        DescriptiveHelp.registerGlobalSchemeInitializer( schemeSecretary );
-        PulsarFrame.registerGlobalSchemeInitializers( schemeSecretary );
-        Pulsar pulsar = new Pulsar( schemeSecretary );
-
-//        if ( guiEnabled )
-//            Kawapad.registerGlobalSchemeInitializer( schemeSecretary );
-        
-        Pulsar.registerLocalSchemeInitializers( schemeSecretary, pulsar );
-        Pulsar.registerFinalSchemeInitializers( schemeSecretary, pulsar );
-        
-        
-//      <<< VERSION INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
-        
+        SchemeSecretary schemeSecretary = PulsarApplicationLibrary.createSchemeSecretary();
+        Pulsar pulsar = PulsarApplicationLibrary.createPulsar( schemeSecretary );
         PulsarFrame pulsarFrame;
         if ( guiEnabled ) {
-            Kawapad.registerGlobalSchemeInitializer( schemeSecretary );
-            
-            KawapadEvaluator local = KawapadEvaluator.getLocal();
-            KawapadEvaluator remote = KawapadEvaluator.getRemote( "http://localhost:8191/eval" );
-            pulsarFrame = PulsarFrame.create( 
-                pulsar, 
-                local,
-                Arrays.asList( local, remote ),
-                true , null );
+            pulsarFrame = PulsarApplicationLibrary.createPulsarGui( schemeSecretary, pulsar, "http://localhost:"+httpPort+"/eval" );
         } else {
             pulsarFrame = null;
         }
         
-        @SuppressWarnings("unused")
-        SchemeHttp schemeHttp;
-        if ( httpEnabled )
-            schemeHttp = new SchemeHttp( schemeSecretary, httpPort, 
-                Arrays.asList( 
-//                    pulsarFrame.getKawapad().threadInitializer,
-                    pulsar.threadInializer
-                    ));
-        else
-            schemeHttp = null;
-        
-//      REMOVED >>> INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
-//      setting enableTime should be done only in newScheme(); 
-//      this.enabledTimer = true;
-//      REMOVED <<< INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
+        if ( httpEnabled ) {
+            PulsarApplicationLibrary.createPulsarHttpServer( schemeSecretary, httpPort, SchemeHttp.UserAuthentication.ONLY_LOOPBACK, pulsar );
+        }
         
         schemeSecretary.newScheme();
         
-        // INIT_03 : it appears that INIT_02 which is a initial correction of
-        // the initializing order of pulsar/kawapad is not sufficient.
-        // Initializing scheme objects and initializing frames should be separately
-        // initialized.
-        // 
-        // The method init() is called whenever the frame is created.
-        if ( pulsarFrame != null )
+        if ( pulsarFrame != null ) {
             pulsarFrame.init();
-
-        if ( filename != null && pulsarFrame != null )
-            pulsarFrame.openFile( new File( filename ) );
-        else
-            pulsarFrame.openIntro();
+            
+            if ( filename != null ) {
+                pulsarFrame.openFile( new File( filename ) );
+            } else {
+                pulsarFrame.openIntro();
+            }
+        }
         
         return pulsar;
     }
     public static Pulsar start(boolean guiEnabled, boolean httpEnabled, int httpPort ) throws IOException {
         return start(guiEnabled, httpEnabled, httpPort, null );
     }
-    public static Pulsar start(boolean guiEnabled, boolean httpEnabled ) throws IOException {
-        return start(guiEnabled, httpEnabled, 8192, null );
-    }
-    public static Pulsar start(boolean guiEnabled ) throws IOException {
-        return start(guiEnabled, true, 8192, null );
-    }
-    public static Pulsar start() throws IOException {
-        return start(true, true, 8192, null );
-    }
     
-    static final Pattern REMOVE_LINE_BREAKS = Pattern.compile( "(\n\r|\r\n|\r|\n)", Pattern.MULTILINE );
-    public static void initObjectPrinter() {
-        SchemePrinter.setSchemeValuePrinter( new SchemePrinter.Formatter() {
-            @Override
-            public String format(Object value) {
-                if ( NoteListParser.isNotationList( value ) ) {
-//                    gnu.kawa.io.PrettyWriter.lineLengthLoc.set( 1000 );
-                    StringBuilder sb = new StringBuilder();
-                    sb.append( "(" );
-                    for ( Object o : ((Collection)value) ) {
-                        sb.append( REMOVE_LINE_BREAKS.matcher( SchemePrinter.prettyPrintProc( o ) ).replaceAll( "" ) );
-                        sb.append( "\n" );
-                    }
-                    if ( 0 < sb.length() ) 
-                        sb.setLength( sb.length() -1 );
-                    sb.append( ")");
-                    return sb.toString();
-                } else  {
-//                    gnu.kawa.io.PrettyWriter.lineLengthLoc.set( 1000 );
-                    return SchemePrinter.prettyPrintProc( value );
-//                    return SchemePrinter.DEFAULT_SCHEME_VALUE_PRINTER.format( value );
-                }
-            }
-        } );
-    }
 
     public static void main(String[] args) throws IOException {
         System.err.println( "*** WELCOME TO PULSAR ***" );
         System.err.println( "VERSION : " + Version.get( PulsarApplication.class ) );
         PulsarLogger.init();
-        initObjectPrinter();
-        parseArgsAndStartPulsar(args);
+        PulsarPrinter.init();
+//        parseArgs01(args);
+        parseArgs(args);
     }
 }

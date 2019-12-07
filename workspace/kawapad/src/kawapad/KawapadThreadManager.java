@@ -1,8 +1,16 @@
 package kawapad;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayDeque;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public final class KawapadThreadManager {
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+    static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
+    static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
+
     private static final boolean DEBUG = false;
     private final class ScratchPadThread extends Thread {
         private final Runnable r;
@@ -19,6 +27,8 @@ public final class KawapadThreadManager {
 //                      schemeSecretary.initializeSchemeForCurrentThread();
                 // ==== WORKAROUND SEE acvpoeov === (Tue, 23 Jul 2019 11:37:32 +0900) //
                 r.run();
+            } catch ( Throwable t ) {
+                logError( "error occured in " + r , t );
             } finally {
                 if ( DEBUG )
                     Kawapad.logInfo( "ScratchPadThreadManager:end" );
