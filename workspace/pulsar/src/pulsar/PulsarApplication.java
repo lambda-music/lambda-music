@@ -125,12 +125,22 @@ public class PulsarApplication {
                 i.run();
             }
 
+//            ArrayList<PulsarApplicationComponent> components = new ArrayList<>();
+//            
+//            components.addAll( schemeSecretaryStack );
+//            components.addAll( pulsarStack );
+//            components.addAll( pulsarFrameStack );
+//            components.addAll( kawapadFrameStack );
+//            components.addAll( schemeHttpStack );
+
             runnableStack.clear();
             schemeSecretaryStack.clear();
             pulsarStack.clear();
             pulsarFrameStack.clear();
             kawapadFrameStack.clear();
             schemeHttpStack.clear();
+            
+            
         }
         static final Pattern parseArgPattern = Pattern.compile( "^--([a-zA-Z0-9\\_\\-]+)\\=(.*)$" );
         class NamedArgument {
@@ -405,12 +415,53 @@ public class PulsarApplication {
             }
         }
     }
+    static <T> int indexOf( T[] a, T v ) {
+        for ( int i=0; i<a.length; i++ ) {
+            if ( v == a[i] || v.equals( a[i] ) )
+                return i;
+        }
+        return -1;
+    }
+    static <T> T[][] splitArray(T[] a, T separator ) {
+        ArrayList<T[]> result = new ArrayList<>();
+        int last = 0;
+        for(;;){
+            int i = indexOf( a, separator );
+            if ( i < 0 )
+                break;
+            if ( last != i ) 
+                result.add( Arrays.copyOfRange( a, last , i ) );
+            last = i+1;
+        }
+        if ( result.size() == 0 ) {
+            result.add( a.clone() );
+        }
+        return result.toArray((T[][])java.lang.reflect.Array.newInstance( a.getClass(), result.size() ) );
+    }
     static void parseArgs02( String[] args ) throws IOException {
-        
-        ArgumentParser argumentParser = new ArgumentParser();
-        argumentParser.parse( args );
+        String[][] args2 = splitArray( args, "," ) ;
+        for ( int i=0; i<args2.length; i++ ) {
+            String[] args3 = args2[i];
+            if ( 0 < args3.length ) {
+                String mainCommand = args3[0];
+                String[] mainArguments = Arrays.copyOfRange( args3 , 1, args3.length );
+                
+                if( "remote".equals( mainCommand ) ) {
+                    remote( mainArguments );
+                } else {
+                    ArgumentParser argumentParser = new ArgumentParser();
+                    argumentParser.parse( mainArguments );
+                    throw new RuntimeException( "unknown command " + mainCommand );
+                }
+            } else {
+                throw new RuntimeException( "" );
+            }
+        }
     }
     
+    static void remote(String[] mainArguments) {
+        
+    }
     private static void invalidArgs() {
         System.err.println( "pulsar : missing arguments." );
         System.err.println( "pulsar [scheme|pulsar|http|gui|token|print-all-available-reference|print-reference] ... " );

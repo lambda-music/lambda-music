@@ -125,7 +125,7 @@ public class PulsarFrame extends KawapadFrame {
             }
         });
         
-        schemeSecretary.addShutdownHook(pulsarGui.shutdownProc01);
+        schemeSecretary.addShutdownHook( pulsarGui.shutdownProc01 );
     }
     
     public static void invokeLocalSchemeInitializers( SchemeSecretary schemeSecretary, PulsarFrame pulsarGui ) {
@@ -221,7 +221,7 @@ public class PulsarFrame extends KawapadFrame {
         
         this.kawapad.addThreadInitializer( this.threadInializer );
 
-        PulsarFrame.registerLocalSchemeInitializers( pulsar.getSchemeSecretary(), PulsarFrame.this );
+        PulsarFrame.registerLocalSchemeInitializers( this.pulsar.getSchemeSecretary(), PulsarFrame.this );
         //          DELETED >>> INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
         //          PulsarGui.invokeLocalSchemeInitializers( schemeSecretary, PulsarGui.this );
         //          DELETED <<< INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
@@ -530,6 +530,7 @@ public class PulsarFrame extends KawapadFrame {
     public final Action RESET_SEQUENCER = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
+//            getKawapad().evaluate( "(close)", false, false, false );
             pulsar.close();
         }
         {

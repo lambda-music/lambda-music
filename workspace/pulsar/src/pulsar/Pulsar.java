@@ -1296,6 +1296,13 @@ public final class Pulsar extends Metro {
         SchemeUtils.defineVar( env, new SafeProcedureN("quit") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
+                long shutdownWaitNow;
+                if ( 0 < args.length  ) {
+                    shutdownWaitNow = SchemeUtils.toLong( args[0] );
+                } else {
+                    shutdownWaitNow = shutdownWait;
+                }
+                
                 Thread t = new Thread() {
                     @Override
                     public void run() {
@@ -1303,7 +1310,7 @@ public final class Pulsar extends Metro {
                             @Override
                             public void execute0(Scheme resource, Object[] args) {
                                 try {
-                                    Thread.sleep( shutdownWait );
+                                    Thread.sleep( shutdownWaitNow );
                                 } catch (InterruptedException e) {
                                     logWarn( e.getMessage() );
                                 }
@@ -1314,7 +1321,7 @@ public final class Pulsar extends Metro {
                 };
                 t.start();
                 
-                return "Now Pulsar will shutdown in " + shutdownWait + " milliseconds...";
+                return "Now Pulsar will shutdown in " + shutdownWaitNow + " milliseconds...";
             }
         }, "quit" );
         
@@ -1328,9 +1335,9 @@ public final class Pulsar extends Metro {
                                 + "and shutdowns the application in " + shutdownWait + " milliseconds. "
                                 + "Currently the time to shutdown is hard-coded and cannot be changed. "
                                 + THROWS_AN_ERROR_IF_NOT_OPEN );
-        }} );
+        }});
         
-        SchemeUtils.defineVar( env, new SafeProcedureN("tap-tempo") {
+        SchemeUtils.defineVar( env, new SafeProcedureN( "tap-tempo" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 getCurrent().tempoTapper.tap(); 
