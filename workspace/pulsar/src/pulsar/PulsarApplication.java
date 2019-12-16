@@ -196,6 +196,10 @@ public class PulsarApplication {
                 Element create() {
                     return new Element() {
                         SchemeSecretary schemeSecretary = new SchemeSecretary();
+                        {
+                            PulsarApplicationLibrary.initializeSchemeSecretary( schemeSecretary );
+                        }
+                        
                         boolean directMeeting = true;
                         @Override
                         Element notifyArg(String s) {
@@ -538,10 +542,6 @@ public class PulsarApplication {
     }
     
     public static Pulsar start( boolean guiEnabled, boolean httpEnabled, int httpPort, String filename ) throws IOException {
-        return start2( guiEnabled, httpEnabled, httpPort, filename );
-    }
-    
-    public static Pulsar start2( boolean guiEnabled, boolean httpEnabled, int httpPort, String filename ) throws IOException {
         SchemeSecretary schemeSecretary = PulsarApplicationLibrary.createSchemeSecretary();
         Pulsar pulsar = PulsarApplicationLibrary.createPulsar( schemeSecretary );
         PulsarFrame pulsarFrame;

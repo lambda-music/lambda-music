@@ -12,9 +12,19 @@ import pulsar.lib.scheme.http.SchemeHttp.UserAuthentication;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 
 public class PulsarApplicationLibrary {
+    public static void initializeSchemeSecretary( SchemeSecretary schemeSecretary ) {
+        // pulsar gui
+        PulsarFrame.registerGlobalSchemeInitializers( schemeSecretary );
+        Kawapad.registerGlobalSchemeInitializer( schemeSecretary );
+        // pulsar
+        DescriptiveHelp.registerGlobalSchemeInitializer( schemeSecretary );
+        Pulsar.registerGlobalSchemeInitializers( schemeSecretary );
+    }
+
     public static SchemeSecretary createSchemeSecretary() {
         SchemeSecretary schemeSecretary = new SchemeSecretary();
         schemeSecretary.setDirectMeeting( true );
+        initializeSchemeSecretary( schemeSecretary );
         return schemeSecretary;
     }
 
@@ -28,23 +38,17 @@ public class PulsarApplicationLibrary {
     }
     public static Pulsar createPulsar( SchemeSecretary schemeSecretary ) {
         Pulsar pulsar = new Pulsar( schemeSecretary );
-        DescriptiveHelp.registerGlobalSchemeInitializer( schemeSecretary );
-        Pulsar.registerGlobalSchemeInitializers( schemeSecretary );
-//        Pulsar.registerFinalSchemeInitializers( schemeSecretary, pulsar );
         return pulsar;
     }
 
     public static PulsarFrame createPulsarGui( SchemeSecretary schemeSecretary, Pulsar pulsar, String ... urls ) {
-        PulsarFrame pulsarFrame;
-        PulsarFrame.registerGlobalSchemeInitializers( schemeSecretary );
-        Kawapad.registerGlobalSchemeInitializer( schemeSecretary );
         KawapadEvaluator local = KawapadEvaluator.getLocal();
         ArrayList<KawapadEvaluator> evaluatorList = new ArrayList<>();
         evaluatorList.add( local );
         for ( String url : urls ) {
             evaluatorList.add( KawapadEvaluator.getRemote( url ) );
         }
-        pulsarFrame = PulsarFrame.create( pulsar, local, evaluatorList, true , null );
+        PulsarFrame pulsarFrame = PulsarFrame.create( pulsar, local, evaluatorList, true , null );
         return pulsarFrame;
     }
 
