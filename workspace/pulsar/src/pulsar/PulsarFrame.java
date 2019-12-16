@@ -107,10 +107,9 @@ public class PulsarFrame extends KawapadFrame {
 
     PulsarFrame frame = this;
     
-
     static final int PB_POSITION_MAX = 1024;
     
-    Runnable shutdownProc01 = new Runnable() {
+    private final Runnable shutdownProc01 = new Runnable() {
         @Override
         public void run() {
 //          frame.setVisible( false );
@@ -118,25 +117,6 @@ public class PulsarFrame extends KawapadFrame {
         }
     };
 
-    public static void registerLocalSchemeInitializers( SchemeSecretary schemeSecretary, PulsarFrame pulsarGui ) {
-        schemeSecretary.registerSchemeInitializer( pulsarGui, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
-            @Override
-            public void execute0( Scheme scheme, Object[] args ) {
-                pulsarGui.initPulsarGui();
-            }
-        });
-        
-        schemeSecretary.addShutdownHook( pulsarGui.shutdownProc01 );
-    }
-    
-    public static void invokeLocalSchemeInitializers( SchemeSecretary schemeSecretary, PulsarFrame pulsarGui ) {
-        schemeSecretary.invokeSchemeInitializers( pulsarGui );
-    }
-    public static void unregisterLocalSchemeInitializers( SchemeSecretary schemeSecretary, PulsarFrame pulsarGui ) {
-        schemeSecretary.unregisterSchemeInitializer( pulsarGui );
-        schemeSecretary.removeShutdownHook(pulsarGui.shutdownProc01);
-    }
-    
     public static void registerGlobalSchemeInitializers( SchemeSecretary schemeSecretary ) {
         schemeSecretary.registerSchemeInitializer( PulsarFrame.class, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
@@ -191,7 +171,7 @@ public class PulsarFrame extends KawapadFrame {
     //
     //////////////////////////////////////////////////////////////////////////////////
 
-    public static final CurrentObject<PulsarFrame> currentObject = new CurrentObject<>();
+    public static final CurrentObject<PulsarFrame> currentObject = new CurrentObject<>( PulsarFrame.class );
 
     public final ThreadInitializer<PulsarFrame> threadInializer = 
             ThreadInitializer.createThreadInitializer( currentObject, this );
@@ -223,7 +203,7 @@ public class PulsarFrame extends KawapadFrame {
         
         this.kawapad.addThreadInitializer( this.threadInializer );
 
-        PulsarFrame.registerLocalSchemeInitializers( this.pulsar.getSchemeSecretary(), PulsarFrame.this );
+        this.pulsar.getSchemeSecretary().addShutdownHook( PulsarFrame.this.shutdownProc01 );
         //          DELETED >>> INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
         //          PulsarGui.invokeLocalSchemeInitializers( schemeSecretary, PulsarGui.this );
         //          DELETED <<< INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
@@ -632,7 +612,8 @@ public class PulsarFrame extends KawapadFrame {
     @Override
     public void dispose() {
         super.dispose();
-        PulsarFrame.unregisterLocalSchemeInitializers( kawapad.getSchemeSecretary(), PulsarFrame.this );
+        kawapad.getSchemeSecretary().removeShutdownHook( this.shutdownProc01 );
+        
         if ( shutdownWhenClose ) {
             // INDIRECT_PULSAR_ACCESS (Sun, 15 Dec 2019 19:26:48 +0900) >>>
             // pulsar.shutdown();

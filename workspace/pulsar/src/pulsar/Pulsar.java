@@ -163,37 +163,10 @@ public final class Pulsar extends Metro {
     }
 
     static long shutdownWait = 1024;
-    public static void registerLocalSchemeInitializers( SchemeSecretary schemeSecretary, Pulsar pulsar ) {
-        schemeSecretary.registerSchemeInitializer( pulsar, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
-            @Override
-            public void execute0( Scheme scheme, Object[] args ) {
-                /*
-                 * INIT_02
-                 * We give up to initialize current thread if it is not running.
-                 * This might happen in initializing the object in the constructor method.
-                 * This seems to be a problem, but it will be initialized when Metro is opened
-                 * by open() method; therefore, we temporally give up the initializing process.  
-                 */
-                if ( pulsar.isOpened() ) {
-                    logWarn( "registerLocalSchemeInitializers_POSTMESSAGE  DONE" );
-                    pulsar.postMessage( new Runnable() {
-                        @Override
-                        public void run() {
-                            // 6. This initializes the thread of Metro's message-queue.
-                            // See pulsar.lib.secretary.scheme.SchemeSecretary#specialInit()
-                            SchemeSecretary.initializeCurrentThread( scheme );
-                        }
-                    });
-                } else {
-                    logWarn( "registerLocalSchemeInitializers_POSTMESSAGE IGNORED" );
-                }
-            }
-        });
-    }
     
     //////////////////////////////////////////////////////////////////////////////////////////
     
-    public static final CurrentObject<Pulsar> currentObject = new CurrentObject<>();
+    public static final CurrentObject<Pulsar> currentObject = new CurrentObject<>( Pulsar.class );
     public final ThreadInitializer<Pulsar> threadInializer = 
             ThreadInitializer.createThreadInitializer( currentObject, this );
     public static Pulsar getCurrent() {

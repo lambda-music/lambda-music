@@ -193,7 +193,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     
     ////////////////////////////////////////////////////////////////////////////
 
-    public static final CurrentObject<Kawapad> currentObject = new CurrentObject<>();
+    public static final CurrentObject<Kawapad> currentObject = new CurrentObject<>( Kawapad.class );
     public final ThreadInitializer<Kawapad> threadInitializer = 
             ThreadInitializer.createThreadInitializer( currentObject, this );
     public static Kawapad getCurrent() {
