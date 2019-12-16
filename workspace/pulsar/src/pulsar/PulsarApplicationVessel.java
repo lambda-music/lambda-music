@@ -4,7 +4,7 @@ import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
 
-public class PulsarApplicationVessel implements PulsarApplicationComponent {
+public class PulsarApplicationVessel<T> implements PulsarApplicationComponent<T> {
     private Deque<PulsarApplicationComponent> components;
     public PulsarApplicationVessel( Collection<PulsarApplicationComponent> components ) {
         this.components = new ArrayDeque<>( components );

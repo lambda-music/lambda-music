@@ -26,7 +26,7 @@ import pulsar.lib.secretary.SecretariallyInvokable;
 import pulsar.lib.secretary.Secretary;
 import pulsar.lib.secretary.SecretaryMessage;
 
-public class SchemeSecretary extends Secretary<Scheme> implements ShutdownHook {
+public class SchemeSecretary extends Secretary<Scheme>  {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -137,17 +137,49 @@ public class SchemeSecretary extends Secretary<Scheme> implements ShutdownHook {
         // SEE gnu.mapping.RunnableClosure.run()
 //      CallContext.getInstance();
     }
+    
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // SHUTDOWN HOOK
+    //////////////////////////////////////////////////////////////////////////////////////////
     private final Collection<Runnable> shutdownHookList = new LinkedList<>();
-    @Override
-    public Collection<Runnable> getShutdownHookList() {
-        // TODO COUNTERMEASURE_FOR_LOCKING (Mon, 23 Sep 2019 08:33:32 +0900)
-        return shutdownHookList;
+    public void addShutdownHook( Runnable runnable ) {
+        synchronized ( this.shutdownHookList ) {
+            this.shutdownHookList.add( runnable );
+        }
     }
+    public void removeShutdownHook( Runnable runnable ) {
+        synchronized ( this.shutdownHookList ) {
+            this.shutdownHookList.remove( runnable );
+        }
+    }
+    public void executeShutdownHook() {
+        synchronized ( this.shutdownHookList ) {
+            for ( Runnable r : this.shutdownHookList ) {
+                try {
+                    r.run();
+                } catch ( Throwable e ) {
+                    logError("", e);
+                }
+            }
+        }
+    }
+    
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // SHUTDOWN HOOK
+    //////////////////////////////////////////////////////////////////////////////////////////
     
     public final void initializeSchemeForCurrentThread() {
         initializeSchemeForCurrentThreadStatic( this.getScheme() );
     }
     
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // Scheme Initializer 
+    //////////////////////////////////////////////////////////////////////////////////////////
+
+    /*
+     * Scheme Initializer initializes the new Scheme instance when the SchemeSecretary creates 
+     * a new Scheme instance.  
+     */
     static class InitializerEntry {
         Object parent;
         SecretaryMessage.NoReturnNoThrow<Scheme> message;
@@ -158,21 +190,24 @@ public class SchemeSecretary extends Secretary<Scheme> implements ShutdownHook {
         }
     }
     
-    List<SchemeSecretary.InitializerEntry> newSchemeInitializerList = new ArrayList<>();
-    
+    private List<SchemeSecretary.InitializerEntry> schemeInitializerList = new ArrayList<>();
+    public List<SchemeSecretary.InitializerEntry> getSchemeInitializerList() {
+        return schemeInitializerList;
+    }
+
     /**
      * This method registers a specified initializer.
      * @see #invokeSchemeInitializers(Object)
      */
     public void registerSchemeInitializer( Object parent, SecretaryMessage.NoReturnNoThrow<Scheme> message ) {
-        this.newSchemeInitializerList.add( new SchemeSecretary.InitializerEntry( parent, message ) );
+        this.getSchemeInitializerList().add( new SchemeSecretary.InitializerEntry( parent, message ) );
     }
     /**
      * This method unregisters a specified initializer.
      * @see #invokeSchemeInitializers(Object)
      */
     public void unregisterSchemeInitializer( Object parent ) {
-        this.newSchemeInitializerList.removeIf( e->e.parent == parent );
+        this.getSchemeInitializerList().removeIf( e->e.parent == parent );
     }
 
     /**
@@ -187,7 +222,7 @@ public class SchemeSecretary extends Secretary<Scheme> implements ShutdownHook {
      *     will be invoked.
      */
     public void invokeSchemeInitializers( Object parent ) {
-        for ( SchemeSecretary.InitializerEntry e : newSchemeInitializerList ) {
+        for ( SchemeSecretary.InitializerEntry e : getSchemeInitializerList() ) {
             if ( parent == null || e.parent == parent )
                 executeSecretarially( e.message );
         }

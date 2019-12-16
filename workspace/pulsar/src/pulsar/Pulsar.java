@@ -69,6 +69,7 @@ import metro.MetroSequence;
 import metro.MetroSyncType;
 import metro.MetroTrack;
 import pulsar.lib.CurrentObject;
+import pulsar.lib.ThreadInitializer;
 import pulsar.lib.scheme.ProceduralDescriptiveBean;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeExecutor;
@@ -201,8 +202,8 @@ public final class Pulsar extends Metro {
     //////////////////////////////////////////////////////////////////////////////////////////
     
     public static final CurrentObject<Pulsar> currentObject = new CurrentObject<>();
-    public final CurrentObject.ThreadInitializer<Pulsar> threadInializer = 
-            new CurrentObject.ThreadInitializer<Pulsar>( currentObject, this );
+    public final ThreadInitializer<Pulsar> threadInializer = 
+            ThreadInitializer.createThreadInitializer( currentObject, this );
     public static Pulsar getCurrent() {
         return currentObject.get();
     }
@@ -285,6 +286,7 @@ public final class Pulsar extends Metro {
     }
     
     private final SchemeSecretary schemeSecretary;
+    @Override
     public SchemeSecretary getSchemeSecretary() {
         return schemeSecretary;
     }
@@ -1419,7 +1421,7 @@ public final class Pulsar extends Metro {
         }} );
         
         
-        SchemeUtils.defineVar( env, new Procedure0("rewind") {
+        SchemeUtils.defineVar( env, new Procedure0( "rewind" ) {
             @Override
             public Object apply0() throws Throwable {
                 getCurrent().rewind();

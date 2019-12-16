@@ -2,12 +2,15 @@ package pulsar;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,7 +26,10 @@ import pulsar.lib.scheme.http.SchemeHttp.UserAuthentication;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 
 public class PulsarApplication {
-
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+    static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
+    static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
     public PulsarApplication() {
     }
     /**
@@ -396,7 +402,9 @@ public class PulsarApplication {
         }
 
         public void parse( String[] args ) {
-            for ( String s : args ) {
+            for ( int i=0; i<args.length; i++ ) {
+                String s = args[i];
+                logInfo( "args[" + i +"]=\"" + s  + "\"");
                 notifyArg( s );
             }
             notifyEnd();
@@ -446,11 +454,12 @@ public class PulsarApplication {
                 String mainCommand = args3[0];
                 String[] mainArguments = Arrays.copyOfRange( args3 , 1, args3.length );
                 
-                if( "remote".equals( mainCommand ) ) {
+                if( "fork".equals( mainCommand ) ) {
                     remote( mainArguments );
-                } else {
+                } else if( "exec".equals( mainCommand ) ) {
                     ArgumentParser argumentParser = new ArgumentParser();
                     argumentParser.parse( mainArguments );
+                } else {
                     throw new RuntimeException( "unknown command " + mainCommand );
                 }
             } else {
@@ -460,7 +469,7 @@ public class PulsarApplication {
     }
     
     static void remote(String[] mainArguments) {
-        
+        // TODO
     }
     private static void invalidArgs() {
         System.err.println( "pulsar : missing arguments." );

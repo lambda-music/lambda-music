@@ -77,6 +77,7 @@ import kawapad.KawapadFrame;
 import metro.MetroTrack;
 import pulsar.Pulsar.TempoTapperTempoNotifier;
 import pulsar.lib.CurrentObject;
+import pulsar.lib.ThreadInitializer;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
@@ -147,7 +148,7 @@ public class PulsarFrame extends KawapadFrame {
 
 
     public void openFile( File mainFile ) throws IOException {
-        pulsar.getSchemeSecretary().executeWithoutSecretarially( new SecretaryMessage.NoReturn<Scheme,IOException>() {
+        frame.getKawapad().getSchemeSecretary().executeWithoutSecretarially( new SecretaryMessage.NoReturn<Scheme,IOException>() {
             @Override
             public void execute0(Scheme resource, Object[] args) throws IOException{
                 logInfo( "Pulsar#openMainFile()" );
@@ -160,7 +161,8 @@ public class PulsarFrame extends KawapadFrame {
     }
     // Is this really necessary to be executed with secretary?
     public void openIntro() throws IOException {
-        pulsar.getSchemeSecretary().executeWithoutSecretarially( new SecretaryMessage.NoReturn<Scheme,IOException>() {
+        logInfo( "Pulsar#openIntro()" );
+        frame.getKawapad().getSchemeSecretary().executeWithoutSecretarially( new SecretaryMessage.NoReturn<Scheme,IOException>() {
             @Override
             public void execute0(Scheme resource, Object[] args) throws IOException{
                 logInfo( "Pulsar#openIntro()" );
@@ -191,8 +193,8 @@ public class PulsarFrame extends KawapadFrame {
 
     public static final CurrentObject<PulsarFrame> currentObject = new CurrentObject<>();
 
-    public final CurrentObject.ThreadInitializer<PulsarFrame> threadInializer = 
-            new CurrentObject.ThreadInitializer<PulsarFrame>( currentObject, this );
+    public final ThreadInitializer<PulsarFrame> threadInializer = 
+            ThreadInitializer.createThreadInitializer( currentObject, this );
     public static PulsarFrame getCurrent() {
         return currentObject.get();
     }
@@ -240,40 +242,49 @@ public class PulsarFrame extends KawapadFrame {
     }
     
     private void initPulsarGui() {
-        Pulsar.createTimer(pulsar, 1000, 20, new Invokable() {
-            transient boolean lastPlaying= false;
-            List<MetroTrack> trackList;
-            @Override
-            public Object invoke(Object... args) {
-                if ( pulsar.isOpened() ) {
-                    boolean playing = pulsar.getPlaying();
-                    if ( playing != lastPlaying ) {
-                        if ( playing ) {
-                            trackList = pulsar.searchTrack( Symbol.valueOf( "main" ) );
+        
+        // INDIRECT_PULSAR_ACCESS (Sun, 15 Dec 2019 19:26:48 +0900) >>>
+        // pulsar.shutdown();
+//        getKawapad().evaluate( "(quit)", false, false, false );
+
+        if ( pulsar != null ) {
+            Pulsar.createTimer(pulsar, 1000, 20, new Invokable() {
+                transient boolean lastPlaying= false;
+                List<MetroTrack> trackList;
+                @Override
+                public Object invoke(Object... args) {
+                    if ( pulsar.isOpened() ) {
+                        boolean playing = pulsar.getPlaying();
+                        if ( playing != lastPlaying ) {
+                            if ( playing ) {
+                                trackList = pulsar.searchTrack( Symbol.valueOf( "main" ) );
+                            }
+                            lastPlaying = playing;
                         }
-                        lastPlaying = playing;
-                    }
-                    
-                    //  This happens quite often so let us ignore it. (Mon, 29 Jul 2019 12:21:50 +0900)
-                    //  Additionally this code have never been executed. Just added this for describing the concept.
-                    //  if ( track == null ) {
-                    //      logWarn( "" );
-                    //  }
-                    
-                    if ( (trackList!= null ) && (! trackList.isEmpty()) && (pb_position != null) ) {
-                        double value=0;
-                        MetroTrack track = trackList.get( 0 ); 
-                        synchronized ( track.getMetroTrackLock() ) {
-                            value = track.getTrackPosition();
+                        
+                        //  This happens quite often so let us ignore it. (Mon, 29 Jul 2019 12:21:50 +0900)
+                        //  Additionally this code have never been executed. Just added this for describing the concept.
+                        //  if ( track == null ) {
+                        //      logWarn( "" );
+                        //  }
+                        
+                        if ( (trackList!= null ) && (! trackList.isEmpty()) && (pb_position != null) ) {
+                            double value=0;
+                            MetroTrack track = trackList.get( 0 ); 
+                            synchronized ( track.getMetroTrackLock() ) {
+                                value = track.getTrackPosition();
+                            }
+                            pb_position.setValue((int) (value * PulsarFrame.PB_POSITION_MAX) );
+                            pb_position.repaint();
+                            pb_position.revalidate();
                         }
-                        pb_position.setValue((int) (value * PulsarFrame.PB_POSITION_MAX) );
-                        pb_position.repaint();
-                        pb_position.revalidate();
                     }
+                    return Values.empty;
                 }
-                return Values.empty;
-            }
-        });
+            });    
+        }
+
+        // INDIRECT_PULSAR_ACCESS (Sun, 15 Dec 2019 19:26:48 +0900) <<<
     }
 
     enum TempoRange {
@@ -530,8 +541,9 @@ public class PulsarFrame extends KawapadFrame {
     public final Action RESET_SEQUENCER = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-//            getKawapad().evaluate( "(close)", false, false, false );
-            pulsar.close();
+            // (Sun, 15 Dec 2019 19:26:48 +0900) INDIRECT_PULSAR_ACCESS
+            getKawapad().evaluate( "(close)", false, false, false );
+            // pulsar.close();
         }
         {
             putValue( Action2.CAPTION, "Reset the Sequencer" );
@@ -621,8 +633,13 @@ public class PulsarFrame extends KawapadFrame {
     public void dispose() {
         super.dispose();
         PulsarFrame.unregisterLocalSchemeInitializers( kawapad.getSchemeSecretary(), PulsarFrame.this );
-        if ( shutdownWhenClose )
-            pulsar.shutdown();
+        if ( shutdownWhenClose ) {
+            // INDIRECT_PULSAR_ACCESS (Sun, 15 Dec 2019 19:26:48 +0900) >>>
+            // pulsar.shutdown();
+            getKawapad().evaluate( "(quit)", false, false, false );
+            // (Sun, 15 Dec 2019 19:26:48 +0900) <<<
+
+        }
     }
     
     void initGuiMenu() {
@@ -938,7 +955,11 @@ public class PulsarFrame extends KawapadFrame {
         b.addActionListener( new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                pulsar.rewind();
+                // INDIRECT_PULSAR_ACCESS (Sun, 15 Dec 2019 19:26:48 +0900) >>>
+                // pulsar.rewind();
+                getKawapad().evaluate( "(rewind)", false, false, false );
+                // (Sun, 15 Dec 2019 19:26:48 +0900) <<<
+
             }
         });
         return b;
@@ -949,7 +970,11 @@ public class PulsarFrame extends KawapadFrame {
         tempoTapButton.addActionListener( new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                pulsar.getTempoTapper().tap();
+                // INDIRECT_PULSAR_ACCESS (Sun, 15 Dec 2019 19:26:48 +0900) >>>
+                // pulsar.getTempoTapper().tap();
+                getKawapad().evaluate( "(tap-tempo)", false, false, false );
+                // (Sun, 15 Dec 2019 19:26:48 +0900) <<<
+
             }
         });
 
