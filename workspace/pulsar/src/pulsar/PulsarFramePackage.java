@@ -534,10 +534,10 @@ public class PulsarFramePackage {
         parent.repaint();;
     }
 
-    static void initScheme( Pulsar pulsar, Scheme scheme ) {
+    static void initScheme( Scheme scheme ) {
         logInfo("PulsarGui#initStaticScheme=======================================");
         //////////////////////////////////////////////////////
-        SchemeSecretary.initializeSchemeForCurrentThreadStatic( scheme );
+        SchemeSecretary.initializeCurrentThread( scheme );
         //////////////////////////////////////////////////////
         Environment env = scheme.getEnvironment();
         
@@ -558,7 +558,7 @@ public class PulsarFramePackage {
                 //                  logError("", e);
                 //                  return null;
                 //              }
-                return SchemeNewFactory.process( pulsar, args );
+                return SchemeNewFactory.process( Pulsar.getCurrent(), args );
             }
         }, "gui-new");
 
@@ -631,7 +631,7 @@ public class PulsarFramePackage {
         SchemeUtils.defineVar( env, new SafeProcedureN("gui-invoke-later") {
             @Override
             public Object applyN( Object[] args ) throws Throwable {
-                guiInvokeLater( pulsar, (Procedure) args[0], Arrays.copyOfRange(args, 1, args.length ) );
+                guiInvokeLater( Pulsar.getCurrent(), (Procedure) args[0], Arrays.copyOfRange(args, 1, args.length ) );
                 return true;
             }
         }, "gui-invoke-later");
@@ -732,7 +732,7 @@ public class PulsarFramePackage {
         SchemeUtils.defineVar( env, new SafeProcedureN("gui-build") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                return guiBuild( pulsar, args );
+                return guiBuild( Pulsar.getCurrent(), args );
             }
         }, "gui-build");
         SchemeUtils.defineVar( env, new SafeProcedureN("gui-newline") {

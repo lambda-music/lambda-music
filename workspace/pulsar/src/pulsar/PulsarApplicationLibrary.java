@@ -29,8 +29,9 @@ public class PulsarApplicationLibrary {
     public static Pulsar createPulsar( SchemeSecretary schemeSecretary ) {
         Pulsar pulsar = new Pulsar( schemeSecretary );
         DescriptiveHelp.registerGlobalSchemeInitializer( schemeSecretary );
+        Pulsar.registerGlobalSchemeInitializers( schemeSecretary );
         Pulsar.registerLocalSchemeInitializers( schemeSecretary, pulsar );
-        Pulsar.registerFinalSchemeInitializers( schemeSecretary, pulsar );
+//        Pulsar.registerFinalSchemeInitializers( schemeSecretary, pulsar );
         return pulsar;
     }
 

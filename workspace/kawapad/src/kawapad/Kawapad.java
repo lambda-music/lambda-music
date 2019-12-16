@@ -351,22 +351,13 @@ public class Kawapad extends JTextPane implements MenuInitializer {
      * current frame. This initializer does not have to be removed even if  
      * frames are disposed.
      */
-    public static void registerGlobalIntroSchemeInitializer( SchemeSecretary schemeSecretary ) {
-        schemeSecretary.registerSchemeInitializer( Kawapad.class, staticIntroInitializer01 );
-    }
-    static SecretaryMessage.NoReturnNoThrow<Scheme> staticIntroInitializer01 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+    static final SecretaryMessage.NoReturnNoThrow<Scheme> staticIntroInitializer01 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
         @Override
         public void execute0( Scheme scheme, Object[] args ) {
             Kawapad.staticIntroInitScheme( scheme.getEnvironment() );             
         }
     };
-    // I added this for the sake of symmetricity, but this didn't use it.
-    // I left it for future use. (Mon, 12 Aug 2019 14:24:38 +0900)
-    public static void unregisterGlobalIntroSchemeInitializer( SchemeSecretary schemeSecretary ) {
-        schemeSecretary.unregisterSchemeFinalizer( Kawapad.class );
-    }
-    
-    protected static void staticIntroInitScheme( Environment env ) {
+    static void staticIntroInitScheme( Environment env ) {
         // ( canonical )
         KawapadDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "about-intro"  );
@@ -384,11 +375,18 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         }} );
         
     }
+    public static void registerGlobalIntroSchemeInitializer( SchemeSecretary schemeSecretary ) {
+        schemeSecretary.registerSchemeInitializer( Kawapad.class, staticIntroInitializer01 );
+    }
+    // I added this for the sake of symmetricity, but this didn't use it.
+    // I left it for future use. (Mon, 12 Aug 2019 14:24:38 +0900)
+    public static void unregisterGlobalIntroSchemeInitializer( SchemeSecretary schemeSecretary ) {
+        schemeSecretary.unregisterSchemeFinalizer( Kawapad.class );
+    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
     
     public void initialize() {
-        schemeSecretary.invokeSchemeInitializers( this );
         Kawapad.eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.CREATE, kawapad );
     }
     public void finalize() {
@@ -2831,7 +2829,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     
     public static Scheme staticInitScheme( Scheme scheme ) {
         logInfo( "Kawapad#staticInitScheme" );
-        SchemeSecretary.initializeSchemeForCurrentThreadStatic( scheme );
+        SchemeSecretary.initializeCurrentThread( scheme );
         Environment env = scheme.getEnvironment();
         
         if ( ! SchemeUtils.isDefined(env, FLAG_DONE_INIT_PULSAR_SCRATCHPAD ) ) {

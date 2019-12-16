@@ -112,7 +112,7 @@ public class KawapadEventHandlers {
                 kawapad.getThreadManager().startScratchPadThread( new Runnable() {
                     @Override
                     public void run() {
-                        kawapad.schemeSecretary.initializeSchemeForCurrentThread();
+                        kawapad.schemeSecretary.initializeCurrentThread();
                         SchemeExecutor.initializeThread( kawapad.getThreadInitializerList() );
                         
                         synchronized ( scheme ) {

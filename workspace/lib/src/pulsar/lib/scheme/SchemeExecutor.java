@@ -35,7 +35,7 @@ public class SchemeExecutor {
             File currentDirectory, File currentFile, String schemeScriptURI )
     {
         //              schemeSecretary.initializeSchemeForCurrentThread();
-        SchemeSecretary.initializeSchemeForCurrentThreadStatic( scheme );
+        SchemeSecretary.initializeCurrentThread( scheme );
         synchronized ( scheme ) {
             Environment env = scheme.getEnvironment();
             

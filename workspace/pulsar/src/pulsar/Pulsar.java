@@ -142,7 +142,26 @@ public final class Pulsar extends Metro {
     static String messageWarnIgnoredMissingSyncTrack( Object arg ) {
         return "could not find a track which name was " + arg + " ... ignored.";
     }
-    
+
+    public static void registerGlobalSchemeInitializers( SchemeSecretary schemeSecretary ) {
+        // This should be global not local (Mon, 16 Dec 2019 22:52:46 +0900)
+        schemeSecretary.registerSchemeInitializer( Pulsar.class, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+            @Override
+            public void execute0( Scheme scheme, Object[] args ) {
+                Pulsar.initScheme( scheme );
+            }
+        });
+        // This should be global not local (Mon, 16 Dec 2019 22:52:46 +0900)
+        schemeSecretary.registerSchemeInitializer( Pulsar.class, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+            @Override
+            public void execute0( Scheme scheme, Object[] args ) {
+                // FIXME this should depend on the current Pulsar instance.
+                // (Wed, 20 Nov 2019 18:32:11 +0900)
+                PulsarFramePackage.initScheme( scheme );
+            }
+        });
+    }
+
     static long shutdownWait = 1024;
     public static void registerLocalSchemeInitializers( SchemeSecretary schemeSecretary, Pulsar pulsar ) {
         schemeSecretary.registerSchemeInitializer( pulsar, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
@@ -162,7 +181,7 @@ public final class Pulsar extends Metro {
                         public void run() {
                             // 6. This initializes the thread of Metro's message-queue.
                             // See pulsar.lib.secretary.scheme.SchemeSecretary#specialInit()
-                            SchemeSecretary.initializeSchemeForCurrentThreadStatic( scheme );
+                            SchemeSecretary.initializeCurrentThread( scheme );
                         }
                     });
                 } else {
@@ -170,35 +189,8 @@ public final class Pulsar extends Metro {
                 }
             }
         });
-        schemeSecretary.registerSchemeInitializer( pulsar, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
-            @Override
-            public void execute0( Scheme scheme, Object[] args ) {
-                Pulsar.initScheme( scheme );
-            }
-        });
-        schemeSecretary.registerSchemeInitializer( pulsar, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
-            @Override
-            public void execute0( Scheme scheme, Object[] args ) {
-                // FIXME this should depend on the current Pulsar instance.
-                // (Wed, 20 Nov 2019 18:32:11 +0900)
-                PulsarFramePackage.initScheme( pulsar, scheme );
-            }
-        });
-
-    }
-    public static void invokeLocalSchemeInitializers( SchemeSecretary schemeSecretary, Pulsar pulsar ) {
-        schemeSecretary.invokeSchemeInitializers( pulsar );
     }
     
-    public static void registerFinalSchemeInitializers( SchemeSecretary schemeSecretary, Pulsar pulsar ) {
-        schemeSecretary.registerSchemeInitializer( pulsar, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
-            @Override
-            public void execute0( Scheme scheme, Object[] args ) {
-//                PulsarGui.addLispWords( scheme, PulsarGui.getPulsarWords(scheme) );
-            }
-        });
-    }
-
     //////////////////////////////////////////////////////////////////////////////////////////
     
     public static final CurrentObject<Pulsar> currentObject = new CurrentObject<>();
@@ -349,7 +341,7 @@ public final class Pulsar extends Metro {
             @Override
             public void execute0( Scheme scheme, Object[] args ) {
                 logInfo( "Pulsar#invokeLater()" + r );
-                SchemeSecretary.initializeSchemeForCurrentThreadStatic( scheme );
+                SchemeSecretary.initializeCurrentThread( scheme );
                 r.run();
             }
         }, Invokable.NOARG );
@@ -450,7 +442,7 @@ public final class Pulsar extends Metro {
                     // The life cycle of timer threads may not be able to be controlled by users;
                     // therefore, we decided to initialize the environment every time we execute
                     // timer events. (Mon, 05 Aug 2019 00:38:14 +0900)
-                    pulsar.getSchemeSecretary().initializeSchemeForCurrentThread();
+                    pulsar.getSchemeSecretary().initializeCurrentThread();
                     
                     // Execute the specified process.
                     Object result = invokable.invoke();
@@ -468,7 +460,7 @@ public final class Pulsar extends Metro {
                     // The life cycle of timer threads may not be able to be controlled by users;
                     // therefore, we decided to initialize the environment every time we execute
                     // timer events. (Mon, 05 Aug 2019 00:38:14 +0900)
-                    pulsar.getSchemeSecretary().initializeSchemeForCurrentThread();
+                    pulsar.getSchemeSecretary().initializeCurrentThread();
                     
                     // Execute the specified process.
                     invokable.invoke();

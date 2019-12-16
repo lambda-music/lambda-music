@@ -36,8 +36,6 @@ public class SchemeSecretary extends Secretary<Scheme>  {
     public Invokable createSecretarillyInvokable( Procedure procedure ) {
         return new SecretariallyInvokable( this, new InvokableSchemeProcedure( procedure ) );  
     }
-    
-    
     public Runnable createRunnableAndInvocable( Procedure procedure, Object... args) {
         return new InvokablyRunnable( this.createSecretarillyInvokable( procedure ), args );
     }
@@ -47,96 +45,6 @@ public class SchemeSecretary extends Secretary<Scheme>  {
         return getExecutive();
     }
     
-    /*-
-     * Memorandum 1 (Someday in 2018)
-     * 
-     * This field specifies an environment object which contains a scope of scheme
-     * language to be executed with.
-     * 
-     * I think the necessity of this field is needed to be explained.
-     * 
-     * Usually these environment objects are not supposed to be set manually. The
-     * reason why it to be set manually is that sometimes the environment object is
-     * missing. I am still not sure what exactly condition causes it to be gone, but
-     * it occurs sometimes.
-     * 
-     * It seemed to me that Kawa's environment objects are stored per a thread. I am
-     * still not sure when they are created. But when multiple threads access to a
-     * single Kawa scheme object, sometime the environment object on the scheme
-     * object is gone and this phenomenon causes strange errors.
-     * 
-     * A working around which I found is setting the desired environment object
-     * before calling the invokable.
-     * 
-     * This field keeps the environment object which is in charge when the invokable
-     * (closure) was passed in order to set it it every time before calling the
-     * invokable.
-     * 
-     * I am quite sure this is not proper way to solve the problem, but it worked
-     * for me.
-     */
-
-    
-    /*-
-     * Memorandum 2 (Sat, 20 Jul 2019 11:33:56 +0900)
-     * 
-     * When a Scheme invokable is called from SwingUtilities#invokeLater(),
-     * NullPointerException occurs sometimes. The stack trace is following : 
-     *
-     * <pre>
-     *   java.lang.NullPointerException
-     *   at gnu.expr.PrimProcedure.decodeType(PrimProcedure.java:404)
-     *   at gnu.expr.PrimProcedure.<init>(PrimProcedure.java:371)
-     *   at gnu.kawa.reflect.ClassMethods.getMethods(ClassMethods.java:136)
-     *   at gnu.kawa.reflect.ClassMethods.apply(ClassMethods.java:252)
-     *   at gnu.kawa.functions.GetNamedPart.getMemberPart(GetNamedPart.java:120)
-     *   at gnu.kawa.functions.GetNamedPart.getNamedPart(GetNamedPart.java:106)
-     *   at gnu.kawa.functions.GetNamedPart.apply2(GetNamedPart.java:46)
-     *   at atInteractiveLevel-93$frame.lambda14(pulsar-basic-framework.scm:612)
-     * </pre>
-     *  The reason this NPE occurs is the passed "lang" argument sometimes becomes null
-     *
-     * <pre>
-     *      public static Type decodeType(Type javaType,
-     *                                    String[] annotTypes, int annotIndex,
-     *                                        ParameterizedType parameterizedType,
-     *                                        Language lang) {
-     *              String annotType = annotTypes != null && annotTypes.length > annotIndex
-     *                  ? annotTypes[annotIndex] : null;
-     *              return lang.decodeType(javaType, annotType, parameterizedType);
-     *          }
-     * </pre>
-     * 
-     * Then I found that setting current language by Language.setCurrentLanguage( language ) 
-     * effectively suppresses the NPE.
-     *  
-     * I am pretty sure this is not supposed to be. 
-     * But I don't know how to manage this problem for some years. 
-     */
-
-    public static final void initializeSchemeForCurrentThreadStatic( Scheme scheme ) {
-        Language.setCurrentLanguage( scheme );
-        Environment.setCurrent( scheme.getEnvironment() );
-//      logInfo( "initializeSchemeForCurrentThreadStatic:" +  Environment.getCurrent().getName() );
-        if ( false ) {
-            String threadName = Thread.currentThread().getName();
-            logInfo( threadName +
-                "(Environment.getCurrent() == newScheme.getEnvironment() ) : " + 
-                ( Environment.getCurrent() == scheme.getEnvironment() ) 
-            );
-            logInfo( threadName +
-                "( Language.getDefaultLanguage() == newScheme ) : " + 
-                ( Language.getDefaultLanguage() == scheme ) 
-                    );
-//          logInfo( threadName +
-//              "(Environment.getCurrent() == env ) : " + 
-//              ( Environment.getCurrent() == env ) 
-//          );
-        }
-        // !!! THIS IS VERY BOGUS !!!! (Thu, 15 Aug 2019 22:38:07 +0900)
-        // SEE gnu.mapping.RunnableClosure.run()
-//      CallContext.getInstance();
-    }
     
     //////////////////////////////////////////////////////////////////////////////////////////
     // SHUTDOWN HOOK
@@ -167,9 +75,12 @@ public class SchemeSecretary extends Secretary<Scheme>  {
     //////////////////////////////////////////////////////////////////////////////////////////
     // SHUTDOWN HOOK
     //////////////////////////////////////////////////////////////////////////////////////////
-    
-    public final void initializeSchemeForCurrentThread() {
-        initializeSchemeForCurrentThreadStatic( this.getScheme() );
+    public static final void initializeCurrentThread( Scheme scheme ) {
+        Language.setCurrentLanguage( scheme );
+        Environment.setCurrent( scheme.getEnvironment() );
+    }
+    public final void initializeCurrentThread() {
+        initializeCurrentThread( this.getScheme() );
     }
     
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -234,7 +145,7 @@ public class SchemeSecretary extends Secretary<Scheme>  {
             public void execute0(Scheme scheme, Object[] args) {
                 // 3. This initializes Secretary Message Queue's thread.
                 // // 4. (in most case ) this initializes main-thread
-                initializeSchemeForCurrentThreadStatic( scheme );
+                initializeCurrentThread( scheme );
             }
         } );
 
@@ -245,7 +156,7 @@ public class SchemeSecretary extends Secretary<Scheme>  {
                     @Override
                     public void run() {
                         // 5. This initializes AWT-EventQueue's thread.
-                        initializeSchemeForCurrentThreadStatic(scheme);
+                        initializeCurrentThread(scheme);
                     }
                 });
             }
@@ -254,7 +165,7 @@ public class SchemeSecretary extends Secretary<Scheme>  {
         registerSchemeInitializer( null, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
             public void execute0(Scheme scheme, Object[] args) {
-                initializeSchemeForCurrentThreadStatic( scheme );
+                initializeCurrentThread( scheme );
                 //XXX This destroys the thread initialization for Environment().
                 // (Thu, 15 Aug 2019 23:07:01 +0900)
 //              SchemeUtils.defineVar( scheme, EmptyList.emptyList, "all-procedures" );
