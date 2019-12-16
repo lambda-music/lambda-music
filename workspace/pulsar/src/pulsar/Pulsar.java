@@ -286,7 +286,6 @@ public final class Pulsar extends Metro {
     }
     
     private final SchemeSecretary schemeSecretary;
-    @Override
     public SchemeSecretary getSchemeSecretary() {
         return schemeSecretary;
     }

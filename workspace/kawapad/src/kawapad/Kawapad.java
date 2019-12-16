@@ -240,9 +240,6 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         this.schemeSecretary = schemeSecretary;
         this.currentEvaluator = currentEvaluator;
         
-        // initialization
-        registerLocalSchemeInitializers( schemeSecretary, this );
-
         // init font
         kawapad.setFont( new Font("monospaced", Font.PLAIN, 12));
         
@@ -321,43 +318,6 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     //////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Initialize variables which is necessary to set whenever the environment is created.
-     * One of such variables is a reference to the frame object. This reference must be
-     * cleared when the frame is disposed.
-     */
-    @Deprecated
-    public static void registerLocalSchemeInitializers( SchemeSecretary schemeSecretary, Kawapad kawapad ) {
-        schemeSecretary.registerSchemeInitializer( kawapad, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
-            @Override
-            public void execute0( Scheme scheme, Object[] args ) {
-                kawapad.initSchemeLocal( scheme );               
-            }
-        });
-//          WARNING This should be done only in init(); (Tue, 06 Aug 2019 18:07:49 +0900)
-//          schemeSecretary.registerSchemeInitializer( kawaPad, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
-//              @Override
-//              public void execute0( Scheme scheme, Object[] args ) {
-//                  logInfo( "eventinvokeEventHandler of Kawapad#registerLocalSchemeInitializers " );
-////                    eventHandlers.invokeEventHandler( kawaPad, EventHandlers.INIT );
-//                  eventHandlers.invokeEventHandler( kawaPad, EventHandlers.CREATE );
-//              }
-//          });
-    }
-    
-    @Deprecated
-    public static void invokeLocalSchemeInitializers( SchemeSecretary schemeSecretary, Kawapad kawapad ) {
-        schemeSecretary.invokeSchemeInitializers( kawapad );
-    }
-
-    /**
-     * Remove initializers that initialize variables for the current frame.
-     */
-    @Deprecated
-    public static void unregisterLocalSchemeInitializers(SchemeSecretary schemeSecretary, Kawapad kawapad ) {
-        schemeSecretary.unregisterSchemeInitializer( kawapad );
-    }
-
-    /**
      * This initializes variables which do not need to refer the reference to the
      * current frame. This initializer does not have to be removed even if  
      * frames are disposed.
@@ -432,7 +392,6 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         Kawapad.eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.CREATE, kawapad );
     }
     public void finalize() {
-        unregisterLocalSchemeInitializers( schemeSecretary, kawapad );
     }
     
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -2870,10 +2829,6 @@ public class Kawapad extends JTextPane implements MenuInitializer {
 
     ////////////////////////////////////////////////////////////////////////////
     
-    protected void initSchemeLocal( Scheme scheme ) {
-        logInfo( "Kawapad#initScheme" );
-    }
-
     public static Scheme staticInitScheme( Scheme scheme ) {
         logInfo( "Kawapad#staticInitScheme" );
         SchemeSecretary.initializeSchemeForCurrentThreadStatic( scheme );
