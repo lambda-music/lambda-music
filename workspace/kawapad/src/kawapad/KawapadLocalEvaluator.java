@@ -1,7 +1,6 @@
 package kawapad;
 
 import java.io.File;
-import java.util.HashMap;
 
 import pulsar.lib.scheme.SchemeResult;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
@@ -33,11 +32,9 @@ public final class KawapadLocalEvaluator implements KawapadEvaluator, KawapadNam
         
         @Override
         public SchemeResult evaluate() {
-            HashMap<String,Object> variables = new HashMap<>();
-            kawapad.initVariables( variables );
             return SchemeSecretary.evaluateScheme( 
                 kawapad.getSchemeSecretary(), 
-                kawapad.getThreadInitializerList(), variables, 
+                kawapad.getThreadInitializerCollection(),
                 schemeScript, currentDirectory, currentFile, "scratchpad" );
         }
     }

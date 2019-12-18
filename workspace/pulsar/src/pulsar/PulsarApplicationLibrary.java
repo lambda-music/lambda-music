@@ -2,7 +2,6 @@ package pulsar;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import kawapad.Kawapad;
 import kawapad.KawapadEvaluator;
@@ -34,7 +33,8 @@ public class PulsarApplicationLibrary {
             httpPort, 
             userAuthentication, 
             schemeSecretary, 
-            Arrays.asList( pulsar.threadInializer ));
+            pulsar.getThreadInitializerCollection()
+            );
     }
     public static Pulsar createPulsar( SchemeSecretary schemeSecretary ) {
         Pulsar pulsar = new Pulsar( schemeSecretary );

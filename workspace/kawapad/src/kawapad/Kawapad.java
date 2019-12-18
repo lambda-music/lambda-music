@@ -98,6 +98,9 @@ import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
 import pulsar.lib.CurrentObject;
 import pulsar.lib.ThreadInitializer;
+import pulsar.lib.ThreadInitializerCollection;
+import pulsar.lib.ThreadInitializerCollectionContainer;
+import pulsar.lib.ThreadInitializerContainer;
 import pulsar.lib.scheme.DescriptiveActions;
 import pulsar.lib.scheme.ProceduralDescriptiveBean;
 import pulsar.lib.scheme.SafeProcedureN;
@@ -136,7 +139,7 @@ import pulsar.lib.swing.TextAction2;
  *  
  * @author Ats Oka
  */
-public class Kawapad extends JTextPane implements MenuInitializer {
+public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kawapad>, ThreadInitializerCollectionContainer, MenuInitializer {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -193,9 +196,21 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     
     ////////////////////////////////////////////////////////////////////////////
 
-    public static final CurrentObject<Kawapad> currentObject = new CurrentObject<>( Kawapad.class );
-    public final ThreadInitializer<Kawapad> threadInitializer = 
-            ThreadInitializer.createThreadInitializer( currentObject, this );
+    private static final CurrentObject<Kawapad> currentObject = new CurrentObject<>( Kawapad.class );
+    private final ThreadInitializer<Kawapad> threadInitializer = 
+            ThreadInitializer.createMultipleThreadInitializer( 
+                ThreadInitializer.createThreadInitializer( currentObject, this ),
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        SchemeUtils.putVar( Environment.getCurrent(),  instanceID, Kawapad.this );
+                    }
+                });
+    
+    @Override
+    public ThreadInitializer<Kawapad> getThreadInitializer() {
+        return threadInitializer;
+    }    
     public static Kawapad getCurrent() {
         return currentObject.get();
     }
@@ -205,25 +220,20 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     // The Thread Initializer Facility
     ////////////////////////////////////////////////////////////////////////////
 
-    Collection<Runnable> threadInitializerList = new ArrayList<>();
-    public void addThreadInitializer( Runnable r ) {
-        threadInitializerList.add( r );
+    private ThreadInitializerCollection threadInitializerCollection = new ThreadInitializerCollection();
+    public ThreadInitializerCollection getThreadInitializerCollection() {
+        return threadInitializerCollection;
     }
-    public void addAllThreadInitializer( Collection<Runnable> rs ) {
-        threadInitializerList.addAll( rs );
-    }
-    public void deleteThreadInitializer( Runnable r ) {
-        threadInitializerList.remove( r );
-    }
-    public Collection<Runnable> getThreadInitializerList() {
-        return Collections.unmodifiableCollection( threadInitializerList );
-    }
-    
     {
-        addThreadInitializer( threadInitializer );
+        this.getThreadInitializerCollection().addThreadInitializer( getThreadInitializer() );
     }
     
-    
+
+    private ThreadInitializerCollection variableInitializerCollection = new ThreadInitializerCollection();
+    public ThreadInitializerCollection getVariableInitializerCollection() {
+        return variableInitializerCollection;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // 
     ////////////////////////////////////////////////////////////////////////////
@@ -373,8 +383,8 @@ public class Kawapad extends JTextPane implements MenuInitializer {
                                 + "" 
                              );
         }} );
-        
     }
+    
     public static void registerGlobalIntroSchemeInitializer( SchemeSecretary schemeSecretary ) {
         schemeSecretary.registerSchemeInitializer( Kawapad.class, staticIntroInitializer01 );
     }
@@ -2795,14 +2805,14 @@ public class Kawapad extends JTextPane implements MenuInitializer {
     public static File getInitFile() {
         return new File( System.getProperty("user.home"), ".kawapad/kawapad-initialization.scm" );
     }
-    public static void executeExternalFile(Scheme scheme, String fileType, File initFile) {
+    public static void executeExternalFile(Scheme scheme, Runnable threadInitializer, String fileType, File initFile) {
         // Read user's configuration file. If any problem is occurred, print its
         // stacktrace in the stderr, and then continue the process.
         try {
             logInfo( "Loading " + initFile.getName() );
             if ( initFile.exists() ) {
                 SchemeExecutor.evaluateScheme( 
-                    scheme, null, null, 
+                    scheme, threadInitializer,
                     new InputStreamReader( new FileInputStream( initFile ) ), 
                     initFile.getParentFile(), initFile, initFile.getPath() 
                     ).throwIfError();
@@ -2821,7 +2831,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
      * classes. 
      */
     static {
-        executeExternalFile( new Scheme(), "kawapad initialization", getInitFile() );
+        executeExternalFile( new Scheme(), null,  "kawapad initialization", getInitFile() );
     }
 
 
@@ -2835,8 +2845,19 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         if ( ! SchemeUtils.isDefined(env, FLAG_DONE_INIT_PULSAR_SCRATCHPAD ) ) {
             SchemeUtils.defineVar(env, true, FLAG_DONE_INIT_PULSAR_SCRATCHPAD );  
 
-            SchemeUtils.defineVar(env, false, "frame"  );
-            SchemeUtils.defineVar(env, false, "scheme" );
+            SchemeUtils.defineVar(env, new Procedure0() {
+                @Override
+                public Object apply0() throws Throwable {
+                    return Kawapad.getCurrent();
+                }
+            }, "kawapad");
+
+            SchemeUtils.defineVar(env, new Procedure0() {
+                @Override
+                public Object apply0() throws Throwable {
+                    return KawapadFrame.getCurrent();
+                }
+            }, "frame");
             
             SchemeUtils.defineVar(env, new Procedure3() {
                 @Override
@@ -2986,7 +3007,7 @@ public class Kawapad extends JTextPane implements MenuInitializer {
                 }
             }
 
-            executeExternalFile( scheme, "user extension", getExtFile() );
+            executeExternalFile( scheme, null, "user extension", getExtFile() );
         }
         return scheme;
     }
@@ -3298,9 +3319,12 @@ public class Kawapad extends JTextPane implements MenuInitializer {
                                         "Kawapad" );
         Kawapad newKawapad = kawapadFrame.getKawapad();
         Kawapad thisKawapad = this;
-        newKawapad.addAllThreadInitializer( thisKawapad.getThreadInitializerList() );
-        newKawapad.addAllVariableInitializer( thisKawapad.getVariableInitializerList() );
-        newKawapad.removeVariableInitializer( thisKawapad.currentInstanceVariableInitializer );
+        
+        newKawapad.getThreadInitializerCollection().addAllThreadInitializer( 
+            thisKawapad.getThreadInitializerCollection().getThreadInitializerList() );
+        
+        newKawapad.getThreadInitializerCollection().deleteThreadInitializer( 
+            thisKawapad.getThreadInitializer() );
         
         kawapadFrame.init();
         if ( f != null )
@@ -3420,56 +3444,6 @@ public class Kawapad extends JTextPane implements MenuInitializer {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 
-    //  Variable Initializer
-    //
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    public static interface KawaVariableInitializer {
-        void initializeVariable( Map<String, Object> variables ); 
-    }
-    List<KawaVariableInitializer> kawaVariableInitializerList = new ArrayList<>();
-    public void addVariableInitializer( KawaVariableInitializer i ){
-        this.kawaVariableInitializerList.add( i );
-    }
-    public void addAllVariableInitializer( Collection<KawaVariableInitializer> is ){
-        this.kawaVariableInitializerList.addAll( is );
-    }
-    public void removeVariableInitializer( KawaVariableInitializer i ){
-        this.kawaVariableInitializerList.remove( i );
-    }
-    public List<KawaVariableInitializer> getVariableInitializerList() {
-        return Collections.unmodifiableList( this.kawaVariableInitializerList );
-    }
-    public void initVariables(HashMap<String, Object> variables) {
-        for ( KawaVariableInitializer i : this.kawaVariableInitializerList ){
-            try {
-                i.initializeVariable( variables );
-            } catch ( Throwable t ) {
-                logError( "an error occured in a variable initializer. ignored. " , t );
-            }
-        }
-    }
-
-    KawaVariableInitializer currentInstanceVariableInitializer = new KawaVariableInitializer() {
-        @Override
-        public void initializeVariable(Map<String, Object> variables ) {
-            variables.put( "kawapad", this );
-        }
-    };
-    KawaVariableInitializer instanceIDVariableInitializer = new KawaVariableInitializer() {
-        @Override
-        public void initializeVariable(Map<String, Object> variables ) {
-            variables.put( instanceID, this );
-        }
-    };
-
-    {
-        addVariableInitializer( currentInstanceVariableInitializer);
-        addVariableInitializer( instanceIDVariableInitializer);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // 
     //  File Management
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3572,7 +3546,5 @@ public class Kawapad extends JTextPane implements MenuInitializer {
         kawapad.initMenu( map );
 
         pulsar.lib.swing.Action2.processMenuBar( menuBar );
-    }    
-    
-
+    }
 }

@@ -639,6 +639,7 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
 
     private void offerNewBuffer( Metro metro, int barLengthInFrames ) throws JackException {
         synchronized ( this.getMetroTrackLock() ) {
+            
 //          logInfo( "offerNewBuffer:" );
             if ( this.ending ) {
 //              logInfo( "offerNewBuffer:ending (" + this.name  + ")");
@@ -677,6 +678,9 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
                 }
                 
             } else {
+                // initialize the current thread
+                this.metro.getThreadInitializerCollection().initialize();
+
 //              logInfo( "offerNewBuffer:normal (" + this.name  + ")");
                 MetroEventBuffer buf = MetroEventBuffer.create();
                 this.sequence.processBuffered( metro, this, buf );

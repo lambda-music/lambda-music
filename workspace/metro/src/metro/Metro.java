@@ -50,6 +50,11 @@ import org.jaudiolibs.jnajack.JackStatus;
 import org.jaudiolibs.jnajack.JackTimebaseCallback;
 import org.jaudiolibs.jnajack.JackTransportState;
 
+import pulsar.lib.CurrentObject;
+import pulsar.lib.ThreadInitializer;
+import pulsar.lib.ThreadInitializerCollection;
+import pulsar.lib.ThreadInitializerCollectionContainer;
+import pulsar.lib.ThreadInitializerContainer;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.Invokable;
 
@@ -57,7 +62,10 @@ import pulsar.lib.secretary.Invokable;
  * 
  * @author Ats Oka
  */
-public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallback, JackTimebaseCallback, Runnable {
+public class Metro 
+    implements  MetroLock, JackProcessCallback, JackShutdownCallback, JackTimebaseCallback, 
+                Runnable, ThreadInitializerContainer<Metro>, ThreadInitializerCollectionContainer 
+{
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -73,7 +81,24 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
         // TODO COUNTERMEASURE_FOR_LOCKING (Mon, 23 Sep 2019 08:33:32 +0900)
         return Metro.this.lock;
     }
+ 
     
+    private static final CurrentObject<Metro> currentObject = new CurrentObject<>( Metro.class );
+    private final ThreadInitializer<Metro> threadInitializer = 
+            ThreadInitializer.createThreadInitializer( currentObject, this );
+    @Override
+    public ThreadInitializer<Metro> getThreadInitializer() {
+        return threadInitializer;
+    }
+    public static Metro getCurrent() {
+        return currentObject.get();
+    }
+
+    private final ThreadInitializerCollection threadInitializerCollection = new ThreadInitializerCollection();
+    @Override
+    public ThreadInitializerCollection getThreadInitializerCollection() {
+        return this.threadInitializerCollection;
+    }
     
     public Metro() {
     }
@@ -84,9 +109,8 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
     protected JackClient client = null;
     protected Thread thread = null;
     protected final ArrayList<MetroPort> inputPortList = new ArrayList<MetroPort>();
-    protected final ArrayList<MetroPort> outputPortList = new ArrayList<MetroPort>();;
+    protected final ArrayList<MetroPort> outputPortList = new ArrayList<MetroPort>();
     
-
     private final JackMidi.Event midiEvent = new JackMidi.Event();
 //  private BlockingQueue<String> debugQueue = new LinkedBlockingQueue<String>();
 //    private StringBuilder sb = new StringBuilder();
@@ -647,6 +671,7 @@ public class Metro implements MetroLock, JackProcessCallback, JackShutdownCallba
     /**
      * Note that this method is called by another thread.
      */
+    @Override
     public void run()  {
         try {
             logInfo("Metro.run()");

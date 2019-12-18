@@ -10,7 +10,7 @@ public abstract class KawapadEvaluatorRunnable implements Runnable {
     String schemeScript;
     boolean doInsertText;
     boolean doReplaceText;
-    private boolean doReportError;
+    boolean doReportError;
     boolean doResetFileModified;
     KawapadEvaluatorRunnable( Kawapad kawapad, String schemeScript, boolean doInsertText, boolean doReplaceText, boolean doReportError, boolean doResetFileModified ) {
         super();
@@ -18,8 +18,8 @@ public abstract class KawapadEvaluatorRunnable implements Runnable {
         this.schemeScript = schemeScript;
         this.doInsertText = doInsertText;
         this.doReplaceText = doReplaceText;
-        this.doResetFileModified = doResetFileModified;
         this.doReportError = doReportError;
+        this.doResetFileModified = doResetFileModified;
     }
     private void procDocument(SchemeResult schemeResult) {
         Kawapad.logWarn( "**KAWAPAD_PAGE**" );
@@ -80,7 +80,7 @@ public abstract class KawapadEvaluatorRunnable implements Runnable {
             }
         } else {
             // if error, insert anyway unless doReportError is false;
-            if ( doResetFileModified ) 
+            if ( doReportError ) 
                 procInsert( schemeResult );
         }
     }

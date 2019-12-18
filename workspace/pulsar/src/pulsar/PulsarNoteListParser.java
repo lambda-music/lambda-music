@@ -43,7 +43,7 @@ public class PulsarNoteListParser extends NoteListParser {
     // MOVED FROM SchemeSequence (Wed, 06 Nov 2019 17:07:05 +0900)
     public static <T> void invokable2receiver( Metro metro, MetroTrack track, Invokable invokable, MetroBufferedMidiReceiver<T> buffer, MetroCollector<T> result ) {
         SchemeSecretary.initializeCurrentThread( ((Pulsar)metro).getSchemeSecretary().getExecutive() );
-        ((Pulsar)metro).threadInializer.run();
+        ((Pulsar)metro).getThreadInitializer().run();
         
         // Call the invokable to get a note list of the next measure.
         Collection<Object> notations = (Collection<Object>)invokable.invoke();

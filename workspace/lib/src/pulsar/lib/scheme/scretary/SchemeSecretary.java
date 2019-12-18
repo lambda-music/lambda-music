@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,16 +16,24 @@ import javax.swing.SwingUtilities;
 import gnu.expr.Language;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
+import gnu.mapping.Procedure0;
 import kawa.standard.Scheme;
+import kawa.standard.load;
+import pulsar.lib.CurrentObject;
+import pulsar.lib.ThreadInitializer;
+import pulsar.lib.ThreadInitializerCollection;
+import pulsar.lib.ThreadInitializerContainer;
+import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.SchemeExecutor;
 import pulsar.lib.scheme.SchemeResult;
+import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.Invokable;
 import pulsar.lib.secretary.InvokablyRunnable;
 import pulsar.lib.secretary.SecretariallyInvokable;
 import pulsar.lib.secretary.Secretary;
 import pulsar.lib.secretary.SecretaryMessage;
 
-public class SchemeSecretary extends Secretary<Scheme>  {
+public class SchemeSecretary extends Secretary<Scheme> implements ThreadInitializerContainer<SchemeSecretary>, ApplicationComponent {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -40,11 +47,60 @@ public class SchemeSecretary extends Secretary<Scheme>  {
         return new InvokablyRunnable( this.createSecretarillyInvokable( procedure ), args );
     }
 
+    //////////////////////////////////////////////////////////////////////////////////////////
+    //
+    //////////////////////////////////////////////////////////////////////////////////////////
+    
+    private static final CurrentObject<SchemeSecretary> currentObject = new CurrentObject<>( SchemeSecretary.class );
+    private final ThreadInitializer<SchemeSecretary> threadInitializer =
+            ThreadInitializer.createMultipleThreadInitializer(   
+                ThreadInitializer.createThreadInitializer( currentObject, this ),
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        initializeCurrentThread();
+                    }
+                });
+    @Override
+    public ThreadInitializer<SchemeSecretary> getThreadInitializer() {
+        return threadInitializer;
+    }
+    public static SchemeSecretary getCurrent() {
+        return currentObject.get();
+    }
+
+    final ThreadInitializerCollection defaultInitializerCollection = new ThreadInitializerCollection();
+    {
+        defaultInitializerCollection.addThreadInitializer( getThreadInitializer() );
+    }
+    public ThreadInitializerCollection getDefaultInitializerCollection() {
+        return defaultInitializerCollection;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    //
+    //////////////////////////////////////////////////////////////////////////////////////////
+
+    private ApplicationComponent parentApplicationComponent;
+    @Override
+    public ApplicationComponent getParentApplicationComponent() {
+        return this.parentApplicationComponent;
+    }
+    @Override
+    public void setParentApplicationComponent(ApplicationComponent parentApplicationComponent) {
+        this.parentApplicationComponent = parentApplicationComponent;
+    }
+
+    @Override
+    public void requesetInit() {
+    }
+    @Override
+    public void requestShutdown() {
+    }
     
     Scheme getScheme() {
         return getExecutive();
     }
-    
     
     //////////////////////////////////////////////////////////////////////////////////////////
     // SHUTDOWN HOOK
@@ -81,6 +137,17 @@ public class SchemeSecretary extends Secretary<Scheme>  {
     }
     public final void initializeCurrentThread() {
         initializeCurrentThread( this.getScheme() );
+    }
+    
+    private final Collection<Runnable> threadInitializerList = new LinkedList<>();
+    public void registerThreadInitializer( Runnable initializer ) {
+        threadInitializerList.add( initializer );
+    }
+    public void unregisterThreadInitializer( Runnable initializer ) {
+        threadInitializerList.remove( initializer );
+    }
+    public Collection<Runnable> getThreadInitializerList() {
+        return threadInitializerList;
     }
     
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -143,12 +210,17 @@ public class SchemeSecretary extends Secretary<Scheme>  {
         registerSchemeInitializer( null, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
             public void execute0(Scheme scheme, Object[] args) {
+                staticInitScheme( scheme );
+            }
+        });
+        registerSchemeInitializer( null, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+            @Override
+            public void execute0(Scheme scheme, Object[] args) {
                 // 3. This initializes Secretary Message Queue's thread.
                 // // 4. (in most case ) this initializes main-thread
                 initializeCurrentThread( scheme );
             }
-        } );
-
+        });
         registerSchemeInitializer( null, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
             public void execute0(Scheme scheme, Object[] args) {
@@ -170,7 +242,7 @@ public class SchemeSecretary extends Secretary<Scheme>  {
                 // (Thu, 15 Aug 2019 23:07:01 +0900)
 //              SchemeUtils.defineVar( scheme, EmptyList.emptyList, "all-procedures" );
             }
-        } );
+        });
     }
 
     @Override
@@ -315,25 +387,56 @@ public class SchemeSecretary extends Secretary<Scheme>  {
             throw new RuntimeException(e);
         }
     }
-    public static SchemeResult evaluateScheme( SchemeSecretary schemeSecretary,
-            Collection<Runnable> threadInitializers, 
-            Map<String,Object> variables, 
+    public static SchemeResult evaluateScheme( 
+            SchemeSecretary schemeSecretary, Runnable threadInitializer, 
             String schemeScript, File currentDirectory, File schemeScriptFile, String schemeScriptURI ) 
     {
         return SchemeSecretary.evaluateScheme(
-            schemeSecretary, threadInitializers, variables,  
+            schemeSecretary, threadInitializer,    
             new StringReader( schemeScript ), currentDirectory, schemeScriptFile, schemeScriptURI );
     }
 
-    public static SchemeResult evaluateScheme( SchemeSecretary schemeSecretary, 
-            Collection<Runnable> threadInitializers, 
-            Map<String,Object> variables, 
+    public static SchemeResult evaluateScheme( 
+            SchemeSecretary schemeSecretary, Runnable threadInitializer, 
             Reader schemeScript, File currentDirectory, File schemeScriptFile, String schemeScriptURI ) {
         return schemeSecretary.executeSecretarially( new SecretaryMessage.NoThrow<Scheme,SchemeResult>() {
             @Override
             public SchemeResult execute0(Scheme scheme, Object[] args) {
-                return SchemeExecutor.evaluateScheme(scheme, threadInitializers, variables, schemeScript, currentDirectory, schemeScriptFile, schemeScriptURI);
+                return SchemeExecutor.evaluateScheme(scheme, threadInitializer, schemeScript, currentDirectory, schemeScriptFile, schemeScriptURI);
             }
         }, Invokable.NOARG );
+    }
+    
+    /**
+     * "loadRelative" was moved from 
+     * {@link SchemeExecutor#evaluateScheme(Scheme, Runnable, Reader, File, File, String)}  
+     */
+    public static void staticInitScheme( Scheme scheme ) {
+        Environment env = scheme.getEnvironment();
+
+        // THIS IS A COPY FROM SchemeExecutor#evaluateScheme 
+        // // I feel overriding "load" by "load-relative" is too risky. It
+        // // may destroy the compatibility inside the kawa library; we
+        // // decide to call it "source".  Usually ,this kind of
+        // // initialization process should be done in staticInitScheme()
+        // // method.  But we want to make it visible here that "source"
+        // // is available in this way.  (Mon, 09 Sep 2019 04:31:19 +0900)
+        // SchemeUtils.defineVar(env, load.loadRelative , "source" );
+        // Moved from SchemeExecutor (Thu, 19 Dec 2019 02:43:01 +0900)
+        SchemeUtils.defineVar(env, load.loadRelative , "source" );
+
+        SchemeUtils.defineVar(env, new Procedure0() {
+            @Override
+            public Object apply0() throws Throwable {
+                return Language.getDefaultLanguage();
+            }
+        }, "current-scheme" );
+        SchemeUtils.defineVar(env, new Procedure0() {
+            @Override
+            public Object apply0() throws Throwable {
+                return Language.getDefaultLanguage();
+            }
+        }, "current-environment" );
+
     }
 }

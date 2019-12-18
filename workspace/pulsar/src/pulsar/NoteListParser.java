@@ -190,10 +190,6 @@ public class NoteListParser {
      *      MetroBufferedMidiReceiver, Map, MetroCollector)
      */
     public <T> void parse( Metro metro, MetroTrack track, Collection<Object> inputList, MetroBufferedMidiReceiver<T> buffer, MetroCollector<T> result ) {
-        
-        // This is it. See comment above.
-        Pulsar.currentObject.set( (Pulsar) metro );
-        
         try {
             if ( inputList != null ) {
                 for ( Iterator<Object> i = inputList.iterator(); i.hasNext(); ) {
@@ -219,8 +215,6 @@ public class NoteListParser {
     }
     
     public <T> void parseNotation( Metro metro, MetroTrack track, LList notation, MetroBufferedMidiReceiver<T> buffer, MetroCollector<T> result ) {
-        // This is it. See comment above.
-        Pulsar.currentObject.set( (Pulsar) metro );
         try {
             parseNotationProc( metro, track, notation, buffer, result );
         } catch ( RuntimeException e ) {

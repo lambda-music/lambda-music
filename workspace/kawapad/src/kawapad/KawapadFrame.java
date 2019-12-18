@@ -49,16 +49,19 @@ import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
-import kawapad.Kawapad.KawaVariableInitializer;
+import pulsar.lib.CurrentObject;
 import pulsar.lib.PulsarLogger;
+import pulsar.lib.ThreadInitializer;
+import pulsar.lib.ThreadInitializerContainer;
 import pulsar.lib.Version;
+import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.DescriptiveDocumentCategory;
 import pulsar.lib.scheme.DescriptiveHelp;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.swing.AcceleratorKeyList;
 import pulsar.lib.swing.Action2;
 
-public class KawapadFrame extends JFrame {
+public class KawapadFrame extends JFrame implements ThreadInitializerContainer<KawapadFrame>, ApplicationComponent {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -67,6 +70,42 @@ public class KawapadFrame extends JFrame {
     public String getFrameName() {
         return this.kawapad.getInstanceID();
     }
+
+    //////////////////////////////////////////////////////////////////////////////////
+    //
+    //////////////////////////////////////////////////////////////////////////////////
+
+    private ApplicationComponent parentApplicationComponent;
+    @Override
+    public ApplicationComponent getParentApplicationComponent() {
+        return this.parentApplicationComponent;
+    }
+    @Override
+    public void setParentApplicationComponent(ApplicationComponent parentApplicationComponent) {
+        this.parentApplicationComponent = parentApplicationComponent;
+    }
+    @Override
+    public void requesetInit() {
+    }
+    @Override
+    public void requestShutdown() {
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////
+    //
+    //////////////////////////////////////////////////////////////////////////////////
+
+    private static final CurrentObject<KawapadFrame> currentObject = new CurrentObject<>( KawapadFrame.class );
+    private final ThreadInitializer<KawapadFrame> threadInitializer = 
+            ThreadInitializer.createThreadInitializer( currentObject, this );
+    @Override
+    public ThreadInitializer<KawapadFrame> getThreadInitializer() {
+        return threadInitializer;
+    }
+    public static KawapadFrame getCurrent() {
+        return currentObject.get();
+    }
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -118,7 +157,7 @@ public class KawapadFrame extends JFrame {
 //      invokeLocalSchemeInitializers( schemeSecretary, this);
 //      DELETED <<< INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
         
-        kawapad = new Kawapad( schemeSecretary, evaluator ) {
+        this.kawapad = new Kawapad( schemeSecretary, evaluator ) {
             // Special thanks go to tips4java
             // https://tips4java.wordpress.com/2009/01/25/no-wrap-text-pane/
             public boolean getScrollableTracksViewportWidth() {
@@ -129,6 +168,8 @@ public class KawapadFrame extends JFrame {
             }
         };
         
+//      this.kawapad.getThreadInitializerCollection().addThreadInitializer( this.getThreadInitializer() );
+
 
 //      Color foreground = Color.green;
 //      Color background = Color.black;
@@ -141,13 +182,6 @@ public class KawapadFrame extends JFrame {
 //      kawapad.setSelectionColor( selectionBackground );
 //      
         // kawapad.setFont(  Font.decode( "Bitstream Vera Sans Mono 12" ) );
-        
-        kawapad.addVariableInitializer( new KawaVariableInitializer() {
-            @Override
-            public void initializeVariable(Map<String, Object> variables ) {
-                variables.put( "frame", KawapadFrame.this );
-            }
-        });
         
 //      int MARGIN = 5;
 //      {

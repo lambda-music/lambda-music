@@ -76,8 +76,7 @@ import kawapad.KawapadEvaluator;
 import kawapad.KawapadFrame;
 import metro.MetroTrack;
 import pulsar.Pulsar.TempoTapperTempoNotifier;
-import pulsar.lib.CurrentObject;
-import pulsar.lib.ThreadInitializer;
+import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
@@ -89,7 +88,7 @@ import pulsar.lib.swing.AutomatedActionField;
 import pulsar.lib.swing.FlawLayout;
 import pulsar.lib.swing.JNamedPanel;
 
-public class PulsarFrame extends KawapadFrame {
+public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     private static final String PULSAR_DEFAULT_CAPTION = "Pulsar - a Lisp Scheme Music Sequencer";
     private static final boolean ENABLED_USER_PANE = false; // (Fri, 27 Sep 2019 12:18:01 +0900)
     private static final boolean ENABLED_TEMPO_TITLE = false; // (Fri, 27 Sep 2019 12:18:01 +0900)
@@ -104,6 +103,27 @@ public class PulsarFrame extends KawapadFrame {
     static void logWarn(String msg) {
         LOGGER.log(Level.WARNING, msg);
     }
+
+    /////////////////////////////////////////////////////
+
+    private ApplicationComponent parentApplicationComponent;
+    @Override
+    public ApplicationComponent getParentApplicationComponent() {
+        return this.parentApplicationComponent;
+    }
+    @Override
+    public void setParentApplicationComponent(ApplicationComponent parentApplicationComponent) {
+        this.parentApplicationComponent = parentApplicationComponent;
+    }
+
+    @Override
+    public void requesetInit() {
+    }
+    @Override
+    public void requestShutdown() {
+    }
+
+    /////////////////////////////////////////////////////
 
     PulsarFrame frame = this;
     
@@ -167,16 +187,8 @@ public class PulsarFrame extends KawapadFrame {
         }
     }
     
-    //////////////////////////////////////////////////////////////////////////////////
-    //
-    //////////////////////////////////////////////////////////////////////////////////
-
-    public static final CurrentObject<PulsarFrame> currentObject = new CurrentObject<>( PulsarFrame.class );
-
-    public final ThreadInitializer<PulsarFrame> threadInializer = 
-            ThreadInitializer.createThreadInitializer( currentObject, this );
     public static PulsarFrame getCurrent() {
-        return currentObject.get();
+        return (PulsarFrame)KawapadFrame.getCurrent();
     }
 
     //////////////////////////////////////////////////////////////////////////////////
@@ -201,15 +213,12 @@ public class PulsarFrame extends KawapadFrame {
         this.pulsar = pulsar;
         this.shutdownWhenClose = shutdownWhenClose;
         
-        this.kawapad.addThreadInitializer( this.threadInializer );
-
         this.pulsar.getSchemeSecretary().addShutdownHook( PulsarFrame.this.shutdownProc01 );
         //          DELETED >>> INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
         //          PulsarGui.invokeLocalSchemeInitializers( schemeSecretary, PulsarGui.this );
         //          DELETED <<< INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
         
-        this.kawapad.addThreadInitializer( this.pulsar.threadInializer );
-        this.kawapad.addVariableInitializer( this.pulsar.getVariableInitializer() );
+        this.kawapad.getThreadInitializerCollection().addThreadInitializer( this.pulsar.getThreadInitializer() );
         
         initGui();
         initGuiMenu();
@@ -222,49 +231,40 @@ public class PulsarFrame extends KawapadFrame {
     }
     
     private void initPulsarGui() {
-        
-        // INDIRECT_PULSAR_ACCESS (Sun, 15 Dec 2019 19:26:48 +0900) >>>
-        // pulsar.shutdown();
-//        getKawapad().evaluate( "(quit)", false, false, false );
-
-        if ( pulsar != null ) {
-            Pulsar.createTimer(pulsar, 1000, 20, new Invokable() {
-                transient boolean lastPlaying= false;
-                List<MetroTrack> trackList;
-                @Override
-                public Object invoke(Object... args) {
-                    if ( pulsar.isOpened() ) {
-                        boolean playing = pulsar.getPlaying();
-                        if ( playing != lastPlaying ) {
-                            if ( playing ) {
-                                trackList = pulsar.searchTrack( Symbol.valueOf( "main" ) );
-                            }
-                            lastPlaying = playing;
+        Pulsar.createTimer(pulsar, 1000, 20, new Invokable() {
+            transient boolean lastPlaying= false;
+            List<MetroTrack> trackList;
+            @Override
+            public Object invoke(Object... args) {
+                if ( pulsar.isOpened() ) {
+                    boolean playing = pulsar.getPlaying();
+                    if ( playing != lastPlaying ) {
+                        if ( playing ) {
+                            trackList = pulsar.searchTrack( Symbol.valueOf( "main" ) );
                         }
-                        
-                        //  This happens quite often so let us ignore it. (Mon, 29 Jul 2019 12:21:50 +0900)
-                        //  Additionally this code have never been executed. Just added this for describing the concept.
-                        //  if ( track == null ) {
-                        //      logWarn( "" );
-                        //  }
-                        
-                        if ( (trackList!= null ) && (! trackList.isEmpty()) && (pb_position != null) ) {
-                            double value=0;
-                            MetroTrack track = trackList.get( 0 ); 
-                            synchronized ( track.getMetroTrackLock() ) {
-                                value = track.getTrackPosition();
-                            }
-                            pb_position.setValue((int) (value * PulsarFrame.PB_POSITION_MAX) );
-                            pb_position.repaint();
-                            pb_position.revalidate();
-                        }
+                        lastPlaying = playing;
                     }
-                    return Values.empty;
+                    
+                    //  This happens quite often so let us ignore it. (Mon, 29 Jul 2019 12:21:50 +0900)
+                    //  Additionally this code have never been executed. Just added this for describing the concept.
+                    //  if ( track == null ) {
+                    //      logWarn( "" );
+                    //  }
+                    
+                    if ( (trackList!= null ) && (! trackList.isEmpty()) && (pb_position != null) ) {
+                        double value=0;
+                        MetroTrack track = trackList.get( 0 ); 
+                        synchronized ( track.getMetroTrackLock() ) {
+                            value = track.getTrackPosition();
+                        }
+                        pb_position.setValue((int) (value * PulsarFrame.PB_POSITION_MAX) );
+                        pb_position.repaint();
+                        pb_position.revalidate();
+                    }
                 }
-            });    
-        }
-
-        // INDIRECT_PULSAR_ACCESS (Sun, 15 Dec 2019 19:26:48 +0900) <<<
+                return Values.empty;
+            }
+        });    
     }
 
     enum TempoRange {

@@ -23,6 +23,12 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
+import pulsar.lib.CurrentObject;
+import pulsar.lib.ThreadInitializer;
+import pulsar.lib.ThreadInitializerCollection;
+import pulsar.lib.ThreadInitializerCollectionContainer;
+import pulsar.lib.ThreadInitializerContainer;
+import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.SchemeExecutor;
 import pulsar.lib.scheme.SchemeResult;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
@@ -38,7 +44,7 @@ import pulsar.lib.scheme.scretary.SchemeSecretary;
  * 
  */
 
-public class SchemeHttp {
+public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, ThreadInitializerCollectionContainer, ApplicationComponent {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
@@ -49,6 +55,53 @@ public class SchemeHttp {
     static void logWarn(String msg) {
         LOGGER.log(Level.WARNING, msg);
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    //
+    ////////////////////////////////////////////////////////////////////////////
+
+    private ApplicationComponent parentApplicationComponent;
+    @Override
+    public ApplicationComponent getParentApplicationComponent() {
+        return this.parentApplicationComponent;
+    }
+    @Override
+    public void setParentApplicationComponent(ApplicationComponent parentApplicationComponent) {
+        this.parentApplicationComponent = parentApplicationComponent;
+    }
+
+    @Override
+    public void requesetInit() {
+    }
+    @Override
+    public void requestShutdown() {
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // The Thread Initializer Facility
+    ////////////////////////////////////////////////////////////////////////////
+
+    private static final CurrentObject<SchemeHttp> currentObject = new CurrentObject<>( SchemeHttp.class );
+    private final ThreadInitializer<SchemeHttp> threadInitializer = 
+            ThreadInitializer.createThreadInitializer( currentObject, this );
+    @Override
+    public ThreadInitializer<SchemeHttp> getThreadInitializer() {
+        return threadInitializer;
+    }    
+    public static SchemeHttp getCurrent() {
+        return currentObject.get();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    private ThreadInitializerCollection threadInitializerCollection = new ThreadInitializerCollection();
+    public ThreadInitializerCollection getThreadInitializerCollection() {
+        return threadInitializerCollection;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // 
+    ////////////////////////////////////////////////////////////////////////////
 
     private static String decode(String value) {
         try {
@@ -104,20 +157,20 @@ public class SchemeHttp {
     SchemeSecretary schemeSecretary;
     HttpServer httpServer;
     Charset charset = Charset.forName( "UTF-8" );
-    List<Runnable> threadInitializers;
+    Runnable schemeThreadInitializer;
     UserAuthentication authentication;
-    public SchemeHttp( int port, UserAuthentication authentication, SchemeSecretary schemeSecretary, List<Runnable> threadInitializers ) throws IOException {
+    public SchemeHttp( int port, UserAuthentication authentication, SchemeSecretary schemeSecretary, Runnable schemeThreadInitializer ) throws IOException {
         super();
         this.port = port;
         this.authentication = authentication;
         this.schemeSecretary = schemeSecretary;
-        this.threadInitializers = threadInitializers;
+        this.schemeThreadInitializer = schemeThreadInitializer;
         this.initialize();
     }
     private void initialize() throws IOException {
         httpServer = HttpServer.create(new InetSocketAddress( port ), 0);
-        httpServer.createContext( "/pulsar", new VimSchemeEvaluation(this.authentication) );
-        httpServer.createContext( "/vim",    new VimSchemeEvaluation(this.authentication) );
+        httpServer.createContext( "/pulsar", new VimSchemeEvaluation(  this.authentication) );
+        httpServer.createContext( "/vim",    new VimSchemeEvaluation(  this.authentication) );
         httpServer.createContext( "/eval",   new PlainSchemeEvaluation(this.authentication) );
         
         httpServer.setExecutor(null); // creates a default executor
@@ -207,9 +260,8 @@ public class SchemeHttp {
             logInfo( requestString );
             SchemeResult schemeResult = 
                     SchemeSecretary.evaluateScheme( 
-                        schemeSecretary, 
-                        threadInitializers, 
-                        null, requestString, null, null, "web-scratchpad" );
+                        schemeSecretary, schemeThreadInitializer, 
+                        requestString, null, null, "web-scratchpad" );
             String responseString;
             responseString = 
                     SchemeExecutor.endWithLineFeed( requestString ) + 
@@ -232,7 +284,7 @@ public class SchemeHttp {
         public void handleProc(HttpExchange t) throws IOException {
             String requestString = readInputStream( t.getRequestBody() ); 
             logInfo( requestString );
-            SchemeResult schemeResult = SchemeSecretary.evaluateScheme( schemeSecretary, threadInitializers, null, requestString, null, null, "web-scratchpad" );
+            SchemeResult schemeResult = SchemeSecretary.evaluateScheme( schemeSecretary, schemeThreadInitializer, requestString, null, null, "web-scratchpad" );
             String responseString;
             responseString = schemeResult.valueAsString;
             logInfo( schemeResult.valueAsString );

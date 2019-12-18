@@ -12,8 +12,6 @@ import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import kawa.standard.Scheme;
-import pulsar.lib.scheme.SchemeExecutor;
-import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.SecretaryMessage;
 
 public class KawapadEventHandlers {
@@ -112,31 +110,18 @@ public class KawapadEventHandlers {
                 kawapad.getThreadManager().startScratchPadThread( new Runnable() {
                     @Override
                     public void run() {
-                        kawapad.schemeSecretary.initializeCurrentThread();
-                        SchemeExecutor.initializeThread( kawapad.getThreadInitializerList() );
+                        kawapad.getThreadInitializerCollection().initialize();
                         
                         synchronized ( scheme ) {
                             //  logInfo( "eventHandlers.invokeEventHandler(inner)" );
-                            Environment env = scheme.getEnvironment();
-                            HashMap<String,Object> variables = new HashMap<>();
-                            try {
-                                SchemeUtils.putVar( env, "scheme", scheme );
-                                kawapad.initVariables( variables );
-                                SchemeExecutor.initializeVariables( env, variables );
-                                
-                                for( Entry<Symbol,SchemeProcedure> e :  getEventType(eventTypeID).entrySet() ) {
-                                    try {
-                                        e.getValue().invoke( args );
-                                    } catch ( Throwable t ) {
-                                        Kawapad.logError("invoking event handlers : ", t);
-                                    }
+//                            Environment env = scheme.getEnvironment();
+                            for( Entry<Symbol,SchemeProcedure> e :  getEventType(eventTypeID).entrySet() ) {
+                                try {
+                                    e.getValue().invoke( args );
+                                } catch ( Throwable t ) {
+                                    Kawapad.logError("invoking event handlers : ", t);
                                 }
-                                
-                            } finally {
-                                SchemeUtils.putVar( env, "scheme", false );
-                                SchemeExecutor.finalizeVariables( env, variables );
                             }
-                            
                         }
                     }
                 });

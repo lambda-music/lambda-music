@@ -5,13 +5,13 @@ import java.util.Arrays;
 import java.util.Collection;
 
 public interface ThreadInitializer<T> extends Runnable {
-    public static <T> ThreadInitializer<T> createThreadInitializer(CurrentObject<T> currentObject, T thisObject) {
+    public static <T> ThreadInitializer<T> createThreadInitializer( CurrentObject<T> currentObject, T thisObject ) {
         return new DefaultThreadInitializer<T>( currentObject, thisObject );
     }
-    public static  ThreadInitializer createMultipleThreadInitializer( Collection<ThreadInitializer> initializers ) {
+    public static  ThreadInitializer createMultipleThreadInitializer( Collection<Runnable> initializers ) {
         return new MultipleThreadInitializer( initializers );
     }
-    public static  ThreadInitializer createMultipleThreadInitializer( ThreadInitializer ... initializers ) {
+    public static  ThreadInitializer createMultipleThreadInitializer( Runnable ... initializers ) {
         return new MultipleThreadInitializer( Arrays.asList( initializers ) );
     }
     final class DefaultThreadInitializer<T> implements ThreadInitializer<T> {
@@ -28,14 +28,14 @@ public interface ThreadInitializer<T> extends Runnable {
         }
     }
     final class MultipleThreadInitializer implements ThreadInitializer {
-        Collection<ThreadInitializer> initializers;
-        MultipleThreadInitializer( Collection<ThreadInitializer> initializers ) {
+        Collection<Runnable> initializers;
+        MultipleThreadInitializer( Collection<Runnable> initializers ) {
             super();
             this.initializers = new ArrayList<>( initializers );
         }
         @Override
         public void run() {
-            for ( ThreadInitializer i : initializers ) {
+            for ( Runnable i : initializers ) {
                 try {
                     i.run();
                 } catch ( Throwable t ) {

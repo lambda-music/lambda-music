@@ -4,47 +4,50 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.Collection;
-import java.util.Map;
+import java.lang.invoke.MethodHandles;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import gnu.kawa.io.InPort;
 import gnu.kawa.io.OutPort;
 import gnu.kawa.io.Path;
 import gnu.lists.Consumer;
 import gnu.mapping.CallContext;
-import gnu.mapping.Environment;
 import kawa.Shell;
 import kawa.standard.Scheme;
-import kawa.standard.load;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 
 public class SchemeExecutor {
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+    static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
+    static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
+
     public static void execSchemeFromResource( Scheme scheme, Class parentClass, String resourcePath ) throws IOException {
         SchemeExecutor.evaluateScheme( 
-            scheme, 
-            null, 
-            null, 
+            scheme, null, 
             new InputStreamReader( parentClass.getResource( resourcePath ).openStream() ), 
             null, null, resourcePath 
             ).throwIfError();
     }
 
     public static SchemeResult evaluateScheme( 
-            Scheme scheme, Collection<Runnable> threadInitializers, 
-            Map<String, Object> variables, Reader schemeScript, 
-            File currentDirectory, File currentFile, String schemeScriptURI )
+            Scheme scheme, Runnable threadInitializer, 
+            Reader schemeScript, File currentDirectory, File currentFile, String schemeScriptURI )
     {
-        //              schemeSecretary.initializeSchemeForCurrentThread();
-        SchemeSecretary.initializeCurrentThread( scheme );
+        // schemeSecretary.initializeSchemeForCurrentThread();
         synchronized ( scheme ) {
-            Environment env = scheme.getEnvironment();
+            SchemeSecretary.initializeCurrentThread( scheme );
+            if ( threadInitializer == null ) {
+                //
+            } else {
+                try {
+                    threadInitializer.run();
+                } catch ( Throwable t ) {
+                    logError("",t);
+                }
+            }
             
-            if ( threadInitializers != null )
-                initializeThread( threadInitializers );
-            if ( variables != null )
-                initializeVariables( env, variables );
-            
-            SchemeUtils.putVar( env , "scheme", scheme );
             
             // Set current directory to the default load path.
             // Note that <i>Shell.currentLoadPath</i> is not documented in the official documentation.
@@ -59,8 +62,8 @@ public class SchemeExecutor {
             // every situation. IMO load-relative supposed to be default.
             // I'm thinking about it.  (Thu, 15 Aug 2019 16:21:22 +0900)
             
-            
             Path savedPath = (Path) Shell.currentLoadPath.get();
+
             try {
                 File parentDirectory;
                 if ( currentFile != null ) {
@@ -71,14 +74,15 @@ public class SchemeExecutor {
     
                 Shell.currentLoadPath.set( Path.valueOf( parentDirectory ) );
     
-                // I feel overriding "load" by "load-relative" is too risky. It
-                // may destroy the compatibility inside the kawa library; we
-                // decide to call it "source".  Usually ,this kind of
-                // initialization process should be done in staticInitScheme()
-                // method.  But we want to make it visible here that "source"
-                // is available in this way.  (Mon, 09 Sep 2019 04:31:19 +0900)
-                SchemeUtils.defineVar(env, load.loadRelative , "source" );
-    
+                // // I feel overriding "load" by "load-relative" is too risky. It
+                // // may destroy the compatibility inside the kawa library; we
+                // // decide to call it "source".  Usually ,this kind of
+                // // initialization process should be done in staticInitScheme()
+                // // method.  But we want to make it visible here that "source"
+                // // is available in this way.  (Mon, 09 Sep 2019 04:31:19 +0900)
+                // SchemeUtils.defineVar(env, load.loadRelative , "source" );
+                // Moved to SchemeSecretary (Thu, 19 Dec 2019 02:43:01 +0900)
+                
     
                 CallContext ctx = CallContext.getInstance();
                 Consumer out = Shell.getOutputConsumer(OutPort.outDefault());
@@ -103,12 +107,6 @@ public class SchemeExecutor {
             } catch (Throwable e) {
                 return SchemeResult.createError( e );
             } finally {
-                SchemeUtils.putVar( env , "scheme", false );
-                
-                if ( variables != null )
-                    for ( Map.Entry<String, Object> e : variables.entrySet() )
-                        SchemeUtils.putVar( env , e.getKey(), false );
-                
                 try {
                     schemeScript.close();
                 } catch (IOException e1) {
@@ -118,30 +116,6 @@ public class SchemeExecutor {
                 Shell.currentLoadPath.set( savedPath );
             }
         }
-    }
-
-
-    public static void initializeThread( Collection<Runnable> threadInitializers ) {
-        if ( threadInitializers != null )
-            for ( Runnable r : threadInitializers ) {
-                try {
-                    r.run();
-                } catch ( Throwable t ) {
-                    SchemeUtils.logError( "", t );
-                }
-            }
-    }
-
-    public static void initializeVariables(Environment env, Map<String, Object> variables) {
-        if ( variables != null )
-            for ( Map.Entry<String, Object> e : variables.entrySet() )
-                SchemeUtils.putVar( env , e.getKey(), e.getValue() );
-    }
-
-    public static void finalizeVariables(Environment env, Map<String, Object> variables) {
-        if ( variables != null )
-            for ( Map.Entry<String, Object> e : variables.entrySet() )
-                SchemeUtils.putVar( env , e.getKey(), false );
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////

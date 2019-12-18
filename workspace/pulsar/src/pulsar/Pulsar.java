@@ -34,7 +34,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -61,15 +60,13 @@ import gnu.mapping.WrongArguments;
 import gnu.math.DFloNum;
 import gnu.math.IntNum;
 import kawa.standard.Scheme;
-import kawapad.Kawapad.KawaVariableInitializer;
 import metro.EventListenable;
 import metro.Metro;
 import metro.MetroPort;
 import metro.MetroSequence;
 import metro.MetroSyncType;
 import metro.MetroTrack;
-import pulsar.lib.CurrentObject;
-import pulsar.lib.ThreadInitializer;
+import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.ProceduralDescriptiveBean;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeExecutor;
@@ -133,7 +130,7 @@ import pulsar.lib.swing.MersenneTwisterFast;
  * 
  * @author Atsushi Oka
  */
-public final class Pulsar extends Metro {
+public final class Pulsar extends Metro implements ApplicationComponent {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }
     static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }
@@ -162,29 +159,33 @@ public final class Pulsar extends Metro {
         });
     }
 
+    //////////////////////////////////////////////////////////////////////////////////////////
+    private ApplicationComponent parentApplicationComponent;
+    @Override
+    public ApplicationComponent getParentApplicationComponent() {
+        return this.parentApplicationComponent;
+    }
+    @Override
+    public void setParentApplicationComponent(ApplicationComponent parentApplicationComponent) {
+        this.parentApplicationComponent = parentApplicationComponent;
+    }
+
+    @Override
+    public void requesetInit() {
+    }
+    @Override
+    public void requestShutdown() {
+    }
+
     static long shutdownWait = 1024;
     
     //////////////////////////////////////////////////////////////////////////////////////////
     
-    public static final CurrentObject<Pulsar> currentObject = new CurrentObject<>( Pulsar.class );
-    public final ThreadInitializer<Pulsar> threadInializer = 
-            ThreadInitializer.createThreadInitializer( currentObject, this );
     public static Pulsar getCurrent() {
-        return currentObject.get();
+        return (Pulsar)Metro.getCurrent();
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
-
-    private KawaVariableInitializer variableInitializer = new KawaVariableInitializer() {
-        @Override
-        public void initializeVariable(Map<String, Object> variables) {
-            variables.put( "pulsar", Pulsar.this );
-        }
-    };
-    public KawaVariableInitializer getVariableInitializer() {
-        return variableInitializer;
-    }
-
 
     @Override
     protected void onCreateThread() {
@@ -410,15 +411,11 @@ public final class Pulsar extends Metro {
             timer.scheduleAtFixedRate( new java.util.TimerTask() {
                 @Override
                 public void run() {
-                    Pulsar.currentObject.set( pulsar );
-                    
-                    // The life cycle of timer threads may not be able to be controlled by users;
-                    // therefore, we decided to initialize the environment every time we execute
-                    // timer events. (Mon, 05 Aug 2019 00:38:14 +0900)
-                    pulsar.getSchemeSecretary().initializeCurrentThread();
+                    pulsar.getThreadInitializerCollection().initialize();
                     
                     // Execute the specified process.
                     Object result = invokable.invoke();
+
                     if ( Boolean.FALSE.equals( result ) ) {
                         timer.cancel();
                     }
@@ -428,13 +425,8 @@ public final class Pulsar extends Metro {
             timer.schedule( new java.util.TimerTask() {
                 @Override
                 public void run() {
-                    Pulsar.currentObject.set( pulsar );
+                    pulsar.getThreadInitializerCollection().initialize();
 
-                    // The life cycle of timer threads may not be able to be controlled by users;
-                    // therefore, we decided to initialize the environment every time we execute
-                    // timer events. (Mon, 05 Aug 2019 00:38:14 +0900)
-                    pulsar.getSchemeSecretary().initializeCurrentThread();
-                    
                     // Execute the specified process.
                     invokable.invoke();
                 }
@@ -612,7 +604,7 @@ public final class Pulsar extends Metro {
         
         @Override
         public void occured(Object parent, Object type) {
-            Pulsar.currentObject.set( pulsar );
+            this.pulsar.getThreadInitializerCollection().initialize();
             try {
                 procedure.apply2( parent, type );
             } catch (Throwable e) {
@@ -839,6 +831,14 @@ public final class Pulsar extends Metro {
      */
     public static void initScheme( Scheme scheme ) {
         Environment env = scheme.getEnvironment();
+        
+        SchemeUtils.defineVar(env, new Procedure0() {
+            @Override
+            public Object apply0() throws Throwable {
+                return Pulsar.getCurrent();
+            }
+        }, "pulsar");
+
 
         SchemeUtils.defineVar( env, new SafeProcedureN( "open?" ) {
             @Override
@@ -2266,6 +2266,7 @@ public final class Pulsar extends Metro {
             logError( "", t );
         }
     }
+    
     
     
 }
