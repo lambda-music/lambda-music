@@ -35,16 +35,23 @@ public class SchemeExecutor {
             Scheme scheme, Runnable threadInitializer, 
             Reader schemeScript, File currentDirectory, File currentFile, String schemeScriptURI )
     {
+        logInfo( "=== Execute Scheme ===" );
+
         // schemeSecretary.initializeSchemeForCurrentThread();
         synchronized ( scheme ) {
+            // Initialize threads : 
+            // Therefore threadInitializer should keep the default thread initializer at here,
+            // calling initializeCurrentThread() here is merely a fallback for initializing Scheme object.
+            // Call initializeCurrentThread() here in case that no thread initializer was specified.
+            
             SchemeSecretary.initializeCurrentThread( scheme );
             if ( threadInitializer == null ) {
-                //
+                logWarn( "No thread initializer was specified " );
             } else {
                 try {
                     threadInitializer.run();
                 } catch ( Throwable t ) {
-                    logError("",t);
+                    logError( "The thread initializer specified failed. ", t);
                 }
             }
             

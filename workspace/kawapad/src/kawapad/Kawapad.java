@@ -2839,7 +2839,6 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     
     public static Scheme staticInitScheme( Scheme scheme ) {
         logInfo( "Kawapad#staticInitScheme" );
-        SchemeSecretary.initializeCurrentThread( scheme );
         Environment env = scheme.getEnvironment();
         
         if ( ! SchemeUtils.isDefined(env, FLAG_DONE_INIT_PULSAR_SCRATCHPAD ) ) {

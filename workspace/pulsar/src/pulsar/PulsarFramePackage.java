@@ -34,7 +34,6 @@ import kawa.standard.Scheme;
 import pulsar.lib.scheme.DescriptiveDocumentCategory;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
-import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.Invokable;
 import pulsar.lib.swing.FlawLayout;
 import pulsar.lib.swing.JNamedPanel;
@@ -537,9 +536,6 @@ public class PulsarFramePackage {
 
     static void initScheme( Scheme scheme ) {
         logInfo("PulsarGui#initStaticScheme=======================================");
-        //////////////////////////////////////////////////////
-        SchemeSecretary.initializeCurrentThread( scheme );
-        //////////////////////////////////////////////////////
         Environment env = scheme.getEnvironment();
         
         SchemeUtils.defineVar(env, new Procedure3() {
