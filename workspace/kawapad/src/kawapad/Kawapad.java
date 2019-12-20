@@ -97,10 +97,7 @@ import kawapad.KawapadSyntaxHighlighter.KawapadSyntaxElementType;
 import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
 import pulsar.lib.CurrentObject;
-import pulsar.lib.ThreadInitializer;
-import pulsar.lib.ThreadInitializerCollection;
-import pulsar.lib.ThreadInitializerCollectionContainer;
-import pulsar.lib.ThreadInitializerContainer;
+import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.DescriptiveActions;
 import pulsar.lib.scheme.ProceduralDescriptiveBean;
 import pulsar.lib.scheme.SafeProcedureN;
@@ -115,6 +112,10 @@ import pulsar.lib.swing.Action2;
 import pulsar.lib.swing.AutomatedActionField;
 import pulsar.lib.swing.MenuInitializer;
 import pulsar.lib.swing.TextAction2;
+import pulsar.lib.thread.ThreadInitializer;
+import pulsar.lib.thread.ThreadInitializerCollection;
+import pulsar.lib.thread.ThreadInitializerCollectionContainer;
+import pulsar.lib.thread.ThreadInitializerContainer;
 
 /**
  * 
@@ -139,7 +140,7 @@ import pulsar.lib.swing.TextAction2;
  *  
  * @author Ats Oka
  */
-public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kawapad>, ThreadInitializerCollectionContainer, MenuInitializer {
+public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kawapad>, ThreadInitializerCollectionContainer, MenuInitializer, ApplicationComponent {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -172,6 +173,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     ////////////////////////////////////////////////////////////////////////////
 
     static transient int uniqueIDCounter = 0;
+
     static String getUniqueID( int uniqueIDCounter ) {
         return "kawapad-" + uniqueIDCounter;
     }
@@ -179,6 +181,22 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         return "kawapad-" + ( uniqueIDCounter ++ );
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    private ApplicationComponent parentApplicationComponent;
+    @Override
+    public ApplicationComponent getParentApplicationComponent() {
+        return this.parentApplicationComponent;
+    }
+    @Override
+    public void setParentApplicationComponent(ApplicationComponent parentApplicationComponent) {
+        this.parentApplicationComponent = parentApplicationComponent;
+    }
+    @Override
+    public void requesetInit() {
+    }
+    @Override
+    public void requestShutdown() {
+    }
     ////////////////////////////////////////////////////////////////////////////
 
     Kawapad kawapad=this;
@@ -198,12 +216,16 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
 
     private static final CurrentObject<Kawapad> currentObject = new CurrentObject<>( Kawapad.class );
     private final ThreadInitializer<Kawapad> threadInitializer = 
-            ThreadInitializer.createMultipleThreadInitializer( 
-                ThreadInitializer.createThreadInitializer( currentObject, this ),
+            ThreadInitializer.createMultipleThreadInitializer( "kawapad", this,
+                ThreadInitializer.createThreadInitializer( "kawapad-current", currentObject, Kawapad.this ), 
                 new Runnable() {
                     @Override
                     public void run() {
                         SchemeUtils.putVar( Environment.getCurrent(),  instanceID, Kawapad.this );
+                    }
+                    @Override
+                    public String toString() {
+                        return "kawapad-putvar";
                     }
                 });
     
@@ -220,18 +242,13 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     // The Thread Initializer Facility
     ////////////////////////////////////////////////////////////////////////////
 
-    private ThreadInitializerCollection threadInitializerCollection = new ThreadInitializerCollection();
+    private ThreadInitializerCollection threadInitializerCollection = new ThreadInitializerCollection("kawapad", this );
     public ThreadInitializerCollection getThreadInitializerCollection() {
         return threadInitializerCollection;
     }
     {
+        // See createIndependentThreadInitializer();
         this.getThreadInitializerCollection().addThreadInitializer( getThreadInitializer() );
-    }
-    
-
-    private ThreadInitializerCollection variableInitializerCollection = new ThreadInitializerCollection();
-    public ThreadInitializerCollection getVariableInitializerCollection() {
-        return variableInitializerCollection;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -3545,5 +3562,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         kawapad.initMenu( map );
 
         pulsar.lib.swing.Action2.processMenuBar( menuBar );
+    }
+    public void init() {
     }
 }

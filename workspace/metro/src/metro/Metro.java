@@ -51,12 +51,12 @@ import org.jaudiolibs.jnajack.JackTimebaseCallback;
 import org.jaudiolibs.jnajack.JackTransportState;
 
 import pulsar.lib.CurrentObject;
-import pulsar.lib.ThreadInitializer;
-import pulsar.lib.ThreadInitializerCollection;
-import pulsar.lib.ThreadInitializerCollectionContainer;
-import pulsar.lib.ThreadInitializerContainer;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.Invokable;
+import pulsar.lib.thread.ThreadInitializer;
+import pulsar.lib.thread.ThreadInitializerCollection;
+import pulsar.lib.thread.ThreadInitializerCollectionContainer;
+import pulsar.lib.thread.ThreadInitializerContainer;
 
 /**
  * 
@@ -84,8 +84,10 @@ public class Metro
  
     
     private static final CurrentObject<Metro> currentObject = new CurrentObject<>( Metro.class );
-    private final ThreadInitializer<Metro> threadInitializer = 
-            ThreadInitializer.createThreadInitializer( currentObject, this );
+    private final ThreadInitializer<Metro> threadInitializer =
+            ThreadInitializer.createMultipleThreadInitializer( "metro", this, 
+                ThreadInitializer.createThreadInitializer( "metro-current", currentObject, this ) );
+            
     @Override
     public ThreadInitializer<Metro> getThreadInitializer() {
         return threadInitializer;
@@ -94,7 +96,11 @@ public class Metro
         return currentObject.get();
     }
 
-    private final ThreadInitializerCollection threadInitializerCollection = new ThreadInitializerCollection();
+    private final ThreadInitializerCollection threadInitializerCollection = new ThreadInitializerCollection( "metro", this );
+    {
+        // It is obligated
+        threadInitializerCollection.addThreadInitializer( this.getThreadInitializer() );
+    }
     @Override
     public ThreadInitializerCollection getThreadInitializerCollection() {
         return this.threadInitializerCollection;

@@ -118,9 +118,11 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
 
     @Override
     public void requesetInit() {
+        this.init();
     }
     @Override
     public void requestShutdown() {
+        frame.quit();
     }
 
     /////////////////////////////////////////////////////
@@ -129,14 +131,6 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     
     static final int PB_POSITION_MAX = 1024;
     
-    private final Runnable shutdownProc01 = new Runnable() {
-        @Override
-        public void run() {
-//          frame.setVisible( false );
-            frame.quit();
-        }
-    };
-
     public static void registerGlobalSchemeInitializers( SchemeSecretary schemeSecretary ) {
         schemeSecretary.registerSchemeInitializer( PulsarFrame.class, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
@@ -213,12 +207,10 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         this.pulsar = pulsar;
         this.shutdownWhenClose = shutdownWhenClose;
         
-        this.pulsar.getSchemeSecretary().addShutdownHook( PulsarFrame.this.shutdownProc01 );
         //          DELETED >>> INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
         //          PulsarGui.invokeLocalSchemeInitializers( schemeSecretary, PulsarGui.this );
         //          DELETED <<< INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
-        
-        this.kawapad.getThreadInitializerCollection().addThreadInitializer( this.pulsar.getThreadInitializer() );
+//      this.kawapad.getThreadInitializerCollection().addThreadInitializer( this.pulsar.getThreadInitializer() );
         
         initGui();
         initGuiMenu();
@@ -612,14 +604,19 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     @Override
     public void dispose() {
         super.dispose();
-        kawapad.getSchemeSecretary().removeShutdownHook( this.shutdownProc01 );
         
         if ( shutdownWhenClose ) {
+            // This process could be ignored : be careful.  (Thu, 19 Dec 2019 23:28:32 +0900)  
+            // ((ApplicationVessel)this.getParentApplicationComponent()).remove( this );
+
+            // This might be incorrect (Thu, 19 Dec 2019 23:30:38 +0900)
             // INDIRECT_PULSAR_ACCESS (Sun, 15 Dec 2019 19:26:48 +0900) >>>
             // pulsar.shutdown();
-            getKawapad().evaluate( "(quit)", false, false, false );
+//            getKawapad().evaluate( "(quit)", false, false, false );
             // (Sun, 15 Dec 2019 19:26:48 +0900) <<<
 
+            // this should be right.
+            getParentApplicationComponent().requestShutdown();
         }
     }
     

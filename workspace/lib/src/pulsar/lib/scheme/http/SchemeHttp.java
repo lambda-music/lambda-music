@@ -24,14 +24,14 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 import pulsar.lib.CurrentObject;
-import pulsar.lib.ThreadInitializer;
-import pulsar.lib.ThreadInitializerCollection;
-import pulsar.lib.ThreadInitializerCollectionContainer;
-import pulsar.lib.ThreadInitializerContainer;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.SchemeExecutor;
 import pulsar.lib.scheme.SchemeResult;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
+import pulsar.lib.thread.ThreadInitializer;
+import pulsar.lib.thread.ThreadInitializerCollection;
+import pulsar.lib.thread.ThreadInitializerCollectionContainer;
+import pulsar.lib.thread.ThreadInitializerContainer;
 
 
 /**
@@ -72,9 +72,11 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
 
     @Override
     public void requesetInit() {
+        
     }
     @Override
     public void requestShutdown() {
+        stop();
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -83,7 +85,8 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
 
     private static final CurrentObject<SchemeHttp> currentObject = new CurrentObject<>( SchemeHttp.class );
     private final ThreadInitializer<SchemeHttp> threadInitializer = 
-            ThreadInitializer.createThreadInitializer( currentObject, this );
+            ThreadInitializer.createMultipleThreadInitializer( "scheme-http", this, 
+                ThreadInitializer.createThreadInitializer( "scheme-http-current", currentObject, this ) );
     @Override
     public ThreadInitializer<SchemeHttp> getThreadInitializer() {
         return threadInitializer;
@@ -94,7 +97,10 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
 
     ////////////////////////////////////////////////////////////////////////////
 
-    private ThreadInitializerCollection threadInitializerCollection = new ThreadInitializerCollection();
+    private ThreadInitializerCollection threadInitializerCollection = new ThreadInitializerCollection( "scheme", this );
+    {
+        threadInitializerCollection.addThreadInitializer( this.getThreadInitializer() );
+    }
     public ThreadInitializerCollection getThreadInitializerCollection() {
         return threadInitializerCollection;
     }
@@ -175,12 +181,6 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
         
         httpServer.setExecutor(null); // creates a default executor
         httpServer.start();
-        schemeSecretary.addShutdownHook( new Runnable() {
-            @Override
-            public void run() {
-                stop();
-            }
-        });
     }
 
     void start(){

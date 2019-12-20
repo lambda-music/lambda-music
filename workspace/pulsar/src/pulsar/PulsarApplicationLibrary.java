@@ -2,6 +2,7 @@ package pulsar;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import kawapad.Kawapad;
 import kawapad.KawapadEvaluator;
@@ -41,7 +42,7 @@ public class PulsarApplicationLibrary {
         return pulsar;
     }
 
-    public static PulsarFrame createPulsarGui( SchemeSecretary schemeSecretary, Pulsar pulsar, String ... urls ) {
+    public static PulsarFrame createPulsarGui( SchemeSecretary schemeSecretary, Pulsar pulsar, List<String> urls ) {
         KawapadEvaluator local = KawapadEvaluator.getLocal();
         ArrayList<KawapadEvaluator> evaluatorList = new ArrayList<>();
         evaluatorList.add( local );

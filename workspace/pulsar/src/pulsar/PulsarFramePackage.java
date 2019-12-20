@@ -28,7 +28,7 @@ import gnu.lists.IString;
 import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
-import gnu.mapping.Procedure3;
+import gnu.mapping.Procedure0;
 import gnu.mapping.Symbol;
 import kawa.standard.Scheme;
 import pulsar.lib.scheme.DescriptiveDocumentCategory;
@@ -538,9 +538,9 @@ public class PulsarFramePackage {
         logInfo("PulsarGui#initStaticScheme=======================================");
         Environment env = scheme.getEnvironment();
         
-        SchemeUtils.defineVar(env, new Procedure3() {
+        SchemeUtils.defineVar(env, new Procedure0() {
             @Override
-            public Object apply3(Object arg1, Object arg2, Object arg3) throws Throwable {
+            public Object apply0() throws Throwable {
                 return PulsarFrame.getCurrent();
             }
         }, "frame");

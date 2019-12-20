@@ -20,9 +20,6 @@ import gnu.mapping.Procedure0;
 import kawa.standard.Scheme;
 import kawa.standard.load;
 import pulsar.lib.CurrentObject;
-import pulsar.lib.ThreadInitializer;
-import pulsar.lib.ThreadInitializerCollection;
-import pulsar.lib.ThreadInitializerContainer;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.SchemeExecutor;
 import pulsar.lib.scheme.SchemeResult;
@@ -32,6 +29,9 @@ import pulsar.lib.secretary.InvokablyRunnable;
 import pulsar.lib.secretary.SecretariallyInvokable;
 import pulsar.lib.secretary.Secretary;
 import pulsar.lib.secretary.SecretaryMessage;
+import pulsar.lib.thread.ThreadInitializer;
+import pulsar.lib.thread.ThreadInitializerCollection;
+import pulsar.lib.thread.ThreadInitializerContainer;
 
 public class SchemeSecretary extends Secretary<Scheme> implements ThreadInitializerContainer<SchemeSecretary>, ApplicationComponent {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -53,12 +53,15 @@ public class SchemeSecretary extends Secretary<Scheme> implements ThreadInitiali
     
     private static final CurrentObject<SchemeSecretary> currentObject = new CurrentObject<>( SchemeSecretary.class );
     private final ThreadInitializer<SchemeSecretary> threadInitializer =
-            ThreadInitializer.createMultipleThreadInitializer(   
-                ThreadInitializer.createThreadInitializer( currentObject, this ),
-                new Runnable() {
+            ThreadInitializer.createMultipleThreadInitializer( "scheme", this,
+                ThreadInitializer.createThreadInitializer( "current-scheme", currentObject, this ), new Runnable() {
                     @Override
                     public void run() {
                         initializeCurrentThread();
+                    }
+                    @Override
+                    public String toString() {
+                        return "scheme-current-thread";
                     }
                 });
     @Override
@@ -69,7 +72,7 @@ public class SchemeSecretary extends Secretary<Scheme> implements ThreadInitiali
         return currentObject.get();
     }
 
-    final ThreadInitializerCollection defaultInitializerCollection = new ThreadInitializerCollection();
+    final ThreadInitializerCollection defaultInitializerCollection = new ThreadInitializerCollection( "default-scheme", this );
     {
         defaultInitializerCollection.addThreadInitializer( getThreadInitializer() );
     }
@@ -93,6 +96,7 @@ public class SchemeSecretary extends Secretary<Scheme> implements ThreadInitiali
 
     @Override
     public void requesetInit() {
+        this.newScheme();
     }
     @Override
     public void requestShutdown() {

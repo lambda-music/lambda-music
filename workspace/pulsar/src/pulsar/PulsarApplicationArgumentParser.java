@@ -2,30 +2,41 @@ package pulsar;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import kawapad.Kawapad;
 import kawapad.KawapadFrame;
-import pulsar.lib.ThreadInitializer;
-import pulsar.lib.ThreadInitializerCollection;
-import pulsar.lib.ThreadInitializerCollectionContainer;
-import pulsar.lib.ThreadInitializerContainer;
 import pulsar.lib.app.ApplicationVessel;
 import pulsar.lib.scheme.http.SchemeHttp;
 import pulsar.lib.scheme.http.SchemeHttp.UserAuthentication;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
+import pulsar.lib.thread.ThreadInitializer;
+import pulsar.lib.thread.ThreadInitializerCollection;
+import pulsar.lib.thread.ThreadInitializerCollectionContainer;
+import pulsar.lib.thread.ThreadInitializerContainer;
 
 class PulsarApplicationArgumentParser {
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+    static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
+    static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
+
+    
     ArrayList<ApplicationVessel> applicationVesselList = new ArrayList<>();
     ArrayDeque<SchemeSecretary> schemeSecretaryStack = new ArrayDeque<>();
     ArrayDeque<Pulsar> pulsarStack= new ArrayDeque<>();
     ArrayDeque<PulsarFrame> pulsarFrameStack= new ArrayDeque<>();
+    ArrayDeque<Kawapad> kawapadStack= new ArrayDeque<>();
     ArrayDeque<KawapadFrame> kawapadFrameStack= new ArrayDeque<>();
     ArrayDeque<SchemeHttp> schemeHttpStack= new ArrayDeque<>();
     ArrayDeque<Runnable> runnableStack = new ArrayDeque<>();
@@ -35,6 +46,7 @@ class PulsarApplicationArgumentParser {
         allDeque.add(schemeSecretaryStack);
         allDeque.add(pulsarStack);
         allDeque.add(pulsarFrameStack);
+        allDeque.add(kawapadStack);
         allDeque.add(kawapadFrameStack);
         allDeque.add(schemeHttpStack);
         allDeque.add(runnableStack);
@@ -44,6 +56,8 @@ class PulsarApplicationArgumentParser {
         for ( Object o : source ) {
             if ( o instanceof ThreadInitializerContainer ) {
                 destination.add(((ThreadInitializerContainer)o).getThreadInitializer());
+                // Add the only first one.  (Fri, 20 Dec 2019 05:01:24 +0900)
+                break;
             }
         }
     }
@@ -56,24 +70,68 @@ class PulsarApplicationArgumentParser {
     }
     
     void deploy() {
-        for ( SchemeSecretary i : schemeSecretaryStack ) {
-            i.newScheme();
+        if ( false ) {
+            for ( SchemeSecretary i : schemeSecretaryStack ) {
+                i.newScheme();
+            }
+            for ( Pulsar i : pulsarStack ) {
+                try {
+                    i.init();
+                } catch (Exception e) {
+                    logError( "", e );
+                }
+            }
+            for ( PulsarFrame i : pulsarFrameStack ) {
+                try {
+                    i.init();
+                } catch (Exception e) {
+                    logError( "", e );
+                }
+            }
+            for ( Kawapad i : kawapadStack ) {
+                try {
+                    i.init();
+                } catch (Exception e) {
+                    logError( "", e );
+                }
+            }
+            for ( KawapadFrame i : kawapadFrameStack ) {
+                try {
+                    i.init();
+                } catch (Exception e) {
+                    logError( "", e );
+                }
+            }
+            for ( SchemeHttp i : schemeHttpStack ) {
+                try {
+                    i.init();
+                } catch (Exception e) {
+                    logError( "", e );
+                }
+            }
         }
-        for ( Pulsar i : pulsarStack ) {
-            i.init();
+        
+        {
+            ArrayList<Runnable> list = new ArrayList<Runnable>( this.runnableStack );
+            Collections.reverse( list );
+            for ( Runnable r : list ) {
+                try {
+                    System.err.println( "invoke:"+ r  );
+                    r.run();
+                } catch (Exception e) {
+                    logError( "", e );
+                }
+            }
         }
-        for ( PulsarFrame i : pulsarFrameStack ) {
-            i.init();
-        }
-        for ( KawapadFrame i : kawapadFrameStack ) {
-            i.init();
-        }
-        for ( SchemeHttp i : schemeHttpStack ) {
-            i.init();
-        }
-        for ( Runnable i : runnableStack ) {
-            i.run();
-        }
+        
+//        for ( Runnable i : runnableStack ) {
+//            try {
+//                logInfo( "invoke:"+ i );
+//                i.run();
+//            } catch (Exception e) {
+//                logError( "", e );
+//            }
+//        }
     
         // Collect all thread initializers.
         ArrayList<ThreadInitializer> threadInitializerList = new ArrayList<>(); 
@@ -87,18 +145,26 @@ class PulsarApplicationArgumentParser {
         }
         // then, add the initializers to the collections.
         for ( ThreadInitializerCollection c : threadInitializerCollectionList ) {
-            c.addAllThreadInitializer((Collection)threadInitializerList );
+            c.addAllThreadInitializer( threadInitializerList );
         }
         
         ApplicationVessel vessel = new ApplicationVessel();
+        vessel.getThreadInitializerCollection().addAllThreadInitializer( threadInitializerList );
         
         vessel.addAll( schemeSecretaryStack );
         vessel.addAll( pulsarStack );
         vessel.addAll( pulsarFrameStack );
+        vessel.addAll( kawapadStack );
         vessel.addAll( kawapadFrameStack );
         vessel.addAll( schemeHttpStack );
  
         applicationVesselList.add( vessel );
+
+        vessel.requesetInit();
+        
+        for ( ThreadInitializerCollection c : threadInitializerCollectionList ) {
+            logInfo( "deploy : "+ c.id + ":" + c.toString() );
+        }
         
         //
 
@@ -226,7 +292,7 @@ class PulsarApplicationArgumentParser {
             @Override
             Element create() {
                 return new Element() {
-                    int httpPort = 8192;
+                    List<Integer> portNumberList = new ArrayList<>();
                     List<String> fileNameList = new ArrayList<>();
                     @Override
                     Element notifyArg(String s) {
@@ -234,7 +300,7 @@ class PulsarApplicationArgumentParser {
                             NamedArgument a = new NamedArgument(s);
                             switch ( a.key ) {
                                 case "port" : 
-                                    this.httpPort = Integer.parseInt( a.value );
+                                    portNumberList.add(  Integer.parseInt( a.value ) );
                                     break;
                                 default :
                                     throw new RuntimeException( "unknown parameter : " + a.key );
@@ -255,9 +321,15 @@ class PulsarApplicationArgumentParser {
                         }
                         Pulsar pulsar = pulsarStack.peek();
                         
-                        PulsarFrame pulsarFrame = PulsarApplicationLibrary.createPulsarGui( schemeSecretary, pulsar, "http://localhost:"+httpPort+"/eval" );
+                        List<String> urlList = new ArrayList<String>();
+                        for ( Integer httpPort : portNumberList ) {
+                            urlList.add( "http://localhost:"+httpPort+"/eval" );
+                        }
+                        
+                        PulsarFrame pulsarFrame = PulsarApplicationLibrary.createPulsarGui( schemeSecretary, pulsar, urlList );
                         
                         pulsarFrameStack.push( pulsarFrame );
+                        kawapadStack.push( pulsarFrame.getKawapad() );
                         
                         runnableStack.push( new Runnable() {
                             @Override
@@ -378,15 +450,6 @@ class PulsarApplicationArgumentParser {
         notifyAllEnd();
     }
     private void notifyAllEnd() {
-        ArrayList<Runnable> list = new ArrayList<Runnable>( this.runnableStack );
-        Collections.reverse( list );
-        for ( Runnable r : list ) {
-            try {
-                System.err.println( "invoke:"+ r  );
-                r.run();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        deploy();
     }
 }

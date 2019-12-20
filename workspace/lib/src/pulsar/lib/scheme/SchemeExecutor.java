@@ -48,6 +48,7 @@ public class SchemeExecutor {
             if ( threadInitializer == null ) {
                 logWarn( "No thread initializer was specified " );
             } else {
+                logInfo( "threadInitializer=" + threadInitializer.toString() );
                 try {
                     threadInitializer.run();
                 } catch ( Throwable t ) {

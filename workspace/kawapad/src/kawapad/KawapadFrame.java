@@ -51,8 +51,6 @@ import javax.swing.SwingUtilities;
 
 import pulsar.lib.CurrentObject;
 import pulsar.lib.PulsarLogger;
-import pulsar.lib.ThreadInitializer;
-import pulsar.lib.ThreadInitializerContainer;
 import pulsar.lib.Version;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.DescriptiveDocumentCategory;
@@ -60,6 +58,8 @@ import pulsar.lib.scheme.DescriptiveHelp;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.swing.AcceleratorKeyList;
 import pulsar.lib.swing.Action2;
+import pulsar.lib.thread.ThreadInitializer;
+import pulsar.lib.thread.ThreadInitializerContainer;
 
 public class KawapadFrame extends JFrame implements ThreadInitializerContainer<KawapadFrame>, ApplicationComponent {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -86,6 +86,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
     }
     @Override
     public void requesetInit() {
+        this.init();
     }
     @Override
     public void requestShutdown() {
@@ -97,7 +98,8 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
 
     private static final CurrentObject<KawapadFrame> currentObject = new CurrentObject<>( KawapadFrame.class );
     private final ThreadInitializer<KawapadFrame> threadInitializer = 
-            ThreadInitializer.createThreadInitializer( currentObject, this );
+            ThreadInitializer.createMultipleThreadInitializer( "kawapad-frame", this, 
+                ThreadInitializer.createThreadInitializer( "current-kawapad-frame", currentObject, this ) );
     @Override
     public ThreadInitializer<KawapadFrame> getThreadInitializer() {
         return threadInitializer;
@@ -105,8 +107,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
     public static KawapadFrame getCurrent() {
         return currentObject.get();
     }
-
-
+    
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Defining GUI
@@ -292,7 +293,13 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
      */
 
 //  ADDED >>> (Tue, 06 Aug 2019 09:29:54 +0900)
-    public void init() {
+    private transient boolean initialized =false;
+    public synchronized void init() {
+        if ( initialized ) {
+            return;
+        }
+        this.initialized = true;
+        
 //      ADDED >>> (Tue, 06 Aug 2019 08:47:14 +0900)
         /*
          * At that time, I didn't realize that creation of a frame should be done in a INIT_03
@@ -307,8 +314,11 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
     }
 //  ADDED <<< (Tue, 06 Aug 2019 09:29:54 +0900)
     
+    private transient boolean disposed  =false;
     @Override
     public void dispose() {
+        if ( disposed ) return;
+        this.disposed = true;
         this.kawapad.finalize();
         super.dispose();
     }
