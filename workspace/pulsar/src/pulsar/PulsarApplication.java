@@ -215,7 +215,9 @@ public class PulsarApplication {
         Pulsar pulsar = PulsarApplicationLibrary.createPulsar( schemeSecretary );
         PulsarFrame pulsarFrame;
         if ( guiEnabled ) {
-            pulsarFrame = PulsarApplicationLibrary.createPulsarGui( schemeSecretary, pulsar, "http://localhost:"+httpPort+"/eval" );
+            pulsarFrame = PulsarApplicationLibrary.createPulsarGui( 
+                schemeSecretary, pulsar, 
+                Arrays.asList( "http://localhost:"+httpPort+"/eval" ) );
         } else {
             pulsarFrame = null;
         }

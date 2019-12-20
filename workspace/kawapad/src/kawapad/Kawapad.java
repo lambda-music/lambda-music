@@ -221,7 +221,8 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
                 new Runnable() {
                     @Override
                     public void run() {
-                        SchemeUtils.putVar( Environment.getCurrent(),  instanceID, Kawapad.this );
+//                        XXX (Sat, 21 Dec 2019 03:14:39 +0900)
+//                        SchemeUtils.putVar( Environment.getCurrent(),  instanceID, Kawapad.this );
                     }
                     @Override
                     public String toString() {
