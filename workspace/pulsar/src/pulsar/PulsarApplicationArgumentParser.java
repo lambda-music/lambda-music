@@ -49,7 +49,7 @@ class PulsarApplicationArgumentParser {
         allDeque.add(kawapadStack);
         allDeque.add(kawapadFrameStack);
         allDeque.add(schemeHttpStack);
-        allDeque.add(runnableStack);
+//        allDeque.add(runnableStack); XXX
     }
     
     private static void addInitializerContainer( Collection<ThreadInitializer> destination, Collection source ) {
@@ -70,6 +70,61 @@ class PulsarApplicationArgumentParser {
     }
     
     void deploy() {
+       
+        // Collect thread initializers and set to collections.
+        ArrayList<ThreadInitializer> threadInitializerList = new ArrayList<>(); 
+        ArrayList<ThreadInitializerCollection> threadInitializerCollectionList = new ArrayList<>(); 
+        {
+            // Collect all thread initializers.
+            for ( ArrayDeque deque : allDeque ) {
+                addInitializerContainer( threadInitializerList, deque );
+            }
+            // Collect all thread initializer collections.
+            for ( ArrayDeque deque : allDeque ) {
+                addInitializerCollectionContainer( threadInitializerCollectionList, deque );
+            }
+            // then, add the initializers to the collections.
+            for ( ThreadInitializerCollection c : threadInitializerCollectionList ) {
+                c.addAllThreadInitializer( threadInitializerList );
+            }
+        }
+        
+        ApplicationVessel vessel = new ApplicationVessel();
+        vessel.getThreadInitializerCollection().addAllThreadInitializer( threadInitializerList );
+        
+        vessel.addAll( schemeSecretaryStack );
+        vessel.addAll( pulsarStack );
+        vessel.addAll( pulsarFrameStack );
+        vessel.addAll( kawapadStack );
+        vessel.addAll( kawapadFrameStack );
+        vessel.addAll( schemeHttpStack );
+ 
+        applicationVesselList.add( vessel );
+
+        vessel.getThreadInitializerCollection().initialize();
+        
+        
+        for ( ThreadInitializerCollection c : threadInitializerCollectionList ) {
+            logInfo( "deploy : "+ c.id + ":" + c.toString() );
+        }
+
+        vessel.requesetInit();
+
+        // Executing runnable stack;
+        {
+            ArrayList<Runnable> list = new ArrayList<Runnable>( this.runnableStack );
+            Collections.reverse( list );
+            for ( Runnable r : list ) {
+                try {
+                    System.err.println( "invoke:"+ r  );
+                    r.run();
+                } catch (Exception e) {
+                    logError( "", e );
+                }
+            }
+        }
+        
+
         if ( false ) {
             for ( SchemeSecretary i : schemeSecretaryStack ) {
                 i.newScheme();
@@ -111,60 +166,6 @@ class PulsarApplicationArgumentParser {
             }
         }
         
-        {
-            ArrayList<Runnable> list = new ArrayList<Runnable>( this.runnableStack );
-            Collections.reverse( list );
-            for ( Runnable r : list ) {
-                try {
-                    System.err.println( "invoke:"+ r  );
-                    r.run();
-                } catch (Exception e) {
-                    logError( "", e );
-                }
-            }
-        }
-        
-//        for ( Runnable i : runnableStack ) {
-//            try {
-//                logInfo( "invoke:"+ i );
-//                i.run();
-//            } catch (Exception e) {
-//                logError( "", e );
-//            }
-//        }
-    
-        // Collect all thread initializers.
-        ArrayList<ThreadInitializer> threadInitializerList = new ArrayList<>(); 
-        for ( ArrayDeque deque : allDeque ) {
-            addInitializerContainer( threadInitializerList, deque );
-        }
-        // Collect all thread initializer collections.
-        ArrayList<ThreadInitializerCollection> threadInitializerCollectionList = new ArrayList<>(); 
-        for ( ArrayDeque deque : allDeque ) {
-            addInitializerCollectionContainer( threadInitializerCollectionList, deque );
-        }
-        // then, add the initializers to the collections.
-        for ( ThreadInitializerCollection c : threadInitializerCollectionList ) {
-            c.addAllThreadInitializer( threadInitializerList );
-        }
-        
-        ApplicationVessel vessel = new ApplicationVessel();
-        vessel.getThreadInitializerCollection().addAllThreadInitializer( threadInitializerList );
-        
-        vessel.addAll( schemeSecretaryStack );
-        vessel.addAll( pulsarStack );
-        vessel.addAll( pulsarFrameStack );
-        vessel.addAll( kawapadStack );
-        vessel.addAll( kawapadFrameStack );
-        vessel.addAll( schemeHttpStack );
- 
-        applicationVesselList.add( vessel );
-
-        vessel.requesetInit();
-        
-        for ( ThreadInitializerCollection c : threadInitializerCollectionList ) {
-            logInfo( "deploy : "+ c.id + ":" + c.toString() );
-        }
         
         //
 
@@ -174,8 +175,6 @@ class PulsarApplicationArgumentParser {
         pulsarFrameStack.clear();
         kawapadFrameStack.clear();
         schemeHttpStack.clear();
-        
-        
     }
     static final Pattern parseArgPattern = Pattern.compile( "^--([a-zA-Z0-9\\_\\-]+)\\=(.*)$" );
     class NamedArgument {
@@ -248,14 +247,15 @@ class PulsarApplicationArgumentParser {
                     }
                     @Override
                     void notifyEnd() {
+                        schemeSecretary.setDirectMeeting( directMeeting );
                         schemeSecretaryStack.push( this.schemeSecretary );
-                        runnableStack.push( new Runnable() {
-                            @Override
-                            public void run() {
-                                schemeSecretary.setDirectMeeting( directMeeting );
-                                schemeSecretary.newScheme();
-                            }
-                        });
+
+//                        runnableStack.push( new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                schemeSecretary.newScheme();
+//                            }
+//                        });
                     }
                 };
             }
@@ -280,7 +280,7 @@ class PulsarApplicationArgumentParser {
                         runnableStack.push( new Runnable() {
                             @Override
                             public void run() {
-                                pulsar.init();
+//                                pulsar.init();
                             }
                         });
                     }

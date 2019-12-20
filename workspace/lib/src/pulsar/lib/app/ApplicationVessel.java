@@ -35,7 +35,6 @@ public class ApplicationVessel implements ApplicationComponent, ThreadInitialize
     }
     @Override
     public void requesetInit() {
-        this.threadInitializerCollection.initialize();
         for ( ApplicationComponent c : this.components ) {
             c.setParentApplicationComponent( this );
             c.requesetInit();

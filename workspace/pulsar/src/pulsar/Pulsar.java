@@ -172,6 +172,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
 
     @Override
     public void requesetInit() {
+        this.init();
     }
     @Override
     public void requestShutdown() {

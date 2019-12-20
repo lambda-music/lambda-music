@@ -193,10 +193,13 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     }
     @Override
     public void requesetInit() {
+        this.initialize();
     }
     @Override
     public void requestShutdown() {
+        this.finalize();
     }
+    
     ////////////////////////////////////////////////////////////////////////////
 
     Kawapad kawapad=this;
@@ -217,18 +220,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     private static final CurrentObject<Kawapad> currentObject = new CurrentObject<>( Kawapad.class );
     private final ThreadInitializer<Kawapad> threadInitializer = 
             ThreadInitializer.createMultipleThreadInitializer( "kawapad", this,
-                ThreadInitializer.createThreadInitializer( "kawapad-current", currentObject, Kawapad.this ), 
-                new Runnable() {
-                    @Override
-                    public void run() {
-//                        XXX (Sat, 21 Dec 2019 03:14:39 +0900)
-//                        SchemeUtils.putVar( Environment.getCurrent(),  instanceID, Kawapad.this );
-                    }
-                    @Override
-                    public String toString() {
-                        return "kawapad-putvar";
-                    }
-                });
+                ThreadInitializer.createThreadInitializer( "kawapad-current", currentObject, Kawapad.this ));
     
     @Override
     public ThreadInitializer<Kawapad> getThreadInitializer() {
@@ -413,11 +405,28 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
+    // Initialization
+    ///////////////////////////////////////////////////////////////////////////////////////////////
     
-    public void initialize() {
+    public void init() {
+        this.initialize();
+    }
+    public void initVariable() {
+        logInfo( "initVariable******************************************************************" );
+        SchemeUtils.putVar( Environment.getCurrent(), instanceID, Kawapad.this );
+    }
+
+    transient boolean initializeDone = false;
+    public synchronized void initialize() {
+        if ( initializeDone ) return;
+        initializeDone = true;
+        initVariable();
         Kawapad.eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.CREATE, kawapad );
     }
-    public void finalize() {
+    transient boolean finalizeDone = false;
+    public synchronized void finalize() {
+        if ( finalizeDone ) return;
+        finalizeDone = true;
     }
     
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -3563,7 +3572,5 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         kawapad.initMenu( map );
 
         pulsar.lib.swing.Action2.processMenuBar( menuBar );
-    }
-    public void init() {
     }
 }
