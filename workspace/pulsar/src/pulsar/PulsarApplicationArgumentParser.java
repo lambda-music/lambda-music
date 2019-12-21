@@ -1,10 +1,16 @@
 package pulsar;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.invoke.MethodHandles;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,6 +47,10 @@ class PulsarApplicationArgumentParser {
     ArrayDeque<SchemeHttp> schemeHttpStack= new ArrayDeque<>();
     ArrayDeque<Runnable> runnableStack = new ArrayDeque<>();
     
+    public List<ApplicationVessel> getApplicationVesselList() {
+        return Collections.unmodifiableList( applicationVesselList );
+    }
+    
     ArrayList<ArrayDeque> allDeque = new ArrayList<>();
     {
         allDeque.add(schemeSecretaryStack);
@@ -50,6 +60,57 @@ class PulsarApplicationArgumentParser {
         allDeque.add(kawapadFrameStack);
         allDeque.add(schemeHttpStack);
 //        allDeque.add(runnableStack); XXX
+    }
+    
+    {
+        RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
+        List<String> arguments = runtimeMxBean.getInputArguments();
+        
+        System.out.println( arguments );
+        System.out.println( "getBootClassPath:"+runtimeMxBean.getBootClassPath() );
+        System.out.println( "getClassPath:"+runtimeMxBean.getClassPath() );
+    }
+    static String readOutput( InputStream i ) throws IOException{
+        BufferedReader reader = 
+                new BufferedReader(new InputStreamReader(i));
+        StringBuilder builder = new StringBuilder();
+        String line = null;
+        while ( (line = reader.readLine()) != null) {
+            builder.append(line);
+            builder.append(System.getProperty("line.separator"));
+        }
+        String result = builder.toString();
+        return result;
+    }
+    static Process executeJavaProcess( Class mainClass, List<String> arguments ) throws IOException{
+        // https://stackoverflow.com/questions/1490869/how-to-get-vm-arguments-from-inside-of-java-application
+        ArrayList<String> fullArguments = new ArrayList<>();
+        RuntimeMXBean r = ManagementFactory.getRuntimeMXBean();
+        fullArguments.add( "java" );
+        fullArguments.addAll( r.getInputArguments() );
+        fullArguments.add("-classpath");
+        fullArguments.add( r.getClassPath() );
+        fullArguments.add( mainClass.getCanonicalName() );
+        fullArguments.addAll( arguments );
+        System.out.println( fullArguments );
+        ProcessBuilder b = new ProcessBuilder( fullArguments );
+        return b.start();
+    }
+    
+    public static void main(String[] args) throws IOException, InterruptedException {
+        if ( args.length == 0 ) {
+            Process p =  executeJavaProcess( PulsarApplicationArgumentParser.class, Arrays.asList("hello"));
+            System.out.println( readOutput( p.getInputStream() ) );
+            System.err.println( readOutput( p.getErrorStream() ) );
+            Thread.sleep( 3000 );
+            p.destroy();
+            System.out.println( "end" );
+        } else {
+            System.out.println("YEAH");
+            Thread.sleep( 5000 );
+            System.out.println("DONE");
+            System.err.println("WARN::TEST");
+        }
     }
     
     private static void addInitializerContainer( Collection<ThreadInitializer> destination, Collection source ) {

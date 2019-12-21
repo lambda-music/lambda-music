@@ -1,10 +1,13 @@
 package pulsar;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -12,6 +15,8 @@ import kawapad.KawapadDocuments;
 import pulsar.lib.GC;
 import pulsar.lib.PulsarLogger;
 import pulsar.lib.Version;
+import pulsar.lib.app.ApplicationComponent;
+import pulsar.lib.app.ApplicationVessel;
 import pulsar.lib.scheme.DescriptiveDocumentCategory;
 import pulsar.lib.scheme.DescriptiveHelp;
 import pulsar.lib.scheme.http.SchemeHttp;
@@ -30,7 +35,7 @@ public class PulsarApplication {
      * passed to the method, only the first argument is taken. 
      * @throws IOException 
      */
-    static Pulsar parseArgs01( String[] args ) throws IOException {
+    static List<ApplicationComponent> parseArgs01( String[] args ) throws IOException {
         boolean argSpecialOutputReference = false;
         String  argSpecialOutputReferenceName = null;
         boolean argSpecialAllAvailableReferences = false;
@@ -40,7 +45,6 @@ public class PulsarApplication {
         String  argFileName = null;
         for ( int i=0; i<args.length; i++ ) {
             String s = args[i];
-            
             
             if ( s.equals( "--version" ) ) {
                 System.out.println( Version.get( PulsarApplication.class ) );
@@ -119,7 +123,8 @@ public class PulsarApplication {
         }
         return result.toArray((T[][])java.lang.reflect.Array.newInstance( a.getClass(), result.size() ) );
     }
-    static void parseArgs02( String[] args ) throws IOException {
+    static List<ApplicationComponent> parseArgs02( String[] args ) throws IOException {
+        List<ApplicationComponent> applicationVesselList = new ArrayList<>();
         String[][] args2 = splitArray( args, "," ) ;
         for ( int i=0; i<args2.length; i++ ) {
             String[] args3 = args2[i];
@@ -132,6 +137,7 @@ public class PulsarApplication {
                 } else if( "exec".equals( mainCommand ) ) {
                     PulsarApplicationArgumentParser pulsarApplicationArgumentParser = new PulsarApplicationArgumentParser();
                     pulsarApplicationArgumentParser.parse( mainArguments );
+                    applicationVesselList.addAll( pulsarApplicationArgumentParser.getApplicationVesselList() );
                 } else {
                     throw new RuntimeException( "unknown command " + mainCommand );
                 }
@@ -139,6 +145,7 @@ public class PulsarApplication {
                 throw new RuntimeException( "" );
             }
         }
+        return applicationVesselList;
     }
     
     static void remote(String[] mainArguments) {
@@ -149,14 +156,17 @@ public class PulsarApplication {
         System.err.println( "pulsar [scheme|pulsar|http|gui|token|print-all-available-reference|print-reference] ... " );
     }
     
-    static void parseArgs( String[] args ) throws IOException {
+    static List<ApplicationComponent> parseArgs( String[] args ) throws IOException {
         if ( args.length == 0 ) {
             invalidArgs();
         }
         if ( args[0].equals( "advanced" ) ) {
-            parseArgs02( Arrays.copyOfRange( args , 1, args.length ) );
+            return parseArgs02( Arrays.copyOfRange( args , 1, args.length ) );
         } else {
-            parseArgs01( args );
+            List<ApplicationComponent> list = parseArgs01( args );
+            ApplicationVessel applicationVessel = new ApplicationVessel();
+            applicationVessel.addAll( list );
+            return Arrays.asList( (ApplicationComponent)applicationVessel );
         }
     }
 
@@ -175,20 +185,30 @@ public class PulsarApplication {
         forceLoad( DescriptiveHelp.class );
     }
     
-    static Pulsar outputAllAvailableReferences( String outputFile ) throws IOException {
-        Pulsar pulsar = start(true,true,8193);
+    static Pulsar lookupPulsar(List<ApplicationComponent> list ) {
+        for ( ApplicationComponent c : list ) {
+            if ( c instanceof Pulsar ) {
+                return (Pulsar) c;
+            }
+        }
+        return null;
+    }
+    static List<ApplicationComponent> outputAllAvailableReferences( String outputFile ) throws IOException {
+        List<ApplicationComponent> list = start(true,true,8193);
+        Pulsar pulsar = lookupPulsar( list );
         loadAllAvailableHelps();
         DescriptiveDocumentCategory.outputAvailableReferences( outputFile );
         quitPulsarSafely( pulsar );
-        return pulsar;
+        return list;
     }
     
-    static Pulsar outputReference( String outputFile, String categoryName ) throws IOException {
+    static List<ApplicationComponent>  outputReference( String outputFile, String categoryName ) throws IOException {
         loadAllAvailableHelps();
-        Pulsar pulsar = start( true, true, 8193 );
+        List<ApplicationComponent> list = start( true, true, 8193 );
+        Pulsar pulsar = lookupPulsar( list );
         DescriptiveDocumentCategory.outputReference( pulsar.getSchemeSecretary(), categoryName, outputFile );
         quitPulsarSafely( pulsar );
-        return pulsar;
+        return list;
     }
     static void quitPulsarSafely(Pulsar pulsar) {
         // Pause for the safe shutdown; at the moment when it runs here, other initializers are still
@@ -210,7 +230,7 @@ public class PulsarApplication {
         GC.exec();
     }
     
-    public static Pulsar start( boolean guiEnabled, boolean httpEnabled, int httpPort, String filename ) throws IOException {
+    public static List<ApplicationComponent> start( boolean guiEnabled, boolean httpEnabled, int httpPort, String filename ) throws IOException {
         SchemeSecretary schemeSecretary = PulsarApplicationLibrary.createSchemeSecretary();
         Pulsar pulsar = PulsarApplicationLibrary.createPulsar( schemeSecretary );
         PulsarFrame pulsarFrame;
@@ -222,8 +242,9 @@ public class PulsarApplication {
             pulsarFrame = null;
         }
         
+        SchemeHttp schemeHttp = null;
         if ( httpEnabled ) {
-            PulsarApplicationLibrary.createPulsarHttpServer( schemeSecretary, httpPort, SchemeHttp.UserAuthentication.ONLY_LOOPBACK, pulsar );
+            schemeHttp = PulsarApplicationLibrary.createPulsarHttpServer( schemeSecretary, httpPort, SchemeHttp.UserAuthentication.ONLY_LOOPBACK, pulsar );
         }
         
         schemeSecretary.newScheme();
@@ -237,10 +258,19 @@ public class PulsarApplication {
                 pulsarFrame.openIntro();
             }
         }
+        ArrayList<ApplicationComponent> result = new ArrayList<>();
+        if ( schemeSecretary != null )
+            result.add( schemeSecretary );
+        if ( pulsar != null )
+            result.add( pulsar );
+        if ( pulsarFrame != null )
+            result.add( pulsarFrame );
+        if ( schemeHttp != null )
+            result.add( schemeHttp );
         
-        return pulsar;
+        return result;
     }
-    public static Pulsar start(boolean guiEnabled, boolean httpEnabled, int httpPort ) throws IOException {
+    public static List<ApplicationComponent> start(boolean guiEnabled, boolean httpEnabled, int httpPort ) throws IOException {
         return start(guiEnabled, httpEnabled, httpPort, null );
     }
     
@@ -251,6 +281,46 @@ public class PulsarApplication {
         PulsarLogger.init();
         PulsarPrinter.init();
 //        parseArgs01(args);
-        parseArgs(args);
+        
+        List<ApplicationComponent> parseArgs = parseArgs(args);
+
+        Thread thread = new Thread( new Runnable() {
+            @Override
+            public void run() {
+                BufferedReader r = new BufferedReader( new InputStreamReader( System.in ) );
+                try {
+                    try {
+                        for (;;) {
+                            String s = r.readLine();
+                            if ( s == null ) 
+                                break;
+                            if ( "shutdown".equals( s ) ) {
+                                System.out.println( "ok" );
+                                for ( ApplicationComponent c : parseArgs ) {
+                                    try {
+                                        c.requestShutdown();
+                                    } catch ( Throwable t ) {
+                                        logError( "", t );
+                                    }
+                                }
+                                break;
+                            } else if ( "alive?".equals( s ) ) {
+                                System.out.println( "yes" );
+                            } else if ( "hello".equals( s ) ) {
+                                System.out.println( "hello" );
+                            } else {
+                                System.out.println( "unknown-command" );
+                            }
+                        }
+                    } finally {
+                        r.close();
+                    }
+                } catch ( IOException e ) {
+                    logError( "", e );
+                }
+            }
+        }, "command-reception" );
+        thread.setDaemon( true );
+        thread.start();
     }
 }
