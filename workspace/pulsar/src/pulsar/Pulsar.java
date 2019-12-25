@@ -1307,6 +1307,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         SchemeUtils.defineVar( env, new SafeProcedureN( "tap-tempo" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
+                logInfo( "Pulsar Scheme API: TAP-TEMPO" );
                 getCurrent().tempoTapper.tap(); 
                 return Invokable.NO_RESULT;
             }
