@@ -117,12 +117,19 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     }
 
     @Override
-    public void requesetInit() {
-        this.init();
+    public void processInit() {
+        super.processInit();
     }
+    
+    boolean quitProcessed = false;
     @Override
-    public void requestShutdown() {
-        frame.quit();
+    public synchronized void processQuit() {
+        if ( quitProcessed )
+            return;
+        quitProcessed = true;
+        pulsar.close();
+        super.processQuit();
+        // System.exit(0);
     }
 
     /////////////////////////////////////////////////////
@@ -198,14 +205,12 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         return new PulsarFrame( pulsar, evaluator, evaluatorList, shutdownWhenClose, caption );
     }
 
-    boolean shutdownWhenClose;
 
     Pulsar pulsar;
     PulsarFrame( Pulsar pulsar, KawapadEvaluator evaluator, Collection<KawapadEvaluator> evaluatorList, boolean shutdownWhenClose, String caption ) {
-        super( pulsar.getSchemeSecretary(), evaluator, evaluatorList, caption == null ? PULSAR_DEFAULT_CAPTION : caption );
+        super( pulsar.getSchemeSecretary(), evaluator, evaluatorList, shutdownWhenClose, caption == null ? PULSAR_DEFAULT_CAPTION : caption );
         
         this.pulsar = pulsar;
-        this.shutdownWhenClose = shutdownWhenClose;
         
         //          DELETED >>> INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
         //          PulsarGui.invokeLocalSchemeInitializers( schemeSecretary, PulsarGui.this );
@@ -474,8 +479,8 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     JTextField tf_currentFile;
     JSlider sl_tempoSlider;
     
-    public void quit() {
-        super.quit();
+    public void requestQuit() {
+        super.requestQuit();
     }
 
     public void guiClear() {
@@ -528,7 +533,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     public final Action QUIT_SEQUENCER = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            quit();
+            requestQuit();
         }
         {
             putValue( Action2.CAPTION, "Quit" );
@@ -592,32 +597,10 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         }
     }
     
-    // INIT_03
-    /**
-     * This method is called whenever the frame is created.
-     */
-    @Override
-    public void init(){
-        super.init();
-    }
     
     @Override
     public void dispose() {
         super.dispose();
-        
-        if ( shutdownWhenClose ) {
-            // This process could be ignored : be careful.  (Thu, 19 Dec 2019 23:28:32 +0900)  
-            // ((ApplicationVessel)this.getParentApplicationComponent()).remove( this );
-
-            // This might be incorrect (Thu, 19 Dec 2019 23:30:38 +0900)
-            // INDIRECT_PULSAR_ACCESS (Sun, 15 Dec 2019 19:26:48 +0900) >>>
-            // pulsar.shutdown();
-//            getKawapad().evaluate( "(quit)", false, false, false );
-            // (Sun, 15 Dec 2019 19:26:48 +0900) <<<
-
-            // this should be right.
-            getParentApplicationComponent().requestShutdown();
-        }
     }
     
     void initGuiMenu() {
@@ -668,12 +651,6 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         }
         
         Action2.processMenuBar(menuBar);
-    }
-    
-    @Override
-    protected void onCloseWindow() {
-        pulsar.close();
-        // System.exit(0);
     }
     
     JComponent pulsarRootPane;

@@ -171,11 +171,11 @@ public final class Pulsar extends Metro implements ApplicationComponent {
     }
 
     @Override
-    public void requesetInit() {
+    public void processInit() {
         this.init();
     }
     @Override
-    public void requestShutdown() {
+    public void processQuit() {
     }
 
     static long shutdownWait = 1024;

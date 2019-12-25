@@ -34,16 +34,16 @@ public class ApplicationVessel implements ApplicationComponent, ThreadInitialize
         components.remove( c );
     }
     @Override
-    public void requesetInit() {
+    public void processInit() {
         for ( ApplicationComponent c : this.components ) {
             c.setParentApplicationComponent( this );
-            c.requesetInit();
+            c.processInit();
         }
     }
     @Override
-    public void requestShutdown() {
+    public void processQuit() {
         for (  ApplicationComponent c : this.components ) {
-            c.requestShutdown();
+            c.processQuit();
         }
     }
 }

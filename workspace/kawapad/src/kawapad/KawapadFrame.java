@@ -53,6 +53,7 @@ import pulsar.lib.CurrentObject;
 import pulsar.lib.PulsarLogger;
 import pulsar.lib.Version;
 import pulsar.lib.app.ApplicationComponent;
+import pulsar.lib.app.ApplicationVessel;
 import pulsar.lib.scheme.DescriptiveDocumentCategory;
 import pulsar.lib.scheme.DescriptiveHelp;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
@@ -85,11 +86,25 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
         this.parentApplicationComponent = parentApplicationComponent;
     }
     @Override
-    public void requesetInit() {
-        this.init();
+    public void processInit() {
+        this.kawapad.processInit();
     }
+    
+    boolean quitProcessed  = false;
     @Override
-    public void requestShutdown() {
+    public synchronized void processQuit() {
+        if ( quitProcessed )
+            return;
+        quitProcessed = true;
+        
+        KawapadFrame.this.kawapad.processQuit();
+        KawapadFrame.this.setVisible(false);
+        SwingUtilities.invokeLater( new Runnable( ) {
+            @Override
+            public void run() {
+                KawapadFrame.this.dispose();
+            }
+        });
     }
 
     //////////////////////////////////////////////////////////////////////////////////
@@ -150,9 +165,21 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
         }
     };
 
-    public KawapadFrame( SchemeSecretary schemeSecretary, KawapadEvaluator evaluator, Collection<KawapadEvaluator> evaluatorList, String title ) throws HeadlessException {
+    boolean shutdownWhenClose;
+
+    public KawapadFrame( 
+            SchemeSecretary schemeSecretary, 
+            KawapadEvaluator evaluator, 
+            Collection<KawapadEvaluator> evaluatorList, 
+            boolean shutdownWhenClose,
+            String title 
+            ) throws HeadlessException 
+    {
         super(title);
         this.setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
+
+        this.shutdownWhenClose = shutdownWhenClose;
+
         
 //      DELETED >>> INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
 //      invokeLocalSchemeInitializers( schemeSecretary, this);
@@ -264,9 +291,11 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
             this.addWindowListener( kawapad.createCloseQuery( new Runnable() {
                 @Override
                 public void run() {
-                    KawapadFrame.this.onCloseWindow();
-                    KawapadFrame.this.setVisible(false);
-                    KawapadFrame.this.dispose();
+                    if ( shutdownWhenClose ) {
+                        KawapadFrame.this.getParentApplicationComponent().processQuit();
+                    } else {
+                        KawapadFrame.this.processQuit();
+                    }
                 }
             }));
             
@@ -281,7 +310,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
         } );
     }
     
-    public void quit() {
+    public void requestQuit() {
         this.dispatchEvent( new WindowEvent(this, WindowEvent.WINDOW_CLOSING ));
     }
 
@@ -293,41 +322,27 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
      */
 
 //  ADDED >>> (Tue, 06 Aug 2019 09:29:54 +0900)
-    private transient boolean initialized =false;
-    public synchronized void init() {
-        if ( initialized ) {
-            return;
-        }
-        this.initialized = true;
-        
-//      ADDED >>> (Tue, 06 Aug 2019 08:47:14 +0900)
-        /*
-         * At that time, I didn't realize that creation of a frame should be done in a INIT_03
-         * different way from the creation of a scheme object. (Tue, 06 Aug 2019 08:47:14 +0900) 
-         */
-        // MODIFIED (Mon, 02 Sep 2019 06:16:35 +0900) >>>
-        // Calling eventhanders is done inside Kawapad 
-//      Kawapad.eventHandlers.invokeEventHandler( kawaPad, EventHandlers.CREATE,  kawaPad );
-        this.kawapad.initialize();
-        // MODIFIED (Mon, 02 Sep 2019 06:16:35 +0900) <<<
-//      ADDED <<< (Tue, 06 Aug 2019 08:47:14 +0900)
-    }
+//    private transient boolean initialized =false;
+//    public synchronized void init() {
+//        if ( initialized ) {
+//            return;
+//        }
+//        this.initialized = true;
+//        
+////      ADDED >>> (Tue, 06 Aug 2019 08:47:14 +0900)
+//        /*
+//         * At that time, I didn't realize that creation of a frame should be done in a INIT_03
+//         * different way from the creation of a scheme object. (Tue, 06 Aug 2019 08:47:14 +0900) 
+//         */
+//        // MODIFIED (Mon, 02 Sep 2019 06:16:35 +0900) >>>
+//        // Calling eventhanders is done inside Kawapad 
+////      Kawapad.eventHandlers.invokeEventHandler( kawaPad, EventHandlers.CREATE,  kawaPad );
+//        this.kawapad.initialize();
+//        // MODIFIED (Mon, 02 Sep 2019 06:16:35 +0900) <<<
+////      ADDED <<< (Tue, 06 Aug 2019 08:47:14 +0900)
+//    }
 //  ADDED <<< (Tue, 06 Aug 2019 09:29:54 +0900)
     
-    private transient boolean disposed  =false;
-    @Override
-    public void dispose() {
-        if ( disposed ) return;
-        this.disposed = true;
-        this.kawapad.finalize();
-        super.dispose();
-    }
-
-    protected void onCloseWindow() {
-    }
-    
-
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 
     // factory
@@ -340,8 +355,11 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
         Kawapad.registerGlobalIntroSchemeInitializer( schemeSecretary );
         Kawapad.registerGlobalSchemeInitializer( schemeSecretary );
         schemeSecretary.newScheme();
-        KawapadFrame kawapadFrame = new KawapadFrame( schemeSecretary, evaluator, evaluatorList, "Scheme Scratch Pad" );
-        kawapadFrame.init();
+        KawapadFrame kawapadFrame = new KawapadFrame( schemeSecretary, evaluator, evaluatorList, true, "Scheme Scratch Pad" );
+        ApplicationVessel v = new ApplicationVessel();
+        v.add( kawapadFrame );
+        kawapadFrame.setParentApplicationComponent( kawapadFrame );
+        v.processInit();
         return kawapadFrame;
     }
     public static void main(String[] args) throws IOException {
@@ -372,7 +390,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
         }
         System.out.println( kawapadFrame.getKawapad().outputKeyStrokeReference() );
         System.out.flush();
-        kawapadFrame.quit();
+        kawapadFrame.requestQuit();
     }
 
     public static void outputDocument() throws IOException {
@@ -382,7 +400,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
         } catch ( InterruptedException e ) {
         }
         DescriptiveDocumentCategory.outputReference( kawapadFrame.kawapad.getSchemeSecretary(), "kawapad-procedures", null );
-        kawapadFrame.quit();
+        kawapadFrame.requestQuit();
     }
     
     public static void start(File f, KawapadEvaluator evaluator, Collection<KawapadEvaluator> evaluatorList ) throws IOException {

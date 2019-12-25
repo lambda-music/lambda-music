@@ -169,7 +169,7 @@ class PulsarApplicationArgumentParser {
             logInfo( "deploy : "+ c.id + ":" + c.toString() );
         }
 
-        vessel.requesetInit();
+        vessel.processInit();
 
         // Executing runnable stack;
         {
@@ -199,21 +199,21 @@ class PulsarApplicationArgumentParser {
             }
             for ( PulsarFrame i : pulsarFrameStack ) {
                 try {
-                    i.init();
+                    i.processInit();
                 } catch (Exception e) {
                     logError( "", e );
                 }
             }
-            for ( Kawapad i : kawapadStack ) {
-                try {
-                    i.init();
-                } catch (Exception e) {
-                    logError( "", e );
-                }
-            }
+//            for ( Kawapad i : kawapadStack ) {
+//                try {
+//                    i.init();
+//                } catch (Exception e) {
+//                    logError( "", e );
+//                }
+//            }
             for ( KawapadFrame i : kawapadFrameStack ) {
                 try {
-                    i.init();
+                    i.processInit();
                 } catch (Exception e) {
                     logError( "", e );
                 }
@@ -395,7 +395,7 @@ class PulsarApplicationArgumentParser {
                         runnableStack.push( new Runnable() {
                             @Override
                             public void run() {
-                                pulsarFrame.init();
+                                pulsarFrame.processInit();
                                 boolean first=true;
                                 for ( String s : fileNameList ) {
                                     try {

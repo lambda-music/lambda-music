@@ -95,11 +95,11 @@ public class SchemeSecretary extends Secretary<Scheme> implements ThreadInitiali
     }
 
     @Override
-    public void requesetInit() {
+    public void processInit() {
         this.newScheme();
     }
     @Override
-    public void requestShutdown() {
+    public void processQuit() {
     }
     
     Scheme getScheme() {

@@ -250,7 +250,7 @@ public class PulsarApplication {
         schemeSecretary.newScheme();
         
         if ( pulsarFrame != null ) {
-            pulsarFrame.init();
+            pulsarFrame.processInit();
             
             if ( filename != null ) {
                 pulsarFrame.openFile( new File( filename ) );
@@ -294,11 +294,13 @@ public class PulsarApplication {
                             String s = r.readLine();
                             if ( s == null ) 
                                 break;
-                            if ( "shutdown".equals( s ) ) {
+                            if (   "quit".equals( s ) 
+                                || "bye" .equals( s ) 
+                                    ) {
                                 System.out.println( "ok" );
                                 for ( ApplicationComponent c : parseArgs ) {
                                     try {
-                                        c.requestShutdown();
+                                        c.processQuit();
                                     } catch ( Throwable t ) {
                                         logError( "", t );
                                     }

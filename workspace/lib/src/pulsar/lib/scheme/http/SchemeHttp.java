@@ -71,11 +71,11 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
     }
 
     @Override
-    public void requesetInit() {
+    public void processInit() {
         
     }
     @Override
-    public void requestShutdown() {
+    public void processQuit() {
         stop();
     }
 

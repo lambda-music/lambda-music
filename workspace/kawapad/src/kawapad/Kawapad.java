@@ -191,13 +191,18 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     public void setParentApplicationComponent(ApplicationComponent parentApplicationComponent) {
         this.parentApplicationComponent = parentApplicationComponent;
     }
+    boolean initProcessed = false;
     @Override
-    public void requesetInit() {
-        this.initialize();
+    public synchronized void processInit() {
+        if ( initProcessed )
+            return;
+        initProcessed = true;
+        
+        Kawapad.eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.CREATE, kawapad );
     }
+    
     @Override
-    public void requestShutdown() {
-        this.finalize();
+    public void processQuit() {
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -253,12 +258,21 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         return schemeSecretary;
     }
 
+    final SecretaryMessage.NoReturnNoThrow<Scheme> variableInitializer01 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+        @Override
+        public void execute0( Scheme scheme, Object[] args ) {
+            SchemeUtils.putVar( scheme.getEnvironment(), instanceID, Kawapad.this );
+        }
+    };
+
     ////////////////////////////////////////////////////////////////////////////
     static ArrayList<Kawapad> kawapadList = new ArrayList<>();
     public Kawapad( SchemeSecretary schemeSecretary, KawapadEvaluator currentEvaluator ) {
         super();
         this.schemeSecretary = schemeSecretary;
         this.currentEvaluator = currentEvaluator;
+        // Added (Mon, 23 Dec 2019 02:11:34 +0900)      
+        this.schemeSecretary.registerSchemeInitializer( null, variableInitializer01 );
         
         // init font
         kawapad.setFont( new Font("monospaced", Font.PLAIN, 12));
@@ -408,26 +422,33 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     // Initialization
     ///////////////////////////////////////////////////////////////////////////////////////////////
     
-    public void init() {
-        this.initialize();
-    }
-    public void initVariable() {
-        logInfo( "initVariable******************************************************************" );
-        SchemeUtils.putVar( Environment.getCurrent(), instanceID, Kawapad.this );
-    }
-
-    transient boolean initializeDone = false;
-    public synchronized void initialize() {
-        if ( initializeDone ) return;
-        initializeDone = true;
-        initVariable();
-        Kawapad.eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.CREATE, kawapad );
-    }
-    transient boolean finalizeDone = false;
-    public synchronized void finalize() {
-        if ( finalizeDone ) return;
-        finalizeDone = true;
-    }
+//    /**
+//     * (Sun, 22 Dec 2019 14:44:05 +0900)
+//     * This initVariable() is incompleted ... but I think it should not be fixed.
+//     * I think this functionarity should rather be deprecated, 
+//     * Because :
+//     * - it is almost completely unused.
+//     * - it makes the current code base more complecated.
+//     * 
+//     * FIXME
+//     */
+//    public void initVariable() {
+//        logInfo( "initVariable******************************************************************" );
+//        SchemeUtils.putVar( Environment.getCurrent(), instanceID, Kawapad.this );
+//    }
+//
+//    transient boolean initializeDone = false;
+//    public synchronized void initialize() {
+//        if ( initializeDone ) return;
+//        initializeDone = true;
+//        initVariable();
+//        Kawapad.eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.CREATE, kawapad );
+//    }
+//    transient boolean finalizeDone = false;
+//    public synchronized void finalize() {
+//        if ( finalizeDone ) return;
+//        finalizeDone = true;
+//    }
     
     //////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -3341,7 +3362,8 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         KawapadFrame kawapadFrame = new KawapadFrame( 
                                         this.kawapad.schemeSecretary, 
                                         this.kawapad.getCurrentEvaluator(), 
-                                        this.kawapad.getEvaluatorList(), 
+                                        this.kawapad.getEvaluatorList(),
+                                        false,
                                         "Kawapad" );
         Kawapad newKawapad = kawapadFrame.getKawapad();
         Kawapad thisKawapad = this;
@@ -3352,7 +3374,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         newKawapad.getThreadInitializerCollection().deleteThreadInitializer( 
             thisKawapad.getThreadInitializer() );
         
-        kawapadFrame.init();
+        kawapadFrame.processInit();
         if ( f != null )
             newKawapad.openFile( f );
         return kawapadFrame; 
