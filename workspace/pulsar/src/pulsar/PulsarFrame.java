@@ -228,11 +228,18 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     }
     
     private void initPulsarGui() {
-        Pulsar.createTimer(pulsar, 1000, 20, new Invokable() {
-            transient boolean lastPlaying= false;
+        Pulsar.createTimer( pulsar, 1000, 20, new Invokable() {
+            transient int counter = 0;
+            transient boolean lastPlaying = false;
+            transient double lastPosition = 0.0d;
             List<MetroTrack> trackList;
+            
             @Override
             public Object invoke(Object... args) {
+                counter ++;
+                if ( 10 < counter ) {
+                }
+                
                 if ( pulsar.isOpened() ) {
                     boolean playing = pulsar.getPlaying();
                     if ( playing != lastPlaying ) {
@@ -249,14 +256,15 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                     //  }
                     
                     if ( (trackList!= null ) && (! trackList.isEmpty()) && (pb_position != null) ) {
-                        double value=0;
+                        double position=0;
                         MetroTrack track = trackList.get( 0 ); 
                         synchronized ( track.getMetroTrackLock() ) {
-                            value = track.getTrackPosition();
+                            position = track.getTrackPosition();
                         }
-                        pb_position.setValue((int) (value * PulsarFrame.PB_POSITION_MAX) );
+                        pb_position.setValue((int) (position * PulsarFrame.PB_POSITION_MAX) );
                         pb_position.repaint();
                         pb_position.revalidate();
+                        lastPosition = position;
                     }
                 }
                 return Values.empty;
