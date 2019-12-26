@@ -9,7 +9,7 @@ import java.net.URL;
 
 import pulsar.lib.scheme.SchemeResult;
 
-public final class KawapadRemoteEvaluator implements KawapadEvaluator, KawapadName {
+final class KawapadEvaluator1Remote implements KawapadEvaluator1 {
     public static String httpRequest(String urlString, String postString) throws IOException {
         String outputString = postString; 
         URL url = new URL( urlString );
@@ -35,40 +35,21 @@ public final class KawapadRemoteEvaluator implements KawapadEvaluator, KawapadNa
             return new String( bout.toByteArray(), "utf-8" );
         }
     }
-    
-    String url;
-    public KawapadRemoteEvaluator(String url) {
-        super();
+    private String url;
+    public KawapadEvaluator1Remote(String url) {
         this.url = url;
     }
-    
     @Override
     public String getName() {
         return this.url;
     }
-
     @Override
-    public void evaluate( Kawapad kawapad, String text, boolean doInsertText, boolean doReplaceText, boolean doReset ) {
-        kawapad.getThreadManager().startScratchPadThread( 
-            new KawapadRemoveEvaluatorRunnable( kawapad, text, doInsertText, doReplaceText, doReset ) );
-    }
-    
-    class KawapadRemoveEvaluatorRunnable extends KawapadEvaluatorRunnable {
-        public KawapadRemoveEvaluatorRunnable(
-                Kawapad kawapad, String schemeScript, 
-                boolean insertText, boolean replaceText, boolean doReset ) 
-        { 
-            super( kawapad, schemeScript, insertText, replaceText, true, doReset );
-        }
-        
-        @Override
-        public SchemeResult evaluate()  {
-            try {
-                String result = httpRequest( url, schemeScript );
-                return SchemeResult.createSucceeded( false, SchemeResult.UNKNOWN_CONTENT, result );
-            } catch (IOException e) {
-                return SchemeResult.createError( e );
-            }
+    public SchemeResult evaluate(Kawapad kawapad, String schemeScript)  {
+        try {
+            String result = httpRequest( url, schemeScript );
+            return SchemeResult.createSucceeded( false, SchemeResult.UNKNOWN_CONTENT, result );
+        } catch (IOException e) {
+            return SchemeResult.createError( e );
         }
     }
 }

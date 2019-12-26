@@ -1,10 +1,11 @@
-package pulsar.lib.scheme;
+package pulsar.lib.scheme.doc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import gnu.mapping.Symbol;
+import pulsar.lib.scheme.SchemeUtils;
 
 public abstract class DescriptiveBean implements DescriptiveBeanSynopsisFormatter, Cloneable {
     public static class Param implements Cloneable {

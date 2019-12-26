@@ -15,6 +15,7 @@ import gnu.lists.Consumer;
 import gnu.mapping.CallContext;
 import kawa.Shell;
 import kawa.standard.Scheme;
+import pulsar.lib.scheme.doc.Descriptive;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 
 public class SchemeExecutor {

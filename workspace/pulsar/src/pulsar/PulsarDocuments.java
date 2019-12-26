@@ -4,8 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import kawa.standard.Scheme;
-import pulsar.lib.scheme.DescriptiveBean;
-import pulsar.lib.scheme.DescriptiveDocumentCategory;
+import pulsar.lib.scheme.doc.DescriptiveBean;
+import pulsar.lib.scheme.doc.DescriptiveDocumentCategory;
 
 public class PulsarDocuments {
     public static final DescriptiveDocumentCategory DOCS = 

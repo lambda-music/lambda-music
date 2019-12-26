@@ -1,4 +1,4 @@
-package pulsar.lib.scheme;
+package pulsar.lib.scheme.doc;
 
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;

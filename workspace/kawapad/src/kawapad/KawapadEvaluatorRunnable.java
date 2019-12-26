@@ -5,17 +5,19 @@ import javax.swing.SwingUtilities;
 import pulsar.lib.scheme.SchemeExecutor;
 import pulsar.lib.scheme.SchemeResult;
 
-public abstract class KawapadEvaluatorRunnable implements Runnable {
+public final class KawapadEvaluatorRunnable implements Runnable {
     Kawapad kawapad;
     String schemeScript;
     boolean doInsertText;
     boolean doReplaceText;
     boolean doReportError;
     boolean doResetFileModified;
-    KawapadEvaluatorRunnable( Kawapad kawapad, String schemeScript, boolean doInsertText, boolean doReplaceText, boolean doReportError, boolean doResetFileModified ) {
+    KawapadEvaluator1 evaluator2;
+    KawapadEvaluatorRunnable( Kawapad kawapad, String schemeScript, KawapadEvaluator1 evaluator2, boolean doInsertText, boolean doReplaceText, boolean doReportError, boolean doResetFileModified ) {
         super();
         this.kawapad = kawapad;
         this.schemeScript = schemeScript;
+        this.evaluator2 = evaluator2;
         this.doInsertText = doInsertText;
         this.doReplaceText = doReplaceText;
         this.doReportError = doReportError;
@@ -63,7 +65,7 @@ public abstract class KawapadEvaluatorRunnable implements Runnable {
     public void run() {
         Kawapad.logInfo( schemeScript );
 
-        SchemeResult schemeResult = evaluate();
+        SchemeResult schemeResult = this.evaluator2.evaluate(kawapad, schemeScript);
         
         if ( schemeResult.succeeded() ) {
             if ( schemeResult.isDocument ) {
@@ -84,5 +86,4 @@ public abstract class KawapadEvaluatorRunnable implements Runnable {
                 procInsert( schemeResult );
         }
     }
-    public abstract SchemeResult evaluate();
 }

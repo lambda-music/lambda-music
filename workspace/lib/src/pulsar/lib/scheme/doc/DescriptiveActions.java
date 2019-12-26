@@ -1,4 +1,4 @@
-package pulsar.lib.scheme;
+package pulsar.lib.scheme.doc;
 
 import java.util.Arrays;
 import java.util.List;

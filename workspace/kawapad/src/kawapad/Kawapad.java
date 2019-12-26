@@ -98,12 +98,12 @@ import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
 import pulsar.lib.CurrentObject;
 import pulsar.lib.app.ApplicationComponent;
-import pulsar.lib.scheme.DescriptiveActions;
-import pulsar.lib.scheme.ProceduralDescriptiveBean;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeExecutor;
 import pulsar.lib.scheme.SchemePrinter;
 import pulsar.lib.scheme.SchemeUtils;
+import pulsar.lib.scheme.doc.DescriptiveActions;
+import pulsar.lib.scheme.doc.ProceduralDescriptiveBean;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.SecretaryMessage;
 import pulsar.lib.secretary.SecretaryMessage.NoReturnNoThrow;
@@ -267,7 +267,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
 
     ////////////////////////////////////////////////////////////////////////////
     static ArrayList<Kawapad> kawapadList = new ArrayList<>();
-    public Kawapad( SchemeSecretary schemeSecretary, KawapadEvaluator currentEvaluator ) {
+    public Kawapad( SchemeSecretary schemeSecretary, KawapadEvaluator1 currentEvaluator ) {
         super();
         this.schemeSecretary = schemeSecretary;
         this.currentEvaluator = currentEvaluator;
@@ -456,33 +456,33 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     //
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    KawapadEvaluator currentEvaluator;
-    public KawapadEvaluator getCurrentEvaluator() {
+    KawapadEvaluator1 currentEvaluator;
+    public KawapadEvaluator1 getCurrentEvaluator() {
         return currentEvaluator;
     }
-    public void setCurrentEvaluator(KawapadEvaluator currentEvaluator) {
+    public void setCurrentEvaluator(KawapadEvaluator1 currentEvaluator) {
         this.currentEvaluator = currentEvaluator;
     }
-    List<KawapadEvaluator> evaluatorList = new ArrayList<>();
-    public KawapadEvaluator getLocalEvaluator() {
+    List<KawapadEvaluator1> evaluatorList = new ArrayList<>();
+    public KawapadEvaluator1 getLocalEvaluator() {
         return evaluatorList.get( 0 );
     }
-    public List<KawapadEvaluator> getEvaluatorList() {
+    public List<KawapadEvaluator1> getEvaluatorList() {
         return Collections.unmodifiableList( this.evaluatorList );
     }
-    public void addEvaluator( KawapadEvaluator evaluator ) {
+    public void addEvaluator( KawapadEvaluator1 evaluator ) {
         this.evaluatorList.add( evaluator );
         updateEvaluatorList();
     }
-    public void removeEvaluator( KawapadEvaluator evaluator ) {
+    public void removeEvaluator( KawapadEvaluator1 evaluator ) {
         this.evaluatorList.remove( evaluator );
         updateEvaluatorList();
     }
-    public void addAllEvaluator( Collection<KawapadEvaluator> evaluatorList ) {
+    public void addAllEvaluator( Collection<KawapadEvaluator1> evaluatorList ) {
         this.evaluatorList.addAll( evaluatorList );
         updateEvaluatorList();
     }
-    public void removeAllEvaluator( Collection<KawapadEvaluator> evaluatorList ) {
+    public void removeAllEvaluator( Collection<KawapadEvaluator1> evaluatorList ) {
         this.evaluatorList.removeAll( evaluatorList );
         updateEvaluatorList();
     }
@@ -498,7 +498,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
             serverMenu.removeAll();
             int i=0;
             boolean found = false;
-            for ( KawapadEvaluator evaluator : evaluatorList ) {
+            for ( KawapadEvaluator1 evaluator : evaluatorList ) {
                 if ( evaluator == this.currentEvaluator ) {
                     found = true;
                 }
@@ -513,7 +513,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
             }
         }
     }
-    private JMenuItem createServerMenuItem( KawapadEvaluator evaluator ) {
+    private JMenuItem createServerMenuItem( KawapadEvaluator1 evaluator ) {
         JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem( KawapadName.getCaption( evaluator) );
         menuItem.addActionListener( new ActionListener() {
             @Override
@@ -532,7 +532,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
      * @return
      *          this
      */
-    public Kawapad setEvaluatorList( Collection<KawapadEvaluator> evaluatorList, JMenu serverMenu ) {
+    public Kawapad setEvaluatorList( Collection<KawapadEvaluator1> evaluatorList, JMenu serverMenu ) {
         this.evaluatorList.clear();
         this.evaluatorList.addAll( evaluatorList );
         this.serverMenu = serverMenu;
@@ -542,14 +542,23 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     
     public void evaluate( String text,  boolean doInsertText, boolean doReplaceText, boolean doReset ) {
         if ( text != null ) {
-            this.getCurrentEvaluator().evaluate( kawapad, text, doInsertText, doReplaceText, doReset );
+            kawapad.getThreadManager().startScratchPadThread( 
+                new KawapadEvaluatorRunnable( 
+                    kawapad, text, this.getCurrentEvaluator(),
+                    doInsertText, doReplaceText, true, doReset ) );
+            
+//            this.getCurrentEvaluator().evaluate( kawapad, text, doInsertText, doReplaceText, doReset );
         } else {
             Kawapad.logWarn( "Ignored because currently no text is selected. " );
         }
     }
     public void locallyEvaluate( String text,  boolean doInsertText, boolean doReplaceText, boolean doReset) {
         if ( text != null ) {
-            this.getLocalEvaluator().evaluate( kawapad, text, doInsertText, doReplaceText, doReset );
+            kawapad.getThreadManager().startScratchPadThread( 
+                new KawapadEvaluatorRunnable( 
+                    kawapad, text, this.getLocalEvaluator(),
+                    doInsertText, doReplaceText, true, doReset ) );
+//            this.getLocalEvaluator().evaluate( kawapad, text, doInsertText, doReplaceText, doReset );
         } else {
             Kawapad.logWarn( "Ignored because currently no text is selected. " );
         }

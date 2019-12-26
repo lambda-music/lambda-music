@@ -1,4 +1,4 @@
-package pulsar.lib.scheme;
+package pulsar.lib.scheme.doc;
 
 public interface KawapadDescriptive {
     public static String formatForKawapad( DescriptiveBean bean ) {

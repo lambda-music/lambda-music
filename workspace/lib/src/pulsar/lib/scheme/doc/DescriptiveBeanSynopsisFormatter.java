@@ -1,4 +1,4 @@
-package pulsar.lib.scheme;
+package pulsar.lib.scheme.doc;
 
 public interface DescriptiveBeanSynopsisFormatter {
     String formatSynopsis();

@@ -1,4 +1,4 @@
-package pulsar.lib.scheme;
+package pulsar.lib.scheme.doc;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +16,8 @@ import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import gnu.mapping.WrongArguments;
 import kawa.standard.Scheme;
+import pulsar.lib.scheme.SafeProcedureN;
+import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.Invokable;
 import pulsar.lib.secretary.SecretaryMessage;

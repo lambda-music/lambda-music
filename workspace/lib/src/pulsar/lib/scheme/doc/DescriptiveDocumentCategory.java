@@ -1,4 +1,4 @@
-package pulsar.lib.scheme;
+package pulsar.lib.scheme.doc;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -20,6 +20,7 @@ import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Symbol;
+import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 
 
@@ -148,7 +149,7 @@ public class DescriptiveDocumentCategory {
         } else {
             actualTarget = SchemeUtils.getVar( name, null );
             if ( actualTarget == null ) {
-                SchemeUtils.logWarn( "setDocumentInitializer: " + name + " was not found." );
+                Descriptive.logWarn( "setDocumentInitializer: " + name + " was not found." );
                 actualTarget = new DescriptiveHelpProcedure( name );
                 SchemeUtils.defineVar( env, actualTarget, name );
             }

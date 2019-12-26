@@ -54,8 +54,8 @@ import pulsar.lib.PulsarLogger;
 import pulsar.lib.Version;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.app.ApplicationVessel;
-import pulsar.lib.scheme.DescriptiveDocumentCategory;
-import pulsar.lib.scheme.DescriptiveHelp;
+import pulsar.lib.scheme.doc.DescriptiveDocumentCategory;
+import pulsar.lib.scheme.doc.DescriptiveHelp;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.swing.AcceleratorKeyList;
 import pulsar.lib.swing.Action2;
@@ -169,8 +169,8 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
 
     public KawapadFrame( 
             SchemeSecretary schemeSecretary, 
-            KawapadEvaluator evaluator, 
-            Collection<KawapadEvaluator> evaluatorList, 
+            KawapadEvaluator1 evaluator, 
+            Collection<KawapadEvaluator1> evaluatorList, 
             boolean shutdownWhenClose,
             String title 
             ) throws HeadlessException 
@@ -349,7 +349,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
-    public static KawapadFrame createStaticInstance( KawapadEvaluator evaluator, Collection<KawapadEvaluator> evaluatorList ) {
+    public static KawapadFrame createStaticInstance( KawapadEvaluator1 evaluator, Collection<KawapadEvaluator1> evaluatorList ) {
         SchemeSecretary schemeSecretary = new SchemeSecretary();
         DescriptiveHelp.registerGlobalSchemeInitializer( schemeSecretary );
         Kawapad.registerGlobalIntroSchemeInitializer( schemeSecretary );
@@ -383,7 +383,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
     }
     
     public static void outputKeyStrokeReference() throws IOException {
-        KawapadFrame kawapadFrame = createStaticInstance( KawapadEvaluator.getLocal(), Collections.EMPTY_LIST );
+        KawapadFrame kawapadFrame = createStaticInstance( KawapadEvaluator1.getLocal(), Collections.EMPTY_LIST );
         try {
             Thread.sleep( 2048 );
         } catch ( InterruptedException e ) {
@@ -394,7 +394,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
     }
 
     public static void outputDocument() throws IOException {
-        KawapadFrame kawapadFrame = createStaticInstance( KawapadEvaluator.getLocal(), Collections.EMPTY_LIST );
+        KawapadFrame kawapadFrame = createStaticInstance( KawapadEvaluator1.getLocal(), Collections.EMPTY_LIST );
         try {
             Thread.sleep( 2048 );
         } catch ( InterruptedException e ) {
@@ -403,23 +403,23 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
         kawapadFrame.requestQuit();
     }
     
-    public static void start(File f, KawapadEvaluator evaluator, Collection<KawapadEvaluator> evaluatorList ) throws IOException {
+    public static void start(File f, KawapadEvaluator1 evaluator, Collection<KawapadEvaluator1> evaluatorList ) throws IOException {
         KawapadFrame kawapadFrame = createStaticInstance( evaluator, evaluatorList );
         if ( f != null )
             kawapadFrame.kawapad.openFile( f );
         else
             kawapadFrame.kawapad.openIntro();
     }
-    public static void start( KawapadEvaluator evaluator, Collection<KawapadEvaluator> evaluatorList ) throws IOException {
+    public static void start( KawapadEvaluator1 evaluator, Collection<KawapadEvaluator1> evaluatorList ) throws IOException {
         start( null, evaluator, evaluatorList );
     }
-    public static void start( Collection<KawapadEvaluator> evaluatorList ) throws IOException {
-        start( null, KawapadEvaluator.getLocal(), evaluatorList );
+    public static void start( Collection<KawapadEvaluator1> evaluatorList ) throws IOException {
+        start( null, KawapadEvaluator1.getLocal(), evaluatorList );
     }
     public static void start() throws IOException {
-        start( null, KawapadEvaluator.getLocal(), Collections.EMPTY_LIST  );
+        start( null, KawapadEvaluator1.getLocal(), Collections.EMPTY_LIST  );
     }
     public static void start( File f ) throws IOException {
-        start( f, KawapadEvaluator.getLocal(), Collections.EMPTY_LIST );
+        start( f, KawapadEvaluator1.getLocal(), Collections.EMPTY_LIST );
     }
 }
