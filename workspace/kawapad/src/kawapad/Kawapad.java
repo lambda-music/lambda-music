@@ -267,7 +267,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
 
     ////////////////////////////////////////////////////////////////////////////
     static ArrayList<Kawapad> kawapadList = new ArrayList<>();
-    public Kawapad( SchemeSecretary schemeSecretary, KawapadEvaluator1 currentEvaluator ) {
+    public Kawapad( SchemeSecretary schemeSecretary, KawapadEvaluator currentEvaluator ) {
         super();
         this.schemeSecretary = schemeSecretary;
         this.currentEvaluator = currentEvaluator;
@@ -456,33 +456,33 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     //
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    KawapadEvaluator1 currentEvaluator;
-    public KawapadEvaluator1 getCurrentEvaluator() {
+    KawapadEvaluator currentEvaluator;
+    public KawapadEvaluator getCurrentEvaluator() {
         return currentEvaluator;
     }
-    public void setCurrentEvaluator(KawapadEvaluator1 currentEvaluator) {
+    public void setCurrentEvaluator(KawapadEvaluator currentEvaluator) {
         this.currentEvaluator = currentEvaluator;
     }
-    List<KawapadEvaluator1> evaluatorList = new ArrayList<>();
-    public KawapadEvaluator1 getLocalEvaluator() {
+    List<KawapadEvaluator> evaluatorList = new ArrayList<>();
+    public KawapadEvaluator getLocalEvaluator() {
         return evaluatorList.get( 0 );
     }
-    public List<KawapadEvaluator1> getEvaluatorList() {
+    public List<KawapadEvaluator> getEvaluatorList() {
         return Collections.unmodifiableList( this.evaluatorList );
     }
-    public void addEvaluator( KawapadEvaluator1 evaluator ) {
+    public void addEvaluator( KawapadEvaluator evaluator ) {
         this.evaluatorList.add( evaluator );
         updateEvaluatorList();
     }
-    public void removeEvaluator( KawapadEvaluator1 evaluator ) {
+    public void removeEvaluator( KawapadEvaluator evaluator ) {
         this.evaluatorList.remove( evaluator );
         updateEvaluatorList();
     }
-    public void addAllEvaluator( Collection<KawapadEvaluator1> evaluatorList ) {
+    public void addAllEvaluator( Collection<KawapadEvaluator> evaluatorList ) {
         this.evaluatorList.addAll( evaluatorList );
         updateEvaluatorList();
     }
-    public void removeAllEvaluator( Collection<KawapadEvaluator1> evaluatorList ) {
+    public void removeAllEvaluator( Collection<KawapadEvaluator> evaluatorList ) {
         this.evaluatorList.removeAll( evaluatorList );
         updateEvaluatorList();
     }
@@ -498,7 +498,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
             serverMenu.removeAll();
             int i=0;
             boolean found = false;
-            for ( KawapadEvaluator1 evaluator : evaluatorList ) {
+            for ( KawapadEvaluator evaluator : evaluatorList ) {
                 if ( evaluator == this.currentEvaluator ) {
                     found = true;
                 }
@@ -513,7 +513,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
             }
         }
     }
-    private JMenuItem createServerMenuItem( KawapadEvaluator1 evaluator ) {
+    private JMenuItem createServerMenuItem( KawapadEvaluator evaluator ) {
         JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem( KawapadName.getCaption( evaluator) );
         menuItem.addActionListener( new ActionListener() {
             @Override
@@ -532,7 +532,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
      * @return
      *          this
      */
-    public Kawapad setEvaluatorList( Collection<KawapadEvaluator1> evaluatorList, JMenu serverMenu ) {
+    public Kawapad setEvaluatorList( Collection<KawapadEvaluator> evaluatorList, JMenu serverMenu ) {
         this.evaluatorList.clear();
         this.evaluatorList.addAll( evaluatorList );
         this.serverMenu = serverMenu;

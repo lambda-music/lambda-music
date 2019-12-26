@@ -72,7 +72,7 @@ import gnu.mapping.Environment;
 import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import kawa.standard.Scheme;
-import kawapad.KawapadEvaluator1;
+import kawapad.KawapadEvaluator;
 import kawapad.KawapadFrame;
 import metro.MetroTrack;
 import pulsar.Pulsar.TempoTapperTempoNotifier;
@@ -198,8 +198,8 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     
     public static PulsarFrame create(
             Pulsar pulsar, 
-            KawapadEvaluator1 evaluator, 
-            Collection<KawapadEvaluator1> evaluatorList, 
+            KawapadEvaluator evaluator, 
+            Collection<KawapadEvaluator> evaluatorList, 
             boolean shutdownWhenClose,
             String caption ) {
         return new PulsarFrame( pulsar, evaluator, evaluatorList, shutdownWhenClose, caption );
@@ -207,7 +207,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
 
 
     Pulsar pulsar;
-    PulsarFrame( Pulsar pulsar, KawapadEvaluator1 evaluator, Collection<KawapadEvaluator1> evaluatorList, boolean shutdownWhenClose, String caption ) {
+    PulsarFrame( Pulsar pulsar, KawapadEvaluator evaluator, Collection<KawapadEvaluator> evaluatorList, boolean shutdownWhenClose, String caption ) {
         super( pulsar.getSchemeSecretary(), evaluator, evaluatorList, shutdownWhenClose, caption == null ? PULSAR_DEFAULT_CAPTION : caption );
         
         this.pulsar = pulsar;

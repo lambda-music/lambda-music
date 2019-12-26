@@ -9,7 +9,7 @@ import java.net.URL;
 
 import pulsar.lib.scheme.SchemeResult;
 
-final class KawapadEvaluator1Remote implements KawapadEvaluator1 {
+final class KawapadEvaluatorRemote implements KawapadEvaluator {
     public static String httpRequest(String urlString, String postString) throws IOException {
         String outputString = postString; 
         URL url = new URL( urlString );
@@ -36,7 +36,7 @@ final class KawapadEvaluator1Remote implements KawapadEvaluator1 {
         }
     }
     private String url;
-    public KawapadEvaluator1Remote(String url) {
+    public KawapadEvaluatorRemote(String url) {
         this.url = url;
     }
     @Override

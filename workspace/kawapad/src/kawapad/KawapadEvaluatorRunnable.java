@@ -12,8 +12,8 @@ public final class KawapadEvaluatorRunnable implements Runnable {
     boolean doReplaceText;
     boolean doReportError;
     boolean doResetFileModified;
-    KawapadEvaluator1 evaluator2;
-    KawapadEvaluatorRunnable( Kawapad kawapad, String schemeScript, KawapadEvaluator1 evaluator2, boolean doInsertText, boolean doReplaceText, boolean doReportError, boolean doResetFileModified ) {
+    KawapadEvaluator evaluator2;
+    KawapadEvaluatorRunnable( Kawapad kawapad, String schemeScript, KawapadEvaluator evaluator2, boolean doInsertText, boolean doReplaceText, boolean doReportError, boolean doResetFileModified ) {
         super();
         this.kawapad = kawapad;
         this.schemeScript = schemeScript;

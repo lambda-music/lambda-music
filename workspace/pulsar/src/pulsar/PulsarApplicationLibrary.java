@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import kawapad.Kawapad;
-import kawapad.KawapadEvaluator1;
+import kawapad.KawapadEvaluator;
 import pulsar.lib.scheme.doc.DescriptiveHelp;
 import pulsar.lib.scheme.http.SchemeHttp;
 import pulsar.lib.scheme.http.SchemeHttp.UserAuthentication;
@@ -43,11 +43,11 @@ public class PulsarApplicationLibrary {
     }
 
     public static PulsarFrame createPulsarGui( SchemeSecretary schemeSecretary, Pulsar pulsar, List<String> urls ) {
-        KawapadEvaluator1 local = KawapadEvaluator1.getLocal();
-        ArrayList<KawapadEvaluator1> evaluatorList = new ArrayList<>();
+        KawapadEvaluator local = KawapadEvaluator.getLocal();
+        ArrayList<KawapadEvaluator> evaluatorList = new ArrayList<>();
         evaluatorList.add( local );
         for ( String url : urls ) {
-            evaluatorList.add( KawapadEvaluator1.getRemote( url ) );
+            evaluatorList.add( KawapadEvaluator.getRemote( url ) );
         }
         PulsarFrame pulsarFrame = PulsarFrame.create( pulsar, local, evaluatorList, true , null );
         return pulsarFrame;

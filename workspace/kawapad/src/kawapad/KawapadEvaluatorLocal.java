@@ -3,7 +3,7 @@ package kawapad;
 import pulsar.lib.scheme.SchemeResult;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 
-final class KawapadEvaluator1Local implements KawapadEvaluator1 {
+final class KawapadEvaluatorLocal implements KawapadEvaluator {
     @Override
     public SchemeResult evaluate(Kawapad kawapad, String schemeScript) {
         return SchemeSecretary.evaluateScheme( 
