@@ -289,6 +289,7 @@ class PulsarApplicationArgumentParser {
                         PulsarApplicationLibrary.initializeSchemeSecretary( schemeSecretary );
                     }
                     
+                    @SuppressWarnings("unused")
                     boolean directMeeting = true;
                     @Override
                     Element notifyArg(String s) {
@@ -308,7 +309,7 @@ class PulsarApplicationArgumentParser {
                     }
                     @Override
                     void notifyEnd() {
-                        schemeSecretary.setDirectMeeting( directMeeting );
+//                        schemeSecretary.setDirectMeeting( directMeeting );
                         schemeSecretaryStack.push( this.schemeSecretary );
 
 //                        runnableStack.push( new Runnable() {

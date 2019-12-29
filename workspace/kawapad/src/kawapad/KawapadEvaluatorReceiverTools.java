@@ -2,7 +2,7 @@ package kawapad;
 
 import javax.swing.SwingUtilities;
 
-import pulsar.lib.scheme.SchemeExecutor;
+import pulsar.lib.scheme.SchemeExecutorUtils;
 import pulsar.lib.scheme.SchemeResult;
 
 public class KawapadEvaluatorReceiverTools {
@@ -45,10 +45,10 @@ public class KawapadEvaluatorReceiverTools {
         }
         private void procInsert( SchemeResult schemeResult, String schemeScript ) {
             if ( ! schemeResult.isEmpty() ) {
-                String resultString = SchemeExecutor.formatResult( schemeResult.valueAsString ); 
+                String resultString = SchemeExecutorUtils.formatResult( schemeResult.valueAsString ); 
                 // We want to make sure the result string ends with "\n" to avoid to get an extra line.
                 if ( ! schemeScript.endsWith( "\n" ) ) {
-                    resultString = "\n" + SchemeExecutor.formatResult( schemeResult.valueAsString ); 
+                    resultString = "\n" + SchemeExecutorUtils.formatResult( schemeResult.valueAsString ); 
                 }
                 Kawapad.logInfo( resultString );
                 SwingUtilities.invokeLater( new RunnableInsertTextToTextPane( kawapad, resultString, true, doResetFileModified ) );

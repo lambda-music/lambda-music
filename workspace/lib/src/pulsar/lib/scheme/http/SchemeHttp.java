@@ -25,7 +25,7 @@ import com.sun.net.httpserver.HttpServer;
 
 import pulsar.lib.CurrentObject;
 import pulsar.lib.app.ApplicationComponent;
-import pulsar.lib.scheme.SchemeExecutor;
+import pulsar.lib.scheme.SchemeExecutorUtils;
 import pulsar.lib.scheme.SchemeResult;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.thread.ThreadInitializer;
@@ -264,8 +264,8 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
                         requestString, null, null, "web-scratchpad" );
             String responseString;
             responseString = 
-                    SchemeExecutor.endWithLineFeed( requestString ) + 
-                    SchemeExecutor.formatResult( schemeResult.valueAsString );
+                    SchemeExecutorUtils.endWithLineFeed( requestString ) + 
+                    SchemeExecutorUtils.formatResult( schemeResult.valueAsString );
             logInfo( schemeResult.valueAsString );
             t.sendResponseHeaders(200, responseString.length());
             t.getResponseHeaders().put( "Content-Type",  Arrays.asList( "text/plain; charset=utf-8" ) );

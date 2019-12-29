@@ -149,27 +149,15 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
 
 
     public void openFile( File mainFile ) throws IOException {
-        frame.getKawapad().getSchemeSecretary().executeWithoutSecretarially( new SecretaryMessage.NoReturn<Scheme,IOException>() {
-            @Override
-            public void execute0(Scheme resource, Object[] args) throws IOException{
-                logInfo( "Pulsar#openMainFile()" );
-                if ( ! mainFile.isFile() )
-                    throw new RuntimeException( "The specified file does not exist (" + mainFile.getPath() + ")" );
-                
-                frame.getKawapad().openFile( mainFile );
-            }
-        }, Invokable.NOARG );
+        logInfo( "Pulsar#openMainFile()" );
+        if ( ! mainFile.isFile() )
+            throw new RuntimeException( "The specified file does not exist (" + mainFile.getPath() + ")" );
+        frame.getKawapad().openFile( mainFile );
     }
     // Is this really necessary to be executed with secretary?
     public void openIntro() throws IOException {
         logInfo( "Pulsar#openIntro()" );
-        frame.getKawapad().getSchemeSecretary().executeWithoutSecretarially( new SecretaryMessage.NoReturn<Scheme,IOException>() {
-            @Override
-            public void execute0(Scheme resource, Object[] args) throws IOException{
-                logInfo( "Pulsar#openIntro()" );
-                frame.getKawapad().openIntro();
-            }
-        }, Invokable.NOARG );
+        frame.getKawapad().openIntro();
     }
     
     public void openIntro2() {

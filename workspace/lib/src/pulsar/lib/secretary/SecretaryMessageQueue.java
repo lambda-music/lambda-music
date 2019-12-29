@@ -74,12 +74,12 @@ public abstract class SecretaryMessageQueue<R> implements SecretaryMessageExecut
     }
 
     // ADDED (Tue, 06 Aug 2019 19:17:35 +0900)
-    public <T,E extends Throwable> T executeWithoutSecretarially( SecretaryMessage<R,T,E> message, Object... args ) throws E {
+    @Override
+    public <T,E extends Throwable> T executeSecretarially( SecretaryMessage<R,T,E> message, Object... args ) throws E {
         return message.execute( getExecutive(), args );
     }
     
-    @Override
-    public <T,E extends Throwable> T executeSecretarially( SecretaryMessage<R,T,E> message, Object... args ) throws E {
+    <T,E extends Throwable> T executeSecretarially2( SecretaryMessage<R,T,E> message, Object... args ) throws E {
         if ( message == null )
             throw new NullPointerException();
         

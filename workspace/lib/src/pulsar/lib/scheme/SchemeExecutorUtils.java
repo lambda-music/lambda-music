@@ -18,14 +18,14 @@ import kawa.standard.Scheme;
 import pulsar.lib.scheme.doc.Descriptive;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 
-public class SchemeExecutor {
+public class SchemeExecutorUtils {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
     public static void execSchemeFromResource( Scheme scheme, Class parentClass, String resourcePath ) throws IOException {
-        SchemeExecutor.evaluateScheme( 
+        SchemeExecutorUtils.evaluateScheme( 
             scheme, null, 
             new InputStreamReader( parentClass.getResource( resourcePath ).openStream() ), 
             null, null, resourcePath 

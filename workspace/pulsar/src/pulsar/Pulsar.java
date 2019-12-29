@@ -68,7 +68,7 @@ import metro.MetroSyncType;
 import metro.MetroTrack;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.SafeProcedureN;
-import pulsar.lib.scheme.SchemeExecutor;
+import pulsar.lib.scheme.SchemeExecutorUtils;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.doc.ProceduralDescriptiveBean;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
@@ -2260,10 +2260,10 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         PulsarDocuments.defineDoc( scheme, PulsarNoteListParser.getInstance() );
 
         try {
-            SchemeExecutor.execSchemeFromResource( scheme, Pulsar.class, "lib/init.scm"  );
+            SchemeExecutorUtils.execSchemeFromResource( scheme, Pulsar.class, "lib/init.scm"  );
 //            SchemeUtils.execSchemeFromResource( scheme, Pulsar.class, "lib/basic-notes.scm"  );
-            SchemeExecutor.execSchemeFromResource( scheme, Pulsar.class, "lib/music.scm"  );
-            SchemeExecutor.execSchemeFromResource( scheme, Pulsar.class, "lib/xnoop.scm" );
+            SchemeExecutorUtils.execSchemeFromResource( scheme, Pulsar.class, "lib/music.scm"  );
+            SchemeExecutorUtils.execSchemeFromResource( scheme, Pulsar.class, "lib/xnoop.scm" );
         } catch ( Throwable t ) {
             logError( "", t );
         }

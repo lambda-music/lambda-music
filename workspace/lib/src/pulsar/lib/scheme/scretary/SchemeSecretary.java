@@ -21,27 +21,27 @@ import kawa.standard.Scheme;
 import kawa.standard.load;
 import pulsar.lib.CurrentObject;
 import pulsar.lib.app.ApplicationComponent;
-import pulsar.lib.scheme.SchemeExecutor;
+import pulsar.lib.scheme.SchemeExecutorUtils;
 import pulsar.lib.scheme.SchemeResult;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.Invokable;
 import pulsar.lib.secretary.InvokablyRunnable;
-import pulsar.lib.secretary.SecretariallyInvokable;
-import pulsar.lib.secretary.Secretary;
 import pulsar.lib.secretary.SecretaryMessage;
 import pulsar.lib.thread.ThreadInitializer;
 import pulsar.lib.thread.ThreadInitializerCollection;
 import pulsar.lib.thread.ThreadInitializerContainer;
 
-public class SchemeSecretary extends Secretary<Scheme> implements ThreadInitializerContainer<SchemeSecretary>, ApplicationComponent {
+public class SchemeSecretary implements ThreadInitializerContainer<SchemeSecretary>, ApplicationComponent {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
+    Scheme scheme=null;
     public SchemeSecretary() {
     }
     public Invokable createSecretarillyInvokable( Procedure procedure ) {
-        return new SecretariallyInvokable( this, new InvokableSchemeProcedure( procedure ) );  
+        return new InvokableSchemeProcedure( procedure );  
+//      return new SecretariallyInvokable( this, new InvokableSchemeProcedure( procedure ) );  
     }
     public Runnable createRunnableAndInvocable( Procedure procedure, Object... args) {
         return new InvokablyRunnable( this.createSecretarillyInvokable( procedure ), args );
@@ -249,10 +249,11 @@ public class SchemeSecretary extends Secretary<Scheme> implements ThreadInitiali
         });
     }
 
-    @Override
     public Scheme getExecutive() {
-        // TODO Auto-generated method stub
-        return super.getExecutive();
+        return this.scheme;
+    }
+    public void setExecutive(Scheme newScheme) {
+        this.scheme = newScheme;
     }
 
     static class FinalizerEntry {
@@ -371,6 +372,7 @@ public class SchemeSecretary extends Secretary<Scheme> implements ThreadInitiali
                     setExecutive( newScheme );
 //                  env = newScheme.getEnvironment();
                 }
+
             });
             // 2. Execute all the initializers.
             invokeSchemeInitializers( null );
@@ -406,14 +408,18 @@ public class SchemeSecretary extends Secretary<Scheme> implements ThreadInitiali
         return schemeSecretary.executeSecretarially( new SecretaryMessage.NoThrow<Scheme,SchemeResult>() {
             @Override
             public SchemeResult execute0(Scheme scheme, Object[] args) {
-                return SchemeExecutor.evaluateScheme(scheme, threadInitializer, schemeScript, currentDirectory, schemeScriptFile, schemeScriptURI);
+                return SchemeExecutorUtils.evaluateScheme(scheme, threadInitializer, schemeScript, currentDirectory, schemeScriptFile, schemeScriptURI);
             }
         }, Invokable.NOARG );
     }
     
+    public <R,T,E extends Throwable> T executeSecretarially( SecretaryMessage<Scheme,T,E> message, Object... args ) throws E {
+        return message.execute( getExecutive(), args );
+    }
+
     /**
      * "loadRelative" was moved from 
-     * {@link SchemeExecutor#evaluateScheme(Scheme, Runnable, Reader, File, File, String)}  
+     * {@link SchemeExecutorUtils#evaluateScheme(Scheme, Runnable, Reader, File, File, String)}  
      */
     public static void staticInitScheme( Scheme scheme ) {
         Environment env = scheme.getEnvironment();
@@ -442,5 +448,9 @@ public class SchemeSecretary extends Secretary<Scheme> implements ThreadInitiali
             }
         }, "current-environment" );
 
+    }
+    
+    public void setDirectMeeting(boolean b) {
+        // dummy
     }
 }

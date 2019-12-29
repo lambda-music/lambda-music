@@ -99,7 +99,7 @@ import kawapad.lib.undomanagers.UndoManagers;
 import pulsar.lib.CurrentObject;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.SafeProcedureN;
-import pulsar.lib.scheme.SchemeExecutor;
+import pulsar.lib.scheme.SchemeExecutorUtils;
 import pulsar.lib.scheme.SchemePrinter;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.doc.DescriptiveActions;
@@ -1306,7 +1306,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         }
         @Override
         public void actionPerformed(ActionEvent e) {
-            kawapad.schemeSecretary.newScheme();
+            kawapad.getSchemeSecretary().newScheme();
         }
         {
             putValue( Action2.CAPTION, "Reset the Environment" );
@@ -2871,7 +2871,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         try {
             logInfo( "Loading " + initFile.getName() );
             if ( initFile.exists() ) {
-                SchemeExecutor.evaluateScheme( 
+                SchemeExecutorUtils.evaluateScheme( 
                     scheme, threadInitializer,
                     new InputStreamReader( new FileInputStream( initFile ) ), 
                     initFile.getParentFile(), initFile, initFile.getPath() 
@@ -3060,7 +3060,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
             if ( false ) {
                 try {
                     logInfo( "Loading [Kawapad internal]/kawapad-extension.scm" );
-                    SchemeExecutor.execSchemeFromResource( scheme, Kawapad.class, "kawapad-extension.scm" );
+                    SchemeExecutorUtils.execSchemeFromResource( scheme, Kawapad.class, "kawapad-extension.scm" );
                 } catch (Throwable e) {
                     logError( "Ignored an error : ", e);
                 }
@@ -3372,7 +3372,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     
     public KawapadFrame createKawapadFrame( File f ) throws IOException {
         KawapadFrame kawapadFrame = new KawapadFrame( 
-                                        this.kawapad.schemeSecretary, 
+                                        this.kawapad.getSchemeSecretary(), 
                                         this.kawapad.getCurrentEvaluator(), 
                                         this.kawapad.getEvaluatorList(),
                                         false,

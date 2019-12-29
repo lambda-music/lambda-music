@@ -104,7 +104,7 @@ public class KawapadEventHandlers {
     }
     public void invokeEventHandler( Kawapad kawapad, String eventTypeID, Object ... args ) {
 //              logInfo( "eventHandlers.invokeEventHandler(outer)" );
-        kawapad.schemeSecretary.executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+        kawapad.getSchemeSecretary().executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
             public void execute0( Scheme scheme, Object[] args ) {
                 kawapad.getThreadManager().startScratchPadThread( new Runnable() {
