@@ -35,6 +35,7 @@ import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.doc.DescriptiveDocumentCategory;
 import pulsar.lib.secretary.Invokable;
+import pulsar.lib.secretary.InvokablyRunnable;
 import pulsar.lib.swing.FlawLayout;
 import pulsar.lib.swing.JNamedPanel;
 import pulsar.lib.swing.JPulsarUserObject;
@@ -165,7 +166,7 @@ public class PulsarFramePackage {
         parent.add( c  );
     }
     public static void guiInvokeLater( Pulsar pulsar, Procedure procedure, Object ... args  ) {
-        SwingUtilities.invokeLater( pulsar.getSchemeExecutor().createRunnableAndInvocable( procedure, args ) );
+        SwingUtilities.invokeLater( InvokablyRunnable.createRunnableAndInvocable( procedure, args ) );
     }
 
     

@@ -28,7 +28,6 @@ public class InvokableSchemeProcedure implements Invokable {
     public InvokableSchemeProcedure( Procedure procedure ) {
         this.procedure = procedure;
     }
-
     @Override
     public Object invoke( Object... args ) {
         try {
@@ -36,5 +35,8 @@ public class InvokableSchemeProcedure implements Invokable {
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
+    }
+    public static Invokable createSecretarillyInvokable( Procedure procedure ) {
+        return new InvokableSchemeProcedure( procedure );  
     }
 }

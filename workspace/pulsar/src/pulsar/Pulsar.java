@@ -67,13 +67,14 @@ import metro.MetroSequence;
 import metro.MetroSyncType;
 import metro.MetroTrack;
 import pulsar.lib.app.ApplicationComponent;
+import pulsar.lib.scheme.InvokableSchemeProcedure;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeExecutor;
+import pulsar.lib.scheme.SchemeExecutor.Message;
 import pulsar.lib.scheme.SchemeExecutorUtils;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.doc.ProceduralDescriptiveBean;
 import pulsar.lib.secretary.Invokable;
-import pulsar.lib.secretary.SecretaryMessage;
 import pulsar.lib.swing.MersenneTwisterFast;
 
 /**
@@ -142,19 +143,21 @@ public final class Pulsar extends Metro implements ApplicationComponent {
 
     public static void registerGlobalSchemeInitializers( SchemeExecutor schemeExecutor ) {
         // This should be global not local (Mon, 16 Dec 2019 22:52:46 +0900)
-        schemeExecutor.registerSchemeInitializer( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+        schemeExecutor.registerSchemeInitializer( new Message() {
             @Override
-            public void execute0( Scheme scheme, Object[] args ) {
+            public Object execute( Scheme scheme, Object[] args ) {
                 Pulsar.initScheme( scheme );
+                return null;
             }
         });
         // This should be global not local (Mon, 16 Dec 2019 22:52:46 +0900)
-        schemeExecutor.registerSchemeInitializer( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+        schemeExecutor.registerSchemeInitializer( new Message() {
             @Override
-            public void execute0( Scheme scheme, Object[] args ) {
+            public Object execute( Scheme scheme, Object[] args ) {
                 // FIXME this should depend on the current Pulsar instance.
                 // (Wed, 20 Nov 2019 18:32:11 +0900)
                 PulsarFramePackage.initScheme( scheme );
+                return null;
             }
         });
     }
@@ -311,12 +314,13 @@ public final class Pulsar extends Metro implements ApplicationComponent {
 
 
     public void invokeLater( Runnable r ) {
-         this.getSchemeExecutor().executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+         this.getSchemeExecutor().executeSecretarially( new Message() {
             @Override
-            public void execute0( Scheme scheme, Object[] args ) {
+            public Object execute( Scheme scheme, Object[] args ) {
                 logInfo( "Pulsar#invokeLater()" + r );
                 SchemeExecutor.initializeCurrentThread( scheme );
                 r.run();
+                return null;
             }
         }, Invokable.NOARG );
     }
@@ -585,7 +589,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
     }
 
     public MetroTrack createTrack( Object name, Collection<Object> tags, Procedure procedure ) {
-        return this.createTrack( name, tags, new SchemeSequence( getSchemeExecutor().createSecretarillyInvokable( procedure ) ) );
+        return this.createTrack( name, tags, new SchemeSequence( InvokableSchemeProcedure.createSecretarillyInvokable( procedure ) ) );
     }
     
     public MetroTrack createRecordingTrack( Object name, Collection<Object> tags, List<MetroPort> inputPorts, List<MetroPort> outputPorts,
@@ -719,7 +723,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         return 
                 searchTrack(
                     readParamSearchTrackFilter(
-                        getSchemeExecutor().createSecretarillyInvokable( readParamTrackSearcher( arg ) )));
+                        InvokableSchemeProcedure.createSecretarillyInvokable( readParamTrackSearcher( arg ) )));
     }
 
     // TODO
@@ -1135,7 +1139,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                 logInfo("set-main");
                 if ( args.length == 1 ) {
                     Procedure procedure = (Procedure)args[0];
-                    getCurrent().setMainProcedure( getCurrent().getSchemeExecutor().createSecretarillyInvokable( procedure ) );
+                    getCurrent().setMainProcedure( InvokableSchemeProcedure.createSecretarillyInvokable( procedure ) );
                 } else {
                     throw new RuntimeException( "invalid argument length" );
                 }
@@ -1272,15 +1276,16 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                 Thread t = new Thread() {
                     @Override
                     public void run() {
-                        getCurrent().getSchemeExecutor().executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+                        getCurrent().getSchemeExecutor().executeSecretarially( new Message() {
                             @Override
-                            public void execute0(Scheme resource, Object[] args) {
+                            public Object execute(Scheme resource, Object[] args) {
                                 try {
                                     Thread.sleep( shutdownWaitNow );
                                 } catch (InterruptedException e) {
                                     logWarn( e.getMessage() );
                                 }
                                 getCurrent().quit(); 
+                                return null;
                             }
                         }, Invokable.NOARG );
                     }
@@ -1959,7 +1964,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                 Runnable runnable = createTimer( getCurrent(), 
                     SchemeUtils.toInteger( arg1 ), 
                     -1, 
-                    getCurrent().getSchemeExecutor().createSecretarillyInvokable( (Procedure)arg2 ) );
+                    InvokableSchemeProcedure.createSecretarillyInvokable( (Procedure)arg2 ) );
                 
                 return new Procedure0() {
                     public Object apply0() throws Throwable {
@@ -1973,7 +1978,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                 Runnable runnable = createTimer( getCurrent(), 
                     SchemeUtils.toInteger( arg0 ), 
                     SchemeUtils.toInteger( arg1 ), 
-                    getCurrent().getSchemeExecutor().createSecretarillyInvokable( (Procedure)arg2 ) );
+                    InvokableSchemeProcedure.createSecretarillyInvokable( (Procedure)arg2 ) );
 
                 return new Procedure0() {
                     public Object apply0() throws Throwable {

@@ -12,7 +12,7 @@ import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import kawa.standard.Scheme;
-import pulsar.lib.secretary.SecretaryMessage;
+import pulsar.lib.scheme.SchemeExecutor.Message;
 
 public class KawapadEventHandlers {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -104,9 +104,9 @@ public class KawapadEventHandlers {
     }
     public void invokeEventHandler( Kawapad kawapad, String eventTypeID, Object ... args ) {
 //              logInfo( "eventHandlers.invokeEventHandler(outer)" );
-        kawapad.getSchemeExecutor().executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+        kawapad.getSchemeExecutor().executeSecretarially( new Message() {
             @Override
-            public void execute0( Scheme scheme, Object[] args ) {
+            public Object execute( Scheme scheme, Object[] args ) {
                 kawapad.getSchemeExecutor().startThread( new Runnable() {
                     @Override
                     public void run() {
@@ -125,6 +125,7 @@ public class KawapadEventHandlers {
                         }
                     }
                 });
+                return null;
             }
         }, kawapad );
     }

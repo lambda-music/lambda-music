@@ -20,6 +20,9 @@
 
 package pulsar.lib.secretary;
 
+import gnu.mapping.Procedure;
+import pulsar.lib.scheme.InvokableSchemeProcedure;
+
 public final class InvokablyRunnable implements Runnable {
     private final Invokable invokable;
     private final Object[] args;
@@ -30,5 +33,8 @@ public final class InvokablyRunnable implements Runnable {
     @Override
     public void run() {
         invokable.invoke( args );
+    }
+    public static Runnable createRunnableAndInvocable( Procedure procedure, Object... args) {
+        return new InvokablyRunnable( InvokableSchemeProcedure.createSecretarillyInvokable( procedure ), args );
     }
 }

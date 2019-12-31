@@ -18,9 +18,9 @@ import gnu.mapping.WrongArguments;
 import kawa.standard.Scheme;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeExecutor;
+import pulsar.lib.scheme.SchemeExecutor.Message;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.Invokable;
-import pulsar.lib.secretary.SecretaryMessage;
 
 public class DescriptiveHelp {
     public static final DescriptiveDocumentCategory DOCS = 
@@ -34,10 +34,11 @@ public class DescriptiveHelp {
         schemeExecutor.registerSchemeInitializer( staticInitializer01 );
     }
 
-    static SecretaryMessage.NoReturnNoThrow<Scheme> staticInitializer01 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+    static Message staticInitializer01 = new Message() {
         @Override
-        public void execute0( Scheme scheme, Object[] args ) {
-            staticInitScheme( scheme.getEnvironment() );             
+        public Object execute( Scheme scheme, Object[] args ) {
+            staticInitScheme( scheme.getEnvironment() );            
+            return null;
         }
     };
 
@@ -54,9 +55,9 @@ public class DescriptiveHelp {
         if ( type == null )
             throw new IllegalArgumentException( "'type' argument cannot be null." );
         
-        return schemeExecutor.executeSecretarially( new SecretaryMessage.NoThrow<Scheme,String>() {
+        return (String)schemeExecutor.executeSecretarially( new Message() {
             @Override
-            public String execute0( Scheme scheme, Object[] args ) {
+            public String execute( Scheme scheme, Object[] args ) {
                 return outputMarkdownReference0( type, scheme.getEnvironment() );
             }
 

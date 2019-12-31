@@ -79,9 +79,9 @@ import pulsar.Pulsar.TempoTapperTempoNotifier;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeExecutor;
+import pulsar.lib.scheme.SchemeExecutor.Message;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.Invokable;
-import pulsar.lib.secretary.SecretaryMessage;
 import pulsar.lib.swing.AcceleratorKeyList;
 import pulsar.lib.swing.Action2;
 import pulsar.lib.swing.AutomatedActionField;
@@ -139,10 +139,11 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     static final int PB_POSITION_MAX = 1024;
     
     public static void registerGlobalSchemeInitializers( SchemeExecutor schemeExecutor ) {
-        schemeExecutor.registerSchemeInitializer( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+        schemeExecutor.registerSchemeInitializer( new Message() {
             @Override
-            public void execute0( Scheme scheme, Object[] args ) {
+            public Object execute( Scheme scheme, Object[] args ) {
                 initScheme( scheme );
+                return null;
             }
         });
     }

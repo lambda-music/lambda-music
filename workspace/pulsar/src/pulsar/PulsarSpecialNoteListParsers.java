@@ -43,6 +43,7 @@ import metro.MetroPort;
 import metro.MetroSyncType;
 import metro.MetroTrack;
 import pulsar.lib.scheme.SchemeUtils;
+import pulsar.lib.secretary.InvokablyRunnable;
 
 /**
  * Defines special note events. 
@@ -362,7 +363,7 @@ public class PulsarSpecialNoteListParsers {
             Object[] args = {};
             // See the note ... XXX_SYNC_01
             ((MetroBufferedMidiReceiver<T>) buffer).exec( offset, 
-                    pulsar.getSchemeExecutor().createRunnableAndInvocable( procedure0, args ));
+                    InvokablyRunnable.createRunnableAndInvocable( procedure0, args ));
         }
         
         public LList exec(double offset, Runnable runnable) {

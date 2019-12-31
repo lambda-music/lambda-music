@@ -25,8 +25,8 @@ import javax.swing.text.Segment;
 import gnu.mapping.LocationEnumeration;
 import gnu.mapping.NamedLocation;
 import kawa.standard.Scheme;
+import pulsar.lib.scheme.SchemeExecutor.Message;
 import pulsar.lib.scheme.SchemeUtils;
-import pulsar.lib.secretary.SecretaryMessage;
 
 public class KawapadContentAssist {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -133,9 +133,9 @@ public class KawapadContentAssist {
         }
     }
     public synchronized void updatePopup(Caret caret) {
-        kawapad.getSchemeExecutor().executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+        kawapad.getSchemeExecutor().executeSecretarially( new Message() {
             @Override
-            public void execute0(Scheme scheme, Object[] args) {
+            public Object execute(Scheme scheme, Object[] args) {
                 try {
                     Document document = kawapad.getDocument();
                     int length = document.getLength();
@@ -189,6 +189,7 @@ public class KawapadContentAssist {
                 } catch (BadLocationException e1) {
                     e1.printStackTrace();
                 }
+                return null;
             }
         });
     }

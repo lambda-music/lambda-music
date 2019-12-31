@@ -14,15 +14,12 @@ import javax.swing.SwingUtilities;
 
 import gnu.expr.Language;
 import gnu.mapping.Environment;
-import gnu.mapping.Procedure;
 import gnu.mapping.Procedure0;
 import kawa.standard.Scheme;
 import kawa.standard.load;
 import pulsar.lib.CurrentObject;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.secretary.Invokable;
-import pulsar.lib.secretary.InvokablyRunnable;
-import pulsar.lib.secretary.SecretaryMessage;
 import pulsar.lib.thread.ThreadInitializer;
 import pulsar.lib.thread.ThreadInitializerCollection;
 import pulsar.lib.thread.ThreadInitializerContainer;
@@ -33,18 +30,14 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
     
+    public abstract interface Message<T> {
+        public abstract T execute( Scheme resource, Object[] args );
+    }
+    
     Scheme scheme=null;
     public SchemeExecutor() {
     }
     
-    public Invokable createSecretarillyInvokable( Procedure procedure ) {
-        return new InvokableSchemeProcedure( procedure );  
-//      return new SecretariallyInvokable( this, new InvokableSchemeProcedure( procedure ) );  
-    }
-    public Runnable createRunnableAndInvocable( Procedure procedure, Object... args) {
-        return new InvokablyRunnable( this.createSecretarillyInvokable( procedure ), args );
-    }
-
     //////////////////////////////////////////////////////////////////////////////////////////
     //
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -120,8 +113,8 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
     // Scheme Initializer 
     //////////////////////////////////////////////////////////////////////////////////////////
     
-    private List<SecretaryMessage.NoReturnNoThrow<Scheme>> schemeInitializerList = new ArrayList<>();
-    public List<SecretaryMessage.NoReturnNoThrow<Scheme>> getSchemeInitializerList() {
+    private List<Message> schemeInitializerList = new ArrayList<>();
+    public List<Message> getSchemeInitializerList() {
         return schemeInitializerList;
     }
 
@@ -129,34 +122,36 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
      * This method registers a specified initializer.
      * @see #invokeSchemeInitializers()
      */
-    public void registerSchemeInitializer( SecretaryMessage.NoReturnNoThrow<Scheme> message ) {
+    public void registerSchemeInitializer( Message message ) {
         this.getSchemeInitializerList().add( message  );
     }
 
     public void invokeSchemeInitializers() {
-        for ( SecretaryMessage.NoReturnNoThrow<Scheme> e : getSchemeInitializerList() ) {
+        for ( Message e : getSchemeInitializerList() ) {
             executeSecretarially( e );
         }
     }
 
     {
-        registerSchemeInitializer( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+        registerSchemeInitializer( new Message() {
             @Override
-            public void execute0(Scheme scheme, Object[] args) {
+            public Object execute(Scheme scheme, Object[] args) {
                 staticInitScheme( scheme );
+                return null;
             }
         });
-        registerSchemeInitializer( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+        registerSchemeInitializer( new Message() {
             @Override
-            public void execute0(Scheme scheme, Object[] args) {
+            public Object execute(Scheme scheme, Object[] args) {
                 // 3. This initializes Secretary Message Queue's thread.
                 // // 4. (in most case ) this initializes main-thread
                 initializeCurrentThread( scheme );
+                return null;
             }
         });
-        registerSchemeInitializer( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+        registerSchemeInitializer( new Message() {
             @Override
-            public void execute0(Scheme scheme, Object[] args) {
+            public Object execute(Scheme scheme, Object[] args) {
                 SwingUtilities.invokeLater( new Runnable() {
                     @Override
                     public void run() {
@@ -164,16 +159,18 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
                         initializeCurrentThread(scheme);
                     }
                 });
+                return null;
             }
         });
         
-        registerSchemeInitializer( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+        registerSchemeInitializer( new Message() {
             @Override
-            public void execute0(Scheme scheme, Object[] args) {
+            public Object execute(Scheme scheme, Object[] args) {
                 initializeCurrentThread( scheme );
                 //XXX This destroys the thread initialization for Environment().
                 // (Thu, 15 Aug 2019 23:07:01 +0900)
 //              SchemeUtils.defineVar( scheme, EmptyList.emptyList, "all-procedures" );
+                return null;
             }
         });
     }
@@ -187,8 +184,8 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
 
     static class FinalizerEntry {
         Object parent;
-        SecretaryMessage.NoReturnNoThrow<Scheme> message;
-        public FinalizerEntry(Object parent, SecretaryMessage.NoReturnNoThrow<Scheme> message) {
+        Message message;
+        public FinalizerEntry(Object parent, Message message) {
             super();
             this.parent = parent;
             this.message = message;
@@ -200,13 +197,14 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
         try {
             
             // 1. Create a new scheme object.
-            executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+            executeSecretarially( new Message() {
                 @Override
-                public void execute0(Scheme scheme, Object[] args) {
+                public Object execute(Scheme scheme, Object[] args) {
                     logInfo( "SchemeSecretary#newScheme()" );
                     Scheme newScheme = new Scheme();
                     setExecutive( newScheme );
 //                  env = newScheme.getEnvironment();
+                    return null;
                 }
 
             });
@@ -220,10 +218,11 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
     
     void setScheme( Scheme newScheme ) {
         try {
-            executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+            executeSecretarially( new Message() {
                 @Override
-                public void execute0(Scheme resource, Object[] args) {
+                public Object execute(Scheme resource, Object[] args) {
                     setExecutive( newScheme );
+                    return null;
                 }
             });
         } catch (Throwable e) {
@@ -243,15 +242,15 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
     public static SchemeResult evaluateScheme( 
             SchemeExecutor schemeExecutor, Runnable threadInitializer, 
             Reader schemeScript, File currentDirectory, File schemeScriptFile, String schemeScriptURI ) {
-        return schemeExecutor.executeSecretarially( new SecretaryMessage.NoThrow<Scheme,SchemeResult>() {
+        return (SchemeResult) schemeExecutor.executeSecretarially( new Message() {
             @Override
-            public SchemeResult execute0(Scheme scheme, Object[] args) {
+            public SchemeResult execute(Scheme scheme, Object[] args) {
                 return SchemeExecutorUtils.evaluateScheme(scheme, threadInitializer, schemeScript, currentDirectory, schemeScriptFile, schemeScriptURI);
             }
         }, Invokable.NOARG );
     }
     
-    public <R,T,E extends Throwable> T executeSecretarially( SecretaryMessage<Scheme,T,E> message, Object... args ) throws E {
+    public Object executeSecretarially( Message message, Object... args ) {
         return message.execute( getExecutive(), args );
     }
 

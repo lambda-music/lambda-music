@@ -100,12 +100,12 @@ import pulsar.lib.CurrentObject;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeExecutor;
+import pulsar.lib.scheme.SchemeExecutor.Message;
 import pulsar.lib.scheme.SchemeExecutorUtils;
 import pulsar.lib.scheme.SchemePrinter;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.doc.DescriptiveActions;
 import pulsar.lib.scheme.doc.ProceduralDescriptiveBean;
-import pulsar.lib.secretary.SecretaryMessage;
 import pulsar.lib.swing.AcceleratorKeyList;
 import pulsar.lib.swing.Action2;
 import pulsar.lib.swing.AutomatedActionField;
@@ -257,10 +257,11 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         return schemeExecutor;
     }
 
-    final SecretaryMessage.NoReturnNoThrow<Scheme> variableInitializer01 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+    final Message variableInitializer01 = new Message() {
         @Override
-        public void execute0( Scheme scheme, Object[] args ) {
+        public Object execute( Scheme scheme, Object[] args ) {
             SchemeUtils.putVar( scheme.getEnvironment(), instanceID, Kawapad.this );
+             return null;
         }
     };
 
@@ -358,10 +359,11 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     public static void registerGlobalSchemeInitializer( SchemeExecutor schemeExecutor ) {
         schemeExecutor.registerSchemeInitializer( staticInitializer01 );
     }
-    static SecretaryMessage.NoReturnNoThrow<Scheme> staticInitializer01 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+    static Message staticInitializer01 = new Message() {
         @Override
-        public void execute0( Scheme scheme, Object[] args ) {
+        public Object execute( Scheme scheme, Object[] args ) {
             Kawapad.staticInitScheme( scheme );             
+            return null;
         }
     };
 
@@ -372,10 +374,11 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
      * current frame. This initializer does not have to be removed even if  
      * frames are disposed.
      */
-    static final SecretaryMessage.NoReturnNoThrow<Scheme> staticIntroInitializer01 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+    static final Message staticIntroInitializer01 = new Message() {
         @Override
-        public void execute0( Scheme scheme, Object[] args ) {
-            Kawapad.staticIntroInitScheme( scheme.getEnvironment() );             
+        public Object execute( Scheme scheme, Object[] args ) {
+            Kawapad.staticIntroInitScheme( scheme.getEnvironment() );
+            return null;
         }
     };
     static void staticIntroInitScheme( Environment env ) {
