@@ -54,7 +54,6 @@ import gnu.math.DFloNum;
 import gnu.math.IntNum;
 import gnu.math.Quantity;
 import kawa.standard.Scheme;
-import pulsar.lib.scheme.scretary.SchemeExecutor;
 import pulsar.lib.secretary.SecretaryMessage;
 
 public class SchemeUtils {

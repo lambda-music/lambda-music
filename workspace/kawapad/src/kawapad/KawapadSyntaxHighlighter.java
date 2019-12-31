@@ -9,8 +9,8 @@ import java.util.regex.Pattern;
 import javax.swing.text.AttributeSet;
 
 import gnu.mapping.Symbol;
+import pulsar.lib.scheme.SchemeExecutor;
 import pulsar.lib.scheme.SchemeUtils;
-import pulsar.lib.scheme.scretary.SchemeExecutor;
 
 class KawapadSyntaxHighlighter extends SyntaxHighlighter {
     private static final boolean DEBUG=true;

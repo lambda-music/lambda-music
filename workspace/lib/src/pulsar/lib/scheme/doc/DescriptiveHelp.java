@@ -17,8 +17,8 @@ import gnu.mapping.Values;
 import gnu.mapping.WrongArguments;
 import kawa.standard.Scheme;
 import pulsar.lib.scheme.SafeProcedureN;
+import pulsar.lib.scheme.SchemeExecutor;
 import pulsar.lib.scheme.SchemeUtils;
-import pulsar.lib.scheme.scretary.SchemeExecutor;
 import pulsar.lib.secretary.Invokable;
 import pulsar.lib.secretary.SecretaryMessage;
 

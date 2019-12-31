@@ -27,7 +27,7 @@ import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroCollector;
 import metro.MetroTrack;
-import pulsar.lib.scheme.scretary.SchemeExecutor;
+import pulsar.lib.scheme.SchemeExecutor;
 import pulsar.lib.secretary.Invokable;
 
 public class PulsarNoteListParser extends NoteListParser {

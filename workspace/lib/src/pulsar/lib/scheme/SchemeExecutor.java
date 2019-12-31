@@ -1,4 +1,4 @@
-package pulsar.lib.scheme.scretary;
+package pulsar.lib.scheme;
 
 import java.io.File;
 import java.io.Reader;
@@ -20,9 +20,6 @@ import kawa.standard.Scheme;
 import kawa.standard.load;
 import pulsar.lib.CurrentObject;
 import pulsar.lib.app.ApplicationComponent;
-import pulsar.lib.scheme.SchemeExecutorUtils;
-import pulsar.lib.scheme.SchemeResult;
-import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.Invokable;
 import pulsar.lib.secretary.InvokablyRunnable;
 import pulsar.lib.secretary.SecretaryMessage;

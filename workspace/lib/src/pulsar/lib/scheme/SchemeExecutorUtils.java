@@ -16,7 +16,6 @@ import gnu.mapping.CallContext;
 import kawa.Shell;
 import kawa.standard.Scheme;
 import pulsar.lib.scheme.doc.Descriptive;
-import pulsar.lib.scheme.scretary.SchemeExecutor;
 
 public class SchemeExecutorUtils {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

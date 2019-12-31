@@ -18,7 +18,7 @@
  * along with Pulsar-Sequencer.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package pulsar.lib.scheme.scretary;
+package pulsar.lib.scheme;
 
 import gnu.mapping.Procedure;
 import pulsar.lib.secretary.Invokable;

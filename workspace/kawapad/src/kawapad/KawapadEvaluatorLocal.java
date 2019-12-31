@@ -1,7 +1,7 @@
 package kawapad;
 
+import pulsar.lib.scheme.SchemeExecutor;
 import pulsar.lib.scheme.SchemeResult;
-import pulsar.lib.scheme.scretary.SchemeExecutor;
 
 final class KawapadEvaluatorLocal implements KawapadEvaluator {
     @Override

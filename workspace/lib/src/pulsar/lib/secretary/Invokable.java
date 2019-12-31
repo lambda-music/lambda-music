@@ -21,7 +21,7 @@
 package pulsar.lib.secretary;
 
 import gnu.mapping.Values;
-import pulsar.lib.scheme.scretary.InvokableSchemeProcedure;
+import pulsar.lib.scheme.InvokableSchemeProcedure;
 
 /**
  * This class defines an interface that executes an arbitrary invokable.

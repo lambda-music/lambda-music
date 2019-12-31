@@ -17,10 +17,10 @@ import pulsar.lib.PulsarLogger;
 import pulsar.lib.Version;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.app.ApplicationVessel;
+import pulsar.lib.scheme.SchemeExecutor;
 import pulsar.lib.scheme.doc.DescriptiveDocumentCategory;
 import pulsar.lib.scheme.doc.DescriptiveHelp;
 import pulsar.lib.scheme.http.SchemeHttp;
-import pulsar.lib.scheme.scretary.SchemeExecutor;
 
 public class PulsarApplication {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

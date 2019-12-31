@@ -20,8 +20,8 @@ import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Symbol;
+import pulsar.lib.scheme.SchemeExecutor;
 import pulsar.lib.scheme.SchemeUtils;
-import pulsar.lib.scheme.scretary.SchemeExecutor;
 
 
 public class DescriptiveDocumentCategory {

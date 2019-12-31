@@ -6,10 +6,10 @@ import java.util.List;
 
 import kawapad.Kawapad;
 import kawapad.KawapadEvaluator;
+import pulsar.lib.scheme.SchemeExecutor;
 import pulsar.lib.scheme.doc.DescriptiveHelp;
 import pulsar.lib.scheme.http.SchemeHttp;
 import pulsar.lib.scheme.http.SchemeHttp.UserAuthentication;
-import pulsar.lib.scheme.scretary.SchemeExecutor;
 
 public class PulsarApplicationLibrary {
     public static void initializeSchemeExecutor( SchemeExecutor schemeExecutor ) {
