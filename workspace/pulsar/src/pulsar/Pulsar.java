@@ -239,7 +239,6 @@ public final class Pulsar extends Metro implements ApplicationComponent {
     public void shutdown() {
         close();
         execCleanupHook();
-        getSchemeSecretary().executeShutdownHook();
     }
 
     /**

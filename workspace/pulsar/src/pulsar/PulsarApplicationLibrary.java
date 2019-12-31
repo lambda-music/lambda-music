@@ -23,7 +23,6 @@ public class PulsarApplicationLibrary {
 
     public static SchemeSecretary createSchemeSecretary() {
         SchemeSecretary schemeSecretary = new SchemeSecretary();
-        schemeSecretary.setDirectMeeting( true );
         initializeSchemeSecretary( schemeSecretary );
         return schemeSecretary;
     }

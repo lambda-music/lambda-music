@@ -5,8 +5,6 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,9 +34,11 @@ public class SchemeSecretary implements ThreadInitializerContainer<SchemeSecreta
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
+    
     Scheme scheme=null;
     public SchemeSecretary() {
     }
+    
     public Invokable createSecretarillyInvokable( Procedure procedure ) {
         return new InvokableSchemeProcedure( procedure );  
 //      return new SecretariallyInvokable( this, new InvokableSchemeProcedure( procedure ) );  
@@ -64,6 +64,7 @@ public class SchemeSecretary implements ThreadInitializerContainer<SchemeSecreta
                         return "scheme-current-thread";
                     }
                 });
+    
     @Override
     public ThreadInitializer<SchemeSecretary> getThreadInitializer() {
         return threadInitializer;
@@ -72,7 +73,7 @@ public class SchemeSecretary implements ThreadInitializerContainer<SchemeSecreta
         return currentObject.get();
     }
 
-    final ThreadInitializerCollection defaultInitializerCollection = new ThreadInitializerCollection( "default-scheme", this );
+    private final ThreadInitializerCollection defaultInitializerCollection = new ThreadInitializerCollection( "default-scheme", this );
     {
         defaultInitializerCollection.addThreadInitializer( getThreadInitializer() );
     }
@@ -109,32 +110,6 @@ public class SchemeSecretary implements ThreadInitializerContainer<SchemeSecreta
     //////////////////////////////////////////////////////////////////////////////////////////
     // SHUTDOWN HOOK
     //////////////////////////////////////////////////////////////////////////////////////////
-    private final Collection<Runnable> shutdownHookList = new LinkedList<>();
-    public void addShutdownHook( Runnable runnable ) {
-        synchronized ( this.shutdownHookList ) {
-            this.shutdownHookList.add( runnable );
-        }
-    }
-    public void removeShutdownHook( Runnable runnable ) {
-        synchronized ( this.shutdownHookList ) {
-            this.shutdownHookList.remove( runnable );
-        }
-    }
-    public void executeShutdownHook() {
-        synchronized ( this.shutdownHookList ) {
-            for ( Runnable r : this.shutdownHookList ) {
-                try {
-                    r.run();
-                } catch ( Throwable e ) {
-                    logError("", e);
-                }
-            }
-        }
-    }
-    
-    //////////////////////////////////////////////////////////////////////////////////////////
-    // SHUTDOWN HOOK
-    //////////////////////////////////////////////////////////////////////////////////////////
     public static final void initializeCurrentThread( Scheme scheme ) {
         Language.setCurrentLanguage( scheme );
         Environment.setCurrent( scheme.getEnvironment() );
@@ -143,21 +118,6 @@ public class SchemeSecretary implements ThreadInitializerContainer<SchemeSecreta
         initializeCurrentThread( this.getScheme() );
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////////
-    // Thread Initializer List 
-    //////////////////////////////////////////////////////////////////////////////////////////
-
-    private final Collection<Runnable> threadInitializerList = new LinkedList<>();
-    public void registerThreadInitializer( Runnable initializer ) {
-        threadInitializerList.add( initializer );
-    }
-    public void unregisterThreadInitializer( Runnable initializer ) {
-        threadInitializerList.remove( initializer );
-    }
-    public Collection<Runnable> getThreadInitializerList() {
-        return threadInitializerList;
-    }
-    
     //////////////////////////////////////////////////////////////////////////////////////////
     // Scheme Initializer 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -397,6 +357,7 @@ public class SchemeSecretary implements ThreadInitializerContainer<SchemeSecreta
             throw new RuntimeException(e);
         }
     }
+    
     public static SchemeResult evaluateScheme( 
             SchemeSecretary schemeSecretary, Runnable threadInitializer, 
             String schemeScript, File currentDirectory, File schemeScriptFile, String schemeScriptURI ) 
@@ -452,9 +413,5 @@ public class SchemeSecretary implements ThreadInitializerContainer<SchemeSecreta
             }
         }, "current-environment" );
 
-    }
-    
-    public void setDirectMeeting(boolean b) {
-        // dummy
     }
 }
