@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.Reader;
 import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -29,14 +30,14 @@ import pulsar.lib.thread.ThreadInitializer;
 import pulsar.lib.thread.ThreadInitializerCollection;
 import pulsar.lib.thread.ThreadInitializerContainer;
 
-public class SchemeSecretary implements ThreadInitializerContainer<SchemeSecretary>, ApplicationComponent {
+public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor>, ApplicationComponent {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
     
     Scheme scheme=null;
-    public SchemeSecretary() {
+    public SchemeExecutor() {
     }
     
     public Invokable createSecretarillyInvokable( Procedure procedure ) {
@@ -51,8 +52,8 @@ public class SchemeSecretary implements ThreadInitializerContainer<SchemeSecreta
     //
     //////////////////////////////////////////////////////////////////////////////////////////
     
-    private static final CurrentObject<SchemeSecretary> currentObject = new CurrentObject<>( SchemeSecretary.class );
-    private final ThreadInitializer<SchemeSecretary> threadInitializer =
+    private static final CurrentObject<SchemeExecutor> currentObject = new CurrentObject<>( SchemeExecutor.class );
+    private final ThreadInitializer<SchemeExecutor> threadInitializer =
             ThreadInitializer.createMultipleThreadInitializer( "scheme", this,
                 ThreadInitializer.createThreadInitializer( "current-scheme", currentObject, this ), new Runnable() {
                     @Override
@@ -66,10 +67,10 @@ public class SchemeSecretary implements ThreadInitializerContainer<SchemeSecreta
                 });
     
     @Override
-    public ThreadInitializer<SchemeSecretary> getThreadInitializer() {
+    public ThreadInitializer<SchemeExecutor> getThreadInitializer() {
         return threadInitializer;
     }
-    public static SchemeSecretary getCurrent() {
+    public static SchemeExecutor getCurrent() {
         return currentObject.get();
     }
 
@@ -234,18 +235,18 @@ public class SchemeSecretary implements ThreadInitializerContainer<SchemeSecreta
     }
     
     public static SchemeResult evaluateScheme( 
-            SchemeSecretary schemeSecretary, Runnable threadInitializer, 
+            SchemeExecutor schemeExecutor, Runnable threadInitializer, 
             String schemeScript, File currentDirectory, File schemeScriptFile, String schemeScriptURI ) 
     {
-        return SchemeSecretary.evaluateScheme(
-            schemeSecretary, threadInitializer,    
+        return SchemeExecutor.evaluateScheme(
+            schemeExecutor, threadInitializer,    
             new StringReader( schemeScript ), currentDirectory, schemeScriptFile, schemeScriptURI );
     }
 
     public static SchemeResult evaluateScheme( 
-            SchemeSecretary schemeSecretary, Runnable threadInitializer, 
+            SchemeExecutor schemeExecutor, Runnable threadInitializer, 
             Reader schemeScript, File currentDirectory, File schemeScriptFile, String schemeScriptURI ) {
-        return schemeSecretary.executeSecretarially( new SecretaryMessage.NoThrow<Scheme,SchemeResult>() {
+        return schemeExecutor.executeSecretarially( new SecretaryMessage.NoThrow<Scheme,SchemeResult>() {
             @Override
             public SchemeResult execute0(Scheme scheme, Object[] args) {
                 return SchemeExecutorUtils.evaluateScheme(scheme, threadInitializer, schemeScript, currentDirectory, schemeScriptFile, schemeScriptURI);
@@ -276,5 +277,61 @@ public class SchemeSecretary implements ThreadInitializerContainer<SchemeSecreta
                 return Language.getDefaultLanguage();
             }
         }, "current-environment" );
+    }
+    
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    private static final boolean DEBUG = false;
+    private final class ScratchPadThread extends Thread {
+        private final Runnable r;
+        private ScratchPadThread(Runnable r) {
+            this.r = r;
+        }
+
+        @Override
+        public void run() {
+            try {
+                if ( DEBUG )
+                    logInfo( "ScratchPadThreadManager:run" );
+                r.run();
+            } catch ( Throwable t ) {
+                logError( "error occured in " + r , t );
+            } finally {
+                if ( DEBUG )
+                    logInfo( "ScratchPadThreadManager:end" );
+                removeThread( this );
+            }
+        }
+        @Override
+        public void interrupt() {
+            logInfo("interrupted");
+            super.interrupt();
+        }
+    }
+    private ArrayDeque<Thread> threadList = new ArrayDeque<>();
+    private void addThread( Thread t ) {
+        synchronized ( threadList ) {
+            threadList.add( t );
+        }
+    }
+    private void removeThread( Thread t ) {
+        synchronized ( threadList ) {
+            threadList.remove( t );
+        }
+    }
+    public void startThread( Runnable r ) {
+        Thread t = new ScratchPadThread(r);
+        addThread(t);
+        t.start();
+    }
+    public void interruptAllThreads() {
+        logInfo("interruptScratchPadThreads");
+        synchronized ( threadList ) {
+            for ( Thread t : threadList ) {
+                logInfo( "interrupt start" );
+                t.interrupt();
+                logInfo( "interrpt end" );
+            }
+        }
     }
 }

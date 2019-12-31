@@ -25,7 +25,7 @@ import kawapad.KawapadFrame;
 import pulsar.lib.app.ApplicationVessel;
 import pulsar.lib.scheme.http.SchemeHttp;
 import pulsar.lib.scheme.http.SchemeHttp.UserAuthentication;
-import pulsar.lib.scheme.scretary.SchemeSecretary;
+import pulsar.lib.scheme.scretary.SchemeExecutor;
 import pulsar.lib.thread.ThreadInitializer;
 import pulsar.lib.thread.ThreadInitializerCollection;
 import pulsar.lib.thread.ThreadInitializerCollectionContainer;
@@ -39,7 +39,7 @@ class PulsarApplicationArgumentParser {
 
     
     ArrayList<ApplicationVessel> applicationVesselList = new ArrayList<>();
-    ArrayDeque<SchemeSecretary> schemeSecretaryStack = new ArrayDeque<>();
+    ArrayDeque<SchemeExecutor> schemeExecutorStack = new ArrayDeque<>();
     ArrayDeque<Pulsar> pulsarStack= new ArrayDeque<>();
     ArrayDeque<PulsarFrame> pulsarFrameStack= new ArrayDeque<>();
     ArrayDeque<Kawapad> kawapadStack= new ArrayDeque<>();
@@ -53,7 +53,7 @@ class PulsarApplicationArgumentParser {
     
     ArrayList<ArrayDeque> allDeque = new ArrayList<>();
     {
-        allDeque.add(schemeSecretaryStack);
+        allDeque.add(schemeExecutorStack);
         allDeque.add(pulsarStack);
         allDeque.add(pulsarFrameStack);
         allDeque.add(kawapadStack);
@@ -153,7 +153,7 @@ class PulsarApplicationArgumentParser {
         ApplicationVessel vessel = new ApplicationVessel();
         vessel.getThreadInitializerCollection().addAllThreadInitializer( threadInitializerList );
         
-        vessel.addAll( schemeSecretaryStack );
+        vessel.addAll( schemeExecutorStack );
         vessel.addAll( pulsarStack );
         vessel.addAll( pulsarFrameStack );
         vessel.addAll( kawapadStack );
@@ -187,7 +187,7 @@ class PulsarApplicationArgumentParser {
         
 
         if ( false ) {
-            for ( SchemeSecretary i : schemeSecretaryStack ) {
+            for ( SchemeExecutor i : schemeExecutorStack ) {
                 i.newScheme();
             }
             for ( Pulsar i : pulsarStack ) {
@@ -231,7 +231,7 @@ class PulsarApplicationArgumentParser {
         //
 
         runnableStack.clear();
-        schemeSecretaryStack.clear();
+        schemeExecutorStack.clear();
         pulsarStack.clear();
         pulsarFrameStack.clear();
         kawapadFrameStack.clear();
@@ -284,9 +284,9 @@ class PulsarApplicationArgumentParser {
             @Override
             Element create() {
                 return new Element() {
-                    SchemeSecretary schemeSecretary = new SchemeSecretary();
+                    SchemeExecutor schemeExecutor = new SchemeExecutor();
                     {
-                        PulsarApplicationLibrary.initializeSchemeSecretary( schemeSecretary );
+                        PulsarApplicationLibrary.initializeSchemeExecutor( schemeExecutor );
                     }
                     
                     @SuppressWarnings("unused")
@@ -310,7 +310,7 @@ class PulsarApplicationArgumentParser {
                     @Override
                     void notifyEnd() {
 //                        schemeSecretary.setDirectMeeting( directMeeting );
-                        schemeSecretaryStack.push( this.schemeSecretary );
+                        schemeExecutorStack.push( this.schemeExecutor );
 
 //                        runnableStack.push( new Runnable() {
 //                            @Override
@@ -332,11 +332,11 @@ class PulsarApplicationArgumentParser {
                     }
                     @Override
                     void notifyEnd() {
-                        if ( schemeSecretaryStack.isEmpty() ) {
+                        if ( schemeExecutorStack.isEmpty() ) {
                             throw new RuntimeException( "no scheme is defined." );
                         }
-                        SchemeSecretary schemeSecretary = schemeSecretaryStack.peek();
-                        Pulsar pulsar = PulsarApplicationLibrary.createPulsar( schemeSecretary );
+                        SchemeExecutor schemeExecutor = schemeExecutorStack.peek();
+                        Pulsar pulsar = PulsarApplicationLibrary.createPulsar( schemeExecutor );
                         pulsarStack.push( pulsar );
                         
                         runnableStack.push( new Runnable() {
@@ -374,10 +374,10 @@ class PulsarApplicationArgumentParser {
                     }
                     @Override
                     void notifyEnd() {
-                        if ( schemeSecretaryStack.isEmpty() ) {
+                        if ( schemeExecutorStack.isEmpty() ) {
                             throw new RuntimeException( "no scheme is defined." );
                         }
-                        SchemeSecretary schemeSecretary = schemeSecretaryStack.peek();
+                        SchemeExecutor schemeExecutor = schemeExecutorStack.peek();
                         if ( pulsarStack.isEmpty() ) {
                             throw new RuntimeException( "no pulsar is defined." );
                         }
@@ -388,7 +388,7 @@ class PulsarApplicationArgumentParser {
                             urlList.add( "http://localhost:"+httpPort+"/eval" );
                         }
                         
-                        PulsarFrame pulsarFrame = PulsarApplicationLibrary.createPulsarGui( schemeSecretary, pulsar, urlList );
+                        PulsarFrame pulsarFrame = PulsarApplicationLibrary.createPulsarGui( schemeExecutor, pulsar, urlList );
                         
                         pulsarFrameStack.push( pulsarFrame );
                         kawapadStack.push( pulsarFrame.getKawapad() );
@@ -458,10 +458,10 @@ class PulsarApplicationArgumentParser {
                     }
                     @Override
                     void notifyEnd() {
-                        if ( schemeSecretaryStack.isEmpty() ) {
+                        if ( schemeExecutorStack.isEmpty() ) {
                             throw new RuntimeException( "no scheme is defined." );
                         }
-                        SchemeSecretary schemeSecretary = schemeSecretaryStack.peek();
+                        SchemeExecutor schemeExecutor = schemeExecutorStack.peek();
                         if ( pulsarStack.isEmpty() ) {
                             throw new RuntimeException( "no pulsar is defined." );
                         }
@@ -469,7 +469,7 @@ class PulsarApplicationArgumentParser {
                         
                         try {
                             SchemeHttp schemeHttp = PulsarApplicationLibrary.createPulsarHttpServer( 
-                                schemeSecretary, httpPort, userAuthentication, pulsar );
+                                schemeExecutor, httpPort, userAuthentication, pulsar );
                             schemeHttpStack.push( schemeHttp );
                         } catch (IOException e) {
                             throw new RuntimeException( e );

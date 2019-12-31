@@ -54,7 +54,7 @@ import gnu.math.DFloNum;
 import gnu.math.IntNum;
 import gnu.math.Quantity;
 import kawa.standard.Scheme;
-import pulsar.lib.scheme.scretary.SchemeSecretary;
+import pulsar.lib.scheme.scretary.SchemeExecutor;
 import pulsar.lib.secretary.SecretaryMessage;
 
 public class SchemeUtils {
@@ -499,8 +499,8 @@ public class SchemeUtils {
 //                        reverse.apply1( 
 //                            DescriptiveDocumentCategory.PROCS.getDocumentList(environment)));
 //    }
-    public static List<String> getAllKey( SchemeSecretary schemeSecretary ) {
-        return schemeSecretary.executeSecretarially( new SecretaryMessage.NoThrow<Scheme, List<String>>() {
+    public static List<String> getAllKey( SchemeExecutor schemeExecutor ) {
+        return schemeExecutor.executeSecretarially( new SecretaryMessage.NoThrow<Scheme, List<String>>() {
             @Override
             public List<String> execute0(Scheme scheme, Object[] args) {
                 ArrayList<String> list = new ArrayList<>();

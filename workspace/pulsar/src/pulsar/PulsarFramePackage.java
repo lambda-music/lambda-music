@@ -165,7 +165,7 @@ public class PulsarFramePackage {
         parent.add( c  );
     }
     public static void guiInvokeLater( Pulsar pulsar, Procedure procedure, Object ... args  ) {
-        SwingUtilities.invokeLater( pulsar.getSchemeSecretary().createRunnableAndInvocable( procedure, args ) );
+        SwingUtilities.invokeLater( pulsar.getSchemeExecutor().createRunnableAndInvocable( procedure, args ) );
     }
 
     

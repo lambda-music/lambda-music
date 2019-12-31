@@ -20,7 +20,7 @@ import pulsar.lib.app.ApplicationVessel;
 import pulsar.lib.scheme.doc.DescriptiveDocumentCategory;
 import pulsar.lib.scheme.doc.DescriptiveHelp;
 import pulsar.lib.scheme.http.SchemeHttp;
-import pulsar.lib.scheme.scretary.SchemeSecretary;
+import pulsar.lib.scheme.scretary.SchemeExecutor;
 
 public class PulsarApplication {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -206,7 +206,7 @@ public class PulsarApplication {
         loadAllAvailableHelps();
         List<ApplicationComponent> list = start( true, true, 8193 );
         Pulsar pulsar = lookupPulsar( list );
-        DescriptiveDocumentCategory.outputReference( pulsar.getSchemeSecretary(), categoryName, outputFile );
+        DescriptiveDocumentCategory.outputReference( pulsar.getSchemeExecutor(), categoryName, outputFile );
         quitPulsarSafely( pulsar );
         return list;
     }
@@ -231,12 +231,12 @@ public class PulsarApplication {
     }
     
     public static List<ApplicationComponent> start( boolean guiEnabled, boolean httpEnabled, int httpPort, String filename ) throws IOException {
-        SchemeSecretary schemeSecretary = PulsarApplicationLibrary.createSchemeSecretary();
-        Pulsar pulsar = PulsarApplicationLibrary.createPulsar( schemeSecretary );
+        SchemeExecutor schemeExecutor = PulsarApplicationLibrary.createSchemeExecutor();
+        Pulsar pulsar = PulsarApplicationLibrary.createPulsar( schemeExecutor );
         PulsarFrame pulsarFrame;
         if ( guiEnabled ) {
             pulsarFrame = PulsarApplicationLibrary.createPulsarGui( 
-                schemeSecretary, pulsar, 
+                schemeExecutor, pulsar, 
                 Arrays.asList( "http://localhost:"+httpPort+"/eval" ) );
         } else {
             pulsarFrame = null;
@@ -244,10 +244,10 @@ public class PulsarApplication {
         
         SchemeHttp schemeHttp = null;
         if ( httpEnabled ) {
-            schemeHttp = PulsarApplicationLibrary.createPulsarHttpServer( schemeSecretary, httpPort, SchemeHttp.UserAuthentication.ONLY_LOOPBACK, pulsar );
+            schemeHttp = PulsarApplicationLibrary.createPulsarHttpServer( schemeExecutor, httpPort, SchemeHttp.UserAuthentication.ONLY_LOOPBACK, pulsar );
         }
         
-        schemeSecretary.newScheme();
+        schemeExecutor.newScheme();
         
         if ( pulsarFrame != null ) {
             pulsarFrame.processInit();
@@ -259,8 +259,8 @@ public class PulsarApplication {
             }
         }
         ArrayList<ApplicationComponent> result = new ArrayList<>();
-        if ( schemeSecretary != null )
-            result.add( schemeSecretary );
+        if ( schemeExecutor != null )
+            result.add( schemeExecutor );
         if ( pulsar != null )
             result.add( pulsar );
         if ( pulsarFrame != null )

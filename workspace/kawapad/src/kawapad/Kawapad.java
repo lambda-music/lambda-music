@@ -104,7 +104,7 @@ import pulsar.lib.scheme.SchemePrinter;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.doc.DescriptiveActions;
 import pulsar.lib.scheme.doc.ProceduralDescriptiveBean;
-import pulsar.lib.scheme.scretary.SchemeSecretary;
+import pulsar.lib.scheme.scretary.SchemeExecutor;
 import pulsar.lib.secretary.SecretaryMessage;
 import pulsar.lib.swing.AcceleratorKeyList;
 import pulsar.lib.swing.Action2;
@@ -252,9 +252,9 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     // 
     ////////////////////////////////////////////////////////////////////////////
 
-    protected SchemeSecretary schemeSecretary;
-    public SchemeSecretary getSchemeSecretary() {
-        return schemeSecretary;
+    protected SchemeExecutor schemeExecutor;
+    public SchemeExecutor getSchemeExecutor() {
+        return schemeExecutor;
     }
 
     final SecretaryMessage.NoReturnNoThrow<Scheme> variableInitializer01 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
@@ -266,12 +266,12 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
 
     ////////////////////////////////////////////////////////////////////////////
     static ArrayList<Kawapad> kawapadList = new ArrayList<>();
-    public Kawapad( SchemeSecretary schemeSecretary, KawapadEvaluator currentEvaluator ) {
+    public Kawapad( SchemeExecutor schemeExecutor, KawapadEvaluator currentEvaluator ) {
         super();
-        this.schemeSecretary = schemeSecretary;
+        this.schemeExecutor = schemeExecutor;
         this.currentEvaluator = currentEvaluator;
         // Added (Mon, 23 Dec 2019 02:11:34 +0900)      
-        this.schemeSecretary.registerSchemeInitializer( variableInitializer01 );
+        this.schemeExecutor.registerSchemeInitializer( variableInitializer01 );
         
         // init font
         kawapad.setFont( new Font("monospaced", Font.PLAIN, 12));
@@ -325,16 +325,16 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         return DescriptiveActions.formatActions( this );
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Thread Manager
-    //
-    //////////////////////////////////////////////////////////////////////////////////////////
-
-    private final KawapadThreadManager threadManager = new KawapadThreadManager();
-    public KawapadThreadManager getThreadManager() {
-        return threadManager;
-    }
+//    //////////////////////////////////////////////////////////////////////////////////////////
+//    //
+//    // Thread Manager
+//    //
+//    //////////////////////////////////////////////////////////////////////////////////////////
+//
+//    private final ThreadManager threadManager = new KawapadThreadManager();
+//    public ThreadManager getThreadManager() {
+//        return threadManager;
+//    }
     
     //////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -355,8 +355,8 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
      * current frame. This initializer does not have to be removed even if  
      * frames are disposed.
      */
-    public static void registerGlobalSchemeInitializer( SchemeSecretary schemeSecretary ) {
-        schemeSecretary.registerSchemeInitializer( staticInitializer01 );
+    public static void registerGlobalSchemeInitializer( SchemeExecutor schemeExecutor ) {
+        schemeExecutor.registerSchemeInitializer( staticInitializer01 );
     }
     static SecretaryMessage.NoReturnNoThrow<Scheme> staticInitializer01 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
         @Override
@@ -396,8 +396,8 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         }} );
     }
     
-    public static void registerGlobalIntroSchemeInitializer( SchemeSecretary schemeSecretary ) {
-        schemeSecretary.registerSchemeInitializer( staticIntroInitializer01 );
+    public static void registerGlobalIntroSchemeInitializer( SchemeExecutor schemeExecutor ) {
+        schemeExecutor.registerSchemeInitializer( staticIntroInitializer01 );
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -524,7 +524,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
 
     public void evaluate( String schemeScript, KawapadEvaluatorReceiver receiver ) {
         if ( schemeScript != null ) {
-            this.kawapad.getThreadManager().startThread( 
+            this.kawapad.getSchemeExecutor().startThread( 
                 new KawapadEvaluatorRunnable( kawapad, schemeScript, this.getCurrentEvaluator(), receiver ) );
         } else {
             Kawapad.logWarn( "Ignored because currently no text is selected. " );
@@ -532,7 +532,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     }
     public void evaluateLocally( String schemeScript, KawapadEvaluatorReceiver receiver ) {
         if ( schemeScript != null ) {
-            this.kawapad.getThreadManager().startThread( 
+            this.kawapad.getSchemeExecutor().startThread( 
                 new KawapadEvaluatorRunnable( kawapad, schemeScript, this.getLocalEvaluator(), receiver ) );
         } else {
             Kawapad.logWarn( "Ignored because currently no text is selected. " );
@@ -1288,7 +1288,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         }
         @Override
         public void actionPerformed(ActionEvent e) {
-            kawapad.getSchemeSecretary().newScheme();
+            kawapad.getSchemeExecutor().newScheme();
         }
         {
             putValue( Action2.CAPTION, "Reset the Environment" );
@@ -1563,7 +1563,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         }
         @Override
         public void actionPerformed(ActionEvent e) {
-            kawapad.getThreadManager().interruptAllThreads();
+            kawapad.getSchemeExecutor().interruptAllThreads();
         }
         {
             putValue( Action2.CAPTION, "Interrupt" );
@@ -3354,7 +3354,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     
     public KawapadFrame createKawapadFrame( File f ) throws IOException {
         KawapadFrame kawapadFrame = new KawapadFrame( 
-                                        this.kawapad.getSchemeSecretary(), 
+                                        this.kawapad.getSchemeExecutor(), 
                                         this.kawapad.getCurrentEvaluator(), 
                                         this.kawapad.getEvaluatorList(),
                                         false,

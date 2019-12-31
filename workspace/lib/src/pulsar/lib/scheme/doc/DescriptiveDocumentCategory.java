@@ -21,7 +21,7 @@ import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Symbol;
 import pulsar.lib.scheme.SchemeUtils;
-import pulsar.lib.scheme.scretary.SchemeSecretary;
+import pulsar.lib.scheme.scretary.SchemeExecutor;
 
 
 public class DescriptiveDocumentCategory {
@@ -192,11 +192,11 @@ public class DescriptiveDocumentCategory {
         }
     }
 
-    public static void outputReference(SchemeSecretary schemeSecretary, String categoryName, String outputFile)
+    public static void outputReference(SchemeExecutor schemeExecutor, String categoryName, String outputFile)
             throws FileNotFoundException, IOException 
     {
         DescriptiveDocumentCategory category = valueOf( categoryName );
-        String str = DescriptiveHelp.outputMarkdownReference( category, schemeSecretary );
+        String str = DescriptiveHelp.outputMarkdownReference( category, schemeExecutor );
         if ( outputFile == null /* || "-".equals( outputFile ) */ ) {
             System.out.println( str );      
         } else {

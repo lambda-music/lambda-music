@@ -133,7 +133,7 @@ public class KawapadContentAssist {
         }
     }
     public synchronized void updatePopup(Caret caret) {
-        kawapad.getSchemeSecretary().executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+        kawapad.getSchemeExecutor().executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
             public void execute0(Scheme scheme, Object[] args) {
                 try {

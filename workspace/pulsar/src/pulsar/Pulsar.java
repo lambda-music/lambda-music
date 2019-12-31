@@ -71,7 +71,7 @@ import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeExecutorUtils;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.doc.ProceduralDescriptiveBean;
-import pulsar.lib.scheme.scretary.SchemeSecretary;
+import pulsar.lib.scheme.scretary.SchemeExecutor;
 import pulsar.lib.secretary.Invokable;
 import pulsar.lib.secretary.SecretaryMessage;
 import pulsar.lib.swing.MersenneTwisterFast;
@@ -140,16 +140,16 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         return "could not find a track which name was " + arg + " ... ignored.";
     }
 
-    public static void registerGlobalSchemeInitializers( SchemeSecretary schemeSecretary ) {
+    public static void registerGlobalSchemeInitializers( SchemeExecutor schemeExecutor ) {
         // This should be global not local (Mon, 16 Dec 2019 22:52:46 +0900)
-        schemeSecretary.registerSchemeInitializer( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+        schemeExecutor.registerSchemeInitializer( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
             public void execute0( Scheme scheme, Object[] args ) {
                 Pulsar.initScheme( scheme );
             }
         });
         // This should be global not local (Mon, 16 Dec 2019 22:52:46 +0900)
-        schemeSecretary.registerSchemeInitializer( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+        schemeExecutor.registerSchemeInitializer( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
             public void execute0( Scheme scheme, Object[] args ) {
                 // FIXME this should depend on the current Pulsar instance.
@@ -203,9 +203,9 @@ public final class Pulsar extends Metro implements ApplicationComponent {
      * (Sun, 24 Nov 2019 12:45:26 +0900) This comment is extremely outdated.
      * 
      */
-    public Pulsar( SchemeSecretary schemeSecretary ) {
+    public Pulsar( SchemeExecutor schemeExecutor ) {
         super();
-        this.schemeSecretary = schemeSecretary;
+        this.schemeExecutor = schemeExecutor;
     }
     
     public void init() {
@@ -251,14 +251,14 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         close();
     }
     
-    private final SchemeSecretary schemeSecretary;
-    public SchemeSecretary getSchemeSecretary() {
-        return schemeSecretary;
+    private final SchemeExecutor schemeExecutor;
+    public SchemeExecutor getSchemeExecutor() {
+        return schemeExecutor;
     }
     
     private void newScheme() {
         logInfo("Pulsar#newScheme() "); 
-        this.getSchemeSecretary().newScheme();
+        this.getSchemeExecutor().newScheme();
     }
 
     MersenneTwisterFast random = new MersenneTwisterFast( new int[] { 
@@ -311,11 +311,11 @@ public final class Pulsar extends Metro implements ApplicationComponent {
 
 
     public void invokeLater( Runnable r ) {
-         this.getSchemeSecretary().executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+         this.getSchemeExecutor().executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
             public void execute0( Scheme scheme, Object[] args ) {
                 logInfo( "Pulsar#invokeLater()" + r );
-                SchemeSecretary.initializeCurrentThread( scheme );
+                SchemeExecutor.initializeCurrentThread( scheme );
                 r.run();
             }
         }, Invokable.NOARG );
@@ -585,7 +585,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
     }
 
     public MetroTrack createTrack( Object name, Collection<Object> tags, Procedure procedure ) {
-        return this.createTrack( name, tags, new SchemeSequence( getSchemeSecretary().createSecretarillyInvokable( procedure ) ) );
+        return this.createTrack( name, tags, new SchemeSequence( getSchemeExecutor().createSecretarillyInvokable( procedure ) ) );
     }
     
     public MetroTrack createRecordingTrack( Object name, Collection<Object> tags, List<MetroPort> inputPorts, List<MetroPort> outputPorts,
@@ -719,7 +719,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         return 
                 searchTrack(
                     readParamSearchTrackFilter(
-                        getSchemeSecretary().createSecretarillyInvokable( readParamTrackSearcher( arg ) )));
+                        getSchemeExecutor().createSecretarillyInvokable( readParamTrackSearcher( arg ) )));
     }
 
     // TODO
@@ -1135,7 +1135,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                 logInfo("set-main");
                 if ( args.length == 1 ) {
                     Procedure procedure = (Procedure)args[0];
-                    getCurrent().setMainProcedure( getCurrent().getSchemeSecretary().createSecretarillyInvokable( procedure ) );
+                    getCurrent().setMainProcedure( getCurrent().getSchemeExecutor().createSecretarillyInvokable( procedure ) );
                 } else {
                     throw new RuntimeException( "invalid argument length" );
                 }
@@ -1272,7 +1272,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                 Thread t = new Thread() {
                     @Override
                     public void run() {
-                        getCurrent().getSchemeSecretary().executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+                        getCurrent().getSchemeExecutor().executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
                             @Override
                             public void execute0(Scheme resource, Object[] args) {
                                 try {
@@ -1959,7 +1959,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                 Runnable runnable = createTimer( getCurrent(), 
                     SchemeUtils.toInteger( arg1 ), 
                     -1, 
-                    getCurrent().getSchemeSecretary().createSecretarillyInvokable( (Procedure)arg2 ) );
+                    getCurrent().getSchemeExecutor().createSecretarillyInvokable( (Procedure)arg2 ) );
                 
                 return new Procedure0() {
                     public Object apply0() throws Throwable {
@@ -1973,7 +1973,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                 Runnable runnable = createTimer( getCurrent(), 
                     SchemeUtils.toInteger( arg0 ), 
                     SchemeUtils.toInteger( arg1 ), 
-                    getCurrent().getSchemeSecretary().createSecretarillyInvokable( (Procedure)arg2 ) );
+                    getCurrent().getSchemeExecutor().createSecretarillyInvokable( (Procedure)arg2 ) );
 
                 return new Procedure0() {
                     public Object apply0() throws Throwable {

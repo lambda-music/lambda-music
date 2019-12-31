@@ -197,7 +197,7 @@ public abstract class SchemeNewFactory {
                 procedure = (Procedure) args.get( last );
                 args.remove(last);
             }
-            ActionListener listener = f.createActionListener( pulsar.getSchemeSecretary().createSecretarillyInvokable( procedure ) );
+            ActionListener listener = f.createActionListener( pulsar.getSchemeExecutor().createSecretarillyInvokable( procedure ) );
 
             List<Object> result = new ArrayList();
             
@@ -446,7 +446,7 @@ public abstract class SchemeNewFactory {
 //                  Language lang = Language.getDefaultLanguage();
                     {
                         JPulsarButton button = new JPulsarButton( caption );
-                        Invokable executor = pulsar.getSchemeSecretary().createSecretarillyInvokable( procedure );
+                        Invokable executor = pulsar.getSchemeExecutor().createSecretarillyInvokable( procedure );
                         button.addMouseListener(new MouseAdapter() {
                             @Override
                             public void mousePressed(MouseEvent e) {
@@ -502,14 +502,14 @@ public abstract class SchemeNewFactory {
                     Procedure procedure = (Procedure)args.get(1);
 
                     return wrapRunnable(
-                        Pulsar.createTimer(pulsar, interval, interval, pulsar.getSchemeSecretary().createSecretarillyInvokable( procedure ) ) );
+                        Pulsar.createTimer(pulsar, interval, interval, pulsar.getSchemeExecutor().createSecretarillyInvokable( procedure ) ) );
                 } else if ( 3 <= args.size() ) {
                     long delay = SchemeUtils.toLong(args.get(0));
                     long interval = SchemeUtils.toLong(args.get(1));
                     Procedure procedure = (Procedure)args.get(2);
 
                     return wrapRunnable(
-                        Pulsar.createTimer(pulsar, delay, interval, pulsar.getSchemeSecretary().createSecretarillyInvokable( procedure ) ) );
+                        Pulsar.createTimer(pulsar, delay, interval, pulsar.getSchemeExecutor().createSecretarillyInvokable( procedure ) ) );
 
                 } else {
                     

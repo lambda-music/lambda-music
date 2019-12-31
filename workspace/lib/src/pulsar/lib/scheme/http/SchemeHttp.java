@@ -27,7 +27,7 @@ import pulsar.lib.CurrentObject;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.SchemeExecutorUtils;
 import pulsar.lib.scheme.SchemeResult;
-import pulsar.lib.scheme.scretary.SchemeSecretary;
+import pulsar.lib.scheme.scretary.SchemeExecutor;
 import pulsar.lib.thread.ThreadInitializer;
 import pulsar.lib.thread.ThreadInitializerCollection;
 import pulsar.lib.thread.ThreadInitializerCollectionContainer;
@@ -160,16 +160,16 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
 
 
     int port;
-    SchemeSecretary schemeSecretary;
+    SchemeExecutor schemeExecutor;
     HttpServer httpServer;
     Charset charset = Charset.forName( "UTF-8" );
     Runnable schemeThreadInitializer;
     UserAuthentication authentication;
-    public SchemeHttp( int port, UserAuthentication authentication, SchemeSecretary schemeSecretary, Runnable schemeThreadInitializer ) throws IOException {
+    public SchemeHttp( int port, UserAuthentication authentication, SchemeExecutor schemeExecutor, Runnable schemeThreadInitializer ) throws IOException {
         super();
         this.port = port;
         this.authentication = authentication;
-        this.schemeSecretary = schemeSecretary;
+        this.schemeExecutor = schemeExecutor;
         this.schemeThreadInitializer = schemeThreadInitializer;
         this.initialize();
     }
@@ -259,8 +259,8 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
             String requestString = readInputStream( t.getRequestBody() ); 
             logInfo( requestString );
             SchemeResult schemeResult = 
-                    SchemeSecretary.evaluateScheme( 
-                        schemeSecretary, schemeThreadInitializer, 
+                    SchemeExecutor.evaluateScheme( 
+                        schemeExecutor, schemeThreadInitializer, 
                         requestString, null, null, "web-scratchpad" );
             String responseString;
             responseString = 
@@ -284,7 +284,7 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
         public void handleProc(HttpExchange t) throws IOException {
             String requestString = readInputStream( t.getRequestBody() ); 
             logInfo( requestString );
-            SchemeResult schemeResult = SchemeSecretary.evaluateScheme( schemeSecretary, schemeThreadInitializer, requestString, null, null, "web-scratchpad" );
+            SchemeResult schemeResult = SchemeExecutor.evaluateScheme( schemeExecutor, schemeThreadInitializer, requestString, null, null, "web-scratchpad" );
             String responseString;
             responseString = schemeResult.valueAsString;
             logInfo( schemeResult.valueAsString );

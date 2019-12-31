@@ -18,7 +18,7 @@ import gnu.mapping.WrongArguments;
 import kawa.standard.Scheme;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
-import pulsar.lib.scheme.scretary.SchemeSecretary;
+import pulsar.lib.scheme.scretary.SchemeExecutor;
 import pulsar.lib.secretary.Invokable;
 import pulsar.lib.secretary.SecretaryMessage;
 
@@ -30,8 +30,8 @@ public class DescriptiveHelp {
      * current frame. This initializer does not have to be removed even if  
      * frames are disposed.
      */
-    public static void registerGlobalSchemeInitializer( SchemeSecretary schemeSecretary ) {
-        schemeSecretary.registerSchemeInitializer( staticInitializer01 );
+    public static void registerGlobalSchemeInitializer( SchemeExecutor schemeExecutor ) {
+        schemeExecutor.registerSchemeInitializer( staticInitializer01 );
     }
 
     static SecretaryMessage.NoReturnNoThrow<Scheme> staticInitializer01 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
@@ -50,11 +50,11 @@ public class DescriptiveHelp {
         list.addAll( type.getDocumentList( env ));
         return MarkdownDescriptive.createMarkdownHelp( list );
     }
-    public static String outputMarkdownReference( DescriptiveDocumentCategory type, SchemeSecretary schemeSecretary ) {
+    public static String outputMarkdownReference( DescriptiveDocumentCategory type, SchemeExecutor schemeExecutor ) {
         if ( type == null )
             throw new IllegalArgumentException( "'type' argument cannot be null." );
         
-        return schemeSecretary.executeSecretarially( new SecretaryMessage.NoThrow<Scheme,String>() {
+        return schemeExecutor.executeSecretarially( new SecretaryMessage.NoThrow<Scheme,String>() {
             @Override
             public String execute0( Scheme scheme, Object[] args ) {
                 return outputMarkdownReference0( type, scheme.getEnvironment() );
