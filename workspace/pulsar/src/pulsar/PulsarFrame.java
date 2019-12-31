@@ -139,7 +139,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     static final int PB_POSITION_MAX = 1024;
     
     public static void registerGlobalSchemeInitializers( SchemeSecretary schemeSecretary ) {
-        schemeSecretary.registerSchemeInitializer( PulsarFrame.class, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+        schemeSecretary.registerSchemeInitializer( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
             public void execute0( Scheme scheme, Object[] args ) {
                 initScheme( scheme );

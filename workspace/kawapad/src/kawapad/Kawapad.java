@@ -106,7 +106,6 @@ import pulsar.lib.scheme.doc.DescriptiveActions;
 import pulsar.lib.scheme.doc.ProceduralDescriptiveBean;
 import pulsar.lib.scheme.scretary.SchemeSecretary;
 import pulsar.lib.secretary.SecretaryMessage;
-import pulsar.lib.secretary.SecretaryMessage.NoReturnNoThrow;
 import pulsar.lib.swing.AcceleratorKeyList;
 import pulsar.lib.swing.Action2;
 import pulsar.lib.swing.AutomatedActionField;
@@ -272,7 +271,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         this.schemeSecretary = schemeSecretary;
         this.currentEvaluator = currentEvaluator;
         // Added (Mon, 23 Dec 2019 02:11:34 +0900)      
-        this.schemeSecretary.registerSchemeInitializer( null, variableInitializer01 );
+        this.schemeSecretary.registerSchemeInitializer( variableInitializer01 );
         
         // init font
         kawapad.setFont( new Font("monospaced", Font.PLAIN, 12));
@@ -357,14 +356,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
      * frames are disposed.
      */
     public static void registerGlobalSchemeInitializer( SchemeSecretary schemeSecretary ) {
-        schemeSecretary.registerSchemeInitializer( Kawapad.class, staticInitializer01 );
-        schemeSecretary.registerSchemeFinalizer( Kawapad.class, new NoReturnNoThrow<Scheme>() {
-            @Override
-            public void execute0(Scheme scheme, Object[] args) {
-                logInfo("finalizer() eventHandlers.clear()");
-                Kawapad.eventHandlers.clear();
-            }
-        });
+        schemeSecretary.registerSchemeInitializer( staticInitializer01 );
     }
     static SecretaryMessage.NoReturnNoThrow<Scheme> staticInitializer01 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {
         @Override
@@ -372,11 +364,6 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
             Kawapad.staticInitScheme( scheme );             
         }
     };
-    // I added this for the sake of symmetricity, but this didn't use it.
-    // I left it for future use. (Mon, 12 Aug 2019 14:24:38 +0900)
-    public static void unregisterGlobalSchemeInitializer( SchemeSecretary schemeSecretary ) {
-        schemeSecretary.unregisterSchemeFinalizer( Kawapad.class );
-    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -410,12 +397,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     }
     
     public static void registerGlobalIntroSchemeInitializer( SchemeSecretary schemeSecretary ) {
-        schemeSecretary.registerSchemeInitializer( Kawapad.class, staticIntroInitializer01 );
-    }
-    // I added this for the sake of symmetricity, but this didn't use it.
-    // I left it for future use. (Mon, 12 Aug 2019 14:24:38 +0900)
-    public static void unregisterGlobalIntroSchemeInitializer( SchemeSecretary schemeSecretary ) {
-        schemeSecretary.unregisterSchemeFinalizer( Kawapad.class );
+        schemeSecretary.registerSchemeInitializer( staticIntroInitializer01 );
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////

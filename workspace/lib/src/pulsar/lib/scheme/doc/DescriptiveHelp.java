@@ -31,7 +31,7 @@ public class DescriptiveHelp {
      * frames are disposed.
      */
     public static void registerGlobalSchemeInitializer( SchemeSecretary schemeSecretary ) {
-        schemeSecretary.registerSchemeInitializer( DescriptiveHelp.class, staticInitializer01 );
+        schemeSecretary.registerSchemeInitializer( staticInitializer01 );
     }
 
     static SecretaryMessage.NoReturnNoThrow<Scheme> staticInitializer01 = new SecretaryMessage.NoReturnNoThrow<Scheme>() {

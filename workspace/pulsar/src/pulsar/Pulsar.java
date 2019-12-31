@@ -142,14 +142,14 @@ public final class Pulsar extends Metro implements ApplicationComponent {
 
     public static void registerGlobalSchemeInitializers( SchemeSecretary schemeSecretary ) {
         // This should be global not local (Mon, 16 Dec 2019 22:52:46 +0900)
-        schemeSecretary.registerSchemeInitializer( Pulsar.class, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+        schemeSecretary.registerSchemeInitializer( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
             public void execute0( Scheme scheme, Object[] args ) {
                 Pulsar.initScheme( scheme );
             }
         });
         // This should be global not local (Mon, 16 Dec 2019 22:52:46 +0900)
-        schemeSecretary.registerSchemeInitializer( Pulsar.class, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+        schemeSecretary.registerSchemeInitializer( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
             public void execute0( Scheme scheme, Object[] args ) {
                 // FIXME this should depend on the current Pulsar instance.

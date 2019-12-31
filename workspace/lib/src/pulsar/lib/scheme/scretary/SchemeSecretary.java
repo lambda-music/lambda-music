@@ -108,7 +108,7 @@ public class SchemeSecretary implements ThreadInitializerContainer<SchemeSecreta
     }
     
     //////////////////////////////////////////////////////////////////////////////////////////
-    // SHUTDOWN HOOK
+    // Thread Initializer
     //////////////////////////////////////////////////////////////////////////////////////////
     public static final void initializeCurrentThread( Scheme scheme ) {
         Language.setCurrentLanguage( scheme );
@@ -121,67 +121,34 @@ public class SchemeSecretary implements ThreadInitializerContainer<SchemeSecreta
     //////////////////////////////////////////////////////////////////////////////////////////
     // Scheme Initializer 
     //////////////////////////////////////////////////////////////////////////////////////////
-
-    /*
-     * Scheme Initializer initializes the new Scheme instance when the SchemeSecretary creates 
-     * a new Scheme instance.  
-     */
-    static class InitializerEntry {
-        Object parent;
-        SecretaryMessage.NoReturnNoThrow<Scheme> message;
-        public InitializerEntry(Object parent, SecretaryMessage.NoReturnNoThrow<Scheme> message) {
-            super();
-            this.parent = parent;
-            this.message = message;
-        }
-    }
     
-    private List<SchemeSecretary.InitializerEntry> schemeInitializerList = new ArrayList<>();
-    public List<SchemeSecretary.InitializerEntry> getSchemeInitializerList() {
+    private List<SecretaryMessage.NoReturnNoThrow<Scheme>> schemeInitializerList = new ArrayList<>();
+    public List<SecretaryMessage.NoReturnNoThrow<Scheme>> getSchemeInitializerList() {
         return schemeInitializerList;
     }
 
     /**
      * This method registers a specified initializer.
-     * @see #invokeSchemeInitializers(Object)
+     * @see #invokeSchemeInitializers()
      */
-    public void registerSchemeInitializer( Object parent, SecretaryMessage.NoReturnNoThrow<Scheme> message ) {
-        this.getSchemeInitializerList().add( new SchemeSecretary.InitializerEntry( parent, message ) );
-    }
-    /**
-     * This method unregisters a specified initializer.
-     * @see #invokeSchemeInitializers(Object)
-     */
-    public void unregisterSchemeInitializer( Object parent ) {
-        this.getSchemeInitializerList().removeIf( e->e.parent == parent );
+    public void registerSchemeInitializer( SecretaryMessage.NoReturnNoThrow<Scheme> message ) {
+        this.getSchemeInitializerList().add( message  );
     }
 
-    /**
-     * This method invokes registered initializers to which the given condition match.
-     *  
-     * @param parent
-     *     Passing null to invoke all initializers or passing parent object to invoke 
-     *     only specific initializers. 
-     * 
-     *     If the parent argument equals to the parent of a registered initializer, the 
-     *     initializer will be invoked. If the parent argument is null, all initializers
-     *     will be invoked.
-     */
-    public void invokeSchemeInitializers( Object parent ) {
-        for ( SchemeSecretary.InitializerEntry e : getSchemeInitializerList() ) {
-            if ( parent == null || e.parent == parent )
-                executeSecretarially( e.message );
+    public void invokeSchemeInitializers() {
+        for ( SecretaryMessage.NoReturnNoThrow<Scheme> e : getSchemeInitializerList() ) {
+            executeSecretarially( e );
         }
     }
 
     {
-        registerSchemeInitializer( null, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+        registerSchemeInitializer( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
             public void execute0(Scheme scheme, Object[] args) {
                 staticInitScheme( scheme );
             }
         });
-        registerSchemeInitializer( null, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+        registerSchemeInitializer( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
             public void execute0(Scheme scheme, Object[] args) {
                 // 3. This initializes Secretary Message Queue's thread.
@@ -189,7 +156,7 @@ public class SchemeSecretary implements ThreadInitializerContainer<SchemeSecreta
                 initializeCurrentThread( scheme );
             }
         });
-        registerSchemeInitializer( null, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+        registerSchemeInitializer( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
             public void execute0(Scheme scheme, Object[] args) {
                 SwingUtilities.invokeLater( new Runnable() {
@@ -202,7 +169,7 @@ public class SchemeSecretary implements ThreadInitializerContainer<SchemeSecreta
             }
         });
         
-        registerSchemeInitializer( null, new SecretaryMessage.NoReturnNoThrow<Scheme>() {
+        registerSchemeInitializer( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
             @Override
             public void execute0(Scheme scheme, Object[] args) {
                 initializeCurrentThread( scheme );
@@ -230,102 +197,9 @@ public class SchemeSecretary implements ThreadInitializerContainer<SchemeSecreta
         }
     }
 
-    List<SchemeSecretary.FinalizerEntry> newSchemeFinalizerList = new ArrayList<>();
-    
-    /**
-     * This method registers a specified finalizer.
-     * @see #invokeSchemeFinalizer(Object)
-     */
-    public void registerSchemeFinalizer( Object parent, SecretaryMessage.NoReturnNoThrow<Scheme> message ) {
-        this.newSchemeFinalizerList.add( new SchemeSecretary.FinalizerEntry( parent, message ) );
-    }
-    /**
-     * This method unregisters a specified finalizer.
-     * @see #invokeSchemeFinalizer(Object)
-     */
-    public void unregisterSchemeFinalizer( Object parent ) {
-        this.newSchemeFinalizerList.removeIf( e->e.parent == parent );
-    }
 
-    public void invokeSchemeFinalizer( Object parent ) {
-        for ( SchemeSecretary.FinalizerEntry e : newSchemeFinalizerList ) {
-            if ( parent == null || e.parent == parent )
-                executeSecretarially( e.message );
-        }
-    }
-
-
-    /*-
-     *  A memorandum (Wed, 24 Jul 2019 09:43:02 +0900) 
-     *
-     *  Yesterday I could not correctly imagine what the scheme initialization
-     *  on the Pulsar system is supposed to be. Yesterday I categorized those
-     *  many initializers into two : dynamic/static but the way to categorize
-     *  did not seem to be proper. It did not work properly in my mind and I
-     *  could not figure out how.
-     * 
-     *  This morning I realized that I am struggling with the objects which
-     *  have totally uneven life cycle and each of those objects supposed to
-     *  have two kind of initializers.
-     * 
-     *  There are some types of objects in an instance of Pulsar application.
-     * 
-     *  1. The scheme object 
-     *  2. Pulsar's  Frame objects (global/local)
-     *  3. Kawapad's Frame objects (global/local)
-     * 
-     *  |                                          |                                        |
-     *  |                                          |                                        |
-     *  |<===== 1. SCHEME OBJECT LIFE SPAN =======>|<===== 1. SCHEME OBJECT LIFE SPAN =====>|
-     *  |                                          |                                        |
-     *  |       |<=== 2.FRAME LIFE SPAN ===>|      |  |<==== 2. FRAME LIFE SPAN ====>|      |
-     *  |   |<=== 3.FRAME LIFE SPAN ===>|   |<==== 3. FRAME LIFE SPAN ====>|                |
-     *  |                                          |                                        |
-     *  
-     * 
-     *  1. Whenever scheme object is renewed, every initializer including
-     *     frame's initializers must be invoked.
-     *
-     *  2. Whenever a new frame is created, some new initializers must be
-     *     registered and invoked at the same time.
-     *
-     *  3. The frame's initializers must be removed when the frame is disposed.
-     *
-     *  4.  When the current scheme object is destroyed and created a new
-     *      scheme object, we have to initialize the object again.
-     *
-     *  5.  Some of initializers are shared between all instance, and others are not shared
-     *      and tied to a single instance of frame.
-     *
-     *  We categorize these initializers into two groups :
-     *
-     *    1. Global Initializer
-     *    2. Local Initializer
-     * 
-     * The problem is, how we create the first scheme object and initialize it.
-     * 
-     *
-     *
-     * This memo is not completed. This is left for future reference.
-     * (Wed, 24 Jul 2019 10:10:41 +0900)
-    */
-
-//  static Environment env=null;
     public void newScheme() {
         try {
-
-            // 0. Create a new scheme object.
-            executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
-                @Override
-                public void execute0(Scheme scheme, Object[] args) {
-                    logInfo( "SchemeSecretary#newScheme()" );
-                    if ( scheme != null ) {
-                        // 0. Execute all the initializers.
-                        invokeSchemeFinalizer( null );
-                    }
-                }
-            });
-            
             
             // 1. Create a new scheme object.
             executeSecretarially( new SecretaryMessage.NoReturnNoThrow<Scheme>() {
@@ -339,7 +213,8 @@ public class SchemeSecretary implements ThreadInitializerContainer<SchemeSecreta
 
             });
             // 2. Execute all the initializers.
-            invokeSchemeInitializers( null );
+            invokeSchemeInitializers();
+            
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
@@ -388,18 +263,7 @@ public class SchemeSecretary implements ThreadInitializerContainer<SchemeSecreta
      */
     public static void staticInitScheme( Scheme scheme ) {
         Environment env = scheme.getEnvironment();
-
-        // THIS IS A COPY FROM SchemeExecutor#evaluateScheme 
-        // // I feel overriding "load" by "load-relative" is too risky. It
-        // // may destroy the compatibility inside the kawa library; we
-        // // decide to call it "source".  Usually ,this kind of
-        // // initialization process should be done in staticInitScheme()
-        // // method.  But we want to make it visible here that "source"
-        // // is available in this way.  (Mon, 09 Sep 2019 04:31:19 +0900)
-        // SchemeUtils.defineVar(env, load.loadRelative , "source" );
-        // Moved from SchemeExecutor (Thu, 19 Dec 2019 02:43:01 +0900)
         SchemeUtils.defineVar(env, load.loadRelative , "source" );
-
         SchemeUtils.defineVar(env, new Procedure0() {
             @Override
             public Object apply0() throws Throwable {
@@ -412,6 +276,5 @@ public class SchemeSecretary implements ThreadInitializerContainer<SchemeSecreta
                 return Language.getDefaultLanguage();
             }
         }, "current-environment" );
-
     }
 }
