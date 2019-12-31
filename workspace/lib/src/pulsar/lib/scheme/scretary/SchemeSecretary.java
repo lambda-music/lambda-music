@@ -142,7 +142,11 @@ public class SchemeSecretary implements ThreadInitializerContainer<SchemeSecreta
     public final void initializeCurrentThread() {
         initializeCurrentThread( this.getScheme() );
     }
-    
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // Thread Initializer List 
+    //////////////////////////////////////////////////////////////////////////////////////////
+
     private final Collection<Runnable> threadInitializerList = new LinkedList<>();
     public void registerThreadInitializer( Runnable initializer ) {
         threadInitializerList.add( initializer );

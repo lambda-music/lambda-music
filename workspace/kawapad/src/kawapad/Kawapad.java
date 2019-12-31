@@ -542,7 +542,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
 
     public void evaluate( String schemeScript, KawapadEvaluatorReceiver receiver ) {
         if ( schemeScript != null ) {
-            this.kawapad.getThreadManager().startScratchPadThread( 
+            this.kawapad.getThreadManager().startThread( 
                 new KawapadEvaluatorRunnable( kawapad, schemeScript, this.getCurrentEvaluator(), receiver ) );
         } else {
             Kawapad.logWarn( "Ignored because currently no text is selected. " );
@@ -550,7 +550,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     }
     public void evaluateLocally( String schemeScript, KawapadEvaluatorReceiver receiver ) {
         if ( schemeScript != null ) {
-            this.kawapad.getThreadManager().startScratchPadThread( 
+            this.kawapad.getThreadManager().startThread( 
                 new KawapadEvaluatorRunnable( kawapad, schemeScript, this.getLocalEvaluator(), receiver ) );
         } else {
             Kawapad.logWarn( "Ignored because currently no text is selected. " );
@@ -1581,7 +1581,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         }
         @Override
         public void actionPerformed(ActionEvent e) {
-            kawapad.getThreadManager().interruptScratchPadThreads();
+            kawapad.getThreadManager().interruptAllThreads();
         }
         {
             putValue( Action2.CAPTION, "Interrupt" );

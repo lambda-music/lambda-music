@@ -22,7 +22,7 @@ public final class KawapadThreadManager {
         public void run() {
             try {
                 if ( DEBUG )
-                    Kawapad.logInfo( "ScratchPadThreadManager:run" );
+                    logInfo( "ScratchPadThreadManager:run" );
                 // ==== WORKAROUND SEE acvpoeov === (Tue, 23 Jul 2019 11:37:32 +0900) //
 //                      schemeSecretary.initializeSchemeForCurrentThread();
                 // ==== WORKAROUND SEE acvpoeov === (Tue, 23 Jul 2019 11:37:32 +0900) //
@@ -31,39 +31,39 @@ public final class KawapadThreadManager {
                 logError( "error occured in " + r , t );
             } finally {
                 if ( DEBUG )
-                    Kawapad.logInfo( "ScratchPadThreadManager:end" );
-                removeScratchPadThread( this );
+                    logInfo( "ScratchPadThreadManager:end" );
+                removeThread( this );
             }
         }
         @Override
         public void interrupt() {
-            Kawapad.logInfo("interrupted");
+            logInfo("interrupted");
             super.interrupt();
         }
     }
-    private ArrayDeque<Thread> scratchPadThreadList = new ArrayDeque<>();
-    public void addScratchPadThread( Thread t ) {
-        synchronized ( scratchPadThreadList ) {
-            scratchPadThreadList.add( t );
+    private ArrayDeque<Thread> threadList = new ArrayDeque<>();
+    private void addThread( Thread t ) {
+        synchronized ( threadList ) {
+            threadList.add( t );
         }
     }
-    public void startScratchPadThread( Runnable r ) {
+    private void removeThread( Thread t ) {
+        synchronized ( threadList ) {
+            threadList.remove( t );
+        }
+    }
+    public void startThread( Runnable r ) {
         Thread t = new ScratchPadThread(r);
-        addScratchPadThread(t);
+        addThread(t);
         t.start();
     }
-    public void removeScratchPadThread( Thread t ) {
-        synchronized ( scratchPadThreadList ) {
-            scratchPadThreadList.remove( t );
-        }
-    }
-    public void interruptScratchPadThreads() {
-        Kawapad.logInfo("interruptScratchPadThreads");
-        synchronized ( scratchPadThreadList ) {
-            for ( Thread t : scratchPadThreadList ) {
-                Kawapad.logInfo( "interrupt start" );
+    public void interruptAllThreads() {
+        logInfo("interruptScratchPadThreads");
+        synchronized ( threadList ) {
+            for ( Thread t : threadList ) {
+                logInfo( "interrupt start" );
                 t.interrupt();
-                Kawapad.logInfo( "interrpt end" );
+                logInfo( "interrpt end" );
             }
         }
     }
