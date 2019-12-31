@@ -145,7 +145,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         // This should be global not local (Mon, 16 Dec 2019 22:52:46 +0900)
         schemeExecutor.registerSchemeInitializer( new Message() {
             @Override
-            public Object execute( Scheme scheme, Object[] args ) {
+            public Object execute( Scheme scheme ) {
                 Pulsar.initScheme( scheme );
                 return null;
             }
@@ -153,7 +153,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         // This should be global not local (Mon, 16 Dec 2019 22:52:46 +0900)
         schemeExecutor.registerSchemeInitializer( new Message() {
             @Override
-            public Object execute( Scheme scheme, Object[] args ) {
+            public Object execute( Scheme scheme ) {
                 // FIXME this should depend on the current Pulsar instance.
                 // (Wed, 20 Nov 2019 18:32:11 +0900)
                 PulsarFramePackage.initScheme( scheme );
@@ -316,13 +316,13 @@ public final class Pulsar extends Metro implements ApplicationComponent {
     public void invokeLater( Runnable r ) {
          this.getSchemeExecutor().executeSecretarially( new Message() {
             @Override
-            public Object execute( Scheme scheme, Object[] args ) {
+            public Object execute( Scheme scheme ) {
                 logInfo( "Pulsar#invokeLater()" + r );
                 SchemeExecutor.initializeCurrentThread( scheme );
                 r.run();
                 return null;
             }
-        }, Invokable.NOARG );
+        } );
     }
     
     
@@ -1278,7 +1278,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                     public void run() {
                         getCurrent().getSchemeExecutor().executeSecretarially( new Message() {
                             @Override
-                            public Object execute(Scheme resource, Object[] args) {
+                            public Object execute(Scheme resource) {
                                 try {
                                     Thread.sleep( shutdownWaitNow );
                                 } catch (InterruptedException e) {
@@ -1287,7 +1287,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                                 getCurrent().quit(); 
                                 return null;
                             }
-                        }, Invokable.NOARG );
+                        } );
                     }
                 };
                 t.start();

@@ -501,7 +501,7 @@ public class SchemeUtils {
     public static List<String> getAllKey( SchemeExecutor schemeExecutor ) {
         return (List<String>) schemeExecutor.executeSecretarially( new Message() {
             @Override
-            public List<String> execute(Scheme scheme, Object[] args) {
+            public List<String> execute(Scheme scheme) {
                 ArrayList<String> list = new ArrayList<>();
                 Environment env = scheme.getEnvironment();
                 for ( LocationEnumeration e=env.enumerateAllLocations();e.hasMoreElements(); ) {

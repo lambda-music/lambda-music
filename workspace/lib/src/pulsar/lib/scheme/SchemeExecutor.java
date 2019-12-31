@@ -19,7 +19,6 @@ import kawa.standard.Scheme;
 import kawa.standard.load;
 import pulsar.lib.CurrentObject;
 import pulsar.lib.app.ApplicationComponent;
-import pulsar.lib.secretary.Invokable;
 import pulsar.lib.thread.ThreadInitializer;
 import pulsar.lib.thread.ThreadInitializerCollection;
 import pulsar.lib.thread.ThreadInitializerContainer;
@@ -31,7 +30,7 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
     
     public abstract interface Message<T> {
-        public abstract T execute( Scheme resource, Object[] args );
+        public abstract T execute( Scheme resource );
     }
     
     Scheme scheme=null;
@@ -94,7 +93,7 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
     public void processQuit() {
     }
     
-    Scheme getScheme() {
+    public Scheme getScheme() {
         return getExecutive();
     }
     
@@ -135,14 +134,14 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
     {
         registerSchemeInitializer( new Message() {
             @Override
-            public Object execute(Scheme scheme, Object[] args) {
+            public Object execute(Scheme scheme) {
                 staticInitScheme( scheme );
                 return null;
             }
         });
         registerSchemeInitializer( new Message() {
             @Override
-            public Object execute(Scheme scheme, Object[] args) {
+            public Object execute(Scheme scheme) {
                 // 3. This initializes Secretary Message Queue's thread.
                 // // 4. (in most case ) this initializes main-thread
                 initializeCurrentThread( scheme );
@@ -151,7 +150,7 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
         });
         registerSchemeInitializer( new Message() {
             @Override
-            public Object execute(Scheme scheme, Object[] args) {
+            public Object execute(Scheme scheme) {
                 SwingUtilities.invokeLater( new Runnable() {
                     @Override
                     public void run() {
@@ -165,7 +164,7 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
         
         registerSchemeInitializer( new Message() {
             @Override
-            public Object execute(Scheme scheme, Object[] args) {
+            public Object execute(Scheme scheme) {
                 initializeCurrentThread( scheme );
                 //XXX This destroys the thread initialization for Environment().
                 // (Thu, 15 Aug 2019 23:07:01 +0900)
@@ -199,7 +198,7 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
             // 1. Create a new scheme object.
             executeSecretarially( new Message() {
                 @Override
-                public Object execute(Scheme scheme, Object[] args) {
+                public Object execute(Scheme scheme) {
                     logInfo( "SchemeSecretary#newScheme()" );
                     Scheme newScheme = new Scheme();
                     setExecutive( newScheme );
@@ -220,7 +219,7 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
         try {
             executeSecretarially( new Message() {
                 @Override
-                public Object execute(Scheme resource, Object[] args) {
+                public Object execute(Scheme resource) {
                     setExecutive( newScheme );
                     return null;
                 }
@@ -244,14 +243,14 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
             Reader schemeScript, File currentDirectory, File schemeScriptFile, String schemeScriptURI ) {
         return (SchemeResult) schemeExecutor.executeSecretarially( new Message() {
             @Override
-            public SchemeResult execute(Scheme scheme, Object[] args) {
+            public SchemeResult execute(Scheme scheme) {
                 return SchemeExecutorUtils.evaluateScheme(scheme, threadInitializer, schemeScript, currentDirectory, schemeScriptFile, schemeScriptURI);
             }
-        }, Invokable.NOARG );
+        });
     }
     
-    public Object executeSecretarially( Message message, Object... args ) {
-        return message.execute( getExecutive(), args );
+    public Object executeSecretarially( Message message ) {
+        return message.execute( getExecutive() );
     }
 
     /**

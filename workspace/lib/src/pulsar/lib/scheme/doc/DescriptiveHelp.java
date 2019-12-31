@@ -20,7 +20,6 @@ import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeExecutor;
 import pulsar.lib.scheme.SchemeExecutor.Message;
 import pulsar.lib.scheme.SchemeUtils;
-import pulsar.lib.secretary.Invokable;
 
 public class DescriptiveHelp {
     public static final DescriptiveDocumentCategory DOCS = 
@@ -36,7 +35,7 @@ public class DescriptiveHelp {
 
     static Message staticInitializer01 = new Message() {
         @Override
-        public Object execute( Scheme scheme, Object[] args ) {
+        public Object execute( Scheme scheme ) {
             staticInitScheme( scheme.getEnvironment() );            
             return null;
         }
@@ -55,14 +54,8 @@ public class DescriptiveHelp {
         if ( type == null )
             throw new IllegalArgumentException( "'type' argument cannot be null." );
         
-        return (String)schemeExecutor.executeSecretarially( new Message() {
-            @Override
-            public String execute( Scheme scheme, Object[] args ) {
-                return outputMarkdownReference0( type, scheme.getEnvironment() );
-            }
-
-        }, Invokable.NOARG );
-    }    
+        return outputMarkdownReference0( type, schemeExecutor.getScheme().getEnvironment() );
+    }
     static int helpTextWidth = 60;
 
     public static void staticInitScheme( Environment env ) {

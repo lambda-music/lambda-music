@@ -104,9 +104,10 @@ public class KawapadEventHandlers {
     }
     public void invokeEventHandler( Kawapad kawapad, String eventTypeID, Object ... args ) {
 //              logInfo( "eventHandlers.invokeEventHandler(outer)" );
+        
         kawapad.getSchemeExecutor().executeSecretarially( new Message() {
             @Override
-            public Object execute( Scheme scheme, Object[] args ) {
+            public Object execute( Scheme scheme ) {
                 kawapad.getSchemeExecutor().startThread( new Runnable() {
                     @Override
                     public void run() {
@@ -127,7 +128,7 @@ public class KawapadEventHandlers {
                 });
                 return null;
             }
-        }, kawapad );
+        } );
     }
     
 //          void invokeEventHandlers( String )

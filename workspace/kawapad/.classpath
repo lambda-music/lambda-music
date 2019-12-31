@@ -2,6 +2,5 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/lib"/>
-	<classpathentry exported="true" kind="lib" path="bin.scheme"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

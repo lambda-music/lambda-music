@@ -25,7 +25,6 @@ import javax.swing.text.Segment;
 import gnu.mapping.LocationEnumeration;
 import gnu.mapping.NamedLocation;
 import kawa.standard.Scheme;
-import pulsar.lib.scheme.SchemeExecutor.Message;
 import pulsar.lib.scheme.SchemeUtils;
 
 public class KawapadContentAssist {
@@ -133,65 +132,60 @@ public class KawapadContentAssist {
         }
     }
     public synchronized void updatePopup(Caret caret) {
-        kawapad.getSchemeExecutor().executeSecretarially( new Message() {
-            @Override
-            public Object execute(Scheme scheme, Object[] args) {
-                try {
-                    Document document = kawapad.getDocument();
-                    int length = document.getLength();
-                    Segment text = KawapadSelection.getText( document );
-                    int dot = caret.getDot();
-                    if ( length < dot )
-                        dot = length;
+        Scheme scheme = kawapad.getSchemeExecutor().getScheme();
+        try {
+            Document document = kawapad.getDocument();
+            int length = document.getLength();
+            Segment text = KawapadSelection.getText( document );
+            int dot = caret.getDot();
+            if ( length < dot )
+                dot = length;
 
-                    int rightEdgePos = dot;
-                    int leftEdgePos = KawapadSelection.leftWordEdgePos( text, dot -1 );
-                    String currentWord;
-                    if ( rightEdgePos < 0 || leftEdgePos < 0 || rightEdgePos <= leftEdgePos ) {
-                        currentWord = "";
-                    } else {
-                        currentWord = String.valueOf( text.subSequence( leftEdgePos, rightEdgePos ) );
-                    }
-                    
-                    if ( DEBUG )
-                        System.err.println( "currentWord:" + currentWord );
-                    
-                    ArrayList<String> allKeys = new ArrayList<>();
-                    LocationEnumeration en = scheme.getEnvironment().enumerateAllLocations();
-                    for ( ; en.hasNext(); ) {
-                        NamedLocation l= en.next();
-                        String key = SchemeUtils.schemeSymbolToJavaString( l.getKeySymbol() );
-                        if ( key.startsWith( currentWord ) ) {
-                            allKeys.add(key);
-                        }
-                    }
-                    
-                    allKeys.sort( comparator );
-                    
-                    if ( popup != null)
-                        popup.hide();
-                    
-                    Rectangle rectangle = kawapad.getUI().modelToView( kawapad, rightEdgePos );
-                    list = new JList( allKeys.toArray() );
-                    JScrollPane sp = new JScrollPane(list);
-                    sp.setSize( new Dimension( 300,300 ) );
-                    list.addListSelectionListener( new ListSelectionListener() {
-                        @Override
-                        public void valueChanged(ListSelectionEvent e) {
-                            list.ensureIndexIsVisible( list.getSelectedIndex() );
-                        }
-                    } );
-
-                    PopupFactory popupFactory = PopupFactory.getSharedInstance();
-                    Point s = kawapad.getLocationOnScreen();
-                    popup = popupFactory.getPopup( kawapad, sp, s.x + rectangle.x, s.y+rectangle.y+rectangle.height + 1 );
-                    popup.show();
-                } catch (BadLocationException e1) {
-                    e1.printStackTrace();
-                }
-                return null;
+            int rightEdgePos = dot;
+            int leftEdgePos = KawapadSelection.leftWordEdgePos( text, dot -1 );
+            String currentWord;
+            if ( rightEdgePos < 0 || leftEdgePos < 0 || rightEdgePos <= leftEdgePos ) {
+                currentWord = "";
+            } else {
+                currentWord = String.valueOf( text.subSequence( leftEdgePos, rightEdgePos ) );
             }
-        });
+            
+            if ( DEBUG )
+                System.err.println( "currentWord:" + currentWord );
+            
+            ArrayList<String> allKeys = new ArrayList<>();
+            LocationEnumeration en = scheme.getEnvironment().enumerateAllLocations();
+            for ( ; en.hasNext(); ) {
+                NamedLocation l= en.next();
+                String key = SchemeUtils.schemeSymbolToJavaString( l.getKeySymbol() );
+                if ( key.startsWith( currentWord ) ) {
+                    allKeys.add(key);
+                }
+            }
+            
+            allKeys.sort( comparator );
+            
+            if ( popup != null)
+                popup.hide();
+            
+            Rectangle rectangle = kawapad.getUI().modelToView( kawapad, rightEdgePos );
+            list = new JList( allKeys.toArray() );
+            JScrollPane sp = new JScrollPane(list);
+            sp.setSize( new Dimension( 300,300 ) );
+            list.addListSelectionListener( new ListSelectionListener() {
+                @Override
+                public void valueChanged(ListSelectionEvent e) {
+                    list.ensureIndexIsVisible( list.getSelectedIndex() );
+                }
+            } );
+
+            PopupFactory popupFactory = PopupFactory.getSharedInstance();
+            Point s = kawapad.getLocationOnScreen();
+            popup = popupFactory.getPopup( kawapad, sp, s.x + rectangle.x, s.y+rectangle.y+rectangle.height + 1 );
+            popup.show();
+        } catch (BadLocationException e1) {
+            e1.printStackTrace();
+        }
     }
     
     
