@@ -141,9 +141,8 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     public static void registerGlobalSchemeInitializers( SchemeExecutor schemeExecutor ) {
         schemeExecutor.registerSchemeInitializer( new Message() {
             @Override
-            public Object execute( Scheme scheme ) {
+            public void execute( Scheme scheme ) {
                 initScheme( scheme );
-                return null;
             }
         });
     }

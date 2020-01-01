@@ -12,7 +12,6 @@ import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import kawa.standard.Scheme;
-import pulsar.lib.scheme.SchemeExecutor.Message;
 
 public class KawapadEventHandlers {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -105,30 +104,25 @@ public class KawapadEventHandlers {
     public void invokeEventHandler( Kawapad kawapad, String eventTypeID, Object ... args ) {
 //              logInfo( "eventHandlers.invokeEventHandler(outer)" );
         
-        kawapad.getSchemeExecutor().executeSecretarially( new Message() {
+        kawapad.getSchemeExecutor().startThread( new Runnable() {
             @Override
-            public Object execute( Scheme scheme ) {
-                kawapad.getSchemeExecutor().startThread( new Runnable() {
-                    @Override
-                    public void run() {
-                        kawapad.getThreadInitializerCollection().initialize();
-                        
-                        synchronized ( scheme ) {
-                            //  logInfo( "eventHandlers.invokeEventHandler(inner)" );
+            public void run() {
+                Scheme scheme = kawapad.getSchemeExecutor().getScheme();
+                kawapad.getThreadInitializerCollection().initialize();
+                
+                synchronized ( scheme ) {
+                    //  logInfo( "eventHandlers.invokeEventHandler(inner)" );
 //                            Environment env = scheme.getEnvironment();
-                            for( Entry<Symbol,SchemeProcedure> e :  getEventType(eventTypeID).entrySet() ) {
-                                try {
-                                    e.getValue().invoke( args );
-                                } catch ( Throwable t ) {
-                                    Kawapad.logError("invoking event handlers : ", t);
-                                }
-                            }
+                    for( Entry<Symbol,SchemeProcedure> e :  getEventType(eventTypeID).entrySet() ) {
+                        try {
+                            e.getValue().invoke( args );
+                        } catch ( Throwable t ) {
+                            Kawapad.logError("invoking event handlers : ", t);
                         }
                     }
-                });
-                return null;
+                }
             }
-        } );
+        });
     }
     
 //          void invokeEventHandlers( String )

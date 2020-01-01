@@ -259,9 +259,8 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
 
     final Message variableInitializer01 = new Message() {
         @Override
-        public Object execute( Scheme scheme ) {
+        public void execute( Scheme scheme ) {
             SchemeUtils.putVar( scheme.getEnvironment(), instanceID, Kawapad.this );
-             return null;
         }
     };
 
@@ -361,9 +360,8 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     }
     static Message staticInitializer01 = new Message() {
         @Override
-        public Object execute( Scheme scheme ) {
+        public void execute( Scheme scheme ) {
             Kawapad.staticInitScheme( scheme );             
-            return null;
         }
     };
 
@@ -376,9 +374,8 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
      */
     static final Message staticIntroInitializer01 = new Message() {
         @Override
-        public Object execute( Scheme scheme ) {
+        public void execute( Scheme scheme ) {
             Kawapad.staticIntroInitScheme( scheme.getEnvironment() );
-            return null;
         }
     };
     static void staticIntroInitScheme( Environment env ) {

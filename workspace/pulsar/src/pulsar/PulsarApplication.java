@@ -222,7 +222,7 @@ public class PulsarApplication {
         pulsar.invokeLater( new Runnable() {
             @Override
             public void run() {
-                pulsar.quit();
+                pulsar.getParentApplicationComponent().processQuit();
             }
         });
         // This is possibly not necessary. But it might help to flush the AWT-eventqueue.

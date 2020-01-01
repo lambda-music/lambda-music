@@ -54,7 +54,6 @@ import gnu.math.DFloNum;
 import gnu.math.IntNum;
 import gnu.math.Quantity;
 import kawa.standard.Scheme;
-import pulsar.lib.scheme.SchemeExecutor.Message;
 
 public class SchemeUtils {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -499,18 +498,14 @@ public class SchemeUtils {
 //                            DescriptiveDocumentCategory.PROCS.getDocumentList(environment)));
 //    }
     public static List<String> getAllKey( SchemeExecutor schemeExecutor ) {
-        return (List<String>) schemeExecutor.executeSecretarially( new Message() {
-            @Override
-            public List<String> execute(Scheme scheme) {
-                ArrayList<String> list = new ArrayList<>();
-                Environment env = scheme.getEnvironment();
-                for ( LocationEnumeration e=env.enumerateAllLocations();e.hasMoreElements(); ) {
-                    NamedLocation nl = e.nextElement();
-                    list.add( schemeSymbolToJavaString( nl.getKeySymbol() ) );
-                }
-                return list;
-            }
-        });
+        Scheme scheme = schemeExecutor.getScheme();
+        ArrayList<String> list = new ArrayList<>();
+        Environment env = scheme.getEnvironment();
+        for ( LocationEnumeration e=env.enumerateAllLocations();e.hasMoreElements(); ) {
+            NamedLocation nl = e.nextElement();
+            list.add( schemeSymbolToJavaString( nl.getKeySymbol() ) );
+        }
+        return list;
     }
     
     public static final String bytesToString( byte[] bs ) {

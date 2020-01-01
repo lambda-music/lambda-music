@@ -145,19 +145,17 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         // This should be global not local (Mon, 16 Dec 2019 22:52:46 +0900)
         schemeExecutor.registerSchemeInitializer( new Message() {
             @Override
-            public Object execute( Scheme scheme ) {
+            public void execute( Scheme scheme ) {
                 Pulsar.initScheme( scheme );
-                return null;
             }
         });
         // This should be global not local (Mon, 16 Dec 2019 22:52:46 +0900)
         schemeExecutor.registerSchemeInitializer( new Message() {
             @Override
-            public Object execute( Scheme scheme ) {
+            public void execute( Scheme scheme ) {
                 // FIXME this should depend on the current Pulsar instance.
                 // (Wed, 20 Nov 2019 18:32:11 +0900)
                 PulsarFramePackage.initScheme( scheme );
-                return null;
             }
         });
     }
@@ -316,13 +314,12 @@ public final class Pulsar extends Metro implements ApplicationComponent {
     public void invokeLater( Runnable r ) {
          this.getSchemeExecutor().executeSecretarially( new Message() {
             @Override
-            public Object execute( Scheme scheme ) {
+            public void execute( Scheme scheme ) {
                 logInfo( "Pulsar#invokeLater()" + r );
                 SchemeExecutor.initializeCurrentThread( scheme );
                 r.run();
-                return null;
             }
-        } );
+        });
     }
     
     
@@ -1263,7 +1260,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                     + THROWS_AN_ERROR_IF_NOT_OPEN );
         }} );
 
-        SchemeUtils.defineVar( env, new SafeProcedureN("quit") {
+        SchemeUtils.defineVar( env, new SafeProcedureN( "quit" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 long shutdownWaitNow;
@@ -1273,21 +1270,16 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                     shutdownWaitNow = shutdownWait;
                 }
                 
+                Pulsar pulsar = getCurrent();
                 Thread t = new Thread() {
                     @Override
                     public void run() {
-                        getCurrent().getSchemeExecutor().executeSecretarially( new Message() {
-                            @Override
-                            public Object execute(Scheme resource) {
-                                try {
-                                    Thread.sleep( shutdownWaitNow );
-                                } catch (InterruptedException e) {
-                                    logWarn( e.getMessage() );
-                                }
-                                getCurrent().quit(); 
-                                return null;
-                            }
-                        } );
+                        try {
+                            Thread.sleep( shutdownWaitNow );
+                        } catch (InterruptedException e) {
+                            logWarn( e.getMessage() );
+                        }
+                        pulsar.getParentApplicationComponent().processQuit(); 
                     }
                 };
                 t.start();

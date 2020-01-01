@@ -35,9 +35,8 @@ public class DescriptiveHelp {
 
     static Message staticInitializer01 = new Message() {
         @Override
-        public Object execute( Scheme scheme ) {
+        public void execute( Scheme scheme ) {
             staticInitScheme( scheme.getEnvironment() );            
-            return null;
         }
     };
 
