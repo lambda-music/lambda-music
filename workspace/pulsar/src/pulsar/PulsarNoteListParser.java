@@ -27,7 +27,7 @@ import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroCollector;
 import metro.MetroTrack;
-import pulsar.lib.scheme.SchemeExecutor;
+import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.secretary.Invokable;
 
 public class PulsarNoteListParser extends NoteListParser {
@@ -42,7 +42,7 @@ public class PulsarNoteListParser extends NoteListParser {
     
     // MOVED FROM SchemeSequence (Wed, 06 Nov 2019 17:07:05 +0900)
     public static <T> void invokable2receiver( Metro metro, MetroTrack track, Invokable invokable, MetroBufferedMidiReceiver<T> buffer, MetroCollector<T> result ) {
-        SchemeExecutor.initializeCurrentThread( ((Pulsar)metro).getSchemeExecutor().getScheme() );
+        SchemeEngine.initializeCurrentThread( ((Pulsar)metro).getSchemeEngine().getScheme() );
         ((Pulsar)metro).getThreadInitializer().run();
         
         // Call the invokable to get a note list of the next measure.

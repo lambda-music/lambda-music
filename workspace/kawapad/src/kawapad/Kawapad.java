@@ -99,8 +99,8 @@ import kawapad.lib.undomanagers.UndoManagers;
 import pulsar.lib.CurrentObject;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.SafeProcedureN;
-import pulsar.lib.scheme.SchemeExecutor;
-import pulsar.lib.scheme.SchemeExecutor.Message;
+import pulsar.lib.scheme.SchemeEngine;
+import pulsar.lib.scheme.SchemeEngine.SchemeEngineListener;
 import pulsar.lib.scheme.SchemeExecutorUtils;
 import pulsar.lib.scheme.SchemePrinter;
 import pulsar.lib.scheme.SchemeUtils;
@@ -252,12 +252,12 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     // 
     ////////////////////////////////////////////////////////////////////////////
 
-    protected SchemeExecutor schemeExecutor;
-    public SchemeExecutor getSchemeExecutor() {
-        return schemeExecutor;
+    protected SchemeEngine schemeEngine;
+    public SchemeEngine getSchemeEngine() {
+        return schemeEngine;
     }
 
-    final Message variableInitializer01 = new Message() {
+    final SchemeEngineListener variableInitializer01 = new SchemeEngineListener() {
         @Override
         public void execute( Scheme scheme ) {
             SchemeUtils.putVar( scheme.getEnvironment(), instanceID, Kawapad.this );
@@ -266,12 +266,12 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
 
     ////////////////////////////////////////////////////////////////////////////
     static ArrayList<Kawapad> kawapadList = new ArrayList<>();
-    public Kawapad( SchemeExecutor schemeExecutor, KawapadEvaluator currentEvaluator ) {
+    public Kawapad( SchemeEngine schemeEngine, KawapadEvaluator currentEvaluator ) {
         super();
-        this.schemeExecutor = schemeExecutor;
+        this.schemeEngine = schemeEngine;
         this.currentEvaluator = currentEvaluator;
         // Added (Mon, 23 Dec 2019 02:11:34 +0900)      
-        this.schemeExecutor.registerSchemeInitializer( variableInitializer01 );
+        this.schemeEngine.registerSchemeInitializer( variableInitializer01 );
         
         // init font
         kawapad.setFont( new Font("monospaced", Font.PLAIN, 12));
@@ -355,10 +355,10 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
      * current frame. This initializer does not have to be removed even if  
      * frames are disposed.
      */
-    public static void registerGlobalSchemeInitializer( SchemeExecutor schemeExecutor ) {
-        schemeExecutor.registerSchemeInitializer( staticInitializer01 );
+    public static void registerGlobalSchemeInitializer( SchemeEngine schemeEngine ) {
+        schemeEngine.registerSchemeInitializer( staticInitializer01 );
     }
-    static Message staticInitializer01 = new Message() {
+    static SchemeEngineListener staticInitializer01 = new SchemeEngineListener() {
         @Override
         public void execute( Scheme scheme ) {
             Kawapad.staticInitScheme( scheme );             
@@ -372,7 +372,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
      * current frame. This initializer does not have to be removed even if  
      * frames are disposed.
      */
-    static final Message staticIntroInitializer01 = new Message() {
+    static final SchemeEngineListener staticIntroInitializer01 = new SchemeEngineListener() {
         @Override
         public void execute( Scheme scheme ) {
             Kawapad.staticIntroInitScheme( scheme.getEnvironment() );
@@ -396,8 +396,8 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         }} );
     }
     
-    public static void registerGlobalIntroSchemeInitializer( SchemeExecutor schemeExecutor ) {
-        schemeExecutor.registerSchemeInitializer( staticIntroInitializer01 );
+    public static void registerGlobalIntroSchemeInitializer( SchemeEngine schemeEngine ) {
+        schemeEngine.registerSchemeInitializer( staticIntroInitializer01 );
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -524,7 +524,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
 
     public void evaluate( String schemeScript, KawapadEvaluatorReceiver receiver ) {
         if ( schemeScript != null ) {
-            this.kawapad.getSchemeExecutor().startThread( 
+            this.kawapad.getSchemeEngine().getThreadManager().startThread( 
                 new KawapadEvaluatorRunnable( kawapad, schemeScript, this.getCurrentEvaluator(), receiver ) );
         } else {
             Kawapad.logWarn( "Ignored because currently no text is selected. " );
@@ -532,7 +532,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     }
     public void evaluateLocally( String schemeScript, KawapadEvaluatorReceiver receiver ) {
         if ( schemeScript != null ) {
-            this.kawapad.getSchemeExecutor().startThread( 
+            this.kawapad.getSchemeEngine().getThreadManager().startThread( 
                 new KawapadEvaluatorRunnable( kawapad, schemeScript, this.getLocalEvaluator(), receiver ) );
         } else {
             Kawapad.logWarn( "Ignored because currently no text is selected. " );
@@ -1288,7 +1288,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         }
         @Override
         public void actionPerformed(ActionEvent e) {
-            kawapad.getSchemeExecutor().newScheme();
+            kawapad.getSchemeEngine().newScheme();
         }
         {
             putValue( Action2.CAPTION, "Reset the Environment" );
@@ -1563,7 +1563,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         }
         @Override
         public void actionPerformed(ActionEvent e) {
-            kawapad.getSchemeExecutor().interruptAllThreads();
+            kawapad.getSchemeEngine().getThreadManager().interruptAllThreads();
         }
         {
             putValue( Action2.CAPTION, "Interrupt" );
@@ -3354,7 +3354,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     
     public KawapadFrame createKawapadFrame( File f ) throws IOException {
         KawapadFrame kawapadFrame = new KawapadFrame( 
-                                        this.kawapad.getSchemeExecutor(), 
+                                        this.kawapad.getSchemeEngine(), 
                                         this.kawapad.getCurrentEvaluator(), 
                                         this.kawapad.getEvaluatorList(),
                                         false,

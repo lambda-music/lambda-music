@@ -25,7 +25,7 @@ import com.sun.net.httpserver.HttpServer;
 
 import pulsar.lib.CurrentObject;
 import pulsar.lib.app.ApplicationComponent;
-import pulsar.lib.scheme.SchemeExecutor;
+import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.SchemeExecutorUtils;
 import pulsar.lib.scheme.SchemeResult;
 import pulsar.lib.thread.ThreadInitializer;
@@ -160,16 +160,16 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
 
 
     int port;
-    SchemeExecutor schemeExecutor;
+    SchemeEngine schemeEngine;
     HttpServer httpServer;
     Charset charset = Charset.forName( "UTF-8" );
     Runnable schemeThreadInitializer;
     UserAuthentication authentication;
-    public SchemeHttp( int port, UserAuthentication authentication, SchemeExecutor schemeExecutor, Runnable schemeThreadInitializer ) throws IOException {
+    public SchemeHttp( int port, UserAuthentication authentication, SchemeEngine schemeEngine, Runnable schemeThreadInitializer ) throws IOException {
         super();
         this.port = port;
         this.authentication = authentication;
-        this.schemeExecutor = schemeExecutor;
+        this.schemeEngine = schemeEngine;
         this.schemeThreadInitializer = schemeThreadInitializer;
         this.initialize();
     }
@@ -259,8 +259,8 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
             String requestString = readInputStream( t.getRequestBody() ); 
             logInfo( requestString );
             SchemeResult schemeResult = 
-                    SchemeExecutor.evaluateScheme( 
-                        schemeExecutor, schemeThreadInitializer, 
+                    SchemeEngine.evaluateScheme( 
+                        schemeEngine, schemeThreadInitializer, 
                         requestString, null, null, "web-scratchpad" );
             String responseString;
             responseString = 
@@ -284,7 +284,7 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
         public void handleProc(HttpExchange t) throws IOException {
             String requestString = readInputStream( t.getRequestBody() ); 
             logInfo( requestString );
-            SchemeResult schemeResult = SchemeExecutor.evaluateScheme( schemeExecutor, schemeThreadInitializer, requestString, null, null, "web-scratchpad" );
+            SchemeResult schemeResult = SchemeEngine.evaluateScheme( schemeEngine, schemeThreadInitializer, requestString, null, null, "web-scratchpad" );
             String responseString;
             responseString = schemeResult.valueAsString;
             logInfo( schemeResult.valueAsString );

@@ -17,8 +17,8 @@ import gnu.mapping.Values;
 import gnu.mapping.WrongArguments;
 import kawa.standard.Scheme;
 import pulsar.lib.scheme.SafeProcedureN;
-import pulsar.lib.scheme.SchemeExecutor;
-import pulsar.lib.scheme.SchemeExecutor.Message;
+import pulsar.lib.scheme.SchemeEngine;
+import pulsar.lib.scheme.SchemeEngine.SchemeEngineListener;
 import pulsar.lib.scheme.SchemeUtils;
 
 public class DescriptiveHelp {
@@ -29,11 +29,11 @@ public class DescriptiveHelp {
      * current frame. This initializer does not have to be removed even if  
      * frames are disposed.
      */
-    public static void registerGlobalSchemeInitializer( SchemeExecutor schemeExecutor ) {
-        schemeExecutor.registerSchemeInitializer( staticInitializer01 );
+    public static void registerGlobalSchemeInitializer( SchemeEngine schemeEngine ) {
+        schemeEngine.registerSchemeInitializer( staticInitializer01 );
     }
 
-    static Message staticInitializer01 = new Message() {
+    static SchemeEngineListener staticInitializer01 = new SchemeEngineListener() {
         @Override
         public void execute( Scheme scheme ) {
             staticInitScheme( scheme.getEnvironment() );            
@@ -49,11 +49,11 @@ public class DescriptiveHelp {
         list.addAll( type.getDocumentList( env ));
         return MarkdownDescriptive.createMarkdownHelp( list );
     }
-    public static String outputMarkdownReference( DescriptiveDocumentCategory type, SchemeExecutor schemeExecutor ) {
+    public static String outputMarkdownReference( DescriptiveDocumentCategory type, SchemeEngine schemeEngine ) {
         if ( type == null )
             throw new IllegalArgumentException( "'type' argument cannot be null." );
         
-        return outputMarkdownReference0( type, schemeExecutor.getScheme().getEnvironment() );
+        return outputMarkdownReference0( type, schemeEngine.getScheme().getEnvironment() );
     }
     static int helpTextWidth = 60;
 

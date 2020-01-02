@@ -69,8 +69,8 @@ import metro.MetroTrack;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.InvokableSchemeProcedure;
 import pulsar.lib.scheme.SafeProcedureN;
-import pulsar.lib.scheme.SchemeExecutor;
-import pulsar.lib.scheme.SchemeExecutor.Message;
+import pulsar.lib.scheme.SchemeEngine;
+import pulsar.lib.scheme.SchemeEngine.SchemeEngineListener;
 import pulsar.lib.scheme.SchemeExecutorUtils;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.doc.ProceduralDescriptiveBean;
@@ -141,16 +141,16 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         return "could not find a track which name was " + arg + " ... ignored.";
     }
 
-    public static void registerGlobalSchemeInitializers( SchemeExecutor schemeExecutor ) {
+    public static void registerGlobalSchemeInitializers( SchemeEngine schemeEngine ) {
         // This should be global not local (Mon, 16 Dec 2019 22:52:46 +0900)
-        schemeExecutor.registerSchemeInitializer( new Message() {
+        schemeEngine.registerSchemeInitializer( new SchemeEngineListener() {
             @Override
             public void execute( Scheme scheme ) {
                 Pulsar.initScheme( scheme );
             }
         });
         // This should be global not local (Mon, 16 Dec 2019 22:52:46 +0900)
-        schemeExecutor.registerSchemeInitializer( new Message() {
+        schemeEngine.registerSchemeInitializer( new SchemeEngineListener() {
             @Override
             public void execute( Scheme scheme ) {
                 // FIXME this should depend on the current Pulsar instance.
@@ -204,9 +204,9 @@ public final class Pulsar extends Metro implements ApplicationComponent {
      * (Sun, 24 Nov 2019 12:45:26 +0900) This comment is extremely outdated.
      * 
      */
-    public Pulsar( SchemeExecutor schemeExecutor ) {
+    public Pulsar( SchemeEngine schemeEngine ) {
         super();
-        this.schemeExecutor = schemeExecutor;
+        this.schemeEngine = schemeEngine;
     }
     
     public void init() {
@@ -252,14 +252,14 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         close();
     }
     
-    private final SchemeExecutor schemeExecutor;
-    public SchemeExecutor getSchemeExecutor() {
-        return schemeExecutor;
+    private final SchemeEngine schemeEngine;
+    public SchemeEngine getSchemeEngine() {
+        return schemeEngine;
     }
     
     private void newScheme() {
         logInfo("Pulsar#newScheme() "); 
-        this.getSchemeExecutor().newScheme();
+        this.getSchemeEngine().newScheme();
     }
 
     MersenneTwisterFast random = new MersenneTwisterFast( new int[] { 
@@ -309,19 +309,6 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             mainProcedure.invoke();
     }
 
-
-
-    public void invokeLater( Runnable r ) {
-         this.getSchemeExecutor().executeSecretarially( new Message() {
-            @Override
-            public void execute( Scheme scheme ) {
-                logInfo( "Pulsar#invokeLater()" + r );
-                SchemeExecutor.initializeCurrentThread( scheme );
-                r.run();
-            }
-        });
-    }
-    
     
     /**
      * This hook objects will be invoked whenever reset() method is called.

@@ -497,8 +497,8 @@ public class SchemeUtils {
 //                        reverse.apply1( 
 //                            DescriptiveDocumentCategory.PROCS.getDocumentList(environment)));
 //    }
-    public static List<String> getAllKey( SchemeExecutor schemeExecutor ) {
-        Scheme scheme = schemeExecutor.getScheme();
+    public static List<String> getAllKey( SchemeEngine schemeEngine ) {
+        Scheme scheme = schemeEngine.getScheme();
         ArrayList<String> list = new ArrayList<>();
         Environment env = scheme.getEnvironment();
         for ( LocationEnumeration e=env.enumerateAllLocations();e.hasMoreElements(); ) {

@@ -104,10 +104,10 @@ public class KawapadEventHandlers {
     public void invokeEventHandler( Kawapad kawapad, String eventTypeID, Object ... args ) {
 //              logInfo( "eventHandlers.invokeEventHandler(outer)" );
         
-        kawapad.getSchemeExecutor().startThread( new Runnable() {
+        kawapad.getSchemeEngine().getThreadManager().startThread( new Runnable() {
             @Override
             public void run() {
-                Scheme scheme = kawapad.getSchemeExecutor().getScheme();
+                Scheme scheme = kawapad.getSchemeEngine().getScheme();
                 kawapad.getThreadInitializerCollection().initialize();
                 
                 synchronized ( scheme ) {

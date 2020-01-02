@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 import javax.swing.text.AttributeSet;
 
 import gnu.mapping.Symbol;
-import pulsar.lib.scheme.SchemeExecutor;
+import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.SchemeUtils;
 
 class KawapadSyntaxHighlighter extends SyntaxHighlighter {
@@ -32,7 +32,7 @@ class KawapadSyntaxHighlighter extends SyntaxHighlighter {
     final AttributeSet defaultStringColor        = SyntaxHighlighter.darkGreenAttributeSet;
     final AttributeSet defaultPunctuationColor   = SyntaxHighlighter.redAttributeSet;
     final AttributeSet defaultKeywordColor       = SyntaxHighlighter.orangeAttributeSet;
-    SchemeExecutor schemeExecutor;
+    SchemeEngine schemeEngine;
     Kawapad kawapad;
     KawapadSyntaxHighlighter(Kawapad kawapad) {
         super( kawapad );
@@ -46,7 +46,7 @@ class KawapadSyntaxHighlighter extends SyntaxHighlighter {
             // vvv IS THIS REALLY NECESSARY?????? TODO (Wed, 11 Sep 2019 03:01:16 +0900)  vvvv
 //            List<String> keywordList = new ArrayList<>();
 //          keywordList.addAll( SchemeUtils.getAllKey( kawapad.getSchemeSecretary() ) );
-            List<String> keywordList = SchemeUtils.getAllKey( kawapad.getSchemeExecutor() );
+            List<String> keywordList = SchemeUtils.getAllKey( kawapad.getSchemeEngine() );
             // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
             keywordList.addAll( kawapad.lispKeywordList );
             keywordList.sort( Kawapad.KEYWORD_COMPARATOR );

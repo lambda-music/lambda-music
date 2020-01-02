@@ -257,7 +257,7 @@ class KawapadTextualIncrement implements MenuInitializer {
             if ( foundSubstr == null ) {
                 Matcher m = NUMBER_PATTERN.matcher( targetStr );
                 if ( m.find() ) {
-                    Scheme scheme = ((Kawapad)target).getSchemeExecutor().getScheme();
+                    Scheme scheme = ((Kawapad)target).getSchemeEngine().getScheme();
                     
                     synchronized ( scheme ) {
                         try {

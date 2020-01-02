@@ -6,42 +6,42 @@ import java.util.List;
 
 import kawapad.Kawapad;
 import kawapad.KawapadEvaluator;
-import pulsar.lib.scheme.SchemeExecutor;
+import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.doc.DescriptiveHelp;
 import pulsar.lib.scheme.http.SchemeHttp;
 import pulsar.lib.scheme.http.SchemeHttp.UserAuthentication;
 
 public class PulsarApplicationLibrary {
-    public static void initializeSchemeExecutor( SchemeExecutor schemeExecutor ) {
+    public static void initializeSchemeEngine( SchemeEngine schemeEngine ) {
         // pulsar gui
-        PulsarFrame.registerGlobalSchemeInitializers( schemeExecutor );
-        Kawapad.registerGlobalSchemeInitializer( schemeExecutor );
+        PulsarFrame.registerGlobalSchemeInitializers( schemeEngine );
+        Kawapad.registerGlobalSchemeInitializer( schemeEngine );
         // pulsar
-        DescriptiveHelp.registerGlobalSchemeInitializer( schemeExecutor );
-        Pulsar.registerGlobalSchemeInitializers( schemeExecutor );
+        DescriptiveHelp.registerGlobalSchemeInitializer( schemeEngine );
+        Pulsar.registerGlobalSchemeInitializers( schemeEngine );
     }
 
-    public static SchemeExecutor createSchemeExecutor() {
-        SchemeExecutor schemeExecutor = new SchemeExecutor();
-        initializeSchemeExecutor( schemeExecutor );
-        return schemeExecutor;
+    public static SchemeEngine createSchemeEngine() {
+        SchemeEngine schemeEngine = new SchemeEngine();
+        initializeSchemeEngine( schemeEngine );
+        return schemeEngine;
     }
 
     public static SchemeHttp createPulsarHttpServer(
-            SchemeExecutor schemeExecutor, int httpPort, UserAuthentication userAuthentication, Pulsar pulsar ) throws IOException {
+            SchemeEngine schemeEngine, int httpPort, UserAuthentication userAuthentication, Pulsar pulsar ) throws IOException {
         return new SchemeHttp( 
             httpPort, 
             userAuthentication, 
-            schemeExecutor, 
+            schemeEngine, 
             pulsar.getThreadInitializerCollection()
             );
     }
-    public static Pulsar createPulsar( SchemeExecutor schemeExecutor ) {
-        Pulsar pulsar = new Pulsar( schemeExecutor );
+    public static Pulsar createPulsar( SchemeEngine schemeEngine ) {
+        Pulsar pulsar = new Pulsar( schemeEngine );
         return pulsar;
     }
 
-    public static PulsarFrame createPulsarGui( SchemeExecutor schemeExecutor, Pulsar pulsar, List<String> urls ) {
+    public static PulsarFrame createPulsarGui( SchemeEngine schemeEngine, Pulsar pulsar, List<String> urls ) {
         KawapadEvaluator local = KawapadEvaluator.getLocal();
         ArrayList<KawapadEvaluator> evaluatorList = new ArrayList<>();
         evaluatorList.add( local );

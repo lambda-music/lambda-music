@@ -54,7 +54,7 @@ import pulsar.lib.PulsarLogger;
 import pulsar.lib.Version;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.app.ApplicationVessel;
-import pulsar.lib.scheme.SchemeExecutor;
+import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.doc.DescriptiveDocumentCategory;
 import pulsar.lib.scheme.doc.DescriptiveHelp;
 import pulsar.lib.swing.AcceleratorKeyList;
@@ -168,7 +168,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
     boolean shutdownWhenClose;
 
     public KawapadFrame( 
-            SchemeExecutor schemeExecutor, 
+            SchemeEngine schemeEngine, 
             KawapadEvaluator evaluator, 
             Collection<KawapadEvaluator> evaluatorList, 
             boolean shutdownWhenClose,
@@ -185,7 +185,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
 //      invokeLocalSchemeInitializers( schemeSecretary, this);
 //      DELETED <<< INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
         
-        this.kawapad = new Kawapad( schemeExecutor, evaluator ) {
+        this.kawapad = new Kawapad( schemeEngine, evaluator ) {
             // Special thanks go to tips4java
             // https://tips4java.wordpress.com/2009/01/25/no-wrap-text-pane/
             public boolean getScrollableTracksViewportWidth() {
@@ -350,12 +350,12 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     public static KawapadFrame createStaticInstance( KawapadEvaluator evaluator, Collection<KawapadEvaluator> evaluatorList ) {
-        SchemeExecutor schemeExecutor = new SchemeExecutor();
-        DescriptiveHelp.registerGlobalSchemeInitializer( schemeExecutor );
-        Kawapad.registerGlobalIntroSchemeInitializer( schemeExecutor );
-        Kawapad.registerGlobalSchemeInitializer( schemeExecutor );
-        schemeExecutor.newScheme();
-        KawapadFrame kawapadFrame = new KawapadFrame( schemeExecutor, evaluator, evaluatorList, true, "Scheme Scratch Pad" );
+        SchemeEngine schemeEngine = new SchemeEngine();
+        DescriptiveHelp.registerGlobalSchemeInitializer( schemeEngine );
+        Kawapad.registerGlobalIntroSchemeInitializer( schemeEngine );
+        Kawapad.registerGlobalSchemeInitializer( schemeEngine );
+        schemeEngine.newScheme();
+        KawapadFrame kawapadFrame = new KawapadFrame( schemeEngine, evaluator, evaluatorList, true, "Scheme Scratch Pad" );
         ApplicationVessel v = new ApplicationVessel();
         v.add( kawapadFrame );
         kawapadFrame.setParentApplicationComponent( kawapadFrame );
@@ -399,7 +399,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
             Thread.sleep( 2048 );
         } catch ( InterruptedException e ) {
         }
-        DescriptiveDocumentCategory.outputReference( kawapadFrame.kawapad.getSchemeExecutor(), "kawapad-procedures", null );
+        DescriptiveDocumentCategory.outputReference( kawapadFrame.kawapad.getSchemeEngine(), "kawapad-procedures", null );
         kawapadFrame.requestQuit();
     }
     

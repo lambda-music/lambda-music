@@ -1,13 +1,13 @@
 package kawapad;
 
-import pulsar.lib.scheme.SchemeExecutor;
+import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.SchemeResult;
 
 final class KawapadEvaluatorLocal implements KawapadEvaluator {
     @Override
     public SchemeResult evaluate(Kawapad kawapad, String schemeScript) {
-        return SchemeExecutor.evaluateScheme( 
-            kawapad.getSchemeExecutor(), 
+        return SchemeEngine.evaluateScheme( 
+            kawapad.getSchemeEngine(), 
             kawapad.getThreadInitializerCollection(),
             schemeScript, 
             kawapad.getCurrentDirectory(), 

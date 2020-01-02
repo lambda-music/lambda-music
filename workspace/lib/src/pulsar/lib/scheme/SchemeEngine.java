@@ -4,13 +4,10 @@ import java.io.File;
 import java.io.Reader;
 import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.swing.SwingUtilities;
 
 import gnu.expr.Language;
 import gnu.mapping.Environment;
@@ -23,31 +20,31 @@ import pulsar.lib.thread.ThreadInitializer;
 import pulsar.lib.thread.ThreadInitializerCollection;
 import pulsar.lib.thread.ThreadInitializerContainer;
 
-public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor>, ApplicationComponent {
+public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, ApplicationComponent {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
     
-    public abstract interface Message<T> {
+    public abstract interface SchemeEngineListener {
         public abstract void execute( Scheme resource );
     }
     
     Scheme scheme=null;
-    public SchemeExecutor() {
+    public SchemeEngine() {
     }
     
     //////////////////////////////////////////////////////////////////////////////////////////
     //
     //////////////////////////////////////////////////////////////////////////////////////////
     
-    private static final CurrentObject<SchemeExecutor> currentObject = new CurrentObject<>( SchemeExecutor.class );
-    private final ThreadInitializer<SchemeExecutor> threadInitializer =
+    private static final CurrentObject<SchemeEngine> currentObject = new CurrentObject<>( SchemeEngine.class );
+    private final ThreadInitializer<SchemeEngine> threadInitializer =
             ThreadInitializer.createMultipleThreadInitializer( "scheme", this,
                 ThreadInitializer.createThreadInitializer( "current-scheme", currentObject, this ), new Runnable() {
                     @Override
                     public void run() {
-                        initializeCurrentThread( SchemeExecutor.this.getScheme() );
+                        initializeCurrentThread( SchemeEngine.this.getScheme() );
                     }
                     @Override
                     public String toString() {
@@ -56,10 +53,10 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
                 });
     
     @Override
-    public ThreadInitializer<SchemeExecutor> getThreadInitializer() {
+    public ThreadInitializer<SchemeEngine> getThreadInitializer() {
         return threadInitializer;
     }
-    public static SchemeExecutor getCurrent() {
+    public static SchemeEngine getCurrent() {
         return currentObject.get();
     }
 
@@ -109,8 +106,8 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
     // Scheme Initializer 
     //////////////////////////////////////////////////////////////////////////////////////////
     
-    private List<Message> schemeInitializerList = new ArrayList<>();
-    public List<Message> getSchemeInitializerList() {
+    private List<SchemeEngineListener> schemeInitializerList = new ArrayList<>();
+    public List<SchemeEngineListener> getSchemeInitializerList() {
         return schemeInitializerList;
     }
 
@@ -118,24 +115,12 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
      * This method registers a specified initializer.
      * @see #invokeSchemeInitializers()
      */
-    public void registerSchemeInitializer( Message message ) {
-        this.getSchemeInitializerList().add( message  );
-    }
-
-    private void invokeSchemeInitializers() {
-        for ( Message e : getSchemeInitializerList() ) {
-            executeSecretarially( e );
-        }
+    public void registerSchemeInitializer( SchemeEngineListener schemeEngineListener ) {
+        this.getSchemeInitializerList().add( schemeEngineListener  );
     }
 
     {
-        registerSchemeInitializer( new Message() {
-            @Override
-            public void execute(Scheme scheme) {
-                staticInitScheme( scheme );
-            }
-        });
-        registerSchemeInitializer( new Message() {
+        registerSchemeInitializer( new SchemeEngineListener() {
             @Override
             public void execute(Scheme scheme) {
                 // 3. This initializes Secretary Message Queue's thread.
@@ -143,37 +128,17 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
                 initializeCurrentThread( scheme );
             }
         });
-        registerSchemeInitializer( new Message() {
+        registerSchemeInitializer( new SchemeEngineListener() {
             @Override
             public void execute(Scheme scheme) {
-                SwingUtilities.invokeLater( new Runnable() {
-                    @Override
-                    public void run() {
-                        // 5. This initializes AWT-EventQueue's thread.
-                        initializeCurrentThread(scheme);
-                    }
-                });
-            }
-        });
-        
-        registerSchemeInitializer( new Message() {
-            @Override
-            public void execute(Scheme scheme) {
-                initializeCurrentThread( scheme );
-                //XXX This destroys the thread initialization for Environment().
-                // (Thu, 15 Aug 2019 23:07:01 +0900)
-//              SchemeUtils.defineVar( scheme, EmptyList.emptyList, "all-procedures" );
+                staticInitScheme( scheme );
             }
         });
     }
-
-    static class FinalizerEntry {
-        Object parent;
-        Message message;
-        public FinalizerEntry(Object parent, Message message) {
-            super();
-            this.parent = parent;
-            this.message = message;
+    
+    private void invokeSchemeInitializers() {
+        for ( SchemeEngineListener e : getSchemeInitializerList() ) {
+            e.execute( this.scheme );
         }
     }
 
@@ -195,25 +160,22 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
     }
     
     public static SchemeResult evaluateScheme( 
-            SchemeExecutor schemeExecutor, Runnable threadInitializer, 
+            SchemeEngine schemeEngine, Runnable threadInitializer, 
             String schemeScript, File currentDirectory, File schemeScriptFile, String schemeScriptURI ) 
     {
-        return SchemeExecutor.evaluateScheme(
-            schemeExecutor, threadInitializer,    
+        return SchemeEngine.evaluateScheme(
+            schemeEngine, threadInitializer,    
             new StringReader( schemeScript ), currentDirectory, schemeScriptFile, schemeScriptURI );
     }
 
     public static SchemeResult evaluateScheme( 
-            SchemeExecutor schemeExecutor, Runnable threadInitializer, 
+            SchemeEngine schemeEngine, Runnable threadInitializer, 
             Reader schemeScript, File currentDirectory, File schemeScriptFile, String schemeScriptURI ) 
     {
         return SchemeExecutorUtils.evaluateScheme(
-            schemeExecutor.getScheme(), threadInitializer, schemeScript, currentDirectory, schemeScriptFile, schemeScriptURI );
+            schemeEngine.getScheme(), threadInitializer, schemeScript, currentDirectory, schemeScriptFile, schemeScriptURI );
     }
     
-    public void executeSecretarially( Message message ) {
-        message.execute( this.scheme );
-    }
 
     /**
      * "loadRelative" was moved from 
@@ -238,57 +200,10 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
     
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     
-    private static final boolean DEBUG = false;
-    private final class ScratchPadThread extends Thread {
-        private final Runnable r;
-        private ScratchPadThread(Runnable r) {
-            this.r = r;
-        }
-
-        @Override
-        public void run() {
-            try {
-                if ( DEBUG )
-                    logInfo( "ScratchPadThreadManager:run" );
-                r.run();
-            } catch ( Throwable t ) {
-                logError( "error occured in " + r , t );
-            } finally {
-                if ( DEBUG )
-                    logInfo( "ScratchPadThreadManager:end" );
-                removeThread( this );
-            }
-        }
-        @Override
-        public void interrupt() {
-            logInfo("interrupted");
-            super.interrupt();
-        }
+    private ThreadManager threadManager = new ThreadManager();
+    public ThreadManager getThreadManager() {
+        return threadManager;
     }
-    private ArrayDeque<Thread> threadList = new ArrayDeque<>();
-    private void addThread( Thread t ) {
-        synchronized ( threadList ) {
-            threadList.add( t );
-        }
-    }
-    private void removeThread( Thread t ) {
-        synchronized ( threadList ) {
-            threadList.remove( t );
-        }
-    }
-    public void startThread( Runnable r ) {
-        Thread t = new ScratchPadThread(r);
-        addThread(t);
-        t.start();
-    }
-    public void interruptAllThreads() {
-        logInfo("interruptScratchPadThreads");
-        synchronized ( threadList ) {
-            for ( Thread t : threadList ) {
-                logInfo( "interrupt start" );
-                t.interrupt();
-                logInfo( "interrpt end" );
-            }
-        }
-    }
+    
+    
 }

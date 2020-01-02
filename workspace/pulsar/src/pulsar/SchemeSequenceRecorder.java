@@ -125,7 +125,7 @@ public class SchemeSequenceRecorder implements MetroSequence, SchemeSequenceRead
                     } else {
                         double d = SchemeUtils.toDouble( a );
                         if ( from <= d && d < to ) {
-                            System.out.println( from );
+                            logInfo( from );
                             PulsarNoteListParser.notation2receiver( metro, null, this.eventBuffer, (LList)notation, MetroCollector.NULL );
                         }
                     }

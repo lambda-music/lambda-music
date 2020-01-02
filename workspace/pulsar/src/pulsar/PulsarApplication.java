@@ -17,7 +17,7 @@ import pulsar.lib.PulsarLogger;
 import pulsar.lib.Version;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.app.ApplicationVessel;
-import pulsar.lib.scheme.SchemeExecutor;
+import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.doc.DescriptiveDocumentCategory;
 import pulsar.lib.scheme.doc.DescriptiveHelp;
 import pulsar.lib.scheme.http.SchemeHttp;
@@ -206,7 +206,7 @@ public class PulsarApplication {
         loadAllAvailableHelps();
         List<ApplicationComponent> list = start( true, true, 8193 );
         Pulsar pulsar = lookupPulsar( list );
-        DescriptiveDocumentCategory.outputReference( pulsar.getSchemeExecutor(), categoryName, outputFile );
+        DescriptiveDocumentCategory.outputReference( pulsar.getSchemeEngine(), categoryName, outputFile );
         quitPulsarSafely( pulsar );
         return list;
     }
@@ -219,24 +219,20 @@ public class PulsarApplication {
         } catch (InterruptedException e) {
             System.err.println( e.getMessage() );
         }
-        pulsar.invokeLater( new Runnable() {
-            @Override
-            public void run() {
-                pulsar.getParentApplicationComponent().processQuit();
-            }
-        });
+        pulsar.getParentApplicationComponent().processQuit();
+
         // This is possibly not necessary. But it might help to flush the AWT-eventqueue.
         // See https://stackoverflow.com/questions/6309407/remove-top-level-container-on-runtime
         GC.exec();
     }
     
     public static List<ApplicationComponent> start( boolean guiEnabled, boolean httpEnabled, int httpPort, String filename ) throws IOException {
-        SchemeExecutor schemeExecutor = PulsarApplicationLibrary.createSchemeExecutor();
-        Pulsar pulsar = PulsarApplicationLibrary.createPulsar( schemeExecutor );
+        SchemeEngine schemeEngine = PulsarApplicationLibrary.createSchemeEngine();
+        Pulsar pulsar = PulsarApplicationLibrary.createPulsar( schemeEngine );
         PulsarFrame pulsarFrame;
         if ( guiEnabled ) {
             pulsarFrame = PulsarApplicationLibrary.createPulsarGui( 
-                schemeExecutor, pulsar, 
+                schemeEngine, pulsar, 
                 Arrays.asList( "http://localhost:"+httpPort+"/eval" ) );
         } else {
             pulsarFrame = null;
@@ -244,10 +240,10 @@ public class PulsarApplication {
         
         SchemeHttp schemeHttp = null;
         if ( httpEnabled ) {
-            schemeHttp = PulsarApplicationLibrary.createPulsarHttpServer( schemeExecutor, httpPort, SchemeHttp.UserAuthentication.ONLY_LOOPBACK, pulsar );
+            schemeHttp = PulsarApplicationLibrary.createPulsarHttpServer( schemeEngine, httpPort, SchemeHttp.UserAuthentication.ONLY_LOOPBACK, pulsar );
         }
         
-        schemeExecutor.newScheme();
+        schemeEngine.newScheme();
         
         if ( pulsarFrame != null ) {
             pulsarFrame.processInit();
@@ -259,8 +255,8 @@ public class PulsarApplication {
             }
         }
         ArrayList<ApplicationComponent> result = new ArrayList<>();
-        if ( schemeExecutor != null )
-            result.add( schemeExecutor );
+        if ( schemeEngine != null )
+            result.add( schemeEngine );
         if ( pulsar != null )
             result.add( pulsar );
         if ( pulsarFrame != null )
