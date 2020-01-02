@@ -99,10 +99,10 @@ import kawapad.lib.undomanagers.UndoManagers;
 import pulsar.lib.CurrentObject;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.SafeProcedureN;
-import pulsar.lib.scheme.SchemeEngine;
-import pulsar.lib.scheme.SchemeEngine.SchemeEngineListener;
 import pulsar.lib.scheme.SchemeExecutorUtils;
+import pulsar.lib.scheme.SchemeExecutor.SchemeEngineListener;
 import pulsar.lib.scheme.SchemePrinter;
+import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.doc.DescriptiveActions;
 import pulsar.lib.scheme.doc.ProceduralDescriptiveBean;
@@ -271,7 +271,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         this.schemeEngine = schemeEngine;
         this.currentEvaluator = currentEvaluator;
         // Added (Mon, 23 Dec 2019 02:11:34 +0900)      
-        this.schemeEngine.registerSchemeInitializer( variableInitializer01 );
+        this.schemeEngine.getSchemeExecutor().registerSchemeInitializer( variableInitializer01 );
         
         // init font
         kawapad.setFont( new Font("monospaced", Font.PLAIN, 12));
@@ -356,7 +356,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
      * frames are disposed.
      */
     public static void registerGlobalSchemeInitializer( SchemeEngine schemeEngine ) {
-        schemeEngine.registerSchemeInitializer( staticInitializer01 );
+        schemeEngine.getSchemeExecutor().registerSchemeInitializer( staticInitializer01 );
     }
     static SchemeEngineListener staticInitializer01 = new SchemeEngineListener() {
         @Override
@@ -397,7 +397,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     }
     
     public static void registerGlobalIntroSchemeInitializer( SchemeEngine schemeEngine ) {
-        schemeEngine.registerSchemeInitializer( staticIntroInitializer01 );
+        schemeEngine.getSchemeExecutor().registerSchemeInitializer( staticIntroInitializer01 );
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -1288,7 +1288,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         }
         @Override
         public void actionPerformed(ActionEvent e) {
-            kawapad.getSchemeEngine().newScheme();
+            kawapad.getSchemeEngine().getSchemeExecutor().newScheme();
         }
         {
             putValue( Action2.CAPTION, "Reset the Environment" );

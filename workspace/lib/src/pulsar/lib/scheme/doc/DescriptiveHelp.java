@@ -17,8 +17,8 @@ import gnu.mapping.Values;
 import gnu.mapping.WrongArguments;
 import kawa.standard.Scheme;
 import pulsar.lib.scheme.SafeProcedureN;
+import pulsar.lib.scheme.SchemeExecutor.SchemeEngineListener;
 import pulsar.lib.scheme.SchemeEngine;
-import pulsar.lib.scheme.SchemeEngine.SchemeEngineListener;
 import pulsar.lib.scheme.SchemeUtils;
 
 public class DescriptiveHelp {
@@ -30,7 +30,7 @@ public class DescriptiveHelp {
      * frames are disposed.
      */
     public static void registerGlobalSchemeInitializer( SchemeEngine schemeEngine ) {
-        schemeEngine.registerSchemeInitializer( staticInitializer01 );
+        schemeEngine.getSchemeExecutor().registerSchemeInitializer( staticInitializer01 );
     }
 
     static SchemeEngineListener staticInitializer01 = new SchemeEngineListener() {
@@ -53,7 +53,7 @@ public class DescriptiveHelp {
         if ( type == null )
             throw new IllegalArgumentException( "'type' argument cannot be null." );
         
-        return outputMarkdownReference0( type, schemeEngine.getScheme().getEnvironment() );
+        return outputMarkdownReference0( type, schemeEngine.getSchemeExecutor().getScheme().getEnvironment() );
     }
     static int helpTextWidth = 60;
 

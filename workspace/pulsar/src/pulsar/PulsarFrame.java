@@ -78,8 +78,8 @@ import metro.MetroTrack;
 import pulsar.Pulsar.TempoTapperTempoNotifier;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.SafeProcedureN;
+import pulsar.lib.scheme.SchemeExecutor.SchemeEngineListener;
 import pulsar.lib.scheme.SchemeEngine;
-import pulsar.lib.scheme.SchemeEngine.SchemeEngineListener;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.Invokable;
 import pulsar.lib.swing.AcceleratorKeyList;
@@ -139,7 +139,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     static final int PB_POSITION_MAX = 1024;
     
     public static void registerGlobalSchemeInitializers( SchemeEngine schemeEngine ) {
-        schemeEngine.registerSchemeInitializer( new SchemeEngineListener() {
+        schemeEngine.getSchemeExecutor().registerSchemeInitializer( new SchemeEngineListener() {
             @Override
             public void execute( Scheme scheme ) {
                 initScheme( scheme );

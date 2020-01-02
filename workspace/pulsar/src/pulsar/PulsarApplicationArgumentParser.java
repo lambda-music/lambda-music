@@ -188,7 +188,7 @@ class PulsarApplicationArgumentParser {
 
         if ( false ) {
             for ( SchemeEngine i : schemeEngineStack ) {
-                i.newScheme();
+                i.getSchemeExecutor().newScheme();
             }
             for ( Pulsar i : pulsarStack ) {
                 try {

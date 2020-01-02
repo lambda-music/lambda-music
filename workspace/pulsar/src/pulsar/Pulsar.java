@@ -69,9 +69,9 @@ import metro.MetroTrack;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.InvokableSchemeProcedure;
 import pulsar.lib.scheme.SafeProcedureN;
-import pulsar.lib.scheme.SchemeEngine;
-import pulsar.lib.scheme.SchemeEngine.SchemeEngineListener;
 import pulsar.lib.scheme.SchemeExecutorUtils;
+import pulsar.lib.scheme.SchemeExecutor.SchemeEngineListener;
+import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.doc.ProceduralDescriptiveBean;
 import pulsar.lib.secretary.Invokable;
@@ -143,14 +143,14 @@ public final class Pulsar extends Metro implements ApplicationComponent {
 
     public static void registerGlobalSchemeInitializers( SchemeEngine schemeEngine ) {
         // This should be global not local (Mon, 16 Dec 2019 22:52:46 +0900)
-        schemeEngine.registerSchemeInitializer( new SchemeEngineListener() {
+        schemeEngine.getSchemeExecutor().registerSchemeInitializer( new SchemeEngineListener() {
             @Override
             public void execute( Scheme scheme ) {
                 Pulsar.initScheme( scheme );
             }
         });
         // This should be global not local (Mon, 16 Dec 2019 22:52:46 +0900)
-        schemeEngine.registerSchemeInitializer( new SchemeEngineListener() {
+        schemeEngine.getSchemeExecutor().registerSchemeInitializer( new SchemeEngineListener() {
             @Override
             public void execute( Scheme scheme ) {
                 // FIXME this should depend on the current Pulsar instance.
@@ -259,7 +259,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
     
     private void newScheme() {
         logInfo("Pulsar#newScheme() "); 
-        this.getSchemeEngine().newScheme();
+        this.getSchemeEngine().getSchemeExecutor().newScheme();
     }
 
     MersenneTwisterFast random = new MersenneTwisterFast( new int[] { 

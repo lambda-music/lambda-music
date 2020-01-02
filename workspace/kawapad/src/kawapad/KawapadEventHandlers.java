@@ -107,7 +107,7 @@ public class KawapadEventHandlers {
         kawapad.getSchemeEngine().getThreadManager().startThread( new Runnable() {
             @Override
             public void run() {
-                Scheme scheme = kawapad.getSchemeEngine().getScheme();
+                Scheme scheme = kawapad.getSchemeEngine().getSchemeExecutor().getScheme();
                 kawapad.getThreadInitializerCollection().initialize();
                 
                 synchronized ( scheme ) {

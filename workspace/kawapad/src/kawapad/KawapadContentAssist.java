@@ -132,7 +132,7 @@ public class KawapadContentAssist {
         }
     }
     public synchronized void updatePopup(Caret caret) {
-        Scheme scheme = kawapad.getSchemeEngine().getScheme();
+        Scheme scheme = kawapad.getSchemeEngine().getSchemeExecutor().getScheme();
         try {
             Document document = kawapad.getDocument();
             int length = document.getLength();

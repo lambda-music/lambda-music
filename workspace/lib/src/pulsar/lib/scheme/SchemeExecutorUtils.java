@@ -44,7 +44,7 @@ public class SchemeExecutorUtils {
             // calling initializeCurrentThread() here is merely a fallback for initializing Scheme object.
             // Call initializeCurrentThread() here in case that no thread initializer was specified.
             
-            SchemeEngine.initializeCurrentThread( scheme );
+            SchemeExecutor.initializeCurrentThread( scheme );
             if ( threadInitializer == null ) {
                 logWarn( "No thread initializer was specified " );
             } else {
