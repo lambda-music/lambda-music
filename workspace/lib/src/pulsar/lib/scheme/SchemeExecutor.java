@@ -160,24 +160,6 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
         }
     }
     
-    public static SchemeResult evaluateScheme( 
-            SchemeExecutor schemeEngine, Runnable threadInitializer, 
-            String schemeScript, File currentDirectory, File schemeScriptFile, String schemeScriptURI ) 
-    {
-        return SchemeExecutor.evaluateScheme(
-            schemeEngine, threadInitializer,    
-            new StringReader( schemeScript ), currentDirectory, schemeScriptFile, schemeScriptURI );
-    }
-
-    public static SchemeResult evaluateScheme( 
-            SchemeExecutor schemeEngine, Runnable threadInitializer, 
-            Reader schemeScript, File currentDirectory, File schemeScriptFile, String schemeScriptURI ) 
-    {
-        return SchemeExecutorUtils.evaluateScheme(
-            schemeEngine.getScheme(), threadInitializer, schemeScript, currentDirectory, schemeScriptFile, schemeScriptURI );
-    }
-    
-
     /**
      * "loadRelative" was moved from 
      * {@link SchemeExecutorUtils#evaluateScheme(Scheme, Runnable, Reader, File, File, String)}  
@@ -198,13 +180,27 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
             }
         }, "current-environment" );
     }
+
     
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    private ThreadManager threadManager = new ThreadManager();
-    public ThreadManager getThreadManager() {
-        return threadManager;
+    public static SchemeResult evaluateScheme( 
+            SchemeExecutor schemeExecutor, Runnable threadInitializer, 
+            String schemeScript, File currentDirectory, File schemeScriptFile, String schemeScriptURI ) 
+    {
+        return SchemeExecutor.evaluateScheme(
+            schemeExecutor, threadInitializer,    
+            new StringReader( schemeScript ), currentDirectory, schemeScriptFile, schemeScriptURI );
     }
+
+    public static SchemeResult evaluateScheme( 
+            SchemeExecutor schemeExecutor, Runnable threadInitializer, 
+            Reader schemeScript, File currentDirectory, File schemeScriptFile, String schemeScriptURI ) 
+    {
+        return SchemeExecutorUtils.evaluateScheme(
+            schemeExecutor.getScheme(), threadInitializer, schemeScript, currentDirectory, schemeScriptFile, schemeScriptURI );
+    }
+    
+
+    
     
     
 }
