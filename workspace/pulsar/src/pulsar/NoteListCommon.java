@@ -327,7 +327,7 @@ public class NoteListCommon {
         return Pair.make( ID_VALUE, J2S_BOOLEAN.convert( value ) );
     }
     /**
-     * @see NoteListParser#parse(metro.Metro, metro.MetroTrack, Collection, metro.MetroBufferedMidiReceiver, boolean)
+     * @see NoteListParser#parseAll(metro.Metro, metro.MetroTrack, Collection, metro.MetroBufferedMidiReceiver, boolean)
      */
     static MetroPort readMapPort( NoteListMap map ) {
         return map.get( ID_PORT, S2J_PORT, DEFAULT_VALUE_PORT );

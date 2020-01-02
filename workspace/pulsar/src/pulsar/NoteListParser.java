@@ -189,13 +189,15 @@ public class NoteListParser {
      * @see pulsar.NoteListParserElement#parseEvent(Metro, MetroTrack,
      *      MetroBufferedMidiReceiver, Map, MetroCollector)
      */
-    public <T> void parse( Metro metro, MetroTrack track, Collection<Object> inputList, MetroBufferedMidiReceiver<T> buffer, MetroCollector<T> result ) {
+    public <T> void parseAll( Metro metro, MetroTrack track, Collection<Object> inputList, MetroBufferedMidiReceiver<T> buffer, MetroCollector<T> result ) {
+        metro.getThreadInitializerCollection().initialize();
+
         try {
             if ( inputList != null ) {
                 for ( Iterator<Object> i = inputList.iterator(); i.hasNext(); ) {
                     Object obj = i.next();
                     if ( obj instanceof LList ) {
-                        parseNotationProc( metro, track, (LList)obj, buffer, result );
+                        parseProc( metro, track, (LList)obj, buffer, result );
                     } else if ( obj instanceof Boolean ) {
                         continue;
                     } else {
@@ -204,7 +206,7 @@ public class NoteListParser {
 
                 } // end of the loop
             }
-        } catch ( RuntimeException e ) {
+        } catch ( Exception e ) {
             try {
                 logWarn( SchemePrinter.printSchemeValue(inputList) );
             } catch (Throwable e1) {
@@ -214,10 +216,12 @@ public class NoteListParser {
         }
     }
     
-    public <T> void parseNotation( Metro metro, MetroTrack track, LList notation, MetroBufferedMidiReceiver<T> buffer, MetroCollector<T> result ) {
+    public <T> void parse( Metro metro, MetroTrack track, LList notation, MetroBufferedMidiReceiver<T> buffer, MetroCollector<T> result ) {
+        metro.getThreadInitializerCollection().initialize();
+
         try {
-            parseNotationProc( metro, track, notation, buffer, result );
-        } catch ( RuntimeException e ) {
+            parseProc( metro, track, notation, buffer, result );
+        } catch ( Exception e ) {
             try {
                 logWarn( SchemePrinter.printSchemeValue(notation) );
             } catch (Throwable e1) {
@@ -226,7 +230,7 @@ public class NoteListParser {
         }
     }
 
-    private <T> void parseNotationProc( Metro metro, MetroTrack track, LList notation, MetroBufferedMidiReceiver<T> buffer, MetroCollector<T> result ) {
+    private <T> void parseProc( Metro metro, MetroTrack track, LList notation, MetroBufferedMidiReceiver<T> buffer, MetroCollector<T> result ) {
         NoteListMap           map    = NoteListMap.createAlist( notation );
         Symbol                type   = map.get( ID_TYPE, SYMBOL_THRU, SYMBOL_NULL );
         if ( type == null ) {

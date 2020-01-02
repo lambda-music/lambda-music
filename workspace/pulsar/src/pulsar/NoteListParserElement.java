@@ -75,7 +75,7 @@ public abstract class NoteListParserElement {
      * {@link NoteListParser#parseNote(Metro, MetroTrack, MetroEventBuffer, boolean, gnu.lists.AbstractSequence) }
      * </li>
      * <li>
-     * {@link NoteListParser#parse(Metro, MetroTrack, Collection, MetroBufferedMidiReceiver, boolean) }
+     * {@link NoteListParser#parseAll(Metro, MetroTrack, Collection, MetroBufferedMidiReceiver, boolean) }
      * </li>
      * </ul>
      * 

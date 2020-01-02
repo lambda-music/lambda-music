@@ -22,6 +22,7 @@ package pulsar;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,6 +37,7 @@ import metro.MetroMidiEvent;
 import metro.MetroSequence;
 import metro.MetroTrack;
 import pulsar.lib.scheme.SafeProcedureN;
+import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.secretary.Invokable;
 
 public class SchemeSequence implements MetroSequence, SchemeSequenceReadable, Invokable {
@@ -115,8 +117,18 @@ public class SchemeSequence implements MetroSequence, SchemeSequenceReadable, In
         // System.out.println("Metro.sequence.new MetroSequence() {...}.initBuffer()" );
 //      buf.humanize( 0.0d, 3 );
         try {
-            PulsarNoteListParser.invokable2receiver(metro, track, invokable, buffer, MetroCollector.NULL ) ;
-        } catch ( RuntimeException e ) {
+            SchemeEngine.initializeCurrentThread( ((Pulsar)metro).getSchemeEngine().getScheme() );
+            ((Pulsar)metro).getThreadInitializer().run();
+            
+            // Call the invokable to get a note list of the next measure.
+            Collection<Object> notations = (Collection<Object>)invokable.invoke();
+            
+            // Parse the retrieved list to execute.
+            // MOVED FROM SchemeSequence (Wed, 06 Nov 2019 17:07:05 +0900)
+            // MOVED AGAIN FROM NoteListParser (Thu, 02 Jan 2020 18:00:29 +0900)
+            PulsarNoteListParser.getInstance().parseAll( metro, track, notations, buffer, (MetroCollector<T>) MetroCollector.NULL );
+            
+        } catch ( Exception e ) {
             LOGGER.log(Level.SEVERE, "", e);
         }
     }
