@@ -59,13 +59,10 @@ public final class SchemeResult {
 
     public static final Object UNKNOWN_CONTENT = new Object();
     
-    public final boolean isDocument;
-    public final Object value;
-    public final String valueAsString;
-    public final Throwable error;
-    public final boolean succeeded() {
-        return error == null;
-    }
+    private final boolean isDocument;
+    private final Object value;
+    private final String valueAsString;
+    private final Throwable error;
     private SchemeResult( boolean isDocument, Object value, String valueAsString, Throwable error ) {
         super();
         this.isDocument = isDocument;
@@ -73,21 +70,38 @@ public final class SchemeResult {
         this.valueAsString = valueAsString;
         this.error = error;
     }
+    public boolean isDocument() {
+        return isDocument;
+    }
+    public final boolean isSucceeded() {
+        return this.error == null;
+    }
+    public final boolean isEmpty() {
+        return this.error == null && ( this.value == null || Values.empty.equals( this.value ) );
+    }
+    public Object getValue() {
+        return value;
+    }
+    public String getValueAsString() {
+        return valueAsString;
+    }
+    public Throwable getError() {
+        return error;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
+
     public SchemeResult throwIfError() {
-        if ( ! succeeded() ) {
+        if ( ! isSucceeded() ) {
             throw new RuntimeException( this.error );
         }
         return this;
     }
     public SchemeResult warnIfError() {
-        if ( ! succeeded() ) {
+        if ( ! isSucceeded() ) {
             logError( "Error", this.error );
         }
         return this;
-    }
-    
-    public boolean isEmpty() {
-        return this.error == null && ( this.value == null || Values.empty.equals( this.value ) );
     }
     
     //////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -37,41 +37,41 @@ public class KawapadEvaluatorReceiverTools {
             Kawapad.logWarn( "**KAWAPAD_PAGE**" );
             SwingUtilities.invokeLater( new RunnableReplaceTextWithEntireBlockOnTextPane(
                 kawapad,
-                schemeResult.valueAsString.replaceFirst( "\n$", "" ),
+                schemeResult.getValueAsString().replaceFirst( "\n$", "" ),
                 false,
                 doResetFileModified
                     ));
         }
         private void procInsert( SchemeResult schemeResult, String schemeScript ) {
             if ( ! schemeResult.isEmpty() ) {
-                String resultString = SchemeResult.formatResult( schemeResult.valueAsString ); 
+                String resultString = SchemeResult.formatResult( schemeResult.getValueAsString() ); 
                 // We want to make sure the result string ends with "\n" to avoid to get an extra line.
                 if ( ! schemeScript.endsWith( "\n" ) ) {
-                    resultString = "\n" + SchemeResult.formatResult( schemeResult.valueAsString ); 
+                    resultString = "\n" + SchemeResult.formatResult( schemeResult.getValueAsString() ); 
                 }
                 Kawapad.logInfo( resultString );
                 SwingUtilities.invokeLater( new RunnableInsertTextToTextPane( kawapad, resultString, true, doResetFileModified ) );
             } else {
                 // do not insert.
-                Kawapad.logInfo( "KawapadEvaluator: do not insert (2). " + schemeResult.value );
+                Kawapad.logInfo( "KawapadEvaluator: do not insert (2). " + schemeResult.getValue() );
             }
         }
         private void procReplace( SchemeResult schemeResult ) {
             if ( ! schemeResult.isEmpty() ) {
                 SwingUtilities.invokeLater( new RunnableReplaceTextOnTextPane(
                     kawapad,
-                    schemeResult.valueAsString,
+                    schemeResult.getValueAsString(),
                     doResetFileModified
                         ));
             } else {
                 // do not insert.
-                Kawapad.logInfo( "KawapadEvaluator: do not insert (1). " + schemeResult.value );
+                Kawapad.logInfo( "KawapadEvaluator: do not insert (1). " + schemeResult.getValue() );
             }
         }
         @Override
         public void receive( String schemeScript, SchemeResult schemeResult ) {
-            if ( schemeResult.succeeded() ) {
-                if ( schemeResult.isDocument ) {
+            if ( schemeResult.isSucceeded() ) {
+                if ( schemeResult.isDocument() ) {
                     procDocument( schemeResult );
                 } else if ( doInsertText ) {
                     if ( doReplaceText ) {
@@ -81,7 +81,7 @@ public class KawapadEvaluatorReceiverTools {
                     }
                 } else {
                     // do not insert if `insertText` is false.
-                    Kawapad.logInfo( "KawapadEvaluator: do not insert (3). " + schemeResult.value );
+                    Kawapad.logInfo( "KawapadEvaluator: do not insert (3). " + schemeResult.getValue() );
                 }
             } else {
                 // if error, insert anyway unless doReportError is false;

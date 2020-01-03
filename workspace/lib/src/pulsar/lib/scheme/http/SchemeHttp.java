@@ -267,8 +267,8 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
             String responseString;
             responseString = 
                     SchemeResult.endWithLineFeed( requestString ) + 
-                    SchemeResult.formatResult( schemeResult.valueAsString );
-            logInfo( schemeResult.valueAsString );
+                    SchemeResult.formatResult( schemeResult.getValueAsString() );
+            logInfo( schemeResult.getValueAsString() );
             t.sendResponseHeaders(200, responseString.length());
             t.getResponseHeaders().put( "Content-Type",  Arrays.asList( "text/plain; charset=utf-8" ) );
             OutputStream os = t.getResponseBody();
@@ -293,8 +293,8 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
             null, 
             "web-scratchpad" );
             String responseString;
-            responseString = schemeResult.valueAsString;
-            logInfo( schemeResult.valueAsString );
+            responseString = schemeResult.getValueAsString();
+            logInfo( schemeResult.getValueAsString() );
             t.sendResponseHeaders(200, responseString.length());
             t.getResponseHeaders().put( "Content-Type",  Arrays.asList( "text/plain; charset=utf-8" ) );
             OutputStream os = t.getResponseBody();
