@@ -5,7 +5,7 @@ import pulsar.lib.scheme.SchemeResult;
 final class KawapadEvaluatorLocal implements KawapadEvaluator {
     @Override
     public SchemeResult evaluate(Kawapad kawapad, String schemeScript) {
-        return kawapad.getSchemeEngine().getSchemeExecutor().evaluate( 
+        return kawapad.getSchemeEngine().getSchemeEvaluator().evaluate( 
         kawapad.getThreadInitializerCollection(),    
         schemeScript, 
         kawapad.getCurrentDirectory(), 

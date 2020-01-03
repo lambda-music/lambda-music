@@ -3,10 +3,18 @@ package pulsar.lib.scheme;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.invoke.MethodHandles;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import gnu.mapping.Values;
 
 public final class SchemeResult {
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }
+    static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }
+    static void logWarn (String msg             ) { LOGGER.log(Level.WARNING,  msg      ); }
+
     public static SchemeResult create(boolean isDocument, Object value, String valueAsString, Throwable error) {
         return new SchemeResult( isDocument, value, valueAsString, error );
     }
@@ -56,6 +64,13 @@ public final class SchemeResult {
         }
         return this;
     }
+    public SchemeResult warnIfError() {
+        if ( ! succeeded() ) {
+            logError( "Error", this.error );
+        }
+        return this;
+    }
+    
     public boolean isEmpty() {
         return this.error == null && ( this.value == null || Values.empty.equals( this.value ) );
     }

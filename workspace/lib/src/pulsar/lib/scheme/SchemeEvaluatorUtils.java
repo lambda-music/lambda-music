@@ -16,7 +16,7 @@ import kawa.Shell;
 import kawa.standard.Scheme;
 import pulsar.lib.scheme.doc.Descriptive;
 
-class SchemeExecutorUtils {
+class SchemeEvaluatorUtils {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -50,7 +50,7 @@ class SchemeExecutorUtils {
             // calling initializeCurrentThread() here is merely a fallback for initializing Scheme object.
             // Call initializeCurrentThread() here in case that no thread initializer was specified.
             
-            SchemeExecutor.initializeCurrentThread( scheme );
+            SchemeEvaluator.initializeCurrentThread( scheme );
             if ( threadInitializer == null ) {
                 logWarn( "No thread initializer was specified " );
             } else {

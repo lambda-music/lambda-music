@@ -354,7 +354,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
         DescriptiveHelp.registerGlobalSchemeInitializer( schemeEngine );
         Kawapad.registerGlobalIntroSchemeInitializer( schemeEngine );
         Kawapad.registerGlobalSchemeInitializer( schemeEngine );
-        schemeEngine.getSchemeExecutor().newScheme();
+        schemeEngine.getSchemeEvaluator().newScheme();
         KawapadFrame kawapadFrame = new KawapadFrame( schemeEngine, evaluator, evaluatorList, true, "Scheme Scratch Pad" );
         ApplicationVessel v = new ApplicationVessel();
         v.add( kawapadFrame );

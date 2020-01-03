@@ -17,9 +17,9 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     
-    private final SchemeExecutor schemeExecutor = new SchemeExecutor();
-    public SchemeExecutor getSchemeExecutor() {
-        return schemeExecutor;
+    private final SchemeEvaluator schemeEvaluator = new SchemeEvaluator();
+    public SchemeEvaluator getSchemeEvaluator() {
+        return schemeEvaluator;
     }
     
     private final ThreadManager threadManager = new ThreadManager();
@@ -42,7 +42,7 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
     private final ThreadInitializer<SchemeEngine> threadInitializer =
             ThreadInitializer.createMultipleThreadInitializer( "scheme-engine", this,
                 ThreadInitializer.createThreadInitializer( "current-scheme-engine", currentObject, this ),
-                this.getSchemeExecutor().getThreadInitializer()
+                this.getSchemeEvaluator().getThreadInitializer()
                 );
     
     @Override
@@ -70,11 +70,11 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
 
     @Override
     public void processInit() {
-        this.getSchemeExecutor().processInit();
+        this.getSchemeEvaluator().processInit();
     }
     @Override
     public void processQuit() {
-        this.getSchemeExecutor().processQuit();
+        this.getSchemeEvaluator().processQuit();
     }
         
 }

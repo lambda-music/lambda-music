@@ -23,7 +23,7 @@ import pulsar.lib.thread.ThreadInitializer;
 import pulsar.lib.thread.ThreadInitializerCollection;
 import pulsar.lib.thread.ThreadInitializerContainer;
 
-public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor>, ApplicationComponent {
+public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluator>, ApplicationComponent {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -34,9 +34,9 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
     }
     
     Scheme scheme=null;
-    public SchemeExecutor() {
+    public SchemeEvaluator() {
     }
-    public SchemeExecutor( Scheme scheme ) {
+    public SchemeEvaluator( Scheme scheme ) {
         this.scheme = scheme;
     }
     
@@ -44,14 +44,14 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
     //
     //////////////////////////////////////////////////////////////////////////////////////////
     
-    private static final CurrentObject<SchemeExecutor> currentObject = new CurrentObject<>( SchemeExecutor.class );
-    private final ThreadInitializer<SchemeExecutor> threadInitializer =
+    private static final CurrentObject<SchemeEvaluator> currentObject = new CurrentObject<>( SchemeEvaluator.class );
+    private final ThreadInitializer<SchemeEvaluator> threadInitializer =
             ThreadInitializer.createMultipleThreadInitializer( "scheme", this,
                 ThreadInitializer.createThreadInitializer( "current-scheme", currentObject, this ), 
                 new Runnable() {
                     @Override
                     public void run() {
-                        initializeCurrentThread( SchemeExecutor.this.getScheme() );
+                        initializeCurrentThread( SchemeEvaluator.this.getScheme() );
                     }
                     @Override
                     public String toString() {
@@ -60,10 +60,10 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
                 });
     
     @Override
-    public ThreadInitializer<SchemeExecutor> getThreadInitializer() {
+    public ThreadInitializer<SchemeEvaluator> getThreadInitializer() {
         return threadInitializer;
     }
-    public static SchemeExecutor getCurrent() {
+    public static SchemeEvaluator getCurrent() {
         return currentObject.get();
     }
 
@@ -168,7 +168,7 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
     
     /**
      * "loadRelative" was moved from 
-     * {@link SchemeExecutorUtils#evaluateScheme(Scheme, Runnable, Reader, File, File, String)}  
+     * {@link SchemeEvaluatorUtils#evaluateScheme(Scheme, Runnable, Reader, File, File, String)}  
      */
     public static void staticInitScheme( Scheme scheme ) {
         Environment env = scheme.getEnvironment();
@@ -194,7 +194,7 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
             File currentFile, 
             String currentURI )
     {
-        return SchemeExecutorUtils.evaluateSchemeProc( 
+        return SchemeEvaluatorUtils.evaluateSchemeProc( 
             scheme,
             threadInitializer, 
             schemeScript, 
@@ -230,18 +230,17 @@ public class SchemeExecutor implements ThreadInitializerContainer<SchemeExecutor
     }
 
 
-    
     // resource
-    public SchemeResult execute( Runnable threadInitializer, Class parentClass, String resourcePath ) throws IOException {
+    public SchemeResult evaluate( Runnable threadInitializer, Class parentClass, String resourcePath ) throws IOException {
         return evaluate( 
             threadInitializer, 
             new InputStreamReader( parentClass.getResource( resourcePath ).openStream() ), 
             null, 
             null, 
             resourcePath 
-            ).throwIfError();
+            );
     }
-    public SchemeResult execute( Class parentClass, String resourcePath ) throws IOException {
-        return execute( null, parentClass, resourcePath ); 
+    public SchemeResult evaluate( Class parentClass, String resourcePath ) throws IOException {
+        return evaluate( null, parentClass, resourcePath ); 
     }
 }

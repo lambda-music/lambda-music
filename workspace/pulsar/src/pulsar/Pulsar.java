@@ -70,8 +70,8 @@ import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.InvokableSchemeProcedure;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeEngine;
-import pulsar.lib.scheme.SchemeExecutor;
-import pulsar.lib.scheme.SchemeExecutor.SchemeEngineListener;
+import pulsar.lib.scheme.SchemeEvaluator;
+import pulsar.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.doc.ProceduralDescriptiveBean;
 import pulsar.lib.secretary.Invokable;
@@ -143,14 +143,14 @@ public final class Pulsar extends Metro implements ApplicationComponent {
 
     public static void registerGlobalSchemeInitializers( SchemeEngine schemeEngine ) {
         // This should be global not local (Mon, 16 Dec 2019 22:52:46 +0900)
-        schemeEngine.getSchemeExecutor().registerSchemeInitializer( new SchemeEngineListener() {
+        schemeEngine.getSchemeEvaluator().registerSchemeInitializer( new SchemeEngineListener() {
             @Override
             public void execute( Scheme scheme ) {
                 Pulsar.initScheme( scheme );
             }
         });
         // This should be global not local (Mon, 16 Dec 2019 22:52:46 +0900)
-        schemeEngine.getSchemeExecutor().registerSchemeInitializer( new SchemeEngineListener() {
+        schemeEngine.getSchemeEvaluator().registerSchemeInitializer( new SchemeEngineListener() {
             @Override
             public void execute( Scheme scheme ) {
                 // FIXME this should depend on the current Pulsar instance.
@@ -259,7 +259,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
     
     private void newScheme() {
         logInfo("Pulsar#newScheme() "); 
-        this.getSchemeEngine().getSchemeExecutor().newScheme();
+        this.getSchemeEngine().getSchemeEvaluator().newScheme();
     }
 
     MersenneTwisterFast random = new MersenneTwisterFast( new int[] { 
@@ -2243,11 +2243,11 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         PulsarDocuments.defineDoc( scheme, PulsarNoteListParser.getInstance() );
 
         try {
-            SchemeExecutor executor = new SchemeExecutor( scheme );
-            executor.execute( Pulsar.class, "lib/init.scm"  );
+            SchemeEvaluator evaluator = new SchemeEvaluator( scheme );
+            evaluator.evaluate( Pulsar.class, "lib/init.scm"  ).warnIfError();
 //            SchemeUtils.execSchemeFromResource( scheme, Pulsar.class, "lib/basic-notes.scm"  );
-            executor.execute( Pulsar.class, "lib/music.scm"  );
-            executor.execute( Pulsar.class, "lib/xnoop.scm" );
+            evaluator.evaluate( Pulsar.class, "lib/music.scm"  ).warnIfError();
+            evaluator.evaluate( Pulsar.class, "lib/xnoop.scm" ).warnIfError();
         } catch ( Throwable t ) {
             logError( "", t );
         }

@@ -258,7 +258,7 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
             String requestString = readInputStream( t.getRequestBody() ); 
             logInfo( requestString );
             SchemeResult schemeResult = 
-                    schemeEngine.getSchemeExecutor().evaluate( 
+                    schemeEngine.getSchemeEvaluator().evaluate( 
             schemeThreadInitializer,    
             requestString, 
             null, 
@@ -286,7 +286,7 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
         public void handleProc(HttpExchange t) throws IOException {
             String requestString = readInputStream( t.getRequestBody() ); 
             logInfo( requestString );
-            SchemeResult schemeResult = schemeEngine.getSchemeExecutor().evaluate( 
+            SchemeResult schemeResult = schemeEngine.getSchemeEvaluator().evaluate( 
             schemeThreadInitializer,    
             requestString, 
             null, 

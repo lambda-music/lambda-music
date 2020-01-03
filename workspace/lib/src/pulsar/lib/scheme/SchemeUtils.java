@@ -498,7 +498,7 @@ public class SchemeUtils {
 //                            DescriptiveDocumentCategory.PROCS.getDocumentList(environment)));
 //    }
     public static List<String> getAllKey( SchemeEngine schemeEngine ) {
-        Scheme scheme = schemeEngine.getSchemeExecutor().getScheme();
+        Scheme scheme = schemeEngine.getSchemeEvaluator().getScheme();
         ArrayList<String> list = new ArrayList<>();
         Environment env = scheme.getEnvironment();
         for ( LocationEnumeration e=env.enumerateAllLocations();e.hasMoreElements(); ) {

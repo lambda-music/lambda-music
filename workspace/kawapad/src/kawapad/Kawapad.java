@@ -98,8 +98,8 @@ import pulsar.lib.CurrentObject;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeEngine;
-import pulsar.lib.scheme.SchemeExecutor;
-import pulsar.lib.scheme.SchemeExecutor.SchemeEngineListener;
+import pulsar.lib.scheme.SchemeEvaluator;
+import pulsar.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import pulsar.lib.scheme.SchemePrinter;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.doc.DescriptiveActions;
@@ -269,7 +269,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         this.schemeEngine = schemeEngine;
         this.currentEvaluator = currentEvaluator;
         // Added (Mon, 23 Dec 2019 02:11:34 +0900)      
-        this.schemeEngine.getSchemeExecutor().registerSchemeInitializer( variableInitializer01 );
+        this.schemeEngine.getSchemeEvaluator().registerSchemeInitializer( variableInitializer01 );
         
         // init font
         kawapad.setFont( new Font("monospaced", Font.PLAIN, 12));
@@ -354,7 +354,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
      * frames are disposed.
      */
     public static void registerGlobalSchemeInitializer( SchemeEngine schemeEngine ) {
-        schemeEngine.getSchemeExecutor().registerSchemeInitializer( staticInitializer01 );
+        schemeEngine.getSchemeEvaluator().registerSchemeInitializer( staticInitializer01 );
     }
     static SchemeEngineListener staticInitializer01 = new SchemeEngineListener() {
         @Override
@@ -395,7 +395,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     }
     
     public static void registerGlobalIntroSchemeInitializer( SchemeEngine schemeEngine ) {
-        schemeEngine.getSchemeExecutor().registerSchemeInitializer( staticIntroInitializer01 );
+        schemeEngine.getSchemeEvaluator().registerSchemeInitializer( staticIntroInitializer01 );
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -1286,7 +1286,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         }
         @Override
         public void actionPerformed(ActionEvent e) {
-            kawapad.getSchemeEngine().getSchemeExecutor().newScheme();
+            kawapad.getSchemeEngine().getSchemeEvaluator().newScheme();
         }
         {
             putValue( Action2.CAPTION, "Reset the Environment" );
@@ -2851,8 +2851,8 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         try {
             logInfo( "Loading " + initFile.getName() );
             if ( initFile.exists() ) {
-                SchemeExecutor executor = new SchemeExecutor( scheme );
-                executor.evaluate( threadInitializer, initFile ).throwIfError();
+                SchemeEvaluator evaluator = new SchemeEvaluator( scheme );
+                evaluator.evaluate( threadInitializer, initFile ).throwIfError();
             } else {
                 logInfo( "The " + fileType + " file \"" + initFile.getPath() + "\" does not exist. Ignored." );
             }
@@ -3037,8 +3037,8 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
             if ( false ) {
                 try {
                     logInfo( "Loading [Kawapad internal]/kawapad-extension.scm" );
-                    SchemeExecutor executor = new SchemeExecutor( scheme );
-                    executor.execute( Kawapad.class, "kawapad-extension.scm" );
+                    SchemeEvaluator evaluator = new SchemeEvaluator( scheme );
+                    evaluator.evaluate( Kawapad.class, "kawapad-extension.scm" ).warnIfError();
                 } catch (Throwable e) {
                     logError( "Ignored an error : ", e);
                 }

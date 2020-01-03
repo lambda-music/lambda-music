@@ -243,7 +243,7 @@ public class PulsarApplication {
             schemeHttp = PulsarApplicationLibrary.createPulsarHttpServer( schemeEngine, httpPort, SchemeHttp.UserAuthentication.ONLY_LOOPBACK, pulsar );
         }
         
-        schemeEngine.getSchemeExecutor().newScheme();
+        schemeEngine.getSchemeEvaluator().newScheme();
         
         if ( pulsarFrame != null ) {
             pulsarFrame.processInit();
