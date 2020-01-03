@@ -47,7 +47,7 @@ final class KawapadEvaluatorRemote implements KawapadEvaluator {
     public SchemeResult evaluate(Kawapad kawapad, String schemeScript)  {
         try {
             String result = httpRequest( url, schemeScript );
-            return SchemeResult.createSucceeded( false, SchemeResult.UNKNOWN_CONTENT, result );
+            return SchemeResult.createSucceededByString( result );
         } catch (IOException e) {
             return SchemeResult.createError( e );
         }

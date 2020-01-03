@@ -14,7 +14,6 @@ import gnu.lists.Consumer;
 import gnu.mapping.CallContext;
 import kawa.Shell;
 import kawa.standard.Scheme;
-import pulsar.lib.scheme.doc.Descriptive;
 
 class SchemeEvaluatorUtils {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -108,16 +107,7 @@ class SchemeEvaluatorUtils {
                 Object resultValue = scheme.eval( new InPort( schemeScript, Path.valueOf( schemeScriptURI ) ) );
                 // Object result = Shell.run( schemeScript, schemeScriptURI, scheme.getEnvironment(), true, 0 ); 
     
-                if ( resultValue == null ) {
-                    return SchemeResult.createNull();
-                } else {
-                    if ( Descriptive.isSchemeDocument( resultValue ) ) {
-                        Object doc = Descriptive.getSchemeDocument(resultValue);
-                        return SchemeResult.createSucceeded( true, doc, SchemePrinter.printDocument(doc) );
-                    } else {
-                        return SchemeResult.createSucceeded( false, resultValue, SchemePrinter.printSchemeValue(resultValue)  );
-                    }
-                }
+                return SchemeResult.createSucceededByObject( resultValue );
             } catch (Throwable e) {
                 return SchemeResult.createError( e );
             } finally {

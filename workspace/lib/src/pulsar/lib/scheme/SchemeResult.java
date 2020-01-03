@@ -8,6 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import gnu.mapping.Values;
+import pulsar.lib.scheme.doc.Descriptive;
 
 public final class SchemeResult {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -18,12 +19,26 @@ public final class SchemeResult {
     public static SchemeResult create(boolean isDocument, Object value, String valueAsString, Throwable error) {
         return new SchemeResult( isDocument, value, valueAsString, error );
     }
-    public static SchemeResult createNull() {
-        return SchemeResult.create( false, null, "#!null", null );
-    }
     public static SchemeResult createSucceeded(boolean isDocument, Object value, String valueAsString ) {
-        return new SchemeResult( isDocument, value, valueAsString, null );
+        return create( isDocument, value, valueAsString, null );
     }
+    public static SchemeResult createSucceededByNull() {
+        return createSucceeded( false, null, "#!null" );
+    }
+    public static SchemeResult createSucceededByString( String resultValueAsString ) {
+        return SchemeResult.createSucceeded( false, SchemeResult.UNKNOWN_CONTENT, resultValueAsString );
+    }
+    public static SchemeResult createSucceededByObject(Object resultValue) {
+        if ( resultValue == null ) {
+            return createSucceededByNull();
+        } else if ( Descriptive.isSchemeDocument( resultValue ) ) {
+            Object doc = Descriptive.getSchemeDocument(resultValue);
+            return createSucceeded( true, doc, SchemePrinter.printDocument(doc) );
+        } else {
+            return createSucceeded( false, resultValue, SchemePrinter.printSchemeValue(resultValue)  );
+        }
+    }
+
     public static SchemeResult createError( Throwable e ) {
         StringWriter sw = new StringWriter();
         PrintWriter w = new PrintWriter( sw );

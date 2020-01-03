@@ -1,11 +1,7 @@
 package pulsar.lib.scheme;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +19,7 @@ import pulsar.lib.thread.ThreadInitializer;
 import pulsar.lib.thread.ThreadInitializerCollection;
 import pulsar.lib.thread.ThreadInitializerContainer;
 
-public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluator>, ApplicationComponent {
+public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluator>, ApplicationComponent, Evaluator {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -63,7 +59,7 @@ public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluat
     public ThreadInitializer<SchemeEvaluator> getThreadInitializer() {
         return threadInitializer;
     }
-    public static SchemeEvaluator getCurrent() {
+    public static Evaluator getCurrent() {
         return currentObject.get();
     }
 
@@ -187,6 +183,7 @@ public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluat
         }, "current-environment" );
     }
 
+    @Override
     public SchemeResult evaluate( 
             Runnable threadInitializer, 
             Reader schemeScript, 
@@ -201,46 +198,5 @@ public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluat
             currentDirectory, 
             currentFile, 
             currentURI );
-    }
-
-    // helper methods
-    public SchemeResult evaluate( 
-            Runnable threadInitializer, 
-            String schemeScriptString, 
-            File currentDirectory, 
-            File currentFile, 
-            String currentURI )
-    {
-        return evaluate( 
-            threadInitializer, 
-            new StringReader( schemeScriptString ),
-            currentDirectory, 
-            currentFile, 
-            currentURI );
-    }
-
-    public SchemeResult evaluate( Runnable threadInitializer, File schemeScriptFile ) throws IOException {
-        return evaluate( 
-            threadInitializer,
-            new InputStreamReader( new FileInputStream( schemeScriptFile ) ), 
-            schemeScriptFile.getParentFile(), 
-            schemeScriptFile, 
-            schemeScriptFile.getPath() 
-            );
-    }
-
-
-    // resource
-    public SchemeResult evaluate( Runnable threadInitializer, Class parentClass, String resourcePath ) throws IOException {
-        return evaluate( 
-            threadInitializer, 
-            new InputStreamReader( parentClass.getResource( resourcePath ).openStream() ), 
-            null, 
-            null, 
-            resourcePath 
-            );
-    }
-    public SchemeResult evaluate( Class parentClass, String resourcePath ) throws IOException {
-        return evaluate( null, parentClass, resourcePath ); 
     }
 }
