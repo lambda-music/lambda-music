@@ -2,7 +2,6 @@ package pulsar.lib.scheme;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
@@ -17,21 +16,28 @@ import kawa.Shell;
 import kawa.standard.Scheme;
 import pulsar.lib.scheme.doc.Descriptive;
 
-public class SchemeExecutorUtils {
+class SchemeExecutorUtils {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
-    public static void execSchemeFromResource( Scheme scheme, Class parentClass, String resourcePath ) throws IOException {
-        SchemeExecutorUtils.evaluateScheme( 
-            scheme, null, 
-            new InputStreamReader( parentClass.getResource( resourcePath ).openStream() ), 
-            null, null, resourcePath 
-            ).throwIfError();
-    }
+//    public static void execSchemeFromResource( Scheme scheme, Class parentClass, String resourcePath ) throws IOException {
+//        SchemeExecutorUtils.evaluateScheme( 
+//            scheme, null, 
+//            new InputStreamReader( parentClass.getResource( resourcePath ).openStream() ), 
+//            null, null, resourcePath 
+//            ).throwIfError();
+//    }
 
-    public static SchemeResult evaluateScheme( 
+//    public static SchemeResult evaluateScheme( 
+//            Scheme scheme, Runnable threadInitializer, 
+//            Reader schemeScript, File currentDirectory, File currentFile, String schemeScriptURI )
+//    {
+//        return evaluateSchemeProc( scheme, threadInitializer, schemeScript, currentDirectory, currentFile, schemeScriptURI );
+//    }
+
+    static SchemeResult evaluateSchemeProc( 
             Scheme scheme, Runnable threadInitializer, 
             Reader schemeScript, File currentDirectory, File currentFile, String schemeScriptURI )
     {
@@ -125,31 +131,4 @@ public class SchemeExecutorUtils {
             }
         }
     }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    ////////////////////////////////////////////////////////////////////////////////////////////
-
-    public static String endWithLineFeed(String s) {
-        if ( s == null )
-            return null;
-        else if ( s.equals( "" ) )
-            return "";
-        else if ( s.endsWith("\n" ) )
-            return s;
-        else
-            return s + "\n"; 
-    }
-
-    public static String formatResult( String s ) {
-        if ( s == null )
-            return null;
-        else if ( s.equals( "" ) )
-            return "";
-        else
-            return "#|\n" + endWithLineFeed( s ) + "|#\n";
-    }
-
-    
-    
 }

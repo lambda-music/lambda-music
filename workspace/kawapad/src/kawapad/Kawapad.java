@@ -26,9 +26,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -99,10 +97,10 @@ import kawapad.lib.undomanagers.UndoManagers;
 import pulsar.lib.CurrentObject;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.SafeProcedureN;
-import pulsar.lib.scheme.SchemeExecutorUtils;
+import pulsar.lib.scheme.SchemeEngine;
+import pulsar.lib.scheme.SchemeExecutor;
 import pulsar.lib.scheme.SchemeExecutor.SchemeEngineListener;
 import pulsar.lib.scheme.SchemePrinter;
-import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.doc.DescriptiveActions;
 import pulsar.lib.scheme.doc.ProceduralDescriptiveBean;
@@ -2853,11 +2851,8 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         try {
             logInfo( "Loading " + initFile.getName() );
             if ( initFile.exists() ) {
-                SchemeExecutorUtils.evaluateScheme( 
-                    scheme, threadInitializer,
-                    new InputStreamReader( new FileInputStream( initFile ) ), 
-                    initFile.getParentFile(), initFile, initFile.getPath() 
-                    ).throwIfError();
+                SchemeExecutor executor = new SchemeExecutor( scheme );
+                executor.evaluate( threadInitializer, initFile ).throwIfError();
             } else {
                 logInfo( "The " + fileType + " file \"" + initFile.getPath() + "\" does not exist. Ignored." );
             }
@@ -3042,7 +3037,8 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
             if ( false ) {
                 try {
                     logInfo( "Loading [Kawapad internal]/kawapad-extension.scm" );
-                    SchemeExecutorUtils.execSchemeFromResource( scheme, Kawapad.class, "kawapad-extension.scm" );
+                    SchemeExecutor executor = new SchemeExecutor( scheme );
+                    executor.execute( Kawapad.class, "kawapad-extension.scm" );
                 } catch (Throwable e) {
                     logError( "Ignored an error : ", e);
                 }

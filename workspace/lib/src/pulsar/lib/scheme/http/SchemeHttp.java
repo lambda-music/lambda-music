@@ -25,10 +25,8 @@ import com.sun.net.httpserver.HttpServer;
 
 import pulsar.lib.CurrentObject;
 import pulsar.lib.app.ApplicationComponent;
-import pulsar.lib.scheme.SchemeExecutorUtils;
-import pulsar.lib.scheme.SchemeExecutor;
-import pulsar.lib.scheme.SchemeResult;
 import pulsar.lib.scheme.SchemeEngine;
+import pulsar.lib.scheme.SchemeResult;
 import pulsar.lib.thread.ThreadInitializer;
 import pulsar.lib.thread.ThreadInitializerCollection;
 import pulsar.lib.thread.ThreadInitializerCollectionContainer;
@@ -260,13 +258,16 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
             String requestString = readInputStream( t.getRequestBody() ); 
             logInfo( requestString );
             SchemeResult schemeResult = 
-                    SchemeExecutor.evaluateScheme( 
-                        schemeEngine.getSchemeExecutor(), schemeThreadInitializer, 
-                        requestString, null, null, "web-scratchpad" );
+                    schemeEngine.getSchemeExecutor().evaluate( 
+            schemeThreadInitializer,    
+            requestString, 
+            null, 
+            null, 
+            "web-scratchpad" );
             String responseString;
             responseString = 
-                    SchemeExecutorUtils.endWithLineFeed( requestString ) + 
-                    SchemeExecutorUtils.formatResult( schemeResult.valueAsString );
+                    SchemeResult.endWithLineFeed( requestString ) + 
+                    SchemeResult.formatResult( schemeResult.valueAsString );
             logInfo( schemeResult.valueAsString );
             t.sendResponseHeaders(200, responseString.length());
             t.getResponseHeaders().put( "Content-Type",  Arrays.asList( "text/plain; charset=utf-8" ) );
@@ -285,7 +286,12 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
         public void handleProc(HttpExchange t) throws IOException {
             String requestString = readInputStream( t.getRequestBody() ); 
             logInfo( requestString );
-            SchemeResult schemeResult = SchemeExecutor.evaluateScheme( schemeEngine.getSchemeExecutor(), schemeThreadInitializer, requestString, null, null, "web-scratchpad" );
+            SchemeResult schemeResult = schemeEngine.getSchemeExecutor().evaluate( 
+            schemeThreadInitializer,    
+            requestString, 
+            null, 
+            null, 
+            "web-scratchpad" );
             String responseString;
             responseString = schemeResult.valueAsString;
             logInfo( schemeResult.valueAsString );

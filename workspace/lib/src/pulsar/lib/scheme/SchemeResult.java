@@ -50,12 +50,35 @@ public final class SchemeResult {
         this.valueAsString = valueAsString;
         this.error = error;
     }
-    public void throwIfError() {
+    public SchemeResult throwIfError() {
         if ( ! succeeded() ) {
             throw new RuntimeException( this.error );
         }
+        return this;
     }
     public boolean isEmpty() {
         return this.error == null && ( this.value == null || Values.empty.equals( this.value ) );
+    }
+    
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    public static String formatResult( String s ) {
+        if ( s == null )
+            return null;
+        else if ( s.equals( "" ) )
+            return "";
+        else
+            return "#|\n" + endWithLineFeed( s ) + "|#\n";
+    }
+    
+    public static String endWithLineFeed(String s) {
+        if ( s == null )
+            return null;
+        else if ( s.equals( "" ) )
+            return "";
+        else if ( s.endsWith("\n" ) )
+            return s;
+        else
+            return s + "\n"; 
     }
 }
