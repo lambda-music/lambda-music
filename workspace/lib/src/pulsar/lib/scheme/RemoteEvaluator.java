@@ -1,17 +1,16 @@
-package kawapad;
+package pulsar.lib.scheme;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import pulsar.lib.scheme.SchemeEvaluator;
-import pulsar.lib.scheme.SchemeResult;
-
-final class KawapadEvaluatorRemote implements KawapadEvaluator {
+public class RemoteEvaluator implements Evaluator {
     public static String httpRequest(String urlString, String postString) throws IOException {
         String outputString = postString; 
         URL url = new URL( urlString );
@@ -38,27 +37,51 @@ final class KawapadEvaluatorRemote implements KawapadEvaluator {
         }
     }
     private String url;
-    public KawapadEvaluatorRemote(String url) {
+    public RemoteEvaluator(String url) {
         this.url = url;
     }
     @Override
-    public String getName() {
+    public String toString() {
         return this.url;
     }
+
     @Override
     public SchemeResult evaluate(
-            SchemeEvaluator evaluator, 
             Runnable threadInitializer, 
-            String schemeScript, 
-            File currentDirectory, 
+            Reader schemeScript, 
+            File currentDirectory,
             File currentFile, 
-            String currentURI)  
+            String currentURI) 
     {
+        String schemeScriptString;
         try {
-            String result = httpRequest( url, schemeScript );
+            schemeScriptString = readAll( schemeScript );
+        } catch (IOException e1) {
+            throw new RuntimeException(e1);
+        }
+        
+        try {
+            String result = httpRequest( url, schemeScriptString );
             return SchemeResult.createSucceededByString( result );
         } catch (IOException e) {
             return SchemeResult.createError( e );
+        }
+    }
+    
+    private static String readAll(Reader schemeScript) throws IOException {
+        try ( StringWriter w = new StringWriter();    
+              Reader r = schemeScript ) 
+        {
+            char[] cbuf = new char[ 1024 * 8 ];
+            for (;;) {
+                int size = r.read( cbuf );
+                if ( 0 < size ) {
+                    w.write( cbuf , 0, size );
+                } else {
+                    break;
+                }
+            }
+            return w.getBuffer().toString();
         }
     }
 }

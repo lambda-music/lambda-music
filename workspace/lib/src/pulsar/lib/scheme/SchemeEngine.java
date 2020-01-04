@@ -22,6 +22,11 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
         return schemeEvaluator;
     }
     
+    private final EvaluatorList evaluatorList = new EvaluatorList();
+    public EvaluatorList getEvaluatorList() {
+        return evaluatorList;
+    }
+    
     private final ThreadManager threadManager = new ThreadManager();
     public ThreadManager getThreadManager() {
         return threadManager;

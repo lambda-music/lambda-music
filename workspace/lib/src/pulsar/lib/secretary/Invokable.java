@@ -20,7 +20,6 @@
 
 package pulsar.lib.secretary;
 
-import gnu.mapping.Values;
 import pulsar.lib.scheme.InvokableSchemeProcedure;
 
 /**
@@ -32,9 +31,8 @@ import pulsar.lib.scheme.InvokableSchemeProcedure;
  */
 public abstract interface Invokable {
     Object NOARG = new Object[0];
-//  Object NO_RESULT = EmptyList.emptyList;
-    Object NO_RESULT = Values.empty;
-
+    // not used
+    Object NO_RESULT = new Object();
     /**
      * This method invokes the invokable which is denoted by the subclasses
      * implement this interface.

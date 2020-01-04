@@ -34,7 +34,6 @@ import kawa.standard.Scheme;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.doc.DescriptiveDocumentCategory;
-import pulsar.lib.secretary.Invokable;
 import pulsar.lib.secretary.InvokablyRunnable;
 import pulsar.lib.swing.FlawLayout;
 import pulsar.lib.swing.JNamedPanel;
@@ -550,7 +549,7 @@ public class PulsarFramePackage {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 guiPack();
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         }, "gui-pack");
 
@@ -590,7 +589,7 @@ public class PulsarFramePackage {
                     ArrayDeque<Object> argList = new ArrayDeque<>( Arrays.asList(args) );
                     Container parent = (Container) SchemeUtils.schemeNullCheck(argList.pop());
                     guiRemoveAll(parent);
-                    return Invokable.NO_RESULT;
+                    return SchemeUtils.NO_RESULT;
                 } else {
                     throw new RuntimeException( 
                         "Invalid argument error\n"+
@@ -606,7 +605,7 @@ public class PulsarFramePackage {
                     ArrayDeque<Object> argList = new ArrayDeque<>( Arrays.asList(args) );
                     Container parent = (Container) SchemeUtils.schemeNullCheck(argList.pop());
                     guiRemoveByRef( parent, argList );
-                    return Invokable.NO_RESULT;
+                    return SchemeUtils.NO_RESULT;
                 } else {
                     throw new RuntimeException( 
                         "Invalid argument error\n"+
@@ -749,7 +748,7 @@ public class PulsarFramePackage {
                 else
                     guiNewline( (JComponent) args[0]);
 
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         }, "gui-newline");
         //      SchemeUtils.defineVar( scheme, "gui-repaint" , new SafeProcedureN("gui-repaint") {
@@ -789,7 +788,7 @@ public class PulsarFramePackage {
                     throw new IllegalArgumentException( "an insufficient number of arguments" );
                 } else {
                     guiGridBagLayout((Container)args[0]);
-                    return Invokable.NO_RESULT;
+                    return SchemeUtils.NO_RESULT;
                 }
             }
         }, "gui-gridbag-layout");
@@ -801,7 +800,7 @@ public class PulsarFramePackage {
                     throw new IllegalArgumentException( "an insufficient number of arguments" );
 
                 guiSpringLayout((Container)args[0]);
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         }, "gui-spring-layout");
         SchemeUtils.defineVar( env, new SafeProcedureN("gui-flow-layout") {
@@ -811,7 +810,7 @@ public class PulsarFramePackage {
                 if ( args.length < 1 )
                     throw new IllegalArgumentException( "an insufficient number of arguments" );
                 guiFlowLayout((Container)args[0]);
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         }, "gui-flow-layout");
         SchemeUtils.defineVar( env, new SafeProcedureN("gui-put-constraint") {
@@ -828,7 +827,7 @@ public class PulsarFramePackage {
                     throw new RuntimeException( "put-constraint has five parameters( constraint1 component1 pad constraint2 component2  )." );
                 }
                 guiRepaint(userPane);
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         }, "gui-put-constraint");
 
@@ -836,14 +835,14 @@ public class PulsarFramePackage {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 guiInvalidate((Container) args[0] );
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         }, "gui-invalidate");
         SchemeUtils.defineVar( env, new SafeProcedureN("gui-validate") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 guiValidate((Container) args[0] );
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         }, "gui-validate");
 
@@ -851,14 +850,14 @@ public class PulsarFramePackage {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 guiRevalidate((Container) args[0] );
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         }, "gui-revalidate");
         SchemeUtils.defineVar( env, new SafeProcedureN("gui-repaint") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 guiRepaint((Container) args[0] );
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         }, "gui-repaint");
 

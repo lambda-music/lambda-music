@@ -19,7 +19,7 @@ import pulsar.lib.thread.ThreadInitializer;
 import pulsar.lib.thread.ThreadInitializerCollection;
 import pulsar.lib.thread.ThreadInitializerContainer;
 
-public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluator>, ApplicationComponent, Evaluator {
+public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluator>, ApplicationComponent, Evaluator, HasName {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -30,12 +30,24 @@ public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluat
     }
     
     Scheme scheme=null;
+    String name=null;
     public SchemeEvaluator() {
+        this.scheme = null;
+        this.name = "local";
     }
     public SchemeEvaluator( Scheme scheme ) {
         this.scheme = scheme;
+        this.name = "local";
+    }
+    public SchemeEvaluator( Scheme scheme, String name ) {
+        this.scheme = scheme;
+        this.name = name;
     }
     
+    @Override
+    public String getName() {
+        return this.name;
+    }
     //////////////////////////////////////////////////////////////////////////////////////////
     //
     //////////////////////////////////////////////////////////////////////////////////////////

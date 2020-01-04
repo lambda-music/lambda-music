@@ -15,6 +15,7 @@ public interface Evaluator {
             File currentFile,
             String currentURI );
 
+    
     default SchemeResult evaluate( 
             Runnable threadInitializer, 
             String schemeScriptString, 

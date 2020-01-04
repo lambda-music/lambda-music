@@ -317,14 +317,14 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                     double value = SchemeUtils.toDouble(args[0]);
                     getCurrent().pb_position.setValue((int) (value * PB_POSITION_MAX) );
                 }
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         }, "gui-set-progress-pos");
         SchemeUtils.defineVar( env, new SafeProcedureN("gui-clear") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 getCurrent().guiClear();
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         }, "gui-clear");
         SchemeUtils.defineVar( env, new SafeProcedureN("gui-divider-location") {
@@ -460,7 +460,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                     sb.append( o.toString() ).append( " " );
                 }
                 getCurrent().frame.getKawapad().insertText( sb.toString().trim() );
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         }, "gui-insert-text");
     }

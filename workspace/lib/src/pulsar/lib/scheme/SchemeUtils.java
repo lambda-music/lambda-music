@@ -50,12 +50,15 @@ import gnu.mapping.NamedLocation;
 import gnu.mapping.Procedure;
 import gnu.mapping.SimpleSymbol;
 import gnu.mapping.Symbol;
+import gnu.mapping.Values;
 import gnu.math.DFloNum;
 import gnu.math.IntNum;
 import gnu.math.Quantity;
 import kawa.standard.Scheme;
 
 public class SchemeUtils {
+    public static final Object NO_RESULT = Values.empty;
+    
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
@@ -473,6 +476,7 @@ public class SchemeUtils {
 
     final Procedure reverse = (Procedure)gnu.kawa.slib.srfi1.reverse.get();
     final Procedure map = (Procedure)gnu.kawa.slib.srfi1.map.get();
+    //  Object NO_RESULT = EmptyList.emptyList;
 
 //    public LList availableProcedures( Environment environment, int index ) throws Throwable {
 //        Procedure1 proc1 = new Procedure1() {

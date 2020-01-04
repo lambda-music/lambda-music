@@ -848,7 +848,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             @Override
             public Object apply1(Object arg0) throws Throwable {
                 getCurrent().open( SchemeUtils.toString( arg0 ) );
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         }, "open");
         
@@ -869,7 +869,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 getCurrent().close();
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         }, "close" );
 
@@ -969,7 +969,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                         pulsar.destroyOutputPort( p );
                     }
                 }
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         };
         SchemeUtils.defineVar( env, closeOutput, "close-output", "closeo" );
@@ -986,7 +986,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                         pulsar.destroyInputPort( p );
                     }
                 }
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         };
         SchemeUtils.defineVar( env, closeInput, "close-input", "closei" );
@@ -1060,7 +1060,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 connectProc( getCurrent(), args, ConnectProc.CONNECT );
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         }, "connect" );
         
@@ -1072,7 +1072,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 connectProc(getCurrent(), args, ConnectProc.DISCONNECT );
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         }, "disconnect");
 
@@ -1127,7 +1127,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                 } else {
                     throw new RuntimeException( "invalid argument length" );
                 }
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         }, "set-main");
 
@@ -1175,7 +1175,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                 } else {
                     throw new RuntimeException( "invalid argument length" );
                 }
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         }, "set-playing", "p" );
 
@@ -1215,7 +1215,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 getCurrent().setPlaying( true ); 
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         }, "play");
         
@@ -1233,7 +1233,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 getCurrent().setPlaying( false ); 
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         }, "stop");
 
@@ -1292,7 +1292,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             public Object applyN(Object[] args) throws Throwable {
                 logInfo( "Pulsar Scheme API: TAP-TEMPO" );
                 getCurrent().tempoTapper.tap(); 
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         } , "tap-tempo", "tapt" );
         
@@ -1320,7 +1320,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                     getCurrent().tempoTapper.setBeatsPerMinute( bpm );
                 }
 
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         }, "set-tempo" );
         
@@ -1350,7 +1350,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             @Override
             public Object apply0() throws Throwable {
                 getCurrent().reset();
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         };
         SchemeUtils.defineVar( env, resetScheme, "reset" );
@@ -1374,7 +1374,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             @Override
             public Object apply0() throws Throwable {
                 getCurrent().rewind();
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         }, "rewind");
         
@@ -1409,7 +1409,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                         pulsar.notifyTrackChange();
                     }
                 }
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         };
         SchemeUtils.defineVar( env, simul , "simultaneous", "simul" );
@@ -1777,7 +1777,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             @Override
             public Object apply0() throws Throwable {
                 getCurrent().notifyTrackChange();
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         };
         SchemeUtils.defineVar( env, notifyTrackChange , "notify-track-change", "nott" );
@@ -1828,7 +1828,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             @Override
             public Object apply0() throws Throwable {
                 getCurrent().clearTracks();
-                return Invokable.NO_RESULT;
+                return SchemeUtils.NO_RESULT;
             }
         };
         SchemeUtils.defineVar( env, clr , "clear-tracks", "clet" );
@@ -1921,7 +1921,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                     else
                         return SchemeUtils.toSchemeString( args[0].getClass().getName() );
                 } else {
-                    return Invokable.NO_RESULT;
+                    return SchemeUtils.NO_RESULT;
                 }
             }
         }, "typeof");
