@@ -169,8 +169,6 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
 
     public KawapadFrame( 
             SchemeEngine schemeEngine, 
-            KawapadEvaluator evaluator, 
-            Collection<KawapadEvaluator> evaluatorList, 
             boolean shutdownWhenClose,
             String title 
             ) throws HeadlessException 
@@ -185,7 +183,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
 //      invokeLocalSchemeInitializers( schemeSecretary, this);
 //      DELETED <<< INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
         
-        this.kawapad = new Kawapad( schemeEngine, evaluator ) {
+        this.kawapad = new Kawapad( schemeEngine ) {
             // Special thanks go to tips4java
             // https://tips4java.wordpress.com/2009/01/25/no-wrap-text-pane/
             public boolean getScrollableTracksViewportWidth() {
@@ -219,7 +217,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
         
         scrollPane = new JScrollPane( kawapad );
         scratchPadRoot = new JPanel( new BorderLayout() );
-        getContentPane().add(scratchPadRoot );
+        getContentPane().add( scratchPadRoot );
         scratchPadRoot.add( scrollPane, BorderLayout.CENTER );
         
         {
@@ -280,8 +278,8 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
             Action2.processMenuBar( menuBar );
             setJMenuBar( menuBar );
             
-            // (Wed, 20 Nov 2019 11:51:41 +0900)
-            this.kawapad.setEvaluatorList( evaluatorList, serverMenu );
+            kawapad.getSchemeEngine().getEvaluatorManager().getServerMenuList().add( serverMenu );
+            kawapad.getSchemeEngine().getEvaluatorManager().notifyUpdate();
         }
 
         {
@@ -355,7 +353,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
         Kawapad.registerGlobalIntroSchemeInitializer( schemeEngine );
         Kawapad.registerGlobalSchemeInitializer( schemeEngine );
         schemeEngine.getSchemeEvaluator().newScheme();
-        KawapadFrame kawapadFrame = new KawapadFrame( schemeEngine, evaluator, evaluatorList, true, "Scheme Scratch Pad" );
+        KawapadFrame kawapadFrame = new KawapadFrame( schemeEngine, true, "Scheme Scratch Pad" );
         ApplicationVessel v = new ApplicationVessel();
         v.add( kawapadFrame );
         kawapadFrame.setParentApplicationComponent( kawapadFrame );

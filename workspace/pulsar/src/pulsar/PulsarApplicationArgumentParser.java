@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 import kawapad.Kawapad;
 import kawapad.KawapadFrame;
 import pulsar.lib.app.ApplicationVessel;
+import pulsar.lib.scheme.EvaluatorManager;
 import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.http.SchemeHttp;
 import pulsar.lib.scheme.http.SchemeHttp.UserAuthentication;
@@ -291,14 +292,20 @@ class PulsarApplicationArgumentParser {
                     
                     @SuppressWarnings("unused")
                     boolean directMeeting = true;
+                    
+                    List<String> urlList = new ArrayList<>();
                     @Override
                     Element notifyArg(String s) {
                         if ( s.startsWith( "--"  ) ) {
                             NamedArgument a = new NamedArgument( s );
                             if ( "parallel".equals( a.key ) ) {
                                 this.directMeeting =  true ;
-                            } else if ( "serial".equals( a.key) ) {
+                            } else if ( "serial".equals( a.key ) ) {
                                 this.directMeeting =  false ;
+                            } else if ( "remote".equals( a.key ) ) {
+                                urlList.add( a.value );
+                            } else if ( "port".equals( a.key ) ) {
+                                urlList.add( "http://localhost:" + a.value + "/eval" );
                             } else {
                                 throw new RuntimeException( "unknown argument " + s );
                             }
@@ -309,6 +316,10 @@ class PulsarApplicationArgumentParser {
                     }
                     @Override
                     void notifyEnd() {
+                        EvaluatorManager.initEvaluatorManager( 
+                            schemeEngine.getEvaluatorManager(), 
+                            this.urlList );
+                        
 //                        schemeSecretary.setDirectMeeting( directMeeting );
                         schemeEngineStack.push( this.schemeEngine );
 
@@ -388,7 +399,7 @@ class PulsarApplicationArgumentParser {
                             urlList.add( "http://localhost:"+httpPort+"/eval" );
                         }
                         
-                        PulsarFrame pulsarFrame = PulsarApplicationLibrary.createPulsarGui( schemeEngine, pulsar, urlList );
+                        PulsarFrame pulsarFrame = PulsarApplicationLibrary.createPulsarGui( schemeEngine, pulsar );
                         
                         pulsarFrameStack.push( pulsarFrame );
                         kawapadStack.push( pulsarFrame.getKawapad() );

@@ -17,6 +17,7 @@ import pulsar.lib.PulsarLogger;
 import pulsar.lib.Version;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.app.ApplicationVessel;
+import pulsar.lib.scheme.EvaluatorManager;
 import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.doc.DescriptiveDocumentCategory;
 import pulsar.lib.scheme.doc.DescriptiveHelp;
@@ -228,12 +229,13 @@ public class PulsarApplication {
     
     public static List<ApplicationComponent> start( boolean guiEnabled, boolean httpEnabled, int httpPort, String filename ) throws IOException {
         SchemeEngine schemeEngine = PulsarApplicationLibrary.createSchemeEngine();
+        EvaluatorManager.initEvaluatorManager( 
+            schemeEngine.getEvaluatorManager(), 
+            Arrays.asList( "http://localhost:"+httpPort+"/eval" ) );
         Pulsar pulsar = PulsarApplicationLibrary.createPulsar( schemeEngine );
         PulsarFrame pulsarFrame;
         if ( guiEnabled ) {
-            pulsarFrame = PulsarApplicationLibrary.createPulsarGui( 
-                schemeEngine, pulsar, 
-                Arrays.asList( "http://localhost:"+httpPort+"/eval" ) );
+            pulsarFrame = PulsarApplicationLibrary.createPulsarGui( schemeEngine, pulsar );
         } else {
             pulsarFrame = null;
         }

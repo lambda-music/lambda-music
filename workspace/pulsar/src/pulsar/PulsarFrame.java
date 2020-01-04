@@ -36,7 +36,6 @@ import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
@@ -72,7 +71,6 @@ import gnu.mapping.Environment;
 import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import kawa.standard.Scheme;
-import kawapad.KawapadEvaluator;
 import kawapad.KawapadFrame;
 import metro.MetroTrack;
 import pulsar.Pulsar.TempoTapperTempoNotifier;
@@ -186,17 +184,15 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     
     public static PulsarFrame create(
             Pulsar pulsar, 
-            KawapadEvaluator evaluator, 
-            Collection<KawapadEvaluator> evaluatorList, 
             boolean shutdownWhenClose,
             String caption ) {
-        return new PulsarFrame( pulsar, evaluator, evaluatorList, shutdownWhenClose, caption );
+        return new PulsarFrame( pulsar, shutdownWhenClose, caption );
     }
 
 
     Pulsar pulsar;
-    PulsarFrame( Pulsar pulsar, KawapadEvaluator evaluator, Collection<KawapadEvaluator> evaluatorList, boolean shutdownWhenClose, String caption ) {
-        super( pulsar.getSchemeEngine(), evaluator, evaluatorList, shutdownWhenClose, caption == null ? PULSAR_DEFAULT_CAPTION : caption );
+    PulsarFrame( Pulsar pulsar, boolean shutdownWhenClose, String caption ) {
+        super( pulsar.getSchemeEngine(), shutdownWhenClose, caption == null ? PULSAR_DEFAULT_CAPTION : caption );
         
         this.pulsar = pulsar;
         

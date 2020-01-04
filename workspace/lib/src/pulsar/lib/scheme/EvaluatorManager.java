@@ -3,7 +3,6 @@ package pulsar.lib.scheme;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -12,7 +11,14 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 
 
-public class EvaluatorList {
+public class EvaluatorManager {
+    Evaluator primaryEvaluator;
+    public Evaluator getPrimaryEvaluator() {
+        return primaryEvaluator;
+    }
+    public void setPrimaryEvaluator(Evaluator primaryEvaluator) {
+        this.primaryEvaluator = primaryEvaluator;
+    }
     Evaluator currentEvaluator;
     public Evaluator getCurrentEvaluator() {
         return currentEvaluator;
@@ -21,9 +27,6 @@ public class EvaluatorList {
         this.currentEvaluator = currentEvaluator;
     }
     List<Evaluator> evaluatorList = new ArrayList<>();
-    public Evaluator getLocalEvaluator() {
-        return evaluatorList.get( 0 );
-    }
     public List<Evaluator> getEvaluatorList() {
         return this.evaluatorList;
     }
@@ -48,7 +51,7 @@ public class EvaluatorList {
                     serverMenu.add( menuItem );
                     i++;
                 }
-                if ( ! found ) {
+                if ( ! found && this.currentEvaluator != null ) {
                     JMenuItem menuItem = createServerMenuItem( this.currentEvaluator );
                     serverMenu.add( menuItem );
                 }
@@ -68,21 +71,19 @@ public class EvaluatorList {
         menuItem.setSelected( evaluator == this.currentEvaluator );
         return menuItem;
     }
-
-    /**
-     * (Wed, 20 Nov 2019 11:21:28 +0900)
-     * @param evaluatorList
-     * @param serverMenuList
-     * @return
-     *          this
-     */
-    public EvaluatorList set( Evaluator currentEvaluator, Collection<Evaluator> evaluatorList, List<JMenu> serverMenuList ) {
-        this.currentEvaluator = currentEvaluator;
-        this.evaluatorList.clear();
-        this.evaluatorList.addAll( evaluatorList );
-        this.serverMenuList.addAll( serverMenuList );
-        this.notifyUpdate();
-        return this;
+    
+    public EvaluatorManager( Evaluator primaryEvaluator ) {
+        this.primaryEvaluator = primaryEvaluator;
+        this.currentEvaluator = primaryEvaluator;
+        this.evaluatorList.add( primaryEvaluator );
     }
 
+    
+    public static void initEvaluatorManager( EvaluatorManager manager, List<String> urls ) {
+        ArrayList<Evaluator> list = new ArrayList<>();
+        for ( String url : urls ) {
+            list.add( new RemoteEvaluator( url ) );
+        }
+        manager.getEvaluatorList().addAll( list );
+    }
 }
