@@ -289,8 +289,8 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
             this.addWindowListener( kawapad.createCloseQuery( new Runnable() {
                 @Override
                 public void run() {
-                    if ( shutdownWhenClose ) {
-                        KawapadFrame.this.getParentApplicationComponent().processQuit();
+                    if ( KawapadFrame.this.shutdownWhenClose ) {
+                        KawapadFrame.this.requestQuit();
                     } else {
                         KawapadFrame.this.processQuit();
                     }
@@ -308,7 +308,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
         } );
     }
     
-    public void requestQuit() {
+    public void requestClose() {
         this.dispatchEvent( new WindowEvent(this, WindowEvent.WINDOW_CLOSING ));
     }
 
@@ -357,7 +357,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
         ApplicationVessel v = new ApplicationVessel();
         v.add( kawapadFrame );
         kawapadFrame.setParentApplicationComponent( kawapadFrame );
-        v.processInit();
+        v.requestInit();
         return kawapadFrame;
     }
     public static void main(String[] args) throws IOException {
@@ -388,7 +388,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
         }
         System.out.println( kawapadFrame.getKawapad().outputKeyStrokeReference() );
         System.out.flush();
-        kawapadFrame.requestQuit();
+        kawapadFrame.requestClose();
     }
 
     public static void outputDocument() throws IOException {
@@ -398,7 +398,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
         } catch ( InterruptedException e ) {
         }
         DescriptiveDocumentCategory.outputReference( kawapadFrame.kawapad.getSchemeEngine(), "kawapad-procedures", null );
-        kawapadFrame.requestQuit();
+        kawapadFrame.requestClose();
     }
     
     public static void start(File f, KawapadEvaluator evaluator, Collection<KawapadEvaluator> evaluatorList ) throws IOException {

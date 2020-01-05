@@ -18,6 +18,7 @@ public class AcceleratorKeyList {
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
+    private static final boolean DEBUG = false;
 
     public static final String ACCELERATOR_KEY_LIST ="accelerator-key-list";
     public static void putAcceleratorKeyList( Action action, List<KeyStroke> keyStrokeList ) {
@@ -75,7 +76,8 @@ public class AcceleratorKeyList {
     public static void addActionToActionMap( JComponent c, Action action ) {
         String name = (String)action.getValue( Action.NAME );
         c.getActionMap().put(name, action );
-        logInfo( name );
+        if ( DEBUG )
+            logInfo( name );
     }
     public static void addActionToInputMap( JComponent c, Action action ) {
         Object name = action.getValue( Action.NAME );

@@ -3,6 +3,7 @@ package pulsar;
 import java.io.IOException;
 
 import kawapad.Kawapad;
+import kawapad.KawapadFrame;
 import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.doc.DescriptiveHelp;
 import pulsar.lib.scheme.http.SchemeHttp;
@@ -26,12 +27,11 @@ public class PulsarApplicationLibrary {
 
     public static SchemeHttp createPulsarHttpServer(
             SchemeEngine schemeEngine, 
-            int httpPort, UserAuthentication userAuthentication, Pulsar pulsar ) throws IOException {
+            int httpPort, UserAuthentication userAuthentication ) throws IOException {
         return new SchemeHttp( 
             httpPort, 
             userAuthentication, 
-            schemeEngine, 
-            pulsar.getThreadInitializerCollection());
+            schemeEngine );
     }
     public static Pulsar createPulsar( SchemeEngine schemeEngine ) {
         return new Pulsar( schemeEngine );
@@ -39,6 +39,10 @@ public class PulsarApplicationLibrary {
 
     public static PulsarFrame createPulsarGui( SchemeEngine schemeEngine, Pulsar pulsar  ) {
         return PulsarFrame.create( pulsar, true , null );
+    }
+
+    public static KawapadFrame createKawapad( SchemeEngine schemeEngine ) {
+        return new KawapadFrame( schemeEngine, true, "Scheme Scratch Pad" );
     }
 
 

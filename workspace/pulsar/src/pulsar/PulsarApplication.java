@@ -248,7 +248,7 @@ public class PulsarApplication {
         
         SchemeHttp schemeHttp = null;
         if ( httpEnabled ) {
-            schemeHttp = PulsarApplicationLibrary.createPulsarHttpServer( schemeEngine, httpPort, SchemeHttp.UserAuthentication.ONLY_LOOPBACK, pulsar );
+            schemeHttp = PulsarApplicationLibrary.createPulsarHttpServer( schemeEngine, httpPort, SchemeHttp.UserAuthentication.ONLY_LOOPBACK );
         }
         
         schemeEngine.getSchemeEvaluator().newScheme();
@@ -257,9 +257,9 @@ public class PulsarApplication {
             pulsarFrame.processInit();
             
             if ( filename != null ) {
-                pulsarFrame.openFile( new File( filename ) );
+                pulsarFrame.getKawapad().openFile( new File( filename ) );
             } else {
-                pulsarFrame.openIntro();
+                pulsarFrame.getKawapad().openIntro();
             }
         }
         ArrayList<ApplicationComponent> result = new ArrayList<>();
@@ -286,7 +286,20 @@ public class PulsarApplication {
         PulsarPrinter.init();
 //        parseArgs01(args);
         
-        List<ApplicationComponent> parseArgs = parseArgs(args);
+        List<ApplicationComponent> components = parseArgs(args);
+        
+        ApplicationVessel owner = new ApplicationVessel();
+        owner.addAll( components );
+        owner.requestInit();
+        
+//        for ( ApplicationComponent c : components ) {
+//            try {
+//                System.out.println( "init:c" + c );
+//                c.processInit();
+//            } catch ( Throwable t ) {
+//                logError( "", t );
+//            }
+//        }
 
         Thread thread = new Thread( new Runnable() {
             @Override
@@ -302,13 +315,17 @@ public class PulsarApplication {
                                 || "bye" .equals( s ) 
                                     ) {
                                 System.out.println( "ok" );
-                                for ( ApplicationComponent c : parseArgs ) {
-                                    try {
-                                        c.processQuit();
-                                    } catch ( Throwable t ) {
-                                        logError( "", t );
-                                    }
-                                }
+//                                for ( ApplicationComponent c : components ) {
+//                                    try {
+//                                        System.out.println( "quit:c" + c );
+//
+//                                        c.processQuit();
+//                                    } catch ( Throwable t ) {
+//                                        logError( "", t );
+//                                    }
+//                                }
+                                owner.processQuit();
+
                                 break;
                             } else if ( "alive?".equals( s ) ) {
                                 System.out.println( "yes" );

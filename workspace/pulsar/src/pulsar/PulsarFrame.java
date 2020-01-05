@@ -30,7 +30,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
@@ -145,18 +144,6 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         });
     }
 
-
-    public void openFile( File mainFile ) throws IOException {
-        logInfo( "Pulsar#openMainFile()" );
-        if ( ! mainFile.isFile() )
-            throw new RuntimeException( "The specified file does not exist (" + mainFile.getPath() + ")" );
-        frame.getKawapad().openFile( mainFile );
-    }
-    // Is this really necessary to be executed with secretary?
-    public void openIntro() throws IOException {
-        logInfo( "Pulsar#openIntro()" );
-        frame.getKawapad().openIntro();
-    }
     
     public void openIntro2() {
         InputStream in = null;
@@ -471,8 +458,8 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     JTextField tf_currentFile;
     JSlider sl_tempoSlider;
     
-    public void requestQuit() {
-        super.requestQuit();
+    public void requestClose() {
+        super.requestClose();
     }
 
     public void guiClear() {
@@ -525,7 +512,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     public final Action QUIT_SEQUENCER = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            requestQuit();
+            requestClose();
         }
         {
             putValue( Action2.CAPTION, "Quit" );

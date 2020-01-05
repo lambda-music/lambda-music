@@ -149,7 +149,8 @@ public class DescriptiveDocumentCategory {
         } else {
             actualTarget = SchemeUtils.getVar( name, null );
             if ( actualTarget == null ) {
-                Descriptive.logWarn( "setDocumentInitializer: " + name + " was not found." );
+                if ( DEBUG )
+                    Descriptive.logWarn( "setDocumentInitializer: " + name + " was not found." );
                 actualTarget = new DescriptiveHelpProcedure( name );
                 SchemeUtils.defineVar( env, actualTarget, name );
             }

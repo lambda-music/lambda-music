@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 
 import kawapad.Kawapad;
 import kawapad.KawapadFrame;
+import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.app.ApplicationVessel;
 import pulsar.lib.scheme.EvaluatorManager;
 import pulsar.lib.scheme.SchemeEngine;
@@ -86,6 +87,70 @@ class PulsarApplicationArgumentParser {
         }
     }
     
+
+    static final class KawapadLoader implements Runnable {
+        private final KawapadFrame frame;
+        private List<String> fileNameList;
+        KawapadLoader(KawapadFrame pulsarFrame, List<String> fileNameList) {
+            this.frame = pulsarFrame;
+            this.fileNameList = fileNameList;
+        }
+        
+        @Override
+        public void run() {
+            frame.processInit();
+            boolean first=true;
+            for ( String s : fileNameList ) {
+                try {
+                    if ( first ) { 
+                        frame.getKawapad().openFile( new File(s) );
+                    } else {
+                        frame.getKawapad().createKawapadFrame( new File(s) );
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                first=false;
+            }
+            if ( first ) {
+                frame.getKawapad().openIntro();
+            }
+        }
+    }
+
+    static class RunnableInitializer implements ApplicationComponent {
+        private ApplicationComponent parent;
+        @Override
+        public void setParentApplicationComponent(ApplicationComponent parent) {
+            this.parent = parent;
+        }
+
+        @Override
+        public ApplicationComponent getParentApplicationComponent() {
+            return parent;
+        }
+        
+        final List<Runnable> runnableStack = new ArrayList<>();
+        public RunnableInitializer( List<Runnable> runnableStack ) {
+            this.runnableStack.addAll( runnableStack );
+        }
+
+        @Override
+        public void processInit() {
+            for ( Runnable r : runnableStack ) {
+                try {
+                    System.err.println( "invoke:"+ r  );
+                    r.run();
+                } catch (Exception e) {
+                    logError( "", e );
+                }
+            }
+        }
+        @Override
+        public void processQuit() {
+        }
+    }
+    
     void deploy() {
        
         // Collect thread initializers and set to collections.
@@ -108,82 +173,29 @@ class PulsarApplicationArgumentParser {
         
         ApplicationVessel vessel = new ApplicationVessel();
         vessel.getThreadInitializerCollection().addAllThreadInitializer( threadInitializerList );
-        
         vessel.addAll( schemeEngineStack );
         vessel.addAll( pulsarStack );
         vessel.addAll( pulsarFrameStack );
         vessel.addAll( kawapadStack );
         vessel.addAll( kawapadFrameStack );
         vessel.addAll( schemeHttpStack );
- 
-        applicationVesselList.add( vessel );
-
-        vessel.getThreadInitializerCollection().initialize();
         
-        
-        for ( ThreadInitializerCollection c : threadInitializerCollectionList ) {
-            logInfo( "deploy : "+ c.id + ":" + c.toString() );
-        }
-
-        vessel.processInit();
-
         // Executing runnable stack;
         {
             ArrayList<Runnable> list = new ArrayList<Runnable>( this.runnableStack );
             Collections.reverse( list );
-            for ( Runnable r : list ) {
-                try {
-                    System.err.println( "invoke:"+ r  );
-                    r.run();
-                } catch (Exception e) {
-                    logError( "", e );
-                }
-            }
+            vessel.add( new RunnableInitializer( list ) );
         }
-        
+ 
+        applicationVesselList.add( vessel );
 
-        if ( false ) {
-            for ( SchemeEngine i : schemeEngineStack ) {
-                i.getSchemeEvaluator().newScheme();
-            }
-            for ( Pulsar i : pulsarStack ) {
-                try {
-                    i.init();
-                } catch (Exception e) {
-                    logError( "", e );
-                }
-            }
-            for ( PulsarFrame i : pulsarFrameStack ) {
-                try {
-                    i.processInit();
-                } catch (Exception e) {
-                    logError( "", e );
-                }
-            }
-//            for ( Kawapad i : kawapadStack ) {
-//                try {
-//                    i.init();
-//                } catch (Exception e) {
-//                    logError( "", e );
-//                }
-//            }
-            for ( KawapadFrame i : kawapadFrameStack ) {
-                try {
-                    i.processInit();
-                } catch (Exception e) {
-                    logError( "", e );
-                }
-            }
-            for ( SchemeHttp i : schemeHttpStack ) {
-                try {
-                    i.init();
-                } catch (Exception e) {
-                    logError( "", e );
-                }
-            }
-        }
-        
-        
+//        vessel.getThreadInitializerCollection().initialize();
+//        
+//        for ( ThreadInitializerCollection c : threadInitializerCollectionList ) {
+//            logInfo( "deploy : "+ c.id + ":" + c.toString() );
+//        }
+//        vessel.processInit();
+
         //
 
         runnableStack.clear();
@@ -315,8 +327,50 @@ class PulsarApplicationArgumentParser {
                 };
             }
         });
+
+        factoryMap.put( "kawapad-gui", new ElementFactory() {
+            @Override
+            Element create() {
+                List<String> fileNameList = new ArrayList<>();
+                return new Element() {
+                    @Override
+                    Element notifyArg(String s) {
+                        if ( s.startsWith( "--" ) ) {
+                            NamedArgument a = new NamedArgument(s);
+                            switch ( a.key ) {
+//                                case "port" : 
+//                                    portNumberList.add(  Integer.parseInt( a.value ) );
+//                                    break;
+                                default :
+                                    throw new RuntimeException( "unknown parameter : " + a.key );
+                            }
+                        } else {
+                            fileNameList.add(s);
+                        }
+                        return this;
+                    }
+                    @Override
+                    void notifyEnd() {
+                        if ( schemeEngineStack.isEmpty() ) {
+                            throw new RuntimeException( "no scheme is defined." );
+                        }
+                        SchemeEngine schemeEngine = schemeEngineStack.peek();
+                        KawapadFrame kawapadFrame = PulsarApplicationLibrary.createKawapad( schemeEngine );
+                        kawapadFrameStack.push( kawapadFrame );
+                        kawapadStack.push( kawapadFrame.getKawapad() );
+                        runnableStack.push( new KawapadLoader( kawapadFrame, fileNameList ));
+                        runnableStack.push( new Runnable() {
+                            @Override
+                            public void run() {
+//                                pulsar.init();
+                            }
+                        });
+                    }
+                };
+            }
+        });
         
-        factoryMap.put( "gui", new ElementFactory() {
+        factoryMap.put( "pulsar-gui", new ElementFactory() {
             @Override
             Element create() {
                 return new Element() {
@@ -353,32 +407,7 @@ class PulsarApplicationArgumentParser {
                         pulsarFrameStack.push( pulsarFrame );
                         kawapadStack.push( pulsarFrame.getKawapad() );
                         
-                        runnableStack.push( new Runnable() {
-                            @Override
-                            public void run() {
-                                pulsarFrame.processInit();
-                                boolean first=true;
-                                for ( String s : fileNameList ) {
-                                    try {
-                                        if ( first ) { 
-                                            pulsarFrame.openFile( new File(s) );
-                                        } else {
-                                            pulsarFrame.getKawapad().createKawapadFrame( new File(s) );
-                                        }
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-                                    first=false;
-                                }
-                                if ( first ) {
-                                    try {
-                                        pulsarFrame.openIntro();
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            }
-                        });
+                        runnableStack.push( new KawapadLoader( pulsarFrame, fileNameList ));
                     }
                 };
             }
@@ -390,6 +419,7 @@ class PulsarApplicationArgumentParser {
             Element create() {
                 return new Element() {
                     private int httpPort = 8192;
+                    // TODO 0 variable accept path for HTTP 
                     private String path = DEFAULT_HTTP_PATH;
                     UserAuthentication userAuthentication = UserAuthentication.ONLY_LOOPBACK;
                     @Override
@@ -426,14 +456,14 @@ class PulsarApplicationArgumentParser {
                             throw new RuntimeException( "no scheme is defined." );
                         }
                         SchemeEngine schemeEngine = schemeEngineStack.peek();
-                        if ( pulsarStack.isEmpty() ) {
-                            throw new RuntimeException( "no pulsar is defined." );
-                        }
-                        Pulsar pulsar = pulsarStack.peek();
+//                        if ( pulsarStack.isEmpty() ) {
+//                            throw new RuntimeException( "no pulsar is defined." );
+//                        }
+//                        Pulsar pulsar = pulsarStack.peek();
                         
                         try {
                             SchemeHttp schemeHttp = PulsarApplicationLibrary.createPulsarHttpServer( 
-                                schemeEngine, httpPort, userAuthentication, pulsar );
+                                schemeEngine, httpPort, userAuthentication );
                             schemeHttpStack.push( schemeHttp );
                         } catch (IOException e) {
                             throw new RuntimeException( e );

@@ -5,15 +5,29 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.lang.invoke.MethodHandles;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import pulsar.lib.app.ApplicationComponent;
 
 public class JavaProcess implements ApplicationComponent{
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static void logError(String msg, Throwable e) {
+        LOGGER.log(Level.SEVERE, msg, e);
+    }
+    static void logInfo(String msg) {
+        LOGGER.log(Level.INFO, msg);
+    }
+    static void logWarn(String msg) {
+        LOGGER.log(Level.WARNING, msg);
+    }
+
     private ApplicationComponent parent;
     @Override
     public void setParentApplicationComponent(ApplicationComponent parent) {
@@ -56,6 +70,8 @@ public class JavaProcess implements ApplicationComponent{
         fullArguments.addAll( arguments );
         System.out.println( fullArguments );
         ProcessBuilder b = new ProcessBuilder( fullArguments );
+        b.inheritIO();
+        
         return b.start();
     }
     static void testMethod(String[] args) throws IOException, InterruptedException {
@@ -112,11 +128,13 @@ public class JavaProcess implements ApplicationComponent{
     }
     @Override
     public synchronized void processInit() {
+        logInfo( "JavaProcess:processInit()" );
         if ( process != null ) {
             System.err.println( "duplicate calling" );
             return;
         }
         try {
+            logInfo( String.join( " ", arguments ) );
             this.process = executeJavaProcess( canonicalNameOfMainClass, arguments );
             this.outputStream = this.process.getOutputStream();
             this.inputStream = this.process.getInputStream();
@@ -128,11 +146,12 @@ public class JavaProcess implements ApplicationComponent{
 
     @Override
     public synchronized void processQuit() {
+        logInfo( "JavaProcess:processQuit()" );
         if ( process == null ) {
             System.err.println( "this object is not initialized." );
             return;
         }
-        this.process.destroy();
+        this.process.destroyForcibly();
     }
     
 }

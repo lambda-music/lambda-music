@@ -162,14 +162,12 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
     SchemeEngine schemeEngine;
     HttpServer httpServer;
     Charset charset = Charset.forName( "UTF-8" );
-    Runnable schemeThreadInitializer;
     UserAuthentication authentication;
-    public SchemeHttp( int port, UserAuthentication authentication, SchemeEngine schemeEngine, Runnable schemeThreadInitializer ) throws IOException {
+    public SchemeHttp( int port, UserAuthentication authentication, SchemeEngine schemeEngine ) throws IOException {
         super();
         this.port = port;
         this.authentication = authentication;
         this.schemeEngine = schemeEngine;
-        this.schemeThreadInitializer = schemeThreadInitializer;
         this.initialize();
     }
     private void initialize() throws IOException {
@@ -259,11 +257,11 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
             logInfo( requestString );
             SchemeResult schemeResult = 
                     schemeEngine.getSchemeEvaluator().evaluate( 
-            schemeThreadInitializer,    
-            requestString, 
-            null, 
-            null, 
-            "web-scratchpad" );
+                        SchemeHttp.this.getThreadInitializerCollection(),    
+                        requestString, 
+                        null, 
+                        null, 
+                        "web-scratchpad" );
             String responseString;
             responseString = 
                     SchemeResult.endWithLineFeed( requestString ) + 
@@ -287,11 +285,11 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
             String requestString = readInputStream( t.getRequestBody() ); 
             logInfo( requestString );
             SchemeResult schemeResult = schemeEngine.getSchemeEvaluator().evaluate( 
-            schemeThreadInitializer,    
-            requestString, 
-            null, 
-            null, 
-            "web-scratchpad" );
+                                            SchemeHttp.this.getThreadInitializerCollection() ,    
+                                            requestString, 
+                                            null, 
+                                            null, 
+                                            "web-scratchpad" );
             String responseString;
             responseString = schemeResult.getValueAsString();
             logInfo( schemeResult.getValueAsString() );

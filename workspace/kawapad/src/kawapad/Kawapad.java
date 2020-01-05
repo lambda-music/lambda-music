@@ -3049,6 +3049,9 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         this.fileModified = false;
     }
     public void openFile( File filePath ) throws IOException {
+        if ( ( ! filePath.exists() ) || ( ! filePath.isFile() ) )
+            throw new RuntimeException( "The specified file does not exist (" + filePath.getPath() + ")" );
+
         if ( ! confirmSave( ConfirmType.OPEN_FILE ) ) {
             return;
         }

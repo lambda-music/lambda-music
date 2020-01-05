@@ -9,14 +9,14 @@ import pulsar.lib.thread.ThreadInitializerCollectionContainer;
 
 public class ApplicationVessel implements ApplicationComponent, ThreadInitializerCollectionContainer {
     private List<ApplicationComponent> components = new ArrayList<>();
-    private ApplicationComponent parentApplicationComponent;
+    private ApplicationComponent parent;
     @Override
     public ApplicationComponent getParentApplicationComponent() {
-        return this.parentApplicationComponent;
+        return this.parent;
     }
     @Override
     public void setParentApplicationComponent(ApplicationComponent parentApplicationComponent) {
-        this.parentApplicationComponent = parentApplicationComponent;
+        this.parent = parentApplicationComponent;
     }
     
     ThreadInitializerCollection threadInitializerCollection = new ThreadInitializerCollection( "application", null );
@@ -25,23 +25,30 @@ public class ApplicationVessel implements ApplicationComponent, ThreadInitialize
         return threadInitializerCollection;
     }
     public void addAll( Collection<? extends ApplicationComponent> cs ) {
-        components.addAll(cs);
+        for ( ApplicationComponent c : cs ) {
+            this.add( c );
+        }
     }
     public <T extends ApplicationComponent> void add( T c ) {
+        c.setParentApplicationComponent( this );
         components.add(c);
     }
-    public void remove( Object c ) {
+    public void remove( ApplicationComponent c ) {
+        if ( components.contains( c ) )
+            c.setParentApplicationComponent( null );
         components.remove( c );
     }
+    
     @Override
     public void processInit() {
+        ApplicationComponent.logInfo( "ApplicationVessel:processInit()" );
         for ( ApplicationComponent c : this.components ) {
-            c.setParentApplicationComponent( this );
             c.processInit();
         }
     }
     @Override
     public void processQuit() {
+        ApplicationComponent.logInfo( "ApplicationVessel:processQuit()" );
         for (  ApplicationComponent c : this.components ) {
             c.processQuit();
         }
