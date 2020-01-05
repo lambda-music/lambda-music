@@ -116,6 +116,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     @Override
     public void processInit() {
         super.processInit();
+        initPulsarGui();
     }
     
     boolean quitProcessed = false;
@@ -193,7 +194,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         initGuiIcon();
         initGuiProgressBar();
         initGuiFocus();
-        initPulsarGui();
+//        initPulsarGui();
         
         AcceleratorKeyList.processAcceleratorKeys( this.getRootPane() );
     }
