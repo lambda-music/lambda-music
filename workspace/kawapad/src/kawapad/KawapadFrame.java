@@ -165,7 +165,13 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
         }
     };
 
-    boolean shutdownWhenClose;
+    private boolean shutdownWhenClose=true;
+    public boolean isShutdownWhenClose() {
+        return shutdownWhenClose;
+    }
+    public void setShutdownWhenClose(boolean shutdownWhenClose) {
+        this.shutdownWhenClose = shutdownWhenClose;
+    }
 
     public KawapadFrame( 
             SchemeEngine schemeEngine, 
@@ -175,8 +181,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
     {
         super(title);
         this.setDefaultCloseOperation( DO_NOTHING_ON_CLOSE );
-
-        this.shutdownWhenClose = shutdownWhenClose;
+        this.setShutdownWhenClose( shutdownWhenClose );
 
         
 //      DELETED >>> INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
@@ -289,7 +294,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
             this.addWindowListener( kawapad.createCloseQuery( new Runnable() {
                 @Override
                 public void run() {
-                    if ( KawapadFrame.this.shutdownWhenClose ) {
+                    if ( KawapadFrame.this.isShutdownWhenClose() ) {
                         KawapadFrame.this.requestQuit();
                     } else {
                         KawapadFrame.this.processQuit();

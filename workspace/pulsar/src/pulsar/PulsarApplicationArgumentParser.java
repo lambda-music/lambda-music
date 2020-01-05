@@ -40,9 +40,8 @@ class PulsarApplicationArgumentParser {
     ArrayList<ApplicationVessel> applicationVesselList = new ArrayList<>();
     ArrayDeque<SchemeEngine> schemeEngineStack = new ArrayDeque<>();
     ArrayDeque<Pulsar> pulsarStack= new ArrayDeque<>();
-    ArrayDeque<PulsarFrame> pulsarFrameStack= new ArrayDeque<>();
     ArrayDeque<Kawapad> kawapadStack= new ArrayDeque<>();
-    ArrayDeque<KawapadFrame> kawapadFrameStack= new ArrayDeque<>();
+    ArrayDeque<KawapadFrame> frameStack= new ArrayDeque<>();
     ArrayDeque<SchemeHttp> schemeHttpStack= new ArrayDeque<>();
     ArrayDeque<Runnable> runnableStack = new ArrayDeque<>();
     
@@ -54,9 +53,8 @@ class PulsarApplicationArgumentParser {
     {
         allDeque.add(schemeEngineStack);
         allDeque.add(pulsarStack);
-        allDeque.add(pulsarFrameStack);
         allDeque.add(kawapadStack);
-        allDeque.add(kawapadFrameStack);
+        allDeque.add(frameStack);
         allDeque.add(schemeHttpStack);
 //        allDeque.add(runnableStack); XXX
     }
@@ -175,9 +173,8 @@ class PulsarApplicationArgumentParser {
         vessel.getThreadInitializerCollection().addAllThreadInitializer( threadInitializerList );
         vessel.addAll( schemeEngineStack );
         vessel.addAll( pulsarStack );
-        vessel.addAll( pulsarFrameStack );
         vessel.addAll( kawapadStack );
-        vessel.addAll( kawapadFrameStack );
+        vessel.addAll( frameStack );
         vessel.addAll( schemeHttpStack );
         
         // Executing runnable stack;
@@ -201,8 +198,7 @@ class PulsarApplicationArgumentParser {
         runnableStack.clear();
         schemeEngineStack.clear();
         pulsarStack.clear();
-        pulsarFrameStack.clear();
-        kawapadFrameStack.clear();
+        frameStack.clear();
         schemeHttpStack.clear();
     }
     static final Pattern parseArgPattern = Pattern.compile( "^--([a-zA-Z0-9\\_\\-]+)\\=(.*)$" );
@@ -355,10 +351,16 @@ class PulsarApplicationArgumentParser {
                             throw new RuntimeException( "no scheme is defined." );
                         }
                         SchemeEngine schemeEngine = schemeEngineStack.peek();
-                        KawapadFrame kawapadFrame = PulsarApplicationLibrary.createKawapad( schemeEngine );
-                        kawapadFrameStack.push( kawapadFrame );
-                        kawapadStack.push( kawapadFrame.getKawapad() );
-                        runnableStack.push( new KawapadLoader( kawapadFrame, fileNameList ));
+                        KawapadFrame frame = PulsarApplicationLibrary.createKawapad( schemeEngine );
+                        
+                        if (frameStack.size() == 0 )
+                            frame.setShutdownWhenClose( true );
+                        else
+                            frame.setShutdownWhenClose( false );
+                        
+                        frameStack.push( frame );
+                        kawapadStack.push( frame.getKawapad() );
+                        runnableStack.push( new KawapadLoader( frame, fileNameList ));
                         runnableStack.push( new Runnable() {
                             @Override
                             public void run() {
@@ -402,12 +404,16 @@ class PulsarApplicationArgumentParser {
                         }
                         Pulsar pulsar = pulsarStack.peek();
                         
-                        PulsarFrame pulsarFrame = PulsarApplicationLibrary.createPulsarGui( schemeEngine, pulsar );
+                        PulsarFrame frame = PulsarApplicationLibrary.createPulsarGui( schemeEngine, pulsar );
+                        if (frameStack.size() == 0 )
+                            frame.setShutdownWhenClose( true );
+                        else
+                            frame.setShutdownWhenClose( false );
                         
-                        pulsarFrameStack.push( pulsarFrame );
-                        kawapadStack.push( pulsarFrame.getKawapad() );
+                        frameStack.push( frame );
+                        kawapadStack.push( frame.getKawapad() );
                         
-                        runnableStack.push( new KawapadLoader( pulsarFrame, fileNameList ));
+                        runnableStack.push( new KawapadLoader( frame, fileNameList ));
                     }
                 };
             }
