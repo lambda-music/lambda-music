@@ -17,6 +17,7 @@ import pulsar.lib.PulsarLogger;
 import pulsar.lib.Version;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.app.ApplicationVessel;
+import pulsar.lib.app.process.JavaProcess;
 import pulsar.lib.scheme.EvaluatorManager;
 import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.doc.DescriptiveDocumentCategory;
@@ -101,8 +102,8 @@ public class PulsarApplication {
             return start(argGui, argHttp, argHttpPort, argFileName);
         }
     }
-    static <T> int indexOf( T[] a, T v ) {
-        for ( int i=0; i<a.length; i++ ) {
+    static <T> int indexOf( T[] a, T v, int from ) {
+        for ( int i=from; i<a.length; i++ ) {
             if ( v == a[i] || v.equals( a[i] ) )
                 return i;
         }
@@ -112,9 +113,11 @@ public class PulsarApplication {
         ArrayList<T[]> result = new ArrayList<>();
         int last = 0;
         for(;;){
-            int i = indexOf( a, separator );
-            if ( i < 0 )
+            int i = indexOf( a, separator, last );
+            if ( i < 0 ) {
+                result.add( Arrays.copyOfRange( a, last , a.length ) );
                 break;
+            }
             if ( last != i ) 
                 result.add( Arrays.copyOfRange( a, last , i ) );
             last = i+1;
@@ -134,11 +137,11 @@ public class PulsarApplication {
                 String[] mainArguments = Arrays.copyOfRange( args3 , 1, args3.length );
                 
                 if( "fork".equals( mainCommand ) ) {
-                    remote( mainArguments );
+                    applicationVesselList.add( forkPulsar( mainArguments ) );
                 } else if( "exec".equals( mainCommand ) ) {
-                    PulsarApplicationArgumentParser pulsarApplicationArgumentParser = new PulsarApplicationArgumentParser();
-                    pulsarApplicationArgumentParser.parse( mainArguments );
-                    applicationVesselList.addAll( pulsarApplicationArgumentParser.getApplicationVesselList() );
+                    PulsarApplicationArgumentParser argumentParser = new PulsarApplicationArgumentParser();
+                    argumentParser.parse( mainArguments );
+                    applicationVesselList.addAll( argumentParser.getApplicationVesselList() );
                 } else {
                     throw new RuntimeException( "unknown command " + mainCommand );
                 }
@@ -149,9 +152,12 @@ public class PulsarApplication {
         return applicationVesselList;
     }
     
-    static void remote(String[] mainArguments) {
-        // TODO
+    static JavaProcess forkPulsar(String[] arguments) {
+        JavaProcess process = new JavaProcess( 
+            PulsarApplication.class.getCanonicalName(), Arrays.asList( arguments ) );
+        return process;
     }
+    
     private static void invalidArgs() {
         System.err.println( "pulsar : missing arguments." );
         System.err.println( "pulsar [scheme|pulsar|http|gui|token|print-all-available-reference|print-reference] ... " );
