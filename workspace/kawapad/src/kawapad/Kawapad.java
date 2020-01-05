@@ -17,6 +17,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
@@ -3244,6 +3245,40 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         }
     };
     
+    static Window lookupWindow( Component c ) {
+        if ( c == null ) {
+            return null;
+        } else if ( c instanceof Window ) {
+            return (Window) c;
+        } else {
+            return lookupWindow( c.getParent() );
+        }
+    }
+
+    private void closeWindow() {
+        Window parent = lookupWindow( this.getParent() );
+        if ( parent != null ) {
+            parent.dispatchEvent( new WindowEvent( parent, WindowEvent.WINDOW_CLOSING ));
+        }
+    }
+    
+    // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
+    @AutomatedActionField
+    public final Action CLOSE_ACTION = new TextAction2( KAWAPAD_CLOSE ) {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            closeWindow();
+        }
+        {
+            putValue( Action2.CAPTION, "Close" );
+            putValue( Action.MNEMONIC_KEY , (int) 'c' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl W" );
+        }
+    };
+    
+    public static final String KAWAPAD_CLOSE = "kawapad-close";
+    
+    
     public WindowListener createCloseQuery( Runnable onClose ) {
         return new WindowAdapter() {
             @Override
@@ -3410,6 +3445,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         file.add( new JMenuItem( kawapad.OPEN_FILE_ACTION ) );
         file.add( new JMenuItem( kawapad.SAVE_FILE_ACTION ) );
         file.add( new JMenuItem( kawapad.SAVE_FILE_AS_ACTION ) ); 
+        file.add( new JMenuItem( kawapad.CLOSE_ACTION ) ); 
         
         scheme.add( new JMenuItem( kawapad.EVALUATE_REPLACE_ACTION ));
         scheme.add( new JMenuItem( kawapad.SELECT_EVALUATE_ACTION ));
