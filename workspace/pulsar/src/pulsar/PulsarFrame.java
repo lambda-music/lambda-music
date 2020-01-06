@@ -768,10 +768,6 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         PulsarFrame.this.userPane = userPane;
         PulsarFrame.this.staticPaneOuter = staticPaneOuter;
         PulsarFrame.this.userPaneOuter = userPaneOuter;
-        
-        // InitializeTempoSlider
-        pulsar.getTempoTapper().registerNotifier( tempoNotifier );
-
     }
     
     JProgressBar pb_position = new JProgressBar() {

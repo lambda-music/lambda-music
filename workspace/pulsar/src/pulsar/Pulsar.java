@@ -454,92 +454,14 @@ public final class Pulsar extends Metro implements ApplicationComponent {
     interface TempoTapperTempoNotifier {
         void notifyTempo( double beatPerMinute );
     }
-    class TempoTapper {
-        final List<TempoTapperTempoNotifier> notifiers = new ArrayList<>();
-        void registerNotifier( TempoTapperTempoNotifier notifier ) {
-            notifiers.add( notifier );
-        }
-        
-        long prev_time = 0;
-        int BUF_SIZE = 3;
-        long TIMEOUT = 1000L*1000L*1000L*2L;
-        void reset() {
-            for ( int i=0;i<t.length; i++ )
-                t[i]=0;
-            tidx=0;
-        }
-        long t[] = new long[BUF_SIZE];
-        int tidx= 0;
-        
-        public void tap( ) {
-            long current_time = System.nanoTime();
-            if ( prev_time == 0 ) {
-                prev_time = current_time;
-                return;
-            }
-            if ( TIMEOUT < current_time - prev_time ) {
-                prev_time = current_time;
-                reset();
-                return;
-            }
-
-            long current_diff = current_time - prev_time ;
-            logInfo( "Elapsed Time : " + current_diff );
-
-            tidx ++;
-            if( tidx < t.length ) {
-            } else {
-                tidx = 0;
-            }
-
-            t[tidx] = current_diff;
-            prev_time = current_time;
-
-            boolean isFull = true;
-            long sum = 0;
-            {
-                for ( int i=0; i<t.length; i++ ) {
-                    if ( 0 < t[i] ) {
-                        sum += t[i];
-                    } else {
-                        isFull = false;
-                        break;
-                    }
-                }
-            }
-
-            if ( isFull ) 
-                try {
-                    double avg = (double)sum / t.length;
-                    double onemin = 1000L*1000L*1000L*60L;
-                    double beatsPerMinute =  onemin / avg  ;
-                    
-                    double currentBeatsPerMinute = getBeatsPerMinute();
-                    beatsPerMinute = ( beatsPerMinute + currentBeatsPerMinute * 2 ) / 3;
-                    logInfo( String.format( "%.2f / %.2f = %.2f", onemin , avg , beatsPerMinute  ) );
-                    
-                    Pulsar.this.setBeatsPerMinute( beatsPerMinute );
-                    
-                } catch (JackException e1) {
-                    logError("", e1);
-                }
-        }
-
-        public void notifyTempoChange() {
-            double beatsPerMinute = Pulsar.this.getBeatsPerMinute();
-            for ( TempoTapperTempoNotifier n : notifiers ) {
-                n.notifyTempo( beatsPerMinute );
-            }
-        }
-    }
     private final TempoTapper tempoTapper = new TempoTapper();
     public TempoTapper getTempoTapper() {
         return tempoTapper;
     }
+    
     @Override
     public void setBeatsPerMinute(double beatsPerMinute) throws JackException {
         super.setBeatsPerMinute( beatsPerMinute );
-        this.getTempoTapper().notifyTempoChange();
     }
     
     interface ConnectProc {
@@ -1296,8 +1218,9 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo( "Pulsar Scheme API: TAP-TEMPO" );
-                getCurrent().tempoTapper.tap(); 
-                return SchemeUtils.NO_RESULT;
+                Pulsar pulsar = getCurrent();
+                double bpm = pulsar.getTempoTapper().tap( pulsar.getBeatsPerMinute() );
+                return SchemeUtils.toSchemeNumber( bpm );
             }
         } , "tap-tempo", "tapt" );
         
@@ -1308,6 +1231,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             setShortDescription( "has the same effect with pressing the tap-tempo button on the main screen. "
                                 );
             setLongDescription( ""
+                                + "(Tue, 07 Jan 2020 01:19:46 +0900) Note : this description is obsolete. \n"
                                 + "The tap-tempo button is a button to change the current tempo. "
                                 + "The button is supposed to be pressed repeatedly to tell the system  "
                                 + "how fast the sequencer should play the current music. "
