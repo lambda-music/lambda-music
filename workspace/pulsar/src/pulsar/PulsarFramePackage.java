@@ -28,7 +28,6 @@ import gnu.lists.IString;
 import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
-import gnu.mapping.Procedure0;
 import gnu.mapping.Symbol;
 import kawa.standard.Scheme;
 import pulsar.lib.scheme.SafeProcedureN;
@@ -538,20 +537,6 @@ public class PulsarFramePackage {
         logInfo("PulsarGui#initStaticScheme=======================================");
         Environment env = scheme.getEnvironment();
         
-        SchemeUtils.defineVar(env, new Procedure0() {
-            @Override
-            public Object apply0() throws Throwable {
-                return PulsarFrame.getCurrent();
-            }
-        }, "frame" );
-
-        SchemeUtils.defineVar(env, new Procedure0() {
-            @Override
-            public Object apply0() throws Throwable {
-                return PulsarFrame.getCurrent();
-            }
-        }, "pulsar-frame" );
-
         SchemeUtils.defineVar( env, new SafeProcedureN("gui-pack") {
             @Override
             public Object applyN(Object[] args) throws Throwable {

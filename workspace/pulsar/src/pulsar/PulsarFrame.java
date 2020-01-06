@@ -65,6 +65,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import gnu.mapping.Environment;
+import gnu.mapping.Procedure0;
 import gnu.mapping.Procedure1;
 import gnu.mapping.Symbol;
 import gnu.mapping.Values;
@@ -313,6 +314,20 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         //////////////////////////////////////////////////////
         Environment env = scheme.getEnvironment();
         
+        SchemeUtils.defineVar(env, new Procedure0() {
+            @Override
+            public Object apply0() throws Throwable {
+                return PulsarFrame.getCurrent();
+            }
+        }, "frame" );
+
+        SchemeUtils.defineVar(env, new Procedure0() {
+            @Override
+            public Object apply0() throws Throwable {
+                return PulsarFrame.getCurrent();
+            }
+        }, "pulsar-frame" );
+
         SchemeUtils.defineVar( env, new SafeProcedureN("gui-get-pane") {
             // TODO ???
             @Override
