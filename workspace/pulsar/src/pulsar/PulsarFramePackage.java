@@ -543,7 +543,14 @@ public class PulsarFramePackage {
             public Object apply0() throws Throwable {
                 return PulsarFrame.getCurrent();
             }
-        }, "frame");
+        }, "frame" );
+
+        SchemeUtils.defineVar(env, new Procedure0() {
+            @Override
+            public Object apply0() throws Throwable {
+                return PulsarFrame.getCurrent();
+            }
+        }, "pulsar-frame" );
 
         SchemeUtils.defineVar( env, new SafeProcedureN("gui-pack") {
             @Override

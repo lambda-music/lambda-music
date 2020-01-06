@@ -518,15 +518,15 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                     beatsPerMinute = ( beatsPerMinute + currentBeatsPerMinute * 2 ) / 3;
                     logInfo( String.format( "%.2f / %.2f = %.2f", onemin , avg , beatsPerMinute  ) );
                     
-                    setBeatsPerMinute( beatsPerMinute );
+                    Pulsar.this.setBeatsPerMinute( beatsPerMinute );
                     
                 } catch (JackException e1) {
                     logError("", e1);
                 }
         }
 
-        public void setBeatsPerMinute(double beatsPerMinute) throws JackException {
-            Pulsar.this.setBeatsPerMinute( (long) beatsPerMinute );
+        public void notifyTempoChange() {
+            double beatsPerMinute = Pulsar.this.getBeatsPerMinute();
             for ( TempoTapperTempoNotifier n : notifiers ) {
                 n.notifyTempo( beatsPerMinute );
             }
@@ -535,6 +535,11 @@ public final class Pulsar extends Metro implements ApplicationComponent {
     private final TempoTapper tempoTapper = new TempoTapper();
     public TempoTapper getTempoTapper() {
         return tempoTapper;
+    }
+    @Override
+    public void setBeatsPerMinute(double beatsPerMinute) throws JackException {
+        super.setBeatsPerMinute( beatsPerMinute );
+        this.getTempoTapper().notifyTempoChange();
     }
     
     interface ConnectProc {
@@ -1317,7 +1322,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             public Object applyN(Object[] args) throws Throwable {
                 if ( 0 < args.length ) {
                     double bpm = SchemeUtils.toDouble(args[0]);
-                    getCurrent().tempoTapper.setBeatsPerMinute( bpm );
+                    getCurrent().setBeatsPerMinute( bpm );
                 }
 
                 return SchemeUtils.NO_RESULT;

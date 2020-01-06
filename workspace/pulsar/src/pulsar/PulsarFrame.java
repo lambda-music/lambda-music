@@ -64,12 +64,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.jaudiolibs.jnajack.JackException;
-
 import gnu.mapping.Environment;
+import gnu.mapping.Procedure1;
 import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import kawa.standard.Scheme;
+import kawapad.KawapadEvaluatorReceiver;
 import kawapad.KawapadFrame;
 import metro.MetroTrack;
 import pulsar.Pulsar.TempoTapperTempoNotifier;
@@ -125,7 +125,10 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         if ( quitProcessed )
             return;
         quitProcessed = true;
-        pulsar.close();
+        
+        this.getKawapad().evaluate( "(close)", KawapadEvaluatorReceiver.REPORT_ERROR );
+//        pulsar.close();
+        
         super.processQuit();
         // System.exit(0);
     }
@@ -272,6 +275,38 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
             };
         };
     }
+
+    transient boolean updatingTempoDisplay = false;
+    protected synchronized void updateTempoDisplay(String s) {
+        if ( updatingTempoDisplay )
+            return;
+        try {
+            updatingTempoDisplay = true;
+            try {
+                this.tempoTapButton.setText( "Tempo="+ SchemeUtils.anyToString( s ) );
+            } catch ( Throwable t ) {
+                logError( "ignored", t );
+            }
+            try {
+//                this.sl_tempoSlider.setValue( (int)Double.parseDouble( s ) );
+            } catch ( Throwable t ) {
+                logError( "ignored", t );
+            }
+        } finally {
+            updatingTempoDisplay = false;
+        }
+    }
+
+    final TempoTapperTempoNotifier tempoNotifier = new TempoTapperTempoNotifier() {
+        @Override
+        public void notifyTempo(double beatPerMinute) {
+            getKawapad().evaluate( 
+                "(gui-set-tempo \""+
+                        String.format( "%.2f", beatPerMinute  )
+                    +"\")", false, false, false );
+        }
+    };
+
     
     static void initScheme(Scheme scheme) {
         logInfo("PulsarGui#initScheme=======================================");
@@ -436,7 +471,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
             }
         }, "gui-frame-divider-position");
 
-        SchemeUtils.defineVar( env, new SafeProcedureN("gui-insert-text") {
+        SchemeUtils.defineVar( env, new SafeProcedureN( "gui-insert-text" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 StringBuilder sb = new StringBuilder();
@@ -447,9 +482,17 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                 return SchemeUtils.NO_RESULT;
             }
         }, "gui-insert-text");
+
+        SchemeUtils.defineVar( env, new Procedure1( "gui-set-tempo" ) {
+            @Override
+            public Object apply1(Object arg1) throws Throwable {
+                getCurrent().updateTempoDisplay( SchemeUtils.anyToString( arg1 ) );
+                return SchemeUtils.NO_RESULT;
+            }
+        }, "gui-set-tempo" );
     }
     
-    
+   
     //Create the "cards".
     JComponent rootPane; 
     JPanel staticPaneOuter;
@@ -526,7 +569,8 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     public final Action TOGGLE_PLAYING_ACTION = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            pulsar.togglePlaying();
+//            pulsar.togglePlaying();
+            getKawapad().evaluate( "(set-playing)", KawapadEvaluatorReceiver.REPORT_ERROR ); 
         }
         {
             putValue( Action2.CAPTION, "Play/Stop" );
@@ -538,7 +582,8 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     public final Action RESET_PLAYING_ACTION = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            pulsar.rewind();
+//            pulsar.rewind();
+            getKawapad().evaluate( "(rewind)", KawapadEvaluatorReceiver.REPORT_ERROR ); 
         }
         {
             putValue( Action2.CAPTION, "Reset" );
@@ -550,7 +595,8 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     public final Action TAP_TEMPO_ACTION = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            pulsar.getTempoTapper().tap();
+//            pulsar.getTempoTapper().tap();
+            getKawapad().evaluate( "(tap-tempo)", KawapadEvaluatorReceiver.REPORT_ERROR ); 
         }
         {
             putValue( Action2.CAPTION, "Tap Tempo" );
@@ -636,6 +682,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     JComponent pulsarRootPane;
     JPanel staticPane;
     JNamedPanel userPane;
+    JButton tempoTapButton;
     void initGui() {
         // this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setDefaultCloseOperation( JFrame.DO_NOTHING_ON_CLOSE );
@@ -683,7 +730,8 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         // Tempo Button
         staticPane.add( createFilePanel(),  BorderLayout.PAGE_START );
         staticPane.add( createStartStopButton(), BorderLayout.LINE_END );
-        staticPane.add( createTempoTapButton(), BorderLayout.CENTER );
+        this.tempoTapButton = createTempoTapButton();
+        staticPane.add( tempoTapButton, BorderLayout.CENTER );
         staticPane.add( createRewindButton(), BorderLayout.LINE_START );
         
         
@@ -720,6 +768,10 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         PulsarFrame.this.userPane = userPane;
         PulsarFrame.this.staticPaneOuter = staticPaneOuter;
         PulsarFrame.this.userPaneOuter = userPaneOuter;
+        
+        // InitializeTempoSlider
+        pulsar.getTempoTapper().registerNotifier( tempoNotifier );
+
     }
     
     JProgressBar pb_position = new JProgressBar() {
@@ -823,12 +875,11 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                 sl_tempoSlider.addChangeListener(new ChangeListener() {
                     @Override
                     public void stateChanged(ChangeEvent e) {
-                        try {
-                            //                      logInfo( "TempoSlider : " + ((JSlider)e.getSource()).getValue() );
-                            pulsar.getTempoTapper().setBeatsPerMinute( ((JSlider)e.getSource()).getValue() );
-                        } catch (JackException e1) {
-                            logError("", e1);
-                        }
+                        // logInfo( "TempoSlider : " + ((JSlider)e.getSource()).getValue() );
+                        getKawapad().evaluate(
+                            "(set-tempo " + ((JSlider)e.getSource()).getValue() + ")", 
+                            KawapadEvaluatorReceiver.REPORT_ERROR );
+                        // pulsar.setBeatsPerMinute( ((JSlider)e.getSource()).getValue() );
                     }
                 });
                 
@@ -841,14 +892,6 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                 
                 if ( ENABLED_TEMPO_TITLE )
                     sl_tempoSlider.setBorder( BorderFactory.createTitledBorder("TEMPO") );
-                
-                // InitializeTempoSlider
-                pulsar.getTempoTapper().registerNotifier( new TempoTapperTempoNotifier() {
-                    @Override
-                    public void notifyTempo(double beatPerMinute) {
-                        sl_tempoSlider.setValue( (int)beatPerMinute );
-                    }
-                });
                 
                 //
                 guiSetTempoRange( TempoRange.NORMAL );
@@ -899,7 +942,8 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         });
         return b;
     }
-    
+
+
     private JButton createTempoTapButton() {
         JButton tempoTapButton = new JButton( "TEMPO" );
         tempoTapButton.addActionListener( new ActionListener() {
@@ -912,13 +956,6 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
 
             }
         });
-
-        pulsar.getTempoTapper().registerNotifier( new TempoTapperTempoNotifier() {
-            @Override
-            public void notifyTempo(double beatPerMinute) {
-                tempoTapButton.setText( String.format( "Tempo=%.2f", beatPerMinute  ) );
-            }
-        } );
 
         tempoTapButton.setPreferredSize(new Dimension(200, 100));
         tempoTapButton.setMargin(new Insets(20, 20, 20, 20));

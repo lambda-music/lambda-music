@@ -2808,6 +2808,13 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
                     return KawapadFrame.getCurrent();
                 }
             }, "frame");
+            SchemeUtils.defineVar(env, new Procedure0() {
+                @Override
+                public Object apply0() throws Throwable {
+                    return KawapadFrame.getCurrent();
+                }
+            }, "kawapad-frame" );
+
             
             SchemeUtils.defineVar(env, new Procedure3() {
                 @Override

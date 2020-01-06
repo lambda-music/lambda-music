@@ -1,9 +1,13 @@
 package pulsar.lib.scheme;
 
 import java.lang.invoke.MethodHandles;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import gnu.mapping.Procedure;
+import gnu.mapping.Procedure1;
+import gnu.mapping.Procedure2;
 import pulsar.lib.CurrentObject;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.thread.ThreadInitializer;
@@ -14,6 +18,26 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
+
+    static HashMap<Object,Object> map = new HashMap<>(); 
+    public static final Procedure putvar = new Procedure2() {
+        @Override
+        public Object apply2(Object arg1, Object arg2) throws Throwable {
+            map.put( arg1, arg2 );
+            return SchemeUtils.NO_RESULT;
+        }
+    };
+    public static final Procedure getvar = new Procedure1() {
+        @Override
+        public Object apply1(Object arg1) throws Throwable {
+            Object result = map.get( arg1 );
+            if ( result == null ) {
+                return false;
+            } else {
+                return result;
+            }
+        }
+    };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     
