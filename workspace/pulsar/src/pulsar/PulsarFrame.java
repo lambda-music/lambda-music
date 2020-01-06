@@ -73,11 +73,11 @@ import kawa.standard.Scheme;
 import kawapad.KawapadEvaluatorReceiver;
 import kawapad.KawapadFrame;
 import metro.MetroTrack;
-import pulsar.Pulsar.TempoTapperTempoNotifier;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.SchemeEvaluator.SchemeEngineListener;
+import pulsar.lib.scheme.SchemeResult;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.Invokable;
 import pulsar.lib.swing.AcceleratorKeyList;
@@ -278,35 +278,34 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     }
 
     transient boolean updatingTempoDisplay = false;
-    protected synchronized void updateTempoDisplay(String s) {
+    transient boolean updatingTempoDisplay_slider = false;
+    transient boolean updatingTempoDisplay_button = false;
+    protected synchronized void setTempoDisplay( double bpm ) {
         if ( updatingTempoDisplay )
             return;
+        
         try {
             updatingTempoDisplay = true;
-            try {
-                this.tempoTapButton.setText( "Tempo="+ SchemeUtils.anyToString( s ) );
-            } catch ( Throwable t ) {
-                logError( "ignored", t );
+            
+            if ( ! updatingTempoDisplay_button ) {
+                try {
+                    this.tapTempoButton.setText( String.format( "Tempo=%.2f", bpm ) );
+                } catch ( Throwable t ) {
+                    logError( "ignored", t );
+                }
             }
-            try {
-//                this.sl_tempoSlider.setValue( (int)Double.parseDouble( s ) );
-            } catch ( Throwable t ) {
-                logError( "ignored", t );
+            
+            if ( ! updatingTempoDisplay_slider ) {
+                try {
+                    this.sl_tempoSlider.setValue( (int)bpm );
+                } catch ( Throwable t ) {
+                    logError( "ignored", t );
+                }
             }
         } finally {
             updatingTempoDisplay = false;
         }
     }
-
-    final TempoTapperTempoNotifier tempoNotifier = new TempoTapperTempoNotifier() {
-        @Override
-        public void notifyTempo(double beatPerMinute) {
-            getKawapad().evaluate( 
-                "(gui-set-tempo \""+
-                        String.format( "%.2f", beatPerMinute  )
-                    +"\")", false, false, false );
-        }
-    };
 
     
     static void initScheme(Scheme scheme) {
@@ -498,10 +497,10 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
             }
         }, "gui-insert-text");
 
-        SchemeUtils.defineVar( env, new Procedure1( "gui-set-tempo" ) {
+        SchemeUtils.defineVar( env, new Procedure1( "gui-set-tempo-display" ) {
             @Override
             public Object apply1(Object arg1) throws Throwable {
-                getCurrent().updateTempoDisplay( SchemeUtils.anyToString( arg1 ) );
+                getCurrent().setTempoDisplay( SchemeUtils.toDouble( arg1 ) );
                 return SchemeUtils.NO_RESULT;
             }
         }, "gui-set-tempo" );
@@ -611,7 +610,15 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         @Override
         public void actionPerformed(ActionEvent e) {
 //            pulsar.getTempoTapper().tap();
-            getKawapad().evaluate( "(tap-tempo)", KawapadEvaluatorReceiver.REPORT_ERROR ); 
+            getKawapad().evaluate( "(tap-tempo)", new KawapadEvaluatorReceiver() {
+                @Override
+                public void receive(String schemeScript, SchemeResult schemeResult) {
+                    double bpm = Double.parseDouble( schemeResult.getValueAsString() );
+                    if ( 0<=bpm ) {
+                        setTempoDisplay( bpm );
+                    }
+                }
+            } ); 
         }
         {
             putValue( Action2.CAPTION, "Tap Tempo" );
@@ -697,7 +704,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     JComponent pulsarRootPane;
     JPanel staticPane;
     JNamedPanel userPane;
-    JButton tempoTapButton;
+    JButton tapTempoButton;
     void initGui() {
         // this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setDefaultCloseOperation( JFrame.DO_NOTHING_ON_CLOSE );
@@ -745,8 +752,8 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         // Tempo Button
         staticPane.add( createFilePanel(),  BorderLayout.PAGE_START );
         staticPane.add( createStartStopButton(), BorderLayout.LINE_END );
-        this.tempoTapButton = createTempoTapButton();
-        staticPane.add( tempoTapButton, BorderLayout.CENTER );
+        this.tapTempoButton = createTapTempoButton();
+        staticPane.add( tapTempoButton, BorderLayout.CENTER );
         staticPane.add( createRewindButton(), BorderLayout.LINE_START );
         
         
@@ -886,11 +893,31 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                 sl_tempoSlider.addChangeListener(new ChangeListener() {
                     @Override
                     public void stateChanged(ChangeEvent e) {
-                        // logInfo( "TempoSlider : " + ((JSlider)e.getSource()).getValue() );
-                        getKawapad().evaluate(
-                            "(set-tempo " + ((JSlider)e.getSource()).getValue() + ")", 
-                            KawapadEvaluatorReceiver.REPORT_ERROR );
-                        // pulsar.setBeatsPerMinute( ((JSlider)e.getSource()).getValue() );
+                        
+                        PulsarFrame pulsarFrame = PulsarFrame.this;
+                        synchronized ( pulsarFrame ) {
+                            try {
+                                pulsarFrame.updatingTempoDisplay_slider = true;
+                                int value = ((JSlider)e.getSource()).getValue();
+                                pulsarFrame.setTempoDisplay( value );
+                                pulsarFrame.getKawapad().evaluate( "(set-tempo " + value + ")", KawapadEvaluatorReceiver.REPORT_ERROR );
+                                
+//                                // logInfo( "TempoSlider : " + ((JSlider)e.getSource()).getValue() );
+//                                String schemeScript = 
+//                                        "(let ((v " + ((JSlider)e.getSource()).getValue() + ")) " +
+//                                        "(set-tempo v)(gui-set-tempo-display v))";
+//                                
+//                                new KawapadEvaluatorRunnable( 
+//                                    pulsarFrame.getKawapad(), 
+//                                    schemeScript, 
+//                                    pulsarFrame.getKawapad().getSchemeEngine().getEvaluatorManager().getCurrentEvaluator(), 
+//                                    KawapadEvaluatorReceiver.REPORT_ERROR  ).run();
+                                
+                                // pulsar.setBeatsPerMinute( ((JSlider)e.getSource()).getValue() );
+                            } finally {
+                                pulsarFrame.updatingTempoDisplay_slider = false;
+                            }
+                        }
                     }
                 });
                 
@@ -955,22 +982,11 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     }
 
 
-    private JButton createTempoTapButton() {
-        JButton tempoTapButton = new JButton( "TEMPO" );
-        tempoTapButton.addActionListener( new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // INDIRECT_PULSAR_ACCESS (Sun, 15 Dec 2019 19:26:48 +0900) >>>
-                // pulsar.getTempoTapper().tap();
-                getKawapad().evaluate( "(tap-tempo)", false, false, false );
-                // (Sun, 15 Dec 2019 19:26:48 +0900) <<<
-
-            }
-        });
-
-        tempoTapButton.setPreferredSize(new Dimension(200, 100));
-        tempoTapButton.setMargin(new Insets(20, 20, 20, 20));
-
-        return tempoTapButton;
+    private JButton createTapTempoButton() {
+        JButton tapTempoButton = new JButton( "TEMPO" );
+        tapTempoButton.addActionListener( TAP_TEMPO_ACTION );
+        tapTempoButton.setPreferredSize(new Dimension(200, 100));
+        tapTempoButton.setMargin(new Insets(20, 20, 20, 20));
+        return tapTempoButton;
     }
 }
