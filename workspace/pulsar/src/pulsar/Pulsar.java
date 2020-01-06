@@ -159,6 +159,14 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             }
         });
     }
+    
+    static {
+        /*
+         *  Replace the main track id when Pulsar class is loaded to VM.
+         *  Since here, the entire system can refer the main track as a Scheme's symbol.
+         */
+        Metro.setMainTrackId( Symbol.valueOf( "main" ) );
+    }
 
     //////////////////////////////////////////////////////////////////////////////////////////
     private ApplicationComponent parentApplicationComponent;
@@ -394,12 +402,12 @@ public final class Pulsar extends Metro implements ApplicationComponent {
 //        });
     }
     
-    public static Runnable createTimer( Pulsar pulsar, long delay, long interval, Invokable invokable ) {
+    public static Runnable createTimer( Runnable threadInitializer, long delay, long interval, Invokable invokable ) {
         if ( 0 < interval  ){
             timer.scheduleAtFixedRate( new java.util.TimerTask() {
                 @Override
                 public void run() {
-                    pulsar.getThreadInitializerCollection().initialize();
+                    threadInitializer.run();
                     
                     // Execute the specified process.
                     Object result = invokable.invoke();
@@ -413,7 +421,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             timer.schedule( new java.util.TimerTask() {
                 @Override
                 public void run() {
-                    pulsar.getThreadInitializerCollection().initialize();
+                    threadInitializer.run();
 
                     // Execute the specified process.
                     invokable.invoke();

@@ -72,6 +72,12 @@ public class Metro
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
     private final Object lock = new Object();
     
+    public static Object mainTrackId = new Object();
+    public static synchronized void setMainTrackId( Object id ) {
+        Metro.mainTrackId = id;
+    }
+    
+    
     /**
      * The every routines which access to the `tracks` field must synchronize
      * to the object which can be retrieved by this getMetroLock() method. 
@@ -129,6 +135,18 @@ public class Metro
     private ArrayList<MetroMidiEvent> inputMidiEventList = new ArrayList<MetroMidiEvent>();
     private ArrayList<MetroMidiEvent> outputMidiEventList = new ArrayList<MetroMidiEvent>();
 
+    private transient MetroTrack mainTrack = null; 
+    /**
+     * A field which tracks a reference to the main track by best effort.
+     * This field occasionally points to an outdated main track.
+     * This field is not used by the internal process; This is intended to
+     * be used as a cache of the referencde to the main track in order to 
+     * avoid searching the main track frequently.  
+     */
+    public MetroTrack getMainTrack() {
+        return mainTrack;
+    }
+    
     // zero means that to get the current bpm from Jack Transport.
     private double beatsPerMinute = 60;
     public double getBeatsPerMinute() {
@@ -1056,6 +1074,9 @@ public class Metro
         synchronized (getMetroLock()) {
             this.registeredTracks.add( track );
         }
+        if ( Metro.mainTrackId.equals( track.getName() ) ) {
+            this.mainTrack = track;
+        }
     }
     public void registerTrack( Collection<MetroTrack> trackList ) {
         checkState();
@@ -1067,6 +1088,12 @@ public class Metro
         
         synchronized (getMetroLock()) {
             this.registeredTracks.addAll( trackList );
+        }
+        for ( MetroTrack track : trackList ) {
+            if ( Metro.mainTrackId.equals( track.getName() ) ) {
+                this.mainTrack = track;
+                break;
+            }
         }
     }
     

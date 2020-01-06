@@ -202,50 +202,79 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         
         AcceleratorKeyList.processAcceleratorKeys( this.getRootPane() );
     }
-    
-    private void initPulsarGui() {
-        Pulsar.createTimer( pulsar, 1000, 20, new Invokable() {
-            transient int counter = 0;
-            transient boolean lastPlaying = false;
-            transient double lastPosition = 0.0d;
-            List<MetroTrack> trackList;
+
+    Invokable invokable = new Invokable() {
+        transient int counter = 0;
+        transient boolean lastPlaying = false;
+        transient double lastPosition = 0.0d;
+        List<MetroTrack> trackList;
+        
+        @Override
+        public Object invoke(Object... args) {
+            counter ++;
+            if ( 10 < counter ) {
+            }
             
-            @Override
-            public Object invoke(Object... args) {
-                counter ++;
-                if ( 10 < counter ) {
+            if ( pulsar.isOpened() ) {
+                boolean playing = pulsar.getPlaying();
+                if ( playing != lastPlaying ) {
+                    if ( playing ) {
+                        trackList = pulsar.searchTrack( Symbol.valueOf( "main" ) );
+                    }
+                    lastPlaying = playing;
                 }
                 
-                if ( pulsar.isOpened() ) {
-                    boolean playing = pulsar.getPlaying();
-                    if ( playing != lastPlaying ) {
-                        if ( playing ) {
-                            trackList = pulsar.searchTrack( Symbol.valueOf( "main" ) );
-                        }
-                        lastPlaying = playing;
+                //  This happens quite often so let us ignore it. (Mon, 29 Jul 2019 12:21:50 +0900)
+                //  Additionally this code have never been executed. Just added this for describing the concept.
+                //  if ( track == null ) {
+                //      logWarn( "" );
+                //  }
+                
+                if ( (trackList!= null ) && (! trackList.isEmpty()) && (pb_position != null) ) {
+                    double position=0;
+                    MetroTrack track = trackList.get( 0 ); 
+                    synchronized ( track.getMetroTrackLock() ) {
+                        position = track.getTrackPosition();
                     }
-                    
-                    //  This happens quite often so let us ignore it. (Mon, 29 Jul 2019 12:21:50 +0900)
-                    //  Additionally this code have never been executed. Just added this for describing the concept.
-                    //  if ( track == null ) {
-                    //      logWarn( "" );
-                    //  }
-                    
-                    if ( (trackList!= null ) && (! trackList.isEmpty()) && (pb_position != null) ) {
-                        double position=0;
-                        MetroTrack track = trackList.get( 0 ); 
-                        synchronized ( track.getMetroTrackLock() ) {
-                            position = track.getTrackPosition();
-                        }
-                        pb_position.setValue((int) (position * PulsarFrame.PB_POSITION_MAX) );
-                        pb_position.repaint();
-                        pb_position.revalidate();
-                        lastPosition = position;
-                    }
+                    pb_position.setValue((int) (position * PulsarFrame.PB_POSITION_MAX) );
+                    pb_position.repaint();
+                    pb_position.revalidate();
+                    lastPosition = position;
                 }
-                return Values.empty;
             }
-        });    
+            return Values.empty;
+        }
+    };
+
+    Invokable invokable2 = new Invokable() {
+        transient int counter = 0;
+        transient double lastPosition = 0.0d;
+        
+        @Override
+        public Object invoke(Object... args) {
+            counter ++;
+            if ( 10 < counter ) {
+            }
+            
+            if ( pulsar.isOpened() ) {
+                MetroTrack track = pulsar.getMainTrack();
+                if ( track != null ) {
+                    double position=0;
+                    synchronized ( track.getMetroTrackLock() ) {
+                        position = track.getTrackPosition();
+                    }
+                    pb_position.setValue((int) (position * PulsarFrame.PB_POSITION_MAX) );
+                    pb_position.repaint();
+                    pb_position.revalidate();
+                    lastPosition = position;
+                }
+            }
+            return Values.empty;
+        }
+    };
+
+    private void initPulsarGui() {
+        Pulsar.createTimer( getKawapad().getThreadInitializerCollection(), 1000, 20, invokable2 );    
     }
 
     enum TempoRange {
