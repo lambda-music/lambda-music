@@ -37,8 +37,8 @@ public class PulsarApplicationLibrary {
         return new Pulsar( schemeEngine );
     }
 
-    public static PulsarFrame createPulsarGui( SchemeEngine schemeEngine, Pulsar pulsar  ) {
-        return PulsarFrame.create( pulsar, true , null );
+    public static PulsarFrame createPulsarGui( SchemeEngine schemeEngine  ) {
+        return PulsarFrame.create( schemeEngine, true , null );
     }
 
     public static KawapadFrame createKawapad( SchemeEngine schemeEngine ) {

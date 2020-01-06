@@ -241,7 +241,7 @@ public class PulsarApplication {
         Pulsar pulsar = PulsarApplicationLibrary.createPulsar( schemeEngine );
         PulsarFrame pulsarFrame;
         if ( guiEnabled ) {
-            pulsarFrame = PulsarApplicationLibrary.createPulsarGui( schemeEngine, pulsar );
+            pulsarFrame = PulsarApplicationLibrary.createPulsarGui( schemeEngine );
         } else {
             pulsarFrame = null;
         }

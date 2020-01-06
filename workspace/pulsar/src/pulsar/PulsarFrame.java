@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -67,12 +66,11 @@ import javax.swing.event.ChangeListener;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure0;
 import gnu.mapping.Procedure1;
-import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import kawa.standard.Scheme;
 import kawapad.KawapadEvaluatorReceiver;
+import kawapad.KawapadEvaluatorRunnable;
 import kawapad.KawapadFrame;
-import metro.MetroTrack;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeEngine;
@@ -175,18 +173,15 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     //////////////////////////////////////////////////////////////////////////////////
     
     public static PulsarFrame create(
-            Pulsar pulsar, 
+            SchemeEngine schemeEngine,
             boolean shutdownWhenClose,
             String caption ) {
-        return new PulsarFrame( pulsar, shutdownWhenClose, caption );
+        return new PulsarFrame( schemeEngine, shutdownWhenClose, caption );
     }
 
 
-    Pulsar pulsar;
-    PulsarFrame( Pulsar pulsar, boolean shutdownWhenClose, String caption ) {
-        super( pulsar.getSchemeEngine(), shutdownWhenClose, caption == null ? PULSAR_DEFAULT_CAPTION : caption );
-        
-        this.pulsar = pulsar;
+    PulsarFrame( SchemeEngine schemeEngine, boolean shutdownWhenClose, String caption ) {
+        super( schemeEngine, shutdownWhenClose, caption == null ? PULSAR_DEFAULT_CAPTION : caption );
         
         //          DELETED >>> INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
         //          PulsarGui.invokeLocalSchemeInitializers( schemeSecretary, PulsarGui.this );
@@ -203,77 +198,62 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         AcceleratorKeyList.processAcceleratorKeys( this.getRootPane() );
     }
 
-    Invokable invokable = new Invokable() {
-        transient int counter = 0;
-        transient boolean lastPlaying = false;
-        transient double lastPosition = 0.0d;
-        List<MetroTrack> trackList;
-        
-        @Override
-        public Object invoke(Object... args) {
-            counter ++;
-            if ( 10 < counter ) {
-            }
-            
-            if ( pulsar.isOpened() ) {
-                boolean playing = pulsar.getPlaying();
-                if ( playing != lastPlaying ) {
-                    if ( playing ) {
-                        trackList = pulsar.searchTrack( Symbol.valueOf( "main" ) );
-                    }
-                    lastPlaying = playing;
-                }
-                
-                //  This happens quite often so let us ignore it. (Mon, 29 Jul 2019 12:21:50 +0900)
-                //  Additionally this code have never been executed. Just added this for describing the concept.
-                //  if ( track == null ) {
-                //      logWarn( "" );
-                //  }
-                
-                if ( (trackList!= null ) && (! trackList.isEmpty()) && (pb_position != null) ) {
-                    double position=0;
-                    MetroTrack track = trackList.get( 0 ); 
-                    synchronized ( track.getMetroTrackLock() ) {
-                        position = track.getTrackPosition();
-                    }
-                    pb_position.setValue((int) (position * PulsarFrame.PB_POSITION_MAX) );
-                    pb_position.repaint();
-                    pb_position.revalidate();
-                    lastPosition = position;
-                }
-            }
-            return Values.empty;
-        }
-    };
-
-    Invokable invokable2 = new Invokable() {
-        transient int counter = 0;
-        transient double lastPosition = 0.0d;
-        
-        @Override
-        public Object invoke(Object... args) {
-            counter ++;
-            if ( 10 < counter ) {
-            }
-            
-            if ( pulsar.isOpened() ) {
-                MetroTrack track = pulsar.getMainTrack();
-                if ( track != null ) {
-                    double position=0;
-                    synchronized ( track.getMetroTrackLock() ) {
-                        position = track.getTrackPosition();
-                    }
-                    pb_position.setValue((int) (position * PulsarFrame.PB_POSITION_MAX) );
-                    pb_position.repaint();
-                    pb_position.revalidate();
-                    lastPosition = position;
-                }
-            }
-            return Values.empty;
-        }
-    };
 
     private void initPulsarGui() {
+        Invokable invokable2 = new Invokable() {
+            transient int counter = 0;
+            transient double lastPosition = 0.0d;
+            transient double position = 0.0d;
+            transient double velo = 0.0d;
+
+            void setValue( double p ) {
+                while ( 0<=p && 1 < p ) {
+                    p = p - 1;
+                }
+                pb_position.setValue((int) (p * PulsarFrame.PB_POSITION_MAX) );
+                pb_position.repaint();
+                pb_position.revalidate();
+            }
+
+            @Override
+            public Object invoke(Object... args) {
+                counter ++;
+                if ( 100 < counter ) {
+                    counter = 0;
+                    String schemeScript = "(if (open?) (get-track-position (get-main-track)) #f)";
+                    new KawapadEvaluatorRunnable( 
+                        kawapad, schemeScript, 
+                        getKawapad().getSchemeEngine().getEvaluatorManager().getCurrentEvaluator(), 
+                        new KawapadEvaluatorReceiver() {
+                            @Override
+                            public void receive(String schemeScript, SchemeResult schemeResult) {
+                                if ( schemeResult.isSucceeded() ) {
+                                    String v = schemeResult.getValueAsString();
+                                    if ( "#f".equals( v ) ) {
+                                        //
+                                    } else {
+                                        lastPosition = position;
+                                        position = Double.parseDouble( v );
+
+                                        double positionEx;
+                                        if ( position < lastPosition ) {
+                                            positionEx = position + Math.ceil( lastPosition );
+                                        } else {
+                                            positionEx = position;
+                                        }
+                                        velo = (positionEx - lastPosition) / 100;
+                                    }
+                                }
+                            }
+                        }).run();
+                }
+                double p = position + ( velo * (double)counter);
+//                System.err.println( "position:" + p );
+                setValue( p ); 
+
+                return Values.empty;
+            }
+        };
         Pulsar.createTimer( getKawapad().getThreadInitializerCollection(), 1000, 20, invokable2 );    
     }
 
@@ -316,7 +296,8 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         try {
             updatingTempoDisplay = true;
             
-            if ( ! updatingTempoDisplay_button ) {
+            if ( ! updatingTempoDisplay_button && this.tapTempoButton != null ) {
+                
                 try {
                     this.tapTempoButton.setText( String.format( "Tempo=%.2f", bpm ) );
                 } catch ( Throwable t ) {
@@ -324,7 +305,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                 }
             }
             
-            if ( ! updatingTempoDisplay_slider ) {
+            if ( ! updatingTempoDisplay_slider && this.sl_tempoSlider != null ) {
                 try {
                     this.sl_tempoSlider.setValue( (int)bpm );
                 } catch ( Throwable t ) {
@@ -543,7 +524,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     transient boolean isComboBoxUpdating = false;
     JComboBox<String> cb_relatedFiles;
     JTextField tf_currentFile;
-    JSlider sl_tempoSlider;
+    transient JSlider sl_tempoSlider;
     
     public void requestClose() {
         super.requestClose();
@@ -733,7 +714,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     JComponent pulsarRootPane;
     JPanel staticPane;
     JNamedPanel userPane;
-    JButton tapTempoButton;
+    transient JButton tapTempoButton;
     void initGui() {
         // this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setDefaultCloseOperation( JFrame.DO_NOTHING_ON_CLOSE );

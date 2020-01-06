@@ -1779,6 +1779,58 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                                 + "" 
                              );
         }} );   
+
+        Procedure getmt = new Procedure0("get-main-track") {
+            @Override
+            public Object apply0() throws Throwable {
+                return SchemeUtils.javaNullCheck( getCurrent().getMainTrack() );
+            }
+        };
+        SchemeUtils.defineVar( env, getmt, "get-main-track", "getmt" );
+        
+        PulsarDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
+            setNames( "get-main-track", "getmt" );
+            setParameterDescription( "" );
+            setReturnValueDescription( "::void" );
+            setShortDescription( "||<name/>|| retrieves the reference to the current main track." );
+            setLongDescription( ""
+                              + "" 
+                             );
+        }} );   
+        
+        Procedure gettp = new Procedure1("get-track-position") {
+            @Override
+            public Object apply1( Object arg1 ) throws Throwable {
+                if ( Boolean.FALSE.equals( arg1 ) ) { 
+                    return Boolean.FALSE;
+                } else {
+                    MetroTrack track = ((MetroTrack)arg1);
+                    double position=-1d;
+                    synchronized ( track.getMetroTrackLock() ) {
+                        position = track.getTrackPosition();
+                    }
+                    
+                    return SchemeUtils.toSchemeNumber( position );
+                }
+            }
+        };
+        SchemeUtils.defineVar( env, gettp, "get-track-position", "gettp" );
+        
+        PulsarDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
+            setNames( "get-track-position", "gettp" );
+            setParameterDescription( "" );
+            setReturnValueDescription( "::void" );
+            setShortDescription( "||<name/>|| gets the current position of the given track." );
+            setLongDescription( ""
+                                + "" 
+                             );
+        }} );   
+        
+        
+        
+        
+        
+        
         
         SchemeUtils.defineVar( env, new Procedure0("print-stack-trace") {
             @Override

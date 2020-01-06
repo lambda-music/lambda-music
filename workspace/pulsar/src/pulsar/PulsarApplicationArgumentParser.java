@@ -399,12 +399,8 @@ class PulsarApplicationArgumentParser {
                             throw new RuntimeException( "no scheme is defined." );
                         }
                         SchemeEngine schemeEngine = schemeEngineStack.peek();
-                        if ( pulsarStack.isEmpty() ) {
-                            throw new RuntimeException( "no pulsar is defined." );
-                        }
-                        Pulsar pulsar = pulsarStack.peek();
                         
-                        PulsarFrame frame = PulsarApplicationLibrary.createPulsarGui( schemeEngine, pulsar );
+                        PulsarFrame frame = PulsarApplicationLibrary.createPulsarGui( schemeEngine );
                         if (frameStack.size() == 0 )
                             frame.setShutdownWhenClose( true );
                         else
