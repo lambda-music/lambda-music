@@ -221,33 +221,38 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                 if ( 100 < counter ) {
                     counter = 0;
                     String schemeScript = "(if (open?) (get-track-position (get-main-track)) #f)";
-                    
-                    KawapadEvaluatorRunnable.create( 
-                        kawapad, 
-                        schemeScript, 
-                        getKawapad().getSchemeEngine().getEvaluatorManager().getCurrentEvaluator(), 
-                        new EvaluatorReceiver() {
-                            @Override
-                            public void receive(String schemeScript, SchemeResult schemeResult) {
-                                if ( schemeResult.isSucceeded() ) {
-                                    String v = schemeResult.getValueAsString();
-                                    if ( "#f".equals( v ) ) {
-                                        //
+                    EvaluatorReceiver receiver = new EvaluatorReceiver() {
+                        @Override
+                        public void receive(String schemeScript, SchemeResult schemeResult) {
+                            if ( schemeResult.isSucceeded() ) {
+                                String v = schemeResult.getValueAsString();
+                                if ( "#f".equals( v ) ) {
+                                    //
+                                } else {
+                                    lastPosition = position;
+                                    position = Double.parseDouble( v );
+                                    
+                                    double positionEx;
+                                    if ( position < lastPosition ) {
+                                        positionEx = position + Math.ceil( lastPosition );
                                     } else {
-                                        lastPosition = position;
-                                        position = Double.parseDouble( v );
-                                        
-                                        double positionEx;
-                                        if ( position < lastPosition ) {
-                                            positionEx = position + Math.ceil( lastPosition );
-                                        } else {
-                                            positionEx = position;
-                                        }
-                                        velo = (positionEx - lastPosition) / 100;
+                                        positionEx = position;
                                     }
+                                    velo = (positionEx - lastPosition) / 100;
                                 }
                             }
-                        } ).run();
+                        }
+                    };
+                    
+                    SchemeEngine.create( 
+                    kawapad.getThreadInitializerCollection(), 
+                    schemeScript, 
+                    getKawapad().getSchemeEngine().getEvaluatorManager().getCurrentEvaluator(), 
+                    receiver, 
+                    kawapad.getCurrentDirectory(), 
+                    kawapad.getCurrentFile(), 
+                    "scratchpad"
+                    ).run();
                 }
                 double p = position + ( velo * (double)counter);
 //                System.err.println( "position:" + p );

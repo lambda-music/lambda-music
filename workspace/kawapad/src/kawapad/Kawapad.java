@@ -406,7 +406,15 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     public void evaluate( String schemeScript, EvaluatorReceiver receiver ) {
         if ( schemeScript != null ) {
             this.kawapad.getSchemeEngine().getThreadManager().startThread( 
-                KawapadEvaluatorRunnable.create( kawapad, schemeScript, this.getSchemeEngine().getEvaluatorManager().getCurrentEvaluator(), receiver ) );
+                SchemeEngine.create( 
+                kawapad.getThreadInitializerCollection(), 
+                schemeScript, 
+                this.getSchemeEngine().getEvaluatorManager().getCurrentEvaluator(), 
+                receiver, 
+                kawapad.getCurrentDirectory(), 
+                kawapad.getCurrentFile(), 
+                "scratchpad"
+                ) );
         } else {
             Kawapad.logWarn( "Ignored because currently no text is selected. " );
         }
@@ -414,7 +422,15 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     public void evaluateLocally( String schemeScript, EvaluatorReceiver receiver ) {
         if ( schemeScript != null ) {
             this.kawapad.getSchemeEngine().getThreadManager().startThread( 
-                KawapadEvaluatorRunnable.create( kawapad, schemeScript, this.getSchemeEngine().getEvaluatorManager().getPrimaryEvaluator(), receiver ) );
+                SchemeEngine.create( 
+                kawapad.getThreadInitializerCollection(), 
+                schemeScript, 
+                this.getSchemeEngine().getEvaluatorManager().getPrimaryEvaluator(), 
+                receiver, 
+                kawapad.getCurrentDirectory(), 
+                kawapad.getCurrentFile(), 
+                "scratchpad"
+                ) );
         } else {
             Kawapad.logWarn( "Ignored because currently no text is selected. " );
         }
