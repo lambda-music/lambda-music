@@ -141,7 +141,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         return "could not find a track which name was " + arg + " ... ignored.";
     }
 
-    public static void registerGlobalSchemeInitializers( SchemeEngine schemeEngine ) {
+    public static void registerSchemeInitializers( SchemeEngine schemeEngine ) {
         // This should be global not local (Mon, 16 Dec 2019 22:52:46 +0900)
         schemeEngine.getSchemeEvaluator().registerSchemeInitializer( new SchemeEngineListener() {
             @Override
@@ -153,8 +153,6 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         schemeEngine.getSchemeEvaluator().registerSchemeInitializer( new SchemeEngineListener() {
             @Override
             public void execute( Scheme scheme ) {
-                // FIXME this should depend on the current Pulsar instance.
-                // (Wed, 20 Nov 2019 18:32:11 +0900)
                 PulsarFramePackage.initScheme( scheme );
             }
         });

@@ -140,13 +140,13 @@ public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluat
             public void execute(Scheme scheme) {
                 // 3. This initializes Secretary Message Queue's thread.
                 // // 4. (in most case ) this initializes main-thread
-                initializeCurrentThread( scheme );
+                SchemeEvaluator.initializeCurrentThread( scheme );
             }
         });
         registerSchemeInitializer( new SchemeEngineListener() {
             @Override
             public void execute(Scheme scheme) {
-                staticInitScheme( scheme );
+                SchemeEvaluator.initScheme( scheme );
             }
         });
     }
@@ -178,7 +178,7 @@ public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluat
      * "loadRelative" was moved from 
      * {@link SchemeEvaluatorUtils#evaluateScheme(Scheme, Runnable, Reader, File, File, String)}  
      */
-    public static void staticInitScheme( Scheme scheme ) {
+    public static void initScheme( Scheme scheme ) {
         Environment env = scheme.getEnvironment();
         SchemeUtils.defineVar(env, load.loadRelative , "source" );
         SchemeUtils.defineVar(env, new Procedure0() {

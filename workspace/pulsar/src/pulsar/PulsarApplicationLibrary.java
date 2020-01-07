@@ -13,10 +13,10 @@ public class PulsarApplicationLibrary {
     public static void initializeSchemeEngine( SchemeEngine schemeEngine ) {
         // pulsar gui
         PulsarFrame.registerGlobalSchemeInitializers( schemeEngine );
-        Kawapad.registerGlobalSchemeInitializer( schemeEngine );
+        Kawapad.registerSchemeInitializer( schemeEngine );
         // pulsar
         DescriptiveHelp.registerGlobalSchemeInitializer( schemeEngine );
-        Pulsar.registerGlobalSchemeInitializers( schemeEngine );
+        Pulsar.registerSchemeInitializers( schemeEngine );
     }
 
     public static SchemeEngine createSchemeEngine() {

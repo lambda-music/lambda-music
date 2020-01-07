@@ -118,7 +118,7 @@ import pulsar.lib.thread.ThreadInitializerContainer;
  * 
  * (Tue, 09 Jul 2019 10:28:51 +0900)
  * <ol>
- * <li>Every scheme object must be initialized by {@link KawapadFrame#staticInitScheme(Scheme)}</li>
+ * <li>Every scheme object must be initialized by {@link KawapadFrame#initScheme(Scheme)}</li>
  * <li>{@link KawapadFrame#initialize() } must be called before use the object.</li>
  * </ol>
  * <pre> 
@@ -352,50 +352,15 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
      * current frame. This initializer does not have to be removed even if  
      * frames are disposed.
      */
-    public static void registerGlobalSchemeInitializer( SchemeEngine schemeEngine ) {
-        schemeEngine.getSchemeEvaluator().registerSchemeInitializer( staticInitializer01 );
+    public static void registerSchemeInitializer( SchemeEngine schemeEngine ) {
+        schemeEngine.getSchemeEvaluator().registerSchemeInitializer( initSchemeListener );
     }
-    static SchemeEngineListener staticInitializer01 = new SchemeEngineListener() {
+    static SchemeEngineListener initSchemeListener = new SchemeEngineListener() {
         @Override
         public void execute( Scheme scheme ) {
-            Kawapad.staticInitScheme( scheme );             
+            Kawapad.initScheme( scheme );             
         }
     };
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * This initializes variables which do not need to refer the reference to the
-     * current frame. This initializer does not have to be removed even if  
-     * frames are disposed.
-     */
-    static final SchemeEngineListener staticIntroInitializer01 = new SchemeEngineListener() {
-        @Override
-        public void execute( Scheme scheme ) {
-            Kawapad.staticIntroInitScheme( scheme.getEnvironment() );
-        }
-    };
-    static void staticIntroInitScheme( Environment env ) {
-        // ( canonical )
-        KawapadDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
-            setNames( "about-intro"  );
-            setParameterDescription( "" );
-            setReturnValueDescription( "" );
-            setShortDescription( "Welcome to Kawapad!" );
-            setLongDescription( ""
-                                + "Kawapad is a simple Lisp Scheme editor which can edit and execute Scheme code "
-                                + "on the fly. Kawapad includes Java implementation of a powerful computer language Lisp Scheme. "
-                                + " "
-                                + "To show all available procedures, execute (help). \n"
-                                + "To show help of a procedure, execute (help [procedure-name] ) . \n"
-                                + "" 
-                             );
-        }} );
-    }
-    
-    public static void registerGlobalIntroSchemeInitializer( SchemeEngine schemeEngine ) {
-        schemeEngine.getSchemeEvaluator().registerSchemeInitializer( staticIntroInitializer01 );
-    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Initialization
@@ -2789,12 +2754,28 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
 
     ////////////////////////////////////////////////////////////////////////////
     
-    public static Scheme staticInitScheme( Scheme scheme ) {
+    public static Scheme initScheme( Scheme scheme ) {
         logInfo( "Kawapad#staticInitScheme" );
         Environment env = scheme.getEnvironment();
         
         if ( ! SchemeUtils.isDefined(env, FLAG_DONE_INIT_PULSAR_SCRATCHPAD ) ) {
             SchemeUtils.defineVar(env, true, FLAG_DONE_INIT_PULSAR_SCRATCHPAD );  
+
+            // ( canonical )
+            KawapadDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
+                setNames( "about-intro"  );
+                setParameterDescription( "" );
+                setReturnValueDescription( "" );
+                setShortDescription( "Welcome to Kawapad!" );
+                setLongDescription( ""
+                                    + "Kawapad is a simple Lisp Scheme editor which can edit and execute Scheme code "
+                                    + "on the fly. Kawapad includes Java implementation of a powerful computer language Lisp Scheme. "
+                                    + " "
+                                    + "To show all available procedures, execute (help). \n"
+                                    + "To show help of a procedure, execute (help [procedure-name] ) . \n"
+                                    + "" 
+                                 );
+            }} );
 
             SchemeUtils.defineVar(env, new Procedure0() {
                 @Override

@@ -30,13 +30,13 @@ public class DescriptiveHelp {
      * frames are disposed.
      */
     public static void registerGlobalSchemeInitializer( SchemeEngine schemeEngine ) {
-        schemeEngine.getSchemeEvaluator().registerSchemeInitializer( staticInitializer01 );
+        schemeEngine.getSchemeEvaluator().registerSchemeInitializer( initSchemeListener );
     }
 
-    static SchemeEngineListener staticInitializer01 = new SchemeEngineListener() {
+    static SchemeEngineListener initSchemeListener = new SchemeEngineListener() {
         @Override
         public void execute( Scheme scheme ) {
-            staticInitScheme( scheme.getEnvironment() );            
+            DescriptiveHelp.initScheme( scheme.getEnvironment() );            
         }
     };
 
@@ -57,7 +57,7 @@ public class DescriptiveHelp {
     }
     static int helpTextWidth = 60;
 
-    public static void staticInitScheme( Environment env ) {
+    public static void initScheme( Environment env ) {
         
         ///////////////////////////////////////////////////////////////////////////////////////////////
         
