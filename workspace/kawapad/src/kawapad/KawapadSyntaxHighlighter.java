@@ -8,8 +8,10 @@ import java.util.regex.Pattern;
 
 import javax.swing.text.AttributeSet;
 
+import gnu.lists.LList;
 import gnu.mapping.Symbol;
 import pulsar.lib.scheme.SchemeEngine;
+import pulsar.lib.scheme.SchemeResult;
 import pulsar.lib.scheme.SchemeUtils;
 
 class KawapadSyntaxHighlighter extends SyntaxHighlighter {
@@ -38,18 +40,36 @@ class KawapadSyntaxHighlighter extends SyntaxHighlighter {
         super( kawapad );
         this.kawapad = kawapad;
     }
+    
+    /**
+     * CAUTION : THIS METHOD IS NOT TESTED SINCE THIS METHOD WAS MODIFED TO USE evaluate() METHOD. 
+     * @return
+     */
     private Pattern createKeywordPattern() {
         Kawapad.logInfo( "createKeywordPattern()" );
         ElapsedTime ep = new ElapsedTime();
         if (DEBUG) ep.start();
+
         synchronized ( Kawapad.class ) {
             // vvv IS THIS REALLY NECESSARY?????? TODO (Wed, 11 Sep 2019 03:01:16 +0900)  vvvv
 //            List<String> keywordList = new ArrayList<>();
 //          keywordList.addAll( SchemeUtils.getAllKey( kawapad.getSchemeSecretary() ) );
-            List<String> keywordList = SchemeUtils.getAllKey( kawapad.getSchemeEngine() );
+
+            SchemeResult result = kawapad.getSchemeEngine().getSchemeEvaluator().evaluate( 
+                "(environment-fold (interaction-environment) cons '())", "get-all" );
+            
+            result.throwIfError();
+            
+            List<String> keywordList =
+                    new ArrayList<> (
+                            SchemeUtils.convertList( 
+                                new ArrayList<>( (LList)result.getValue() ),
+                                (v)->SchemeUtils.anyToString( v ) ) );
+            
             // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
             keywordList.addAll( kawapad.lispKeywordList );
             keywordList.sort( Kawapad.KEYWORD_COMPARATOR );
+            
             for ( ListIterator<String> i=keywordList.listIterator(); i.hasNext(); ) {
                 String s = i.next();
                 i.set( Pattern.quote( s ) );

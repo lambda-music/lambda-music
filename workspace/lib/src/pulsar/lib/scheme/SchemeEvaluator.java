@@ -194,12 +194,13 @@ public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluat
             }
         }, "current-environment" );
 
-        SchemeUtils.defineVar(env, new Procedure0() {
-            @Override
-            public Object apply0() throws Throwable {
-                return Language.getDefaultLanguage();
-            }
-        }, "current-environment" );
+//        SchemeUtils.defineVar(env, new Procedure0() {
+//            @Override
+//            public Object apply0() throws Throwable {
+//                SchemeUtils.getAllKey( (Scheme)Language.getDefaultLanguage() );
+//                return 
+//            }
+//        }, "get-all-identifiers" );
     }
 
     @Override

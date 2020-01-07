@@ -501,8 +501,7 @@ public class SchemeUtils {
 //                        reverse.apply1( 
 //                            DescriptiveDocumentCategory.PROCS.getDocumentList(environment)));
 //    }
-    public static List<String> getAllKey( SchemeEngine schemeEngine ) {
-        Scheme scheme = schemeEngine.getSchemeEvaluator().getScheme();
+    public static List<String> getAllKey( Scheme scheme ) {
         ArrayList<String> list = new ArrayList<>();
         Environment env = scheme.getEnvironment();
         for ( LocationEnumeration e=env.enumerateAllLocations();e.hasMoreElements(); ) {
@@ -514,6 +513,16 @@ public class SchemeUtils {
     
     public static final String bytesToString( byte[] bs ) {
         return javax.xml.bind.DatatypeConverter.printHexBinary( bs );
+    }
+    
+    
+    public static List<String> getAllKey( SchemeEvaluator evaluator ) {
+        SchemeResult result = evaluator.evaluate( 
+            "(environment-fold (interaction-environment) cons '())", "get-all" );
+        result.throwIfError();
+        return SchemeUtils.convertList( 
+            new ArrayList<>( (LList)result.getValue() ),
+            (v)->SchemeUtils.anyToString( v ) );
     }
     
     /////////////////////////////////////////////////////////////////////////////////////////

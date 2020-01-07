@@ -20,7 +20,6 @@ import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Symbol;
-import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.SchemeUtils;
 
 
@@ -193,11 +192,11 @@ public class DescriptiveDocumentCategory {
         }
     }
 
-    public static void outputReference(SchemeEngine schemeEngine, String categoryName, String outputFile)
+    public static void outputReference(Environment environment, String categoryName, String outputFile)
             throws FileNotFoundException, IOException 
     {
         DescriptiveDocumentCategory category = valueOf( categoryName );
-        String str = DescriptiveHelp.outputMarkdownReference( category, schemeEngine );
+        String str = DescriptiveHelp.outputMarkdownReference( category, environment );
         if ( outputFile == null /* || "-".equals( outputFile ) */ ) {
             System.out.println( str );      
         } else {

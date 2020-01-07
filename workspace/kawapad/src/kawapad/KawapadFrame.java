@@ -399,7 +399,10 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
             Thread.sleep( 2048 );
         } catch ( InterruptedException e ) {
         }
-        DescriptiveDocumentCategory.outputReference( kawapadFrame.kawapad.getSchemeEngine(), "kawapad-procedures", null );
+        DescriptiveDocumentCategory.outputReference( 
+            kawapadFrame.kawapad.getSchemeEngine().getSchemeEvaluator().getScheme().getEnvironment(),
+            "kawapad-procedures", null );
+        
         kawapadFrame.requestClose();
     }
     

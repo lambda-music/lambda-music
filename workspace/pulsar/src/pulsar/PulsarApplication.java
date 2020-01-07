@@ -213,7 +213,9 @@ public class PulsarApplication {
         loadAllAvailableHelps();
         List<ApplicationComponent> list = start( true, true, 8193 );
         Pulsar pulsar = lookupPulsar( list );
-        DescriptiveDocumentCategory.outputReference( pulsar.getSchemeEngine(), categoryName, outputFile );
+        DescriptiveDocumentCategory.outputReference( 
+            pulsar.getSchemeEngine().getSchemeEvaluator().getScheme().getEnvironment(), 
+            categoryName, outputFile );
         quitPulsarSafely( pulsar );
         return list;
     }

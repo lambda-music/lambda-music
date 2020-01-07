@@ -107,18 +107,14 @@ public class KawapadEventHandlers {
         kawapad.getSchemeEngine().getThreadManager().startThread( new Runnable() {
             @Override
             public void run() {
-                Scheme scheme = kawapad.getSchemeEngine().getSchemeEvaluator().getScheme();
                 kawapad.getThreadInitializerCollection().initialize();
-                
-                synchronized ( scheme ) {
-                    //  logInfo( "eventHandlers.invokeEventHandler(inner)" );
-//                            Environment env = scheme.getEnvironment();
-                    for( Entry<Symbol,SchemeProcedure> e :  getEventType(eventTypeID).entrySet() ) {
-                        try {
-                            e.getValue().invoke( args );
-                        } catch ( Throwable t ) {
-                            Kawapad.logError("invoking event handlers : ", t);
-                        }
+                //  logInfo( "eventHandlers.invokeEventHandler(inner)" );
+                //                            Environment env = scheme.getEnvironment();
+                for( Entry<Symbol,SchemeProcedure> e :  getEventType(eventTypeID).entrySet() ) {
+                    try {
+                        e.getValue().invoke( args );
+                    } catch ( Throwable t ) {
+                        Kawapad.logError("invoking event handlers : ", t);
                     }
                 }
             }

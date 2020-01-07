@@ -21,7 +21,6 @@ import gnu.mapping.Procedure0;
 import gnu.mapping.Procedure1;
 import gnu.mapping.Procedure2;
 import gnu.mapping.Values;
-import kawa.standard.Scheme;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.swing.AcceleratorKeyList;
 import pulsar.lib.swing.Action2;
@@ -257,23 +256,18 @@ class KawapadTextualIncrement implements MenuInitializer {
             if ( foundSubstr == null ) {
                 Matcher m = NUMBER_PATTERN.matcher( targetStr );
                 if ( m.find() ) {
-                    Scheme scheme = ((Kawapad)target).getSchemeEngine().getSchemeEvaluator().getScheme();
-                    
-                    synchronized ( scheme ) {
-                        try {
-                            String numStr = targetStr.substring( m.start(), m.end());
-                            String strResult = fractionAdd( numStr, direction );
-                            
-                            if ( strResult != null ) {
-                                foundSubstr = strResult.toString();
-                                foundBeginPos = m.start() + beginPos;
-                                foundEndPos   = m.end()   + beginPos;
-                            }
-                        } catch (Throwable e) {
-                            Kawapad.logWarn( "TextualIncrementalAddon.replace():"+e.getMessage() );
+                    try {
+                        String numStr = targetStr.substring( m.start(), m.end());
+                        String strResult = fractionAdd( numStr, direction );
+                        
+                        if ( strResult != null ) {
+                            foundSubstr = strResult.toString();
+                            foundBeginPos = m.start() + beginPos;
+                            foundEndPos   = m.end()   + beginPos;
                         }
+                    } catch (Throwable e) {
+                        Kawapad.logWarn( "TextualIncrementalAddon.replace():"+e.getMessage() );
                     }
-                     
                 }
             }
             if ( foundSubstr == null ) {

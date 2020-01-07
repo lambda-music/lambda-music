@@ -38,6 +38,29 @@ public interface Evaluator {
             currentFile, 
             currentURI );
     }
+    default SchemeResult evaluate( 
+            Runnable threadInitializer, 
+            String schemeScriptString, 
+            String currentURI ) 
+    {
+        return evaluate( 
+            threadInitializer,
+            new StringReader( schemeScriptString ),
+            null, 
+            null, 
+            currentURI );
+    }
+    default SchemeResult evaluate( 
+            String schemeScriptString, 
+            String currentURI ) 
+    {
+        return evaluate( 
+            null,
+            new StringReader( schemeScriptString ),
+            null, 
+            null, 
+            currentURI );
+    }
 
     default SchemeResult evaluate( Runnable threadInitializer, File schemeScriptFile ) throws IOException {
         return evaluate( 

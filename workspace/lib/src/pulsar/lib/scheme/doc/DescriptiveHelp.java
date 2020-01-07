@@ -49,11 +49,11 @@ public class DescriptiveHelp {
         list.addAll( type.getDocumentList( env ));
         return MarkdownDescriptive.createMarkdownHelp( list );
     }
-    public static String outputMarkdownReference( DescriptiveDocumentCategory type, SchemeEngine schemeEngine ) {
+    public static String outputMarkdownReference( DescriptiveDocumentCategory type, Environment environment ) {
         if ( type == null )
             throw new IllegalArgumentException( "'type' argument cannot be null." );
         
-        return outputMarkdownReference0( type, schemeEngine.getSchemeEvaluator().getScheme().getEnvironment() );
+        return outputMarkdownReference0( type, environment );
     }
     static int helpTextWidth = 60;
 

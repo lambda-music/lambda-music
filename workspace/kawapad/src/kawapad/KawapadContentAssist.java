@@ -22,9 +22,7 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.Segment;
 
-import gnu.mapping.LocationEnumeration;
-import gnu.mapping.NamedLocation;
-import kawa.standard.Scheme;
+import pulsar.lib.scheme.SchemeEvaluator;
 import pulsar.lib.scheme.SchemeUtils;
 
 public class KawapadContentAssist {
@@ -132,7 +130,8 @@ public class KawapadContentAssist {
         }
     }
     public synchronized void updatePopup(Caret caret) {
-        Scheme scheme = kawapad.getSchemeEngine().getSchemeEvaluator().getScheme();
+        SchemeEvaluator evaluator = kawapad.getSchemeEngine().getSchemeEvaluator();
+        
         try {
             Document document = kawapad.getDocument();
             int length = document.getLength();
@@ -153,23 +152,23 @@ public class KawapadContentAssist {
             if ( DEBUG )
                 System.err.println( "currentWord:" + currentWord );
             
-            ArrayList<String> allKeys = new ArrayList<>();
-            LocationEnumeration en = scheme.getEnvironment().enumerateAllLocations();
-            for ( ; en.hasNext(); ) {
-                NamedLocation l= en.next();
-                String key = SchemeUtils.schemeSymbolToJavaString( l.getKeySymbol() );
+            ArrayList<String> allKeys = 
+                    new ArrayList<>( SchemeUtils.getAllKey( evaluator ) );
+
+            ArrayList<String> keys = new ArrayList<>();
+            for ( String key : allKeys ) {
                 if ( key.startsWith( currentWord ) ) {
-                    allKeys.add(key);
+                    keys.add(key);
                 }
             }
             
-            allKeys.sort( comparator );
+            keys.sort( comparator );
             
             if ( popup != null)
                 popup.hide();
             
             Rectangle rectangle = kawapad.getUI().modelToView( kawapad, rightEdgePos );
-            list = new JList( allKeys.toArray() );
+            list = new JList( keys.toArray() );
             JScrollPane sp = new JScrollPane(list);
             sp.setSize( new Dimension( 300,300 ) );
             list.addListSelectionListener( new ListSelectionListener() {
