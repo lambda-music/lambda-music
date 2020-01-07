@@ -35,7 +35,7 @@ class PulsarApplicationArgumentParser {
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
-    static final String DEFAULT_EVAL_PATH = "/eval";
+    static final String DEFAULT_REMOTE_URL = "http://localhost:";
     
     ArrayList<ApplicationVessel> applicationVesselList = new ArrayList<>();
     ArrayDeque<SchemeEngine> schemeEngineStack = new ArrayDeque<>();
@@ -253,22 +253,17 @@ class PulsarApplicationArgumentParser {
                         PulsarApplicationLibrary.initializeSchemeEngine( schemeEngine );
                     }
                     
-                    @SuppressWarnings("unused")
-                    boolean directMeeting = true;
-                    
                     List<String> urlList = new ArrayList<>();
                     @Override
                     Element notifyArg(String s) {
                         if ( s.startsWith( "--"  ) ) {
                             NamedArgument a = new NamedArgument( s );
-                            if ( "parallel".equals( a.key ) ) {
-                                this.directMeeting =  true ;
-                            } else if ( "serial".equals( a.key ) ) {
-                                this.directMeeting =  false ;
-                            } else if ( "remote".equals( a.key ) ) {
+                            if ( false ) {
+                                //
+                            } else if ( "server-url".equals( a.key ) ) {
                                 urlList.add( a.value );
-                            } else if ( "port".equals( a.key ) ) {
-                                urlList.add( "http://localhost:" + a.value );
+                            } else if ( "server-port".equals( a.key ) ) {
+                                urlList.add( DEFAULT_REMOTE_URL + a.value );
                             } else {
                                 throw new RuntimeException( "unknown argument " + s );
                             }
@@ -416,13 +411,13 @@ class PulsarApplicationArgumentParser {
         });
         
         
-        factoryMap.put( "http", new ElementFactory() {
+        factoryMap.put( "scheme-server", new ElementFactory() {
             @Override
             Element create() {
                 return new Element() {
-                    private int httpPort = 8192;
+                    private int serverPort = 8192;
                     // TODO 0 variable accept path for HTTP 
-                    private String path = "";
+                    private String serverPath = "";
                     UserAuthentication userAuthentication = UserAuthentication.ONLY_LOOPBACK;
                     @Override
                     Element notifyArg(String s) {
@@ -430,10 +425,10 @@ class PulsarApplicationArgumentParser {
                             NamedArgument a = new NamedArgument(s);
                             switch ( a.key ) {
                                 case "port" : 
-                                    this.httpPort = Integer.parseInt( a.value );
+                                    this.serverPort = Integer.parseInt( a.value );
                                     break;
                                 case "path" : 
-                                    this.path = a.value;
+                                    this.serverPath = a.value;
                                     break;
                                 case "auth" : 
                                     if ( "only-loopback".equals( a.value )  ) {
@@ -465,7 +460,7 @@ class PulsarApplicationArgumentParser {
                         
                         try {
                             SchemeHttp schemeHttp = PulsarApplicationLibrary.createPulsarHttpServer( 
-                                schemeEngine, httpPort, path, userAuthentication );
+                                schemeEngine, serverPort, serverPath, userAuthentication );
                             schemeHttpStack.push( schemeHttp );
                         } catch (IOException e) {
                             throw new RuntimeException( e );
