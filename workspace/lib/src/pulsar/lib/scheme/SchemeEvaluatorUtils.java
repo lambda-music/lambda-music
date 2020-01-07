@@ -20,7 +20,8 @@ class SchemeEvaluatorUtils {
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
-
+    static final boolean DEBUG = false;
+    
 //    public static void execSchemeFromResource( Scheme scheme, Class parentClass, String resourcePath ) throws IOException {
 //        SchemeExecutorUtils.evaluateScheme( 
 //            scheme, null, 
@@ -53,7 +54,8 @@ class SchemeEvaluatorUtils {
             if ( threadInitializer == null ) {
                 logWarn( "No thread initializer was specified " );
             } else {
-                logInfo( "threadInitializer=" + threadInitializer.toString() );
+                if ( DEBUG )
+                    logInfo( "threadInitializer=" + threadInitializer.toString() );
                 try {
                     threadInitializer.run();
                 } catch ( Throwable t ) {

@@ -13,8 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import kawapad.Kawapad;
 import kawapad.KawapadFrame;
@@ -36,7 +34,6 @@ class PulsarApplicationArgumentParser {
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
     static final String DEFAULT_REMOTE_URL = "http://localhost:";
-    
     ArrayList<ApplicationVessel> applicationVesselList = new ArrayList<>();
     ArrayDeque<SchemeEngine> schemeEngineStack = new ArrayDeque<>();
     ArrayDeque<Pulsar> pulsarStack= new ArrayDeque<>();
@@ -201,21 +198,6 @@ class PulsarApplicationArgumentParser {
         frameStack.clear();
         schemeHttpStack.clear();
     }
-    static final Pattern parseArgPattern = Pattern.compile( "^--([a-zA-Z0-9\\_\\-]+)\\=(.*)$" );
-    class NamedArgument {
-        String key;
-        String value;
-        public NamedArgument( String s ) {
-            Matcher m = parseArgPattern.matcher( s );
-            if ( m.matches() ) {
-                this.key = m.group( 1 );
-                this.value = m.group( 2 );
-            } else {
-                this.key = s;
-                this.value = null;
-            }
-        }
-    }
     abstract class Element {
         abstract Element notifyArg( String s );
         abstract void notifyEnd();
@@ -257,13 +239,13 @@ class PulsarApplicationArgumentParser {
                     @Override
                     Element notifyArg(String s) {
                         if ( s.startsWith( "--"  ) ) {
-                            NamedArgument a = new NamedArgument( s );
+                            PulsarApplicationNamedArgument a = new PulsarApplicationNamedArgument( s );
                             if ( false ) {
                                 //
-                            } else if ( "server-url".equals( a.key ) ) {
-                                urlList.add( a.value );
-                            } else if ( "server-port".equals( a.key ) ) {
-                                urlList.add( DEFAULT_REMOTE_URL + a.value );
+                            } else if ( "server-url".equals( a.getKey() ) ) {
+                                urlList.add( a.getValue() );
+                            } else if ( "server-port".equals( a.getKey() ) ) {
+                                urlList.add( DEFAULT_REMOTE_URL + a.getValue() );
                             } else {
                                 throw new RuntimeException( "unknown argument " + s );
                             }
@@ -327,13 +309,13 @@ class PulsarApplicationArgumentParser {
                     @Override
                     Element notifyArg(String s) {
                         if ( s.startsWith( "--" ) ) {
-                            NamedArgument a = new NamedArgument(s);
-                            switch ( a.key ) {
+                            PulsarApplicationNamedArgument a = new PulsarApplicationNamedArgument(s);
+                            switch ( a.getKey() ) {
 //                                case "port" : 
 //                                    portNumberList.add(  Integer.parseInt( a.value ) );
 //                                    break;
                                 default :
-                                    throw new RuntimeException( "unknown parameter : " + a.key );
+                                    throw new RuntimeException( "unknown parameter : " + a.getKey() );
                             }
                         } else {
                             fileNameList.add(s);
@@ -375,13 +357,13 @@ class PulsarApplicationArgumentParser {
                     @Override
                     Element notifyArg(String s) {
                         if ( s.startsWith( "--" ) ) {
-                            NamedArgument a = new NamedArgument(s);
-                            switch ( a.key ) {
+                            PulsarApplicationNamedArgument a = new PulsarApplicationNamedArgument(s);
+                            switch ( a.getKey() ) {
 //                                case "port" : 
 //                                    portNumberList.add(  Integer.parseInt( a.value ) );
 //                                    break;
                                 default :
-                                    throw new RuntimeException( "unknown parameter : " + a.key );
+                                    throw new RuntimeException( "unknown parameter : " + a.getKey() );
                             }
                         } else {
                             fileNameList.add(s);
@@ -422,25 +404,25 @@ class PulsarApplicationArgumentParser {
                     @Override
                     Element notifyArg(String s) {
                         if (s.startsWith( "--" ) ) {
-                            NamedArgument a = new NamedArgument(s);
-                            switch ( a.key ) {
+                            PulsarApplicationNamedArgument a = new PulsarApplicationNamedArgument(s);
+                            switch ( a.getKey() ) {
                                 case "port" : 
-                                    this.serverPort = Integer.parseInt( a.value );
+                                    this.serverPort = Integer.parseInt( a.getValue() );
                                     break;
                                 case "path" : 
-                                    this.serverPath = a.value;
+                                    this.serverPath = a.getValue();
                                     break;
                                 case "auth" : 
-                                    if ( "only-loopback".equals( a.value )  ) {
+                                    if ( "only-loopback".equals( a.getValue() )  ) {
                                         this.userAuthentication = UserAuthentication.ONLY_LOOPBACK;
                                         // } else if ( "only-loopback".equals( a.value )  ) {
                                         // TODO
                                     } else {
-                                        throw new RuntimeException( "unknown authentication type : " + a.key );
+                                        throw new RuntimeException( "unknown authentication type : " + a.getKey() );
                                     }
                                     break;
                                 default :
-                                    throw new RuntimeException( "unknown parameter : " + a.key );
+                                    throw new RuntimeException( "unknown parameter : " + a.getKey() );
                             }
                         } else {
                             throw new RuntimeException( "unknown parameter : " + s );

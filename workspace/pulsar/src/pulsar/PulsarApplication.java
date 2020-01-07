@@ -31,6 +31,7 @@ public class PulsarApplication {
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
     public PulsarApplication() {
     }
+    
     /**
      * The main method which starts up the application. The application opens a file
      * which is specified in argument values. When more than one arguments were
@@ -104,8 +105,15 @@ public class PulsarApplication {
     }
 
     static List<ApplicationComponent> parseArgs02( String[] args ) throws IOException {
-        List<ApplicationComponent> applicationVesselList = new ArrayList<>();
-        String[][] args2 = ArraySplitter.splitBeginEnd( args, "begin", "end" ) ;
+        PulsarApplicationArgumentMacro macro = new PulsarApplicationArgumentMacro( Arrays.asList( args ) );
+        macro.exec();
+        args = macro.getOutputAsArray();
+        
+        System.err.println( macro.getOutput() );
+        
+        List<ApplicationComponent> vessels = new ArrayList<>();
+        String[][] args2 = PulsarApplicationArraySplitter.splitBeginEnd( args, "begin", "end" ) ;
+        
         for ( int i=0; i<args2.length; i++ ) {
             String[] args3 = args2[i];
             if ( 0 < args3.length ) {
@@ -113,11 +121,14 @@ public class PulsarApplication {
                 String[] mainArguments = Arrays.copyOfRange( args3 , 1, args3.length );
                 
                 if( "fork".equals( mainCommand ) ) {
-                    applicationVesselList.add( forkPulsar( mainArguments ) );
+                    // fork
+                    vessels.add( forkPulsar( mainArguments ) );
+                    
                 } else if( "exec".equals( mainCommand ) ) {
+                    // exec
                     PulsarApplicationArgumentParser argumentParser = new PulsarApplicationArgumentParser();
                     argumentParser.parse( mainArguments );
-                    applicationVesselList.addAll( argumentParser.getApplicationVesselList() );
+                    vessels.addAll( argumentParser.getApplicationVesselList() );
                 } else {
                     throw new RuntimeException( "unknown command " + mainCommand );
                 }
@@ -125,7 +136,7 @@ public class PulsarApplication {
                 throw new RuntimeException( "" );
             }
         }
-        return applicationVesselList;
+        return vessels;
     }
     
     static JavaProcess forkPulsar(String[] arguments) {
@@ -140,9 +151,6 @@ public class PulsarApplication {
     }
     
     static List<ApplicationComponent> parseArgs( String[] args ) throws IOException {
-        if ( args.length == 0 ) {
-            invalidArgs();
-        }
         if ( args[0].equals( "advanced" ) ) {
             return parseArgs02( Arrays.copyOfRange( args , 1, args.length ) );
         } else {
@@ -265,7 +273,12 @@ public class PulsarApplication {
         PulsarPrinter.init();
 //        parseArgs01(args);
         
-        List<ApplicationComponent> components = parseArgs(args);
+        if ( args.length == 0 ) {
+            invalidArgs();
+            return ;
+        }
+
+        List<ApplicationComponent> components = parseArgs02(args);
         
         ApplicationVessel owner = new ApplicationVessel();
         owner.addAll( components );

@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ArraySplitter<T> {
+public class PulsarApplicationArraySplitter<T> {
     List<T[]> output = new ArrayList<>();
     T[] input;
     T tokenBegin;
     T tokenEnd;
-    public ArraySplitter(T[] input) {
+    public PulsarApplicationArraySplitter(T[] input) {
         super();
         this.input = input;
     }
-    public ArraySplitter(T[] input, T tokenBegin, T tokenEnd) {
+    public PulsarApplicationArraySplitter(T[] input, T tokenBegin, T tokenEnd) {
         this.input = input;
         this.tokenBegin = tokenBegin;
         this.tokenEnd   = tokenEnd;
@@ -48,6 +48,9 @@ public class ArraySplitter<T> {
         if ( level != 0 ) {
             throw new RuntimeException( "missing end error." );
         }
+        if ( start != input.length ) {
+            add( start, input.length );
+        }
     }
     public T[][] getResult() {
         return output.toArray((T[][])java.lang.reflect.Array.newInstance( this.input.getClass(), output.size() ) );
@@ -56,7 +59,7 @@ public class ArraySplitter<T> {
         return new ArrayList<>( output );
     }
     public static <T> T[][] splitBeginEnd(T[] a, T begin, T end ) {
-        ArraySplitter<T> splitter = new ArraySplitter<T>( a, begin, end );
+        PulsarApplicationArraySplitter<T> splitter = new PulsarApplicationArraySplitter<T>( a, begin, end );
         splitter.proc();
         return splitter.getResult();
     }
