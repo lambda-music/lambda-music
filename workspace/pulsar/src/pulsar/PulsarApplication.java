@@ -102,34 +102,10 @@ public class PulsarApplication {
             return start(argGui, argHttp, argHttpPort, argFileName);
         }
     }
-    static <T> int indexOf( T[] a, T v, int from ) {
-        for ( int i=from; i<a.length; i++ ) {
-            if ( v == a[i] || v.equals( a[i] ) )
-                return i;
-        }
-        return -1;
-    }
-    static <T> T[][] splitArray(T[] a, T separator ) {
-        ArrayList<T[]> result = new ArrayList<>();
-        int last = 0;
-        for(;;){
-            int i = indexOf( a, separator, last );
-            if ( i < 0 ) {
-                result.add( Arrays.copyOfRange( a, last , a.length ) );
-                break;
-            }
-            if ( last != i ) 
-                result.add( Arrays.copyOfRange( a, last , i ) );
-            last = i+1;
-        }
-        if ( result.size() == 0 ) {
-            result.add( a.clone() );
-        }
-        return result.toArray((T[][])java.lang.reflect.Array.newInstance( a.getClass(), result.size() ) );
-    }
+
     static List<ApplicationComponent> parseArgs02( String[] args ) throws IOException {
         List<ApplicationComponent> applicationVesselList = new ArrayList<>();
-        String[][] args2 = splitArray( args, "," ) ;
+        String[][] args2 = ArraySplitter.splitBeginEnd( args, "begin", "end" ) ;
         for ( int i=0; i<args2.length; i++ ) {
             String[] args3 = args2[i];
             if ( 0 < args3.length ) {

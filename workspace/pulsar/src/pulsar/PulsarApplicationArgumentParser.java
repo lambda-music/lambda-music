@@ -48,7 +48,7 @@ class PulsarApplicationArgumentParser {
     public List<ApplicationVessel> getApplicationVesselList() {
         return Collections.unmodifiableList( applicationVesselList );
     }
-    
+
     ArrayList<ArrayDeque> allDeque = new ArrayList<>();
     {
         allDeque.add(schemeEngineStack);
