@@ -2,6 +2,7 @@ package kawapad;
 
 import javax.swing.SwingUtilities;
 
+import pulsar.lib.scheme.EvaluatorReceiver;
 import pulsar.lib.scheme.SchemeResult;
 
 public class KawapadEvaluatorReceiverTools {
@@ -13,7 +14,7 @@ public class KawapadEvaluatorReceiverTools {
             kawapad, doInsertText, doReplaceText, doReportError, doResetFileModified );
     }
     
-    static final class InsertingUpdatingText implements KawapadEvaluatorReceiver {
+    static final class InsertingUpdatingText implements EvaluatorReceiver {
         private Kawapad kawapad;
         private boolean doInsertText;
         private boolean doReplaceText;

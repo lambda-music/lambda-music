@@ -68,10 +68,10 @@ import gnu.mapping.Procedure0;
 import gnu.mapping.Procedure1;
 import gnu.mapping.Values;
 import kawa.standard.Scheme;
-import kawapad.KawapadEvaluatorReceiver;
 import kawapad.KawapadEvaluatorRunnable;
 import kawapad.KawapadFrame;
 import pulsar.lib.app.ApplicationComponent;
+import pulsar.lib.scheme.EvaluatorReceiver;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.SchemeEvaluator.SchemeEngineListener;
@@ -125,7 +125,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
             return;
         quitProcessed = true;
         
-        this.getKawapad().evaluate( "(close)", KawapadEvaluatorReceiver.REPORT_ERROR );
+        this.getKawapad().evaluate( "(close)", EvaluatorReceiver.REPORT_ERROR );
 //        pulsar.close();
         
         super.processQuit();
@@ -221,10 +221,12 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                 if ( 100 < counter ) {
                     counter = 0;
                     String schemeScript = "(if (open?) (get-track-position (get-main-track)) #f)";
-                    new KawapadEvaluatorRunnable( 
-                        kawapad, schemeScript, 
+                    
+                    KawapadEvaluatorRunnable.create( 
+                        kawapad, 
+                        schemeScript, 
                         getKawapad().getSchemeEngine().getEvaluatorManager().getCurrentEvaluator(), 
-                        new KawapadEvaluatorReceiver() {
+                        new EvaluatorReceiver() {
                             @Override
                             public void receive(String schemeScript, SchemeResult schemeResult) {
                                 if ( schemeResult.isSucceeded() ) {
@@ -234,7 +236,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                                     } else {
                                         lastPosition = position;
                                         position = Double.parseDouble( v );
-
+                                        
                                         double positionEx;
                                         if ( position < lastPosition ) {
                                             positionEx = position + Math.ceil( lastPosition );
@@ -245,7 +247,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                                     }
                                 }
                             }
-                        }).run();
+                        } ).run();
                 }
                 double p = position + ( velo * (double)counter);
 //                System.err.println( "position:" + p );
@@ -594,7 +596,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         @Override
         public void actionPerformed(ActionEvent e) {
 //            pulsar.togglePlaying();
-            getKawapad().evaluate( "(set-playing)", KawapadEvaluatorReceiver.REPORT_ERROR ); 
+            getKawapad().evaluate( "(set-playing)", EvaluatorReceiver.REPORT_ERROR ); 
         }
         {
             putValue( Action2.CAPTION, "Play/Stop" );
@@ -607,7 +609,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         @Override
         public void actionPerformed(ActionEvent e) {
 //            pulsar.rewind();
-            getKawapad().evaluate( "(rewind)", KawapadEvaluatorReceiver.REPORT_ERROR ); 
+            getKawapad().evaluate( "(rewind)", EvaluatorReceiver.REPORT_ERROR ); 
         }
         {
             putValue( Action2.CAPTION, "Reset" );
@@ -620,7 +622,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         @Override
         public void actionPerformed(ActionEvent e) {
 //            pulsar.getTempoTapper().tap();
-            getKawapad().evaluate( "(tap-tempo)", new KawapadEvaluatorReceiver() {
+            getKawapad().evaluate( "(tap-tempo)", new EvaluatorReceiver() {
                 @Override
                 public void receive(String schemeScript, SchemeResult schemeResult) {
                     double bpm = Double.parseDouble( schemeResult.getValueAsString() );
@@ -910,7 +912,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                                 pulsarFrame.updatingTempoDisplay_slider = true;
                                 int value = ((JSlider)e.getSource()).getValue();
                                 pulsarFrame.setTempoDisplay( value );
-                                pulsarFrame.getKawapad().evaluate( "(set-tempo " + value + ")", KawapadEvaluatorReceiver.REPORT_ERROR );
+                                pulsarFrame.getKawapad().evaluate( "(set-tempo " + value + ")", EvaluatorReceiver.REPORT_ERROR );
                                 
 //                                // logInfo( "TempoSlider : " + ((JSlider)e.getSource()).getValue() );
 //                                String schemeScript = 

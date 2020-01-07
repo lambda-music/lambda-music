@@ -95,6 +95,7 @@ import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
 import pulsar.lib.CurrentObject;
 import pulsar.lib.app.ApplicationComponent;
+import pulsar.lib.scheme.EvaluatorReceiver;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.SchemeEvaluator;
@@ -434,18 +435,18 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     //
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    public void evaluate( String schemeScript, KawapadEvaluatorReceiver receiver ) {
+    public void evaluate( String schemeScript, EvaluatorReceiver receiver ) {
         if ( schemeScript != null ) {
             this.kawapad.getSchemeEngine().getThreadManager().startThread( 
-                new KawapadEvaluatorRunnable( kawapad, schemeScript, this.getSchemeEngine().getEvaluatorManager().getCurrentEvaluator(), receiver ) );
+                KawapadEvaluatorRunnable.create( kawapad, schemeScript, this.getSchemeEngine().getEvaluatorManager().getCurrentEvaluator(), receiver ) );
         } else {
             Kawapad.logWarn( "Ignored because currently no text is selected. " );
         }
     }
-    public void evaluateLocally( String schemeScript, KawapadEvaluatorReceiver receiver ) {
+    public void evaluateLocally( String schemeScript, EvaluatorReceiver receiver ) {
         if ( schemeScript != null ) {
             this.kawapad.getSchemeEngine().getThreadManager().startThread( 
-                new KawapadEvaluatorRunnable( kawapad, schemeScript, this.getSchemeEngine().getEvaluatorManager().getPrimaryEvaluator(), receiver ) );
+                KawapadEvaluatorRunnable.create( kawapad, schemeScript, this.getSchemeEngine().getEvaluatorManager().getPrimaryEvaluator(), receiver ) );
         } else {
             Kawapad.logWarn( "Ignored because currently no text is selected. " );
         }

@@ -31,8 +31,6 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -352,7 +350,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
-    public static KawapadFrame createStaticInstance( KawapadEvaluator evaluator, Collection<KawapadEvaluator> evaluatorList ) {
+    public static KawapadFrame createStaticInstance( ) {
         SchemeEngine schemeEngine = new SchemeEngine();
         DescriptiveHelp.registerGlobalSchemeInitializer( schemeEngine );
         Kawapad.registerGlobalIntroSchemeInitializer( schemeEngine );
@@ -386,7 +384,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
     }
     
     public static void outputKeyStrokeReference() throws IOException {
-        KawapadFrame kawapadFrame = createStaticInstance( KawapadEvaluator.getLocal(), Collections.EMPTY_LIST );
+        KawapadFrame kawapadFrame = createStaticInstance( );
         try {
             Thread.sleep( 2048 );
         } catch ( InterruptedException e ) {
@@ -397,7 +395,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
     }
 
     public static void outputDocument() throws IOException {
-        KawapadFrame kawapadFrame = createStaticInstance( KawapadEvaluator.getLocal(), Collections.EMPTY_LIST );
+        KawapadFrame kawapadFrame = createStaticInstance();
         try {
             Thread.sleep( 2048 );
         } catch ( InterruptedException e ) {
@@ -406,23 +404,14 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
         kawapadFrame.requestClose();
     }
     
-    public static void start(File f, KawapadEvaluator evaluator, Collection<KawapadEvaluator> evaluatorList ) throws IOException {
-        KawapadFrame kawapadFrame = createStaticInstance( evaluator, evaluatorList );
+    public static void start(File f ) throws IOException {
+        KawapadFrame kawapadFrame = createStaticInstance( );
         if ( f != null )
             kawapadFrame.kawapad.openFile( f );
         else
             kawapadFrame.kawapad.openIntro();
     }
-    public static void start( KawapadEvaluator evaluator, Collection<KawapadEvaluator> evaluatorList ) throws IOException {
-        start( null, evaluator, evaluatorList );
-    }
-    public static void start( Collection<KawapadEvaluator> evaluatorList ) throws IOException {
-        start( null, KawapadEvaluator.getLocal(), evaluatorList );
-    }
     public static void start() throws IOException {
-        start( null, KawapadEvaluator.getLocal(), Collections.EMPTY_LIST  );
-    }
-    public static void start( File f ) throws IOException {
-        start( f, KawapadEvaluator.getLocal(), Collections.EMPTY_LIST );
+        start( null );
     }
 }

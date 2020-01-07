@@ -1,5 +1,6 @@
 package pulsar.lib.scheme;
 
+import java.io.File;
 import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -96,7 +97,6 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
     public void setParentApplicationComponent(ApplicationComponent parentApplicationComponent) {
         this.parentApplicationComponent = parentApplicationComponent;
     }
-
     @Override
     public void processInit() {
         this.getSchemeEvaluator().processInit();
@@ -104,5 +104,24 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
     @Override
     public void processQuit() {
         this.getSchemeEvaluator().processQuit();
+    }
+    
+    public static Runnable create(
+            Runnable threadInitializer, 
+            String schemeScript, 
+            Evaluator evaluator,
+            EvaluatorReceiver receiver, 
+            File currentDirectory, 
+            File currentFile, 
+            String currentURI )
+    {
+        return new EvaluatorRunnable( 
+            threadInitializer, 
+            schemeScript, 
+            evaluator, 
+            receiver, 
+            currentDirectory,
+            currentFile, 
+            currentURI );
     }
 }
