@@ -407,44 +407,22 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         if ( schemeScript != null ) {
             this.kawapad.getSchemeEngine().getThreadManager().startThread( 
                 SchemeEngine.create( 
-                kawapad.getThreadInitializerCollection(), 
-                schemeScript, 
-                this.getSchemeEngine().getEvaluatorManager().getCurrentEvaluator(), 
-                receiver, 
-                kawapad.getCurrentDirectory(), 
-                kawapad.getCurrentFile(), 
-                "scratchpad"
-                ) );
+                    kawapad.getThreadInitializerCollection(), 
+                    schemeScript, 
+                    this.getSchemeEngine().getEvaluatorManager().getCurrentEvaluator(), 
+                    receiver, 
+                    kawapad.getCurrentDirectory(), 
+                    kawapad.getCurrentFile(), 
+                    "scratchpad"
+                ));
         } else {
             Kawapad.logWarn( "Ignored because currently no text is selected. " );
         }
     }
-    public void evaluateLocally( String schemeScript, EvaluatorReceiver receiver ) {
-        if ( schemeScript != null ) {
-            this.kawapad.getSchemeEngine().getThreadManager().startThread( 
-                SchemeEngine.create( 
-                kawapad.getThreadInitializerCollection(), 
-                schemeScript, 
-                this.getSchemeEngine().getEvaluatorManager().getPrimaryEvaluator(), 
-                receiver, 
-                kawapad.getCurrentDirectory(), 
-                kawapad.getCurrentFile(), 
-                "scratchpad"
-                ) );
-        } else {
-            Kawapad.logWarn( "Ignored because currently no text is selected. " );
-        }
-    }
-
     public void evaluate( String schemeScript,  boolean doInsertText, boolean doReplaceText, boolean doReset ) {
         this.evaluate( 
             schemeScript, 
-            KawapadEvaluatorReceiverTools.kawapadUpdator( kawapad, doInsertText, doReplaceText, true, doReset ) );
-    }
-    public void evaluateLocally( String schemeScript,  boolean doInsertText, boolean doReplaceText, boolean doReset ) {
-        this.evaluateLocally( 
-            schemeScript, 
-            KawapadEvaluatorReceiverTools.kawapadUpdator( kawapad, doInsertText, doReplaceText, true, doReset ) );
+            KawapadUpdater.create( kawapad, doInsertText, doReplaceText, true, doReset ) );
     }
     
     //////////////////////////////////////////////////////////////////////////////////////////

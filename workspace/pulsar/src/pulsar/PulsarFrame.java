@@ -68,7 +68,6 @@ import gnu.mapping.Procedure0;
 import gnu.mapping.Procedure1;
 import gnu.mapping.Values;
 import kawa.standard.Scheme;
-import kawapad.KawapadEvaluatorRunnable;
 import kawapad.KawapadFrame;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.scheme.EvaluatorReceiver;

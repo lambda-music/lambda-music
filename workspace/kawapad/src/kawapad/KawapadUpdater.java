@@ -5,8 +5,8 @@ import javax.swing.SwingUtilities;
 import pulsar.lib.scheme.EvaluatorReceiver;
 import pulsar.lib.scheme.SchemeResult;
 
-public class KawapadEvaluatorReceiverTools {
-    public static InsertingUpdatingText kawapadUpdator(
+public class KawapadUpdater {
+    public static EvaluatorReceiver create(
             Kawapad kawapad, boolean doInsertText,
             boolean doReplaceText, boolean doReportError, boolean doResetFileModified) 
     {
