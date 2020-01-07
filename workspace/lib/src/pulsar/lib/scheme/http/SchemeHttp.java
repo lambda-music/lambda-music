@@ -44,6 +44,8 @@ import pulsar.lib.thread.ThreadInitializerContainer;
  */
 
 public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, ThreadInitializerCollectionContainer, ApplicationComponent {
+    public static final String PATH_RESET = "/reset";
+    public static final String PATH_EVAL  = "/eval";
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
@@ -163,18 +165,19 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
     HttpServer httpServer;
     Charset charset = Charset.forName( "UTF-8" );
     UserAuthentication authentication;
-    public SchemeHttp( int port, UserAuthentication authentication, SchemeEngine schemeEngine ) throws IOException {
+    public SchemeHttp( int port, String path, UserAuthentication authentication, SchemeEngine schemeEngine ) throws IOException {
         super();
         this.port = port;
         this.authentication = authentication;
         this.schemeEngine = schemeEngine;
-        this.initialize();
+        this.initialize( path );
     }
-    private void initialize() throws IOException {
+    private void initialize( String path ) throws IOException {
         httpServer = HttpServer.create(new InetSocketAddress( port ), 0);
-        httpServer.createContext( "/pulsar", new VimSchemeEvaluation(  this.authentication) );
-        httpServer.createContext( "/vim",    new VimSchemeEvaluation(  this.authentication) );
-        httpServer.createContext( "/eval",   new PlainSchemeEvaluation(this.authentication) );
+        httpServer.createContext( path + "/pulsar", new VimSchemeEvaluation(  this.authentication) );
+        httpServer.createContext( path + "/vim",    new VimSchemeEvaluation(  this.authentication) );
+        httpServer.createContext( path + PATH_EVAL,   new PlainSchemeEvaluation(this.authentication) );
+        httpServer.createContext( path + PATH_RESET,  new ResetScheme(          this.authentication) );
         
         httpServer.setExecutor(null); // creates a default executor
         httpServer.start();
@@ -293,6 +296,29 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
             String responseString;
             responseString = schemeResult.getValueAsString();
             logInfo( schemeResult.getValueAsString() );
+            t.sendResponseHeaders(200, responseString.length());
+            t.getResponseHeaders().put( "Content-Type",  Arrays.asList( "text/plain; charset=utf-8" ) );
+            OutputStream os = t.getResponseBody();
+            os.write(responseString.getBytes());
+            os.close();
+        }
+    }
+
+    class ResetScheme extends SchemeHttpHandler {
+        public ResetScheme(UserAuthentication authentication) {
+            super( authentication );
+        }
+
+        @Override
+        public void handleProc(HttpExchange t) throws IOException {
+            String requestString = readInputStream( t.getRequestBody() );
+            logInfo( requestString );
+            
+            schemeEngine.getEvaluatorManager().getCurrentEvaluator().reset();
+            
+            String responseString;
+            responseString = "ok";
+            logInfo( responseString );
             t.sendResponseHeaders(200, responseString.length());
             t.getResponseHeaders().put( "Content-Type",  Arrays.asList( "text/plain; charset=utf-8" ) );
             OutputStream os = t.getResponseBody();

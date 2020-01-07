@@ -35,7 +35,7 @@ class PulsarApplicationArgumentParser {
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
-    static final String DEFAULT_HTTP_PATH = "/eval";
+    static final String DEFAULT_EVAL_PATH = "/eval";
     
     ArrayList<ApplicationVessel> applicationVesselList = new ArrayList<>();
     ArrayDeque<SchemeEngine> schemeEngineStack = new ArrayDeque<>();
@@ -268,7 +268,7 @@ class PulsarApplicationArgumentParser {
                             } else if ( "remote".equals( a.key ) ) {
                                 urlList.add( a.value );
                             } else if ( "port".equals( a.key ) ) {
-                                urlList.add( "http://localhost:" + a.value + DEFAULT_HTTP_PATH );
+                                urlList.add( "http://localhost:" + a.value );
                             } else {
                                 throw new RuntimeException( "unknown argument " + s );
                             }
@@ -422,7 +422,7 @@ class PulsarApplicationArgumentParser {
                 return new Element() {
                     private int httpPort = 8192;
                     // TODO 0 variable accept path for HTTP 
-                    private String path = DEFAULT_HTTP_PATH;
+                    private String path = "";
                     UserAuthentication userAuthentication = UserAuthentication.ONLY_LOOPBACK;
                     @Override
                     Element notifyArg(String s) {
@@ -465,7 +465,7 @@ class PulsarApplicationArgumentParser {
                         
                         try {
                             SchemeHttp schemeHttp = PulsarApplicationLibrary.createPulsarHttpServer( 
-                                schemeEngine, httpPort, userAuthentication );
+                                schemeEngine, httpPort, path, userAuthentication );
                             schemeHttpStack.push( schemeHttp );
                         } catch (IOException e) {
                             throw new RuntimeException( e );

@@ -23,6 +23,8 @@ public interface Evaluator {
             File currentFile,
             String currentURI );
 
+    abstract void reset();
+
     
     default SchemeResult evaluate( 
             Runnable threadInitializer, 
@@ -83,7 +85,22 @@ public interface Evaluator {
             );
     }
     default SchemeResult evaluate( Class parentClass, String resourcePath ) throws IOException {
-        return evaluate( null, parentClass, resourcePath ); 
+        return evaluate( 
+            null, 
+            new InputStreamReader( parentClass.getResource( resourcePath ).openStream() ), 
+            null, 
+            null, 
+            resourcePath ); 
     }
+    
+//    default SchemeResult reset( Runnable threadInitializer ) {
+//        String schemeScript = "(reset-scheme)";
+//        return this.evaluate( 
+//            threadInitializer,
+//            new StringReader( schemeScript ),
+//            null,
+//            null,
+//            "reset" );
+//    }
 
 }

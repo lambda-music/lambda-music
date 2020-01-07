@@ -14,6 +14,7 @@ public class PulsarApplicationLibrary {
         // pulsar gui
         PulsarFrame.registerGlobalSchemeInitializers( schemeEngine );
         Kawapad.registerSchemeInitializer( schemeEngine );
+        
         // pulsar
         DescriptiveHelp.registerGlobalSchemeInitializer( schemeEngine );
         Pulsar.registerSchemeInitializers( schemeEngine );
@@ -27,9 +28,13 @@ public class PulsarApplicationLibrary {
 
     public static SchemeHttp createPulsarHttpServer(
             SchemeEngine schemeEngine, 
-            int httpPort, UserAuthentication userAuthentication ) throws IOException {
+            int httpPort, 
+            String path, 
+            UserAuthentication userAuthentication ) throws IOException 
+    {
         return new SchemeHttp( 
-            httpPort, 
+            httpPort,
+            path,
             userAuthentication, 
             schemeEngine );
     }

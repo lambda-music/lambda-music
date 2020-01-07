@@ -26,7 +26,7 @@ public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluat
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
     
     public abstract interface SchemeEngineListener {
-        public abstract void execute( Scheme resource );
+        public abstract void execute( Scheme scheme );
     }
     
     Scheme scheme=null;
@@ -218,5 +218,10 @@ public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluat
             currentDirectory, 
             currentFile, 
             currentURI );
+    }
+    
+    @Override
+    public void reset() {
+        this.newScheme();
     }
 }

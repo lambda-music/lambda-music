@@ -265,7 +265,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
     
     private void newScheme() {
         logInfo("Pulsar#newScheme() "); 
-        this.getSchemeEngine().getSchemeEvaluator().newScheme();
+        this.getSchemeEngine().getSchemeEvaluator().reset();
     }
 
     MersenneTwisterFast random = new MersenneTwisterFast( new int[] { 

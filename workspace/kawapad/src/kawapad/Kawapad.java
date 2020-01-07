@@ -1166,7 +1166,8 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         }
         @Override
         public void actionPerformed(ActionEvent e) {
-            kawapad.getSchemeEngine().getSchemeEvaluator().newScheme();
+//            kawapad. getSchemeEngine().getSchemeEvaluator().reset();
+            kawapad.getSchemeEngine().getEvaluatorManager().getCurrentEvaluator().reset();
         }
         {
             putValue( Action2.CAPTION, "Reset the Environment" );

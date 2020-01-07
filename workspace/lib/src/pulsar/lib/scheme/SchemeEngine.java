@@ -9,8 +9,10 @@ import java.util.logging.Logger;
 import gnu.mapping.Procedure;
 import gnu.mapping.Procedure1;
 import gnu.mapping.Procedure2;
+import kawa.standard.Scheme;
 import pulsar.lib.CurrentObject;
 import pulsar.lib.app.ApplicationComponent;
+import pulsar.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import pulsar.lib.thread.ThreadInitializer;
 import pulsar.lib.thread.ThreadInitializerContainer;
 
@@ -62,6 +64,7 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
     //////////////////////////////////////////////////////////////////////////////////////////
 
     public SchemeEngine() {
+        SchemeEngine.registerSchemeInitializer( this );
     }
     
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -123,5 +126,25 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
             currentDirectory,
             currentFile, 
             currentURI );
+    }
+    
+    public static void registerSchemeInitializer( SchemeEngine engine ) {
+        engine.getSchemeEvaluator().registerSchemeInitializer( initSchemeListener );
+    }
+    private static SchemeEngineListener initSchemeListener = new SchemeEngineListener() {
+        @Override
+        public void execute(Scheme scheme) {
+            initScheme( scheme );
+        }
+    };
+    static void initScheme( Scheme scheme ) {
+//        Environment env = scheme.getEnvironment();
+//        SchemeUtils.defineVar(env, new Procedure0() {
+//            @Override
+//            public Object apply0() throws Throwable {
+//                getCurrent().getSchemeEvaluator().newScheme();
+//                return true;
+//            }
+//        }, "reset-scheme" );
     }
 }

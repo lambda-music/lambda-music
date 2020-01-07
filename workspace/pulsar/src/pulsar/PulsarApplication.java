@@ -239,7 +239,8 @@ public class PulsarApplication {
         SchemeEngine schemeEngine = PulsarApplicationLibrary.createSchemeEngine();
         EvaluatorManager.initEvaluatorManager( 
             schemeEngine.getEvaluatorManager(), 
-            Arrays.asList( "http://localhost:"+httpPort+"/eval" ) );
+            Arrays.asList( "http://localhost:"+httpPort+"" ) );
+        
         Pulsar pulsar = PulsarApplicationLibrary.createPulsar( schemeEngine );
         PulsarFrame pulsarFrame;
         if ( guiEnabled ) {
@@ -250,7 +251,7 @@ public class PulsarApplication {
         
         SchemeHttp schemeHttp = null;
         if ( httpEnabled ) {
-            schemeHttp = PulsarApplicationLibrary.createPulsarHttpServer( schemeEngine, httpPort, SchemeHttp.UserAuthentication.ONLY_LOOPBACK );
+            schemeHttp = PulsarApplicationLibrary.createPulsarHttpServer( schemeEngine, httpPort, "",  SchemeHttp.UserAuthentication.ONLY_LOOPBACK );
         }
         
         schemeEngine.getSchemeEvaluator().newScheme();

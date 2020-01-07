@@ -11,7 +11,6 @@ import gnu.expr.Language;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
-import kawa.standard.Scheme;
 
 public class KawapadEventHandlers {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

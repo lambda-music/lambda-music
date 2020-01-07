@@ -10,6 +10,8 @@ import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import pulsar.lib.scheme.http.SchemeHttp;
+
 public class RemoteEvaluator implements Evaluator {
     public static String httpRequest(String urlString, String postString) throws IOException {
         String outputString = postString; 
@@ -36,13 +38,15 @@ public class RemoteEvaluator implements Evaluator {
             return new String( bout.toByteArray(), "utf-8" );
         }
     }
-    private String url;
-    public RemoteEvaluator(String url) {
-        this.url = url;
+    private String urlEval;
+    private String urlReset;
+    public RemoteEvaluator( String url ) {
+        this.urlEval  = url + SchemeHttp.PATH_EVAL;
+        this.urlReset = url + SchemeHttp.PATH_RESET;
     }
     @Override
     public String toString() {
-        return this.url;
+        return this.urlEval;
     }
 
     @Override
@@ -61,10 +65,20 @@ public class RemoteEvaluator implements Evaluator {
         }
         
         try {
-            String result = httpRequest( url, schemeScriptString );
+            String result = httpRequest( urlEval, schemeScriptString );
             return SchemeResult.createSucceededByString( result );
         } catch (IOException e) {
             return SchemeResult.createError( e );
+        }
+    }
+    
+    @Override
+    public void reset() {
+        try {
+            String result = httpRequest( urlReset, "reset\n" );
+            Evaluator.logInfo( "RemoteEvaluator.reset() :" +  result );
+        } catch (IOException e) {
+            Evaluator.logError( "RemoteEvaluator.reset() error :" , e  );
         }
     }
     
