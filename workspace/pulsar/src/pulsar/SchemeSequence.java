@@ -37,7 +37,6 @@ import metro.MetroMidiEvent;
 import metro.MetroSequence;
 import metro.MetroTrack;
 import pulsar.lib.scheme.SafeProcedureN;
-import pulsar.lib.scheme.SchemeEvaluator;
 import pulsar.lib.secretary.Invokable;
 
 public class SchemeSequence implements MetroSequence, SchemeSequenceReadable, Invokable {
@@ -117,8 +116,10 @@ public class SchemeSequence implements MetroSequence, SchemeSequenceReadable, In
         // System.out.println("Metro.sequence.new MetroSequence() {...}.initBuffer()" );
 //      buf.humanize( 0.0d, 3 );
         try {
-            SchemeEvaluator.initializeCurrentThread( ((Pulsar)metro).getSchemeEngine().getSchemeEvaluator().getScheme() );
-            ((Pulsar)metro).getThreadInitializer().run();
+//            SchemeEvaluator.initializeCurrentThread( ((Pulsar)metro).getSchemeEngine().getSchemeEvaluator().getScheme() );
+//            ((Pulsar)metro).getThreadInitializer().run();
+            
+            metro.getThreadInitializerCollection().run();
             
             // Call the invokable to get a note list of the next measure.
             Collection<Object> notations = (Collection<Object>)invokable.invoke();
