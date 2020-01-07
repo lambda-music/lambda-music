@@ -120,7 +120,10 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
     public static KawapadFrame getCurrent() {
         return currentObject.get();
     }
-    
+    public static boolean isPresent() {
+        return currentObject.isPresent();
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Defining GUI

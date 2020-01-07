@@ -231,6 +231,9 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     public static Kawapad getCurrent() {
         return currentObject.get();
     }
+    public static boolean isPresent() {
+        return currentObject.isPresent();
+    }
 
     
     ////////////////////////////////////////////////////////////////////////////
@@ -2784,6 +2787,26 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
                     return Kawapad.getCurrent();
                 }
             }, "kawapad");
+            
+            SchemeUtils.defineVar(env, new Procedure0() {
+                @Override
+                public Object apply0() throws Throwable {
+                    return Kawapad.isPresent();
+                }
+            }, "kawapad-present?");
+
+            SchemeUtils.defineVar(env, new Procedure0() {
+                @Override
+                public Object apply0() throws Throwable {
+                    return KawapadFrame.getCurrent();
+                }
+            }, "kawapad-frame" );
+            SchemeUtils.defineVar(env, new Procedure0() {
+                @Override
+                public Object apply0() throws Throwable {
+                    return KawapadFrame.isPresent();
+                }
+            }, "kawapad-frame-present?");
 
             SchemeUtils.defineVar(env, new Procedure0() {
                 @Override
@@ -2794,9 +2817,10 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
             SchemeUtils.defineVar(env, new Procedure0() {
                 @Override
                 public Object apply0() throws Throwable {
-                    return KawapadFrame.getCurrent();
+                    return KawapadFrame.isPresent();
                 }
-            }, "kawapad-frame" );
+            }, "frame-present?");
+            
 
             
             SchemeUtils.defineVar(env, new Procedure3() {

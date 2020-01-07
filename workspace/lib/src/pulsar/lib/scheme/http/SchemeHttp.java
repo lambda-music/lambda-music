@@ -95,6 +95,9 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
     public static SchemeHttp getCurrent() {
         return currentObject.get();
     }
+    public static boolean isPresent() {
+        return currentObject.isPresent();
+    }
 
     ////////////////////////////////////////////////////////////////////////////
 

@@ -6,7 +6,9 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
+import gnu.mapping.Procedure0;
 import gnu.mapping.Procedure1;
 import gnu.mapping.Procedure2;
 import kawa.standard.Scheme;
@@ -85,6 +87,9 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
     public static SchemeEngine getCurrent() {
         return currentObject.get();
     }
+    public static boolean isPresent() {
+        return currentObject.isPresent();
+    }
 
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -138,6 +143,20 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
         }
     };
     static void initScheme( Scheme scheme ) {
+        Environment env = scheme.getEnvironment();
+        SchemeUtils.defineVar(env, new Procedure0() {
+            @Override
+            public Object apply0() throws Throwable {
+                return SchemeEngine.getCurrent();
+            }
+        }, "scheme-engine" );
+        SchemeUtils.defineVar(env, new Procedure0() {
+            @Override
+            public Object apply0() throws Throwable {
+                return SchemeEngine.isPresent();
+            }
+        }, "scheme-engine-present?");
+
 //        Environment env = scheme.getEnvironment();
 //        SchemeUtils.defineVar(env, new Procedure0() {
 //            @Override

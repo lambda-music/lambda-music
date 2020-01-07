@@ -101,6 +101,9 @@ public class Metro
     public static Metro getCurrent() {
         return currentObject.get();
     }
+    public static boolean isPresent() {
+        return currentObject.isPresent();
+    }
 
     private final ThreadInitializerCollection threadInitializerCollection = new ThreadInitializerCollection( "metro", this );
     {

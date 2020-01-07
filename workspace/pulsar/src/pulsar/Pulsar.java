@@ -162,6 +162,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         /*
          *  Replace the main track id when Pulsar class is loaded to VM.
          *  Since here, the entire system can refer the main track as a Scheme's symbol.
+         *  (Tue, 07 Jan 2020 20:05:06 +0900)
          */
         Metro.setMainTrackId( Symbol.valueOf( "main" ) );
     }
@@ -191,6 +192,9 @@ public final class Pulsar extends Metro implements ApplicationComponent {
     
     public static Pulsar getCurrent() {
         return (Pulsar)Metro.getCurrent();
+    }
+    public static boolean isPresent() {
+        return Metro.isPresent();
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -759,6 +763,13 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                 return Pulsar.getCurrent();
             }
         }, "pulsar");
+
+        SchemeUtils.defineVar(env, new Procedure0() {
+            @Override
+            public Object apply0() throws Throwable {
+                return Pulsar.isPresent();
+            }
+        }, "pulsar-present?");
 
 
         SchemeUtils.defineVar( env, new SafeProcedureN( "open?" ) {
