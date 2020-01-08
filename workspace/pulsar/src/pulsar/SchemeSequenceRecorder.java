@@ -41,6 +41,7 @@ public class SchemeSequenceRecorder implements MetroSequence, SchemeSequenceRead
     private List<MetroPort>  inputPorts;
     private List<MetroPort>  outputPorts;
     private double recordLength;
+    @SuppressWarnings("unused")
     private boolean loop;
     private transient LList notations = EmptyList.emptyList;
     private SchemeSequenceRecorder( List<MetroPort> inputPorts, List<MetroPort> outputPorts, double recordLength, boolean loop ) {

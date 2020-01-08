@@ -29,28 +29,32 @@
         </jar>
     </target>
     <target name="create_api_reference" depends="create_run_jar" >
-        <java jar="pulsar.jar"  fork="true" error="generated/generated-avail-api.log" >
-            <arg value="--all-available-references" />
-        </java>
-        <java jar="pulsar.jar"  fork="true" output="generated/generated-help-api.md" error="generated/generated-help-api.log" >
-            <arg value="--output-reference" />
-            <arg value="help-procedures" />
-        </java>
-        <java jar="pulsar.jar"  fork="true" output="generated/generated-pulsar-api.md" error="generated/generated-pulsar-api.log" >
-            <arg value="--output-reference" />
-            <arg value="pulsar-procedures" />
-        </java>
-        <java jar="pulsar.jar"  fork="true" output="generated/generated-pulsar-gui-api.md" error="generated/generated-pulsar-gui-api.log" >
-            <arg value="--output-reference" />
-            <arg value="pulsar-gui-procedures" />
-        </java>
-        <java jar="pulsar.jar"  fork="true" output="generated/generated-pulsar-notations-api.md" error="generated/generated-pulsar-notations-api.log" >
-            <arg value="--output-reference" />
-            <arg value="pulsar-notations" />
-        </java>
-        <java jar="pulsar.jar"  fork="true" output="generated/generated-kawapad-api.md" error="generated/generated-kawapad-api.log" >
-            <arg value="--output-reference" />
-            <arg value="kawapad-procedures" />
+        <java jar="pulsar.jar"  fork="true"   > <!-- error="generated/generated-api.log" -->
+            <arg value="exec" />
+            <arg value="scheme" />
+            <arg value="+" />
+            <arg value="all-available-references" />
+            <arg value="+" />
+            <arg value="output-reference" />
+            <arg value="--category=pulsar-procedures" />
+            <arg value="--output-file=generated/generated-pulsar-api.md" />
+            <arg value="+" />
+            <arg value="output-reference" />
+            <arg value="--category=pulsar-notations" />
+            <arg value="--output-file=generated/generated-pulsar-notations-api.md" />
+            <arg value="+" />
+            <arg value="output-reference" />
+            <arg value="--category=pulsar-gui-procedures" />
+            <arg value="--output-file=generated/generated-pulsar-gui-api.md" />
+            <arg value="+" />
+            <arg value="output-reference" />
+            <arg value="--category=kawapad-procedures" />
+            <arg value="--output-file=generated/generated-kawapad-api.md" />
+            <arg value="+" />
+            <arg value="output-reference" />
+            <arg value="--category=help-procedures" />
+            <arg value="--output-file=generated/generated-help-api.md" />
+            <arg value="+" />
         </java>
     </target>
     <target name="concat_api_reference" depends="create_api_reference" >

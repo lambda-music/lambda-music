@@ -100,4 +100,5 @@ Set the main font of the editor. Kawapad can change its font-face.
 |kawapad-open-file|Open|  CTRL-O  |
 |kawapad-save-file|Save|  CTRL-S  |
 |kawapad-save-file-as|Save as|  SHIFT-CTRL-S  |
+|kawapad-close|Close|  CTRL-W  |
 

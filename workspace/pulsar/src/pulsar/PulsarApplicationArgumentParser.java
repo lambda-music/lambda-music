@@ -20,6 +20,7 @@ import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.app.ApplicationVessel;
 import pulsar.lib.scheme.EvaluatorManager;
 import pulsar.lib.scheme.SchemeEngine;
+import pulsar.lib.scheme.doc.DescriptiveDocumentCategory;
 import pulsar.lib.scheme.http.SchemeHttp;
 import pulsar.lib.scheme.http.SchemeHttp.UserAuthentication;
 import pulsar.lib.thread.ThreadInitializer;
@@ -146,6 +147,7 @@ class PulsarApplicationArgumentParser {
         }
     }
     
+    
     void deploy() {
        
         // Collect thread initializers and set to collections.
@@ -199,7 +201,12 @@ class PulsarApplicationArgumentParser {
         schemeHttpStack.clear();
     }
     abstract class Element {
+        /*
+         * The returned value becomes to the "current" element afterwards;
+         * usually it should return "this".
+         */
         abstract Element notifyArg( String s );
+        
         abstract void notifyEnd();
     }
     abstract class ElementFactory {
@@ -451,7 +458,96 @@ class PulsarApplicationArgumentParser {
                 };
             }
         });
+        factoryMap.put( "output-reference", new ElementFactory() {
+            @Override
+            Element create() {
+                return new Element() {
+                    String outputFile = null;
+                    String category   = null;
+                    @Override
+                    Element notifyArg(String s) {
+                        if ( s.startsWith( "--" ) ) {
+                            PulsarApplicationNamedArgument narg = new PulsarApplicationNamedArgument( s );
+                            switch ( narg.getKey() ) {
+                                case "category" :
+                                    category = narg.getValue();
+                                    break;
+                                case "output-file" :
+                                    outputFile = narg.getValue();
+                                    break;
+                                default :
+                                    throw new RuntimeException( "unknown parameter : " + narg.getKey() );
+                            }
+                        } else {
+                            throw new RuntimeException( "unknown parameter : " + s );
+                        }
+                        return this;
+                    }
+                    @Override
+                    void notifyEnd() {
+                        if ( schemeEngineStack.isEmpty() ) {
+                            throw new RuntimeException( "no scheme is defined." );
+                        }
+                        SchemeEngine schemeEngine = schemeEngineStack.peek();
+                        
+                        runnableStack.add( new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    DescriptiveDocumentCategory.outputReference( 
+                                        schemeEngine.getSchemeEvaluator().getScheme().getEnvironment(), 
+                                        category, outputFile );
+                                } catch (IOException e) {
+                                    logError( "error occured in output-reference", e ); 
+                                }
+                            }
+                        });
+                    }
+                };
+            }
+        });
+        factoryMap.put( "all-available-references", new ElementFactory() {
+            @Override
+            Element create() {
+                return new Element() {
+                    String outputFile = null;
+                    @Override
+                    Element notifyArg(String s) {
+                        if ( s.startsWith( "--" ) ) {
+                            PulsarApplicationNamedArgument narg = new PulsarApplicationNamedArgument( s );
+                            switch ( narg.getKey() ) {
+                                case "output-file" :
+                                    outputFile = narg.getValue();
+                                    break;
+                                default :
+                                    throw new RuntimeException( "unknown parameter : " + narg.getKey() );
+                            }
+                        } else {
+                            throw new RuntimeException( "unknown parameter : " + s );
+                        }
+                        return this;
+                    }
+                    @Override
+                    void notifyEnd() {
+                        if ( schemeEngineStack.isEmpty() ) {
+                            throw new RuntimeException( "no scheme is defined." );
+                        }
+                        runnableStack.add( new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    DescriptiveDocumentCategory.outputAvailableReferences( outputFile );
+                                } catch (IOException e) {
+                                    logError( "error occured in output-reference", e ); 
+                                }
+                            }
+                        });
+                    }
+                };
+            }
+        });
     }
+    
     Element defaultElement = factoryMap.get( "default" ).create();
     Element currentElement = defaultElement;
     private void notifyEnd() {

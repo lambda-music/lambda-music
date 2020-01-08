@@ -359,7 +359,6 @@ public class PulsarSpecialNoteListParsers {
 //            double offset        = map.containsKey( ID_OFFSET   )  ? SchemeUtils.toDouble(     map.get( ID_OFFSET    ) ) : 0.0d;
 //            Procedure procedure0 = map.containsKey( ID_PROCEDURE ) ?                (Procedure)map.get( ID_PROCEDURE )   : null;
             
-            Pulsar pulsar = ((Pulsar)metro);
             Object[] args = {};
             // See the note ... XXX_SYNC_01
             ((MetroBufferedMidiReceiver<T>) buffer).exec( offset, 

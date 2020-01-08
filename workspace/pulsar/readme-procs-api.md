@@ -358,13 +358,14 @@ TAP-TEMPO
     (tap-tempo|tapt)::void
 
 ### DESCRIPTION ###
-has the same effect with pressing the tap-tempo button on the main screen. The
-tap-tempo button is a button to change the current tempo. The button is supposed to be
-pressed repeatedly to tell the system how fast the sequencer should play the current
-music. The sequencer calculates the average of durations between the pressing the
-button, and apply the value as the current tempo on the sequencer system. See (help
-set-tempo).In case the current sequencer system has not established any connection to the
-JACK, it throws an exception.
+has the same effect with pressing the tap-tempo button on the main screen.
+(Tue, 07 Jan 2020 01:19:46 +0900) Note : this description is obsolete. The tap-tempo
+button is a button to change the current tempo. The button is supposed to be pressed
+repeatedly to tell the system how fast the sequencer should play the current music. The
+sequencer calculates the average of durations between the pressing the button, and apply
+the value as the current tempo on the sequencer system. See (help set-tempo).In
+case the current sequencer system has not established any connection to the JACK, it
+throws an exception.
 
 
 
@@ -629,6 +630,32 @@ CLEAR-TRACKS
 
 --------------------------------------------------------
 
+GET-MAIN-TRACK
+====================
+
+#### SYNOPSIS ####
+    (get-main-track|getmt)::void
+
+### DESCRIPTION ###
+||get-main-track|| retrieves the reference to the current main track.
+
+
+
+--------------------------------------------------------
+
+GET-TRACK-POSITION
+====================
+
+#### SYNOPSIS ####
+    (get-track-position|gettp)::void
+
+### DESCRIPTION ###
+||get-track-position|| gets the current position of the given track.
+
+
+
+--------------------------------------------------------
+
 PRINT-STACK-TRACE
 ====================
 
@@ -760,7 +787,26 @@ default value one is applied.
 
 --------------------------------------------------------
 
+ABOUT-INTRO
+====================
 
+#### SYNOPSIS ####
+    (about-intro)
+
+### DESCRIPTION ###
+Welcome to Pulsar music sequencer! Pulsar music sequencer is a music sequencer
+which collaboratively works with a powerful computer language Lisp Scheme. And this
+frame itself is a powerful Lisp Scheme editor which is called Kawapad. In Lisp, all
+commands are surrounded with a pair of parentheses. You can easily execute one of those
+command by moving your cursor within the pair of parentheses and pressing CTRL+ENTER.
+
+To show this help, execute (help about-intro). To show all available
+procedures, execute (help) . To show help of a procedure, execute (help [procedure-name] )
+.
+
+
+
+--------------------------------------------------------
 
 LOAD-FONT
 ====================
@@ -775,7 +821,6 @@ Set the main font of the editor. Kawapad can change its font-face.
 
 
 --------------------------------------------------------
-
 
 MAKE-PAGE
 ====================
@@ -904,5 +949,4 @@ which is designed to ease the process of building notation lists.
 
 
 --------------------------------------------------------
-
 
