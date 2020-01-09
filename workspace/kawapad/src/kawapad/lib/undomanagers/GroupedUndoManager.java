@@ -22,13 +22,14 @@ package kawapad.lib.undomanagers;
 
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.UndoableEdit;
 
+import pulsar.lib.log.PulsarLogger;
+
 public abstract interface GroupedUndoManager extends UndoableEdit, UndoableEditListener {
-    public static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    public static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     public static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     public static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     public static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

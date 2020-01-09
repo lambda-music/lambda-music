@@ -5,13 +5,13 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import gnu.mapping.Values;
+import pulsar.lib.log.PulsarLogger;
 import pulsar.lib.scheme.doc.Descriptive;
 
 public final class SchemeResult {
-    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }
     static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }
     static void logWarn (String msg             ) { LOGGER.log(Level.WARNING,  msg      ); }

@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import gnu.kawa.io.InPort;
 import gnu.kawa.io.OutPort;
@@ -14,9 +13,10 @@ import gnu.lists.Consumer;
 import gnu.mapping.CallContext;
 import kawa.Shell;
 import kawa.standard.Scheme;
+import pulsar.lib.log.PulsarLogger;
 
 class SchemeEvaluatorUtils {
-    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

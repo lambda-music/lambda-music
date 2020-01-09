@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import gnu.lists.LList;
 import gnu.mapping.Procedure;
@@ -42,6 +41,7 @@ import metro.MetroCollector;
 import metro.MetroPort;
 import metro.MetroSyncType;
 import metro.MetroTrack;
+import pulsar.lib.log.PulsarLogger;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.InvokablyRunnable;
 
@@ -51,7 +51,7 @@ import pulsar.lib.secretary.InvokablyRunnable;
  * @author ats
  */
 public class PulsarSpecialNoteListParsers {
-    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }

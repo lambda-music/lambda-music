@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.JPanel;
 
 import gnu.mapping.Procedure;
+import pulsar.lib.log.PulsarLogger;
 
 public class JNamedPanel extends JPanel implements JSelectableUserObject {
     public JNamedPanel() {
@@ -90,7 +90,7 @@ public class JNamedPanel extends JPanel implements JSelectableUserObject {
             this.nextProcedure.clear();
         }
     }
-    static final Logger LOGGER = Logger.getLogger( JNamedPanel.class.getName() );
+    static final PulsarLogger LOGGER = PulsarLogger.getLogger( JNamedPanel.class.getName() );
     
     private final class JNamedPanelEntry implements Map.Entry {
         private final Entry<Component, String> entry;

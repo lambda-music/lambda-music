@@ -38,7 +38,6 @@ import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -70,6 +69,7 @@ import gnu.mapping.Values;
 import kawa.standard.Scheme;
 import kawapad.KawapadFrame;
 import pulsar.lib.app.ApplicationComponent;
+import pulsar.lib.log.PulsarLogger;
 import pulsar.lib.scheme.EvaluatorReceiver;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeEngine;
@@ -88,7 +88,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     private static final boolean ENABLED_USER_PANE = false; // (Fri, 27 Sep 2019 12:18:01 +0900)
     private static final boolean ENABLED_TEMPO_TITLE = false; // (Fri, 27 Sep 2019 12:18:01 +0900)
     
-    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }

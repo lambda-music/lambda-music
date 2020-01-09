@@ -15,7 +15,7 @@ import java.util.logging.SimpleFormatter;
 
 import javax.swing.SwingUtilities;
 
-public class PulsarLogger {
+public class PulsarLogger2 {
 	static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
 	static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }
 	static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }

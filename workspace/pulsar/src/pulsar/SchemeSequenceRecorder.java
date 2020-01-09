@@ -3,7 +3,6 @@ package pulsar;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.jaudiolibs.jnajack.JackException;
 
@@ -20,12 +19,13 @@ import metro.MetroPort;
 import metro.MetroSequence;
 import metro.MetroTrack;
 import metro.SimpleMetroEventBuffer;
+import pulsar.lib.log.PulsarLogger;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.Invokable;
 
 
 public class SchemeSequenceRecorder implements MetroSequence, SchemeSequenceReadable, Invokable {
-    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }
     static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }
     static void logInfo (Object msg             ) { LOGGER.log(Level.INFO,"{0}",msg      ); }

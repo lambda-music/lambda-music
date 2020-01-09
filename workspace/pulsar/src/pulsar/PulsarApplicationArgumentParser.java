@@ -12,12 +12,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import kawapad.Kawapad;
 import kawapad.KawapadFrame;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.app.ApplicationVessel;
+import pulsar.lib.log.PulsarLogger;
 import pulsar.lib.scheme.EvaluatorManager;
 import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.doc.DescriptiveDocumentCategory;
@@ -29,7 +29,7 @@ import pulsar.lib.thread.ThreadInitializerCollectionContainer;
 import pulsar.lib.thread.ThreadInitializerContainer;
 
 class PulsarApplicationArgumentParser {
-    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

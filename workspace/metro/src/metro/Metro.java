@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.jaudiolibs.jnajack.Jack;
 import org.jaudiolibs.jnajack.JackClient;
@@ -51,6 +50,7 @@ import org.jaudiolibs.jnajack.JackTimebaseCallback;
 import org.jaudiolibs.jnajack.JackTransportState;
 
 import pulsar.lib.CurrentObject;
+import pulsar.lib.log.PulsarLogger;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.Invokable;
 import pulsar.lib.thread.ThreadInitializer;
@@ -66,7 +66,7 @@ public class Metro
     implements  MetroLock, JackProcessCallback, JackShutdownCallback, JackTimebaseCallback, 
                 Runnable, ThreadInitializerContainer<Metro>, ThreadInitializerCollectionContainer 
 {
-    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

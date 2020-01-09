@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import javax.swing.JList;
@@ -22,11 +21,12 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.Segment;
 
+import pulsar.lib.log.PulsarLogger;
 import pulsar.lib.scheme.SchemeEvaluator;
 import pulsar.lib.scheme.SchemeUtils;
 
 public class KawapadContentAssist {
-    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

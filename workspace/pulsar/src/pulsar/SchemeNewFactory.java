@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -59,6 +58,7 @@ import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import gnu.math.IntNum;
+import pulsar.lib.log.PulsarLogger;
 import pulsar.lib.scheme.InvokableSchemeProcedure;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
@@ -75,7 +75,7 @@ import pulsar.lib.swing.JUserObjectContainer;
 import pulsar.lib.swing.PulsarListItem;
 
 public abstract class SchemeNewFactory {
-    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }

@@ -6,7 +6,6 @@ import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import gnu.expr.Language;
 import gnu.mapping.Environment;
@@ -15,12 +14,13 @@ import kawa.standard.Scheme;
 import kawa.standard.load;
 import pulsar.lib.CurrentObject;
 import pulsar.lib.app.ApplicationComponent;
+import pulsar.lib.log.PulsarLogger;
 import pulsar.lib.thread.ThreadInitializer;
 import pulsar.lib.thread.ThreadInitializerCollection;
 import pulsar.lib.thread.ThreadInitializerContainer;
 
 public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluator>, ApplicationComponent, Evaluator, HasName {
-    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

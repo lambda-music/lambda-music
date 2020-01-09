@@ -2,7 +2,6 @@ package pulsar.lib.scheme.doc;
 
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -10,9 +9,10 @@ import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 import gnu.mapping.SimpleSymbol;
 import gnu.mapping.Symbol;
+import pulsar.lib.log.PulsarLogger;
 
 public class Descriptive {
-    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }

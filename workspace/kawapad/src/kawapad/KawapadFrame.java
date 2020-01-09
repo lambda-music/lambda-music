@@ -34,7 +34,6 @@ import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -48,10 +47,11 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 import pulsar.lib.CurrentObject;
-import pulsar.lib.PulsarLogger;
+import pulsar.lib.PulsarLogger2;
 import pulsar.lib.Version;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.app.ApplicationVessel;
+import pulsar.lib.log.PulsarLogger;
 import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.doc.DescriptiveDocumentCategory;
 import pulsar.lib.scheme.doc.DescriptiveHelp;
@@ -61,7 +61,7 @@ import pulsar.lib.thread.ThreadInitializer;
 import pulsar.lib.thread.ThreadInitializerContainer;
 
 public class KawapadFrame extends JFrame implements ThreadInitializerContainer<KawapadFrame>, ApplicationComponent {
-    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
@@ -368,7 +368,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
     public static void main(String[] args) throws IOException {
         System.err.println( "*** Welcome to Kawapad *** " );
         System.err.println( "VERSION : " + Version.get( KawapadFrame.class ) );
-        PulsarLogger.init();
+        PulsarLogger2.init();
         if ( 0 < args.length  ) {
             if ( args[0].equals( "--version" ) ) {
                 System.out.println( Version.get( KawapadFrame.class ) );

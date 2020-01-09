@@ -22,7 +22,8 @@ package metro;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Logger;
+
+import pulsar.lib.log.PulsarLogger;
 
 // DON'T PERFORM AUTOMATIC FORMAT ON THIS FILE!!! THAT GONNA BE A DISASTER!!
 /** @formatter:off */  
@@ -212,7 +213,7 @@ public abstract class MetroMidi {
     public abstract <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message );
     public abstract void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event );
      
-    static final Logger LOGGER = Logger.getLogger( MetroMidi.class.getName() );
+    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MetroMidi.class.getName() );
 
     static HashMap<String,MetroMidi> infoMap = new HashMap<String,MetroMidi>();
     static void putInfo( MetroMidi info ) {

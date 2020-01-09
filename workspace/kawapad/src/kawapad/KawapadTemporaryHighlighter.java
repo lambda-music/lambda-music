@@ -23,7 +23,6 @@ package kawapad;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayDeque;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
@@ -31,8 +30,10 @@ import javax.swing.text.Highlighter;
 import javax.swing.text.Highlighter.HighlightPainter;
 import javax.swing.text.JTextComponent;
 
+import pulsar.lib.log.PulsarLogger;
+
 public class KawapadTemporaryHighlighter {
-    protected static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    protected static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     protected static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     protected static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     protected static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

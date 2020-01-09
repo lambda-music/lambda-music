@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import gnu.lists.LList;
 import gnu.lists.Pair;
@@ -39,6 +38,7 @@ import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroCollector;
 import metro.MetroTrack;
+import pulsar.lib.log.PulsarLogger;
 import pulsar.lib.scheme.SchemePrinter;
 import pulsar.lib.scheme.SchemeUtils;
 
@@ -54,7 +54,7 @@ import pulsar.lib.scheme.SchemeUtils;
  * @author ats
  */
 public class NoteListParser {
-    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }

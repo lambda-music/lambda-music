@@ -5,12 +5,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import pulsar.lib.CurrentObject;
+import pulsar.lib.log.PulsarLogger;
 
 public interface ThreadInitializer<T> extends Runnable, ThreadInitializerOwner {
-    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }

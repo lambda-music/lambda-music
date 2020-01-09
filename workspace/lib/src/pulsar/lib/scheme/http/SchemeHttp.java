@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -25,6 +24,7 @@ import com.sun.net.httpserver.HttpServer;
 
 import pulsar.lib.CurrentObject;
 import pulsar.lib.app.ApplicationComponent;
+import pulsar.lib.log.PulsarLogger;
 import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.SchemeResult;
 import pulsar.lib.thread.ThreadInitializer;
@@ -46,7 +46,7 @@ import pulsar.lib.thread.ThreadInitializerContainer;
 public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, ThreadInitializerCollectionContainer, ApplicationComponent {
     public static final String PATH_RESET = "/reset";
     public static final String PATH_EVAL  = "/eval";
-    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }
