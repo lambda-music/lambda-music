@@ -12,7 +12,7 @@ import java.util.logging.Level;
 
 import kawapad.KawapadDocuments;
 import pulsar.lib.GC;
-import pulsar.lib.PulsarLogger2;
+import pulsar.lib.PulsarLogFormatter;
 import pulsar.lib.Version;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.app.ApplicationVessel;
@@ -269,7 +269,7 @@ public class PulsarApplication {
     public static void main(String[] args) throws IOException {
         System.err.println( "*** WELCOME TO PULSAR ***" );
         System.err.println( "VERSION : " + Version.get( PulsarApplication.class ) );
-        PulsarLogger2.init();
+        PulsarLogFormatter.init();
         PulsarPrinter.init();
 //        parseArgs01(args);
         

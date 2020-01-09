@@ -47,7 +47,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 import pulsar.lib.CurrentObject;
-import pulsar.lib.PulsarLogger2;
+import pulsar.lib.PulsarLogFormatter;
 import pulsar.lib.Version;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.app.ApplicationVessel;
@@ -368,7 +368,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
     public static void main(String[] args) throws IOException {
         System.err.println( "*** Welcome to Kawapad *** " );
         System.err.println( "VERSION : " + Version.get( KawapadFrame.class ) );
-        PulsarLogger2.init();
+        PulsarLogFormatter.init();
         if ( 0 < args.length  ) {
             if ( args[0].equals( "--version" ) ) {
                 System.out.println( Version.get( KawapadFrame.class ) );
