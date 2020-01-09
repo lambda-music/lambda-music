@@ -22,6 +22,7 @@ package metro;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
 
 import pulsar.lib.log.PulsarLogger;
 
@@ -1110,7 +1111,7 @@ public abstract class MetroMidi {
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver ) {
 //            // TODO
-            LOGGER.warning( "WARNING : UNSUPPORTED TUNE_REQUEST WAS CALLED" );
+            LOGGER.log( Level.WARNING, "WARNING : UNSUPPORTED TUNE_REQUEST WAS CALLED" );
             return null;
         }
         public byte[] createMidi( int value ) {
@@ -1315,7 +1316,7 @@ public abstract class MetroMidi {
         }
         public <T> T callMidi( MetroMidiReceiver<T> receiver ) {
           // TODO
-          LOGGER.warning( "WARNING : UNSUPPORTED TUNE_REQUEST WAS CALLED" );
+          LOGGER.log( Level.WARNING, "WARNING : UNSUPPORTED TUNE_REQUEST WAS CALLED" );
           return null;
         }
         public byte[] createMidi( int value ) {

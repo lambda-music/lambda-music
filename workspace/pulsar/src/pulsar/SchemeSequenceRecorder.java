@@ -28,7 +28,6 @@ public class SchemeSequenceRecorder implements MetroSequence, SchemeSequenceRead
     static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }
     static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }
-    static void logInfo (Object msg             ) { LOGGER.log(Level.INFO,"{0}",msg      ); }
     static void logWarn (String msg             ) { LOGGER.log(Level.WARNING,  msg      ); }
 
     public static SchemeSequenceRecorder createSchemeSequenceRecorder(
@@ -106,7 +105,7 @@ public class SchemeSequenceRecorder implements MetroSequence, SchemeSequenceRead
                         if ( list != null ) {
                             this.notations = Pair.make( list, notations );
                         }
-                        logInfo( list );
+                        logInfo( list.toString() );
                     }
                 }
             }
@@ -126,7 +125,7 @@ public class SchemeSequenceRecorder implements MetroSequence, SchemeSequenceRead
                     } else {
                         double d = SchemeUtils.toDouble( a );
                         if ( from <= d && d < to ) {
-                            logInfo( from );
+                            logInfo( Double.toString( from ) );
                             // MOVED FROM SchemeSequence (Wed, 06 Nov 2019 17:07:05 +0900)
                             // MOVED AGAIN FROM NoteListParser (Thu, 02 Jan 2020 18:00:29 +0900)
                             PulsarNoteListParser.getInstance().parse( metro, null, (LList)notation, this.eventBuffer, MetroCollector.NULL );

@@ -17,10 +17,4 @@ public class PulsarLogger {
     public void log(Level l, String msg, Throwable e) {
         this.logger.log( l, msg, e );
     }
-    public void log(Level l, String msg, Object object ) {
-        this.logger.log( l, msg, object );
-    }
-    public void warning(String string) {
-        this.logger.warning( string );
-    }
 }
