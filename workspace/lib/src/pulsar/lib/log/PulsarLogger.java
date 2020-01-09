@@ -4,6 +4,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class PulsarLogger {
+    public static SimpleConsole console=null;
+    public static synchronized SimpleConsole getConsole() {
+        if ( console == null ) {
+            console = new SimpleConsole();
+        }
+
+        return console;
+    }
     private Logger logger;
     public PulsarLogger( String name ) {
         this.logger = Logger.getLogger( name );
@@ -16,5 +24,8 @@ public class PulsarLogger {
     }
     public void log(Level l, String msg, Throwable e) {
         this.logger.log( l, msg, e );
+        
+        SimpleConsole console = getConsole();
+        console.addText( e );
     }
 }

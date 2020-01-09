@@ -111,6 +111,8 @@ class SchemeEvaluatorUtils {
     
                 return SchemeResult.createSucceededByObject( resultValue );
             } catch (Throwable e) {
+                logError( "** Execute Scheme *** error ", e ); 
+
                 return SchemeResult.createError( e );
             } finally {
                 try {

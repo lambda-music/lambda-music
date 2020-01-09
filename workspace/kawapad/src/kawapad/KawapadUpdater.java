@@ -50,7 +50,7 @@ public class KawapadUpdater {
                 if ( ! schemeScript.endsWith( "\n" ) ) {
                     resultString = "\n" + SchemeResult.formatResult( schemeResult.getValueAsString() ); 
                 }
-                Kawapad.logInfo( resultString );
+//                Kawapad.logInfo( resultString );
                 SwingUtilities.invokeLater( new RunnableInsertTextToTextPane( kawapad, resultString, true, doResetFileModified ) );
             } else {
                 // do not insert.
