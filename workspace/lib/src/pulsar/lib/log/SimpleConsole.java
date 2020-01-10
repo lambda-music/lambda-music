@@ -89,7 +89,13 @@ public class SimpleConsole extends JFrame {
     }
     private void showConsole() {
         Window w = javax.swing.FocusManager.getCurrentManager().getActiveWindow();
-        Component c = w.getFocusOwner();
+        
+        Component c;
+        if ( w == null ) 
+            c = null;
+        else
+            c = w.getFocusOwner();
+        
         SimpleConsole.this.setVisible( true );
         SimpleConsole.this.toFront();
         SimpleConsole.this.repaint();
