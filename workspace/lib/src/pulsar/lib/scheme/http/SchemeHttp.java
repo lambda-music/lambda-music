@@ -269,9 +269,15 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
                         null, 
                         "web-scratchpad" );
             String responseString;
-            responseString = 
-                    SchemeResult.endWithLineFeed( requestString ) + 
-                    SchemeResult.formatResult( schemeResult.getValueAsString() );
+            
+            if ( schemeResult.getValue() == null ) {
+                responseString = 
+                        SchemeResult.endWithLineFeed( requestString ); 
+            } else {
+                responseString = 
+                        SchemeResult.endWithLineFeed( requestString ) + 
+                        SchemeResult.formatResult( schemeResult.getValueAsString() );
+            }
             logInfo( schemeResult.getValueAsString() );
             t.sendResponseHeaders(200, responseString.length());
             t.getResponseHeaders().put( "Content-Type",  Arrays.asList( "text/plain; charset=utf-8" ) );

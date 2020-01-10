@@ -33,6 +33,7 @@
             <arg value="--output-keystroke-reference" />
         </java>
     </target>
+    
     <target name="concat_api_reference" depends="create_api_reference" >
         <concat destfile="readme.md"  >
             <file file="manual-readme.md" />
