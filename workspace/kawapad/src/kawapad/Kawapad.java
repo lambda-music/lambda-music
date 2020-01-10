@@ -2164,7 +2164,12 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
             if ( currDot == currMark ) {
                 // This sequence effectively select the lower pair of parenthesis.
                 PARENTHESIS_EXPAND_SELECTION_ACTION.actionPerformed( e );
-                PARENTHESIS_SHRINK_SELECTION_BY_SEARCH_ACTION.actionPerformed( e );
+                boolean expansionSucceeded = true;
+                if ( caret.getDot() == caret.getMark() ) {
+                    expansionSucceeded = false;
+                }
+                if ( expansionSucceeded )
+                    PARENTHESIS_SHRINK_SELECTION_BY_SEARCH_ACTION.actionPerformed( e );
                 return;
             }
             selector.transform( getParenthesisStack(), document, caret );

@@ -60,7 +60,7 @@ public class SimpleConsole extends JFrame {
 //        textArea.setText( "hello" );
         revalidate();
         setSize( 850,500 );
-        setTitle( "Log" );
+        setTitle( "Log Viewer" );
         setDefaultCloseOperation( DISPOSE_ON_CLOSE );
     }
     
