@@ -747,7 +747,6 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             "This procedure alters the current sequencer system's state. ";
 
 
-    
     /**
      * Initializes an environment of scheme engine and defines API for the scripts.
      * 
@@ -756,7 +755,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
      */
     public static void initScheme( Scheme scheme ) {
         Environment env = scheme.getEnvironment();
-        
+
         SchemeUtils.defineVar(env, new Procedure0() {
             @Override
             public Object apply0() throws Throwable {

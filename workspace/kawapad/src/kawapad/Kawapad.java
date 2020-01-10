@@ -95,6 +95,7 @@ import kawapad.lib.undomanagers.UndoManagers;
 import pulsar.lib.CurrentObject;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.log.PulsarLogger;
+import pulsar.lib.log.SimpleConsole;
 import pulsar.lib.scheme.EvaluatorReceiver;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeEngine;
@@ -473,7 +474,6 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         //  purgeKeyFromActionMap( textPane.getActionMap(), DefaultEditorKit.insertBreakAction );
         kawapad.getActionMap().put( DefaultEditorKit.insertBreakAction, KAWAPAD_INSERT_BREAK_ACTION );
     }
-
 
 
     final class NewInsertBreakTextAction extends TextAction2 {
@@ -2749,6 +2749,26 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         executeExternalFile( new Scheme(), null,  "kawapad initialization", getInitFile() );
     }
 
+    public static class ConcoleObject {
+        static String formatLogger(Object[] args) {
+            return String.join( " ", SchemeUtils.anySchemeValueListToStringList( Arrays.asList( args ) ) );
+        }
+        public void info( Object ... args ){
+            SimpleConsole.getConsole().addText( formatLogger( args ) );
+        }
+        public void warn( Object ... args ){
+            SimpleConsole.getConsole().addText( formatLogger( args ) );
+        }
+        public void error( Object ... args ){
+            SimpleConsole.getConsole().addText( formatLogger( args ) );
+        }
+        public void clear(){
+            SimpleConsole.getConsole().clearText();
+        }
+        public void setText( Object ... args ){
+            SimpleConsole.getConsole().setText( formatLogger( args ) );
+        }
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     
@@ -2774,6 +2794,9 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
                                     + "" 
                                  );
             }} );
+            
+            SchemeUtils.defineVar(env, new ConcoleObject(), "console" );
+
 
             SchemeUtils.defineVar(env, new Procedure0() {
                 @Override

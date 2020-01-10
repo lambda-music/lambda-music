@@ -124,6 +124,10 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
             return;
         quitProcessed = true;
         
+        if ( this.timerHandle != null ) {
+            this.timerHandle.run();
+        }
+        
         this.getKawapad().evaluate( "(close)", EvaluatorReceiver.REPORT_ERROR );
 //        pulsar.close();
         
@@ -198,6 +202,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     }
 
 
+    Runnable timerHandle=null;
     private void initPulsarGui() {
         Invokable invokable2 = new Invokable() {
             transient int counter = 0;
@@ -260,7 +265,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                 return Values.empty;
             }
         };
-        Pulsar.createTimer( getKawapad().getThreadInitializerCollection(), 1000, 20, invokable2 );    
+        this.timerHandle = Pulsar.createTimer( getKawapad().getThreadInitializerCollection(), 1000, 20, invokable2 );    
     }
 
     enum TempoRange {

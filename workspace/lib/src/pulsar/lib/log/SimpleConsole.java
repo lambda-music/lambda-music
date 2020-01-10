@@ -14,6 +14,14 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 public class SimpleConsole extends JFrame {
+    public static SimpleConsole console=null;
+    public static synchronized SimpleConsole getConsole() {
+        if ( console == null ) {
+            console = new SimpleConsole();
+        }
+        return console;
+    }
+
     JTextArea textArea = new JTextArea();
     JScrollPane pane = new JScrollPane( textArea );
     {
@@ -21,8 +29,8 @@ public class SimpleConsole extends JFrame {
         textArea.setEditable( true );
         textArea.setText( "hello" );
         revalidate();
-        setSize( 800,500 );
-        setTitle( "Error Log" );
+        setSize( 850,500 );
+        setTitle( "Log" );
     }
     
     public static void main(String[] args) {
@@ -46,7 +54,6 @@ public class SimpleConsole extends JFrame {
                 
                 showConsole();
             }
-
         });
     }
     private void showConsole() {
@@ -80,5 +87,24 @@ public class SimpleConsole extends JFrame {
         } catch (IOException e1) {
             e1.printStackTrace();
         }
+    }
+
+    public void clearText() {
+        SwingUtilities.invokeLater( new Runnable() {
+            @Override
+            public void run() {
+                textArea.setText( "" );
+                showConsole();
+            }
+        });
+    }
+    public void setText( String s ) {
+        SwingUtilities.invokeLater( new Runnable() {
+            @Override
+            public void run() {
+                textArea.setText( s );
+                showConsole();
+            }
+        });
     }
 }
