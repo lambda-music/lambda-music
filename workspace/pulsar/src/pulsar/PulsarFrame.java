@@ -265,7 +265,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                 return Values.empty;
             }
         };
-        this.timerHandle = Pulsar.createTimer( getKawapad().getThreadInitializerCollection(), 1000, 20, invokable2 );    
+        this.timerHandle = Pulsar.createTimer( getKawapad().getThreadInitializerCollection(), 5000, 20, invokable2 );    
     }
 
     enum TempoRange {
@@ -908,12 +908,26 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                 labelTables.put(500, new JLabel( "500" ));
                 labelTables.put(750, new JLabel( "750" ));
                 labelTables.put(1000, new JLabel( "1000" ));
+                
 
                 sl_tempoSlider.setLabelTable( labelTables );
-                sl_tempoSlider.setPaintLabels(true);
-                sl_tempoSlider.addChangeListener(new ChangeListener() {
+                sl_tempoSlider.setPaintLabels( true );
+                if ( ENABLED_TEMPO_TITLE )
+                    sl_tempoSlider.setBorder( BorderFactory.createTitledBorder("TEMPO") );
+                
+                //
+                guiSetTempoRange( TempoRange.NORMAL );
+
+                /*
+                 * (Fri, 10 Jan 2020 11:09:27 +0900)
+                 * 
+                 *  Setting a change listener to a slider should be done after setting its value;
+                 *  otherwise the listener will be invoked and it causes the script to be executed
+                 *  before the Scheme engine is initialized. 
+                 */
+                sl_tempoSlider.addChangeListener( new ChangeListener() {
                     @Override
-                    public void stateChanged(ChangeEvent e) {
+                    public void stateChanged( ChangeEvent e ) {
                         
                         PulsarFrame pulsarFrame = PulsarFrame.this;
                         synchronized ( pulsarFrame ) {
@@ -922,38 +936,12 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                                 int value = ((JSlider)e.getSource()).getValue();
                                 pulsarFrame.setTempoDisplay( value );
                                 pulsarFrame.getKawapad().evaluate( "(set-tempo " + value + ")", EvaluatorReceiver.REPORT_ERROR );
-                                
-//                                // logInfo( "TempoSlider : " + ((JSlider)e.getSource()).getValue() );
-//                                String schemeScript = 
-//                                        "(let ((v " + ((JSlider)e.getSource()).getValue() + ")) " +
-//                                        "(set-tempo v)(gui-set-tempo-display v))";
-//                                
-//                                new KawapadEvaluatorRunnable( 
-//                                    pulsarFrame.getKawapad(), 
-//                                    schemeScript, 
-//                                    pulsarFrame.getKawapad().getSchemeEngine().getEvaluatorManager().getCurrentEvaluator(), 
-//                                    KawapadEvaluatorReceiver.REPORT_ERROR  ).run();
-                                
-                                // pulsar.setBeatsPerMinute( ((JSlider)e.getSource()).getValue() );
                             } finally {
                                 pulsarFrame.updatingTempoDisplay_slider = false;
                             }
                         }
                     }
                 });
-                
-//                sl_tempoSlider.setBorder(
-//                        BorderFactory.createCompoundBorder(
-//                                BorderFactory.createTitledBorder("TEMPO"),
-//                                sl_tempoSlider.getBorder()
-//                                )
-//                        );
-                
-                if ( ENABLED_TEMPO_TITLE )
-                    sl_tempoSlider.setBorder( BorderFactory.createTitledBorder("TEMPO") );
-                
-                //
-                guiSetTempoRange( TempoRange.NORMAL );
             }
         }
     }

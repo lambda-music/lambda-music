@@ -37,11 +37,32 @@ class SchemeEvaluatorUtils {
 //        return evaluateSchemeProc( scheme, threadInitializer, schemeScript, currentDirectory, currentFile, schemeScriptURI );
 //    }
 
+    static String readAll( Reader r ) {
+        StringBuilder sb = new StringBuilder();
+        char[] cb = new char[ 4096 ];
+        int s;
+        try {
+            while( 0 < ( s = r.read( cb ) ) ){
+                sb.append( cb, 0, s );
+            }
+            return sb.toString();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
     static SchemeResult evaluateSchemeProc( 
             Scheme scheme, Runnable threadInitializer, 
             Reader schemeScript, File currentDirectory, File currentFile, String schemeScriptURI )
     {
         logInfo( "=== Execute Scheme ===" );
+        
+        if ( scheme == null ) {
+            return SchemeResult.createError( 
+                new NullPointerException( 
+                    "could not execute the given script because Scheme engine is not initialized. \n" + 
+                    readAll( schemeScript )));
+        }
 
         // schemeSecretary.initializeSchemeForCurrentThread();
         synchronized ( scheme ) {

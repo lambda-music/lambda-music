@@ -27,10 +27,11 @@ public class SimpleConsole extends JFrame {
     {
         getContentPane().add( pane );
         textArea.setEditable( true );
-        textArea.setText( "hello" );
+//        textArea.setText( "hello" );
         revalidate();
         setSize( 850,500 );
         setTitle( "Log" );
+        setDefaultCloseOperation( DISPOSE_ON_CLOSE );
     }
     
     public static void main(String[] args) {
