@@ -2,13 +2,21 @@ package pulsar.lib.log;
 
 import java.awt.Component;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -22,9 +30,31 @@ public class SimpleConsole extends JFrame {
         return console;
     }
 
+    public void requestClose() {
+        this.dispatchEvent( new WindowEvent(this, WindowEvent.WINDOW_CLOSING ));
+    }
+
     JTextArea textArea = new JTextArea();
     JScrollPane pane = new JScrollPane( textArea );
+    JMenuBar menubar = new JMenuBar();
+    JMenu fileMenu = new JMenu( "File" );
+    Action closeAction = new AbstractAction() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            SimpleConsole.this.requestClose();
+        }
+        String caption = "Close";
+        {
+            putValue( Action.NAME,  caption );
+            putValue( Action.MNEMONIC_KEY, (int)caption.charAt(0) );
+            putValue( Action.ACCELERATOR_KEY , KeyStroke.getKeyStroke(KeyEvent.VK_W, ActionEvent.CTRL_MASK) );
+        }
+    };
+    
     {
+        setJMenuBar( menubar );
+        menubar.add( fileMenu );
+        fileMenu.add( closeAction );
         getContentPane().add( pane );
         textArea.setEditable( true );
 //        textArea.setText( "hello" );
