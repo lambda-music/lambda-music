@@ -101,7 +101,7 @@ import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.SchemeEvaluator;
 import pulsar.lib.scheme.SchemeEvaluator.SchemeEngineListener;
-import pulsar.lib.scheme.SchemeEvaluatorGenericUtils;
+import pulsar.lib.scheme.SchemeEvaluatorUtils;
 import pulsar.lib.scheme.SchemePrinter;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.doc.DescriptiveActions;
@@ -2738,7 +2738,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
      * classes. 
      */
     static {
-        SchemeEvaluatorGenericUtils.executeExternalFile( new Scheme(), null,  "kawapad initialization", getInitFile() );
+        SchemeEvaluatorUtils.executeExternalFile( new Scheme(), null,  "kawapad initialization", getInitFile() );
     }
 
     public static class ConcoleObject {
@@ -2981,7 +2981,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
                 }
             }
 
-            SchemeEvaluatorGenericUtils.executeExternalFile( scheme, null, "kawapad user extension", getExtFile() );
+            SchemeEvaluatorUtils.executeExternalFile( scheme, null, "kawapad user extension", getExtFile() );
         }
         return scheme;
     }

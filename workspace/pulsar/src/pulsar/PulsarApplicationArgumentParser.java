@@ -206,7 +206,6 @@ class PulsarApplicationArgumentParser {
          * usually it should return "this".
          */
         abstract Element notifyArg( String s );
-        
         abstract void notifyEnd();
     }
     abstract class ElementFactory {
