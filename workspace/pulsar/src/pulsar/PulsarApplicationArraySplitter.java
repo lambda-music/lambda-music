@@ -63,6 +63,11 @@ public class PulsarApplicationArraySplitter<T> {
         splitter.proc();
         return splitter.getResult();
     }
+    public static <T> List<T[]> splitBeginEndAsList(T[] a, T begin, T end ) {
+        PulsarApplicationArraySplitter<T> splitter = new PulsarApplicationArraySplitter<T>( a, begin, end );
+        splitter.proc();
+        return splitter.getResultAsList();
+    }
     
     private static void testSplitter(String[] input ) {
         String[][] output = splitBeginEnd( input, "begin", "end" );

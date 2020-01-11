@@ -1,7 +1,6 @@
 package pulsar;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.invoke.MethodHandles;
@@ -11,123 +10,43 @@ import java.util.List;
 import java.util.logging.Level;
 
 import kawapad.KawapadDocuments;
-import pulsar.lib.GC;
 import pulsar.lib.PulsarLogFormatter;
 import pulsar.lib.Version;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.app.ApplicationVessel;
 import pulsar.lib.app.process.JavaProcess;
 import pulsar.lib.log.PulsarLogger;
-import pulsar.lib.scheme.EvaluatorManager;
-import pulsar.lib.scheme.SchemeEngine;
-import pulsar.lib.scheme.doc.DescriptiveDocumentCategory;
 import pulsar.lib.scheme.doc.DescriptiveHelp;
-import pulsar.lib.scheme.http.SchemeHttp;
 
 public class PulsarApplication {
     static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
-    public PulsarApplication() {
+    private PulsarApplication() {
     }
     
-    /**
-     * The main method which starts up the application. The application opens a file
-     * which is specified in argument values. When more than one arguments were
-     * passed to the method, only the first argument is taken. 
-     * @throws IOException 
-     */
-    static List<ApplicationComponent> parseArgs01( String[] args ) throws IOException {
-        boolean argSpecialOutputReference = false;
-        String  argSpecialOutputReferenceName = null;
-        boolean argSpecialAllAvailableReferences = false;
-        boolean argHttp = true;
-        int     argHttpPort = 8192;
-        boolean argGui = true;
-        String  argFileName = null;
-        for ( int i=0; i<args.length; i++ ) {
-            String s = args[i];
-            
-            if ( s.equals( "--version" ) ) {
-                System.out.println( Version.get( PulsarApplication.class ) );
-                return null;
-            } else if ( s.startsWith( "--http=" ) ) {
-                argHttp = true;
-                argHttpPort = Integer.parseInt( s.substring( "--http=".length() ) );
-                break;
-            } else if ( s.equals( "--http" ) ) { 
-                argHttp = true;
-                argHttpPort = 8192;
-                break;
-            } else if ( s.equals( "--gui" ) ) { 
-                argGui = true;
-                break;
-            } else if ( s.equals( "--no-http" ) ) { 
-                argHttp = false;
-                break;
-            } else if ( s.equals( "--no-gui" ) ) { 
-                argGui = false;
-                break;
-            } else if ( s.equals( "--all-available-references" ) ) { 
-                argSpecialAllAvailableReferences = true;
-                break;
-            } else if ( s.equals( "--output-reference" ) ) { 
-                argSpecialOutputReference = true;
-                i++;
-                if ( i < args.length  ){
-                    argSpecialOutputReferenceName = args[i];
-                    System.err.println( "--output-reference:" + argSpecialOutputReferenceName  );
-                } else {
-                    System.err.println( "warning : insufficient nubmer of arguments."
-                            + " The given argument --output-reference was ignroed." );  
-                }
-                break;
-            } else {
-                if ( argFileName == null )
-                    argFileName = s;
-            }
-        }
-
-        if ( false ) {
-            // dummy
-            return null; 
-        } else if ( argSpecialAllAvailableReferences ) {
-            return outputAllAvailableReferences( argFileName );
-        } else if ( argSpecialOutputReference ) {
-            return outputReference( argFileName,  argSpecialOutputReferenceName );
-        } else if ( argHttp || argGui ) {
-            return start(argGui, argHttp, argHttpPort, argFileName);
-        } else {
-            System.err.println( "hmm... you have better to have at least one interface to control the system." );
-            return start(argGui, argHttp, argHttpPort, argFileName);
-        }
-    }
-
-    static List<ApplicationComponent> parseArgs02( String[] args ) throws IOException {
+    static List<ApplicationComponent> parseArgs( String[] args ) throws IOException {
         PulsarApplicationArgumentMacro macro = new PulsarApplicationArgumentMacro( Arrays.asList( args ) );
         macro.exec();
         args = macro.getOutputAsArray();
-        
         System.err.println( macro.getOutput() );
-        
         List<ApplicationComponent> vessels = new ArrayList<>();
-        String[][] args2 = PulsarApplicationArraySplitter.splitBeginEnd( args, "begin", "end" ) ;
+        String[][] arrayOfArgs = PulsarApplicationArraySplitter.splitBeginEnd( args, "begin", "end" ) ;
         
-        for ( int i=0; i<args2.length; i++ ) {
-            String[] args3 = args2[i];
-            if ( 0 < args3.length ) {
-                String mainCommand = args3[0];
-                String[] mainArguments = Arrays.copyOfRange( args3 , 1, args3.length );
+        for ( int i=0; i<arrayOfArgs.length; i++ ) {
+            List<String> argguments = new ArrayList<>( Arrays.asList( arrayOfArgs[i] ));
+            if ( 0 < argguments.size() ) {
+                String mainCommand    = argguments.remove( 0 );
                 
                 if( "fork".equals( mainCommand ) ) {
                     // fork
-                    vessels.add( forkPulsar( mainArguments ) );
+                    vessels.add( forkPulsar( argguments ) );
                     
                 } else if( "exec".equals( mainCommand ) ) {
                     // exec
                     PulsarApplicationArgumentParser argumentParser = new PulsarApplicationArgumentParser();
-                    argumentParser.parse( mainArguments );
+                    argumentParser.parse( argguments );
                     vessels.addAll( argumentParser.getApplicationVesselList() );
                 } else {
                     throw new RuntimeException( "unknown command " + mainCommand );
@@ -139,28 +58,12 @@ public class PulsarApplication {
         return vessels;
     }
     
-    static JavaProcess forkPulsar(String[] arguments) {
+    static JavaProcess forkPulsar(List<String> arguments) {
         JavaProcess process = new JavaProcess( 
-            PulsarApplication.class.getCanonicalName(), Arrays.asList( arguments ) );
+            PulsarApplication.class.getCanonicalName(), arguments );
         return process;
     }
     
-    private static void invalidArgs() {
-        System.err.println( "pulsar : missing arguments." );
-        System.err.println( "pulsar [scheme|pulsar|http|gui|token|print-all-available-reference|print-reference] ... " );
-    }
-    
-    static List<ApplicationComponent> parseArgs( String[] args ) throws IOException {
-        if ( args[0].equals( "advanced" ) ) {
-            return parseArgs02( Arrays.copyOfRange( args , 1, args.length ) );
-        } else {
-            List<ApplicationComponent> list = parseArgs01( args );
-            ApplicationVessel applicationVessel = new ApplicationVessel();
-            applicationVessel.addAll( list );
-            return Arrays.asList( (ApplicationComponent)applicationVessel );
-        }
-    }
-
     private static void forceLoad( Class c ) {
         try {
             Class.forName( c.getName(), true, c.getClassLoader() );
@@ -175,124 +78,31 @@ public class PulsarApplication {
         forceLoad( KawapadDocuments.class );
         forceLoad( DescriptiveHelp.class );
     }
-    
-    static Pulsar lookupPulsar(List<ApplicationComponent> list ) {
-        for ( ApplicationComponent c : list ) {
-            if ( c instanceof Pulsar ) {
-                return (Pulsar) c;
-            }
-        }
-        return null;
-    }
-    static List<ApplicationComponent> outputAllAvailableReferences( String outputFile ) throws IOException {
-        List<ApplicationComponent> list = start(true,true,8193);
-        Pulsar pulsar = lookupPulsar( list );
-        loadAllAvailableHelps();
-        DescriptiveDocumentCategory.outputAvailableReferences( outputFile );
-        quitPulsarSafely( pulsar );
-        return list;
-    }
-    
-    static List<ApplicationComponent>  outputReference( String outputFile, String categoryName ) throws IOException {
-        loadAllAvailableHelps();
-        List<ApplicationComponent> list = start( true, true, 8193 );
-        Pulsar pulsar = lookupPulsar( list );
-        DescriptiveDocumentCategory.outputReference( 
-            pulsar.getSchemeEngine().getSchemeEvaluator().getScheme().getEnvironment(), 
-            categoryName, outputFile );
-        quitPulsarSafely( pulsar );
-        return list;
-    }
-    static void quitPulsarSafely(Pulsar pulsar) {
-        // Pause for the safe shutdown; at the moment when it runs here, other initializers are still
-        // working and they somehow remain on the AWT-eventqueue and prevent JVM to
-        // shutdown. (Mon, 26 Aug 2019 14:11:31 +0900)
-        try {
-            Thread.sleep( 2048 );
-        } catch (InterruptedException e) {
-            System.err.println( e.getMessage() );
-        }
-        pulsar.getParentApplicationComponent().processQuit();
 
-        // This is possibly not necessary. But it might help to flush the AWT-eventqueue.
-        // See https://stackoverflow.com/questions/6309407/remove-top-level-container-on-runtime
-        GC.exec();
+    private static void invalidArgs() {
+        System.err.println( "pulsar : missing arguments." );
+        System.err.println( "pulsar [scheme|pulsar|http|gui|token|print-all-available-reference|print-reference] ... " );
     }
     
-    public static List<ApplicationComponent> start( boolean guiEnabled, boolean httpEnabled, int httpPort, String filename ) throws IOException {
-        SchemeEngine schemeEngine = PulsarApplicationLibrary.createSchemeEngine();
-        EvaluatorManager.initEvaluatorManager( 
-            schemeEngine.getEvaluatorManager(), 
-            Arrays.asList( "http://localhost:"+httpPort+"" ) );
-        
-        Pulsar pulsar = PulsarApplicationLibrary.createPulsar( schemeEngine );
-        PulsarFrame pulsarFrame;
-        if ( guiEnabled ) {
-            pulsarFrame = PulsarApplicationLibrary.createPulsarGui( schemeEngine );
-        } else {
-            pulsarFrame = null;
-        }
-        
-        SchemeHttp schemeHttp = null;
-        if ( httpEnabled ) {
-            schemeHttp = PulsarApplicationLibrary.createPulsarHttpServer( schemeEngine, httpPort, "",  SchemeHttp.UserAuthentication.ONLY_LOOPBACK );
-        }
-        
-        schemeEngine.getSchemeEvaluator().newScheme();
-        
-        if ( pulsarFrame != null ) {
-            pulsarFrame.processInit();
-            
-            if ( filename != null ) {
-                pulsarFrame.getKawapad().openFile( new File( filename ) );
-            } else {
-                pulsarFrame.getKawapad().openIntro();
-            }
-        }
-        ArrayList<ApplicationComponent> result = new ArrayList<>();
-        if ( schemeEngine != null )
-            result.add( schemeEngine );
-        if ( pulsar != null )
-            result.add( pulsar );
-        if ( pulsarFrame != null )
-            result.add( pulsarFrame );
-        if ( schemeHttp != null )
-            result.add( schemeHttp );
-        
-        return result;
-    }
-    public static List<ApplicationComponent> start(boolean guiEnabled, boolean httpEnabled, int httpPort ) throws IOException {
-        return start(guiEnabled, httpEnabled, httpPort, null );
-    }
     
-
     public static void main(String[] args) throws IOException {
         System.err.println( "*** WELCOME TO PULSAR ***" );
         System.err.println( "VERSION : " + Version.get( PulsarApplication.class ) );
         PulsarLogFormatter.init();
         PulsarPrinter.init();
-//        parseArgs01(args);
         
         if ( args.length == 0 ) {
+            // TODO
             invalidArgs();
             return ;
         }
 
-        List<ApplicationComponent> components = parseArgs02(args);
+        List<ApplicationComponent> components = parseArgs(args);
         
         ApplicationVessel owner = new ApplicationVessel();
         owner.addAll( components );
         owner.requestInit();
         
-//        for ( ApplicationComponent c : components ) {
-//            try {
-//                System.out.println( "init:c" + c );
-//                c.processInit();
-//            } catch ( Throwable t ) {
-//                logError( "", t );
-//            }
-//        }
-
         Thread thread = new Thread( new Runnable() {
             @Override
             public void run() {
@@ -307,17 +117,7 @@ public class PulsarApplication {
                                 || "bye" .equals( s ) 
                                     ) {
                                 System.out.println( "ok" );
-//                                for ( ApplicationComponent c : components ) {
-//                                    try {
-//                                        System.out.println( "quit:c" + c );
-//
-//                                        c.processQuit();
-//                                    } catch ( Throwable t ) {
-//                                        logError( "", t );
-//                                    }
-//                                }
                                 owner.processQuit();
-
                                 break;
                             } else if ( "alive?".equals( s ) ) {
                                 System.out.println( "yes" );
