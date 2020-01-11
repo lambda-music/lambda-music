@@ -15,7 +15,7 @@ import kawa.Shell;
 import kawa.standard.Scheme;
 import pulsar.lib.log.PulsarLogger;
 
-class SchemeEvaluatorUtils {
+class SchemeEvaluatorImplementation {
     static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 

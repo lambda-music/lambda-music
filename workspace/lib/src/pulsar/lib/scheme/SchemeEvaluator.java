@@ -179,7 +179,7 @@ public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluat
     
     /**
      * "loadRelative" was moved from 
-     * {@link SchemeEvaluatorUtils#evaluateScheme(Scheme, Runnable, Reader, File, File, String)}  
+     * {@link SchemeEvaluatorImplementation#evaluateScheme(Scheme, Runnable, Reader, File, File, String)}  
      */
     public static void initScheme( Scheme scheme ) {
         Environment env = scheme.getEnvironment();
@@ -214,7 +214,7 @@ public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluat
             File currentFile, 
             String currentURI )
     {
-        return SchemeEvaluatorUtils.evaluateSchemeProc( 
+        return SchemeEvaluatorImplementation.evaluateSchemeProc( 
             scheme,
             threadInitializer, 
             schemeScript, 

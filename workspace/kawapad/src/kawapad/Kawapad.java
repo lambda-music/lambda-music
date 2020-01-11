@@ -101,6 +101,7 @@ import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.SchemeEvaluator;
 import pulsar.lib.scheme.SchemeEvaluator.SchemeEngineListener;
+import pulsar.lib.scheme.SchemeEvaluatorGenericUtils;
 import pulsar.lib.scheme.SchemePrinter;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.doc.DescriptiveActions;
@@ -2728,21 +2729,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     public static File getInitFile() {
         return new File( System.getProperty("user.home"), ".kawapad/kawapad-initialization.scm" );
     }
-    public static void executeExternalFile(Scheme scheme, Runnable threadInitializer, String fileType, File initFile) {
-        // Read user's configuration file. If any problem is occurred, print its
-        // stacktrace in the stderr, and then continue the process.
-        try {
-            logInfo( "Loading " + initFile.getName() );
-            if ( initFile.exists() ) {
-                SchemeEvaluator evaluator = new SchemeEvaluator( scheme );
-                evaluator.evaluate( threadInitializer, initFile ).throwIfError();
-            } else {
-                logInfo( "The " + fileType + " file \"" + initFile.getPath() + "\" does not exist. Ignored." );
-            }
-        } catch (Throwable e) {
-            logError( "Ignored an error : ", e);
-        }
-    }
+
     /**
      * This file is executed only once when Kawapad class is loaded to the current VM.
      * This file is executed before Kawapad is initialized; therefore, in this file 
@@ -2751,7 +2738,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
      * classes. 
      */
     static {
-        executeExternalFile( new Scheme(), null,  "kawapad initialization", getInitFile() );
+        SchemeEvaluatorGenericUtils.executeExternalFile( new Scheme(), null,  "kawapad initialization", getInitFile() );
     }
 
     public static class ConcoleObject {
@@ -2994,7 +2981,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
                 }
             }
 
-            executeExternalFile( scheme, null, "user extension", getExtFile() );
+            SchemeEvaluatorGenericUtils.executeExternalFile( scheme, null, "kawapad user extension", getExtFile() );
         }
         return scheme;
     }
