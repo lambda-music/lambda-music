@@ -169,7 +169,7 @@ public class PulsarApplication {
         }
     }
     
-    private static void loadAllAvailableHelps() {
+    static void loadAllAvailableHelps() {
         forceLoad( PulsarDocuments.class );
         forceLoad( PulsarFramePackage.class );
         forceLoad( KawapadDocuments.class );
