@@ -65,33 +65,45 @@ public interface Evaluator {
             currentURI );
     }
 
-    default SchemeResult evaluate( Runnable threadInitializer, File schemeScriptFile ) throws IOException {
-        return evaluate( 
-            threadInitializer,
-            new InputStreamReader( new FileInputStream( schemeScriptFile ) ), 
-            schemeScriptFile.getParentFile(), 
-            schemeScriptFile, 
-            schemeScriptFile.getPath() 
-            );
+    default SchemeResult evaluate( Runnable threadInitializer, File schemeScriptFile ) {
+        try {
+            return evaluate( 
+                threadInitializer,
+                new InputStreamReader( new FileInputStream( schemeScriptFile ) ), 
+                schemeScriptFile.getParentFile(), 
+                schemeScriptFile, 
+                schemeScriptFile.getPath() 
+                    );
+        } catch ( IOException e ) {
+            return SchemeResult.createError( e );
+        }
     }
 
 
-    default SchemeResult evaluate( Runnable threadInitializer, Class parentClass, String resourcePath ) throws IOException {
-        return evaluate( 
-            threadInitializer, 
-            new InputStreamReader( parentClass.getResource( resourcePath ).openStream() ), 
-            null, 
-            null, 
-            resourcePath 
-            );
+    default SchemeResult evaluate( Runnable threadInitializer, Class parentClass, String resourcePath ) {
+        try {
+            return evaluate( 
+                threadInitializer, 
+                new InputStreamReader( parentClass.getResource( resourcePath ).openStream() ), 
+                null, 
+                null, 
+                resourcePath 
+                    );
+        } catch ( IOException e ) {
+            return SchemeResult.createError( e );
+        }
     }
-    default SchemeResult evaluate( Class parentClass, String resourcePath ) throws IOException {
-        return evaluate( 
-            null, 
-            new InputStreamReader( parentClass.getResource( resourcePath ).openStream() ), 
-            null, 
-            null, 
-            resourcePath ); 
+    default SchemeResult evaluate( Class parentClass, String resourcePath ) {
+        try {
+            return evaluate( 
+                null, 
+                new InputStreamReader( parentClass.getResource( resourcePath ).openStream() ), 
+                null, 
+                null, 
+                resourcePath ); 
+        } catch ( IOException e ) {
+            return SchemeResult.createError( e );
+        }
     }
     
 //    default SchemeResult reset( Runnable threadInitializer ) {
