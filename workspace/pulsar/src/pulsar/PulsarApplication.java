@@ -6,10 +6,12 @@ import java.io.InputStreamReader;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 
 import kawapad.KawapadDocuments;
+import pulsar.PulsarApplicationDefaultArgument.Element;
 import pulsar.lib.PulsarLogFormatter;
 import pulsar.lib.Version;
 import pulsar.lib.app.ApplicationComponent;
@@ -25,34 +27,58 @@ public class PulsarApplication {
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
     private PulsarApplication() {
     }
-    
+
+    private static void exec1( List<ApplicationComponent> vessels, List<String> arguments ) throws IOException {
+        String mainCommand;
+        if ( 0 < arguments.size() ) {
+            mainCommand = arguments.get( 0 );
+        } else {
+            mainCommand = null;
+        }
+
+        if( "fork".equals( mainCommand ) ) {
+            List<String> subArguments = arguments.subList( 1, arguments.size() );
+            // fork
+            vessels.add( forkPulsar( subArguments ) );
+            
+        } else if( "exec".equals( mainCommand ) ) {
+            List<String> subArguments = arguments.subList( 1, arguments.size() );
+            // exec
+            PulsarApplicationArgumentParser argumentParser = new PulsarApplicationArgumentParser();
+            argumentParser.parse( subArguments );
+            vessels.addAll( argumentParser.getApplicationVesselList() );
+        } else {
+            List<Element> defaultArgumentList = PulsarApplicationDefaultArgument.load();
+            Element defaultArgument = null;
+            if ( defaultArgumentList.isEmpty() ) {
+                defaultArgument = new Element( "default", "exec scheme + pulsar + pulsar-gui $* +" );
+            } else {
+                defaultArgument = defaultArgumentList.get( 0 );
+            }
+            
+            List<String> subArguments = defaultArgument.interpolate( String.join( " ", arguments ) );
+            // a recursive calling
+            exec1( vessels, subArguments );
+        }
+    }
+
     static List<ApplicationComponent> parseArgs( String[] args ) throws IOException {
-        PulsarApplicationArgumentMacro macro = new PulsarApplicationArgumentMacro( Arrays.asList( args ) );
-        macro.exec();
-        args = macro.getOutputAsArray();
-        System.err.println( macro.getOutput() );
-        List<ApplicationComponent> vessels = new ArrayList<>();
+        {
+            PulsarApplicationArgumentMacro macro = new PulsarApplicationArgumentMacro( Arrays.asList( args ) );
+            macro.exec();
+            args = macro.getOutputAsArray();
+            System.err.println( macro.getOutput() );
+        }
+
         String[][] arrayOfArgs = PulsarApplicationArraySplitter.splitBeginEnd( args, "begin", "end" ) ;
         
-        for ( int i=0; i<arrayOfArgs.length; i++ ) {
-            List<String> argguments = new ArrayList<>( Arrays.asList( arrayOfArgs[i] ));
-            if ( 0 < argguments.size() ) {
-                String mainCommand    = argguments.remove( 0 );
-                
-                if( "fork".equals( mainCommand ) ) {
-                    // fork
-                    vessels.add( forkPulsar( argguments ) );
-                    
-                } else if( "exec".equals( mainCommand ) ) {
-                    // exec
-                    PulsarApplicationArgumentParser argumentParser = new PulsarApplicationArgumentParser();
-                    argumentParser.parse( argguments );
-                    vessels.addAll( argumentParser.getApplicationVesselList() );
-                } else {
-                    throw new RuntimeException( "unknown command " + mainCommand );
-                }
-            } else {
-                throw new RuntimeException( "" );
+        List<ApplicationComponent> vessels = new ArrayList<>();
+        if ( arrayOfArgs.length == 0 ) {
+            exec1( vessels, Collections.emptyList() );
+        } else {
+            for ( int i=0; i<arrayOfArgs.length; i++ ) {
+                List<String> arguments = new ArrayList<>( Arrays.asList( arrayOfArgs[i] ));
+                exec1( vessels, arguments );
             }
         }
         return vessels;
@@ -79,23 +105,17 @@ public class PulsarApplication {
         forceLoad( DescriptiveHelp.class );
     }
 
-    private static void invalidArgs() {
-        System.err.println( "pulsar : missing arguments." );
-        System.err.println( "pulsar [scheme|pulsar|http|gui|token|print-all-available-reference|print-reference] ... " );
-    }
-    
+//    private static void invalidArgs() {
+//        System.err.println( "pulsar : missing arguments." );
+//        System.err.println( "pulsar [scheme|pulsar|http|gui|token|print-all-available-reference|print-reference] ... " );
+//    }
+//    
     
     public static void main(String[] args) throws IOException {
         System.err.println( "*** WELCOME TO PULSAR ***" );
         System.err.println( "VERSION : " + Version.get( PulsarApplication.class ) );
         PulsarLogFormatter.init();
         PulsarPrinter.init();
-        
-        if ( args.length == 0 ) {
-            // TODO
-            invalidArgs();
-            return ;
-        }
 
         List<ApplicationComponent> components = parseArgs(args);
         
