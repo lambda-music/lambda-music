@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 
+import kawapad.Kawapad;
 import kawapad.KawapadDocuments;
 import pulsar.PulsarApplicationDefaultArgument.Element;
 import pulsar.lib.PulsarLogFormatter;
@@ -98,20 +99,22 @@ public class PulsarApplication {
         }
     }
     
-    static void loadAllAvailableHelps() {
+    static void loadBasicClasses() {
+        // For documentation.
         forceLoad( PulsarDocuments.class );
         forceLoad( PulsarFramePackage.class );
         forceLoad( KawapadDocuments.class );
         forceLoad( DescriptiveHelp.class );
+        
+        // See those static blocks.
+        forceLoad( Kawapad.class );
+        forceLoad( Pulsar.class );
     }
 
-//    private static void invalidArgs() {
-//        System.err.println( "pulsar : missing arguments." );
-//        System.err.println( "pulsar [scheme|pulsar|http|gui|token|print-all-available-reference|print-reference] ... " );
-//    }
-//    
-    
     public static void main(String[] args) throws IOException {
+        // This causes invoking various initialization procedures.
+        loadBasicClasses();
+        
         System.err.println( "*** WELCOME TO PULSAR ***" );
         System.err.println( "VERSION : " + Version.get( PulsarApplication.class ) );
         PulsarLogFormatter.init();

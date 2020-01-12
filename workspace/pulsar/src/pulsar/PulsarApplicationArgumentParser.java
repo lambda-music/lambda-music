@@ -69,7 +69,7 @@ class PulsarApplicationArgumentParser extends ArgumentParserDefault {
                     if ( parser.getValueStack( SCHEME_ENGINE ).isEmpty() ) {
                         throw new RuntimeException( "no scheme is defined." );
                     }
-                    PulsarApplication.loadAllAvailableHelps();
+                    PulsarApplication.loadBasicClasses();
                     parser.getValueStack( RUNNABLE ).add( new Runnable() {
                         @Override
                         public void run() {
@@ -116,7 +116,7 @@ class PulsarApplicationArgumentParser extends ArgumentParserDefault {
                         throw new RuntimeException( "no scheme is defined." );
                     }
                     SchemeEngine schemeEngine = parser.getValueStack( SCHEME_ENGINE ).peek();
-                    PulsarApplication.loadAllAvailableHelps();
+                    PulsarApplication.loadBasicClasses();
                     parser.getValueStack( RUNNABLE ).add( new Runnable() {
                         @Override
                         public void run() {
