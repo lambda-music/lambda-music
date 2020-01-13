@@ -103,7 +103,7 @@ class SchemeEvaluatorImplementation {
             try {
                 File parentDirectory;
                 if ( currentFile != null ) {
-                    parentDirectory = currentFile.getParentFile();
+                    parentDirectory = currentFile.getAbsoluteFile().getParentFile();
                 } else {
                     parentDirectory = new File(".").getAbsoluteFile().getCanonicalFile();
                 }
