@@ -86,7 +86,7 @@ import pulsar.lib.swing.PulsarGuiUtils;
 
 public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     private static final String PULSAR_DEFAULT_CAPTION = "Pulsar - a Lisp Scheme Music Sequencer";
-    private static final boolean ENABLED_USER_PANE = false; // (Fri, 27 Sep 2019 12:18:01 +0900)
+    private static final boolean ENABLED_USER_PANE = true; // (Fri, 27 Sep 2019 12:18:01 +0900)
     private static final boolean ENABLED_TEMPO_TITLE = false; // (Fri, 27 Sep 2019 12:18:01 +0900)
     
     static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
