@@ -49,6 +49,7 @@ public class PulsarApplicationDefaultArgument {
             return Collections.emptyList();
         }
         
+        int counter = 0;
         try ( BufferedReader r = new BufferedReader( new FileReader( getInitFile() ) ) ) {
             List<Element> result = new ArrayList<>();
             for (;;){
@@ -60,12 +61,22 @@ public class PulsarApplicationDefaultArgument {
                 
                 String key =null;
                 String value =null;
-                if ( 0 < ts.length ) {
-                    key = ts[0];
+
+                if ( ts.length == 0 ) {
+                    // this should not happen.
+                } else if ( ts.length == 1 ) {
+                    // in case there is no tab on the line,
+                   key = String.format( "default-%02d" , counter++ );
+                   value = ts[0];
+                } else {
+                    if ( 0 < ts.length ) {
+                        key = ts[0];
+                    }
+                    if ( 1 < ts.length ) {
+                        value = ts[1];
+                    }
                 }
-                if ( 1 < ts.length ) {
-                    value = ts[1];
-                }
+                
                 if ( key != null && value != null ) {
                     result.add( new Element( key, value ) );
                 }

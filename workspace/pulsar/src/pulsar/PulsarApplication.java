@@ -30,7 +30,7 @@ public class PulsarApplication {
     private PulsarApplication() {
     }
 
-    private static void exec1( List<ApplicationComponent> vessels, List<String> arguments ) throws IOException {
+    private static void exec1( List<ApplicationComponent> vessels, List<String> arguments, boolean recurseCall ) throws IOException {
         String mainCommand;
         if ( 0 < arguments.size() ) {
             mainCommand = arguments.get( 0 );
@@ -50,6 +50,10 @@ public class PulsarApplication {
             argumentParser.parse( subArguments );
             vessels.addAll( argumentParser.getApplicationVesselList() );
         } else {
+            if ( recurseCall ) {
+                throw new Error( "a malformed default value in the default argument configuration." );
+            }
+            
             List<Element> defaultArgumentList = PulsarApplicationDefaultArgument.load();
             Element defaultArgument = null;
             if ( defaultArgumentList.isEmpty() ) {
@@ -59,8 +63,9 @@ public class PulsarApplication {
             }
             
             List<String> subArguments = defaultArgument.interpolate( String.join( " ", arguments ) );
+            
             // a recursive calling
-            exec1( vessels, subArguments );
+            exec1( vessels, subArguments, true );
         }
     }
 
@@ -76,11 +81,11 @@ public class PulsarApplication {
         
         List<ApplicationComponent> vessels = new ArrayList<>();
         if ( arrayOfArgs.length == 0 ) {
-            exec1( vessels, Collections.emptyList() );
+            exec1( vessels, Collections.emptyList(), false );
         } else {
             for ( int i=0; i<arrayOfArgs.length; i++ ) {
                 List<String> arguments = new ArrayList<>( Arrays.asList( arrayOfArgs[i] ));
-                exec1( vessels, arguments );
+                exec1( vessels, arguments, false );
             }
         }
         return vessels;
