@@ -141,18 +141,10 @@ public final class Pulsar extends Metro implements ApplicationComponent {
     }
 
     public static void registerSchemeInitializers( SchemeEngine schemeEngine ) {
-        // This should be global not local (Mon, 16 Dec 2019 22:52:46 +0900)
         schemeEngine.getSchemeEvaluator().registerSchemeInitializer( new SchemeEngineListener() {
             @Override
             public void execute( Scheme scheme ) {
                 Pulsar.initScheme( scheme );
-            }
-        });
-        // This should be global not local (Mon, 16 Dec 2019 22:52:46 +0900)
-        schemeEngine.getSchemeEvaluator().registerSchemeInitializer( new SchemeEngineListener() {
-            @Override
-            public void execute( Scheme scheme ) {
-                PulsarFramePackage.initScheme( scheme );
             }
         });
     }

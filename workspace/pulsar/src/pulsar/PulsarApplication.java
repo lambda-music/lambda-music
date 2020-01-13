@@ -20,6 +20,7 @@ import pulsar.lib.app.ApplicationVessel;
 import pulsar.lib.app.process.JavaProcess;
 import pulsar.lib.log.PulsarLogger;
 import pulsar.lib.scheme.doc.DescriptiveHelp;
+import pulsar.lib.swing.PulsarGuiUtils;
 
 public class PulsarApplication {
     static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -102,7 +103,7 @@ public class PulsarApplication {
     static void loadBasicClasses() {
         // For documentation.
         forceLoad( PulsarDocuments.class );
-        forceLoad( PulsarFramePackage.class );
+        forceLoad( PulsarGuiUtils.class );
         forceLoad( KawapadDocuments.class );
         forceLoad( DescriptiveHelp.class );
         

@@ -82,6 +82,7 @@ import pulsar.lib.swing.Action2;
 import pulsar.lib.swing.AutomatedActionField;
 import pulsar.lib.swing.FlawLayout;
 import pulsar.lib.swing.JNamedPanel;
+import pulsar.lib.swing.PulsarGuiUtils;
 
 public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     private static final String PULSAR_DEFAULT_CAPTION = "Pulsar - a Lisp Scheme Music Sequencer";
@@ -149,7 +150,6 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
             }
         });
     }
-
     
     public void openIntro2() {
         InputStream in = null;
@@ -543,7 +543,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
 
     public void guiClear() {
         userPane.removeAll();
-        PulsarFramePackage.guiFlowLayout( userPane );
+        PulsarGuiUtils.guiFlowLayout( userPane );
         frame.invalidate();
         frame.revalidate();
         // frame.pack();
@@ -738,7 +738,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         };
 //        staticPane.setBorder( BorderFactory.createEmptyBorder() );
         
-        PulsarFramePackage.guiBorderLayout( staticPane );
+        PulsarGuiUtils.guiBorderLayout( staticPane );
         
         JPanel staticPaneOuter = staticPane; 
         
@@ -871,7 +871,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     // XXX REMOVE THIS
     private class JPusarFilePanel extends JPanel {
         public JPusarFilePanel() {
-            super( PulsarFramePackage.newLayout() );
+            super( PulsarGuiUtils.newLayout() );
         }
                 
         JSliderPanel panel_slider = new JSliderPanel();
@@ -881,7 +881,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         }
         class JSliderPanel extends JPanel {
             public JSliderPanel() {
-                super( PulsarFramePackage.newLayout() );
+                super( PulsarGuiUtils.newLayout() );
             }
             
             JSlider sl_tempoSlider = new JSlider();

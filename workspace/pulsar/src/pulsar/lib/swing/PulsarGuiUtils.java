@@ -1,4 +1,4 @@
-package pulsar;
+package pulsar.lib.swing;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -29,19 +29,15 @@ import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import kawa.standard.Scheme;
+import pulsar.Pulsar;
+import pulsar.SchemeNewFactory;
 import pulsar.lib.log.PulsarLogger;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.doc.DescriptiveDocumentCategory;
 import pulsar.lib.secretary.InvokablyRunnable;
-import pulsar.lib.swing.FlawLayout;
-import pulsar.lib.swing.JNamedPanel;
-import pulsar.lib.swing.JPulsarUserObject;
-import pulsar.lib.swing.JSelectableUserObject;
-import pulsar.lib.swing.LayoutUtils;
-import pulsar.lib.swing.SpringLayoutUtil;
 
-public class PulsarFramePackage {
+public class PulsarGuiUtils {
     public static final DescriptiveDocumentCategory DOCS = 
             DescriptiveDocumentCategory.createCategory( "pulsar-gui-procedures" );
 
@@ -57,7 +53,7 @@ public class PulsarFramePackage {
     }
     static final int BORDER_SIZE = 10;
 
-    public PulsarFramePackage() {
+    public PulsarGuiUtils() {
     }
 
     public static void guiPack() {
@@ -533,7 +529,7 @@ public class PulsarFramePackage {
         parent.repaint();;
     }
 
-    static void initScheme( Scheme scheme ) {
+    public static void initScheme( Scheme scheme ) {
         logInfo("PulsarGui#initStaticScheme=======================================");
         Environment env = scheme.getEnvironment();
         
