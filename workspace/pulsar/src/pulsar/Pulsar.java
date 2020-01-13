@@ -70,7 +70,6 @@ import pulsar.lib.log.PulsarLogger;
 import pulsar.lib.scheme.InvokableSchemeProcedure;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeEngine;
-import pulsar.lib.scheme.SchemeEvaluator;
 import pulsar.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.doc.ProceduralDescriptiveBean;
@@ -2239,15 +2238,15 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         
         PulsarDocuments.defineDoc( scheme, PulsarNoteListParser.getInstance() );
 
-        try {
-            SchemeEvaluator evaluator = new SchemeEvaluator( scheme );
-            evaluator.evaluate( Pulsar.class, "lib/init.scm"  ).warnIfError();
-//            SchemeUtils.execSchemeFromResource( scheme, Pulsar.class, "lib/basic-notes.scm"  );
-            evaluator.evaluate( Pulsar.class, "lib/music.scm"  ).warnIfError();
-            evaluator.evaluate( Pulsar.class, "lib/xnoop.scm" ).warnIfError();
-        } catch ( Throwable t ) {
-            logError( "", t );
-        }
+//        try {
+//            SchemeEvaluator evaluator = new SchemeEvaluator( scheme );
+//            evaluator.evaluate( Pulsar.class, "lib/init.scm"  ).warnIfError();
+//            evaluator.evaluate( Pulsar.class, "lib/basic-notes.scm"  ).warnIfError();
+//            evaluator.evaluate( Pulsar.class, "lib/music.scm"  ).warnIfError();
+//            evaluator.evaluate( Pulsar.class, "lib/xnoop.scm" ).warnIfError();
+//        } catch ( Throwable t ) {
+//            logError( "", t );
+//        }
     }
     
 }

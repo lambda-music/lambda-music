@@ -110,10 +110,32 @@ public class PulsarApplication {
         forceLoad( Kawapad.class );
         forceLoad( Pulsar.class );
     }
+    
+    static void initKawaImportPath() {
+        String value = System.getProperty( "kawa.import.path" );
+        if ( value == null ) 
+            value = "";
+        else
+            value = value + ":";
+        
+        String homeValue = System.getProperty( "user.home" );
+        if ( homeValue != null ) {
+            value = value + 
+                    homeValue + ".pulsar/"  + ":" +
+                    homeValue + ".kawapad/" + "";
+            System.setProperty( "kawa.import.path", value );
+        } else {
+            // do nothing
+        }
+    }
 
     public static void main(String[] args) throws IOException {
+        // Initialize Kawa import path in the first place.
+        initKawaImportPath();
+        
         // This causes invoking various initialization procedures.
         loadBasicClasses();
+        
         
         System.err.println( "*** WELCOME TO PULSAR ***" );
         System.err.println( "VERSION : " + Version.get( PulsarApplication.class ) );

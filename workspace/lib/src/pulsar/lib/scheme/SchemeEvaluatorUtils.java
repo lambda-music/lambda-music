@@ -1,9 +1,14 @@
 package pulsar.lib.scheme;
 
 import java.io.File;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
 
+import gnu.expr.Language;
+import gnu.kawa.io.InPort;
+import gnu.kawa.io.Path;
 import kawa.standard.Scheme;
 import pulsar.lib.log.PulsarLogger;
 
@@ -25,6 +30,16 @@ public class SchemeEvaluatorUtils {
             }
         } catch (Throwable e) {
             logError( "Ignored an error : ", e);
+        }
+    }
+    
+    // Execute script in the current context; that is, it is done without any initialization for threads/environmens. 
+    public static void executeInTheCurrentContext( Class parentClass, String resourcePath ) {
+        Scheme scheme = (Scheme) Language.getDefaultLanguage();
+        try ( Reader schemeScript = new InputStreamReader( parentClass.getResource( resourcePath ).openStream() ); ) {
+            scheme.eval( new InPort( schemeScript, Path.valueOf( resourcePath ) ) );
+        } catch (Throwable e) {
+            logError( "" , e );
         }
     }
 }
