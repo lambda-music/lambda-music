@@ -42,7 +42,7 @@ import javax.swing.JComboBox;
 
 import org.jaudiolibs.jnajack.JackException;
 
-import gnu.kawa.functions.RunProcess;
+import gnu.kawa.io.Path;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.LList;
@@ -58,6 +58,7 @@ import gnu.mapping.Values;
 import gnu.mapping.WrongArguments;
 import gnu.math.DFloNum;
 import gnu.math.IntNum;
+import kawa.Shell;
 import kawa.standard.Scheme;
 import metro.EventListenable;
 import metro.Metro;
@@ -2106,8 +2107,13 @@ public final class Pulsar extends Metro implements ApplicationComponent {
 //                List l =  new ArrayList( Arrays.asList( args ) );
 //                l.add( 0, Keyword.make( "directory" ) );
 //                l.add( 1, new File( System.getProperty( "user.dir" ) ) );
-//                args = l.toArray();                
-                return new PulsarProcessWrapper( (Process)RunProcess.instance.applyN( args ) );
+//                args = l.toArray();
+                
+                List<String> list = SchemeUtils.anySchemeValueListToStringList( Arrays.asList(args) );
+                ProcessBuilder sb = new ProcessBuilder( list );
+                sb.directory( ((Path) Shell.currentLoadPath.get()).toFile() );
+                sb.inheritIO();
+                return new PulsarProcessWrapper( sb.start() );
             }
         }, "create-process", "newp" );
 
