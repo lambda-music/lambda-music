@@ -6,9 +6,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
 
+import pulsar.lib.CurrentObject;
 import pulsar.lib.log.PulsarLogger;
 
-public class ThreadInitializerCollection implements Runnable, ThreadInitializerOwner {
+public class ThreadInitializerCollection implements Runnable, ThreadInitializerOwner, ThreadInitializerContainer {
     static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
@@ -19,7 +20,32 @@ public class ThreadInitializerCollection implements Runnable, ThreadInitializerO
     static void logWarn(String msg) {
         LOGGER.log(Level.WARNING, msg);
     }
+    
+    /////////////////////////////////////////////////////////////////////////////////////////
+    //
+    // ADDED (Tue, 14 Jan 2020 11:34:27 +0900)
+    // NOTE : ThreadInitializerCollection itself is a thread initializer.
+    // SEE_THIS_TAG
+    // 
+    /////////////////////////////////////////////////////////////////////////////////////////
+    private static final CurrentObject<ThreadInitializerCollection> currentObject = new CurrentObject<>( ThreadInitializerCollection.class );
+    private final ThreadInitializer<ThreadInitializerCollection> threadInitializer =
+            ThreadInitializer.createMultipleThreadInitializer( "ThreadInitializerCollection", this, 
+                ThreadInitializer.createThreadInitializer( "ThreadInitializerCollection", currentObject, this ) );
+            
+    @Override
+    public ThreadInitializer<ThreadInitializerCollection> getThreadInitializer() {
+        return threadInitializer;
+    }
+    public static ThreadInitializerCollection getCurrent() {
+        return currentObject.get();
+    }
+    public static boolean isPresent() {
+        return currentObject.isPresent();
+    }
 
+    /////////////////////////////////////////////////////////////////////////////////////////
+    
     Object owner;
     public final String id;
     public ThreadInitializerCollection( String id, Object owner ) {
@@ -70,6 +96,17 @@ public class ThreadInitializerCollection implements Runnable, ThreadInitializerO
     }
     public Collection<Runnable> getThreadInitializerList() {
         return Collections.unmodifiableCollection( threadInitializerList );
+    }
+
+    
+    {
+        /*
+         *  ADDED (Tue, 14 Jan 2020 11:34:27 +0900)
+         *  Register itself to the thread initializer collection.
+         *  See the comment in the upper part of this source code.
+         *  SEE_THIS_TAG 
+         */
+        addThreadInitializer( threadInitializer );
     }
     
     private static void runAll( Collection<Runnable> threadInitializers ) {
