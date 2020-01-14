@@ -118,6 +118,9 @@ class SchemeEvaluatorImplementation {
                 // // is available in this way.  (Mon, 09 Sep 2019 04:31:19 +0900)
                 // SchemeUtils.defineVar(env, load.loadRelative , "source" );
                 // Moved to SchemeSecretary (Thu, 19 Dec 2019 02:43:01 +0900)
+                //
+                // Note : Now the application should use source
+                //
                 
     
                 CallContext ctx = CallContext.getInstance();
