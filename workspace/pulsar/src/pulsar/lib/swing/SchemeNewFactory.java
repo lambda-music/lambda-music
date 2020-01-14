@@ -64,6 +64,7 @@ import pulsar.lib.scheme.InvokableSchemeProcedure;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.Invokable;
+import pulsar.lib.thread.ThreadInitializerCollection;
 
 public abstract class SchemeNewFactory {
     static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -85,7 +86,29 @@ public abstract class SchemeNewFactory {
 
         map.put(key, factory );
     }
+    
+    static abstract class SchemeThreadInitializingListener {
+        private final ThreadInitializerCollection collection = ThreadInitializerCollection.getCurrent();
+        protected void initializeThread() {
+            collection.initialize();
+        }
+    }
+    static abstract class SchemeActionListener extends SchemeThreadInitializingListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            initializeThread();
+        }
+    }
+    static abstract class SchemeChangeListener extends SchemeThreadInitializingListener implements ChangeListener {
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            initializeThread();
+        }
+    }
 
+
+    
+    
     /**
      * @param pulsar
      *    This parameter is not used except button/fast-button/frame.
@@ -116,13 +139,15 @@ public abstract class SchemeNewFactory {
 
 
 
-    static final class ComponentFactoryActionListener implements ActionListener {
+    static final class ComponentFactoryActionListener extends SchemeActionListener {
         Invokable invokable; 
         ComponentFactoryActionListener( Invokable invokable ) {
             this.invokable = invokable; 
         }
         @Override
         public void actionPerformed(ActionEvent e) {
+            super.actionPerformed(e);
+            
             AbstractButton button = (AbstractButton)e.getSource();
             invokable.invoke( 
                     button.isSelected(),
@@ -277,9 +302,11 @@ public abstract class SchemeNewFactory {
                     {
                         Environment env = Environment.getCurrent();
                         Language lang = Language.getDefaultLanguage();
-                        textField.addActionListener( new ActionListener() {
+                        textField.addActionListener( new SchemeActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
+                                super.actionPerformed( e );
+                                
                                 try {
                                     Environment.setCurrent(env);
                                     Language.setCurrentLanguage(lang);
@@ -384,9 +411,10 @@ public abstract class SchemeNewFactory {
                     Language lang = Language.getDefaultLanguage();
                     {
                         JPulsarButton button = new JPulsarButton( caption );
-                        button.addActionListener( new ActionListener() {
+                        button.addActionListener( new SchemeActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
+                                super.actionPerformed( e );
                                 try {
                                     Environment.setCurrent(env);
                                     Language.setCurrentLanguage(lang);
@@ -546,9 +574,10 @@ public abstract class SchemeNewFactory {
                     slider.setMajorTickSpacing( majorTick );
                     slider.setMinorTickSpacing( minorTick );
                     slider.setPaintTicks(true);
-                    slider.addChangeListener(new ChangeListener() {
+                    slider.addChangeListener(new SchemeChangeListener() {
                         @Override
                         public void stateChanged(ChangeEvent e) {
+                            super.stateChanged( e ); 
                             try {
                                 procedure.applyN( new Object[] {IntNum.valueOf( slider.getValue() )  } );
                             } catch (Throwable e1) {
@@ -591,10 +620,11 @@ public abstract class SchemeNewFactory {
                         procedure = (Procedure) args.remove(last);
                     }
                     
-                    ActionListener actionListener = new ActionListener() {
+                    ActionListener actionListener = new SchemeActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
-                            try {
+                            super.actionPerformed( e );
+                                                        try {
                                 Environment.setCurrent(env);
                                 Language.setCurrentLanguage(lang);
                                 JPulsarComboBox<PulsarListItem> comboBox = (JPulsarComboBox)e.getSource();

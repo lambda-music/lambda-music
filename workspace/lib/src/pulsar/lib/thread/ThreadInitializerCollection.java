@@ -44,6 +44,7 @@ public class ThreadInitializerCollection implements Runnable, ThreadInitializerO
         return currentObject.isPresent();
     }
 
+    
     /////////////////////////////////////////////////////////////////////////////////////////
     
     Object owner;
@@ -58,7 +59,16 @@ public class ThreadInitializerCollection implements Runnable, ThreadInitializerO
     }
     private final Collection<Runnable> threadInitializerList = new ArrayList<>();
 
-    
+    {
+        /*
+         *  ADDED (Tue, 14 Jan 2020 11:34:27 +0900)
+         *  Register itself to the thread initializer collection.
+         *  See the comment in the upper part of this source code.
+         *  SEE_THIS_TAG 
+         */
+        threadInitializerList.add( threadInitializer );
+    }
+
     public void addThreadInitializer( ThreadInitializer i ) {
         if ( i.getThreadInitializerOwner() == this.getThreadInitializerOwner() ) {
             // The container manages its thread initializer by itself; 
@@ -99,15 +109,6 @@ public class ThreadInitializerCollection implements Runnable, ThreadInitializerO
     }
 
     
-    {
-        /*
-         *  ADDED (Tue, 14 Jan 2020 11:34:27 +0900)
-         *  Register itself to the thread initializer collection.
-         *  See the comment in the upper part of this source code.
-         *  SEE_THIS_TAG 
-         */
-        addThreadInitializer( threadInitializer );
-    }
     
     private static void runAll( Collection<Runnable> threadInitializers ) {
         for ( Runnable r : threadInitializers ) {
