@@ -30,7 +30,6 @@ import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import kawa.standard.Scheme;
 import pulsar.Pulsar;
-import pulsar.SchemeNewFactory;
 import pulsar.lib.log.PulsarLogger;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;

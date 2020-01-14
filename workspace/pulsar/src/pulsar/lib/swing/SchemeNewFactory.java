@@ -18,7 +18,7 @@
  * along with Pulsar-Sequencer.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package pulsar;
+package pulsar.lib.swing;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -58,22 +58,12 @@ import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import gnu.math.IntNum;
+import pulsar.Pulsar;
 import pulsar.lib.log.PulsarLogger;
 import pulsar.lib.scheme.InvokableSchemeProcedure;
 import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.secretary.Invokable;
-import pulsar.lib.swing.FlawLayout;
-import pulsar.lib.swing.JNamedPanel;
-import pulsar.lib.swing.JPulsarButton;
-import pulsar.lib.swing.JPulsarCheckBox;
-import pulsar.lib.swing.JPulsarComboBox;
-import pulsar.lib.swing.JPulsarRadioButton;
-import pulsar.lib.swing.JPulsarTextField;
-import pulsar.lib.swing.JPulsarUserObject;
-import pulsar.lib.swing.JUserObjectContainer;
-import pulsar.lib.swing.PulsarGuiUtils;
-import pulsar.lib.swing.PulsarListItem;
 
 public abstract class SchemeNewFactory {
     static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
