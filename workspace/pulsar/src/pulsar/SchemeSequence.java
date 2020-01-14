@@ -99,7 +99,7 @@ public class SchemeSequence implements MetroSequence, SchemeSequenceReadable, In
     }
     @Override
     public Object invoke(Object... args) {
-        return invoke( args );
+        return invokable.invoke( args );
     }
 
     @Override
