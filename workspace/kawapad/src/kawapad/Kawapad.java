@@ -2741,7 +2741,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         SchemeEvaluatorUtils.executeExternalFile( new Scheme(), null,  "kawapad initialization", getInitFile() );
     }
 
-    public static class ConcoleObject {
+    public static class ConsoleObject {
         static String formatLogger(Object[] args) {
             return String.join( " ", SchemeUtils.anySchemeValueListToStringList( Arrays.asList( args ) ) );
         }
@@ -2787,7 +2787,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
                                  );
             }} );
             
-            SchemeUtils.defineVar(env, new ConcoleObject(), "console" );
+            SchemeUtils.defineVar(env, new ConsoleObject(), "console" );
 
 
             SchemeUtils.defineVar(env, new Procedure0() {
