@@ -102,8 +102,8 @@ public class SimpleConsole extends JFrame {
         if ( w != null ) {
             System.err.println( "*** REQUEST FOCUS ***" );
             w.toFront();
-            w.setVisible( false );
-            w.setVisible( true );
+//            w.setVisible( false );
+//            w.setVisible( true );
             if ( c != null ) {
                 c.requestFocus();
             }

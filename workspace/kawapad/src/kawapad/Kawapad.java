@@ -2851,7 +2851,9 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
             SchemeUtils.defineVar(env, new Procedure1() {
                 @Override
                 public Object apply1(Object arg1 ) throws Throwable {
-                    return Kawapad.correctIndentation( getCurrent(), SchemePrinter.printSchemeValue( arg1 ));
+                    return SchemeUtils.toSchemeString(   
+                            Kawapad.correctIndentation( getCurrent(), 
+                                SchemePrinter.printSchemeValue( arg1 )));
                 }
             }, "prettify", "pre" );
             
