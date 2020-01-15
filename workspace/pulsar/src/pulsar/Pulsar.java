@@ -621,7 +621,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         } else if ( object instanceof Symbol || object instanceof IString ) {
             return new TagSearchIsProcedure(object);
         } else {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException( "unsupported type of the argument (" + object + ")" );
         }
     }
     
@@ -645,14 +645,22 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             return Arrays.<MetroTrack>asList((MetroTrack)object);
         } else if ( object instanceof Procedure ) {
             return Arrays.asList( createTrack( null, null, (Procedure)object ));
-        } else if ( object instanceof Pair ) {
-            if (((Pair)object).getCar() instanceof MetroTrack) {
-                return (List<MetroTrack>) object;
-            } else if ( NoteListParser.isNotationList(object) ) {
-                return Arrays.asList( createTrack( null, null, new TrackProcedure( (Pair) object ) ) );
+        } else if ( object instanceof LList ) {
+            if ( ((LList)object).isEmpty() ) {
+                return Collections.emptyList();
             } else {
-                return readParamSearchTrack( object );
-            }
+                if ( object instanceof Pair ) {
+                    if (((Pair)object).getCar() instanceof MetroTrack) {
+                        return (List<MetroTrack>) object;
+                    } else if ( NoteListParser.isNotationList(object) ) {
+                        return Arrays.asList( createTrack( null, null, new TrackProcedure( (Pair) object ) ) );
+                    } else {
+                        return readParamSearchTrack( object );
+                    }
+                } else {
+                    throw new IllegalArgumentException("unknown type of argument (" + object + ")" ) ;
+                }
+            } 
         } else {
             return readParamSearchTrack( object );
         }
@@ -679,7 +687,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         } else if ( arg  instanceof Number ) {
             return new TrackProcedure( createRestBar(((Number)arg).intValue() ) );
         } else {
-            throw new IllegalArgumentException( "unsupported type of the argument" );
+            throw new IllegalArgumentException( "unsupported type of the argument (" + arg + ")" );
         }
     }
 
