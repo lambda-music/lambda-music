@@ -36,7 +36,7 @@ import metro.MetroMidiEvent;
 import metro.MetroSequence;
 import metro.MetroTrack;
 import pulsar.lib.log.PulsarLogger;
-import pulsar.lib.scheme.SafeProcedureN;
+import pulsar.lib.scheme.proc.SafeProcedureN;
 import pulsar.lib.secretary.Invokable;
 
 public class SchemeSequence implements MetroSequence, SchemeSequenceReadable, Invokable {

@@ -69,11 +69,11 @@ import metro.MetroTrack;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.log.PulsarLogger;
 import pulsar.lib.scheme.InvokableSchemeProcedure;
-import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.doc.ProceduralDescriptiveBean;
+import pulsar.lib.scheme.proc.SafeProcedureN;
 import pulsar.lib.secretary.Invokable;
 import pulsar.lib.swing.MersenneTwisterFast;
 

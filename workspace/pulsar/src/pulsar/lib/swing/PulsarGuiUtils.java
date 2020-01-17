@@ -31,9 +31,9 @@ import gnu.mapping.Symbol;
 import kawa.standard.Scheme;
 import pulsar.Pulsar;
 import pulsar.lib.log.PulsarLogger;
-import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.doc.DescriptiveDocumentCategory;
+import pulsar.lib.scheme.proc.SafeProcedureN;
 import pulsar.lib.secretary.InvokablyRunnable;
 
 public class PulsarGuiUtils {

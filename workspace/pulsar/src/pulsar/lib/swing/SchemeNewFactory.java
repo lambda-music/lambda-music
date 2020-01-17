@@ -61,8 +61,8 @@ import gnu.math.IntNum;
 import pulsar.Pulsar;
 import pulsar.lib.log.PulsarLogger;
 import pulsar.lib.scheme.InvokableSchemeProcedure;
-import pulsar.lib.scheme.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
+import pulsar.lib.scheme.proc.SafeProcedureN;
 import pulsar.lib.secretary.Invokable;
 import pulsar.lib.thread.ThreadInitializerCollection;
 
