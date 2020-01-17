@@ -36,7 +36,7 @@ import metro.MetroMidiEvent;
 import metro.MetroSequence;
 import metro.MetroTrack;
 import pulsar.lib.log.PulsarLogger;
-import pulsar.lib.scheme.proc.SafeProcedureN;
+import pulsar.lib.scheme.proc.PulsarProcedureN;
 import pulsar.lib.secretary.Invokable;
 
 public class SchemeSequence implements MetroSequence, SchemeSequenceReadable, Invokable {
@@ -51,7 +51,7 @@ public class SchemeSequence implements MetroSequence, SchemeSequenceReadable, In
         LOGGER.log(Level.WARNING, msg);
     }
     
-    static final class SchemeSequenceDefaultProcedure extends SafeProcedureN {
+    static final class SchemeSequenceDefaultProcedure extends PulsarProcedureN {
         private final LList notations;
         SchemeSequenceDefaultProcedure(LList notations) {
             this.notations = notations;

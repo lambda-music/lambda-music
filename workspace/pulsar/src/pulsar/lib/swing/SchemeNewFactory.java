@@ -62,7 +62,7 @@ import pulsar.Pulsar;
 import pulsar.lib.log.PulsarLogger;
 import pulsar.lib.scheme.InvokableSchemeProcedure;
 import pulsar.lib.scheme.SchemeUtils;
-import pulsar.lib.scheme.proc.SafeProcedureN;
+import pulsar.lib.scheme.proc.PulsarProcedureN;
 import pulsar.lib.secretary.Invokable;
 import pulsar.lib.thread.ThreadInitializerCollection;
 
@@ -508,7 +508,7 @@ public abstract class SchemeNewFactory {
 
         register( "timer", new SchemeNewFactory() {
             private Procedure wrapRunnable( Runnable runnable ) {
-                return new SafeProcedureN() {
+                return new PulsarProcedureN() {
                     public Object applyN(Object[] args) throws Throwable {
                         runnable.run();
                         return EmptyList.emptyList;

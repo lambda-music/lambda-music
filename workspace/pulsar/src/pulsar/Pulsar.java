@@ -49,10 +49,6 @@ import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
-import gnu.mapping.Procedure0;
-import gnu.mapping.Procedure1;
-import gnu.mapping.Procedure2;
-import gnu.mapping.Procedure3;
 import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import gnu.mapping.WrongArguments;
@@ -73,7 +69,11 @@ import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import pulsar.lib.scheme.SchemeUtils;
 import pulsar.lib.scheme.doc.ProceduralDescriptiveBean;
-import pulsar.lib.scheme.proc.SafeProcedureN;
+import pulsar.lib.scheme.proc.PulsarProcedure0;
+import pulsar.lib.scheme.proc.PulsarProcedure1;
+import pulsar.lib.scheme.proc.PulsarProcedure2;
+import pulsar.lib.scheme.proc.PulsarProcedure3;
+import pulsar.lib.scheme.proc.PulsarProcedureN;
 import pulsar.lib.secretary.Invokable;
 import pulsar.lib.swing.MersenneTwisterFast;
 
@@ -431,7 +431,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         };
     }
 
-    private static final class TagSearchIsProcedure extends Procedure2 {
+    private static final class TagSearchIsProcedure extends PulsarProcedure2 {
         private final Object value;
         TagSearchIsProcedure(Object value) {
             this.value = value;
@@ -442,7 +442,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         }
     }
 
-    final static class TrackProcedure extends Procedure0 {
+    final static class TrackProcedure extends PulsarProcedure0 {
         final LList pair;
         TrackProcedure( LList pair ) {
             this.pair = pair;
@@ -756,14 +756,14 @@ public final class Pulsar extends Metro implements ApplicationComponent {
     public static void initScheme( Scheme scheme ) {
         Environment env = scheme.getEnvironment();
 
-        SchemeUtils.defineVar(env, new Procedure0() {
+        SchemeUtils.defineVar(env, new PulsarProcedure0() {
             @Override
             public Object apply0() throws Throwable {
                 return Pulsar.getCurrent();
             }
         }, "pulsar");
 
-        SchemeUtils.defineVar(env, new Procedure0() {
+        SchemeUtils.defineVar(env, new PulsarProcedure0() {
             @Override
             public Object apply0() throws Throwable {
                 return Pulsar.isPresent();
@@ -771,7 +771,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         }, "pulsar-present?");
 
 
-        SchemeUtils.defineVar( env, new SafeProcedureN( "open?" ) {
+        SchemeUtils.defineVar( env, new PulsarProcedureN( "open?" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 return getCurrent().isOpened();
@@ -787,7 +787,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                                      + "otherwise returns #f. " );
         }} );
         
-        SchemeUtils.defineVar( env, new Procedure1("open") {
+        SchemeUtils.defineVar( env, new PulsarProcedure1("open") {
             @Override
             public Object apply1(Object arg0) throws Throwable {
                 getCurrent().open( SchemeUtils.toString( arg0 ) );
@@ -808,7 +808,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                     + ALTERS_THE_CURRENT_STATE );
         }} );
         
-        SchemeUtils.defineVar( env, new SafeProcedureN("close") {
+        SchemeUtils.defineVar( env, new PulsarProcedureN("close") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 getCurrent().close();
@@ -844,7 +844,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             );
         }};     
         
-        Procedure openOutput = new SafeProcedureN("open-output") {
+        Procedure openOutput = new PulsarProcedureN("open-output") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 Pulsar pulsar = getCurrent();
@@ -864,7 +864,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         
         //////////////////////////////////////////////////////////
 
-        Procedure openInput = new SafeProcedureN("open-input") {
+        Procedure openInput = new PulsarProcedureN("open-input") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 Pulsar pulsar = getCurrent();
@@ -903,7 +903,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         }}
         InitDocClosePorts initDocClosePorts = new InitDocClosePorts();
         
-        Procedure closeOutput = new SafeProcedureN("close-output") {
+        Procedure closeOutput = new PulsarProcedureN("close-output") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 Pulsar pulsar = getCurrent();
@@ -920,7 +920,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
 
         //////////////////////////////////////////////////////////
         
-        Procedure closeInput = new SafeProcedureN("close-input") {
+        Procedure closeInput = new PulsarProcedureN("close-input") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 Pulsar pulsar = getCurrent();
@@ -950,7 +950,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         }}
         InitDocListPorts initDocListPorts = new InitDocListPorts();
  
-        Procedure listOutput = new SafeProcedureN("list-output") {
+        Procedure listOutput = new PulsarProcedureN("list-output") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 List<MetroPort> list = getCurrent().getOutputPorts();
@@ -964,7 +964,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         
         //////////////////////////////////////////////////////////
 
-        Procedure listInput = new SafeProcedureN("list-input") {
+        Procedure listInput = new PulsarProcedureN("list-input") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 List<MetroPort> list = getCurrent().getInputPorts();
@@ -999,7 +999,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         }}
         InitDocConnection initDocConnection = new InitDocConnection();
         
-        SchemeUtils.defineVar( env, new SafeProcedureN("connect") {
+        SchemeUtils.defineVar( env, new PulsarProcedureN("connect") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 connectProc( getCurrent(), args, ConnectProc.CONNECT );
@@ -1011,7 +1011,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         
         //////////////////////////////////////////////////////////
         
-        SchemeUtils.defineVar( env, new SafeProcedureN("disconnect") {
+        SchemeUtils.defineVar( env, new PulsarProcedureN("disconnect") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 connectProc(getCurrent(), args, ConnectProc.DISCONNECT );
@@ -1035,7 +1035,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                                     );
         }}
         InitDocAllConnection initDocAllConnection = new InitDocAllConnection(); 
-        SchemeUtils.defineVar( env, new SafeProcedureN("list-all-output") {
+        SchemeUtils.defineVar( env, new PulsarProcedureN("list-all-output") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 return Pair.makeList( getCurrent().getAvailableOutputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
@@ -1047,7 +1047,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
 
         //////////////////////////////////////////////////////////
         
-        SchemeUtils.defineVar( env, new SafeProcedureN("list-all-input") {
+        SchemeUtils.defineVar( env, new PulsarProcedureN("list-all-input") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 return Pair.makeList( getCurrent().getAvailableInputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
@@ -1060,7 +1060,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         //////////////////////////////////////////////////////////
         
         
-        SchemeUtils.defineVar( env, new SafeProcedureN("set-main") {
+        SchemeUtils.defineVar( env, new PulsarProcedureN("set-main") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo("set-main");
@@ -1089,7 +1089,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
 
         //////////////////////////////////////////////////////////
 
-        SchemeUtils.defineVar( env, new Procedure0( "get-main" ) {
+        SchemeUtils.defineVar( env, new PulsarProcedure0( "get-main" ) {
             @Override
             public Object apply0() throws Throwable {
                 return getCurrent().getMainProcedure();
@@ -1107,7 +1107,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
 
         //////////////////////////////////////////////////////////
         
-        SchemeUtils.defineVar( env, new SafeProcedureN("set-playing") {
+        SchemeUtils.defineVar( env, new PulsarProcedureN("set-playing") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 Pulsar pulsar = getCurrent();
@@ -1135,7 +1135,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                                  );
         }} );
 
-        SchemeUtils.defineVar( env, new SafeProcedureN("playing?") {
+        SchemeUtils.defineVar( env, new PulsarProcedureN("playing?") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 return getCurrent().getPlaying();
@@ -1154,7 +1154,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                                  );
         }} );
         
-        SchemeUtils.defineVar( env, new SafeProcedureN("play") {
+        SchemeUtils.defineVar( env, new PulsarProcedureN("play") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 getCurrent().setPlaying( true ); 
@@ -1172,7 +1172,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                                  );
         }} );
 
-        SchemeUtils.defineVar( env, new SafeProcedureN("stop") {
+        SchemeUtils.defineVar( env, new PulsarProcedureN("stop") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 getCurrent().setPlaying( false ); 
@@ -1190,7 +1190,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                     + THROWS_AN_ERROR_IF_NOT_OPEN );
         }} );
 
-        SchemeUtils.defineVar( env, new SafeProcedureN( "quit" ) {
+        SchemeUtils.defineVar( env, new PulsarProcedureN( "quit" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 long shutdownWaitNow;
@@ -1230,7 +1230,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                                 + THROWS_AN_ERROR_IF_NOT_OPEN );
         }});
         
-        SchemeUtils.defineVar( env, new SafeProcedureN( "tap-tempo" ) {
+        SchemeUtils.defineVar( env, new PulsarProcedureN( "tap-tempo" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo( "Pulsar Scheme API: TAP-TEMPO" );
@@ -1257,7 +1257,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                                 + THROWS_AN_ERROR_IF_NOT_OPEN );
         }} );
 
-        SchemeUtils.defineVar( env, new SafeProcedureN("set-tempo") {
+        SchemeUtils.defineVar( env, new PulsarProcedureN("set-tempo") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 if ( 0 < args.length ) {
@@ -1291,7 +1291,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
          * This function only reset the current scheme environment.
          * See {@link Pulsar#reset }
          */
-        Procedure0 resetScheme = new Procedure0( "reset" ) {
+        Procedure resetScheme = new PulsarProcedure0( "reset" ) {
             @Override
             public Object apply0() throws Throwable {
                 getCurrent().reset();
@@ -1315,7 +1315,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         }} );
         
         
-        SchemeUtils.defineVar( env, new Procedure0( "rewind" ) {
+        SchemeUtils.defineVar( env, new PulsarProcedure0( "rewind" ) {
             @Override
             public Object apply0() throws Throwable {
                 getCurrent().rewind();
@@ -1334,7 +1334,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                                 + THROWS_AN_ERROR_IF_NOT_OPEN );
         }} );
         
-        Procedure simul = new SafeProcedureN( "simultaneous" ) {
+        Procedure simul = new PulsarProcedureN( "simultaneous" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 Pulsar pulsar = getCurrent();
@@ -1375,7 +1375,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         
         /////////////////////////////////////////////////////////////////
 
-        Procedure getTrack = new SafeProcedureN( "get-track" ) {
+        Procedure getTrack = new PulsarProcedureN( "get-track" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 Pulsar current = getCurrent();
@@ -1425,7 +1425,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         /////////////////////////////////////////////////////////////////
         
         
-        Procedure newTrack = new SafeProcedureN( "new-track" ) {
+        Procedure newTrack = new PulsarProcedureN( "new-track" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 Object name;
@@ -1477,7 +1477,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
 
         
         
-        Procedure newRecordingTrack = new SafeProcedureN( "new-recording-track" ) {
+        Procedure newRecordingTrack = new PulsarProcedureN( "new-recording-track" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 Pulsar current = getCurrent();
@@ -1587,7 +1587,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
 
         /////////////////////////////////////////////////////////////////
         
-        abstract class TrackManagementProcedure extends SafeProcedureN  {
+        abstract class TrackManagementProcedure extends PulsarProcedureN  {
             TrackManagementProcedure( String name ) {
                 super(name);
             }
@@ -1718,7 +1718,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         ).setNames( "remove-track", "remt" ) );
 
 
-        Procedure notifyTrackChange = new Procedure0( "notify-track-change" ) {
+        Procedure notifyTrackChange = new PulsarProcedure0( "notify-track-change" ) {
             @Override
             public Object apply0() throws Throwable {
                 getCurrent().notifyTrackChange();
@@ -1742,7 +1742,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                              );
         }} );
         
-        SchemeUtils.defineVar( env, new Procedure0("list-tracks") {
+        SchemeUtils.defineVar( env, new PulsarProcedure0("list-tracks") {
             @Override
             public Object apply0() throws Throwable {
                 List<MetroTrack> tempAllTracks = getCurrent().replicateAllTracks(); 
@@ -1769,7 +1769,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                              );
         }} );       
         
-        Procedure0 clr = new Procedure0("clear-tracks") {
+        PulsarProcedure0 clr = new PulsarProcedure0("clear-tracks") {
             @Override
             public Object apply0() throws Throwable {
                 getCurrent().clearTracks();
@@ -1788,7 +1788,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                              );
         }} );   
 
-        Procedure getmt = new Procedure0("get-main-track") {
+        Procedure getmt = new PulsarProcedure0("get-main-track") {
             @Override
             public Object apply0() throws Throwable {
                 return SchemeUtils.javaNullCheck( getCurrent().getMainTrack() );
@@ -1806,7 +1806,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                              );
         }} );   
         
-        Procedure gettp = new Procedure1("get-track-position") {
+        Procedure gettp = new PulsarProcedure1("get-track-position") {
             @Override
             public Object apply1( Object arg1 ) throws Throwable {
                 if ( Boolean.FALSE.equals( arg1 ) ) { 
@@ -1840,7 +1840,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         
         
         
-        SchemeUtils.defineVar( env, new Procedure0("print-stack-trace") {
+        SchemeUtils.defineVar( env, new PulsarProcedure0("print-stack-trace") {
             @Override
             public Object apply0() throws Throwable {
                 PrintStream out = null;
@@ -1873,7 +1873,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         }} );   
 
         
-        SchemeUtils.defineVar( env, new Procedure1("display-warn") {
+        SchemeUtils.defineVar( env, new PulsarProcedure1("display-warn") {
             @Override
             public Object apply1(Object arg1) throws Throwable {
                 System.err.print( arg1 );
@@ -1892,7 +1892,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                              );
         }} );
         
-        SchemeUtils.defineVar( env, new Procedure0("newline-warn") {
+        SchemeUtils.defineVar( env, new PulsarProcedure0("newline-warn") {
             @Override
             public Object apply0() throws Throwable {
                 System.err.println();
@@ -1910,7 +1910,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                              );
         }} );
         
-        SchemeUtils.defineVar( env, new SafeProcedureN("typeof") {
+        SchemeUtils.defineVar( env, new PulsarProcedureN("typeof") {
             public Object applyN(Object[] args) throws Throwable {
                 if ( 0 < args.length  ) {
                     if ( args[0] == null ) 
@@ -1935,14 +1935,14 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         }} );
         
 
-        SchemeUtils.defineVar( env, new SafeProcedureN( "schedule" ) {
+        SchemeUtils.defineVar( env, new PulsarProcedureN( "schedule" ) {
             public Object apply2(Object arg1, Object arg2) {
                 Runnable runnable = createTimer( getCurrent(), 
                     SchemeUtils.toInteger( arg1 ), 
                     -1, 
                     InvokableSchemeProcedure.createSecretarillyInvokable( (Procedure)arg2 ) );
                 
-                return new Procedure0() {
+                return new PulsarProcedure0() {
                     public Object apply0() throws Throwable {
                         runnable.run();
                         return Values.empty;
@@ -1956,7 +1956,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                     SchemeUtils.toInteger( arg1 ), 
                     InvokableSchemeProcedure.createSecretarillyInvokable( (Procedure)arg2 ) );
 
-                return new Procedure0() {
+                return new PulsarProcedure0() {
                     public Object apply0() throws Throwable {
                         runnable.run();
                         return Values.empty;
@@ -1996,7 +1996,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         
         
 
-        SchemeUtils.defineVar( env, new Procedure3("add-event-listener") {
+        SchemeUtils.defineVar( env, new PulsarProcedure3("add-event-listener") {
             @Override
             public Object apply3(Object arg0, Object arg1, Object arg2 ) throws Throwable {
                 if ( arg0 instanceof EventListenable ) {
@@ -2025,7 +2025,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             );
         }} );
 
-        SchemeUtils.defineVar( env, new Procedure2( "remove-event-listener" ) {
+        SchemeUtils.defineVar( env, new PulsarProcedure2( "remove-event-listener" ) {
             @Override
             public Object apply2(Object arg0, Object arg1 ) throws Throwable {
                 if ( arg0 instanceof EventListenable ) {
@@ -2060,14 +2060,14 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         }});
 
         
-        SchemeUtils.defineVar( env, new Procedure1( "track?" ) {
+        SchemeUtils.defineVar( env, new PulsarProcedure1( "track?" ) {
             @Override
             public Object apply1(Object arg0 ) throws Throwable {
                 return arg0 instanceof MetroTrack;
             }
         });
 
-        SchemeUtils.defineVar( env, new Procedure1( "track->procedure" ) {
+        SchemeUtils.defineVar( env, new PulsarProcedure1( "track->procedure" ) {
             @Override
             public Object apply1(Object arg0 ) throws Throwable {
                 if ( arg0 instanceof MetroTrack ) {
@@ -2078,7 +2078,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             }
         });
         
-        SchemeUtils.defineVar( env, new SafeProcedureN( "apply-track" ) {
+        SchemeUtils.defineVar( env, new PulsarProcedureN( "apply-track" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 if ( args.length < 1 ) {
@@ -2094,7 +2094,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             }
         }, "apply-track", "appt" );
         
-        SchemeUtils.defineVar( env, new SafeProcedureN( "read-track" ) {
+        SchemeUtils.defineVar( env, new PulsarProcedureN( "read-track" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 if ( args.length < 1 ) {
@@ -2109,7 +2109,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             }
         }, "read-track", "reat" );
 
-        SchemeUtils.defineVar( env, new SafeProcedureN( "create-process" ) {
+        SchemeUtils.defineVar( env, new PulsarProcedureN( "create-process" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
 //                List l =  new ArrayList( Arrays.asList( args ) );
@@ -2125,7 +2125,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             }
         }, "create-process", "newp" );
 
-        SchemeUtils.defineVar( env, new SafeProcedureN( "destroy-process" ) {
+        SchemeUtils.defineVar( env, new PulsarProcedureN( "destroy-process" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 for ( int i=0; i<args.length; i++ ) {
@@ -2141,7 +2141,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             }
         }, "destroy-process", "kilp" ); 
         
-        SchemeUtils.defineVar( env, new SafeProcedureN( "kill-process" ) {
+        SchemeUtils.defineVar( env, new PulsarProcedureN( "kill-process" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 for ( int i=0; i<args.length; i++ ) {
@@ -2157,7 +2157,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             }
         }, "kill-process", "fkilp" );
 
-        SchemeUtils.defineVar( env, new Procedure1( "sleep" ) {
+        SchemeUtils.defineVar( env, new PulsarProcedure1( "sleep" ) {
             @Override
             public Object apply1(Object arg1) throws Throwable {
                 Thread.sleep( SchemeUtils.toInteger( arg1 ));
@@ -2165,7 +2165,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             }
         } );
         
-        SchemeUtils.defineVar( env, new SafeProcedureN("random") {
+        SchemeUtils.defineVar( env, new PulsarProcedureN("random") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 Pulsar pulsar = getCurrent();
@@ -2202,7 +2202,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             );
         }} );
         
-        SchemeUtils.defineVar( env, new SafeProcedureN("luck") {
+        SchemeUtils.defineVar( env, new PulsarProcedureN("luck") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 double probability = args.length == 0 ? 0.5 : SchemeUtils.toDouble( args[0] );

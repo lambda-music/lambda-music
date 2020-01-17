@@ -10,7 +10,6 @@ import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Procedure1;
-import gnu.mapping.Procedure2;
 import gnu.mapping.SimpleSymbol;
 import gnu.mapping.Symbol;
 import gnu.mapping.Values;
@@ -18,8 +17,9 @@ import gnu.mapping.WrongArguments;
 import kawa.standard.Scheme;
 import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.SchemeEvaluator.SchemeEngineListener;
-import pulsar.lib.scheme.proc.SafeProcedureN;
 import pulsar.lib.scheme.SchemeUtils;
+import pulsar.lib.scheme.proc.PulsarProcedure2;
+import pulsar.lib.scheme.proc.PulsarProcedureN;
 
 public class DescriptiveHelp {
     public static final DescriptiveDocumentCategory DOCS = 
@@ -88,7 +88,7 @@ public class DescriptiveHelp {
                                 );
         }} );
         
-        SchemeUtils.defineVar( env, new SafeProcedureN("help!") {
+        SchemeUtils.defineVar( env, new PulsarProcedureN("help!") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 return "Calm down!";
@@ -107,7 +107,7 @@ public class DescriptiveHelp {
                 + "nor any other related elements. See (help about-main)." );
         }} );
         
-        final class ProcedureHelp extends SafeProcedureN {
+        final class ProcedureHelp extends PulsarProcedureN {
             final Environment environment;
             final int index;
             final Procedure reverse = (Procedure)gnu.kawa.slib.srfi1.reverse.get();
@@ -235,7 +235,7 @@ public class DescriptiveHelp {
         }} );
 
         
-        SchemeUtils.defineVar( env, new Procedure2("make-help") {
+        SchemeUtils.defineVar( env, new PulsarProcedure2("make-help") {
             Symbol names = Symbol.valueOf( "names" );
             Symbol params = Symbol.valueOf( "params" );
             Symbol returns = Symbol.valueOf( "returns" );

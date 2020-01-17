@@ -9,12 +9,12 @@ import java.util.logging.Level;
 
 import gnu.expr.Language;
 import gnu.mapping.Environment;
-import gnu.mapping.Procedure0;
 import kawa.standard.Scheme;
 import kawa.standard.load;
 import pulsar.lib.CurrentObject;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.log.PulsarLogger;
+import pulsar.lib.scheme.proc.PulsarProcedure0;
 import pulsar.lib.thread.ThreadInitializer;
 import pulsar.lib.thread.ThreadInitializerCollection;
 import pulsar.lib.thread.ThreadInitializerContainer;
@@ -184,13 +184,13 @@ public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluat
     public static void initScheme( Scheme scheme ) {
         Environment env = scheme.getEnvironment();
         SchemeUtils.defineVar(env, load.loadRelative , "source" );
-        SchemeUtils.defineVar(env, new Procedure0() {
+        SchemeUtils.defineVar(env, new PulsarProcedure0() {
             @Override
             public Object apply0() throws Throwable {
                 return Language.getDefaultLanguage();
             }
         }, "current-scheme" );
-        SchemeUtils.defineVar(env, new Procedure0() {
+        SchemeUtils.defineVar(env, new PulsarProcedure0() {
             @Override
             public Object apply0() throws Throwable {
                 return Language.getDefaultLanguage();

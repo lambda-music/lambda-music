@@ -1,9 +1,9 @@
 package pulsar.lib.scheme.doc;
 
-import gnu.mapping.Procedure0;
 import pulsar.lib.scheme.SchemeUtils;
+import pulsar.lib.scheme.proc.PulsarProcedure0;
 
-public class DescriptiveHelpProcedure extends Procedure0 {
+public class DescriptiveHelpProcedure extends PulsarProcedure0 {
     public DescriptiveHelpProcedure(String name) {
         super(name);
     }

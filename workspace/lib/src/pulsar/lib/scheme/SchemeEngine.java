@@ -7,14 +7,14 @@ import java.util.logging.Level;
 
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
-import gnu.mapping.Procedure0;
-import gnu.mapping.Procedure1;
-import gnu.mapping.Procedure2;
 import kawa.standard.Scheme;
 import pulsar.lib.CurrentObject;
 import pulsar.lib.app.ApplicationComponent;
 import pulsar.lib.log.PulsarLogger;
 import pulsar.lib.scheme.SchemeEvaluator.SchemeEngineListener;
+import pulsar.lib.scheme.proc.PulsarProcedure0;
+import pulsar.lib.scheme.proc.PulsarProcedure1;
+import pulsar.lib.scheme.proc.PulsarProcedure2;
 import pulsar.lib.thread.ThreadInitializer;
 import pulsar.lib.thread.ThreadInitializerContainer;
 
@@ -25,14 +25,14 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
     static HashMap<Object,Object> map = new HashMap<>(); 
-    public static final Procedure putvar = new Procedure2() {
+    public static final Procedure putvar = new PulsarProcedure2() {
         @Override
         public Object apply2(Object arg1, Object arg2) throws Throwable {
             map.put( arg1, arg2 );
             return SchemeUtils.NO_RESULT;
         }
     };
-    public static final Procedure getvar = new Procedure1() {
+    public static final Procedure getvar = new PulsarProcedure1() {
         @Override
         public Object apply1(Object arg1) throws Throwable {
             Object result = map.get( arg1 );
@@ -144,13 +144,13 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
     };
     static void initScheme( Scheme scheme ) {
         Environment env = scheme.getEnvironment();
-        SchemeUtils.defineVar(env, new Procedure0() {
+        SchemeUtils.defineVar(env, new PulsarProcedure0() {
             @Override
             public Object apply0() throws Throwable {
                 return SchemeEngine.getCurrent();
             }
         }, "scheme-engine" );
-        SchemeUtils.defineVar(env, new Procedure0() {
+        SchemeUtils.defineVar(env, new PulsarProcedure0() {
             @Override
             public Object apply0() throws Throwable {
                 return SchemeEngine.isPresent();

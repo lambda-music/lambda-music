@@ -17,11 +17,11 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 
 import gnu.mapping.Environment;
-import gnu.mapping.Procedure0;
-import gnu.mapping.Procedure1;
-import gnu.mapping.Procedure2;
 import gnu.mapping.Values;
 import pulsar.lib.scheme.SchemeUtils;
+import pulsar.lib.scheme.proc.PulsarProcedure0;
+import pulsar.lib.scheme.proc.PulsarProcedure1;
+import pulsar.lib.scheme.proc.PulsarProcedure2;
 import pulsar.lib.swing.AcceleratorKeyList;
 import pulsar.lib.swing.Action2;
 import pulsar.lib.swing.MenuInitializer;
@@ -36,7 +36,7 @@ class KawapadTextualIncrement implements MenuInitializer {
 
     
     public static void initScheme(Environment env) {
-        SchemeUtils.defineVar( env, new Procedure2("add-incremental-keyword") {
+        SchemeUtils.defineVar( env, new PulsarProcedure2("add-incremental-keyword") {
             @Override
             public Object apply2(Object arg1, Object arg2) throws Throwable {
                 Kawapad.getCurrent().textualIncrement.addIncrementalSymbol( 
@@ -45,7 +45,7 @@ class KawapadTextualIncrement implements MenuInitializer {
                 return Values.empty;
             }
         });
-        SchemeUtils.defineVar( env, new Procedure1("delete-incremental-keyword") {
+        SchemeUtils.defineVar( env, new PulsarProcedure1("delete-incremental-keyword") {
             @Override
             public Object apply1(Object arg1) throws Throwable {
                 Kawapad.getCurrent().textualIncrement.deleteIncrementalSymbol( 
@@ -53,7 +53,7 @@ class KawapadTextualIncrement implements MenuInitializer {
                 return Values.empty;
             }
         });
-        SchemeUtils.defineVar( env, new Procedure0("clear-incremental-keyword") {
+        SchemeUtils.defineVar( env, new PulsarProcedure0("clear-incremental-keyword") {
             @Override
             public Object apply0() throws Throwable {
                 Kawapad.getCurrent().textualIncrement.clearIncrementalSymbol();
