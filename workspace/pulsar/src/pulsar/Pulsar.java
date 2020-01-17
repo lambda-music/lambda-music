@@ -860,7 +860,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         };
         SchemeUtils.defineLambda( env, openOutput  );
 
-        PulsarDocuments.DOCS.defineDoc( env, initDocOpenPorts.process( "output" ).setNames( "open-output", "openo" ) );
+        PulsarDocuments.DOCS.defineDoc( env, initDocOpenPorts.processArguments( "output" ).setNames( "open-output", "openo" ) );
         
         //////////////////////////////////////////////////////////
 
@@ -880,7 +880,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         };
         SchemeUtils.defineLambda( env, openInput  );
 
-        PulsarDocuments.DOCS.defineDoc( env, initDocOpenPorts.process( "input" ).setNames( "open-input" , "openi" ) );
+        PulsarDocuments.DOCS.defineDoc( env, initDocOpenPorts.processArguments( "input" ).setNames( "open-input" , "openi" ) );
 
         
         //////////////////////////////////////////////////////////
@@ -915,7 +915,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             }
         };
         SchemeUtils.defineLambda( env, closeOutput );
-        PulsarDocuments.DOCS.defineDoc( env, initDocClosePorts.process( "output" ).setNames( "close-output" , "closeo" ) );
+        PulsarDocuments.DOCS.defineDoc( env, initDocClosePorts.processArguments( "output" ).setNames( "close-output" , "closeo" ) );
 
         //////////////////////////////////////////////////////////
         
@@ -933,7 +933,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         };
         SchemeUtils.defineLambda( env, closeInput );
         
-        PulsarDocuments.DOCS.defineDoc( env, initDocClosePorts.process( "input" ).setNames( "close-input", "closei" ) );
+        PulsarDocuments.DOCS.defineDoc( env, initDocClosePorts.processArguments( "input" ).setNames( "close-input", "closei" ) );
 
         //////////////////////////////////////////////////////////
 
@@ -958,7 +958,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             }
         };
         SchemeUtils.defineLambda( env, listOutput );
-        PulsarDocuments.DOCS.defineDoc( env, initDocListPorts.process( "output" ).setNames("list-output" , "lso" ) );
+        PulsarDocuments.DOCS.defineDoc( env, initDocListPorts.processArguments( "output" ).setNames("list-output" , "lso" ) );
         
         
         //////////////////////////////////////////////////////////
@@ -972,7 +972,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             }
         };
         SchemeUtils.defineLambda( env, listInput );
-        PulsarDocuments.DOCS.defineDoc( env, initDocListPorts.process( "input" ).setNames("list-input" , "lsi") );
+        PulsarDocuments.DOCS.defineDoc( env, initDocListPorts.processArguments( "input" ).setNames("list-input" , "lsi") );
 
         //////////////////////////////////////////////////////////
 
@@ -1006,7 +1006,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             }
         } );
         
-        PulsarDocuments.DOCS.defineDoc( env, initDocConnection.process( "connects" ).setNames( "connect" ) );
+        PulsarDocuments.DOCS.defineDoc( env, initDocConnection.processArguments( "connects" ).setNames( "connect" ) );
         
         //////////////////////////////////////////////////////////
         
@@ -1018,7 +1018,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             }
         });
 
-        PulsarDocuments.DOCS.defineDoc( env, initDocConnection.process( "disconnects" ).setNames( "disconnect" ) );
+        PulsarDocuments.DOCS.defineDoc( env, initDocConnection.processArguments( "disconnects" ).setNames( "disconnect" ) );
 
         //////////////////////////////////////////////////////////
         
@@ -1042,7 +1042,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             }
         });
 
-        PulsarDocuments.DOCS.defineDoc( env, initDocAllConnection.process( "output" ).setNames("list-all-output", "lao") );
+        PulsarDocuments.DOCS.defineDoc( env, initDocAllConnection.processArguments( "output" ).setNames("list-all-output", "lao") );
 
         //////////////////////////////////////////////////////////
         
@@ -1054,7 +1054,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             }
         });
         
-        PulsarDocuments.DOCS.defineDoc( env, initDocAllConnection.process( "input" ).setNames("list-all-input", "lai") );
+        PulsarDocuments.DOCS.defineDoc( env, initDocAllConnection.processArguments( "input" ).setNames("list-all-input", "lai") );
 
         //////////////////////////////////////////////////////////
         
@@ -1692,7 +1692,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                                 + ""
                              );
         }};
-        PulsarDocuments.DOCS.defineDoc( env, trackInitializer.process( 
+        PulsarDocuments.DOCS.defineDoc( env, trackInitializer.processArguments( 
         "put",
         ""
             + "The sequencer starts to play the added track and it gives the user some controls on "
@@ -1708,7 +1708,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             }
         };
         SchemeUtils.defineLambda( env, removeTrack );
-        PulsarDocuments.DOCS.defineDoc( env, trackInitializer.process( 
+        PulsarDocuments.DOCS.defineDoc( env, trackInitializer.processArguments( 
         "removes",
         ""
             + "The sequencer remove the specified track. Eventually the track stops playing. "

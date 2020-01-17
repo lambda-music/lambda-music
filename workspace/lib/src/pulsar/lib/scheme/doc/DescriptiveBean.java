@@ -58,7 +58,7 @@ public abstract class DescriptiveBean implements DescriptiveBeanSynopsisFormatte
         public void setDescription(String description) {
             this.description = description;
         }
-        public Param process(Object[] args) {
+        public Param processArguments(Object[] args) {
             Param out = new Param(
                 this.getNames(),
                 this.getType(),
@@ -190,8 +190,8 @@ public abstract class DescriptiveBean implements DescriptiveBeanSynopsisFormatte
         this.longDescription = longDescription;
     }
 
-    public DescriptiveBean process( Object ... arguments ) {
-        return process( this, arguments );
+    public DescriptiveBean processArguments( Object ... args ) {
+        return processArguments( this, args );
     }
     
     public String format() {
@@ -201,14 +201,14 @@ public abstract class DescriptiveBean implements DescriptiveBeanSynopsisFormatte
 //  @Override
 //  public abstract String formatSynopsis();
 
-    static DescriptiveBean process( DescriptiveBean in, Object ... args ) {
+    static DescriptiveBean processArguments( DescriptiveBean in, Object ... args ) {
         // See comment in DescriptiveBean#clone() 
         DescriptiveBean out = in.clone();
         
         out.setParameterDescription( String.format( in.getParameterDescription(), args ));
         out.setParameterList( new ArrayList<>() );
         for ( Param in_param : in.getParameterList() ) {
-            out.addParameter( in_param.process( args ) );
+            out.addParameter( in_param.processArguments( args ) );
         }
         
         out.setReturnValueDescription( String.format( in.getReturnValueDescription(), args )) ;
