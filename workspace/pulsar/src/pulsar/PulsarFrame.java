@@ -334,37 +334,37 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         //////////////////////////////////////////////////////
         Environment env = scheme.getEnvironment();
         
-        SchemeUtils.defineVar(env, new PulsarProcedure0() {
+        SchemeUtils.defineLambda(env, new PulsarProcedure0( "frame" ) {
             @Override
             public Object apply0() throws Throwable {
                 return PulsarFrame.getCurrent();
             }
-        }, "frame" );
+        });
 
-        SchemeUtils.defineVar(env, new PulsarProcedure0() {
+        SchemeUtils.defineLambda(env, new PulsarProcedure0( "pulsar-frame" ) {
             @Override
             public Object apply0() throws Throwable {
                 return PulsarFrame.getCurrent();
             }
-        }, "pulsar-frame" );
+        });
 
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-get-pane") {
+        SchemeUtils.defineLambda( env, new PulsarProcedureN("gui-get-pane") {
             // TODO ???
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo("gui-get-pane");
                 return getCurrent().userPane;
             }
-        }, "gui-get-pane");
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-get-frame") {
+        });
+        SchemeUtils.defineLambda( env, new PulsarProcedureN("gui-get-frame") {
             // TODO ???
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo("gui-get-frame");
                 return getCurrent().frame;
             }
-        }, "gui-get-frame");
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-set-progress-pos") {
+        });
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-set-progress-pos" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 if ( 0 < args.length ) {
@@ -373,15 +373,15 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                 }
                 return SchemeUtils.NO_RESULT;
             }
-        }, "gui-set-progress-pos");
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-clear") {
+        });
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-clear" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 getCurrent().guiClear();
                 return SchemeUtils.NO_RESULT;
             }
-        }, "gui-clear");
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-divider-location") {
+        });
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-divider-location" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 ArrayList<Object> argList = new ArrayList<Object>( Arrays.asList( args ) );
@@ -411,9 +411,9 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                             "usage : (gui-divider-location! [pane])" );
                 }
             }
-        }, "gui-divider-location");
+        });
 
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-frame-height") {
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-frame-height" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 PulsarFrame pulsarGui = getCurrent();
@@ -428,8 +428,8 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                 return SchemeUtils.toSchemeNumber( size.height );
             }
             
-        }, "gui-frame-height");
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-frame-width") {
+        });
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-frame-width" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 PulsarFrame pulsarGui = getCurrent();
@@ -444,8 +444,8 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                 return SchemeUtils.toSchemeNumber( size.width );
             }
             
-        }, "gui-frame-width");
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-frame-left") {
+        });
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-frame-left" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 PulsarFrame pulsarGui = getCurrent();
@@ -459,8 +459,8 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                 return SchemeUtils.toSchemeNumber( pos.x );
             }
             
-        }, "gui-frame-left");
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-frame-top") {
+        });
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-frame-top" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 PulsarFrame pulsarGui = getCurrent();
@@ -474,9 +474,9 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                 return SchemeUtils.toSchemeNumber( pos.y );
             }
             
-        }, "gui-frame-top");
+        });
 
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-frame-divider-position") {
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-frame-divider-position" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 PulsarFrame pulsarGui = getCurrent();
@@ -504,9 +504,9 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                             "usage : (gui-panel-divider-position! [pane])" );
                 }
             }
-        }, "gui-frame-divider-position");
+        });
 
-        SchemeUtils.defineVar( env, new PulsarProcedureN( "gui-insert-text" ) {
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-insert-text" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 StringBuilder sb = new StringBuilder();
@@ -516,15 +516,15 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                 getCurrent().frame.getKawapad().insertText( sb.toString().trim() );
                 return SchemeUtils.NO_RESULT;
             }
-        }, "gui-insert-text");
+        });
 
-        SchemeUtils.defineVar( env, new PulsarProcedure1( "gui-set-tempo-display" ) {
+        SchemeUtils.defineLambda( env, new PulsarProcedure1( "gui-set-tempo"  ) {
             @Override
             public Object apply1(Object arg1) throws Throwable {
                 getCurrent().setTempoDisplay( SchemeUtils.toDouble( arg1 ) );
                 return SchemeUtils.NO_RESULT;
             }
-        }, "gui-set-tempo" );
+        });
     }
     
    

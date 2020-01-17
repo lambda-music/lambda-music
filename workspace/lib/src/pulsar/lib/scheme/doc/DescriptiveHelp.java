@@ -61,14 +61,14 @@ public class DescriptiveHelp {
         
         ///////////////////////////////////////////////////////////////////////////////////////////////
         
-        SchemeUtils.defineVar( env, new Procedure1("make-page") {
+        SchemeUtils.defineLambda( env, new Procedure1("make-page") {
             @Override
             public Object apply1(Object arg1) throws Throwable {
                 return Descriptive.makeSchemeDocument( 
                             SchemeUtils.toSchemeString( 
                                 Descriptive.formatKawapad( SchemeUtils.anyToString(arg1), helpTextWidth ) )); 
             }
-        }, "make-page");
+        });
         
         DescriptiveHelp.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "make-page" );
@@ -88,12 +88,12 @@ public class DescriptiveHelp {
                                 );
         }} );
         
-        SchemeUtils.defineVar( env, new PulsarProcedureN("help!") {
+        SchemeUtils.defineLambda( env, new PulsarProcedureN("help!") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 return "Calm down!";
             }
-        }, "help!");
+        });
         
         DescriptiveHelp.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "help!" );
@@ -113,8 +113,8 @@ public class DescriptiveHelp {
             final Procedure reverse = (Procedure)gnu.kawa.slib.srfi1.reverse.get();
             final Procedure map = (Procedure)gnu.kawa.slib.srfi1.map.get();
             
-            private ProcedureHelp(Environment environment, String name, int index ) {
-                super(name);
+            private ProcedureHelp(Environment environment, int index, String ... names ) {
+                super(names);
                 this.environment=environment ;
                 this.index = index;
             }
@@ -213,7 +213,7 @@ public class DescriptiveHelp {
             }
         }
         
-        SchemeUtils.defineVar( env, new ProcedureHelp( env, "help", 1 ) , "help", "he" );
+        SchemeUtils.defineLambda( env, new ProcedureHelp( env, 1,  "help", "he" ) );
         DescriptiveHelp.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "help", "he" );
             setParameterDescription( "[symbol|procedure]" );
@@ -235,7 +235,7 @@ public class DescriptiveHelp {
         }} );
 
         
-        SchemeUtils.defineVar( env, new PulsarProcedure2("make-help") {
+        SchemeUtils.defineLambda( env, new PulsarProcedure2("make-help") {
             Symbol names = Symbol.valueOf( "names" );
             Symbol params = Symbol.valueOf( "params" );
             Symbol returns = Symbol.valueOf( "returns" );
@@ -293,7 +293,7 @@ public class DescriptiveHelp {
                 DescriptiveHelp.DOCS.defineDoc( env, arg1, bean );
                 return Values.empty;
             }
-        }, "make-help");
+        } );
         
         DescriptiveHelp.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "make-help" );
@@ -330,7 +330,7 @@ public class DescriptiveHelp {
         }} );
 
         
-        SchemeUtils.defineVar( env, new Procedure1("help-markdown") {
+        SchemeUtils.defineLambda( env, new Procedure1("help-markdown") {
             @Override
             public Object apply0() throws Throwable {
                 return this.apply1( DescriptiveHelp.DOCS.getSymbol() );
@@ -344,7 +344,7 @@ public class DescriptiveHelp {
                 return Values.empty;
             }
 
-        }, "help-markdown" );
+        } );
         
         DescriptiveHelp.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames("help-markdown");

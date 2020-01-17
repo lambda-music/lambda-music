@@ -18,8 +18,8 @@ public abstract class PulsarProcedureN extends SafeProcedureN implements Multipl
     public PulsarProcedureN(MethodHandle applyMethod) {
         super( applyMethod );
     }
-    public PulsarProcedureN(String name) {
-        super( name );
+    public PulsarProcedureN( String ... names ) {
+        super( names[0] );
+        setNames( names );
     }
-    
 }

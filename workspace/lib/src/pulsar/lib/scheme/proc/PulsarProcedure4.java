@@ -7,7 +7,8 @@ public abstract class PulsarProcedure4 extends Procedure4 implements MultipleNam
         super();
     }
 
-    public PulsarProcedure4(String name) {
-        super( name );
+    public PulsarProcedure4( String ... names ) {
+        super( names[0] );
+        setNames( names );
     }
 }

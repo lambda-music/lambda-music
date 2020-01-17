@@ -184,18 +184,18 @@ public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluat
     public static void initScheme( Scheme scheme ) {
         Environment env = scheme.getEnvironment();
         SchemeUtils.defineVar(env, load.loadRelative , "source" );
-        SchemeUtils.defineVar(env, new PulsarProcedure0() {
+        SchemeUtils.defineLambda(env, new PulsarProcedure0( "current-scheme" ) {
             @Override
             public Object apply0() throws Throwable {
                 return Language.getDefaultLanguage();
             }
-        }, "current-scheme" );
-        SchemeUtils.defineVar(env, new PulsarProcedure0() {
+        });
+        SchemeUtils.defineLambda(env, new PulsarProcedure0( "current-environment" ) {
             @Override
             public Object apply0() throws Throwable {
                 return Language.getDefaultLanguage();
             }
-        }, "current-environment" );
+        });
 
 //        SchemeUtils.defineVar(env, new Procedure0() {
 //            @Override

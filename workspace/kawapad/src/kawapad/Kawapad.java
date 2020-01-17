@@ -2790,72 +2790,72 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
             SchemeUtils.defineVar(env, new ConsoleObject(), "console" );
 
 
-            SchemeUtils.defineVar(env, new PulsarProcedure0() {
+            SchemeUtils.defineLambda(env, new PulsarProcedure0( "kawapad" ) {
                 @Override
                 public Object apply0() throws Throwable {
                     return Kawapad.getCurrent();
                 }
-            }, "kawapad");
+            });
             
-            SchemeUtils.defineVar(env, new PulsarProcedure0() {
+            SchemeUtils.defineLambda(env, new PulsarProcedure0( "kawapad-present?" ) {
                 @Override
                 public Object apply0() throws Throwable {
                     return Kawapad.isPresent();
                 }
-            }, "kawapad-present?");
+            });
 
-            SchemeUtils.defineVar(env, new PulsarProcedure0() {
+            SchemeUtils.defineLambda(env, new PulsarProcedure0("kawapad-frame" ) {
                 @Override
                 public Object apply0() throws Throwable {
                     return KawapadFrame.getCurrent();
                 }
-            }, "kawapad-frame" );
-            SchemeUtils.defineVar(env, new PulsarProcedure0() {
+            });
+
+            SchemeUtils.defineLambda(env, new PulsarProcedure0("kawapad-frame-present?") {
                 @Override
                 public Object apply0() throws Throwable {
                     return KawapadFrame.isPresent();
                 }
-            }, "kawapad-frame-present?");
+            });
 
-            SchemeUtils.defineVar(env, new PulsarProcedure0() {
+            SchemeUtils.defineLambda(env, new PulsarProcedure0("frame") {
                 @Override
                 public Object apply0() throws Throwable {
                     return KawapadFrame.getCurrent();
                 }
-            }, "frame");
-            SchemeUtils.defineVar(env, new PulsarProcedure0() {
+            });
+
+            SchemeUtils.defineLambda(env, new PulsarProcedure0("frame-present?") {
                 @Override
                 public Object apply0() throws Throwable {
                     return KawapadFrame.isPresent();
                 }
-            }, "frame-present?");
+            });
             
-
-            
-            SchemeUtils.defineVar(env, new PulsarProcedure3() {
+            SchemeUtils.defineLambda(env, new PulsarProcedure3("register-event-handler") {
                 @Override
                 public Object apply3(Object arg1, Object arg2, Object arg3) throws Throwable {
                     Kawapad.eventHandlers.register( (Symbol)arg1, (Symbol)arg2, (Procedure) arg3 );
                     return EmptyList.emptyList;
                 }
-            }, "register-event-handler");
-            SchemeUtils.defineVar(env, new PulsarProcedure2() {
+            });
+
+            SchemeUtils.defineLambda(env, new PulsarProcedure2("unregister-event-handler") {
                 @Override
                 public Object apply2(Object arg1, Object arg2 ) throws Throwable {
                     Kawapad.eventHandlers.unregister((Symbol)arg1,(Symbol)arg2 );
                     return EmptyList.emptyList;
                 }
-            }, "unregister-event-handler");
+            });
 
-            
-            SchemeUtils.defineVar(env, new PulsarProcedure1() {
+            SchemeUtils.defineLambda(env, new PulsarProcedure1( "prettify", "pre" ) {
                 @Override
                 public Object apply1(Object arg1 ) throws Throwable {
                     return SchemeUtils.toSchemeString(   
                             Kawapad.correctIndentation( getCurrent(), 
                                 SchemePrinter.printSchemeValue( arg1 )));
                 }
-            }, "prettify", "pre" );
+            });
             
 //            // deprecated?
 //            SchemeUtils.defineVar(env, new PulsarProcedure1() {
@@ -2867,7 +2867,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
 
             KawapadTextualIncrement.initScheme( env );
             
-            SchemeUtils.defineVar( env, new PulsarProcedure2("load-font") {
+            SchemeUtils.defineLambda( env, new PulsarProcedure2("load-font") {
                 @Override
                 public Object apply2(Object arg1,Object arg2) throws Throwable {
                     String filePath = SchemeUtils.anyToString( arg1 );
@@ -2879,7 +2879,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
                     kawapad.setFont( font );
                     return Values.empty;
                 }
-            }, "load-font" );
+            } );
 
             KawapadDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
                 setNames( "load-font"  );
@@ -2896,28 +2896,28 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
             }});
 
             
-            SchemeUtils.defineVar(env, new PulsarProcedureN("add-lisp-keyword") {
+            SchemeUtils.defineLambda(env, new PulsarProcedureN("add-lisp-keyword") {
                 @Override
                 public Object applyN(Object[] args) throws Throwable {
                     getCurrent().addAllLispKeywords( SchemeUtils.schemeStringListToJavaStringList( Arrays.asList( args )));
                     return Values.empty;
                 }
             } );
-            SchemeUtils.defineVar(env, new PulsarProcedureN( "delete-lisp-keyword" ) {
+            SchemeUtils.defineLambda(env, new PulsarProcedureN( "delete-lisp-keyword" ) {
                 @Override
                 public Object applyN(Object[] args) throws Throwable {
                     getCurrent().deleteAllLispKeywords( SchemeUtils.schemeStringListToJavaStringList( Arrays.asList( args )));
                     return Values.empty;
                 }
             } );
-            SchemeUtils.defineVar(env, new PulsarProcedureN("add-syntax-keyword") {
+            SchemeUtils.defineLambda(env, new PulsarProcedureN("add-syntax-keyword") {
                 @Override
                 public Object applyN(Object[] args) throws Throwable {
                     getCurrent().addAllLispKeywords( SchemeUtils.schemeStringListToJavaStringList( Arrays.asList( args )));
                     return Values.empty;
                 }
             } );
-            SchemeUtils.defineVar(env, new PulsarProcedureN( "delete-syntax-keyword" ) {
+            SchemeUtils.defineLambda(env, new PulsarProcedureN( "delete-syntax-keyword" ) {
                 @Override
                 public Object applyN(Object[] args) throws Throwable {
                     getCurrent().deleteAllLispKeywords( SchemeUtils.schemeStringListToJavaStringList( Arrays.asList( args )));
@@ -2925,14 +2925,14 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
                 }
             } );
             
-            SchemeUtils.defineVar(env, new PulsarProcedure1("get-syntax-keywords") {
+            SchemeUtils.defineLambda(env, new PulsarProcedure1("get-syntax-keywords") {
                 @Override
                 public Object apply1(Object arg1) throws Throwable {
                     return LList.makeList( SchemeUtils.javaStringListToSchemeSymbolList( getCurrent().lispKeywordList ) );
                 }
             } );
 
-            SchemeUtils.defineVar(env, new PulsarProcedureN( "set-syntax-color" ) {
+            SchemeUtils.defineLambda(env, new PulsarProcedureN( "set-syntax-color" ) {
                 @Override
                 public Object apply2(Object arg1, Object arg2) throws Throwable {
                     getCurrent().documentFilter.getSyntaxElementList().get(
@@ -2958,13 +2958,13 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
                     throw new InternalError();
                 }
             });
-            SchemeUtils.defineVar(env, new PulsarProcedure0("pwd") {
+            SchemeUtils.defineLambda(env, new PulsarProcedure0("pwd") {
                 @Override
                 public Object apply0() throws Throwable {
                     return SchemeUtils.toSchemeString( getCurrent().getCurrentDirectory().toString() );
                 }
             } );
-            SchemeUtils.defineVar(env, new PulsarProcedure0("current-file") {
+            SchemeUtils.defineLambda(env, new PulsarProcedure0("current-file") {
                 @Override
                 public Object apply0() throws Throwable {
                     return SchemeUtils.toSchemeString( getCurrent().getCurrentFile().toString() );

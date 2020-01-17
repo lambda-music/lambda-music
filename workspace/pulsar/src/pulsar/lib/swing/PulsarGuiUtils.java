@@ -532,15 +532,15 @@ public class PulsarGuiUtils {
         logInfo("PulsarGui#initStaticScheme=======================================");
         Environment env = scheme.getEnvironment();
         
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-pack") {
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-pack" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 guiPack();
                 return SchemeUtils.NO_RESULT;
             }
-        }, "gui-pack");
+        });
 
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-new") {
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-new" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 //              try {
@@ -551,9 +551,9 @@ public class PulsarGuiUtils {
                 //              }
                 return SchemeNewFactory.process( Pulsar.getCurrent(), args );
             }
-        }, "gui-new");
+        });
 
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-parent") {
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-parent" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 if ( 1 <= args.length ) {
@@ -567,9 +567,9 @@ public class PulsarGuiUtils {
                             "usage : (gui-remove-by-name [parent] [name])" );
                 }
             }
-        }, "gui-parent");
+        });
 
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-remove-all") {
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-remove-all" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 if ( 1 <= args.length ) {
@@ -583,9 +583,9 @@ public class PulsarGuiUtils {
                             "usage : (gui-remove-by-name [parent] [name])" );
                 }
             }
-        }, "gui-remove-all");
+        });
 
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-remove-by-ref") {
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-remove-by-ref" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 if ( 1 < args.length ) {
@@ -599,9 +599,9 @@ public class PulsarGuiUtils {
                             "usage : (gui-remove-by-name [parent] [name])" );
                 }
             }
-        }, "gui-remove-by-ref");
+        });
 
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-remove-by-name") {
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-remove-by-name" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 if ( 1 < args.length ) {
@@ -618,16 +618,16 @@ public class PulsarGuiUtils {
                             "usage : (gui-remove-by-name [parent] [name])" );
                 }
             }
-        }, "gui-remove-by-name");
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-invoke-later") {
+        });
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-invoke-later" ) {
             @Override
             public Object applyN( Object[] args ) throws Throwable {
                 guiInvokeLater( Pulsar.getCurrent(), (Procedure) args[0], Arrays.copyOfRange(args, 1, args.length ) );
                 return true;
             }
-        }, "gui-invoke-later");
+        });
 
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-get") {
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-get" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 if ( 1 == args.length ) {
@@ -654,10 +654,10 @@ public class PulsarGuiUtils {
                             "usage : (gui-get [parent] [name ... ])" );
                 }
             }
-        }, "gui-get");
+        });
 
 
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-set-selected") {
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-set-selected" ) {
             public Object applyN(Object[] args) throws Throwable {
                 if ( 3 == args.length ) {
                     JSelectableUserObject parent = (JSelectableUserObject) args[0];
@@ -673,9 +673,9 @@ public class PulsarGuiUtils {
                 }
 
             }
-        }, "gui-set-selected");
+        });
 
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-set-text") {
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-set-text" ) {
             public Object applyN(Object[] args) throws Throwable {
                 if ( 2 == args.length ) {
                     JTextComponent parent = (JTextComponent) args[0];
@@ -688,12 +688,12 @@ public class PulsarGuiUtils {
                             "usage : (gui-set-text text-component text )" );
                 }
             }
-        }, "gui-set-text");
+        });
 
         /**
          * (gui-get-user-object (gui-get (part1 'gui) 'self) )
          */
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-set-user-object") {
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-set-user-object" ) {
             public Object applyN(Object[] args) throws Throwable {
                 if ( 2 == args.length ) {
                     JPulsarUserObject parent = (JPulsarUserObject) args[0];
@@ -706,8 +706,9 @@ public class PulsarGuiUtils {
                             "usage : (gui-set-user-object parent user-object )" );
                 }
             }
-        }, "gui-set-user-object");
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-get-user-object") {
+        });
+
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-get-user-object" ) {
             public Object applyN(Object[] args) throws Throwable {
                 if ( 1 == args.length ) {
                     JPulsarUserObject parent = (JPulsarUserObject) args[0];
@@ -718,15 +719,16 @@ public class PulsarGuiUtils {
                             "usage : (gui-get-user-object parent)" );
                 }
             }
-        }, "gui-get-user-object");
+        });
 
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-build") {
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-build" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 return guiBuild( Pulsar.getCurrent(), args );
             }
-        }, "gui-build");
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-newline") {
+        });
+
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-newline" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo("newline-gui");
@@ -737,7 +739,8 @@ public class PulsarGuiUtils {
 
                 return SchemeUtils.NO_RESULT;
             }
-        }, "gui-newline");
+        });
+
         //      SchemeUtils.defineVar( scheme, "gui-repaint" , new PulsarProcedureN("gui-repaint") {
         //          @Override
         //          public Object applyN(Object[] args) throws Throwable {
@@ -746,7 +749,8 @@ public class PulsarGuiUtils {
         //              return Invokable.NO_RESULT;
         //          }
         //      });
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-layout") {
+
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-layout" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo( "gui-layout" );
@@ -765,9 +769,9 @@ public class PulsarGuiUtils {
                     return container;
                 }
             }
-        }, "gui-layout");
+        });
 
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-gridbag-layout") {
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-gridbag-layout" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo( "gui-gridbag-layout" );
@@ -778,8 +782,9 @@ public class PulsarGuiUtils {
                     return SchemeUtils.NO_RESULT;
                 }
             }
-        }, "gui-gridbag-layout");
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-spring-layout") {
+        });
+
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-spring-layout" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo( "gui-spring-layout" );
@@ -789,8 +794,9 @@ public class PulsarGuiUtils {
                 guiSpringLayout((Container)args[0]);
                 return SchemeUtils.NO_RESULT;
             }
-        }, "gui-spring-layout");
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-flow-layout") {
+        });
+
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-flow-layout" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo( "gui-flow-layout" );
@@ -799,8 +805,9 @@ public class PulsarGuiUtils {
                 guiFlowLayout((Container)args[0]);
                 return SchemeUtils.NO_RESULT;
             }
-        }, "gui-flow-layout");
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-put-constraint") {
+        });
+        
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-put-constraint" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo("refresh-gui");
@@ -816,37 +823,39 @@ public class PulsarGuiUtils {
                 guiRepaint(userPane);
                 return SchemeUtils.NO_RESULT;
             }
-        }, "gui-put-constraint");
+        });
 
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-invalidate") {
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-invalidate" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 guiInvalidate((Container) args[0] );
                 return SchemeUtils.NO_RESULT;
             }
-        }, "gui-invalidate");
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-validate") {
+        });
+
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-validate" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 guiValidate((Container) args[0] );
                 return SchemeUtils.NO_RESULT;
             }
-        }, "gui-validate");
+        });
 
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-revalidate") {
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-revalidate" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 guiRevalidate((Container) args[0] );
                 return SchemeUtils.NO_RESULT;
             }
-        }, "gui-revalidate");
-        SchemeUtils.defineVar( env, new PulsarProcedureN("gui-repaint") {
+        });
+
+        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-repaint" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 guiRepaint((Container) args[0] );
                 return SchemeUtils.NO_RESULT;
             }
-        }, "gui-repaint");
+        });
 
 //      Kawapad.staticInitScheme( scheme );
     }

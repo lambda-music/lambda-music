@@ -144,18 +144,18 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
     };
     static void initScheme( Scheme scheme ) {
         Environment env = scheme.getEnvironment();
-        SchemeUtils.defineVar(env, new PulsarProcedure0() {
+        SchemeUtils.defineLambda(env, new PulsarProcedure0( "scheme-engine" ) {
             @Override
             public Object apply0() throws Throwable {
                 return SchemeEngine.getCurrent();
             }
-        }, "scheme-engine" );
-        SchemeUtils.defineVar(env, new PulsarProcedure0() {
+        }  );
+        SchemeUtils.defineLambda(env, new PulsarProcedure0( "scheme-engine-present?" ) {
             @Override
             public Object apply0() throws Throwable {
                 return SchemeEngine.isPresent();
             }
-        }, "scheme-engine-present?");
+        } );
 
 //        Environment env = scheme.getEnvironment();
 //        SchemeUtils.defineVar(env, new Procedure0() {

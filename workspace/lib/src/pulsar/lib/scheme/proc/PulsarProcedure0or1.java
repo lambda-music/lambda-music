@@ -7,7 +7,8 @@ public abstract class PulsarProcedure0or1 extends Procedure0or1 implements Multi
         super();
     }
 
-    public PulsarProcedure0or1(String name) {
-        super( name );
+    public PulsarProcedure0or1(String ... names) {
+        super( names[0] );
+        setNames( names );
     }
 }

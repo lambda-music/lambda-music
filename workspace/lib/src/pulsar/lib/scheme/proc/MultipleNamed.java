@@ -2,6 +2,7 @@ package pulsar.lib.scheme.proc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -10,22 +11,26 @@ import gnu.mapping.Symbol;
 
 public interface MultipleNamed {
     static final Symbol MULTIPLE_NAME_KEY = Symbol.valueOf( "multiple-names" );
-    public static void setNames( PropertySet self, String... names ) {
-        List<String> o;
+    public static void setNames( PropertySet self, Collection<String> names ) {
+        List<String> l;
         try {
-            o = (List<String>) self.getProperty( MULTIPLE_NAME_KEY , null );
+            l = (List<String>) self.getProperty( MULTIPLE_NAME_KEY , null );
         } catch ( ClassCastException e ) {
             e.printStackTrace();
-            o = null;
+            l = null;
         }
-        if ( o == null ) {
-            o = new ArrayList( Arrays.asList( names ));
-            self.setProperty( MULTIPLE_NAME_KEY, o );
+        if ( l == null ) {
+            l = new ArrayList( names );
+            self.setProperty( MULTIPLE_NAME_KEY, l );
+        }
+        
+        if ( 0 < l.size() ) {
+            self.setName( l.get( 0 ) );
         }
     }
     public static List<String> getNames( PropertySet self ) {
-        List<String> o = (List<String>) self.getProperty( MULTIPLE_NAME_KEY , null );
-        return Collections.unmodifiableList( o );
+        List<String> l = (List<String>) self.getProperty( MULTIPLE_NAME_KEY , null );
+        return Collections.unmodifiableList( l );
     }
 
     default PropertySet getPropertySet() {
@@ -33,11 +38,13 @@ public interface MultipleNamed {
     };
 
     default void setNames( String ... names ) {
+        setNames( getPropertySet(), Arrays.asList( names ) );
+    }
+    default void setNames( List<String> names ) {
         setNames( getPropertySet(), names );
     }
 
     default List<String> getNames() {
         return getNames( getPropertySet() );
     }
-
 }

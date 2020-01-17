@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -55,6 +56,7 @@ import gnu.math.IntNum;
 import gnu.math.Quantity;
 import kawa.standard.Scheme;
 import pulsar.lib.log.PulsarLogger;
+import pulsar.lib.scheme.proc.MultipleNamed;
 
 public class SchemeUtils {
     public static final Object NO_RESULT = Values.empty;
@@ -401,16 +403,31 @@ public class SchemeUtils {
     }
 
     private static final boolean DEBUG_ENV = false;
-    public static final void defineVar( Environment env, Object value, String ... names ) {
+
+
+    public static final void defineVar( Environment env, Object value, Collection<String> names ) {
         // env = Environment.getCurrent();
         if ( DEBUG_ENV )
-            logInfo( "defineVar:" + env.getName() + ":" + Arrays.asList( names ) );
+            logInfo( "defineVar:" + env.getName() + ":" + names );
+        
         for ( String name : names ) {
             env.define( schemeSymbol( name ), null, value );
         }
     }
-    public static final void defineVar( Environment env, Procedure value ) {
-        defineVar( env, value, value.getName() );
+    public static final void defineVar( Environment env, Object value, String ... names ) {
+        defineVar( env, value, Arrays.asList( names ) );
+    }
+
+    public static final void defineVar( Environment env, Procedure value, String ... names ) {
+        defineVar( env, value, Arrays.asList( names ) );
+    }
+
+    public static final void defineLambda( Environment env, Procedure value ) {
+        if ( value instanceof MultipleNamed ) {
+            defineVar( env, value, ((MultipleNamed)value).getNames() );
+        } else {
+            defineVar( env, value, value.getName() );
+        }
     }
     public static final boolean isDefined( Environment env, String name  ) {
         // env = Environment.getCurrent();
