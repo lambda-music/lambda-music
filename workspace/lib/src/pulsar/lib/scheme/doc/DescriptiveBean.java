@@ -3,11 +3,13 @@ package pulsar.lib.scheme.doc;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ListIterator;
 
 import gnu.mapping.Symbol;
 import pulsar.lib.scheme.SchemeUtils;
 
 public abstract class DescriptiveBean implements DescriptiveBeanSynopsisFormatter, Cloneable {
+    private static final int MAX_SERIES_COUNT = 16;
     public static class Param implements Cloneable {
         List<String> names;
         String type;
@@ -84,6 +86,7 @@ public abstract class DescriptiveBean implements DescriptiveBeanSynopsisFormatte
     public DescriptiveBean() {
     }
     
+    // this method could be purged
     public DescriptiveBean(
             List<String> names, 
             String parameterDescription, String returnValueDescription,
@@ -100,6 +103,21 @@ public abstract class DescriptiveBean implements DescriptiveBeanSynopsisFormatte
         this.longDescription = longDescription;
     }
     
+    private static ArrayList<Param> deepCopyParamList( ArrayList<Param> list ) {
+        ArrayList<Param> resultList = new ArrayList<>();
+        for ( Param p : list ) {
+            resultList.add( p.clone() );
+        }
+        return resultList;
+    }
+    private static ArrayList<ArrayList<Param>> deepCopyParamListList( ArrayList<ArrayList<Param>> inListList ) {
+        ArrayList<ArrayList<Param>> outListList = new ArrayList<>();
+        for ( ArrayList<Param> inList : inListList ) {
+            outListList.add( deepCopyParamList( inList ) );
+        }
+        return outListList;
+    }
+    
     @Override
     public DescriptiveBean clone() {
         try {
@@ -109,19 +127,16 @@ public abstract class DescriptiveBean implements DescriptiveBeanSynopsisFormatte
              */
             DescriptiveBean result = (DescriptiveBean)super.clone();
             result.names = this.names == null ? null : new ArrayList<>( this.names );
-            result.parameterList = new ArrayList<>();
-            for ( Param p : this.parameterList ) {
-                result.parameterList.add( p.clone() );
-            }
+            result.parameterListList = deepCopyParamListList( this.parameterListList );
             return result;
         } catch (CloneNotSupportedException e) {
             throw new InternalError(e);
         }
     }
-    
+
     private List<String> names;
     private String parameterDescription;
-    private List<Param> parameterList = new ArrayList<>();
+    private ArrayList<ArrayList<Param>> parameterListList = new ArrayList<>();
     private String returnValueDescription;
     private String shortDescription;
     private String longDescription;
@@ -148,7 +163,7 @@ public abstract class DescriptiveBean implements DescriptiveBeanSynopsisFormatte
 
     public abstract String formatParameter( Param param );
 
-    public abstract String formatParameterDescription();
+    public abstract String formatParameterDescription(int seriesNo);
 
     public String getParameterDescription() {
         return parameterDescription;
@@ -156,20 +171,33 @@ public abstract class DescriptiveBean implements DescriptiveBeanSynopsisFormatte
     public void setParameterDescription(String parameterDescription) {
         this.parameterDescription = parameterDescription;
     }
-    public void addParameter( Param param ){
-        this.parameterList.add( param );
+    public void addParameter( int seriesNo, Param param ){
+        this.getParameterList( seriesNo ).add( param );
     }
-    public void addParameter( String name, String type, String defaultValue, boolean isVariable, String description ){
-        this.addParameter( new Param( Arrays.asList( name ), type, defaultValue, isVariable, description ) );
+    
+    public void addParameter( int seriesNo, String name, String type, String defaultValue, boolean isVariable, String description ){
+        this.addParameter( seriesNo, new Param( Arrays.asList( name ), type, defaultValue, isVariable, description ) );
     }
-    public void addParameter( List<String> names, String type, String defaultValue, boolean isVariable, String description ){
-        this.addParameter( new Param( names, type, defaultValue, isVariable, description ) );
+    public void addParameter( int seriesNo, List<String> names, String type, String defaultValue, boolean isVariable, String description ){
+        this.addParameter( seriesNo, new Param( names, type, defaultValue, isVariable, description ) );
     }
-    public List<Param> getParameterList() {
-        return parameterList;
+    
+    private static final void ensureSize( ArrayList list, int size ) {
+        list.ensureCapacity( size );
+        while ( list.size() < size ) {
+            list.add( new ArrayList<>());
+        }
     }
-    public void setParameterList(List<Param> parameterList) {
-        this.parameterList = parameterList;
+    
+    public List<Param> getParameterList( int seriesNo ) {
+        if ( seriesNo < 0 || MAX_SERIES_COUNT <= seriesNo ) {
+            throw new IllegalArgumentException( "an invalid number of series number (" + seriesNo + ")" );
+        }
+        ensureSize( this.parameterListList, seriesNo + 1 );
+        return this.parameterListList.get( seriesNo );
+    }
+    public int getParameterListCount() {
+        return this.parameterListList.size();
     }
     public String getReturnValueDescription() {
         return returnValueDescription;
@@ -191,7 +219,7 @@ public abstract class DescriptiveBean implements DescriptiveBeanSynopsisFormatte
     }
 
     public DescriptiveBean processArguments( Object ... args ) {
-        return processArguments( this, args );
+        return processArguments0( this, args );
     }
     
     public String format() {
@@ -201,14 +229,16 @@ public abstract class DescriptiveBean implements DescriptiveBeanSynopsisFormatte
 //  @Override
 //  public abstract String formatSynopsis();
 
-    static DescriptiveBean processArguments( DescriptiveBean in, Object ... args ) {
+    static DescriptiveBean processArguments0( DescriptiveBean in, Object ... args ) {
         // See comment in DescriptiveBean#clone() 
         DescriptiveBean out = in.clone();
         
         out.setParameterDescription( String.format( in.getParameterDescription(), args ));
-        out.setParameterList( new ArrayList<>() );
-        for ( Param in_param : in.getParameterList() ) {
-            out.addParameter( in_param.processArguments( args ) );
+
+        for ( ArrayList<Param> out_list : out.parameterListList ) {
+            for ( ListIterator<Param> out_iter = out_list.listIterator(); out_iter.hasNext(); ) {
+                out_iter.set( out_iter.next().processArguments( args ) );
+            }
         }
         
         out.setReturnValueDescription( String.format( in.getReturnValueDescription(), args )) ;

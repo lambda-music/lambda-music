@@ -305,6 +305,10 @@ public class SchemeUtils {
         else
             return fromSymbol(schemeVal);
     }
+    public static boolean isQuantity( Object schemeVal ) {
+        return schemeVal instanceof Quantity;
+    }
+
     public static String fromSymbol(Object schemeVal) {
         return ((Symbol)schemeVal).getName();
     }

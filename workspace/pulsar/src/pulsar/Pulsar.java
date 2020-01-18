@@ -798,7 +798,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         PulsarDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean() {{
             setNames( "open" );
             setParameterDescription( "[string]" );
-            addParameter( "client-name", "string", null , false, "The client name in the current Jack session. " );
+            addParameter( 0, "client-name", "string", null , false, "The client name in the current Jack session. " );
             setReturnValueDescription( "::void" );
             setShortDescription( "starts a new connection between JACK Audio Connection Kit." );
             setLongDescription( 
@@ -831,7 +831,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
 
         ProceduralDescriptiveBean initDocOpenPorts = new ProceduralDescriptiveBean() {{
                 setParameterDescription( "[ANY|(list ANY...)  ]..." );
-                addParameter( "port-name", "any|(list any ...)", null , true, "The port name in the current JACK session. " );
+                addParameter( 0, "port-name", "any|(list any ...)", null , true, "The port name in the current JACK session. " );
                 setReturnValueDescription( "::MetroPort" );
                 setShortDescription( "opens %s ports on the current JACK connection. " );
                 setLongDescription( "" + "Each argument is the name of a port to create. "
@@ -858,7 +858,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                 return LList.makeList( list );
             }
         };
-        SchemeUtils.defineLambda( env, openOutput  );
+        SchemeUtils.defineLambda( env, openOutput );
 
         PulsarDocuments.DOCS.defineDoc( env, initDocOpenPorts.processArguments( "output" ).setNames( "open-output", "openo" ) );
         
@@ -887,7 +887,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         
         class InitDocClosePorts extends ProceduralDescriptiveBean {{
             setParameterDescription( "[MetroPort|symbol|string|(list MetroPort|symbol|string ...) ]..." );
-            addParameter( "port", "MetroPort|symbol|string|(list MetroPort|symbol|string ...)", null , true, "The port object to close. " );
+            addParameter( 0, "port", "MetroPort|symbol|string|(list MetroPort|symbol|string ...)", null , true, "The port object to close. " );
             setReturnValueDescription( "::void" );
             setShortDescription( "closes the specified %s ports on the current JACK connection. " );
             setLongDescription(  
@@ -978,8 +978,8 @@ public final class Pulsar extends Metro implements ApplicationComponent {
 
         class InitDocConnection extends ProceduralDescriptiveBean {{
                 setParameterDescription( "[string] ..." );
-                addParameter( "from", "string", null , true, "a canonical port name in the current JACK session. " );
-                addParameter( "to", "string", null , true, "a canonical port name in the current JACK session. " );
+                addParameter( 0, "from", "string", null , true, "a canonical port name in the current JACK session. " );
+                addParameter( 0, "to", "string", null , true, "a canonical port name in the current JACK session. " );
                 setReturnValueDescription( "::void" );
                 setShortDescription( "%s specified two ports on the current JACK connection. " );
                 setLongDescription( ""
@@ -1076,7 +1076,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         PulsarDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean() {{
             setNames( "set-main" );
             setParameterDescription( "[procedure]" );
-            addParameter( "main-procedure", "procedure", null , false, "a procedure to set as the main procedure. " );
+            addParameter( 0, "main-procedure", "procedure", null , false, "a procedure to set as the main procedure. " );
             setReturnValueDescription( "::void" );
             setShortDescription( "sets the main procedure. " );
             setLongDescription( ""
@@ -1124,7 +1124,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         PulsarDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames("set-playing" );
             setParameterDescription( "[boolean]" );
-            addParameter( "playing","boolean",  null, false, "the status to set. " );
+            addParameter( 0, "playing","boolean",  null, false, "the status to set. " );
             setReturnValueDescription( "::void" );
             setShortDescription( "sets the current playing state." );
             setLongDescription( ""
@@ -1271,7 +1271,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         PulsarDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "set-tempo" );
             setParameterDescription( "number" );
-            addParameter( "tempo", "number", null, false, "the tempo to set." ); 
+            addParameter( 0, "tempo", "number", null, false, "the tempo to set." ); 
             setReturnValueDescription( "::void" );
             setShortDescription( "sets the current tempo. " );
             setLongDescription( ""
@@ -1360,7 +1360,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         PulsarDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "simultaneous", "simul" );
             setParameterDescription( "[procedure]..." );
-            addParameter( "subproc", "procedure", null, true, "a subprocedure to execute by this procedure. " ); 
+            addParameter( 0, "subproc", "procedure", null, true, "a subprocedure to execute by this procedure. " ); 
             setReturnValueDescription( "::void" );
             setShortDescription( "executes passed the procedures \"simultaneously\". " );
             setLongDescription( ""
@@ -1390,7 +1390,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         PulsarDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "get-track", "gett" );
             setParameterDescription( "[track-spec]..." );
-            addParameter( "track-spec", "any", null, true, "a subprocedure to execute by this procedure. See (help about-track-spec). " ); 
+            addParameter( 0, "track-spec", "any", null, true, "a subprocedure to execute by this procedure. See (help about-track-spec). " ); 
         
             setReturnValueDescription( "::void" );
             setShortDescription( "||<name/>|| retrieves multiple tracks which are specified as track-spec arguments. " );
@@ -1456,7 +1456,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         PulsarDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "new-track" , "newt" );
             setParameterDescription( "[procedure/(list notation)]..." );
-            addParameter( "notations", "procedure/(list notation)", null, true, "The contents of the track. " );
+            addParameter( 0, "notations", "procedure/(list notation)", null, true, "The contents of the track. " );
             setReturnValueDescription( "::MetroTrack" );
             setShortDescription( "<name/> creates a new track." );
             setLongDescription( ""
@@ -1535,7 +1535,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         PulsarDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "new-recording-track" , "rect" );
             setParameterDescription( "[procedure/(list notation)]..." );
-            addParameter( "notations", "procedure/(list notation)", null, true, "The contents of the track. " );
+            addParameter( 0, "notations", "procedure/(list notation)", null, true, "The contents of the track. " );
             setReturnValueDescription( "::MetroTrack" );
             setShortDescription( "<name/> creates a new track." );
             setLongDescription( ""
@@ -1670,9 +1670,9 @@ public final class Pulsar extends Metro implements ApplicationComponent {
 
         ProceduralDescriptiveBean trackInitializer = new ProceduralDescriptiveBean(){{
             setParameterDescription( "track [sync-type] [sync-track] [sync-offset]" );
-            addParameter( "sync-type",   "symbol",     "", false, "one of ||immediate||, ||parallel|| and ||serial||. " );
-            addParameter( "sync-track",  "MetroTrack|track-spec", "", false, "a reference to MetroTrack object to synchronize with. " ); // XXX
-            addParameter( "sync-offset", "number",     "", false, "the offset value by real number. " ); 
+            addParameter( 0, "sync-type",   "symbol",     "", false, "one of ||immediate||, ||parallel|| and ||serial||. " );
+            addParameter( 0, "sync-track",  "MetroTrack|track-spec", "", false, "a reference to MetroTrack object to synchronize with. " ); // XXX
+            addParameter( 0, "sync-offset", "number",     "", false, "the offset value by real number. " ); 
             setReturnValueDescription( "" );
             setShortDescription( "%1$s the passed track on the sequencer. " );
             setLongDescription( ""
@@ -1883,7 +1883,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         PulsarDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "display-warn" );
             setParameterDescription( "any" );
-            addParameter("value", "any", null, false , "" );
+            addParameter( 0, "value", "any", null, false , "" );
             setReturnValueDescription( "::void" );
             setShortDescription( "||<name/>|| output the specified value to the standard error stream. " );
             setLongDescription( ""
@@ -1925,7 +1925,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         PulsarDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "typeof" );
             setParameterDescription( "any" );
-            addParameter("value", "any", null, false , "" );
+            addParameter( 0, "value", "any", null, false , "" );
             setReturnValueDescription( "::string" );
             setShortDescription( "||<name/>|| returns a Java class name of the specified value. " );
             setLongDescription( "In case the specified value is a ||null|| of Java, this procedure returns \"null\" as a string value. "
@@ -1978,9 +1978,9 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         PulsarDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames("make-timer" );
             setParameterDescription( "delay interval proc" );
-            addParameter("delay",     "number",    null, false , "" );
-            addParameter("interval",  "number",    null, false , "" );
-            addParameter("callback",  "procedure", null, false , "" );
+            addParameter( 0, "delay",     "number",    null, false , "" );
+            addParameter( 0, "interval",  "number",    null, false , "" );
+            addParameter( 0, "callback",  "procedure", null, false , "" );
         
             setReturnValueDescription( "::procedure" );
             setShortDescription( "||<name/>|| creates a new timer object. " );
@@ -2013,9 +2013,9 @@ public final class Pulsar extends Metro implements ApplicationComponent {
 
         PulsarDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "add-event-listener" );
-            addParameter("target",     "object",    null, false , "" );
-            addParameter("event-type", "symbol",    null, false , "" );
-            addParameter("callback",   "procedure", null, false , "" );
+            addParameter( 0, "target",     "object",    null, false , "" );
+            addParameter( 0, "event-type", "symbol",    null, false , "" );
+            addParameter( 0, "callback",   "procedure", null, false , "" );
         
             setReturnValueDescription( "::void" );
             setShortDescription( "||<name/>|| registers the specified procedure as an event handler. " );
@@ -2048,8 +2048,8 @@ public final class Pulsar extends Metro implements ApplicationComponent {
 
         PulsarDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean() {{
             setNames( "remove-event-listener" );
-            addParameter( "target",     "object",    null, false , "" );
-            addParameter( "callback",   "procedure", null, false , "" );
+            addParameter( 0, "target",     "object",    null, false , "" );
+            addParameter( 0, "callback",   "procedure", null, false , "" );
         
             setReturnValueDescription( "::void" );
             setShortDescription( "||<name/>|| unregisters the specified procedure as an event handler. " );
@@ -2190,7 +2190,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         PulsarDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "random", "rnd" );
             setParameterDescription( "[range::number]" );
-            addParameter("range",     "number",  "1",  false , "" );
+            addParameter( 0, "range",     "number",  "1",  false , "" );
             setReturnValueDescription( "::number" );
             setShortDescription( "||<name/>|| generates a random number. " );
             setLongDescription( ""
@@ -2231,7 +2231,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         PulsarDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "luck" );
             setParameterDescription( "[numeric]" );
-            addParameter("probability",   "number",  "0.5",  false, "the probability to return #t." );
+            addParameter( 0, "probability",   "number",  "0.5",  false, "the probability to return #t." );
             setReturnValueDescription( "::boolean" );
             setShortDescription( "||<name/>|| is a procedure that returns a random boolean value. " );
             setLongDescription( "The first argument is the value of probability "

@@ -8,8 +8,8 @@ public interface KawapadDescriptive {
         message.append( "NAME: " );
         message.append( bean.getName().toUpperCase()  );
         message.append( "\n\n" );
-        {
-            String syn = bean.formatParameterDescription();
+        for ( int seriesNo=0; seriesNo< bean.getParameterListCount(); seriesNo++ ) {
+            String syn = bean.formatParameterDescription( seriesNo );
             String rv = bean.getReturnValueDescription();
             message.append( 
                     "SYNOPSIS: (" +

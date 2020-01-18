@@ -450,13 +450,19 @@
 ; (newline)
 ; (raise 'hello)
 (make-help  notation '((names "notation" "n" ) 
-              (params
-                ("arg" "any" #f #t "see description "))
-              (returns "::notation" )
-              (short-description "<name/> creates a notation or a list of notations. " )
-              (long-description  "This procedure is a tool which is designed to ease the process of building notation lists.  "
-                                 ""
-                                 )))
+                       (params (0 
+                                ("arg" "any" #f #t "see description ")))
+                       ;(params (0
+                       ;         ("arg" "any" #f #t "see description ")
+                       ;         ("arg" "any" #f #t "see description "))
+                       ;        (1
+                       ;         ("arg" "any" #f #t "see description ")
+                       ;         ("arg" "any" #f #t "see description ")))
+                       (returns "::notation" )
+                       (short-description "<name/> creates a notation or a list of notations. " )
+                       (long-description  "This procedure is a tool which is designed to ease the process of building notation lists.  "
+                                          ""
+                                          )))
 
 ; (display (help notation))
 ; (newline)

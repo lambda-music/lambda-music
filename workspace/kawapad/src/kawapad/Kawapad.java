@@ -2884,8 +2884,8 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
             KawapadDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
                 setNames( "load-font"  );
                 setParameterDescription( "" );
-                addParameter( "file-size", "string", null , false, "Specifies the path to the font file. " );
-                addParameter( "font-size", "number", null , false, "Specifies its font size. " );
+                addParameter( 0, "file-size", "string", null , false, "Specifies the path to the font file. " );
+                addParameter( 0, "font-size", "number", null , false, "Specifies its font size. " );
                 setReturnValueDescription( "::void" );
                 setShortDescription( "Set the main font of the editor." );
                 setLongDescription( ""

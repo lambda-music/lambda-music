@@ -32,11 +32,11 @@ public class MarkdownDescriptive extends Descriptive {
         message.append( "====================" );
         message.append( "\n\n" );
         
-        {
+        for ( int seriesNo=0; seriesNo< bean.getParameterListCount(); seriesNo++ ) {
             message.append( 
                     "#### SYNOPSIS ####\n" );
             message.append( "    " );
-            message.append( bean.formatSynopsis());
+            message.append( bean.formatSynopsis(seriesNo));
             message.append( "\n\n" );
         }
 

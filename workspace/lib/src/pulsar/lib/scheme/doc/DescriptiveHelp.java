@@ -73,7 +73,7 @@ public class DescriptiveHelp {
         DescriptiveHelp.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "make-page" );
             setParameterDescription( "[string]" );
-            addParameter("content",   "string",  null,  false, "the content to convert to a ||kawapad-page||. " );
+            addParameter( 0, "content",   "string",  null,  false, "the content to convert to a ||kawapad-page||. " );
             setReturnValueDescription( "::kawapad-page" );
             setShortDescription( "<name/> makes the passed value into ||kawapad-page|| object. " );
             setLongDescription( ""
@@ -217,7 +217,7 @@ public class DescriptiveHelp {
         DescriptiveHelp.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "help", "he" );
             setParameterDescription( "[symbol|procedure]" );
-            addParameter(
+            addParameter( 0, 
                 "query" , "'procs|'notes|'all|procedure", "'all", false, "" );
             
             setReturnValueDescription( "::string|list" );
@@ -259,20 +259,49 @@ public class DescriptiveHelp {
                                 );
                         
                     } else if ( params.equals( car ) ) {
-                        for (Object o3: ((LList)cdr)) {
-                            LList l3=(LList)o3;
-                            if ( l3.size() != 5 ) {
-                                throw new IllegalArgumentException("an element in 'params' parameter must be a list which size is 5. ");
+                        if ( ! ( cdr instanceof LList ) ) {
+                            throw new IllegalArgumentException( "`param` paramer should be a three-dimensional list" );
+                        }
+                        
+                        for ( Object o3: ((LList)cdr) ) {
+                            if ( ! ( o3 instanceof LList ) ) {
+                                throw new IllegalArgumentException( "every element in the `param` argument must be a two-dimensional list" );
                             }
-                            bean.addParameter( 
-                                SchemeUtils.toString(l3.get( 0 )) , // names
-                                SchemeUtils.toString(l3.get( 1 )), // type, 
-                                Boolean.FALSE.equals( l3.get( 2 ) ) ?
+
+                            int seriesNo = -1;
+                            for ( Object o4: ((LList)o3)) {
+                                if ( seriesNo < 0 ) {
+                                    if ( ! SchemeUtils.isQuantity( o4 ) ) {
+                                        throw new IllegalArgumentException( "the first element in a list in the param paramer must be a number" );
+                                    }
+                                    seriesNo = SchemeUtils.toInteger( o4 );
+                                    continue;
+                                } else {
+                                    if ( ! ( o4 instanceof LList ) ) {
+                                        throw new IllegalArgumentException( "every element except the first in a list in the param paramer must be a list"  );
+                                    }
+                                }
+                                
+                                if ( seriesNo < 0 ) {
+                                    throw new IllegalArgumentException( "series number is not set" );
+                                }
+
+                                LList l4=(LList)o4;
+                                if ( l4.size() != 5 ) {
+                                    throw new IllegalArgumentException("the length in an element in 'params' parameter must be a list which size is 5. ");
+                                }
+                                bean.addParameter( 
+                                    seriesNo,                            // series number 
+                                    SchemeUtils.toString ( l4.get( 0 )), // names
+                                    SchemeUtils.toString ( l4.get( 1 )), // type, 
+                                    Boolean.FALSE.equals ( l4.get( 2 )) ?
                                             null :
-                                            SchemeUtils.toString(l3.get( 2 )), // defaultValue,
-                                SchemeUtils.toBoolean( l3.get(3 )), // isVariable,
-                                SchemeUtils.toString(l3.get( 4 )) //description );
-                                );
+                                                SchemeUtils.toString(l4.get( 2 )), // defaultValue,
+                                                SchemeUtils.toBoolean( l4.get( 3 )), // isVariable,
+                                                SchemeUtils.toString ( l4.get( 4 ))  //description );
+                                        );
+                            }
+
                         }
                     } else if ( returns.equals( car ) ) {
                         bean.setReturnValueDescription( SchemeUtils.toString( ((Pair)cdr).getCar() ));
@@ -298,8 +327,8 @@ public class DescriptiveHelp {
         DescriptiveHelp.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames( "make-help" );
             setParameterDescription( "" );
-            addParameter( "target", "procedure" , null, false, "The reference to the target procedure. See the description. " );
-            addParameter( "content", "(list cons ...)" , null, false, "See the description. " );
+            addParameter( 0, "target", "procedure" , null, false, "The reference to the target procedure. See the description. " );
+            addParameter( 0, "content", "(list cons ...)" , null, false, "See the description. " );
             setReturnValueDescription( "::void" );
             setShortDescription(  "||<name/>|| registers a reference manual for a procedure on the Pulsar documentation system. " );
             setLongDescription( 
@@ -349,7 +378,7 @@ public class DescriptiveHelp {
         DescriptiveHelp.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
             setNames("help-markdown");
             setParameterDescription( "" );
-            addParameter( "type", "string", "'procs", false,  "either 'procs or 'notes " );
+            addParameter( 0, "type", "string", "'procs", false,  "either 'procs or 'notes " );
             setReturnValueDescription( "::string" );
             setShortDescription(  "is a procedure to execute when the user needs something which calms you down." );
             setLongDescription( 

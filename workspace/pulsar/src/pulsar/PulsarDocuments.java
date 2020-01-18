@@ -60,7 +60,7 @@ public class PulsarDocuments {
                     list = Arrays.asList( p.getLongName(), p.getShortName() );
                 }
             }
-            bean.addParameter(
+            bean.addParameter( 0,
                 list,
                 nullCheck( p.getType() ), 
                 nullCheck( p.getDefaultValue()), 

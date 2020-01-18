@@ -30,20 +30,20 @@ public class ProceduralDescriptiveBean extends DescriptiveBean {
     }
 
     @Override
-    public String formatParameterDescription() {
+    public String formatParameterDescription( int seriesNo ) {
         List<String> stringList = new ArrayList<>();
-        for ( Param param : this.getParameterList() ) {
+        for ( Param param : this.getParameterList( seriesNo ) ) {
             stringList.add( formatParameter( param ) );
         }
         return String.join( " ", stringList );
     }
 
     @Override
-    public String formatSynopsis() {
-        return formatSynopsisForProcedure( (ProceduralDescriptiveBean) this );
+    public String formatSynopsis(int seriesNo ) {
+        return formatSynopsisForProcedure( seriesNo, (ProceduralDescriptiveBean) this );
     }
-    static String formatSynopsisForProcedure(ProceduralDescriptiveBean bean) {
-        String syn = bean.formatParameterDescription();
+    static String formatSynopsisForProcedure( int seriesNo, ProceduralDescriptiveBean bean ) {
+        String syn = bean.formatParameterDescription(seriesNo);
         String rv = bean.getReturnValueDescription();
         String str = "(" +
                 String.join( "|", bean.getNames()) +
