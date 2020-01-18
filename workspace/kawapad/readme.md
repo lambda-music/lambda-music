@@ -13,8 +13,8 @@ ABOUT-INTRO
 ### DESCRIPTION ###
 Welcome to Kawapad! Kawapad is a simple Lisp Scheme editor which can edit and
 execute Scheme code on the fly. Kawapad includes Java implementation of a powerful
-computer language Lisp Scheme. To show all available procedures, execute (help). To
-show help of a procedure, execute (help [procedure-name] ) .
+computer language Lisp Scheme. To show all available procedures, execute \(help\). To
+show help of a procedure, execute \(help \[procedure-name\] \) .
 
 
 

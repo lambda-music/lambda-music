@@ -43,7 +43,7 @@ public class ProceduralDescriptiveBean extends DescriptiveBean {
         return formatSynopsisForProcedure( seriesNo, (ProceduralDescriptiveBean) this );
     }
     static String formatSynopsisForProcedure( int seriesNo, ProceduralDescriptiveBean bean ) {
-        String syn = bean.formatParameterDescription(seriesNo);
+        String syn = seriesNo < 0 ? "" : bean.formatParameterDescription(seriesNo);
         String rv = bean.getReturnValueDescription();
         String str = "(" +
                 String.join( "|", bean.getNames()) +

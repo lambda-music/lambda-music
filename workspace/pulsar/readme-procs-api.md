@@ -9,8 +9,8 @@ OPEN?
     (open?)::boolean
 
 ### DESCRIPTION ###
-returns the current open state. This procedure returns #t iff the current
-sequencer state is open; otherwise returns #f.
+returns the current open state. This procedure returns \#t iff the current
+sequencer state is open; otherwise returns \#f.
 
 
 
@@ -253,8 +253,8 @@ SET-MAIN
 
 ### DESCRIPTION ###
 sets the main procedure. The main procedure is a procedure which is called
-when (rewind) procedure is called in order to reset the sequencer's state. Usually,
-the main procedure is a procedure to boot up the current song system.
+when \(rewind\) procedure is called in order to reset the sequencer's state.
+Usually, the main procedure is a procedure to boot up the current song system.
 
 
 
@@ -267,7 +267,7 @@ GET-MAIN
     (get-main)::procedure
 
 ### DESCRIPTION ###
-retrieves the main procedure. See (help set-main) for further information.
+retrieves the main procedure. See \(help set-main\) for further information.
 
 
 
@@ -280,8 +280,8 @@ SET-PLAYING
     (set-playing playing::boolean)::void
 
 ### DESCRIPTION ###
-sets the current playing state. When #f is passed to this procedure, the
-sequencer stops playing. When #t is passed to this procedure ,the sequencer resumes
+sets the current playing state. When \#f is passed to this procedure, the
+sequencer stops playing. When \#t is passed to this procedure ,the sequencer resumes
 playing. In case the current sequencer system has not established any connection to the
 JACK, it throws an exception.
 
@@ -297,7 +297,7 @@ PLAYING?
 
 ### DESCRIPTION ###
 retrieves the current playing state. When the sequencer is playing, it returns
-#t; otherwise it returns #f. See (help set-playing) for further information. In
+\#t; otherwise it returns \#f. See \(help set-playing\) for further information. In
 case the current sequencer system has not established any connection to the JACK, it
 throws an exception.
 
@@ -312,7 +312,7 @@ PLAY
     (play)::void
 
 ### DESCRIPTION ###
-causes the sequencer to start playing. See (help set-play) for further
+causes the sequencer to start playing. See \(help set-play\) for further
 information.In case the current sequencer system has not established any connection to the
 JACK, it throws an exception.
 
@@ -327,7 +327,7 @@ STOP
     (stop)::void
 
 ### DESCRIPTION ###
-causes the sequencer to stop playing. See (help set-play) for further
+causes the sequencer to stop playing. See \(help set-play\) for further
 information.In case the current sequencer system has not established any connection to the
 JACK, it throws an exception.
 
@@ -359,13 +359,13 @@ TAP-TEMPO
 
 ### DESCRIPTION ###
 has the same effect with pressing the tap-tempo button on the main screen.
-(Tue, 07 Jan 2020 01:19:46 +0900) Note : this description is obsolete. The tap-tempo
-button is a button to change the current tempo. The button is supposed to be pressed
-repeatedly to tell the system how fast the sequencer should play the current music. The
-sequencer calculates the average of durations between the pressing the button, and apply
-the value as the current tempo on the sequencer system. See (help set-tempo).In
-case the current sequencer system has not established any connection to the JACK, it
-throws an exception.
+\(Tue, 07 Jan 2020 01:19:46 +0900\) Note : this description is obsolete. The
+tap-tempo button is a button to change the current tempo. The button is supposed to be
+pressed repeatedly to tell the system how fast the sequencer should play the current
+music. The sequencer calculates the average of durations between the pressing the
+button, and apply the value as the current tempo on the sequencer system. See \(help
+set-tempo\).In case the current sequencer system has not established any connection to the
+JACK, it throws an exception.
 
 
 
@@ -382,7 +382,7 @@ sets the current tempo. This procedure takes an argument as a
 beat-per-minutes. A value less than one is treated as one. There is no maximum value for the
 argument. thought, the result of passing extreme values to the procedure is not defined.
 
-See (help tap-tempo) for further information.In case the current sequencer
+See \(help tap-tempo\) for further information.In case the current sequencer
 system has not established any connection to the JACK, it throws an exception.
 
 
@@ -398,7 +398,7 @@ RESET
 ### DESCRIPTION ###
 resets the environment object of Scheme interpreter, and close the current JACK
 connection. This procedure is supposed to be called interactively and is not supposed to be
-called from other procedures; a procedure which called the (reset) procedure will be
+called from other procedures; a procedure which called the \(reset\) procedure will be
 deleted from the current environment object as well as other procedures and as a
 result, the procedure cannot call other procedures which are necessary to continue the
 process.
@@ -415,9 +415,9 @@ REWIND
 
 ### DESCRIPTION ###
 causes the music sequencer to go to the head of the song. This procedure
-usually causes the music sequencer to call the main-procedure. See (help set-main). In
-case the current sequencer system has not established any connection to the JACK, it
-throws an exception.
+usually causes the music sequencer to call the main-procedure. See \(help set-main\).
+In case the current sequencer system has not established any connection to the
+JACK, it throws an exception.
 
 
 
@@ -450,7 +450,7 @@ GET-TRACK
 
 ### DESCRIPTION ###
 ||get-track|| retrieves multiple tracks which are specified as track-spec
-arguments. The tracks are stored in a linked list. See (help about-track-spec). In case
+arguments. The tracks are stored in a linked list. See \(help about-track-spec\). In case
 the current sequencer system has not established any connection to the JACK, it
 throws an exception.
 
@@ -472,8 +472,8 @@ string and procedure are valid as a track-spec.
 
 When track-spec is a procedure: The system enumerates all tracks in the current
 sequencer, and call the specified procedure for each track. The procedure should have two
-parameters : (lambda ( name tags ) ... ). If a track identified by the name and the tags
-is not to retrieve, the procedure should return #f; otherwise the track is
+parameters : \(lambda \( name tags \) ... \). If a track identified by the name and the
+tags is not to retrieve, the procedure should return \#f; otherwise the track is
 selected to the result.
 
 In case the current sequencer system has not established any connection to the
@@ -497,9 +497,9 @@ sequencer plays it and asks to the track again when it finished to play the nota
 list. The length of a notation list which a track creates is usually one measure; but
 it can be any length. The sequencer can have multiple tracks. There is no limit on
 maximum number of tracks. It is necessary to add the track which is created by
-new-track procedure to the sequencer by (put-track) procedure. See (help put-track) for
-further information. In case the current sequencer system has not established any
-connection to the JACK, it throws an exception.
+new-track procedure to the sequencer by \(put-track\) procedure. See \(help put-track\)
+for further information. In case the current sequencer system has not established
+any connection to the JACK, it throws an exception.
 
 
 
@@ -550,9 +550,9 @@ frame itself is a powerful Lisp Scheme editor which is called Kawapad. In Lisp, 
 commands are surrounded with a pair of parentheses. You can easily execute one of those
 command by moving your cursor within the pair of parentheses and pressing CTRL+ENTER.
 
-To show this help, execute (help about-intro). To show all available
-procedures, execute (help) . To show help of a procedure, execute (help [procedure-name] )
-.
+To show this help, execute \(help about-intro\). To show all available
+procedures, execute \(help\) . To show help of a procedure, execute \(help
+\[procedure-name\] \) .
 
 
 
@@ -562,7 +562,8 @@ PUT-TRACK
 ====================
 
 #### SYNOPSIS ####
-    (n type: '[put-track|putt])
+    (n type: '[put-track|putt] 
+)
 
 ### DESCRIPTION ###
  
@@ -575,7 +576,8 @@ REMOVE-TRACK
 ====================
 
 #### SYNOPSIS ####
-    (n type: '[remove-track|remt])
+    (n type: '[remove-track|remt] 
+)
 
 ### DESCRIPTION ###
  
@@ -611,7 +613,7 @@ LIST-TRACKS
 ### DESCRIPTION ###
 ||list-tracks|| retrieves all tracks on the current sequencer. The order of
 the tracks in the result of this procedure follows the first-in-last-out
-manner. That is, (car (list-tracks)) always returns the last added track.
+manner. That is, \(car \(list-tracks\)\) always returns the last added track.
 
 
 
@@ -761,8 +763,8 @@ RANDOM
 
 ### DESCRIPTION ###
 ||random|| generates a random number. This procedure adopts Mersenne Twister a
-random number generating algorithm. If an argument [range] is specified, the return
-value will be within 0<= x <[range]. If the argument is omitted, the range value
+random number generating algorithm. If an argument \[range\] is specified, the return
+value will be within 0<= x <\[range\]. If the argument is omitted, the range value
 defaults to 1.
 
 
@@ -778,9 +780,9 @@ LUCK
 ### DESCRIPTION ###
 ||luck|| is a procedure that returns a random boolean value. The first
 argument is the value of probability where the larger value causes the more probability
-of returning #t. When the specified value is equals or less than zero, the
-returning value is always #f. When the specified value is equals or larger than one the
-returning value is always #t. The only parameter can be omitted and in that case the
+of returning \#t. When the specified value is equals or less than zero, the
+returning value is always \#f. When the specified value is equals or larger than one the
+returning value is always \#t. The only parameter can be omitted and in that case the
 default value one is applied.
 
 
@@ -800,9 +802,9 @@ frame itself is a powerful Lisp Scheme editor which is called Kawapad. In Lisp, 
 commands are surrounded with a pair of parentheses. You can easily execute one of those
 command by moving your cursor within the pair of parentheses and pressing CTRL+ENTER.
 
-To show this help, execute (help about-intro). To show all available
-procedures, execute (help) . To show help of a procedure, execute (help [procedure-name] )
-.
+To show this help, execute \(help about-intro\). To show all available
+procedures, execute \(help\) . To show help of a procedure, execute \(help
+\[procedure-name\] \) .
 
 
 
@@ -855,7 +857,7 @@ is a procedure to execute when the user needs something which calms you down.
 When this procedure is called, this procedure will return a message which tries to
 calm the user down. Any argument specified to this procedure will be silently
 ignored.This procedure is deliberately defined as a joke and has by no means effect to the
-current system state nor any other related elements. See (help about-main).
+current system state nor any other related elements. See \(help about-main\).
 
 
 
@@ -930,7 +932,7 @@ is a procedure to execute when the user needs something which calms you down.
 When this procedure is called, this procedure will return a message which tries to
 calm the user down. Any argument specified to this procedure will be silently
 ignored.This procedure is deliberately defined as a joke and has by no means effect to the
-current system state nor any other related elements. See (help about-main).
+current system state nor any other related elements. See \(help about-main\).
 
 
 

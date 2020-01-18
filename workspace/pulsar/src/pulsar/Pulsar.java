@@ -780,7 +780,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         
         PulsarDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean() {{
             setNames( "open?" );
-            setParameterDescription(   "" );
+            setParameterDescription( "" );
             setReturnValueDescription( "::boolean" );
             setShortDescription(       "returns the current open state. " );
             setLongDescription(        "This procedure returns #t iff the current sequencer state is open; "
@@ -1692,12 +1692,13 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                                 + ""
                              );
         }};
+
         PulsarDocuments.DOCS.defineDoc( env, trackInitializer.processArguments( 
-        "put",
-        ""
+            "put",
+            ""
             + "The sequencer starts to play the added track and it gives the user some controls on "
             + "how it starts playing the track."    
-        ).setNames( "put-track", "putt" ) );
+        ).setNames( "put-track", "putt" ));
 
         /////////////////////////////////////////////////////////////////
 
@@ -1709,12 +1710,12 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         };
         SchemeUtils.defineLambda( env, removeTrack );
         PulsarDocuments.DOCS.defineDoc( env, trackInitializer.processArguments( 
-        "removes",
-        ""
-            + "The sequencer remove the specified track. Eventually the track stops playing. "
-            + "And it gives the user some controls on "
-            + "how it stops playing the track. "    
-        ).setNames( "remove-track", "remt" ) );
+            "removes",
+            ""
+                    + "The sequencer remove the specified track. Eventually the track stops playing. "
+                    + "And it gives the user some controls on "
+                    + "how it stops playing the track. "    
+                ).setNames( "remove-track", "remt" ) );
 
 
         Procedure notifyTrackChange = new PulsarProcedure0( "notify-track-change", "nott" ) {

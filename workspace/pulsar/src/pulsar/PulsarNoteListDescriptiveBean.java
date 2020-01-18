@@ -39,7 +39,7 @@ public class PulsarNoteListDescriptiveBean extends DescriptiveBean {
         return formatSynopsisForNoteListParserElement( seriesNo, this );
     }
     static String formatSynopsisForNoteListParserElement( int seriesNo, DescriptiveBean bean ) {
-        String syn = bean.formatParameterDescription( seriesNo );
+        String syn = seriesNo < 0 ? "" : bean.formatParameterDescription( seriesNo ) ;
         String rv = bean.getReturnValueDescription();
         String str = "(n type: '[" +
                 String.join( "|", bean.getNames()) +

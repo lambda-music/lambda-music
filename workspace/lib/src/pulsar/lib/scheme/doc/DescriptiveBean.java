@@ -140,6 +140,12 @@ public abstract class DescriptiveBean implements DescriptiveBeanSynopsisFormatte
     private String returnValueDescription;
     private String shortDescription;
     private String longDescription;
+    
+    {
+        // do this in order to display empty parameter correctly
+        // (Sat, 18 Jan 2020 14:37:26 +0900)
+        parameterListList.add( new ArrayList<>() );
+    }
 
     public String getName() {
         if ( getNames() == null || getNames().isEmpty() )
@@ -242,8 +248,8 @@ public abstract class DescriptiveBean implements DescriptiveBeanSynopsisFormatte
         }
         
         out.setReturnValueDescription( String.format( in.getReturnValueDescription(), args )) ;
-        out.setShortDescription( String.format ( in.getShortDescription(), args ));
-        out.setLongDescription( String.format( in.getLongDescription(), args ));
+        out.setShortDescription(       String.format( in.getShortDescription(), args ));
+        out.setLongDescription(        String.format( in.getLongDescription(), args ));
         
         return out;
     }

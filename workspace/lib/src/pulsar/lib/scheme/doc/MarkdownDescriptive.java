@@ -19,6 +19,24 @@ public class MarkdownDescriptive extends Descriptive {
             sb.append( "\n\n" );
         }
         return sb.toString();
+    }    
+
+    static Pattern pe  = Pattern.compile( "[\\\\\\[\\]\\#\\(\\)\\*\\`\\_\\{\\}]", Pattern.MULTILINE );
+    static Pattern pe2 = Pattern.compile( "^\\s+" );
+    public static void main(String[] args) {
+        System.out.println( pe2.matcher( "   hello" ).find() );
+        System.out.println( pe2.matcher( "hello" ).find() );
+        System.out.println( pe2.matcher( "returns the current open state." ).find() );
+         
+    }
+    static String escapeMarkdown( String s ) {
+        String[] ss = s.split( "\\n" );
+        for ( int i=0; i<ss.length; i++ ) {
+            if ( ! pe2.matcher( ss[i] ).find() ) {
+                ss[i] = pe.matcher( ss[i] ).replaceAll( "\\\\$0" );
+            }
+        }
+        return String.join( "\n", ss );
     }
 
     static Pattern p1 = Pattern.compile( "([\\(\\)\\[\\]])" );
@@ -32,6 +50,11 @@ public class MarkdownDescriptive extends Descriptive {
         message.append( "====================" );
         message.append( "\n\n" );
         
+        if ( bean.getParameterListCount() == 0 ) {
+            message.append( 
+                    "#### SYNOPSIS ####\n" );
+            
+        }
         for ( int seriesNo=0; seriesNo< bean.getParameterListCount(); seriesNo++ ) {
             message.append( 
                     "#### SYNOPSIS ####\n" );
@@ -44,12 +67,14 @@ public class MarkdownDescriptive extends Descriptive {
         {
             msg1 = bean.getShortDescription();
             msg1 = bean.interporlate( msg1 );
+            msg1 = escapeMarkdown( msg1 );
         }
 
         String msg2;
         {
             msg2 = bean.getLongDescription();
             msg2 = bean.interporlate( msg2 );
+            msg2 = escapeMarkdown( msg2 );
         }
         
         message.append( "### DESCRIPTION ###\n" );
