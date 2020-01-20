@@ -9,8 +9,8 @@ OPEN?
     (open?)::boolean
 
 ### DESCRIPTION ###
-returns the current open state. This procedure returns \#t iff the current
-sequencer state is open; otherwise returns \#f.
+||open?|| returns the current open state. This procedure returns \#t iff the
+current sequencer state is open; otherwise returns \#f.
 
 
 
@@ -562,11 +562,31 @@ PUT-TRACK
 ====================
 
 #### SYNOPSIS ####
-    (n type: '[put-track|putt] 
-)
+    (put-track|putt [sync-type::symbol=] [sync-track::MetroTrack|track-spec=] [sync-offset::number=])
 
 ### DESCRIPTION ###
- 
+put the passed track on the sequencer. The sequencer starts to play the added
+track and it gives the user some controls on how it starts playing the track.
+
+The ||track|| parameter is the reference to the track which is to play.
+
+The sync-type parameter can be one of ||immediate||, ||parallel|| and
+||serial||.
+
+When sync-type is ||immediate||, the sequencer starts to play the track as soon
+as possible after returning from the procedure call. When sync-type is
+||parallel||, the sequencer starts to play the track at the same position with the track
+which is specified as ||sync-track|| parameter.
+
+When sync-type is ||serial||, the sequencer starts to play the track right
+after the track which is specified in the ||sync-track|| finished to play.
+
+The sync-track parameter is the reference to the track which is to synchronize
+with.
+
+The sync-offset parameter is the time offset from the time that track is
+supposed to start playing. The number must be a real number. It denotes the offset
+length which unit is a measure-length.
 
 
 
@@ -576,11 +596,32 @@ REMOVE-TRACK
 ====================
 
 #### SYNOPSIS ####
-    (n type: '[remove-track|remt] 
-)
+    (remove-track|remt [sync-type::symbol=] [sync-track::MetroTrack|track-spec=] [sync-offset::number=])
 
 ### DESCRIPTION ###
- 
+removes the passed track on the sequencer. The sequencer remove the specified
+track. Eventually the track stops playing. And it gives the user some controls on how
+it stops playing the track.
+
+The ||track|| parameter is the reference to the track which is to play.
+
+The sync-type parameter can be one of ||immediate||, ||parallel|| and
+||serial||.
+
+When sync-type is ||immediate||, the sequencer starts to play the track as soon
+as possible after returning from the procedure call. When sync-type is
+||parallel||, the sequencer starts to play the track at the same position with the track
+which is specified as ||sync-track|| parameter.
+
+When sync-type is ||serial||, the sequencer starts to play the track right
+after the track which is specified in the ||sync-track|| finished to play.
+
+The sync-track parameter is the reference to the track which is to synchronize
+with.
+
+The sync-offset parameter is the time offset from the time that track is
+supposed to start playing. The number must be a real number. It denotes the offset
+length which unit is a measure-length.
 
 
 

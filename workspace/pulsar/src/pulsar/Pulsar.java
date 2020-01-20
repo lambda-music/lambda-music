@@ -782,7 +782,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             setNames( "open?" );
             setParameterDescription( "" );
             setReturnValueDescription( "::boolean" );
-            setShortDescription(       "returns the current open state. " );
+            setShortDescription(       "||<name/>|| returns the current open state. " );
             setLongDescription(        "This procedure returns #t iff the current sequencer state is open; "
                                      + "otherwise returns #f. " );
         }} );

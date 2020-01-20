@@ -124,39 +124,44 @@ public class DescriptiveDocumentCategory {
     }
 
     public Object defineDoc( Environment env, DescriptiveBean bean ) {
-        return defineDoc0( env, this, null, bean );
+        return defineDoc0( env, this, bean.getName(), null,   bean );
+    }
+    public Object defineDoc( Environment env, String targetVar, DescriptiveBean bean ) {
+        return defineDoc0( env, this, targetVar,      null,   bean );
     }
     public Object defineDoc( Environment env, Object target, DescriptiveBean bean ) {
-        return defineDoc0( env, this, target, bean );
+        return defineDoc0( env, this, null,           target, bean );
     }
-    
-    public static Object defineDoc0(Environment env, DescriptiveDocumentCategory type, Object target, DescriptiveBean bean) {
+    public static Object defineDoc0(Environment env, DescriptiveDocumentCategory type, String targetVar, Object target, DescriptiveBean bean ) {
         synchronized ( Language.getDefaultLanguage() ) {
-            Object actualTarget = defineDoc0( env, type, target, bean.format(), bean.getName(), bean.getNames() );
+            Object actualTarget = defineDoc0( env, type, targetVar, target, bean.format(), bean.getNames() );
             Descriptive.setDescriptionBean( actualTarget, bean );
-            return target;
+            return actualTarget;
         }
     }
 
     //      static Procedure proc_defineDocument = eval( lis( "lambda", lis("rt"),   ) );   
-    public static Object defineDoc0( Environment env, DescriptiveDocumentCategory type, final Object target, String description, String name, List<String> names )  {
+    public static Object defineDoc0( Environment env, DescriptiveDocumentCategory type, final String targetVar, final Object target, String description, List<String> names )  {
         if ( DEBUG )
-            logInfo( "DescriptiveDocumentType.defineDoc0()" + name );
+            logInfo( "DescriptiveDocumentType.defineDoc0()" + targetVar );
         Object actualTarget;
         if ( target != null ) {
             actualTarget = target;
         } else {
-            actualTarget = SchemeUtils.getVar( name, null );
+            if ( targetVar == null ) {
+                throw new IllegalArgumentException( "targetVar cannot be null when target is null." );
+            }
+            actualTarget = SchemeUtils.getVar( targetVar, null );
             if ( actualTarget == null ) {
                 if ( DEBUG )
-                    Descriptive.logWarn( "setDocumentInitializer: " + name + " was not found." );
-                actualTarget = new DescriptiveHelpProcedure( name );
-                SchemeUtils.defineVar( env, actualTarget, name );
+                    Descriptive.logWarn( "setDocumentInitializer: " + targetVar + " was not found." );
+                actualTarget = new DescriptiveHelpProcedure( targetVar );
+                SchemeUtils.defineVar( env, actualTarget, targetVar );
             }
         }
             
         if ( DEBUG )
-            logInfo( "setting description on '" + name + "'" + " " + actualTarget.toString() );
+            logInfo( "setting description on '" + targetVar + "'" + " " + actualTarget.toString() );
         //          logInfo( "description" );
         //          logInfo( description );
         Descriptive.setDescription( actualTarget, description );

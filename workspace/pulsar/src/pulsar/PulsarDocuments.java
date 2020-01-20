@@ -29,6 +29,7 @@ public class PulsarDocuments {
         else 
             return s;
     }
+    public static final String PREFIX = "note-event-"; 
     public static void defineDoc(Scheme scheme, NoteListParserElement element ) {
         DescriptiveBean bean = new PulsarNoteListDescriptiveBean(); 
         if ( element.getLongName() == null ) {
@@ -46,22 +47,22 @@ public class PulsarDocuments {
         }
         bean.setParameterDescription( "" );
         for ( NoteListParserElementParameter p : element.getParameters() ) {
-            List<String> list;
+            List<String> nameList;
             if ( p.getShortName() == null ) {
                 if ( p.getLongName() == null ) {
-                    list = Arrays.asList( "no-name" );
+                    nameList = Arrays.asList( "no-name" );
                 } else {
-                    list = Arrays.asList( p.getShortName() );
+                    nameList = Arrays.asList( p.getShortName() );
                 }
             } else {
                 if ( p.getLongName() == null ) {
-                    list = Arrays.asList( p.getShortName() );
+                    nameList = Arrays.asList( p.getShortName() );
                 } else {
-                    list = Arrays.asList( p.getLongName(), p.getShortName() );
+                    nameList = Arrays.asList( p.getLongName(), p.getShortName() );
                 }
             }
             bean.addParameter( 0,
-                list,
+                nameList,
                 nullCheck( p.getType() ), 
                 nullCheck( p.getDefaultValue()), 
                 false, 
@@ -71,6 +72,6 @@ public class PulsarDocuments {
         bean.setShortDescription( nullCheck( element.getShortDescription() ) );
         bean.setLongDescription( nullCheck( element.getLongDescription() ) );
         
-        NOTES.defineDoc( scheme.getEnvironment(), bean );
+        NOTES.defineDoc( scheme.getEnvironment(), "note-" + bean.getName(),  bean );
     }
 }
