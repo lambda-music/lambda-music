@@ -1,24 +1,24 @@
 
-Lambda-Music a Programmable Sequencer 
+Lambda a Programmable Music Sequencer 
 ===================================
 
-### Lambda-Music lets you write a piece of music by Scheme! ###
+### Lambda lets you write a piece of music by Scheme! ###
 
 ![corresponding-parenthesis-movement](imgs/corresponding-parenthesis-movement.gif)
 
-Lambda-Music is a music sequencer which enables users to write music as Scheme
+Lambda is a music sequencer which enables users to write music as Scheme
 programs. In this system, musical notes and other informations are written as
 Scheme's association lists. The musical notes can be dynamically generated as
 Scheme's association lists on-the-fly. Users can also interact with the
 dynamically generated music at runtime and affect the direction that the music
 is going.
 
-Lambda-Music is written in Java and Scheme which is powered by Kawa a Java based
-Scheme implementation. You can process MIDI data via Jack Audio Connection Kit
+Lambda is written in Java and Scheme which is powered by Kawa a Java based
+Scheme implementation. You can process MIDI data via JACKAudio Connection Kit
 a multiplatform audio connection system which is accessed via Java Native
 Access.
 
-Lambda-Music runs on most major platforms which can run Java such as Windows, Mac-OSX
+Lambda runs on most major platforms which can run Java such as Windows, Mac-OSX
 and various Linux distributions. 
 
 
@@ -37,21 +37,21 @@ and various Linux distributions.
 ### Feature ###
 - Enables you to write pieces of music as Scheme program.
 - Built with Kawa a powerful Scheme implementation.
-- Works with JACK Audio Connection Kit and can connect to any synthesizer
-  applications support JACK.
+- Works with JACK Audio Connection Kit and is able to connect to any 
+  synthesizer applications support JACK.
 - Includes Kawapad; Kawapad is an editor to edit Scheme program 
 	- Kawapad can prettify S-Expression.
 	- Execute a block of code on-the-fly.
 	- Kawapad can be extended by Kawa-Scheme.
 
 ### System Requirements ###
-Any operating systems that can run the following systems :
+Any operating systems that can run the following systems:
 - Java 8
 - JNA Java Native Access
-- Jack Audio Connection Kit
+- JACK Audio Connection Kit
 
 Pulsar has been developed and tested in Ubuntu 16.04. A cursory experiment to
-run Pulsar in Windows 10 with Windows JACK was succeeded.  It is still unknown
+run Pulsar in Windows 10 with Windows JACKAudio was succeeded.  It is still unknown
 if Pulsar can run in OS X and further experiments are needed.
 
 Pulser uses following libraries :
@@ -66,7 +66,7 @@ not necessary to separately be installed.
 
 ### How to Install ###
 
-Pulsar requires [Java8](https://www.java.com/en/download/) and [Jack Audio
+Pulsar requires [Java8](https://www.java.com/en/download/) and [JACKAudio
 Connection Kit](http://jackaudio.org/). Please make sure that these are
 properly installed on your environment.
 
@@ -173,14 +173,14 @@ Pulsar consists three parts of components :
 
 - [Metro](./workspace/metro/readme.md )
   Metro is a simple framework to build music sequencer systems. Metro
-  encapsulates JackAudio and offers mechanisms to send measure-beat based music
-  data to JackAudio.
+  encapsulates JACKAudio and offers mechanisms to send measure-beat based music
+  data to JACKAudio.
   
 
 - [Pulsar](./workspace/pulsar/readme.md )
   Pulsar is the main component of this application; Pulsar bridges between
   three components Metro, KawaPad and Kawa  in order to implement the
-  accessibility to JackAudio from Scheme.
+  accessibility to JACKAudio from Scheme.
 
 
 ### Compilation ###
