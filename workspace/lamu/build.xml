@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project default="create_run_jar" name="Create Runnable Jar for Project pulsar">
+<project default="create_run_jar" name="Create Runnable Jar for Project lamu">
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
     <!--define folder properties-->
     <property name="dir.buildfile" value="." />
     <property name="dir.workspace" value="${dir.buildfile}/.." />
     <property name="dir.jarfile" value="${dir.buildfile}" />
-    <property name="file.pulsar.version" value="${dir.workspace}/pulsar/src/pulsar/version.txt" />
+    <property name="file.lamu.version" value="${dir.workspace}/lamu/src/lamu/version.txt" />
     <property name="file.kawapad.version" value="${dir.workspace}/kawapad/src/kawapad/version.txt" />
     <target name="create_run_jar">
-        <jar destfile="${dir.jarfile}/pulsar.jar" filesetmanifest="mergewithoutmain">
+        <jar destfile="${dir.jarfile}/lamu.jar" filesetmanifest="mergewithoutmain">
             <manifest>
-                <attribute name="Main-Class" value="pulsar.PulsarApplication" />
+                <attribute name="Main-Class" value="lamu.LamuApplication" />
                 <attribute name="Class-Path" value="." />
             </manifest>
             <fileset dir="${dir.jarfile}/bin" />
@@ -25,27 +25,27 @@
             <fileset dir="${dir.workspace}/kawapad/bin" />
             <fileset dir="${dir.workspace}/kawapad/bin.scheme" />
             <fileset dir="${dir.jarfile}/bin.scheme" />
-            <fileset file="${file.pulsar.version}" />
+            <fileset file="${file.lamu.version}" />
         </jar>
     </target>
     <target name="create_api_reference" depends="create_run_jar" >
-        <java jar="pulsar.jar"  fork="true"   > <!-- error="generated/generated-api.log" -->
+        <java jar="lamu.jar"  fork="true"   > <!-- error="generated/generated-api.log" -->
             <arg value="exec" />
             <arg value="scheme" />
             <arg value="+" />
             <arg value="all-available-references" />
             <arg value="+" />
             <arg value="output-reference" />
-            <arg value="--category=pulsar-procedures" />
-            <arg value="--output-file=generated/generated-pulsar-api.md" />
+            <arg value="--category=lamu-procedures" />
+            <arg value="--output-file=generated/generated-lamu-api.md" />
             <arg value="+" />
             <arg value="output-reference" />
-            <arg value="--category=pulsar-notations" />
-            <arg value="--output-file=generated/generated-pulsar-notations-api.md" />
+            <arg value="--category=lamu-notations" />
+            <arg value="--output-file=generated/generated-lamu-notations-api.md" />
             <arg value="+" />
             <arg value="output-reference" />
-            <arg value="--category=pulsar-gui-procedures" />
-            <arg value="--output-file=generated/generated-pulsar-gui-api.md" />
+            <arg value="--category=lamu-gui-procedures" />
+            <arg value="--output-file=generated/generated-lamu-gui-api.md" />
             <arg value="+" />
             <arg value="output-reference" />
             <arg value="--category=kawapad-procedures" />
@@ -60,14 +60,14 @@
     <target name="concat_api_reference" depends="create_api_reference" >
         <concat destfile="readme-procs-api.md"  >
             <file file="manual-readme-procs-api.md" />
-            <file file="generated/generated-pulsar-api.md" />
-            <file file="generated/generated-pulsar-gui-api.md" />
+            <file file="generated/generated-lamu-api.md" />
+            <file file="generated/generated-lamu-gui-api.md" />
             <file file="generated/generated-kawapad-api.md" />
             <file file="generated/generated-help-api.md" />
         </concat>
         <concat destfile="readme-notes-api.md"  >
             <file file="manual-readme-notes-api.md" />
-            <file file="generated/generated-pulsar-notations-api.md" />
+            <file file="generated/generated-lamu-notations-api.md" />
         </concat>
     </target>
     <target name="build_all" depends="concat_api_reference">

@@ -49,14 +49,14 @@ import org.jaudiolibs.jnajack.JackStatus;
 import org.jaudiolibs.jnajack.JackTimebaseCallback;
 import org.jaudiolibs.jnajack.JackTransportState;
 
-import pulsar.lib.CurrentObject;
-import pulsar.lib.log.PulsarLogger;
-import pulsar.lib.scheme.SchemeUtils;
-import pulsar.lib.secretary.Invokable;
-import pulsar.lib.thread.ThreadInitializer;
-import pulsar.lib.thread.ThreadInitializerCollection;
-import pulsar.lib.thread.ThreadInitializerCollectionContainer;
-import pulsar.lib.thread.ThreadInitializerContainer;
+import lamu.lib.CurrentObject;
+import lamu.lib.log.PulsarLogger;
+import lamu.lib.scheme.SchemeUtils;
+import lamu.lib.secretary.Invokable;
+import lamu.lib.thread.ThreadInitializer;
+import lamu.lib.thread.ThreadInitializerCollection;
+import lamu.lib.thread.ThreadInitializerCollectionContainer;
+import lamu.lib.thread.ThreadInitializerContainer;
 
 /**
  * 

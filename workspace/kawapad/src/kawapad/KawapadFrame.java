@@ -46,19 +46,19 @@ import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
-import pulsar.lib.CurrentObject;
-import pulsar.lib.PulsarLogFormatter;
-import pulsar.lib.Version;
-import pulsar.lib.app.ApplicationComponent;
-import pulsar.lib.app.ApplicationVessel;
-import pulsar.lib.log.PulsarLogger;
-import pulsar.lib.scheme.SchemeEngine;
-import pulsar.lib.scheme.doc.DescriptiveDocumentCategory;
-import pulsar.lib.scheme.doc.DescriptiveHelp;
-import pulsar.lib.swing.AcceleratorKeyList;
-import pulsar.lib.swing.Action2;
-import pulsar.lib.thread.ThreadInitializer;
-import pulsar.lib.thread.ThreadInitializerContainer;
+import lamu.lib.CurrentObject;
+import lamu.lib.PulsarLogFormatter;
+import lamu.lib.Version;
+import lamu.lib.app.ApplicationComponent;
+import lamu.lib.app.ApplicationVessel;
+import lamu.lib.log.PulsarLogger;
+import lamu.lib.scheme.SchemeEngine;
+import lamu.lib.scheme.doc.DescriptiveDocumentCategory;
+import lamu.lib.scheme.doc.DescriptiveHelp;
+import lamu.lib.swing.AcceleratorKeyList;
+import lamu.lib.swing.Action2;
+import lamu.lib.thread.ThreadInitializer;
+import lamu.lib.thread.ThreadInitializerContainer;
 
 public class KawapadFrame extends JFrame implements ThreadInitializerContainer<KawapadFrame>, ApplicationComponent {
     static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );

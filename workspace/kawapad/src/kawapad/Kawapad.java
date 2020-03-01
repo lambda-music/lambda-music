@@ -88,33 +88,33 @@ import kawapad.KawapadSelection.SideParenthesisSelector;
 import kawapad.KawapadSyntaxHighlighter.KawapadSyntaxElementType;
 import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
-import pulsar.lib.CurrentObject;
-import pulsar.lib.app.ApplicationComponent;
-import pulsar.lib.log.PulsarLogger;
-import pulsar.lib.log.SimpleConsole;
-import pulsar.lib.scheme.EvaluatorReceiver;
-import pulsar.lib.scheme.SchemeEngine;
-import pulsar.lib.scheme.SchemeEvaluator;
-import pulsar.lib.scheme.SchemeEvaluator.SchemeEngineListener;
-import pulsar.lib.scheme.SchemeEvaluatorUtils;
-import pulsar.lib.scheme.SchemePrinter;
-import pulsar.lib.scheme.SchemeUtils;
-import pulsar.lib.scheme.doc.DescriptiveActions;
-import pulsar.lib.scheme.doc.ProceduralDescriptiveBean;
-import pulsar.lib.scheme.proc.PulsarProcedure0;
-import pulsar.lib.scheme.proc.PulsarProcedure1;
-import pulsar.lib.scheme.proc.PulsarProcedure2;
-import pulsar.lib.scheme.proc.PulsarProcedure3;
-import pulsar.lib.scheme.proc.PulsarProcedureN;
-import pulsar.lib.swing.AcceleratorKeyList;
-import pulsar.lib.swing.Action2;
-import pulsar.lib.swing.AutomatedActionField;
-import pulsar.lib.swing.MenuInitializer;
-import pulsar.lib.swing.TextAction2;
-import pulsar.lib.thread.ThreadInitializer;
-import pulsar.lib.thread.ThreadInitializerCollection;
-import pulsar.lib.thread.ThreadInitializerCollectionContainer;
-import pulsar.lib.thread.ThreadInitializerContainer;
+import lamu.lib.CurrentObject;
+import lamu.lib.app.ApplicationComponent;
+import lamu.lib.log.PulsarLogger;
+import lamu.lib.log.SimpleConsole;
+import lamu.lib.scheme.EvaluatorReceiver;
+import lamu.lib.scheme.SchemeEngine;
+import lamu.lib.scheme.SchemeEvaluator;
+import lamu.lib.scheme.SchemeEvaluatorUtils;
+import lamu.lib.scheme.SchemePrinter;
+import lamu.lib.scheme.SchemeUtils;
+import lamu.lib.scheme.SchemeEvaluator.SchemeEngineListener;
+import lamu.lib.scheme.doc.DescriptiveActions;
+import lamu.lib.scheme.doc.ProceduralDescriptiveBean;
+import lamu.lib.scheme.proc.PulsarProcedure0;
+import lamu.lib.scheme.proc.PulsarProcedure1;
+import lamu.lib.scheme.proc.PulsarProcedure2;
+import lamu.lib.scheme.proc.PulsarProcedure3;
+import lamu.lib.scheme.proc.PulsarProcedureN;
+import lamu.lib.swing.AcceleratorKeyList;
+import lamu.lib.swing.Action2;
+import lamu.lib.swing.AutomatedActionField;
+import lamu.lib.swing.MenuInitializer;
+import lamu.lib.swing.TextAction2;
+import lamu.lib.thread.ThreadInitializer;
+import lamu.lib.thread.ThreadInitializerCollection;
+import lamu.lib.thread.ThreadInitializerCollectionContainer;
+import lamu.lib.thread.ThreadInitializerContainer;
 
 /**
  * 
@@ -3555,6 +3555,6 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         map.put( "scheme"   , schemeMenuItem );
         kawapad.initMenu( map );
 
-        pulsar.lib.swing.Action2.processMenuBar( menuBar );
+        lamu.lib.swing.Action2.processMenuBar( menuBar );
     }
 }

@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 
-import pulsar.lib.log.PulsarLogger;
+import lamu.lib.log.PulsarLogger;
 
 // DON'T PERFORM AUTOMATIC FORMAT ON THIS FILE!!! THAT GONNA BE A DISASTER!!
 /** @formatter:off */  

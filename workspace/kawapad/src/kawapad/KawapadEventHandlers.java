@@ -10,7 +10,7 @@ import gnu.expr.Language;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
-import pulsar.lib.log.PulsarLogger;
+import lamu.lib.log.PulsarLogger;
 
 public class KawapadEventHandlers {
     static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );

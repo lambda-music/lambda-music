@@ -28,9 +28,10 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import javax.swing.text.Highlighter.HighlightPainter;
-import javax.swing.text.JTextComponent;
 
-import pulsar.lib.log.PulsarLogger;
+import lamu.lib.log.PulsarLogger;
+
+import javax.swing.text.JTextComponent;
 
 public class KawapadTemporaryHighlighter {
     protected static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );

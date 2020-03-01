@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 
-import pulsar.lib.log.PulsarLogger;
+import lamu.lib.log.PulsarLogger;
 
 public interface EventListenable {
     static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );

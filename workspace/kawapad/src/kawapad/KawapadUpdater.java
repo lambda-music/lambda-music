@@ -2,8 +2,8 @@ package kawapad;
 
 import javax.swing.SwingUtilities;
 
-import pulsar.lib.scheme.EvaluatorReceiver;
-import pulsar.lib.scheme.SchemeResult;
+import lamu.lib.scheme.EvaluatorReceiver;
+import lamu.lib.scheme.SchemeResult;
 
 public class KawapadUpdater {
     public static EvaluatorReceiver create(

@@ -3,7 +3,7 @@ package metro;
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
 
-import pulsar.lib.log.PulsarLogger;
+import lamu.lib.log.PulsarLogger;
 
 public interface MetroSyncTrack {
     static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );

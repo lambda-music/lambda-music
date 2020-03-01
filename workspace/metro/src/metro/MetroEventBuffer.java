@@ -9,7 +9,7 @@ import java.util.logging.Level;
 
 import org.jaudiolibs.jnajack.JackException;
 
-import pulsar.lib.log.PulsarLogger;
+import lamu.lib.log.PulsarLogger;
 
 class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroEvent,byte[]> implements MetroDumper {
     public static MetroEventBuffer create() {
