@@ -4,7 +4,7 @@ Lambda-Music a Programmable Sequencer
 
 ### Lambda-Music lets you write a piece of music by Scheme! ###
 
-![corresponding-parenthesis-movement](documents/imgs/corresponding-parenthesis-movement.gif)
+![corresponding-parenthesis-movement](imgs/corresponding-parenthesis-movement.gif)
 
 Lambda-Music is a music sequencer which enables users to write music as Scheme
 programs. In this system, musical notes and other informations are written as
