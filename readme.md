@@ -1,24 +1,24 @@
 
-Pulsar a Lisp Scheme Music Sequencer
+Lambda-Music a Programmable Sequencer 
 ===================================
 
-### Pulsar lets you write a piece of music by Lisp Scheme! ###
+### Lambda-Music lets you write a piece of music by Scheme! ###
 
 ![corresponding-parenthesis-movement](documents/imgs/corresponding-parenthesis-movement.gif)
 
-Pulsar is a music sequencer which enables users to write music as Lisp Scheme
+Lambda-Music is a music sequencer which enables users to write music as Scheme
 programs. In this system, musical notes and other informations are written as
 Scheme's association lists. The musical notes can be dynamically generated as
 Scheme's association lists on-the-fly. Users can also interact with the
 dynamically generated music at runtime and affect the direction that the music
 is going.
 
-Pulsar is written in Java and Lisp Scheme which is powered by Kawa a Java based
+Lambda-Music is written in Java and Scheme which is powered by Kawa a Java based
 Scheme implementation. You can process MIDI data via Jack Audio Connection Kit
 a multiplatform audio connection system which is accessed via Java Native
 Access.
 
-Pulsar runs on most major platforms which can run Java such as Windows, Mac-OSX
+Lambda-Music runs on most major platforms which can run Java such as Windows, Mac-OSX
 and various Linux distributions. 
 
 
@@ -35,12 +35,12 @@ and various Linux distributions.
 
 
 ### Feature ###
-- Enables you to write pieces of music as Lisp Scheme program.
-- Built with Kawa a powerful Lisp Scheme implementation.
+- Enables you to write pieces of music as Scheme program.
+- Built with Kawa a powerful Scheme implementation.
 - Works with JACK Audio Connection Kit and can connect to any synthesizer
   applications support JACK.
 - Includes Kawapad; Kawapad is an editor to edit Scheme program 
-	- Kawapad can prettify Lisp code.
+	- Kawapad can prettify S-Expression.
 	- Execute a block of code on-the-fly.
 	- Kawapad can be extended by Kawa-Scheme.
 
@@ -128,13 +128,13 @@ This also starts Pulsar sequencer. This may give you some possibility to
 control of the application more precisely.
 
 
-### Execute Lisp Scheme Commands from Your Editors ###
+### Execute Scheme Commands from Your Editors ###
 
 If you are a VIM user, 
 ```VIM
 :xmap <Return> :!curl -sSd "`cat`" http://localhost:8192/pulsar
 ```
-this VIM command effectively turns your VIM into a Lisp Scheme interactive
+this VIM command effectively turns your VIM into a Scheme interactive
 editor. Select the specific text and hit your enter-key then the text will be
 executed in the Pulsar application instance.
 
@@ -167,9 +167,9 @@ risks. Do not run Pulsar in such situations.
 Pulsar consists three parts of components :
 
 - [KawaPad](./workspace/kawapad/readme.md )
-  KawaPad is a simple editor which can be extended by writing Lisp Scheme code.
+  KawaPad is a simple editor which can be extended by writing Scheme code.
   It has a number of basic editor functions for writing Scheme programs. These
-  functions are written by Lisp Scheme itself.
+  functions are written by Scheme itself.
 
 - [Metro](./workspace/metro/readme.md )
   Metro is a simple framework to build music sequencer systems. Metro
@@ -180,7 +180,7 @@ Pulsar consists three parts of components :
 - [Pulsar](./workspace/pulsar/readme.md )
   Pulsar is the main component of this application; Pulsar bridges between
   three components Metro, KawaPad and Kawa  in order to implement the
-  accessibility to JackAudio from Lisp Scheme.
+  accessibility to JackAudio from Scheme.
 
 
 ### Compilation ###
