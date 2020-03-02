@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="build" name="Create Runnable Jar for Project pulsar">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <!--define folder properties-->
+    <property name="dir.buildfile" value="." />
+    <property name="dir.workspace" value="${dir.buildfile}/.." />
+    <property name="dir.jarfile" value="${dir.buildfile}" />
+    <property name="dir.apiref.input" value="./docs.src" />
+    <property name="dir.apiref.output" value="./temp-apiref" />
+    <property name="dir.docs" value="./docs" />
+    <target name="create_api_reference" >
+        <mkdir dir="${dir.apiref.output}"/>
+        <mkdir dir="${dir.docs}"/>
+        <java jar="kawapad.jar"  fork="true" 
+        	output="${dir.apiref.output}/generated-kawapad-api.md" 
+        	error="${dir.apiref.output}/generated-kawapad-api.log" >
+            <arg value="--output-reference" />
+        </java>
+        <java jar="kawapad.jar"  fork="true" output="${dir.apiref.output}/generated-kawapad-keystroke.md" error="${dir.apiref.output}/generated-kawapad-keystroke.log" >
+            <arg value="--output-keystroke-reference" />
+        </java>
+    </target>
+    <target name="concat_api_reference" depends="create_api_reference" >
+        <concat destfile="${dir.docs}/readme.md"  >
+            <file file="${dir.apiref.input}/manual-readme.md" />
+            <file file="${dir.apiref.output}/generated-kawapad-api.md" />
+            <file file="${dir.apiref.output}/generated-kawapad-keystroke.md" />
+        </concat>
+        <delete dir="${dir.apiref.output}" />
+    </target>
+    <target name="build" depends="concat_api_reference">
+    </target>
+</project>
