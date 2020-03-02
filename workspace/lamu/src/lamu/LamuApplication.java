@@ -146,7 +146,7 @@ public class LamuApplication {
         
         
         System.err.println( "*** WELCOME TO PULSAR ***" );
-        System.err.println( "VERSION : " + Version.get( LamuApplication.class ) );
+        System.err.println( "VERSION : " + Version.get( Pulsar.class ) );
         LogFormatter.init();
         LamuPrinter.init();
 
