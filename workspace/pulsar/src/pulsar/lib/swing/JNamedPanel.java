@@ -14,7 +14,7 @@ import java.util.logging.Level;
 import javax.swing.JPanel;
 
 import gnu.mapping.Procedure;
-import quartz.lib.log.PulsarLogger;
+import quartz.lib.log.SimpleConsoleLogger;
 
 public class JNamedPanel extends JPanel implements JSelectableUserObject {
     public JNamedPanel() {
@@ -90,7 +90,7 @@ public class JNamedPanel extends JPanel implements JSelectableUserObject {
             this.nextProcedure.clear();
         }
     }
-    static final PulsarLogger LOGGER = PulsarLogger.getLogger( JNamedPanel.class.getName() );
+    static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( JNamedPanel.class.getName() );
     
     private final class JNamedPanelEntry implements Map.Entry {
         private final Entry<Component, String> entry;

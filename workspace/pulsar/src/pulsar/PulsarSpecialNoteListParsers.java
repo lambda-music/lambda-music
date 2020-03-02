@@ -41,7 +41,7 @@ import metro.MetroCollector;
 import metro.MetroPort;
 import metro.MetroSyncType;
 import metro.MetroTrack;
-import quartz.lib.log.PulsarLogger;
+import quartz.lib.log.SimpleConsoleLogger;
 import quartz.lib.scheme.SchemeUtils;
 import quartz.lib.secretary.InvokablyRunnable;
 
@@ -51,7 +51,7 @@ import quartz.lib.secretary.InvokablyRunnable;
  * @author ats
  */
 public class PulsarSpecialNoteListParsers {
-    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }

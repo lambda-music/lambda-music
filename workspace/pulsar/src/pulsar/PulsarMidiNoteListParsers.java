@@ -103,7 +103,7 @@ import metro.MetroMidi.MetroMidiSongPositionPointer;
 import metro.MetroMidi.MetroMidiSongSelect;
 import metro.MetroMidi.MetroMidiStart;
 import metro.MetroMidi.MetroMidiStop;
-import quartz.lib.log.PulsarLogger;
+import quartz.lib.log.SimpleConsoleLogger;
 import metro.MetroMidiMessageGen;
 import metro.MetroPort;
 import metro.MetroTrack;
@@ -117,7 +117,7 @@ import metro.MetroTrack;
  *
  */
 public class PulsarMidiNoteListParsers {
-    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }

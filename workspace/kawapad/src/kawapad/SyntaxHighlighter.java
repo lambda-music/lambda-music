@@ -21,7 +21,7 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 
-import quartz.lib.log.PulsarLogger;
+import quartz.lib.log.SimpleConsoleLogger;
 
 /**
  * See https://stackoverflow.com/a/28773736 by diadyne
@@ -33,7 +33,7 @@ import quartz.lib.log.PulsarLogger;
  */
 public abstract class SyntaxHighlighter extends DocumentFilter {
     private static final boolean DEBUG = false;
-    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

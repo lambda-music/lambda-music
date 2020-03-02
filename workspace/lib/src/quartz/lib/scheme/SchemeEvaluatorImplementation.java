@@ -13,10 +13,10 @@ import gnu.lists.Consumer;
 import gnu.mapping.CallContext;
 import kawa.Shell;
 import kawa.standard.Scheme;
-import quartz.lib.log.PulsarLogger;
+import quartz.lib.log.SimpleConsoleLogger;
 
 class SchemeEvaluatorImplementation {
-    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

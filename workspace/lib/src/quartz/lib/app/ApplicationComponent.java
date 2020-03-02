@@ -3,10 +3,10 @@ package quartz.lib.app;
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
 
-import quartz.lib.log.PulsarLogger;
+import quartz.lib.log.SimpleConsoleLogger;
 
 public interface ApplicationComponent {
-    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e)  { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)                { LOGGER.log(Level.INFO, msg); }
     static void logWarn(String msg)                { LOGGER.log(Level.WARNING, msg); }

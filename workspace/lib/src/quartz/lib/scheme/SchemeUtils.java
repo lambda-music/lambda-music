@@ -55,13 +55,13 @@ import gnu.math.DFloNum;
 import gnu.math.IntNum;
 import gnu.math.Quantity;
 import kawa.standard.Scheme;
-import quartz.lib.log.PulsarLogger;
+import quartz.lib.log.SimpleConsoleLogger;
 import quartz.lib.scheme.proc.MultipleNamed;
 
 public class SchemeUtils {
     public static final Object NO_RESULT = Values.empty;
     
-    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }

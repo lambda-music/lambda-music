@@ -26,10 +26,10 @@ import java.util.logging.Level;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.UndoableEdit;
 
-import quartz.lib.log.PulsarLogger;
+import quartz.lib.log.SimpleConsoleLogger;
 
 public abstract interface GroupedUndoManager extends UndoableEdit, UndoableEditListener {
-    public static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    public static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     public static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     public static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     public static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

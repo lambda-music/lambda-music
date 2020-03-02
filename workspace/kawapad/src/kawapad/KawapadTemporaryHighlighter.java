@@ -29,12 +29,12 @@ import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import javax.swing.text.Highlighter.HighlightPainter;
 
-import quartz.lib.log.PulsarLogger;
+import quartz.lib.log.SimpleConsoleLogger;
 
 import javax.swing.text.JTextComponent;
 
 public class KawapadTemporaryHighlighter {
-    protected static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    protected static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     protected static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     protected static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     protected static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

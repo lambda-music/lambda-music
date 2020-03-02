@@ -16,7 +16,7 @@ import quartz.lib.app.args.ArgumentParserDefault;
 import quartz.lib.app.args.ArgumentParserElement;
 import quartz.lib.app.args.ArgumentParserElementFactory;
 import quartz.lib.app.args.ArgumentParserStackKey;
-import quartz.lib.log.PulsarLogger;
+import quartz.lib.log.SimpleConsoleLogger;
 import quartz.lib.scheme.EvaluatorManager;
 import quartz.lib.scheme.SchemeEngine;
 import quartz.lib.scheme.doc.DescriptiveDocumentCategory;
@@ -24,7 +24,7 @@ import quartz.lib.scheme.http.SchemeHttp;
 import quartz.lib.scheme.http.SchemeHttp.UserAuthentication;
 
 class LamuApplicationArgumentParser extends ArgumentParserDefault {
-    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

@@ -51,7 +51,7 @@ import quartz.lib.LogFormatter;
 import quartz.lib.Version;
 import quartz.lib.app.ApplicationComponent;
 import quartz.lib.app.ApplicationVessel;
-import quartz.lib.log.PulsarLogger;
+import quartz.lib.log.SimpleConsoleLogger;
 import quartz.lib.scheme.SchemeEngine;
 import quartz.lib.scheme.doc.DescriptiveDocumentCategory;
 import quartz.lib.scheme.doc.DescriptiveHelp;
@@ -61,7 +61,7 @@ import quartz.lib.thread.ThreadInitializer;
 import quartz.lib.thread.ThreadInitializerContainer;
 
 public class KawapadFrame extends JFrame implements ThreadInitializerContainer<KawapadFrame>, ApplicationComponent {
-    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

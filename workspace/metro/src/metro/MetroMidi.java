@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 
-import quartz.lib.log.PulsarLogger;
+import quartz.lib.log.SimpleConsoleLogger;
 
 // DON'T PERFORM AUTOMATIC FORMAT ON THIS FILE!!! THAT GONNA BE A DISASTER!!
 /** @formatter:off */  
@@ -214,7 +214,7 @@ public abstract class MetroMidi {
     public abstract <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message );
     public abstract void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event );
      
-    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MetroMidi.class.getName() );
+    static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( MetroMidi.class.getName() );
 
     static HashMap<String,MetroMidi> infoMap = new HashMap<String,MetroMidi>();
     static void putInfo( MetroMidi info ) {

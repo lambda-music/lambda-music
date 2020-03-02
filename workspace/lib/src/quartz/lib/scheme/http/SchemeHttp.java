@@ -24,7 +24,7 @@ import com.sun.net.httpserver.HttpServer;
 
 import quartz.lib.CurrentObject;
 import quartz.lib.app.ApplicationComponent;
-import quartz.lib.log.PulsarLogger;
+import quartz.lib.log.SimpleConsoleLogger;
 import quartz.lib.scheme.SchemeEngine;
 import quartz.lib.scheme.SchemeResult;
 import quartz.lib.thread.ThreadInitializer;
@@ -46,7 +46,7 @@ import quartz.lib.thread.ThreadInitializerContainer;
 public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, ThreadInitializerCollectionContainer, ApplicationComponent {
     public static final String PATH_RESET = "/reset";
     public static final String PATH_EVAL  = "/eval";
-    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }

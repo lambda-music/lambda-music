@@ -30,7 +30,7 @@ import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import kawa.standard.Scheme;
 import pulsar.Pulsar;
-import quartz.lib.log.PulsarLogger;
+import quartz.lib.log.SimpleConsoleLogger;
 import quartz.lib.scheme.SchemeUtils;
 import quartz.lib.scheme.doc.DescriptiveDocumentCategory;
 import quartz.lib.scheme.proc.PulsarProcedureN;
@@ -40,7 +40,7 @@ public class PulsarGuiUtils {
     public static final DescriptiveDocumentCategory DOCS = 
             DescriptiveDocumentCategory.createCategory( "pulsar-gui-procedures" );
 
-    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }

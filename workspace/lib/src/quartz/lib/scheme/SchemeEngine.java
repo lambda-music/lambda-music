@@ -10,7 +10,7 @@ import gnu.mapping.Procedure;
 import kawa.standard.Scheme;
 import quartz.lib.CurrentObject;
 import quartz.lib.app.ApplicationComponent;
-import quartz.lib.log.PulsarLogger;
+import quartz.lib.log.SimpleConsoleLogger;
 import quartz.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import quartz.lib.scheme.proc.PulsarProcedure0;
 import quartz.lib.scheme.proc.PulsarProcedure1;
@@ -19,7 +19,7 @@ import quartz.lib.thread.ThreadInitializer;
 import quartz.lib.thread.ThreadInitializerContainer;
 
 public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, ApplicationComponent {
-    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

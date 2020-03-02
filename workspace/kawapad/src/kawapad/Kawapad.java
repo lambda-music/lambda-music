@@ -90,7 +90,7 @@ import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
 import quartz.lib.CurrentObject;
 import quartz.lib.app.ApplicationComponent;
-import quartz.lib.log.PulsarLogger;
+import quartz.lib.log.SimpleConsoleLogger;
 import quartz.lib.log.SimpleConsole;
 import quartz.lib.scheme.EvaluatorReceiver;
 import quartz.lib.scheme.SchemeEngine;
@@ -140,7 +140,7 @@ import quartz.lib.thread.ThreadInitializerContainer;
  * @author Ats Oka
  */
 public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kawapad>, ThreadInitializerCollectionContainer, MenuInitializer, ApplicationComponent {
-    static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
