@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project default="create_api_reference" name="Create Runnable Jar for Project pulsar">
+<project default="build" name="Create Runnable Jar for Project pulsar">
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
     <!--define folder properties-->
     <property name="dir.buildfile" value="." />
     <property name="dir.workspace" value="${dir.buildfile}/.." />
     <property name="dir.jarfile" value="${dir.buildfile}" />
+    <property name="dir.apiref.input" value="./docs.src" />
+    <property name="dir.apiref.output" value="./temp-apiref" />
+    <property name="dir.docs" value="./docs" />
     <target name="create_api_reference" >
-        <mkdir dir="./generated"/>
+        <mkdir dir="${dir.apiref.output}"/>
+        <mkdir dir="${dir.docs}"/>
         <java jar="lamu.jar"  fork="true"   > <!-- error="generated/generated-api.log" -->
             <arg value="exec" />
             <arg value="scheme" />
@@ -16,39 +20,40 @@
             <arg value="+" />
             <arg value="output-reference" />
             <arg value="--category=pulsar-procedures" />
-            <arg value="--output-file=generated/generated-pulsar-api.md" />
+            <arg value="--output-file=${dir.apiref.output}/generated-pulsar-api.md" />
             <arg value="+" />
             <arg value="output-reference" />
             <arg value="--category=pulsar-notations" />
-            <arg value="--output-file=generated/generated-pulsar-notations-api.md" />
+            <arg value="--output-file=${dir.apiref.output}/generated-pulsar-notations-api.md" />
             <arg value="+" />
             <arg value="output-reference" />
             <arg value="--category=pulsar-gui-procedures" />
-            <arg value="--output-file=generated/generated-pulsar-gui-api.md" />
+            <arg value="--output-file=${dir.apiref.output}/generated-pulsar-gui-api.md" />
             <arg value="+" />
             <arg value="output-reference" />
             <arg value="--category=kawapad-procedures" />
-            <arg value="--output-file=generated/generated-kawapad-api.md" />
+            <arg value="--output-file=${dir.apiref.output}/generated-kawapad-api.md" />
             <arg value="+" />
             <arg value="output-reference" />
             <arg value="--category=help-procedures" />
-            <arg value="--output-file=generated/generated-help-api.md" />
+            <arg value="--output-file=${dir.apiref.output}/generated-help-api.md" />
             <arg value="+" />
         </java>
     </target>
     <target name="concat_api_reference" depends="create_api_reference" >
-        <concat destfile="readme-procs-api.md"  >
-            <file file="manual-readme-procs-api.md" />
-            <file file="generated/generated-pulsar-api.md" />
-            <file file="generated/generated-pulsar-gui-api.md" />
-            <file file="generated/generated-kawapad-api.md" />
-            <file file="generated/generated-help-api.md" />
+        <concat destfile="${dir.docs}/readme-procs-api.md"  >
+            <file file="${dir.apiref.input}/manual-readme-procs-api.md" />
+            <file file="${dir.apiref.output}/generated-pulsar-api.md" />
+            <file file="${dir.apiref.output}/generated-pulsar-gui-api.md" />
+            <file file="${dir.apiref.output}/generated-kawapad-api.md" />
+            <file file="${dir.apiref.output}/generated-help-api.md" />
         </concat>
-        <concat destfile="readme-notes-api.md"  >
-            <file file="manual-readme-notes-api.md" />
-            <file file="generated/generated-pulsar-notations-api.md" />
+        <concat destfile="${dir.docs}/readme-notes-api.md"  >
+            <file file="${dir.apiref.input}/manual-readme-notes-api.md" />
+            <file file="${dir.apiref.output}/generated-pulsar-notations-api.md" />
         </concat>
+        <delete dir="${dir.apiref.output}" />
     </target>
-    <target name="build_all" depends="concat_api_reference">
+    <target name="build" depends="concat_api_reference">
     </target>
 </project>
