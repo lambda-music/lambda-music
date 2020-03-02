@@ -1,4 +1,4 @@
-package pulsar;
+package lamu;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,10 +6,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class PulsarApplicationArgumentMacro {
+public class LamuApplicationArgumentMacro {
     List<String> input;
     List<String> output= new ArrayList<>();
-    public PulsarApplicationArgumentMacro( List<String> input ) {
+    public LamuApplicationArgumentMacro( List<String> input ) {
         this.input = input;
     }
     public List<String> getInput() {
@@ -29,7 +29,7 @@ public class PulsarApplicationArgumentMacro {
         public String getMacroName() {
             return this.name;
         };
-        abstract List<String> execute( Map<String,PulsarApplicationNamedArgument> namedArgs );
+        abstract List<String> execute( Map<String,LamuApplicationNamedArgument> namedArgs );
     }
     static final HashMap<String,MacroElement> map = new HashMap<>();
     static void register( MacroElement e ){
@@ -38,7 +38,7 @@ public class PulsarApplicationArgumentMacro {
     static {
         register( new MacroElement( "local" ) {
             @Override
-            List<String> execute(Map<String,PulsarApplicationNamedArgument> namedArgs ) {
+            List<String> execute(Map<String,LamuApplicationNamedArgument> namedArgs ) {
                 List<String> result = new ArrayList<>();
                 result.add("exec");
                 result.add("scheme");
@@ -61,11 +61,11 @@ public class PulsarApplicationArgumentMacro {
             if ( s != null ) {
                 if ( map.containsKey( s ) ) {
                     MacroElement e = map.get( s );
-                    HashMap<String,PulsarApplicationNamedArgument> nargs = new HashMap<>();
+                    HashMap<String,LamuApplicationNamedArgument> nargs = new HashMap<>();
                     while ( i.hasNext() ) {
                         s=i.next();
                         if ( s.startsWith( "--" ) ) {
-                            PulsarApplicationNamedArgument na = new PulsarApplicationNamedArgument( s );
+                            LamuApplicationNamedArgument na = new LamuApplicationNamedArgument( s );
                             nargs.put( na.getKey(), na );
                         } else {
                             break;

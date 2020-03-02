@@ -1,15 +1,17 @@
-package pulsar;
+package lamu;
 
 import java.io.IOException;
 
 import kawapad.Kawapad;
 import kawapad.KawapadFrame;
+import pulsar.Pulsar;
+import pulsar.PulsarFrame;
 import pulsar.lib.scheme.SchemeEngine;
 import pulsar.lib.scheme.doc.DescriptiveHelp;
 import pulsar.lib.scheme.http.SchemeHttp;
 import pulsar.lib.scheme.http.SchemeHttp.UserAuthentication;
 
-public class PulsarApplicationLibrary {
+public class LamuApplicationLibrary {
     public static void initializeSchemeEngine( SchemeEngine schemeEngine ) {
         // pulsar gui
         PulsarFrame.registerGlobalSchemeInitializers( schemeEngine );

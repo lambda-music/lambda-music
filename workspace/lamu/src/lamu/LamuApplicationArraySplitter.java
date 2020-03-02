@@ -1,19 +1,19 @@
-package pulsar;
+package lamu;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class PulsarApplicationArraySplitter<T> {
+public class LamuApplicationArraySplitter<T> {
     List<T[]> output = new ArrayList<>();
     T[] input;
     T tokenBegin;
     T tokenEnd;
-    public PulsarApplicationArraySplitter(T[] input) {
+    public LamuApplicationArraySplitter(T[] input) {
         super();
         this.input = input;
     }
-    public PulsarApplicationArraySplitter(T[] input, T tokenBegin, T tokenEnd) {
+    public LamuApplicationArraySplitter(T[] input, T tokenBegin, T tokenEnd) {
         this.input = input;
         this.tokenBegin = tokenBegin;
         this.tokenEnd   = tokenEnd;
@@ -59,12 +59,12 @@ public class PulsarApplicationArraySplitter<T> {
         return new ArrayList<>( output );
     }
     public static <T> T[][] splitBeginEnd(T[] a, T begin, T end ) {
-        PulsarApplicationArraySplitter<T> splitter = new PulsarApplicationArraySplitter<T>( a, begin, end );
+        LamuApplicationArraySplitter<T> splitter = new LamuApplicationArraySplitter<T>( a, begin, end );
         splitter.proc();
         return splitter.getResult();
     }
     public static <T> List<T[]> splitBeginEndAsList(T[] a, T begin, T end ) {
-        PulsarApplicationArraySplitter<T> splitter = new PulsarApplicationArraySplitter<T>( a, begin, end );
+        LamuApplicationArraySplitter<T> splitter = new LamuApplicationArraySplitter<T>( a, begin, end );
         splitter.proc();
         return splitter.getResultAsList();
     }

@@ -1,4 +1,4 @@
-package pulsar;
+package lamu;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,6 +9,8 @@ import java.util.logging.Level;
 
 import kawapad.Kawapad;
 import kawapad.KawapadFrame;
+import pulsar.Pulsar;
+import pulsar.PulsarFrame;
 import pulsar.lib.app.args.ArgumentParser;
 import pulsar.lib.app.args.ArgumentParserDefault;
 import pulsar.lib.app.args.ArgumentParserElement;
@@ -21,7 +23,7 @@ import pulsar.lib.scheme.doc.DescriptiveDocumentCategory;
 import pulsar.lib.scheme.http.SchemeHttp;
 import pulsar.lib.scheme.http.SchemeHttp.UserAuthentication;
 
-class PulsarApplicationArgumentParser extends ArgumentParserDefault {
+class LamuApplicationArgumentParser extends ArgumentParserDefault {
     static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -51,7 +53,7 @@ class PulsarApplicationArgumentParser extends ArgumentParserDefault {
                 @Override
                 public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
                     if ( s.startsWith( "--" ) ) {
-                        PulsarApplicationNamedArgument narg = new PulsarApplicationNamedArgument( s );
+                        LamuApplicationNamedArgument narg = new LamuApplicationNamedArgument( s );
                         switch ( narg.getKey() ) {
                             case "output-file" :
                                 outputFile = narg.getValue();
@@ -69,7 +71,7 @@ class PulsarApplicationArgumentParser extends ArgumentParserDefault {
                     if ( parser.getValueStack( SCHEME_ENGINE ).isEmpty() ) {
                         throw new RuntimeException( "no scheme is defined." );
                     }
-                    PulsarApplication.loadBasicClasses();
+                    LamuApplication.loadBasicClasses();
                     parser.getValueStack( RUNNABLE ).add( new Runnable() {
                         @Override
                         public void run() {
@@ -94,7 +96,7 @@ class PulsarApplicationArgumentParser extends ArgumentParserDefault {
                 @Override
                 public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
                     if ( s.startsWith( "--" ) ) {
-                        PulsarApplicationNamedArgument narg = new PulsarApplicationNamedArgument( s );
+                        LamuApplicationNamedArgument narg = new LamuApplicationNamedArgument( s );
                         switch ( narg.getKey() ) {
                             case "category" :
                                 category = narg.getValue();
@@ -116,7 +118,7 @@ class PulsarApplicationArgumentParser extends ArgumentParserDefault {
                         throw new RuntimeException( "no scheme is defined." );
                     }
                     SchemeEngine schemeEngine = parser.getValueStack( SCHEME_ENGINE ).peek();
-                    PulsarApplication.loadBasicClasses();
+                    LamuApplication.loadBasicClasses();
                     parser.getValueStack( RUNNABLE ).add( new Runnable() {
                         @Override
                         public void run() {
@@ -145,7 +147,7 @@ class PulsarApplicationArgumentParser extends ArgumentParserDefault {
                 @Override
                 public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
                     if (s.startsWith( "--" ) ) {
-                        PulsarApplicationNamedArgument a = new PulsarApplicationNamedArgument(s);
+                        LamuApplicationNamedArgument a = new LamuApplicationNamedArgument(s);
                         switch ( a.getKey() ) {
                             case "port" : 
                                 this.serverPort = Integer.parseInt( a.getValue() );
@@ -182,7 +184,7 @@ class PulsarApplicationArgumentParser extends ArgumentParserDefault {
 //                        Pulsar pulsar = pulsarStack.peek();
                     
                     try {
-                        SchemeHttp schemeHttp = PulsarApplicationLibrary.createPulsarHttpServer( 
+                        SchemeHttp schemeHttp = LamuApplicationLibrary.createPulsarHttpServer( 
                             schemeEngine, serverPort, serverPath, userAuthentication );
                         parser.getValueStack( SCHEME_HTTP ).push( schemeHttp );
                     } catch (IOException e) {
@@ -201,7 +203,7 @@ class PulsarApplicationArgumentParser extends ArgumentParserDefault {
                 @Override
                 public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
                     if ( s.startsWith( "--" ) ) {
-                        PulsarApplicationNamedArgument a = new PulsarApplicationNamedArgument(s);
+                        LamuApplicationNamedArgument a = new LamuApplicationNamedArgument(s);
                         switch ( a.getKey() ) {
 //                                case "port" : 
 //                                    portNumberList.add(  Integer.parseInt( a.value ) );
@@ -221,7 +223,7 @@ class PulsarApplicationArgumentParser extends ArgumentParserDefault {
                     }
                     SchemeEngine schemeEngine = parser.getValueStack( SCHEME_ENGINE ).peek();
                     
-                    PulsarFrame frame = PulsarApplicationLibrary.createPulsarGui( schemeEngine );
+                    PulsarFrame frame = LamuApplicationLibrary.createPulsarGui( schemeEngine );
                     if (parser.getValueStack( FRAME ).size() == 0 )
                         frame.setShutdownWhenClose( true );
                     else
@@ -244,7 +246,7 @@ class PulsarApplicationArgumentParser extends ArgumentParserDefault {
                 @Override
                 public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
                     if ( s.startsWith( "--" ) ) {
-                        PulsarApplicationNamedArgument a = new PulsarApplicationNamedArgument(s);
+                        LamuApplicationNamedArgument a = new LamuApplicationNamedArgument(s);
                         switch ( a.getKey() ) {
 //                                case "port" : 
 //                                    portNumberList.add(  Integer.parseInt( a.value ) );
@@ -263,7 +265,7 @@ class PulsarApplicationArgumentParser extends ArgumentParserDefault {
                         throw new RuntimeException( "no scheme is defined." );
                     }
                     SchemeEngine schemeEngine = parser.getValueStack( SCHEME_ENGINE ).peek();
-                    KawapadFrame frame = PulsarApplicationLibrary.createKawapad( schemeEngine );
+                    KawapadFrame frame = LamuApplicationLibrary.createKawapad( schemeEngine );
                     
                     if (parser.getValueStack( FRAME ).size() == 0 )
                         frame.setShutdownWhenClose( true );
@@ -298,7 +300,7 @@ class PulsarApplicationArgumentParser extends ArgumentParserDefault {
                         throw new RuntimeException( "no scheme is defined." );
                     }
                     SchemeEngine schemeEngine = parser.getValueStack( SCHEME_ENGINE ).peek();
-                    Pulsar pulsar = PulsarApplicationLibrary.createPulsar( schemeEngine );
+                    Pulsar pulsar = LamuApplicationLibrary.createPulsar( schemeEngine );
                     parser.getValueStack( PULSAR ).push( pulsar );
                     
                     parser.getValueStack( RUNNABLE ).push( new Runnable() {
@@ -319,14 +321,14 @@ class PulsarApplicationArgumentParser extends ArgumentParserDefault {
             return new ArgumentParserElement() {
                 SchemeEngine schemeEngine = new SchemeEngine();
                 {
-                    PulsarApplicationLibrary.initializeSchemeEngine( schemeEngine );
+                    LamuApplicationLibrary.initializeSchemeEngine( schemeEngine );
                 }
                 
                 List<String> urlList = new ArrayList<>();
                 @Override
                 public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
                     if ( s.startsWith( "--"  ) ) {
-                        PulsarApplicationNamedArgument a = new PulsarApplicationNamedArgument( s );
+                        LamuApplicationNamedArgument a = new LamuApplicationNamedArgument( s );
                         if ( false ) {
                             //
                         } else if ( "server-url".equals( a.getKey() ) ) {

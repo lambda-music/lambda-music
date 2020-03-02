@@ -1,11 +1,12 @@
-package pulsar;
+package lamu;
 
 import java.util.Collection;
 import java.util.regex.Pattern;
 
+import pulsar.NoteListParser;
 import pulsar.lib.scheme.SchemePrinter;
 
-public class PulsarPrinter {
+public class LamuPrinter {
     static final Pattern REMOVE_LINE_BREAKS = Pattern.compile( "(\n\r|\r\n|\r|\n)", Pattern.MULTILINE );
     public static void init() {
         SchemePrinter.setSchemeValuePrinter( new SchemePrinter.Formatter() {

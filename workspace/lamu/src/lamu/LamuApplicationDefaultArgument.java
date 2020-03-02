@@ -1,4 +1,4 @@
-package pulsar;
+package lamu;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class PulsarApplicationDefaultArgument {
+public class LamuApplicationDefaultArgument {
     public static class Element {
         String key;
         String value;

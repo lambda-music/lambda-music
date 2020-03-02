@@ -1,4 +1,4 @@
-package pulsar;
+package lamu;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,7 +12,9 @@ import java.util.logging.Level;
 
 import kawapad.Kawapad;
 import kawapad.KawapadDocuments;
-import pulsar.PulsarApplicationDefaultArgument.Element;
+import lamu.LamuApplicationDefaultArgument.Element;
+import pulsar.Pulsar;
+import pulsar.PulsarDocuments;
 import pulsar.lib.PulsarLogFormatter;
 import pulsar.lib.Version;
 import pulsar.lib.app.ApplicationComponent;
@@ -22,12 +24,12 @@ import pulsar.lib.log.PulsarLogger;
 import pulsar.lib.scheme.doc.DescriptiveHelp;
 import pulsar.lib.swing.PulsarGuiUtils;
 
-public class PulsarApplication {
+public class LamuApplication {
     static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
-    private PulsarApplication() {
+    private LamuApplication() {
     }
 
     private static void exec1( List<ApplicationComponent> vessels, List<String> arguments, boolean recurseCall ) throws IOException {
@@ -46,7 +48,7 @@ public class PulsarApplication {
         } else if( "exec".equals( mainCommand ) ) {
             List<String> subArguments = arguments.subList( 1, arguments.size() );
             // exec
-            PulsarApplicationArgumentParser argumentParser = new PulsarApplicationArgumentParser();
+            LamuApplicationArgumentParser argumentParser = new LamuApplicationArgumentParser();
             argumentParser.parse( subArguments );
             vessels.addAll( argumentParser.getApplicationVesselList() );
         } else {
@@ -54,7 +56,7 @@ public class PulsarApplication {
                 throw new Error( "a malformed default value in the default argument configuration." );
             }
             
-            List<Element> defaultArgumentList = PulsarApplicationDefaultArgument.load();
+            List<Element> defaultArgumentList = LamuApplicationDefaultArgument.load();
             Element defaultArgument = null;
             if ( defaultArgumentList.isEmpty() ) {
                 defaultArgument = new Element( "default", "exec scheme + pulsar + pulsar-gui $* +" );
@@ -71,13 +73,13 @@ public class PulsarApplication {
 
     static List<ApplicationComponent> parseArgs( String[] args ) throws IOException {
         {
-            PulsarApplicationArgumentMacro macro = new PulsarApplicationArgumentMacro( Arrays.asList( args ) );
+            LamuApplicationArgumentMacro macro = new LamuApplicationArgumentMacro( Arrays.asList( args ) );
             macro.exec();
             args = macro.getOutputAsArray();
             System.err.println( macro.getOutput() );
         }
 
-        String[][] arrayOfArgs = PulsarApplicationArraySplitter.splitBeginEnd( args, "begin", "end" ) ;
+        String[][] arrayOfArgs = LamuApplicationArraySplitter.splitBeginEnd( args, "begin", "end" ) ;
         
         List<ApplicationComponent> vessels = new ArrayList<>();
         if ( arrayOfArgs.length == 0 ) {
@@ -93,7 +95,7 @@ public class PulsarApplication {
     
     static JavaProcess forkPulsar(List<String> arguments) {
         JavaProcess process = new JavaProcess( 
-            PulsarApplication.class.getCanonicalName(), arguments );
+            LamuApplication.class.getCanonicalName(), arguments );
         return process;
     }
     
@@ -144,9 +146,9 @@ public class PulsarApplication {
         
         
         System.err.println( "*** WELCOME TO PULSAR ***" );
-        System.err.println( "VERSION : " + Version.get( PulsarApplication.class ) );
+        System.err.println( "VERSION : " + Version.get( LamuApplication.class ) );
         PulsarLogFormatter.init();
-        PulsarPrinter.init();
+        LamuPrinter.init();
 
         List<ApplicationComponent> components = parseArgs(args);
         
