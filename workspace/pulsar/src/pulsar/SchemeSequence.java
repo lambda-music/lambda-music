@@ -36,7 +36,7 @@ import metro.MetroMidiEvent;
 import metro.MetroSequence;
 import metro.MetroTrack;
 import quartz.lib.log.SimpleConsoleLogger;
-import quartz.lib.scheme.proc.PulsarProcedureN;
+import quartz.lib.scheme.proc.MultipleNamedProcedureN;
 import quartz.lib.secretary.Invokable;
 
 public class SchemeSequence implements MetroSequence, SchemeSequenceReadable, Invokable {
@@ -51,7 +51,7 @@ public class SchemeSequence implements MetroSequence, SchemeSequenceReadable, In
         LOGGER.log(Level.WARNING, msg);
     }
     
-    static final class SchemeSequenceDefaultProcedure extends PulsarProcedureN {
+    static final class SchemeSequenceDefaultProcedure extends MultipleNamedProcedureN {
         private final LList notations;
         SchemeSequenceDefaultProcedure(LList notations) {
             this.notations = notations;

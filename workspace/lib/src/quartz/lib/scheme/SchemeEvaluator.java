@@ -14,7 +14,7 @@ import kawa.standard.load;
 import quartz.lib.CurrentObject;
 import quartz.lib.app.ApplicationComponent;
 import quartz.lib.log.SimpleConsoleLogger;
-import quartz.lib.scheme.proc.PulsarProcedure0;
+import quartz.lib.scheme.proc.MultipleNamedProcedure0;
 import quartz.lib.thread.ThreadInitializer;
 import quartz.lib.thread.ThreadInitializerCollection;
 import quartz.lib.thread.ThreadInitializerContainer;
@@ -184,13 +184,13 @@ public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluat
     public static void initScheme( Scheme scheme ) {
         Environment env = scheme.getEnvironment();
         SchemeUtils.defineVar(env, load.loadRelative , "source" );
-        SchemeUtils.defineLambda(env, new PulsarProcedure0( "current-scheme" ) {
+        SchemeUtils.defineLambda(env, new MultipleNamedProcedure0( "current-scheme" ) {
             @Override
             public Object apply0() throws Throwable {
                 return Language.getDefaultLanguage();
             }
         });
-        SchemeUtils.defineLambda(env, new PulsarProcedure0( "current-environment" ) {
+        SchemeUtils.defineLambda(env, new MultipleNamedProcedure0( "current-environment" ) {
             @Override
             public Object apply0() throws Throwable {
                 return Language.getDefaultLanguage();

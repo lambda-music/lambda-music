@@ -33,7 +33,7 @@ import pulsar.Pulsar;
 import quartz.lib.log.SimpleConsoleLogger;
 import quartz.lib.scheme.SchemeUtils;
 import quartz.lib.scheme.doc.DescriptiveDocumentCategory;
-import quartz.lib.scheme.proc.PulsarProcedureN;
+import quartz.lib.scheme.proc.MultipleNamedProcedureN;
 import quartz.lib.secretary.InvokablyRunnable;
 
 public class PulsarGuiUtils {
@@ -532,7 +532,7 @@ public class PulsarGuiUtils {
         logInfo("PulsarGui#initStaticScheme=======================================");
         Environment env = scheme.getEnvironment();
         
-        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-pack" ) {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-pack" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 guiPack();
@@ -540,7 +540,7 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-new" ) {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-new" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 //              try {
@@ -553,7 +553,7 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-parent" ) {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-parent" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 if ( 1 <= args.length ) {
@@ -569,7 +569,7 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-remove-all" ) {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-remove-all" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 if ( 1 <= args.length ) {
@@ -585,7 +585,7 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-remove-by-ref" ) {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-remove-by-ref" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 if ( 1 < args.length ) {
@@ -601,7 +601,7 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-remove-by-name" ) {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-remove-by-name" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 if ( 1 < args.length ) {
@@ -619,7 +619,7 @@ public class PulsarGuiUtils {
                 }
             }
         });
-        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-invoke-later" ) {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-invoke-later" ) {
             @Override
             public Object applyN( Object[] args ) throws Throwable {
                 guiInvokeLater( Pulsar.getCurrent(), (Procedure) args[0], Arrays.copyOfRange(args, 1, args.length ) );
@@ -627,7 +627,7 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-get" ) {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-get" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 if ( 1 == args.length ) {
@@ -657,7 +657,7 @@ public class PulsarGuiUtils {
         });
 
 
-        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-set-selected" ) {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-set-selected" ) {
             public Object applyN(Object[] args) throws Throwable {
                 if ( 3 == args.length ) {
                     JSelectableUserObject parent = (JSelectableUserObject) args[0];
@@ -675,7 +675,7 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-set-text" ) {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-set-text" ) {
             public Object applyN(Object[] args) throws Throwable {
                 if ( 2 == args.length ) {
                     JTextComponent parent = (JTextComponent) args[0];
@@ -693,7 +693,7 @@ public class PulsarGuiUtils {
         /**
          * (gui-get-user-object (gui-get (part1 'gui) 'self) )
          */
-        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-set-user-object" ) {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-set-user-object" ) {
             public Object applyN(Object[] args) throws Throwable {
                 if ( 2 == args.length ) {
                     JPulsarUserObject parent = (JPulsarUserObject) args[0];
@@ -708,7 +708,7 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-get-user-object" ) {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-get-user-object" ) {
             public Object applyN(Object[] args) throws Throwable {
                 if ( 1 == args.length ) {
                     JPulsarUserObject parent = (JPulsarUserObject) args[0];
@@ -721,14 +721,14 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-build" ) {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-build" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 return guiBuild( Pulsar.getCurrent(), args );
             }
         });
 
-        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-newline" ) {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-newline" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo("newline-gui");
@@ -750,7 +750,7 @@ public class PulsarGuiUtils {
         //          }
         //      });
 
-        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-layout" ) {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-layout" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo( "gui-layout" );
@@ -771,7 +771,7 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-gridbag-layout" ) {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-gridbag-layout" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo( "gui-gridbag-layout" );
@@ -784,7 +784,7 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-spring-layout" ) {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-spring-layout" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo( "gui-spring-layout" );
@@ -796,7 +796,7 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-flow-layout" ) {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-flow-layout" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo( "gui-flow-layout" );
@@ -807,7 +807,7 @@ public class PulsarGuiUtils {
             }
         });
         
-        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-put-constraint" ) {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-put-constraint" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo("refresh-gui");
@@ -825,7 +825,7 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-invalidate" ) {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-invalidate" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 guiInvalidate((Container) args[0] );
@@ -833,7 +833,7 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-validate" ) {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-validate" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 guiValidate((Container) args[0] );
@@ -841,7 +841,7 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-revalidate" ) {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-revalidate" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 guiRevalidate((Container) args[0] );
@@ -849,7 +849,7 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new PulsarProcedureN( "gui-repaint" ) {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-repaint" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 guiRepaint((Container) args[0] );

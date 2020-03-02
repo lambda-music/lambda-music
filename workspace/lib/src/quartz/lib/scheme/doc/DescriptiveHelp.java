@@ -18,8 +18,8 @@ import kawa.standard.Scheme;
 import quartz.lib.scheme.SchemeEngine;
 import quartz.lib.scheme.SchemeUtils;
 import quartz.lib.scheme.SchemeEvaluator.SchemeEngineListener;
-import quartz.lib.scheme.proc.PulsarProcedure2;
-import quartz.lib.scheme.proc.PulsarProcedureN;
+import quartz.lib.scheme.proc.MultipleNamedProcedure2;
+import quartz.lib.scheme.proc.MultipleNamedProcedureN;
 
 public class DescriptiveHelp {
     public static final DescriptiveDocumentCategory DOCS = 
@@ -88,7 +88,7 @@ public class DescriptiveHelp {
                                 );
         }} );
         
-        SchemeUtils.defineLambda( env, new PulsarProcedureN("help!") {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN("help!") {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 return "Calm down!";
@@ -107,7 +107,7 @@ public class DescriptiveHelp {
                 + "nor any other related elements. See (help about-main)." );
         }} );
         
-        final class ProcedureHelp extends PulsarProcedureN {
+        final class ProcedureHelp extends MultipleNamedProcedureN {
             final Environment environment;
             final int index;
             final Procedure reverse = (Procedure)gnu.kawa.slib.srfi1.reverse.get();
@@ -235,7 +235,7 @@ public class DescriptiveHelp {
         }} );
 
         
-        SchemeUtils.defineLambda( env, new PulsarProcedure2("make-help") {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedure2("make-help") {
             Symbol names = Symbol.valueOf( "names" );
             Symbol params = Symbol.valueOf( "params" );
             Symbol returns = Symbol.valueOf( "returns" );

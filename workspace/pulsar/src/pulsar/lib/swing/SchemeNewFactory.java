@@ -62,7 +62,7 @@ import pulsar.Pulsar;
 import quartz.lib.log.SimpleConsoleLogger;
 import quartz.lib.scheme.InvokableSchemeProcedure;
 import quartz.lib.scheme.SchemeUtils;
-import quartz.lib.scheme.proc.PulsarProcedureN;
+import quartz.lib.scheme.proc.MultipleNamedProcedureN;
 import quartz.lib.secretary.Invokable;
 import quartz.lib.thread.ThreadInitializerCollection;
 
@@ -508,7 +508,7 @@ public abstract class SchemeNewFactory {
 
         register( "timer", new SchemeNewFactory() {
             private Procedure wrapRunnable( Runnable runnable ) {
-                return new PulsarProcedureN() {
+                return new MultipleNamedProcedureN() {
                     public Object applyN(Object[] args) throws Throwable {
                         runnable.run();
                         return EmptyList.emptyList;

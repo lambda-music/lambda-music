@@ -101,11 +101,11 @@ import quartz.lib.scheme.SchemeUtils;
 import quartz.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import quartz.lib.scheme.doc.DescriptiveActions;
 import quartz.lib.scheme.doc.ProceduralDescriptiveBean;
-import quartz.lib.scheme.proc.PulsarProcedure0;
-import quartz.lib.scheme.proc.PulsarProcedure1;
-import quartz.lib.scheme.proc.PulsarProcedure2;
-import quartz.lib.scheme.proc.PulsarProcedure3;
-import quartz.lib.scheme.proc.PulsarProcedureN;
+import quartz.lib.scheme.proc.MultipleNamedProcedure0;
+import quartz.lib.scheme.proc.MultipleNamedProcedure1;
+import quartz.lib.scheme.proc.MultipleNamedProcedure2;
+import quartz.lib.scheme.proc.MultipleNamedProcedure3;
+import quartz.lib.scheme.proc.MultipleNamedProcedureN;
 import quartz.lib.swing.AcceleratorKeyList;
 import quartz.lib.swing.Action2;
 import quartz.lib.swing.AutomatedActionField;
@@ -2790,49 +2790,49 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
             SchemeUtils.defineVar(env, new ConsoleObject(), "console" );
 
 
-            SchemeUtils.defineLambda(env, new PulsarProcedure0( "kawapad" ) {
+            SchemeUtils.defineLambda(env, new MultipleNamedProcedure0( "kawapad" ) {
                 @Override
                 public Object apply0() throws Throwable {
                     return Kawapad.getCurrent();
                 }
             });
             
-            SchemeUtils.defineLambda(env, new PulsarProcedure0( "kawapad-present?" ) {
+            SchemeUtils.defineLambda(env, new MultipleNamedProcedure0( "kawapad-present?" ) {
                 @Override
                 public Object apply0() throws Throwable {
                     return Kawapad.isPresent();
                 }
             });
 
-            SchemeUtils.defineLambda(env, new PulsarProcedure0("kawapad-frame" ) {
+            SchemeUtils.defineLambda(env, new MultipleNamedProcedure0("kawapad-frame" ) {
                 @Override
                 public Object apply0() throws Throwable {
                     return KawapadFrame.getCurrent();
                 }
             });
 
-            SchemeUtils.defineLambda(env, new PulsarProcedure0("kawapad-frame-present?") {
+            SchemeUtils.defineLambda(env, new MultipleNamedProcedure0("kawapad-frame-present?") {
                 @Override
                 public Object apply0() throws Throwable {
                     return KawapadFrame.isPresent();
                 }
             });
 
-            SchemeUtils.defineLambda(env, new PulsarProcedure0("frame") {
+            SchemeUtils.defineLambda(env, new MultipleNamedProcedure0("frame") {
                 @Override
                 public Object apply0() throws Throwable {
                     return KawapadFrame.getCurrent();
                 }
             });
 
-            SchemeUtils.defineLambda(env, new PulsarProcedure0("frame-present?") {
+            SchemeUtils.defineLambda(env, new MultipleNamedProcedure0("frame-present?") {
                 @Override
                 public Object apply0() throws Throwable {
                     return KawapadFrame.isPresent();
                 }
             });
             
-            SchemeUtils.defineLambda(env, new PulsarProcedure3("register-event-handler") {
+            SchemeUtils.defineLambda(env, new MultipleNamedProcedure3("register-event-handler") {
                 @Override
                 public Object apply3(Object arg1, Object arg2, Object arg3) throws Throwable {
                     Kawapad.eventHandlers.register( (Symbol)arg1, (Symbol)arg2, (Procedure) arg3 );
@@ -2840,7 +2840,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
                 }
             });
 
-            SchemeUtils.defineLambda(env, new PulsarProcedure2("unregister-event-handler") {
+            SchemeUtils.defineLambda(env, new MultipleNamedProcedure2("unregister-event-handler") {
                 @Override
                 public Object apply2(Object arg1, Object arg2 ) throws Throwable {
                     Kawapad.eventHandlers.unregister((Symbol)arg1,(Symbol)arg2 );
@@ -2848,7 +2848,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
                 }
             });
 
-            SchemeUtils.defineLambda(env, new PulsarProcedure1( "prettify", "pre" ) {
+            SchemeUtils.defineLambda(env, new MultipleNamedProcedure1( "prettify", "pre" ) {
                 @Override
                 public Object apply1(Object arg1 ) throws Throwable {
                     return SchemeUtils.toSchemeString(   
@@ -2867,7 +2867,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
 
             KawapadTextualIncrement.initScheme( env );
             
-            SchemeUtils.defineLambda( env, new PulsarProcedure2("load-font") {
+            SchemeUtils.defineLambda( env, new MultipleNamedProcedure2("load-font") {
                 @Override
                 public Object apply2(Object arg1,Object arg2) throws Throwable {
                     String filePath = SchemeUtils.anyToString( arg1 );
@@ -2896,28 +2896,28 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
             }});
 
             
-            SchemeUtils.defineLambda(env, new PulsarProcedureN("add-lisp-keyword") {
+            SchemeUtils.defineLambda(env, new MultipleNamedProcedureN("add-lisp-keyword") {
                 @Override
                 public Object applyN(Object[] args) throws Throwable {
                     getCurrent().addAllLispKeywords( SchemeUtils.schemeStringListToJavaStringList( Arrays.asList( args )));
                     return Values.empty;
                 }
             } );
-            SchemeUtils.defineLambda(env, new PulsarProcedureN( "delete-lisp-keyword" ) {
+            SchemeUtils.defineLambda(env, new MultipleNamedProcedureN( "delete-lisp-keyword" ) {
                 @Override
                 public Object applyN(Object[] args) throws Throwable {
                     getCurrent().deleteAllLispKeywords( SchemeUtils.schemeStringListToJavaStringList( Arrays.asList( args )));
                     return Values.empty;
                 }
             } );
-            SchemeUtils.defineLambda(env, new PulsarProcedureN("add-syntax-keyword") {
+            SchemeUtils.defineLambda(env, new MultipleNamedProcedureN("add-syntax-keyword") {
                 @Override
                 public Object applyN(Object[] args) throws Throwable {
                     getCurrent().addAllLispKeywords( SchemeUtils.schemeStringListToJavaStringList( Arrays.asList( args )));
                     return Values.empty;
                 }
             } );
-            SchemeUtils.defineLambda(env, new PulsarProcedureN( "delete-syntax-keyword" ) {
+            SchemeUtils.defineLambda(env, new MultipleNamedProcedureN( "delete-syntax-keyword" ) {
                 @Override
                 public Object applyN(Object[] args) throws Throwable {
                     getCurrent().deleteAllLispKeywords( SchemeUtils.schemeStringListToJavaStringList( Arrays.asList( args )));
@@ -2925,14 +2925,14 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
                 }
             } );
             
-            SchemeUtils.defineLambda(env, new PulsarProcedure1("get-syntax-keywords") {
+            SchemeUtils.defineLambda(env, new MultipleNamedProcedure1("get-syntax-keywords") {
                 @Override
                 public Object apply1(Object arg1) throws Throwable {
                     return LList.makeList( SchemeUtils.javaStringListToSchemeSymbolList( getCurrent().lispKeywordList ) );
                 }
             } );
 
-            SchemeUtils.defineLambda(env, new PulsarProcedureN( "set-syntax-color" ) {
+            SchemeUtils.defineLambda(env, new MultipleNamedProcedureN( "set-syntax-color" ) {
                 @Override
                 public Object apply2(Object arg1, Object arg2) throws Throwable {
                     getCurrent().documentFilter.getSyntaxElementList().get(
@@ -2958,13 +2958,13 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
                     throw new InternalError();
                 }
             });
-            SchemeUtils.defineLambda(env, new PulsarProcedure0("pwd") {
+            SchemeUtils.defineLambda(env, new MultipleNamedProcedure0("pwd") {
                 @Override
                 public Object apply0() throws Throwable {
                     return SchemeUtils.toSchemeString( getCurrent().getCurrentDirectory().toString() );
                 }
             } );
-            SchemeUtils.defineLambda(env, new PulsarProcedure0("current-file") {
+            SchemeUtils.defineLambda(env, new MultipleNamedProcedure0("current-file") {
                 @Override
                 public Object apply0() throws Throwable {
                     return SchemeUtils.toSchemeString( getCurrent().getCurrentFile().toString() );

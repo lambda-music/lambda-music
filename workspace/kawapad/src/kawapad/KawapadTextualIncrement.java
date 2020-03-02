@@ -19,9 +19,9 @@ import javax.swing.text.TextAction;
 import gnu.mapping.Environment;
 import gnu.mapping.Values;
 import quartz.lib.scheme.SchemeUtils;
-import quartz.lib.scheme.proc.PulsarProcedure0;
-import quartz.lib.scheme.proc.PulsarProcedure1;
-import quartz.lib.scheme.proc.PulsarProcedure2;
+import quartz.lib.scheme.proc.MultipleNamedProcedure0;
+import quartz.lib.scheme.proc.MultipleNamedProcedure1;
+import quartz.lib.scheme.proc.MultipleNamedProcedure2;
 import quartz.lib.swing.AcceleratorKeyList;
 import quartz.lib.swing.Action2;
 import quartz.lib.swing.MenuInitializer;
@@ -36,7 +36,7 @@ class KawapadTextualIncrement implements MenuInitializer {
 
     
     public static void initScheme(Environment env) {
-        SchemeUtils.defineLambda( env, new PulsarProcedure2("add-incremental-keyword") {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedure2("add-incremental-keyword") {
             @Override
             public Object apply2(Object arg1, Object arg2) throws Throwable {
                 Kawapad.getCurrent().textualIncrement.addIncrementalSymbol( 
@@ -45,7 +45,7 @@ class KawapadTextualIncrement implements MenuInitializer {
                 return Values.empty;
             }
         });
-        SchemeUtils.defineLambda( env, new PulsarProcedure1("delete-incremental-keyword") {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedure1("delete-incremental-keyword") {
             @Override
             public Object apply1(Object arg1) throws Throwable {
                 Kawapad.getCurrent().textualIncrement.deleteIncrementalSymbol( 
@@ -53,7 +53,7 @@ class KawapadTextualIncrement implements MenuInitializer {
                 return Values.empty;
             }
         });
-        SchemeUtils.defineLambda( env, new PulsarProcedure0("clear-incremental-keyword") {
+        SchemeUtils.defineLambda( env, new MultipleNamedProcedure0("clear-incremental-keyword") {
             @Override
             public Object apply0() throws Throwable {
                 Kawapad.getCurrent().textualIncrement.clearIncrementalSymbol();

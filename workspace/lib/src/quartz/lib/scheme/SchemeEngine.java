@@ -12,9 +12,9 @@ import quartz.lib.CurrentObject;
 import quartz.lib.app.ApplicationComponent;
 import quartz.lib.log.SimpleConsoleLogger;
 import quartz.lib.scheme.SchemeEvaluator.SchemeEngineListener;
-import quartz.lib.scheme.proc.PulsarProcedure0;
-import quartz.lib.scheme.proc.PulsarProcedure1;
-import quartz.lib.scheme.proc.PulsarProcedure2;
+import quartz.lib.scheme.proc.MultipleNamedProcedure0;
+import quartz.lib.scheme.proc.MultipleNamedProcedure1;
+import quartz.lib.scheme.proc.MultipleNamedProcedure2;
 import quartz.lib.thread.ThreadInitializer;
 import quartz.lib.thread.ThreadInitializerContainer;
 
@@ -25,14 +25,14 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
     static HashMap<Object,Object> map = new HashMap<>(); 
-    public static final Procedure putvar = new PulsarProcedure2() {
+    public static final Procedure putvar = new MultipleNamedProcedure2() {
         @Override
         public Object apply2(Object arg1, Object arg2) throws Throwable {
             map.put( arg1, arg2 );
             return SchemeUtils.NO_RESULT;
         }
     };
-    public static final Procedure getvar = new PulsarProcedure1() {
+    public static final Procedure getvar = new MultipleNamedProcedure1() {
         @Override
         public Object apply1(Object arg1) throws Throwable {
             Object result = map.get( arg1 );
@@ -144,13 +144,13 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
     };
     static void initScheme( Scheme scheme ) {
         Environment env = scheme.getEnvironment();
-        SchemeUtils.defineLambda(env, new PulsarProcedure0( "scheme-engine" ) {
+        SchemeUtils.defineLambda(env, new MultipleNamedProcedure0( "scheme-engine" ) {
             @Override
             public Object apply0() throws Throwable {
                 return SchemeEngine.getCurrent();
             }
         }  );
-        SchemeUtils.defineLambda(env, new PulsarProcedure0( "scheme-engine-present?" ) {
+        SchemeUtils.defineLambda(env, new MultipleNamedProcedure0( "scheme-engine-present?" ) {
             @Override
             public Object apply0() throws Throwable {
                 return SchemeEngine.isPresent();

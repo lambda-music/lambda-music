@@ -1,9 +1,9 @@
 package quartz.lib.scheme.doc;
 
 import quartz.lib.scheme.SchemeUtils;
-import quartz.lib.scheme.proc.PulsarProcedure0;
+import quartz.lib.scheme.proc.MultipleNamedProcedure0;
 
-public class DescriptiveHelpProcedure extends PulsarProcedure0 {
+public class DescriptiveHelpProcedure extends MultipleNamedProcedure0 {
     public DescriptiveHelpProcedure(String name) {
         super(name);
     }
