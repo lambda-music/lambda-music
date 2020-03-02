@@ -1,26 +1,80 @@
 
-Lambda a Programmable Music Sequencer 
+Lamu a Programmable Music Sequencer 
 ===================================
 
-### Lambda lets you write a piece of music by Scheme! ###
+### Write Scheme and Make Music by Lamu ###
 
 ![corresponding-parenthesis-movement](imgs/corresponding-parenthesis-movement.gif)
 
-Lambda is a music sequencer which enables users to write music as Scheme
-programs. In this system, musical notes and other informations are written as
-Scheme's association lists. The musical notes can be dynamically generated as
-Scheme's association lists on-the-fly. Users can also interact with the
-dynamically generated music at runtime and affect the direction that the music
-is going.
+Lamu (stands for LAmbda-MUsic) is a music sequencer which enables users to 
+write music as Scheme programs. In this system, musical notes and other 
+informations are written as Scheme's association lists. The musical notes can 
+be dynamically generated as Scheme's association lists on-the-fly. Users can 
+also interact with the dynamically generated music at runtime and affect the 
+direction that the music is going.
 
-Lambda is written in Java and Scheme which is powered by Kawa a Java based
+Lamu is written in Java and Scheme which is powered by Kawa a Java based
 Scheme implementation. You can process MIDI data via JACKAudio Connection Kit
 a multiplatform audio connection system which is accessed via Java Native
 Access.
 
-Lambda runs on most major platforms which can run Java such as Windows, Mac-OSX
+Lamu runs on most major platforms which can run Java such as Windows, Mac-OSX
 and various Linux distributions. 
 
+### Architecture ### 
+
+You may ask, what the heck is this? Well, this is merely a JACKAudio client 
+which works with a powerful scripting language Scheme. This could be a 
+live-coding environment, or a JACK connection controller which can be executed 
+from your shell, or could be anything; it is very simple yet incredibly 
+powerful way to play music, in my humble opinion. I have not tried other 
+live-coding environment such as SuperCollider, Sonic Pi and others; but I am 
+fairly sure this can be a very Linux-way to implement a live-coding 
+environment.
+
+![Architecture][architecture]
+
+I started to write this program to get a metronome to practice the guitar.
+And then I realized that this program could be a live-coding environment; I 
+started to write a Scheme editor to speed up the way write the Scheme code.  
+That is [Kawapad][kawapad]
+
+But later I realized that this program can be JACKAudio connection controller.  
+Actually, I have been in a difficult time to get along with LADISH and I have 
+never had it work right with my favorite synth applications. The connections 
+are too fragile and lost too often. Therefore, I have written some mechanisms 
+to restore/scrap a set of connections programmatically. That is 
+[Pulsar][pulsar].  Not only is [Pulsar][pulsar] actually to restore/scrap 
+connections; I'll talk about it later.
+
+
+### About Me ###
+
+I am a Japanese programmer born in 1973. I was born and raised in Tokyo.  
+Therefore, I have never spoken English in daily life. Believe me. And Japanese 
+people is one of the most English resistant people which is extremely stubborn.  
+I know it and I have to admit it. But in the meantime I cannot help it.
+I have tried so many times to educate this stubborn people and I finally gave 
+up. They are too stubborn.  The grammar structure and pronunciation system in 
+Japanese are very different from rest of the world and it is extremely 
+difficult to make Japanese people understand the difference. It maybe because 
+the geographical situation is so isolated from others that the history have 
+been developed very differently.  I still haven't found the exact reason why 
+Japanese is so different from others.
+
+Therefore, you may find my documentation has some difficulty to be 
+comprehended; I have to admit it and please excuse my English in advance. The 
+following is a list of documentation which I have written so far about this 
+program.
+
+But there may be something that makes me different from other Japanese; I was 
+living in _super-rural_ area in North-East Thailand for twelve years and I 
+luckily did not die; there were many opportunities that I could die but I 
+didn't. During the time I learned a dialect of Laotian language and eventually 
+I could speak it very fluently. That experience opened me up to the other 
+languages like English. And I studied Scheme in the same period.
+
+Anyways, the following is the list.
 
 ### Documentation ###
 
@@ -30,7 +84,7 @@ and various Linux distributions.
 - [Pulsar Notation Reference](workspace/pulsar/readme-notes-api.md)
 - [Metro](workspace/metro/readme.md)
 - [JavaDoc of Metro](workspace/metro/doc/index.html)
-- [KawaPad](workspace/kawapad/readme.md)
+- [KawaPad][kawapad]
 - [KawaPad API Reference](workspace/kawapad/readme-api.md)
 
 
@@ -213,6 +267,7 @@ Eclipse. This build file can build Pulsar-Sequencer.
 
 
 
+[kawapad]: https://lambda-music.github.io/lamu/workspace/kawapad/readme.md
+[architecture]: https://lambda-music.github.io/lamu/docs/lambda-music-architecture.png
 
-
-<!-- vim: set spell expandtab : -->
+[vim-modeline]: # ( vim: set spell expandtab fo+=aw: )
