@@ -88,33 +88,33 @@ import kawapad.KawapadSelection.SideParenthesisSelector;
 import kawapad.KawapadSyntaxHighlighter.KawapadSyntaxElementType;
 import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
-import pulsar.lib.CurrentObject;
-import pulsar.lib.app.ApplicationComponent;
-import pulsar.lib.log.PulsarLogger;
-import pulsar.lib.log.SimpleConsole;
-import pulsar.lib.scheme.EvaluatorReceiver;
-import pulsar.lib.scheme.SchemeEngine;
-import pulsar.lib.scheme.SchemeEvaluator;
-import pulsar.lib.scheme.SchemeEvaluator.SchemeEngineListener;
-import pulsar.lib.scheme.SchemeEvaluatorUtils;
-import pulsar.lib.scheme.SchemePrinter;
-import pulsar.lib.scheme.SchemeUtils;
-import pulsar.lib.scheme.doc.DescriptiveActions;
-import pulsar.lib.scheme.doc.ProceduralDescriptiveBean;
-import pulsar.lib.scheme.proc.PulsarProcedure0;
-import pulsar.lib.scheme.proc.PulsarProcedure1;
-import pulsar.lib.scheme.proc.PulsarProcedure2;
-import pulsar.lib.scheme.proc.PulsarProcedure3;
-import pulsar.lib.scheme.proc.PulsarProcedureN;
-import pulsar.lib.swing.AcceleratorKeyList;
-import pulsar.lib.swing.Action2;
-import pulsar.lib.swing.AutomatedActionField;
-import pulsar.lib.swing.MenuInitializer;
-import pulsar.lib.swing.TextAction2;
-import pulsar.lib.thread.ThreadInitializer;
-import pulsar.lib.thread.ThreadInitializerCollection;
-import pulsar.lib.thread.ThreadInitializerCollectionContainer;
-import pulsar.lib.thread.ThreadInitializerContainer;
+import quartz.lib.CurrentObject;
+import quartz.lib.app.ApplicationComponent;
+import quartz.lib.log.PulsarLogger;
+import quartz.lib.log.SimpleConsole;
+import quartz.lib.scheme.EvaluatorReceiver;
+import quartz.lib.scheme.SchemeEngine;
+import quartz.lib.scheme.SchemeEvaluator;
+import quartz.lib.scheme.SchemeEvaluatorUtils;
+import quartz.lib.scheme.SchemePrinter;
+import quartz.lib.scheme.SchemeUtils;
+import quartz.lib.scheme.SchemeEvaluator.SchemeEngineListener;
+import quartz.lib.scheme.doc.DescriptiveActions;
+import quartz.lib.scheme.doc.ProceduralDescriptiveBean;
+import quartz.lib.scheme.proc.PulsarProcedure0;
+import quartz.lib.scheme.proc.PulsarProcedure1;
+import quartz.lib.scheme.proc.PulsarProcedure2;
+import quartz.lib.scheme.proc.PulsarProcedure3;
+import quartz.lib.scheme.proc.PulsarProcedureN;
+import quartz.lib.swing.AcceleratorKeyList;
+import quartz.lib.swing.Action2;
+import quartz.lib.swing.AutomatedActionField;
+import quartz.lib.swing.MenuInitializer;
+import quartz.lib.swing.TextAction2;
+import quartz.lib.thread.ThreadInitializer;
+import quartz.lib.thread.ThreadInitializerCollection;
+import quartz.lib.thread.ThreadInitializerCollectionContainer;
+import quartz.lib.thread.ThreadInitializerContainer;
 
 /**
  * 
@@ -3555,6 +3555,6 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         map.put( "scheme"   , schemeMenuItem );
         kawapad.initMenu( map );
 
-        pulsar.lib.swing.Action2.processMenuBar( menuBar );
+        quartz.lib.swing.Action2.processMenuBar( menuBar );
     }
 }

@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.regex.Pattern;
 
 import pulsar.NoteListParser;
-import pulsar.lib.scheme.SchemePrinter;
+import quartz.lib.scheme.SchemePrinter;
 
 public class LamuPrinter {
     static final Pattern REMOVE_LINE_BREAKS = Pattern.compile( "(\n\r|\r\n|\r|\n)", Pattern.MULTILINE );

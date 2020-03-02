@@ -30,11 +30,11 @@ import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import kawa.standard.Scheme;
 import pulsar.Pulsar;
-import pulsar.lib.log.PulsarLogger;
-import pulsar.lib.scheme.SchemeUtils;
-import pulsar.lib.scheme.doc.DescriptiveDocumentCategory;
-import pulsar.lib.scheme.proc.PulsarProcedureN;
-import pulsar.lib.secretary.InvokablyRunnable;
+import quartz.lib.log.PulsarLogger;
+import quartz.lib.scheme.SchemeUtils;
+import quartz.lib.scheme.doc.DescriptiveDocumentCategory;
+import quartz.lib.scheme.proc.PulsarProcedureN;
+import quartz.lib.secretary.InvokablyRunnable;
 
 public class PulsarGuiUtils {
     public static final DescriptiveDocumentCategory DOCS = 

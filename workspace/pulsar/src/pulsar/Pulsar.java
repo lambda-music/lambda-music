@@ -62,20 +62,20 @@ import metro.MetroPort;
 import metro.MetroSequence;
 import metro.MetroSyncType;
 import metro.MetroTrack;
-import pulsar.lib.app.ApplicationComponent;
-import pulsar.lib.log.PulsarLogger;
-import pulsar.lib.scheme.InvokableSchemeProcedure;
-import pulsar.lib.scheme.SchemeEngine;
-import pulsar.lib.scheme.SchemeEvaluator.SchemeEngineListener;
-import pulsar.lib.scheme.SchemeUtils;
-import pulsar.lib.scheme.doc.ProceduralDescriptiveBean;
-import pulsar.lib.scheme.proc.PulsarProcedure0;
-import pulsar.lib.scheme.proc.PulsarProcedure1;
-import pulsar.lib.scheme.proc.PulsarProcedure2;
-import pulsar.lib.scheme.proc.PulsarProcedure3;
-import pulsar.lib.scheme.proc.PulsarProcedureN;
-import pulsar.lib.secretary.Invokable;
 import pulsar.lib.swing.MersenneTwisterFast;
+import quartz.lib.app.ApplicationComponent;
+import quartz.lib.log.PulsarLogger;
+import quartz.lib.scheme.InvokableSchemeProcedure;
+import quartz.lib.scheme.SchemeEngine;
+import quartz.lib.scheme.SchemeUtils;
+import quartz.lib.scheme.SchemeEvaluator.SchemeEngineListener;
+import quartz.lib.scheme.doc.ProceduralDescriptiveBean;
+import quartz.lib.scheme.proc.PulsarProcedure0;
+import quartz.lib.scheme.proc.PulsarProcedure1;
+import quartz.lib.scheme.proc.PulsarProcedure2;
+import quartz.lib.scheme.proc.PulsarProcedure3;
+import quartz.lib.scheme.proc.PulsarProcedureN;
+import quartz.lib.secretary.Invokable;
 
 /**
  * Pulsar is a MIDI sequencer program which is controlled by a powerful computer

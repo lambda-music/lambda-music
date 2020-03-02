@@ -15,14 +15,14 @@ import kawapad.KawapadDocuments;
 import lamu.LamuApplicationDefaultArgument.Element;
 import pulsar.Pulsar;
 import pulsar.PulsarDocuments;
-import pulsar.lib.PulsarLogFormatter;
-import pulsar.lib.Version;
-import pulsar.lib.app.ApplicationComponent;
-import pulsar.lib.app.ApplicationVessel;
-import pulsar.lib.app.process.JavaProcess;
-import pulsar.lib.log.PulsarLogger;
-import pulsar.lib.scheme.doc.DescriptiveHelp;
 import pulsar.lib.swing.PulsarGuiUtils;
+import quartz.lib.LogFormatter;
+import quartz.lib.Version;
+import quartz.lib.app.ApplicationComponent;
+import quartz.lib.app.ApplicationVessel;
+import quartz.lib.app.process.JavaProcess;
+import quartz.lib.log.PulsarLogger;
+import quartz.lib.scheme.doc.DescriptiveHelp;
 
 public class LamuApplication {
     static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -147,7 +147,7 @@ public class LamuApplication {
         
         System.err.println( "*** WELCOME TO PULSAR ***" );
         System.err.println( "VERSION : " + Version.get( LamuApplication.class ) );
-        PulsarLogFormatter.init();
+        LogFormatter.init();
         LamuPrinter.init();
 
         List<ApplicationComponent> components = parseArgs(args);

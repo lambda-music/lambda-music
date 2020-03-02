@@ -38,9 +38,9 @@ import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroCollector;
 import metro.MetroTrack;
-import pulsar.lib.log.PulsarLogger;
-import pulsar.lib.scheme.SchemePrinter;
-import pulsar.lib.scheme.SchemeUtils;
+import quartz.lib.log.PulsarLogger;
+import quartz.lib.scheme.SchemePrinter;
+import quartz.lib.scheme.SchemeUtils;
 
 /**
  * {@link NoteListParser} receives a cons cell of Scheme language which contains

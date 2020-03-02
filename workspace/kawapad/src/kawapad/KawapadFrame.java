@@ -46,19 +46,19 @@ import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
-import pulsar.lib.CurrentObject;
-import pulsar.lib.PulsarLogFormatter;
-import pulsar.lib.Version;
-import pulsar.lib.app.ApplicationComponent;
-import pulsar.lib.app.ApplicationVessel;
-import pulsar.lib.log.PulsarLogger;
-import pulsar.lib.scheme.SchemeEngine;
-import pulsar.lib.scheme.doc.DescriptiveDocumentCategory;
-import pulsar.lib.scheme.doc.DescriptiveHelp;
-import pulsar.lib.swing.AcceleratorKeyList;
-import pulsar.lib.swing.Action2;
-import pulsar.lib.thread.ThreadInitializer;
-import pulsar.lib.thread.ThreadInitializerContainer;
+import quartz.lib.CurrentObject;
+import quartz.lib.LogFormatter;
+import quartz.lib.Version;
+import quartz.lib.app.ApplicationComponent;
+import quartz.lib.app.ApplicationVessel;
+import quartz.lib.log.PulsarLogger;
+import quartz.lib.scheme.SchemeEngine;
+import quartz.lib.scheme.doc.DescriptiveDocumentCategory;
+import quartz.lib.scheme.doc.DescriptiveHelp;
+import quartz.lib.swing.AcceleratorKeyList;
+import quartz.lib.swing.Action2;
+import quartz.lib.thread.ThreadInitializer;
+import quartz.lib.thread.ThreadInitializerContainer;
 
 public class KawapadFrame extends JFrame implements ThreadInitializerContainer<KawapadFrame>, ApplicationComponent {
     static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -368,7 +368,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
     public static void main(String[] args) throws IOException {
         System.err.println( "*** Welcome to Kawapad *** " );
         System.err.println( "VERSION : " + Version.get( KawapadFrame.class ) );
-        PulsarLogFormatter.init();
+        LogFormatter.init();
         if ( 0 < args.length  ) {
             if ( args[0].equals( "--version" ) ) {
                 System.out.println( Version.get( KawapadFrame.class ) );

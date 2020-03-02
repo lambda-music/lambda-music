@@ -103,10 +103,10 @@ import metro.MetroMidi.MetroMidiSongPositionPointer;
 import metro.MetroMidi.MetroMidiSongSelect;
 import metro.MetroMidi.MetroMidiStart;
 import metro.MetroMidi.MetroMidiStop;
+import quartz.lib.log.PulsarLogger;
 import metro.MetroMidiMessageGen;
 import metro.MetroPort;
 import metro.MetroTrack;
-import pulsar.lib.log.PulsarLogger;
 
 /**
  * Defines MIDI events.

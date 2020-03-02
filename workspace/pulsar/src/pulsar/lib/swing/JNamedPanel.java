@@ -14,7 +14,7 @@ import java.util.logging.Level;
 import javax.swing.JPanel;
 
 import gnu.mapping.Procedure;
-import pulsar.lib.log.PulsarLogger;
+import quartz.lib.log.PulsarLogger;
 
 public class JNamedPanel extends JPanel implements JSelectableUserObject {
     public JNamedPanel() {

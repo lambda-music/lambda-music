@@ -6,10 +6,10 @@ import kawapad.Kawapad;
 import kawapad.KawapadFrame;
 import pulsar.Pulsar;
 import pulsar.PulsarFrame;
-import pulsar.lib.scheme.SchemeEngine;
-import pulsar.lib.scheme.doc.DescriptiveHelp;
-import pulsar.lib.scheme.http.SchemeHttp;
-import pulsar.lib.scheme.http.SchemeHttp.UserAuthentication;
+import quartz.lib.scheme.SchemeEngine;
+import quartz.lib.scheme.doc.DescriptiveHelp;
+import quartz.lib.scheme.http.SchemeHttp;
+import quartz.lib.scheme.http.SchemeHttp.UserAuthentication;
 
 public class LamuApplicationLibrary {
     public static void initializeSchemeEngine( SchemeEngine schemeEngine ) {

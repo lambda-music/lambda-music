@@ -59,12 +59,12 @@ import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import gnu.math.IntNum;
 import pulsar.Pulsar;
-import pulsar.lib.log.PulsarLogger;
-import pulsar.lib.scheme.InvokableSchemeProcedure;
-import pulsar.lib.scheme.SchemeUtils;
-import pulsar.lib.scheme.proc.PulsarProcedureN;
-import pulsar.lib.secretary.Invokable;
-import pulsar.lib.thread.ThreadInitializerCollection;
+import quartz.lib.log.PulsarLogger;
+import quartz.lib.scheme.InvokableSchemeProcedure;
+import quartz.lib.scheme.SchemeUtils;
+import quartz.lib.scheme.proc.PulsarProcedureN;
+import quartz.lib.secretary.Invokable;
+import quartz.lib.thread.ThreadInitializerCollection;
 
 public abstract class SchemeNewFactory {
     static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );

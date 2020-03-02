@@ -32,7 +32,7 @@ import java.util.logging.Level;
 
 import org.jaudiolibs.jnajack.JackException;
 
-import pulsar.lib.log.PulsarLogger;
+import quartz.lib.log.PulsarLogger;
 
 /*
  * To acquire further understanding about buffering of this Metro framework,

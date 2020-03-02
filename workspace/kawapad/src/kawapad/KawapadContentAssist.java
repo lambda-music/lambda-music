@@ -21,9 +21,9 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.Segment;
 
-import pulsar.lib.log.PulsarLogger;
-import pulsar.lib.scheme.SchemeEvaluator;
-import pulsar.lib.scheme.SchemeUtils;
+import quartz.lib.log.PulsarLogger;
+import quartz.lib.scheme.SchemeEvaluator;
+import quartz.lib.scheme.SchemeUtils;
 
 public class KawapadContentAssist {
     static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );

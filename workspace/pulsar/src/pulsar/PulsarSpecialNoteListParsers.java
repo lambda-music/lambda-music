@@ -41,9 +41,9 @@ import metro.MetroCollector;
 import metro.MetroPort;
 import metro.MetroSyncType;
 import metro.MetroTrack;
-import pulsar.lib.log.PulsarLogger;
-import pulsar.lib.scheme.SchemeUtils;
-import pulsar.lib.secretary.InvokablyRunnable;
+import quartz.lib.log.PulsarLogger;
+import quartz.lib.scheme.SchemeUtils;
+import quartz.lib.secretary.InvokablyRunnable;
 
 /**
  * Defines special note events. 

@@ -19,9 +19,9 @@ import metro.MetroPort;
 import metro.MetroSequence;
 import metro.MetroTrack;
 import metro.SimpleMetroEventBuffer;
-import pulsar.lib.log.PulsarLogger;
-import pulsar.lib.scheme.SchemeUtils;
-import pulsar.lib.secretary.Invokable;
+import quartz.lib.log.PulsarLogger;
+import quartz.lib.scheme.SchemeUtils;
+import quartz.lib.secretary.Invokable;
 
 
 public class SchemeSequenceRecorder implements MetroSequence, SchemeSequenceReadable, Invokable {

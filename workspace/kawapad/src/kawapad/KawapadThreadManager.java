@@ -4,7 +4,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.ArrayDeque;
 import java.util.logging.Level;
 
-import pulsar.lib.log.PulsarLogger;
+import quartz.lib.log.PulsarLogger;
 
 public final class KawapadThreadManager implements ThreadManager {
     static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );

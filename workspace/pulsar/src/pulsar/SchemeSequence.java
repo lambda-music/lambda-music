@@ -35,9 +35,9 @@ import metro.MetroCollector;
 import metro.MetroMidiEvent;
 import metro.MetroSequence;
 import metro.MetroTrack;
-import pulsar.lib.log.PulsarLogger;
-import pulsar.lib.scheme.proc.PulsarProcedureN;
-import pulsar.lib.secretary.Invokable;
+import quartz.lib.log.PulsarLogger;
+import quartz.lib.scheme.proc.PulsarProcedureN;
+import quartz.lib.secretary.Invokable;
 
 public class SchemeSequence implements MetroSequence, SchemeSequenceReadable, Invokable {
     static final PulsarLogger LOGGER = PulsarLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
