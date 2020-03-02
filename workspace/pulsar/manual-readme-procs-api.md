@@ -1,4 +1,0 @@
-Pulsar API Reference
-======================
-
-

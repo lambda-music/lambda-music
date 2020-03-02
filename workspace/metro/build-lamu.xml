@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- WARNING: Eclipse auto-generated file.
+              Any modifications will be overwritten.
+              To include a user specific buildfile here, simply create one in the same
+              directory with the processing instruction <?eclipse.ant.import?>
+              as the first entry and export the buildfile again. --><project basedir="." default="build" name="metro">
+    <property environment="env"/>
+    <property name="lamu.location" value="../lamu"/>
+    <property name="pulsar.location" value="../pulsar"/>
+    <property name="lib.location" value="../lib"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.8"/>
+    <property name="source" value="1.8"/>
+    <path id="lib.classpath">
+        <pathelement location="${lib.location}/bin"/>
+        <pathelement location="${lib.location}/lib/jna-4.5.0.jar"/>
+        <pathelement location="${lib.location}/lib/jna-platform-4.5.0.jar"/>
+        <pathelement location="${lib.location}/lib/jnajack-1.3.0.jar"/>
+        <pathelement location="${lib.location}/lib/kawa.jar"/>
+        <pathelement location="${lib.location}/lib/JTattoo-1.6.11.jar"/>
+    </path>
+    <path id="metro.classpath">
+        <pathelement location="bin"/>
+        <path refid="lib.classpath"/>
+    </path>
+    <target name="init">
+        <mkdir dir="bin"/>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete dir="bin"/>
+    </target>
+    <target depends="clean" name="cleanall">
+        <ant antfile="build-lamu.xml" dir="${lib.location}" inheritAll="false" target="clean"/>
+    </target>
+    <target depends="build-subprojects,build-project" name="build"/>
+    <target name="build-subprojects">
+        <ant antfile="build-lamu.xml" dir="${lib.location}" inheritAll="false" target="build-project"/>
+    </target>
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
+            <src path="src"/>
+            <classpath refid="metro.classpath"/>
+        </javac>
+    </target>
+    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects">
+        <ant antfile="build-lamu.xml" dir="${lamu.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build-lamu.xml" dir="${lamu.location}" inheritAll="false" target="build"/>
+        <ant antfile="build-lamu.xml" dir="${pulsar.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build-lamu.xml" dir="${pulsar.location}" inheritAll="false" target="build"/>
+    </target>
+</project>
