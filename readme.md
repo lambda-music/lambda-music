@@ -164,14 +164,14 @@ global IP assigned or a running production server etc. causes great security
 risks. Do not run Lamu in such situations.
 
 
-### Basic  ### 
-
+### Basic  ###
+_UNDER CONSTRUCTION_
 
 ### Command Reference ###
-
+_UNDER CONSTRUCTION_
 
 ### Architecture of Pulsar Sequencer ###
-
+_UNDER CONSTRUCTION_
 Pulsar consists three parts of components :
 
 - [KawaPad](./workspace/kawapad/readme.md )
