@@ -1,3 +1,4 @@
 theme: jekyll-theme-leap-day
 title: Lambda Programmable Music Sequencer
 description: Write Scheme and make music on-the-fly with JACKAudio.
+google_analytics: UA-159323195-3
