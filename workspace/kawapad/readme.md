@@ -1,4 +1,4 @@
-Kawapad Scheme Editor Developer Reference 
+Kawapad Scheme Editor Developer's Reference 
 ==============================================
 
 **UNDER CONSTRUCTION**
