@@ -3,11 +3,11 @@ Kawapad Scheme Editor Developer Reference
 
 **UNDER CONSTRUCTION**
 
-- [The Specification of Pulsar Association Lists for Notation][notes-api]
-- [The Specification of Pulsar API for Scheme Procedures][procs-api]
+- [The Reference of Kawapad API][doc-api]
+- [The Reference of Kawapad Default Keystrokes][doc-keystroke]
 
-[notes-api]:../lamu/docs/notes-api/
-[procs-api]:../lamu/docs/procs-api/
+[doc-api]:./docs/api/
+[doc-keystroke]:./docs/keystrokes/
 
 [kawa]: https://www.gnu.org/software/kawa/
 [lambda-music]: ../
