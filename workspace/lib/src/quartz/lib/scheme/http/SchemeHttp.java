@@ -44,6 +44,7 @@ import quartz.lib.thread.ThreadInitializerContainer;
  */
 
 public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, ThreadInitializerCollectionContainer, ApplicationComponent {
+    public static final String PATH_VIM = "/vim";
     public static final String PATH_RESET = "/reset";
     public static final String PATH_EVAL  = "/eval";
     static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -177,10 +178,9 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
     }
     private void initialize( String path ) throws IOException {
         httpServer = HttpServer.create(new InetSocketAddress( port ), 0);
-        httpServer.createContext( path + "/pulsar", new VimSchemeEvaluation(  this.authentication) );
-        httpServer.createContext( path + "/vim",    new VimSchemeEvaluation(  this.authentication) );
-        httpServer.createContext( path + PATH_EVAL,   new PlainSchemeEvaluation(this.authentication) );
-        httpServer.createContext( path + PATH_RESET,  new ResetScheme(          this.authentication) );
+        httpServer.createContext( path + PATH_VIM,     new VimSchemeEvaluation(  this.authentication) );
+        httpServer.createContext( path + PATH_EVAL,  new PlainSchemeEvaluation(this.authentication) );
+        httpServer.createContext( path + PATH_RESET, new ResetScheme(          this.authentication) );
         
         httpServer.setExecutor(null); // creates a default executor
         httpServer.start();
