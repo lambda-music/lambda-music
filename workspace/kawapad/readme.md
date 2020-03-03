@@ -1,9 +1,7 @@
-Kawapad Scheme Editor 
-=======================
+Kawapad Scheme Editor Developer Reference 
+==============================================
 
-Pulsar is a bridge between [Metro Sequencing Framework][metro] and 
-[Kawa][kawa]. Pulsar defines API to manipulate JACKAudio from Scheme.
-Pulsar defines two categories of API:
+**UNDER CONSTRUCTION**
 
 - [The Specification of Pulsar Association Lists for Notation][notes-api]
 - [The Specification of Pulsar API for Scheme Procedures][procs-api]
