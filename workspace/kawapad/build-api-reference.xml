@@ -17,15 +17,20 @@
         	error="${dir.apiref.output}/generated-kawapad-api.log" >
             <arg value="--output-reference" />
         </java>
-        <java jar="kawapad.jar"  fork="true" output="${dir.apiref.output}/generated-kawapad-keystroke.md" error="${dir.apiref.output}/generated-kawapad-keystroke.log" >
+        <java jar="kawapad.jar"  fork="true" 
+        	output="${dir.apiref.output}/generated-kawapad-keystroke.md" 
+        	error="${dir.apiref.output}/generated-kawapad-keystroke.log" >
             <arg value="--output-keystroke-reference" />
         </java>
     </target>
     <target name="concat_api_reference" depends="create_api_reference" >
-        <concat destfile="${dir.docs}/readme.md"  >
-            <file file="${dir.apiref.input}/manual-readme.md" />
-            <file file="${dir.apiref.output}/generated-kawapad-api.md" />
+        <concat destfile="${dir.docs}/keystrokes/readme.md"  >
+            <file file="${dir.apiref.input}/manual-kawapad-keystroke.md" />
             <file file="${dir.apiref.output}/generated-kawapad-keystroke.md" />
+        </concat>
+        <concat destfile="${dir.docs}/api/readme.md"  >
+            <file file="${dir.apiref.input}/manual-kawapad-api.md" />
+            <file file="${dir.apiref.output}/generated-kawapad-api.md" />
         </concat>
         <delete dir="${dir.apiref.output}" />
     </target>
