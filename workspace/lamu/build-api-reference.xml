@@ -11,7 +11,8 @@
     <property name="dir.docs" value="./docs" />
     <target name="create_api_reference" >
         <mkdir dir="${dir.apiref.output}"/>
-        <mkdir dir="${dir.docs}"/>
+        <mkdir dir="${dir.docs}/procs-api" />
+        <mkdir dir="${dir.docs}/notes-api"/>
         <java jar="lamu.jar"  fork="true"   > <!-- error="generated/generated-api.log" -->
             <arg value="exec" />
             <arg value="scheme" />
@@ -41,14 +42,14 @@
         </java>
     </target>
     <target name="concat_api_reference" depends="create_api_reference" >
-        <concat destfile="${dir.docs}/readme-procs-api.md"  >
+        <concat destfile="${dir.docs}/procs-api/readme.md"  >
             <file file="${dir.apiref.input}/manual-readme-procs-api.md" />
             <file file="${dir.apiref.output}/generated-pulsar-api.md" />
             <file file="${dir.apiref.output}/generated-pulsar-gui-api.md" />
             <file file="${dir.apiref.output}/generated-kawapad-api.md" />
             <file file="${dir.apiref.output}/generated-help-api.md" />
         </concat>
-        <concat destfile="${dir.docs}/readme-notes-api.md"  >
+        <concat destfile="${dir.docs}/notes-api/readme.md"  >
             <file file="${dir.apiref.input}/manual-readme-notes-api.md" />
             <file file="${dir.apiref.output}/generated-pulsar-notations-api.md" />
         </concat>
