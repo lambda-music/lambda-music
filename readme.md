@@ -2,13 +2,8 @@
 Lamu a Programmable Music Sequencer 
 ===================================
 
-[Overview of Lambda Programmable Music Sequencer][lambda-music]
-
-<iframe width="560" height="315" 
-src="https://www.youtube.com/embed/4Uu6bKWs_Vc" frameborder="0" 
-allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
-allowfullscreen>
-</iframe>
+# Introduction #
+Please, read [Overview of Lambda Programmable Music Sequencer][lambda-music].
 
 # Architecture #
 Lamu is merely an Lisp editor built on Scheme interpreter works with JACKAudio 
@@ -241,12 +236,13 @@ Eclipse. This build file can build Pulsar-Sequencer.
 
 
 
-[jna]: https://github.com/java-native-access/jna
 [kawa]: https://www.gnu.org/software/kawa/
-[lambda-music]: https://lambda-music.github.io/
-[metro]:./workspace/metro/readme.md
-[pulsar]:.//workspace/pulsar/readme.md
-[kawapad]:https://lambda-music.github.io/lamu/workspace/kawapad/readme.md
+[lambda-music]: ../
+[metro]:./workspace/metro/
+[pulsar]:./workspace/pulsar/
+[kawapad]:./workspace/kawapad/
 [architecture]:https://lambda-music.github.io/lamu/imgs/lambda-music-architecture-300.png
+[jna]:https://github.com/java-native-access/jna
+[jnajack]:https://github.com/jaudiolibs/jnajack
 
 [vim-modeline]: # ( vim: set spell expandtab fo+=awlt : )
