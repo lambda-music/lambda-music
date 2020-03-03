@@ -259,6 +259,6 @@ Eclipse. This build file can build Pulsar-Sequencer.
 [kawa]: https://www.gnu.org/software/kawa/
 [lambda-music]: https://lambda-music.github.io/
 [kawapad]: https://lambda-music.github.io/lamu/workspace/kawapad/readme.md
-[architecture]: https://lambda-music.github.io/lamu/imgs/lambda-music-architecture.png
+[architecture]: https://lambda-music.github.io/lamu/imgs/lambda-music-architecture-300.png
 
 [vim-modeline]: # ( vim: set spell expandtab fo+=aw: )
