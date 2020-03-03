@@ -43,23 +43,9 @@ Lamu consists several layers on its architecture.
 
 
 This repository includes following three projects :
-[Kawapad][kawapad] [Metro][metro] [Pulsar][pulsar]
-
-
-I started to write this program to get a metronome to practice the guitar.
-And then I realized that this program could be a live-coding environment; I 
-started to write a Scheme editor to speed up the way write the Scheme code.  
-That is [Kawapad][kawapad]
-
-But later I realized that this program can be JACKAudio connection controller.  
-Actually, I have been in a difficult time to get along with LADISH and I have 
-never had it work right with my favorite synth applications. The connections 
-are too fragile and lost too often. Therefore, I have written some mechanisms 
-to restore/scrap a set of connections programmatically. That is 
-[Pulsar][pulsar].  Not only is [Pulsar][pulsar] actually to restore/scrap 
-connections; I'll talk about it later.
-
-[Lamu](https://lambda-music.github.io/lamu/)
+- [Kawapad][kawapad]
+- [Metro][metro]
+- [Pulsar][pulsar]
 
 ![corresponding-parenthesis-movement](imgs/corresponding-parenthesis-movement.gif)
 
