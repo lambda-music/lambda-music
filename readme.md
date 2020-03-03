@@ -1,5 +1,5 @@
 
-Lamu a Programmable Music Sequencer 
+Lambda Programmable Music Sequencer 
 ===================================
 
 # Introduction #
@@ -42,7 +42,7 @@ This repository includes following three projects :
 - [Metro][metro]
 - [Pulsar][pulsar]
 
-![corresponding-parenthesis-movement](imgs/corresponding-parenthesis-movement.gif)
+![corresponding-parenthesis-movement][editor-movie]
 
 
 ### Documentation ###
@@ -244,5 +244,6 @@ Eclipse. This build file can build Pulsar-Sequencer.
 [architecture]:https://lambda-music.github.io/lamu/imgs/lambda-music-architecture-300.png
 [jna]:https://github.com/java-native-access/jna
 [jnajack]:https://github.com/jaudiolibs/jnajack
+[editor-movie]:./imgs/corresponding-parenthesis-movement.gif
 
 [vim-modeline]: # ( vim: set spell expandtab fo+=awlt : )
