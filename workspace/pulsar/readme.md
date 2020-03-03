@@ -2,9 +2,14 @@ Pulsar
 =======
 
 Pulsar is a bridge between [Metro Sequencing Framework][metro] and 
-[Kawa][kawa].  Pulsar defines API methods to manipulate JACKAudio from Scheme.
+[Kawa][kawa]. Pulsar defines API to manipulate JACKAudio from Scheme.
+Pulsar defines two categories of API:
 
+-[The Specification of Pulsar Association Lists for Notation][note-api]
+-[The Specification of Pulsar API for Scheme Procedures][proc-api]
 
+[note-api]:../lamu/docs/note-api/
+[proc-api]:../lamu/docs/proc-api/
 [kawa]: https://www.gnu.org/software/kawa/
 [lambda-music]: ../
 [metro]:./workspace/metro/
