@@ -244,8 +244,8 @@ Eclipse. This build file can build Pulsar-Sequencer.
 [jna]: https://github.com/java-native-access/jna
 [kawa]: https://www.gnu.org/software/kawa/
 [lambda-music]: https://lambda-music.github.io/
-[metro]:https://lambda-music.github.io/lamu/workspace/metro/readme.md
-[pulsar]:https://lambda-music.github.io/lamu/workspace/pulsar/readme.md
+[metro]:./workspace/metro/readme.md
+[pulsar]:.//workspace/pulsar/readme.md
 [kawapad]:https://lambda-music.github.io/lamu/workspace/kawapad/readme.md
 [architecture]:https://lambda-music.github.io/lamu/imgs/lambda-music-architecture-300.png
 
