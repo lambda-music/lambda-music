@@ -2,37 +2,49 @@
 Lamu a Programmable Music Sequencer 
 ===================================
 
-### Write Scheme and Make Music by Lamu ###
+[Overview of Lambda Programmable Music Sequencer][lambda-music]
 
-![corresponding-parenthesis-movement](imgs/corresponding-parenthesis-movement.gif)
+<iframe width="560" height="315" 
+src="https://www.youtube.com/embed/4Uu6bKWs_Vc" frameborder="0" 
+allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
+allowfullscreen>
+</iframe>
 
-Lamu (stands for LAmbda-MUsic) is a music sequencer which enables users to 
-write music as Scheme programs. In this system, musical notes and other 
-informations are written as Scheme's association lists. The musical notes can 
-be dynamically generated as Scheme's association lists on-the-fly. Users can 
-also interact with the dynamically generated music at runtime and affect the 
-direction that the music is going.
+# Architecture #
+Lamu is merely an Lisp editor built on Scheme interpreter works with JACKAudio 
+client. This can be used as a live-coding environment, or a JACK connection 
+controller which can be executed from your shell. I believe it is a very simple 
+yet effective way to implement DAW in Linux. 
 
-Lamu is written in Java and Scheme which is powered by Kawa a Java based
-Scheme implementation. You can process MIDI data via JACKAudio Connection Kit
-a multiplatform audio connection system which is accessed via Java Native
-Access.
-
-Lamu runs on most major platforms which can run Java such as Windows, Mac-OSX
-and various Linux distributions. 
-
-### Architecture ### 
-
-You may ask, what the heck is this? Well, this is merely a JACKAudio client 
-which works with a powerful scripting language Scheme. This could be a 
-live-coding environment, or a JACK connection controller which can be executed 
-from your shell, or could be anything; it is very simple yet incredibly 
-powerful way to play music, in my humble opinion. I have not tried other 
-live-coding environment such as SuperCollider, Sonic Pi and others; but I am 
-fairly sure this can be a very Linux-way to implement a live-coding 
+I have not tried other live-coding environment such as SuperCollider, Sonic Pi 
+and others; the main difference between them and Lamu is that these 
+environments have sound modules but Lamu does not. Lamu is simply a JACKAudio 
+client. But I believe this can be a very Linux-way to implement a live-coding 
 environment.
 
+Lamu consists several layers on its architecture.
+
 ![Architecture][architecture]
+
+- [Kawa Scheme][kawa]
+  A Scheme implementation which is written in Java.
+- Kawa HTTP
+  A HTTP interface for Kawa.
+- [Kawapad][kawapad]
+  A Lisp editor which is written in Java. This works as an interface for Kawa.
+- [Metro][metro]
+  A multi-track MIDI sequencer framework which is written in Java.
+- [Pulsar][pulsar]
+  A bridge between [Metro][metro] and [Kawa Scheme][kawa]
+- [jna][jna]
+  Java Native Access.
+- [jnajack][jnajack]
+  Java bindings to JACK Audio Connection Kit.
+
+
+This repository includes following three projects :
+[Kawapad][kawapad] [Metro][metro] [Pulsar][pulsar]
+
 
 I started to write this program to get a metronome to practice the guitar.
 And then I realized that this program could be a live-coding environment; I 
@@ -47,34 +59,10 @@ to restore/scrap a set of connections programmatically. That is
 [Pulsar][pulsar].  Not only is [Pulsar][pulsar] actually to restore/scrap 
 connections; I'll talk about it later.
 
+[Lamu](https://lambda-music.github.io/lamu/)
 
-### About Me ###
+![corresponding-parenthesis-movement](imgs/corresponding-parenthesis-movement.gif)
 
-I am a Japanese programmer born in 1973. I was born and raised in Tokyo.  
-Therefore, I have never spoken English in daily life. Believe me. And Japanese 
-people is one of the most English resistant people which is extremely stubborn.  
-I know it and I have to admit it. But in the meantime I cannot help it.
-I have tried so many times to educate this stubborn people and I finally gave 
-up. They are too stubborn.  The grammar structure and pronunciation system in 
-Japanese are very different from rest of the world and it is extremely 
-difficult to make Japanese people understand the difference. It maybe because 
-the geographical situation is so isolated from others that the history have 
-been developed very differently.  I still haven't found the exact reason why 
-Japanese is so different from others.
-
-Therefore, you may find my documentation has some difficulty to be 
-comprehended; I have to admit it and please excuse my English in advance. The 
-following is a list of documentation which I have written so far about this 
-program.
-
-But there may be something that makes me different from other Japanese; I was 
-living in _super-rural_ area in North-East Thailand for twelve years and I 
-luckily did not die; there were many opportunities that I could die but I 
-didn't. During the time I learned a dialect of Laotian language and eventually 
-I could speak it very fluently. That experience opened me up to the other 
-languages like English. And I studied Scheme in the same period.
-
-Anyways, the following is the list.
 
 ### Documentation ###
 
@@ -267,7 +255,10 @@ Eclipse. This build file can build Pulsar-Sequencer.
 
 
 
+[jna]: https://github.com/java-native-access/jna
+[kawa]: https://www.gnu.org/software/kawa/
+[lamuda-music]: https://lambda-music.github.io/
 [kawapad]: https://lambda-music.github.io/lamu/workspace/kawapad/readme.md
-[architecture]: https://lambda-music.github.io/lamu/docs/lambda-music-architecture.png
+[architecture]: https://lambda-music.github.io/lamu/imgs/lambda-music-architecture.png
 
 [vim-modeline]: # ( vim: set spell expandtab fo+=aw: )
