@@ -199,7 +199,7 @@ Eclipse. This file builds `Lamu.jar`.
 
 
 [L_KAWA]: https://www.gnu.org/software/kawa/
-[L_LAMBDA_MUSIC]: ../
+[L_LAMBDA_MUSIC]:https://lambda-music.github.io/
 [architecture]:https://lambda-music.github.io/lamu/imgs/lambda-music-architecture-300.png
 [L_JNA]:https://github.com/java-native-access/jna
 [L_JNAJACK]:https://github.com/jaudiolibs/jnajack
