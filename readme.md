@@ -43,16 +43,19 @@ Lamu includes following projects :
 
 ## User Documentation ##
 - [Getting Started](./getting-started.md)
-- [Lamu Command-line Parameter Specification](./workspace/lamu/docs/args-api/)
-- [Pulsar API Reference](./workspace/lamu/docs/procs-api/)
-- [Pulsar Notation Reference](./workspace/lamu/docs/notes-api/)
-- [KawaPad API Reference](workspace/kawapad/docs/api/)
-- [KawaPad Keystroke Reference](workspace/kawapad/docs/keystrokes/)
+- [Lamu Command-line Parameter Specification](./workspace/build/docs/args-api/)
+- [Pulsar API Reference](./workspace/build/docs/procs-api/)
+- [Pulsar Notation Reference](./workspace/build/docs/notes-api/)
+- [KawaPad API Reference](./workspace/kawapad/docs/api/)
+- [KawaPad Keystroke Reference](./workspace/kawapad/docs/keystrokes/)
+
+[# kawapad-api]: ./workspace/kawapad/docs.src/manual-kawapad-api.md
+[# kawapad-keystroke]: ./workspace/kawapad/docs.src/manual-kawapad-keystroke.md
 
 ## Developer Documentation ##
-- [Pulsar](./workspace/pulsar/)
-- [Metro](./workspace/metro/)
-- [JavaDoc of Metro](workspace/metro/doc/index.html)
+- [Javadoc of Lambda Programmable Music Sequencer](./workspace/build/javadoc/index.html)
+- [Pulsar](./workspace/pulsar/readme.md)
+- [Metro](./workspace/metro/readme.md)
 - [KawaPad](./workspace/kawapad/)
 
 # System Requirements #
