@@ -1,23 +1,18 @@
 Pulsar 
 =======
 
-Pulsar is a bridge between [Metro Sequencing Framework][metro] and 
-[Kawa][kawa]. Pulsar defines API to manipulate JACKAudio from Scheme.
+Pulsar is a bridge between [Metro Sequencing Framework][METRO] and 
+[Kawa][KAWA].  Pulsar defines API to manipulate JACKAudio from Scheme.
 Pulsar defines two categories of API:
 
-- [The Specification of Pulsar Association Lists for Notation][notes-api]
-- [The Specification of Pulsar API for Scheme Procedures][procs-api]
+# User's Manual #
+- [The Specification of Pulsar Association Lists for Notation][NOTES_API]
+- [The Specification of Pulsar API for Scheme Procedures][PROCS_API]
 
-[notes-api]:../lamu/docs/notes-api/
-[procs-api]:../lamu/docs/procs-api/
+# Developer's Manual #
+- [JavaDoc of Pulsar-package](../build/javadoc/pulsar/package-summary.html)
 
-[kawa]: https://www.gnu.org/software/kawa/
-[lambda-music]: ../
-[metro]:./workspace/metro/
-[pulsar]:./workspace/pulsar/
-[kawapad]:./workspace/kawapad/
-[architecture]:https://lambda-music.github.io/lamu/imgs/lambda-music-architecture-300.png
-[jna]:https://github.com/java-native-access/jna
-[jnajack]:https://github.com/jaudiolibs/jnajack
-[editor-movie]:./imgs/corresponding-parenthesis-movement.gif
-[vim-modeline]: # ( vim: set spell expandtab fo+=awlt : )
+[NOTES_API]: ../build/docs/notes-api/readme.md
+[PROCS_API]: ../build/docs/procs-api/readme.md
+[KAWA]: https://www.gnu.org/software/kawa/
+[METRO]:../metro/readme.md
