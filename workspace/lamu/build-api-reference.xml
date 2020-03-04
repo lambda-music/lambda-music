@@ -11,8 +11,10 @@
     <property name="dir.docs" value="./docs" />
     <target name="create_api_reference" >
         <mkdir dir="${dir.apiref.output}"/>
+        <mkdir dir="${dir.docs}" />
         <mkdir dir="${dir.docs}/procs-api" />
         <mkdir dir="${dir.docs}/notes-api"/>
+        <mkdir dir="${dir.docs}/args-api"/>
         <java jar="lamu.jar"  fork="true"   > <!-- error="generated/generated-api.log" -->
             <arg value="exec" />
             <arg value="scheme" />
@@ -53,8 +55,17 @@
             <file file="${dir.apiref.input}/manual-readme-notes-api.md" />
             <file file="${dir.apiref.output}/generated-pulsar-notations-api.md" />
         </concat>
+        <concat destfile="${dir.docs}/args-api/readme.md"  >
+            <file file="${dir.apiref.input}/manual-readme-args-api.md" />
+        </concat>
+        <concat destfile="${dir.docs}/readme.md"  >
+            <file file="${dir.apiref.input}/manual-readme.md" />
+        </concat>
         <delete dir="${dir.apiref.output}" />
     </target>
-    <target name="build" depends="concat_api_reference">
+	<target name="clean" >
+    	<delete dir="${dir.docs}" />
+	</target>
+    <target name="build" depends="clean,concat_api_reference">
     </target>
 </project>

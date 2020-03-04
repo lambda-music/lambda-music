@@ -43,7 +43,7 @@ Lamu includes following projects :
 
 ## User Documentation ##
 - [Getting Started](./getting-started.md)
-- [Lamu Command-line Parameter Specification](./workspace/lamu/readme.md) 
+- [Lamu Command-line Parameter Specification](./workspace/lamu/docs/args-api/) 
 - [Pulsar API Reference](./workspace/lamu/docs/procs-api/)
 - [Pulsar Notation Reference](./workspace/lamu/docs/notes-api/)
 - [KawaPad API Reference](workspace/kawapad/docs/api/)
