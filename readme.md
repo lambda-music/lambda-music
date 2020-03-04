@@ -14,8 +14,8 @@ yet effective way to implement DAW in Linux.
 I have not tried other live-coding environment such as SuperCollider, Sonic Pi 
 and others; the main difference between them and Lamu is that these 
 environments have sound modules but Lamu does not. Lamu is simply a JACKAudio 
-client. But I believe this can be a very Linux-way to implement a live-coding 
-environment.
+client. I believe the combination of Scheme and JACKAudio can be a very 
+effective and "Linux"-way to implement a live-coding environment.
 
 Lamu consists several layers on its architecture.
 
@@ -32,7 +32,7 @@ Lamu depends on following projects :
 Lamu includes following projects :
 - [Lamu/Kawapad][kawapad]
   A Lisp editor which is written in Java. This works as an interface for Kawa.
-- Kawa HTTP
+- Lamu/Kawa HTTP
   A HTTP interface for Kawa.
 - [Lamu/Metro][metro]
   A multi-track MIDI sequencer framework which is written in Java.
@@ -42,8 +42,8 @@ Lamu includes following projects :
 # Documentation #
 
 ## User Documentation ##
-- [Getting Started](getting-started.md)
-- [Lamu Command-line Parameter Specification](./workspace/lamu/) 
+- [Getting Started](./getting-started.md)
+- [Lamu Command-line Parameter Specification](./workspace/lamu/readme.md) 
 - [Pulsar API Reference](./workspace/lamu/docs/procs-api/)
 - [Pulsar Notation Reference](./workspace/lamu/docs/notes-api/)
 - [KawaPad API Reference](workspace/kawapad/docs/api/)
