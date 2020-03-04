@@ -22,28 +22,28 @@ Lamu consists several layers on its architecture.
 ![Architecture][architecture]
 
 Lamu depends on following projects :
-- [Kawa Scheme][kawa]
+- [Kawa Scheme][L_KAWA]
   A Scheme implementation which is written in Java.
-- [jna][jna]
+- [jna][L_JNA]
   Java Native Access.
-- [jnajack][jnajack]
+- [jnajack][L_JNAJACK]
   Java bindings to JACK Audio Connection Kit.
 
 Lamu includes following projects :
-- [Lamu/Kawapad][kawapad]
+- [Lamu/Kawapad](./workspace/kawapad/)
   A Lisp editor which is written in Java. This works as an interface for Kawa.
 - Lamu/Kawa HTTP
   A HTTP interface for Kawa.
-- [Lamu/Metro][metro]
+- [Lamu/Metro](./workspace/metro/)
   A multi-track MIDI sequencer framework which is written in Java.
-- [Lamu/Pulsar][pulsar]
-  A bridge between [Metro][metro] and [Kawa Scheme][kawa]
+- [Lamu/Pulsar](./workspace/pulsar/)
+  A bridge between [Metro](./workspace/metro/) and [Kawa Scheme][L_KAWA]
 
 # Documentation #
 
 ## User Documentation ##
 - [Getting Started](./getting-started.md)
-- [Lamu Command-line Parameter Specification](./workspace/lamu/docs/args-api/) 
+- [Lamu Command-line Parameter Specification](./workspace/lamu/docs/args-api/)
 - [Pulsar API Reference](./workspace/lamu/docs/procs-api/)
 - [Pulsar Notation Reference](./workspace/lamu/docs/notes-api/)
 - [KawaPad API Reference](workspace/kawapad/docs/api/)
@@ -53,19 +53,17 @@ Lamu includes following projects :
 - [Pulsar](./workspace/pulsar/)
 - [Metro](./workspace/metro/)
 - [JavaDoc of Metro](workspace/metro/doc/index.html)
-- [KawaPad][kawapad]
+- [KawaPad](./workspace/kawapad/)
 
-[todo]: # ( aaa )
-
-### System Requirements ###
+# System Requirements #
 Any operating systems that can run the following systems:
 - Java 8
-- JNA Java Native Access
+- JNA
 - JACK Audio Connection Kit
 
-Pulsar has been developed and tested in Ubuntu 16.04. A cursory experiment to
-run Pulsar in Windows 10 with Windows JACKAudio was succeeded.  It is still unknown
-if Pulsar can run in OS X and further experiments are needed.
+Lamu has been developed and tested in Ubuntu 16.04. It runs under Windows 10
+successfully. Running under OS X is still not tested; it should work as well 
+operation systems.
 
 Pulser uses following libraries :
 
@@ -74,70 +72,51 @@ Pulser uses following libraries :
 - KAWA-3.0
 - JTattoo-1.6.11
 
-These are statically linked to the main file `lamu.jar`; therefore, they are
-not necessary to separately be installed.
+These are statically linked and packed to `lamu.jar`.
 
-### How to Install ###
+# How to Install #
 
-Pulsar requires [Java8](https://www.java.com/en/download/) and [JACKAudio
-Connection Kit](http://jackaudio.org/). Please make sure that these are
-properly installed on your environment.
+## Prerequisites ##
+Lamu requires [Java8](https://www.java.com/en/download/) and [JACKAudio
+Connection Kit](http://jackaudio.org/). These libraries should have properly 
+installed on your environment before executing `lamu.jar`.
 
-After these prerequisites are installed, just download the JAR file from
-[lamu.jar on the MASTER branch](https://github.com/lambda-music/lamu/blob/master/workspace/lamu/lamu.jar).
+After the libraries are installed, download the `lamu.jar` from
+[lamu.jar on the MASTER branch][LAMU_JAR]
+[LAMU_JAR]:https://github.com/lambda-music/lamu/blob/master/workspace/lamu/lamu.jar
 
-Currently Pulsar have no installer. Though, Pulsar is a simple JAR (Java
-Archive) file and no installation process is required. Just locate the file
-anywhere convenient for you, preferably in any directory which is on your
-//$PATH// list.
+Lamu is packed into an executable JAR file and no installation is required.  
+Just place the file any directory; preferably, it has better to be placed on a 
+directory which is on the `$PATH` list.
 
+# How to Run #
 
-### How to Run ###
+In your shell command prompt, execute
 
-In your shell command prompt,
 ```bash
 > java -jar /the-path-to-the-file/lamu.jar
 ```
-is sufficient to make it run. 
 
 In most platforms, you can also execute the application by double-clicking on
-the file in your file-browser.
+the file in your file-browser. 
 
-Pulsar has two interfaces : HTTP interface and window interface.
-```bash
-> java jar lamu.jar --no-gui 
-```
-This disables the window interface.
+## Command-line Parameter ##
 
+Specifying a path to an arbitrary file as command-line parameter causes the 
+Lamu editor to open the specified file.
 
 ```bash
-> java jar lamu.jar --no-http
+> java jar lamu.jar any-scheme-program.scm
 ```
-This disables the HTTP interface.
 
-```bash
-> java jar lamu.jar [filename]
-```
-Otherwise every argument is taken as filename. Though, only the first argument
-is applied; other arguments are silently ignored. Note that when //--no-gui//
-is specified, no filename is applied since there is no editor to edit in that
-case.
 
-### How to Run (Advanced) ###
 
-It is very interesting that Kawa can invoke every method on the fly; that is
-you do not have to specify the startup class when you start the JVM. Add the
-path of//lamu.jar// to your CLASSPATH then execute Kawa's REPL.
+## Advanced Command-line Parameter ##
+Lamu is formed by several components. And Lamu's command-line parameter can 
+specify the components to be instantiated on at the start-up.
 
-```bash
-CLASSPATH="$CLASSPATH:/path-to-lamu-dir/lamu.jar" kawa
-```
-Then, execute the following command in Kawa's REPL.
-```scheme
-(lamu.LamuApplication:main (java.lang.String[]))
-```
-This also starts Lamu sequencer. This may give you some possibility to
-control of the application more precisely.
+For further information, please read 
+[Lamu Command-line Parameter Specification](./workspace/lamu/docs/args-api/)
 
 
 ### Execute Scheme Commands from Your Editors ###
@@ -219,14 +198,11 @@ depends on following projects :
 Eclipse. This file builds `Lamu.jar`.
 
 
-[kawa]: https://www.gnu.org/software/kawa/
+[L_KAWA]: https://www.gnu.org/software/kawa/
 [lambda-music]: ../
-[metro]:./workspace/metro/
-[pulsar]:./workspace/pulsar/
-[kawapad]:./workspace/kawapad/
 [architecture]:https://lambda-music.github.io/lamu/imgs/lambda-music-architecture-300.png
-[jna]:https://github.com/java-native-access/jna
-[jnajack]:https://github.com/jaudiolibs/jnajack
+[L_JNA]:https://github.com/java-native-access/jna
+[L_JNAJACK]:https://github.com/jaudiolibs/jnajack
 [editor-movie]:./imgs/corresponding-parenthesis-movement.gif
 
 [vim-modeline]: # ( vim: set spell expandtab fo+=awlt : )
