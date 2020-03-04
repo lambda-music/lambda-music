@@ -3,11 +3,18 @@ Kawapad Scheme Editor Developer's Reference
 
 **UNDER CONSTRUCTION**
 
-- [The Reference of Kawapad API][doc-api]
-- [The Reference of Kawapad Default Keystrokes][doc-keystroke]
+- [The Reference of Kawapad API]( ./docs/api/readme.md )
+- [The Reference of Kawapad Default Keystrokes]( ./docs/keystrokes/readme.md )
 
-[doc-api]:./docs/api/
-[doc-keystroke]:./docs/keystrokes/
+[When you plan to edit one of documents above, edit one of following  ]: # ()
+[The Reference of Kawapad API]: # ( ./docs.src/manual-kawapad-api.md )
+[The Reference of Kawapad Default Keystrokes]: # ( ./docs.src/manual-kawapad-keystroke.md)
+
+
+# Developer's Reference #
+- [JavaDoc of Metro-package](../build/javadoc/metro/package-summary.html)
+
+
 
 [kawa]: https://www.gnu.org/software/kawa/
 [lambda-music]: ../

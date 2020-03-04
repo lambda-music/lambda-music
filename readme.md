@@ -19,7 +19,7 @@ effective and "Linux"-way to implement a live-coding environment.
 
 Lamu consists several layers on its architecture.
 
-![Architecture][architecture]
+![Architecture][ARCHITECTURE]
 
 Lamu depends on following projects :
 - [Kawa Scheme][L_KAWA]
@@ -56,7 +56,7 @@ Lamu includes following projects :
 - [Javadoc of Lambda Programmable Music Sequencer](./workspace/build/javadoc/)
 - [Pulsar](./workspace/pulsar/readme.md)
 - [Metro](./workspace/metro/readme.md)
-- [KawaPad](./workspace/kawapad/)
+- [KawaPad](./workspace/kawapad/readme.md)
 
 # System Requirements #
 Any operating systems that can run the following systems:
@@ -200,7 +200,7 @@ Eclipse. This file builds `Lamu.jar`.
 
 [L_KAWA]: https://www.gnu.org/software/kawa/
 [L_LAMBDA_MUSIC]:https://lambda-music.github.io/
-[architecture]:https://lambda-music.github.io/lamu/imgs/lambda-music-architecture-300.png
+[ARCHITECTURE]:https://lambda-music.github.io/lamu/imgs/lambda-music-architecture-300.png
 [L_JNA]:https://github.com/java-native-access/jna
 [L_JNAJACK]:https://github.com/jaudiolibs/jnajack
 [editor-movie]:./imgs/corresponding-parenthesis-movement.gif
