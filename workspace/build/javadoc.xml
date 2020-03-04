@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="javadoc">
+    <target name="javadoc">
+        <javadoc access="protected" author="true" 
+        	classpath="../lib/lib/jna-4.5.0.jar:../metro/bin:../lib/lib/kawa.jar:../lib/lib/jna-platform-4.5.0.jar:../lib/bin:../kawapad/bin:../pulsar/bin:../lib/lib/jnajack-1.3.0.jar:../lib/lib/JTattoo-1.6.11.jar" destdir="javadoc" doctitle="Lamuda Programmable Music Sequencer Develpper's Documentation" 
+        	nodeprecated="false" 
+        	nodeprecatedlist="false" 
+        	noindex="false" 
+        	nonavbar="false" notree="false" 
+        	packagenames="quartz.lib.app,quartz.lib.app.process,quartz.lib.secretary,metro,quartz.lib.scheme.doc,pulsar,kawapad.lib,quartz.lib,kawapad.lib.undomanagers,lamu,quartz.lib.app.args,quartz.lib.scheme.proc,quartz.lib.thread,kawapad,quartz.lib.scheme.http,quartz.lib.log,quartz.lib.swing,quartz.lib.scheme,pulsar.lib.swing" source="1.8" sourcepath="../metro/src:../lamu/src:../pulsar/src.scheme:../kawapad/src:../lib/src:../pulsar/src"
+        	splitindex="true" use="true" version="true"/>
+    </target>
+	<target name="jar">
+        <jar destfile="./lamu-javadoc.jar"  >
+            <fileset dir="./javadoc" />
+    	</jar>
+	</target>
+</project>
