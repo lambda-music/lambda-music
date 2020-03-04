@@ -53,7 +53,7 @@ Lamu includes following projects :
 [# kawapad-keystroke]: ./workspace/kawapad/docs.src/manual-kawapad-keystroke.md
 
 ## Developer Documentation ##
-- [Javadoc of Lambda Programmable Music Sequencer](./workspace/build/javadoc/index.html)
+- [Javadoc of Lambda Programmable Music Sequencer](./workspace/build/javadoc/)
 - [Pulsar](./workspace/pulsar/readme.md)
 - [Metro](./workspace/metro/readme.md)
 - [KawaPad](./workspace/kawapad/)
