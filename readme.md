@@ -90,7 +90,7 @@ directory which is on the `$PATH` list.
 
 # How to Run #
 
-In your shell command prompt, execute
+In a shell command prompt, execute
 
 ```bash
 > java -jar /the-path-to-the-file/lamu.jar
