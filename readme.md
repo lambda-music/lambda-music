@@ -108,10 +108,8 @@ Lamu editor to open the specified file.
 > java jar lamu.jar any-scheme-program.scm
 ```
 
-
-
 ## Advanced Command-line Parameter ##
-Lamu is formed by several components. And Lamu's command-line parameter can 
+Lamu is composed by several components. And Lamu's command-line parameter can 
 specify the components to be instantiated on at the start-up.
 
 For further information, please read 
