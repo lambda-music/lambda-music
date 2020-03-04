@@ -82,8 +82,8 @@ Connection Kit](http://jackaudio.org/). These libraries should have properly
 installed on your environment before executing `lamu.jar`.
 
 After the libraries are installed, download the `lamu.jar` from
-[lamu.jar on the MASTER branch][LAMU_JAR]
-[LAMU_JAR]:https://github.com/lambda-music/lamu/blob/master/workspace/lamu/lamu.jar
+[lamu.jar on the MASTER branch]
+(https://github.com/lambda-music/lamu/blob/master/workspace/lamu/lamu.jar)
 
 Lamu is packed into an executable JAR file and no installation is required.  
 Just place the file any directory; preferably, it has better to be placed on a 
