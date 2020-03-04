@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project lamu">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <!--define folder properties-->
+    <property name="dir.buildfile" value="."/>
+    <property name="dir.workspace" value="${dir.buildfile}/.."/>
+    <property name="dir.jarfile"   value="${dir.buildfile}"/>
+    <target name="create_run_jar">
+        <jar destfile="${dir.jarfile}/lamu.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="lamu.LamuApplication"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/lib/lib/jna-4.5.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/lib/lib/jna-platform-4.5.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/lib/lib/jnajack-1.3.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/lib/lib/kawa.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/lib/lib/JTattoo-1.6.11.jar"/>
+            <fileset dir="${dir.workspace}/lib/bin"/>
+            <fileset dir="${dir.workspace}/kawapad/bin"/>
+            <fileset dir="${dir.workspace}/metro/bin"/>
+            <fileset dir="${dir.workspace}/pulsar/bin"/>
+            <fileset dir="${dir.workspace}/lamu/bin"/>
+        </jar>
+    </target>
+</project>
