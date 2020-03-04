@@ -3,7 +3,7 @@ Lambda Programmable Music Sequencer
 ===================================
 
 # Introduction #
-Please, read [Overview of Lambda Programmable Music Sequencer][lambda-music].
+Please, read [Overview of Lambda Programmable Music Sequencer][LAMBDA_MUSIC].
 
 # Architecture #
 Lamu is merely an Lisp editor built on Scheme interpreter works with JACKAudio 
@@ -199,7 +199,7 @@ Eclipse. This file builds `Lamu.jar`.
 
 
 [L_KAWA]: https://www.gnu.org/software/kawa/
-[lambda-music]: ../
+[LAMBDA_MUSIC]: ../lambda-music.github.io/
 [architecture]:https://lambda-music.github.io/lamu/imgs/lambda-music-architecture-300.png
 [L_JNA]:https://github.com/java-native-access/jna
 [L_JNAJACK]:https://github.com/jaudiolibs/jnajack
