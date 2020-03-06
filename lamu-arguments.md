@@ -13,9 +13,12 @@ processing. This causes unpredictable skips on the generated sound.  Therefore,
 Kawapad is designed that to be able to be separately executed in another JVM 
 from the Java virtual-machine which processing the events of JACKAudio.
 
-# Syntax #
+
+
+
+
 
 ```
-[type]
+[mode]
 ```
 
