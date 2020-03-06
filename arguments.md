@@ -5,7 +5,7 @@ Lamu consists several components. Lamu's command-line parameter can specify
 which components to be instantiated at the start-up.
 
 For further information about the architecture of Lamu, please see [The 
-architecture of Lamu](./lamu-architecture.md).
+architecture of Lamu](./architecture.md).
 
 Lamu is also be able to run in client-server model. A Java editor is sometimes 
 a burden for the garbage collection and obstructs JACKAudio's real-time 

@@ -61,9 +61,9 @@ Therefore, Kawapad is designed that to be able to be separately executed in
 another JVM from the Java virtual-machine which processing the events of 
 JACKAudio.  
 
-This can be invoked by [Lamu Command-line parameter](./lamu-arguments.md).
+This can be invoked by [Lamu Command-line parameter](./arguments.md).
 For further information, please read the [Lamu Command-line 
-parameter](./lamu-arguments.md).
+parameter](./arguments.md).
 
 
 
