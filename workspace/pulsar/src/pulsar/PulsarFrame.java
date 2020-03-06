@@ -950,7 +950,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     }
 
     private JButton createStartStopButton() {
-        JButton b = new JButton( "■|▶" ) {
+        JButton b = new JButton( "[]>>" ) {
             @Override
             public Dimension getPreferredSize() {
                 Dimension s = super.getPreferredSize();
@@ -969,7 +969,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     }
     
     private JButton createRewindButton() {
-        JButton b = new JButton( "||◀" ) {
+        JButton b = new JButton( "||<<" ) {
             @Override
             public Dimension getPreferredSize() {
                 Dimension s = super.getPreferredSize();

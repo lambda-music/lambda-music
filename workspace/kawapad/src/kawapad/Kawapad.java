@@ -14,6 +14,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Font;
+import java.awt.FontFormatException;
 import java.awt.Graphics;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
@@ -60,6 +61,7 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.plaf.FontUIResource;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -90,15 +92,15 @@ import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
 import quartz.lib.CurrentObject;
 import quartz.lib.app.ApplicationComponent;
-import quartz.lib.log.SimpleConsoleLogger;
 import quartz.lib.log.SimpleConsole;
+import quartz.lib.log.SimpleConsoleLogger;
 import quartz.lib.scheme.EvaluatorReceiver;
 import quartz.lib.scheme.SchemeEngine;
 import quartz.lib.scheme.SchemeEvaluator;
+import quartz.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import quartz.lib.scheme.SchemeEvaluatorUtils;
 import quartz.lib.scheme.SchemePrinter;
 import quartz.lib.scheme.SchemeUtils;
-import quartz.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import quartz.lib.scheme.doc.DescriptiveActions;
 import quartz.lib.scheme.doc.ProceduralDescriptiveBean;
 import quartz.lib.scheme.proc.MultipleNamedProcedure0;
@@ -276,7 +278,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         this.schemeEngine.getSchemeEvaluator().registerSchemeInitializer( variableInitializer01 );
         
         // init font
-        kawapad.setFont( new Font("monospaced", Font.PLAIN, 12));
+        // kawapad.setFont( new Font("monospaced", Font.PLAIN, 12));
         
         // See https://stackoverflow.com/questions/49818079/java-selected-text-over-highlighted-text
         // (Mon, 16 Sep 2019 14:20:03 +0900)
@@ -2763,6 +2765,28 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    public static Font loadFont(String filePath, float fontSize) throws FontFormatException, IOException {
+		Font font = Font.createFont(Font.TRUETYPE_FONT, new File( filePath )).deriveFont( fontSize );
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		ge.registerFont(font);
+		return font;
+	}
+    public static void setUIFont( Font f ){
+    	setUIFont( new javax.swing.plaf.FontUIResource( f ) );
+    }
+
+    // https://stackoverflow.com/questions/7434845/setting-the-default-font-of-swing-program
+    public static void setUIFont( javax.swing.plaf.FontUIResource f ){
+    	java.util.Enumeration keys = javax.swing.UIManager.getDefaults().keys();
+    	while (keys.hasMoreElements()) {
+    		Object key = keys.nextElement();
+    		Object value = javax.swing.UIManager.get(key);
+    		if (value instanceof javax.swing.plaf.FontUIResource)
+    			javax.swing.UIManager.put (key, f);
+    	}
+    } 
+
+    ////////////////////////////////////////////////////////////////////////////
     
     public static Scheme initScheme( Scheme scheme ) {
         logInfo( "Kawapad#staticInitScheme" );
@@ -2872,9 +2896,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
                 public Object apply2(Object arg1,Object arg2) throws Throwable {
                     String filePath = SchemeUtils.anyToString( arg1 );
                     float  fontSize = SchemeUtils.toFloat( arg2 );
-                    Font font = Font.createFont(Font.TRUETYPE_FONT, new File( filePath )).deriveFont( fontSize );
-                    GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-                    ge.registerFont(font);
+                    Font font = loadFont( filePath, fontSize );
                     Kawapad kawapad = getCurrent();
                     kawapad.setFont( font );
                     return Values.empty;
@@ -2895,6 +2917,29 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
                                  );
             }});
 
+            SchemeUtils.defineLambda( env, new MultipleNamedProcedure2("load-font-ui") {
+                @Override
+                public Object apply2(Object arg1,Object arg2) throws Throwable {
+                    String filePath = SchemeUtils.anyToString( arg1 );
+                    float  fontSize = SchemeUtils.toFloat( arg2 );
+                    Font font = loadFont( filePath, fontSize );
+                    setUIFont( new FontUIResource(font));
+                    return Values.empty;
+                }
+            });
+
+            KawapadDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
+                setNames( "load-font-ui" );
+                setParameterDescription( "" );
+                addParameter( 0, "file-size", "string", null , false, "Specifies the path to the font file. " );
+                addParameter( 0, "font-size", "number", null , false, "Specifies its font size. " );
+                setReturnValueDescription( "::void" );
+                setShortDescription( "Set the main font of the ui." );
+                setLongDescription( ""
+                        + "_<name/>_ loads a file from the specified file and "
+                        + "set it as the default font of the current ui. "
+                        + "" );
+            }});
             
             SchemeUtils.defineLambda(env, new MultipleNamedProcedureN("add-lisp-keyword") {
                 @Override
@@ -3415,7 +3460,8 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
             }
         }
     }
-    private static final List<String> DEFAULT_LISP_WORDS = Arrays.asList( "let", "lambda", "define" );
+
+	private static final List<String> DEFAULT_LISP_WORDS = Arrays.asList( "let", "lambda", "define" );
     ArrayList<String> lispKeywordList = new ArrayList<>( DEFAULT_LISP_WORDS );
     public List<String> getLispKeywordList() {
         return Collections.unmodifiableList( this.lispKeywordList );

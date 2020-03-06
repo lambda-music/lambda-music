@@ -138,6 +138,27 @@ public class LamuApplication {
     }
 
     public static void main(String[] args) throws IOException {
+//    	javax.swing.UIManager.getLookAndFeelDefaults()
+//        	.put("defaultFont", new java.awt.Font("Data Senenty LET", java.awt.Font.BOLD, 14));
+    	
+//        MetalLookAndFeel.setCurrentTheme( new LamuMetalTheme() );
+//        try {
+//			UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
+//		} catch (ClassNotFoundException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		} catch (InstantiationException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		} catch (IllegalAccessException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		} catch (UnsupportedLookAndFeelException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		}
+        
+    	
         // Initialize Kawa import path in the first place.
         initKawaImportPath();
         
