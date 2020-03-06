@@ -56,10 +56,10 @@ Lamu editor to open the specified file.
 
 ## Advanced Command-line Parameter ##
 Lamu is composed by several components. And Lamu's command-line parameter can 
-specify the components to be instantiated on at the start-up.
+specify which of these components to be instantiated on at the start-up.
 
-For further information, please read 
-[Lamu Command-line Parameter Specification](./workspace/lamu/docs/args-api/)
+For further information, please read [Lamu Command-line Parameter 
+Specification](./lamu-arguments.md)
 
 
 ### Execute Scheme Commands from Your Editors ###

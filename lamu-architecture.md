@@ -12,7 +12,7 @@ environments have sound modules but Lamu does not. Lamu is simply a JACKAudio
 client. I believe the combination of Scheme and JACKAudio can be a very 
 effective and "Linux"-way to implement a live-coding environment.
 
-### Architecture of Pulsar Sequencer ###
+# Architecture of Pulsar Sequencer #
 Lamu consists several layers on its architecture.
 
 ![Architecture][LNK_ARCHITECTURE]
@@ -25,34 +25,48 @@ Lamu depends on following projects :
 - [jnajack][LNK_JNAJACK]
   Java bindings to JACK Audio Connection Kit.
 
-Lamu includes following projects :
+Lamu includes following projects:
+
 - [Lamu/Kawapad](./workspace/kawapad/)
-  A Lisp editor which is written in Java. This works as an interface for Kawa.
-- Lamu/Kawa HTTP
-  A HTTP interface for Kawa.
+  KawaPad is an Scheme editor which can write and run Scheme code on-the-fly.  
+  The editor can be extended by Scheme itself.  Kawapad has a number of useful 
+  features for editing Scheme programs. Kawapad is written in Java and 
+  cooperatively works with [Kawa Scheme][LNK_KAWA].
+
+- Lamu/KawaHTTP
+  A HTTP interface for Kawa. This allows remote processes to execute any Scheme 
+  code remotely.
+
 - [Lamu/Metro](./workspace/metro/)
-  A multi-track MIDI sequencer framework which is written in Java.
+  Metro is a multi-track MIDI sequencer framework which is written in Java.
+  Metro provides a simple framework to build music sequencing systems. Metro
+  encapsulates the access to JACKAudio and offers mechanisms to send notation 
+  data to JACKAudio.
+
 - [Lamu/Pulsar](./workspace/pulsar/)
-  A bridge between [Metro](./workspace/metro/) and [Kawa Scheme][LNK_KAWA]
+  Pulsar is the main component of this application; Pulsar works as a bridge 
+  between [Metro](./workspace/metro/) and [Kawa Scheme][LNK_KAWA]. Pulsar also
+  provides several sets of API for Scheme to control JACKAudio and others.
+
 - [Lamu](./workspace/lamu/)
   The project for Lamu application class which manages command-line parsing,
   starting up and others.
 
 
-- [KawaPad](./workspace/kawapad/readme.md )
-  KawaPad is a simple editor which can be extended by writing Scheme code.
-  It has a number of basic editor functions for writing Scheme programs. These
-  functions are written by Scheme.
+# Lamu Client-Server Mode #
+Lamu is also be able to run in client-server model. A Java text editor is 
+sometimes a burden for the garbage collection and obstructs JACKAudio's 
+real-time processing. This causes unpredictable skips on the generated sound.  
+Therefore, Kawapad is designed that to be able to be separately executed in 
+another JVM from the Java virtual-machine which processing the events of 
+JACKAudio.  
 
-- [Metro](./workspace/metro/readme.md )
-  Metro is a simple framework to build music sequencer systems. Metro
-  encapsulates JACKAudio and offers mechanisms to send measure-beat based music
-  data to JACKAudio.
+This can be invoked by [Lamu Command-line parameter](./lamu-arguments.md).
+For further information, please read the [Lamu Command-line 
+parameter](./lamu-arguments.md).
 
-- [Pulsar](./workspace/pulsar/readme.md )
-  Pulsar is the main component of this application; Pulsar bridges between
-  three components Metro, KawaPad and Kawa  in order to implement the
-  accessibility to JACKAudio from Scheme.
+
+
 
 [LNK_ARCHITECTURE]:https://lambda-music.github.io/lamu/imgs/lambda-music-architecture-300.png
 [LNK_KAWA]: https://www.gnu.org/software/kawa/
