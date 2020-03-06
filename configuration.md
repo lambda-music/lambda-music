@@ -22,7 +22,7 @@ These files are Scheme file and they are executed on start-up.
 A typical task for `kawapad-initialization.scm` may be initializing LookAndFeel 
 for Kawapad. The following is an example of registering 
 
-```scheme
+```Scheme
 (define-simple-class DarkMetalTheme  (javax.swing.plaf.metal.DefaultMetalTheme)
                      (color-primary1   (javax.swing.plaf.ColorUIResource 1/16 1/16 1/16 ))
                      (color-primary2   (javax.swing.plaf.ColorUIResource 1/16 1/16 1/16 ))
@@ -74,7 +74,7 @@ UI.
 
 The following code sets these kawapad editor's colors to their namely colors.
 
-```
+```scheme
 (register-event-handler 'create 'init-font
                         (lambda (kawapad)
                           (kawapad:set-foreground          java.awt.Color:green )
@@ -86,7 +86,7 @@ The following code sets these kawapad editor's colors to their namely colors.
 ```
 
 The following code sets default LAF only for the current Kawapad instance.
-```
+```scheme
 (register-event-handler 'create 'init-font
                         (lambda (kawapad)
                           (javax.swing.plaf.metal.MetalLookAndFeel:setCurrentTheme
