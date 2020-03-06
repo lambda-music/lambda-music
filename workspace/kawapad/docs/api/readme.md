@@ -35,4 +35,18 @@ Set the main font of the editor. Kawapad can change its font-face.
 
 --------------------------------------------------------
 
+LOAD-FONT-UI
+====================
+
+#### SYNOPSIS ####
+    (load-font-ui file-size::string font-size::number)::void
+
+### DESCRIPTION ###
+Set the main font of the ui. \_load-font-ui\_ loads a file from the specified
+file and set it as the default font of the current ui.
+
+
+
+--------------------------------------------------------
+
 

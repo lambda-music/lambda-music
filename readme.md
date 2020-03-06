@@ -11,7 +11,7 @@ Please, read [Overview of Lambda Programmable Music Sequencer][LNK_LAMBDA_MUSIC]
 ## User Documentation ##
 - [Getting Started Installation and Execution](./getting-started.md)
 - [Lamu Command-line Parameter Specification](./arguments.md)
-- [Lamu Configuration](./configuration.md)
+- [Lamu Configuration File Specification](./configuration.md)
 - [Lamu API Reference](./workspace/build/docs/procs-api/)
 - [Lamu Notation Reference](./workspace/build/docs/notes-api/)
 - [KawaPad API Reference](./workspace/kawapad/docs/api/)
