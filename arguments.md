@@ -11,14 +11,12 @@ Lamu is also be able to run in client-server model. A Java editor is sometimes
 a burden for the garbage collection and obstructs JACKAudio's real-time 
 processing. This causes unpredictable skips on the generated sound.  Therefore, 
 Kawapad is designed that to be able to be separately executed in another JVM 
-from the Java virtual-machine which processing the events of JACKAudio.
-
-
-
 
 
 
 ```
-[mode]
+lamu  [exec|fork|""] 
+lamu begin exec scheme + kawapad-gui + end begin fork exec scheme + pulsar + scheme-server + end
+
 ```
 

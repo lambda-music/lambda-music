@@ -28,17 +28,22 @@ import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
-import kawa.standard.Scheme;
 import pulsar.Pulsar;
 import quartz.lib.log.SimpleConsoleLogger;
 import quartz.lib.scheme.SchemeUtils;
 import quartz.lib.scheme.doc.DescriptiveDocumentCategory;
+import quartz.lib.scheme.doc.ProceduralDescriptiveBean;
 import quartz.lib.scheme.proc.MultipleNamedProcedureN;
 import quartz.lib.secretary.InvokablyRunnable;
 
 public class PulsarGuiUtils {
     public static final DescriptiveDocumentCategory DOCS = 
-            DescriptiveDocumentCategory.createCategory( "pulsar-gui-procedures" );
+            DescriptiveDocumentCategory.createCategory( "pulsar-gui-procedures", new Runnable() {
+            	@Override
+            	public void run() {
+		            PulsarGuiUtils.initScheme( Environment.getCurrent() );            
+            	}
+            });
 
     static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
@@ -528,9 +533,8 @@ public class PulsarGuiUtils {
         parent.repaint();;
     }
 
-    public static void initScheme( Scheme scheme ) {
+    public static void initScheme( Environment env ) {
         logInfo("PulsarGui#initStaticScheme=======================================");
-        Environment env = scheme.getEnvironment();
         
         SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-pack" ) {
             @Override
@@ -727,6 +731,17 @@ public class PulsarGuiUtils {
                 return guiBuild( Pulsar.getCurrent(), args );
             }
         });
+        
+        PulsarGuiUtils.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
+            setNames( "gui-build" );
+            setParameterDescription( "" );
+            setReturnValueDescription( "::Object" );
+            setShortDescription( "an utility procedure to create a Swing component." );
+            setLongDescription( ""
+                    + "This procedure utilizes process to build Swing components. "
+            		+ "More description is comming now." );
+        }} );
+
 
         SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-newline" ) {
             @Override

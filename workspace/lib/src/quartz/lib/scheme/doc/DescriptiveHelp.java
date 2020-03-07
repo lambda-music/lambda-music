@@ -16,14 +16,19 @@ import gnu.mapping.Values;
 import gnu.mapping.WrongArguments;
 import kawa.standard.Scheme;
 import quartz.lib.scheme.SchemeEngine;
-import quartz.lib.scheme.SchemeUtils;
 import quartz.lib.scheme.SchemeEvaluator.SchemeEngineListener;
+import quartz.lib.scheme.SchemeUtils;
 import quartz.lib.scheme.proc.MultipleNamedProcedure2;
 import quartz.lib.scheme.proc.MultipleNamedProcedureN;
 
 public class DescriptiveHelp {
     public static final DescriptiveDocumentCategory DOCS = 
-            DescriptiveDocumentCategory.createCategory( "help-procedures" );
+            DescriptiveDocumentCategory.createCategory( "help-procedures", new Runnable() {
+				@Override
+				public void run() {
+		            DescriptiveHelp.initScheme( Environment.getCurrent() );            
+				}
+			});
     /**
      * This initializes variables which do not need to refer the reference to the
      * current frame. This initializer does not have to be removed even if  

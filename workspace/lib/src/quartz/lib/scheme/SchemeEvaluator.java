@@ -71,7 +71,7 @@ public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluat
     public ThreadInitializer<SchemeEvaluator> getThreadInitializer() {
         return threadInitializer;
     }
-    public static Evaluator getCurrent() {
+    public static SchemeEvaluator getCurrent() {
         return currentObject.get();
     }
     public static boolean isPresent() {

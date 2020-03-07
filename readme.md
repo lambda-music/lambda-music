@@ -8,19 +8,20 @@ Please, read [Overview of Lambda Programmable Music Sequencer][LNK_LAMBDA_MUSIC]
 
 # Documentation #
 
-## User Documentation ##
+## User's Documentation ##
 - [Getting Started Installation and Execution](./getting-started.md)
 - [Lamu Command-line Parameter Specification](./arguments.md)
 - [Lamu Configuration File Specification](./configuration.md)
-- [Lamu API Reference](./workspace/build/docs/procs-api/)
-- [Lamu Notation Reference](./workspace/build/docs/notes-api/)
-- [KawaPad API Reference](./workspace/kawapad/docs/api/)
-- [KawaPad Keystroke Reference](./workspace/kawapad/docs/keystrokes/)
+- [Lamu API Reference](./workspace/build/docs/lamu-api-reference.md)
+- [Lamu GUI Extension API Reference](./workspace/build/docs/lamu-gui-extension-api-reference.md)
+- [Lamu Notation Reference](./workspace/build/docs/lamu-notation-reference.md)
+- [KawaPad API Reference](./workspace/build/docs/kawapad-api-reference.md)
+- [KawaPad Keystroke Reference](./workspace/build/docs/kawapad-keystroke-reference.md)
 
 [# kawapad-api]: ./workspace/kawapad/docs.src/manual-kawapad-api.md
 [# kawapad-keystroke]: ./workspace/kawapad/docs.src/manual-kawapad-keystroke.md
 
-## Developer Documentation ##
+## Developer's Documentation ##
 - [Architecture Overview](./architecture.md)
 - [Javadoc of Lambda Programmable Music Sequencer](./workspace/build/javadoc/)
 - [Pulsar](./workspace/pulsar/readme.md)

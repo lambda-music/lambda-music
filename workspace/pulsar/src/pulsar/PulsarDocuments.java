@@ -3,24 +3,45 @@ package pulsar;
 import java.util.Arrays;
 import java.util.List;
 
-import kawa.standard.Scheme;
+import gnu.mapping.Environment;
 import quartz.lib.scheme.doc.DescriptiveBean;
 import quartz.lib.scheme.doc.DescriptiveDocumentCategory;
 
 public class PulsarDocuments {
     public static final DescriptiveDocumentCategory DOCS = 
-            DescriptiveDocumentCategory.createCategory( "pulsar-procedures" );
+    		DescriptiveDocumentCategory.createCategory( 
+    				"pulsar-procedures",
+    				new Runnable() {
+		    			@Override
+		    			public void run() {
+		    				// Note : (Sat, 07 Mar 2020 23:38:27 +0900)
+		    				// 
+		    				// For now, this should be done by Scheme initializer; therefore, this
+		    				// is not necessary to initializer here. In near future, Pulsar.initScheme()
+		    				// method is possiblly called by Kawa's 'require'; in such case, the following
+		    				// initialization must be done.
+		    				// 
+		    				// Pulsar.initScheme( SchemeEvaluator.getCurrent().getScheme() );
+		    				// 
+		    			}
+		    		});
 
     public static final DescriptiveDocumentCategory NOTES = 
-            DescriptiveDocumentCategory.createCategory( "pulsar-notations" );
+            DescriptiveDocumentCategory.createCategory( "pulsar-notations", new Runnable() {
+            	@Override
+            	public void run() {
+    				// Note : (Sat, 07 Mar 2020 23:38:27 +0900)
+            		// The situation is same as the statement above.  
+            	}
+            });
 
     private PulsarDocuments() {}
-    public static void defineDoc(Scheme scheme, NoteListParser parser ) {
+    public static void defineDoc( Environment env, NoteListParser parser ) {
         List<NoteListParserElement> allElements = parser.getAllElements();
 //      Collections.reverse( allElements );
         
         for ( NoteListParserElement element : allElements ) {
-            defineDoc( scheme, element );
+            defineDoc( env, element );
         }
     }
     public static String nullCheck( String s ) {
@@ -30,7 +51,7 @@ public class PulsarDocuments {
             return s;
     }
     public static final String PREFIX = "note-event-"; 
-    public static void defineDoc(Scheme scheme, NoteListParserElement element ) {
+    public static void defineDoc( Environment env, NoteListParserElement element ) {
         DescriptiveBean bean = new PulsarNoteListDescriptiveBean(); 
         if ( element.getLongName() == null ) {
             if ( element.getShortName() ==null ) {
@@ -72,6 +93,6 @@ public class PulsarDocuments {
         bean.setShortDescription( nullCheck( element.getShortDescription() ) );
         bean.setLongDescription( nullCheck( element.getLongDescription() ) );
         
-        NOTES.defineDoc( scheme.getEnvironment(), "note-" + bean.getName(),  bean );
+        NOTES.defineDoc( env, "note-" + bean.getName(),  bean );
     }
 }

@@ -67,8 +67,8 @@ import quartz.lib.app.ApplicationComponent;
 import quartz.lib.log.SimpleConsoleLogger;
 import quartz.lib.scheme.InvokableSchemeProcedure;
 import quartz.lib.scheme.SchemeEngine;
-import quartz.lib.scheme.SchemeUtils;
 import quartz.lib.scheme.SchemeEvaluator.SchemeEngineListener;
+import quartz.lib.scheme.SchemeUtils;
 import quartz.lib.scheme.doc.ProceduralDescriptiveBean;
 import quartz.lib.scheme.proc.MultipleNamedProcedure0;
 import quartz.lib.scheme.proc.MultipleNamedProcedure1;
@@ -145,7 +145,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         schemeEngine.getSchemeEvaluator().registerSchemeInitializer( new SchemeEngineListener() {
             @Override
             public void execute( Scheme scheme ) {
-                Pulsar.initScheme( scheme );
+                Pulsar.initScheme( scheme.getEnvironment() );
             }
         });
     }
@@ -753,8 +753,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
      * @param scheme
      *            the scheme instance to initialize.
      */
-    public static void initScheme( Scheme scheme ) {
-        Environment env = scheme.getEnvironment();
+    public static void initScheme( Environment env ) {
 
         SchemeUtils.defineLambda(env, new MultipleNamedProcedure0( "pulsar" ) {
             @Override
@@ -2242,7 +2241,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                     + "The only parameter can be omitted and in that case the default value one is applied. " );
         }} );
         
-        PulsarDocuments.defineDoc( scheme, PulsarNoteListParser.getInstance() );
+        PulsarDocuments.defineDoc( env, PulsarNoteListParser.getInstance() );
 
 //        try {
 //            SchemeEvaluator evaluator = new SchemeEvaluator( scheme );

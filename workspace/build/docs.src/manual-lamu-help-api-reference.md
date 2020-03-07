@@ -1,4 +1,4 @@
-Pulsar API Reference
+Lamu Help API Reference
 ======================
 
 

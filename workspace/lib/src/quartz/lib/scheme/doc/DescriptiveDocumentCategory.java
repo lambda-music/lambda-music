@@ -1,4 +1,4 @@
-package quartz.lib.scheme.doc;
+package quartz.lib.scheme.doc;	
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -22,15 +22,38 @@ import gnu.mapping.Symbol;
 import quartz.lib.log.SimpleConsoleLogger;
 import quartz.lib.scheme.SchemeUtils;
 
+/**
+ * 
+ * 1. Note that the
+ * {@link DescriptiveDocumentCategory#createCategory(Symbol, Runnable)} method
+ * will not be called unless the caller class is loaded by VM and the loading
+ * process will not be done unless the user does not causes the class to be
+ * loaded. Please read {@link lamu.LamuApplication#loadBasicClasses}.
+ * 
+ * 2. The documentation object will not properly be initialized unless its host
+ * object is instanciated; especially the new mechanism that loads the libraries
+ * by KawaScheme's `require` method needs extra procedures to initialize its
+ * corresponding document. Because the documentation is not initalized unless
+ * the library object is properly loaded by `require` method. This will end up
+ * the documentation system outputs an empty file because at that point, the
+ * document object is not created yet.
+ * 
+ * This is where `Runnable documentInitializer` parameter of createCategory() method
+ * comes in. The initializer object creates the document object instead of
+ * `require` method. This note will be deleted if all objects migrate to the new
+ * mechanism to load the library.
+ * 
+ * @author ats
+ *
+ */
 
 public class DescriptiveDocumentCategory {
-    public static DescriptiveDocumentCategory createCategory(Symbol symbol) {
-        return new DescriptiveDocumentCategory( symbol );
+    public static DescriptiveDocumentCategory createCategory(Symbol symbol, Runnable documentInitializer ) {
+		return new DescriptiveDocumentCategory(symbol, documentInitializer);
     }
-    public static DescriptiveDocumentCategory createCategory(String symbol) {
-        return new DescriptiveDocumentCategory( SchemeUtils.schemeSymbol( symbol ) );
+    public static DescriptiveDocumentCategory createCategory(String symbol, Runnable documentInitializer ) {
+		return new DescriptiveDocumentCategory(SchemeUtils.schemeSymbol(symbol), documentInitializer);
     }
-
     static final Map<Symbol,DescriptiveDocumentCategory> allCategories = new LinkedHashMap<>();
 
     /**
@@ -115,12 +138,17 @@ public class DescriptiveDocumentCategory {
         }
     }
     private Symbol symbol;
-    private DescriptiveDocumentCategory( Symbol symbol ) {
+	private Runnable documentInitializer;
+    private DescriptiveDocumentCategory( Symbol symbol, Runnable documentInitializer ) {
         this.symbol = symbol;
+        this.documentInitializer = documentInitializer;
         DescriptiveDocumentCategory.addCategory( this );
     }
     public Symbol getSymbol() {
         return symbol;
+    }
+    public void executeDocumentInitializer() {
+    	this.documentInitializer.run();
     }
     public LList getDocumentList( Environment env ) {
         return getDocumentList( env, this );
@@ -233,6 +261,19 @@ public class DescriptiveDocumentCategory {
             throws FileNotFoundException, IOException 
     {
         DescriptiveDocumentCategory category = valueOf( categoryName );
+        
+        // ADDED (Sun, 08 Mar 2020 00:59:17 +0900) >>>
+        // Call its initializer to invoke effectively the initScheme() method; this
+        // causes the document object to be initialized.  
+        Environment.setCurrent( environment );
+        category.executeDocumentInitializer();
+        // ADDED (Sun, 08 Mar 2020 00:59:17 +0900) <<<
+        
+        // Note (Sun, 08 Mar 2020 01:02:03 +0900) 
+        // This initialization process is related to the way how these libraries are initialized in
+        // the current system. These initScheme() based initialization is not effective; these should be
+        // replaced to the new KawaScheme's `require` method.
+        
         String str = DescriptiveHelp.outputMarkdownReference( category, environment );
         if ( outputFile == null /* || "-".equals( outputFile ) */ ) {
             System.out.println( str );      

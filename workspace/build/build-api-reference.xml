@@ -35,6 +35,10 @@
             <arg value="--output-file=${dir.apiref.output}/generated-kawapad-procedures.md" />
             <arg value="+" />
             <arg value="output-reference" />
+            <arg value="--category=kawapad-keystrokes" />
+            <arg value="--output-file=${dir.apiref.output}/generated-kawapad-keystrokes.md" />
+            <arg value="+" />
+            <arg value="output-reference" />
             <arg value="--category=help-procedures" />
             <arg value="--output-file=${dir.apiref.output}/generated-help-procedures.md" />
             <arg value="+" />
@@ -60,6 +64,10 @@
         <concat destfile="${dir.docs}/kawapad-api-reference.md"  >
             <file file="${dir.apiref.input}/manual-kawapad-api-reference.md" />
             <file file="${dir.apiref.output}/generated-kawapad-procedures.md" />
+        </concat>
+        <concat destfile="${dir.docs}/kawapad-keystroke-reference.md"  >
+            <file file="${dir.apiref.input}/manual-kawapad-keystroke-reference.md" />
+            <file file="${dir.apiref.output}/generated-kawapad-keystrokes.md" />
         </concat>
         <concat destfile="${dir.docs}/readme.md"  >
             <file file="${dir.apiref.input}/manual-readme.md" />
