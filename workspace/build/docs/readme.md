@@ -1,4 +1,4 @@
-`docs` directory
+About 'docs' directory
 ==================
 
 Note that this directory contains only auto-generated files. Any modification 

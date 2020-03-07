@@ -12,8 +12,6 @@
     <target name="create_api_reference" >
         <mkdir dir="${dir.apiref.output}"/>
         <mkdir dir="${dir.docs}" />
-        <mkdir dir="${dir.docs}/procs-api" />
-        <mkdir dir="${dir.docs}/notes-api"/>
         <java jar="lamu.jar"  fork="true"   > <!-- error="generated/generated-api.log" -->
             <arg value="exec" />
             <arg value="scheme" />
@@ -46,13 +44,22 @@
         <concat destfile="${dir.docs}/lamu-api-reference.md"  >
             <file file="${dir.apiref.input}/manual-lamu-api-reference.md" />
             <file file="${dir.apiref.output}/generated-pulsar-procedures.md" />
-            <file file="${dir.apiref.output}/generated-pulsar-gui-procedures.md" />
-            <file file="${dir.apiref.output}/generated-kawapad-procedures.md" />
-            <file file="${dir.apiref.output}/generated-help-procedures.md" />
         </concat>
         <concat destfile="${dir.docs}/lamu-notation-reference.md"  >
-            <file file="${dir.apiref.input}/manual-lamu-notations.md" />
+            <file file="${dir.apiref.input}/manual-lamu-notation-reference.md" />
             <file file="${dir.apiref.output}/generated-pulsar-notations.md" />
+        </concat>
+        <concat destfile="${dir.docs}/lamu-gui-extension-api-reference.md"  >
+            <file file="${dir.apiref.input}/manual-lamu-gui-extension-api-reference.md" />
+            <file file="${dir.apiref.output}/generated-pulsar-gui-procedures.md" />
+        </concat>
+        <concat destfile="${dir.docs}/lamu-help-api-reference.md"  >
+            <file file="${dir.apiref.input}/manual-lamu-help-api-reference.md" />
+            <file file="${dir.apiref.output}/generated-help-procedures.md" />
+        </concat>
+        <concat destfile="${dir.docs}/kawapad-api-reference.md"  >
+            <file file="${dir.apiref.input}/manual-kawapad-api-reference.md" />
+            <file file="${dir.apiref.output}/generated-kawapad-procedures.md" />
         </concat>
         <concat destfile="${dir.docs}/readme.md"  >
             <file file="${dir.apiref.input}/manual-readme.md" />

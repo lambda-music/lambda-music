@@ -1,7 +1,6 @@
-Pulsar Notation API Reference
+Lamu Notation Reference
 ======================
 
-TODO
 NO-OPERATION
 ====================
 

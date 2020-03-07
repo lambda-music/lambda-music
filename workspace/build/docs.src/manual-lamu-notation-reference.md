@@ -1,4 +1,3 @@
-Lamu API Reference
+Lamu Notation Reference
 ======================
-
 

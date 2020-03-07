@@ -1,4 +1,4 @@
-Lamu API Reference
+Kawapad API Reference
 ======================
 
 
