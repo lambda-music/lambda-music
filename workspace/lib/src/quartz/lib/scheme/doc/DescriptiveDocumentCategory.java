@@ -32,13 +32,37 @@ public class DescriptiveDocumentCategory {
     }
 
     static final Map<Symbol,DescriptiveDocumentCategory> allCategories = new LinkedHashMap<>();
+
+    /**
+     * Adds the specified category.
+     * @param category
+     * the category object to be added.
+     */
     public static synchronized void addCategory(DescriptiveDocumentCategory category) {
         allCategories.put( category.symbol, category );
     }
+    
+    /**
+     * Removes the specified category.
+     * @param category
+     * the category object to be removed.
+     */
     public static synchronized void removeCategory(DescriptiveDocumentCategory category) {
         allCategories.remove( category.symbol );
     }
-    public static synchronized Collection<DescriptiveDocumentCategory> getAll() {
+    
+    /**
+     * This procedure returns a list which contains all available DocumentCategory objects.
+	 * Note that this method only returns the category objects which are already loaded to
+	 * the current virtual machine. In order to get the specific document category, the class
+	 * which is related the category should be loaded before calling this method.
+	 * 
+	 * @see {@link LamuApplication#loadBasicClasses }
+	 * 
+     * @return
+     *    an {@link ArrayList} object which contains all available {@link DescriptiveDocumentCategory} objects.
+     */
+    public static synchronized Collection<DescriptiveDocumentCategory> getAllCategories() {
         return new ArrayList<>( allCategories.values() );
     }
 
@@ -175,9 +199,17 @@ public class DescriptiveDocumentCategory {
     }
     
 
-    public static void outputAvailableReferences(String outputFile) throws FileNotFoundException, IOException {
+    /**
+     * 
+     * This outputs the formatted documentation 
+     * @param outputFile
+     *     the file name to be output.
+     *     
+     * @throws IOException
+     */
+    public static void outputAvailableReferences(String outputFile) throws IOException {
         List<String> stringList = new ArrayList<>();
-        for ( DescriptiveDocumentCategory c : getAll() ) {
+        for ( DescriptiveDocumentCategory c : getAllCategories() ) {
             stringList.add( SchemeUtils.schemeStringToJavaString( c.getSymbol() ) );
         }
         String str = String.join( ",", stringList );

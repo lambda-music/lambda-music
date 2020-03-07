@@ -1,8 +1,10 @@
 package lamu;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -114,24 +116,79 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 }
                 @Override
                 public void notifyEnd(ArgumentParser parser) {
-                    if ( parser.getValueStack( SCHEME_ENGINE ).isEmpty() ) {
-                        throw new RuntimeException( "no scheme is defined." );
-                    }
-                    SchemeEngine schemeEngine = parser.getValueStack( SCHEME_ENGINE ).peek();
-                    LamuApplication.loadBasicClasses();
-                    parser.getValueStack( RUNNABLE ).add( new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                DescriptiveDocumentCategory.outputReference( 
-                                    schemeEngine.getSchemeEvaluator().getScheme().getEnvironment(), 
-                                    category, outputFile );
-                            } catch (IOException e) {
-                                logError( "error occured in output-reference", e ); 
-                            }
-                        }
-                    });
+                	/*
+                	 * (Sat, 07 Mar 2020 20:23:21 +0900)
+                	 * ### SPECIAL ###  
+                	 * Check for special keyword(s) and process differently that cannot be processed
+                	 * by the `Descriptive` Documentation System. 
+                	 * 
+                	 */
+                	switch ( this.category ) {
+                		case "kawapad-keystrokes" :
+                			/*
+                			 *  This is a special keyword to output keystroke reference which is 
+                			 *  not processed in `Desctiptive` help system.
+                			 */
+                			procKeyStroke(parser);
+                			break;
+                			/*
+                			 * The others are processed by the documentation system. 
+                			 */
+                		default :
+                			procDocument(parser);
+                			break;
+                	}
                 }
+                void procKeyStroke(ArgumentParser parser) {
+					if ( parser.getValueStack( SCHEME_ENGINE ).isEmpty() ) {
+						throw new RuntimeException( "no scheme is defined." );
+					}
+					SchemeEngine schemeEngine = parser.getValueStack( SCHEME_ENGINE ).peek();
+
+					LamuApplication.loadBasicClasses();
+					parser.getValueStack( RUNNABLE ).add( new Runnable() {
+						@Override
+						public void run() {
+							Kawapad kawapad = new Kawapad(schemeEngine);
+							String s = kawapad.outputKeyStrokeReference();
+							FileOutputStream o=null;
+							try {
+								o = new FileOutputStream( new File( outputFile ) );
+								o.write( s.getBytes(Charset.forName("utf-8")));
+								o.flush();
+							} catch (IOException e) {
+								logError( "error occured in output-reference", e ); 
+							} finally {
+								try {
+									o.close();
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+							}
+						}
+					});
+
+                	
+				}
+				void procDocument(ArgumentParser parser) {
+					if ( parser.getValueStack( SCHEME_ENGINE ).isEmpty() ) {
+						throw new RuntimeException( "no scheme is defined." );
+					}
+					SchemeEngine schemeEngine = parser.getValueStack( SCHEME_ENGINE ).peek();
+					LamuApplication.loadBasicClasses();
+					parser.getValueStack( RUNNABLE ).add( new Runnable() {
+						@Override
+						public void run() {
+							try {
+								DescriptiveDocumentCategory.outputReference( 
+										schemeEngine.getSchemeEvaluator().getScheme().getEnvironment(), 
+										category, outputFile );
+							} catch (IOException e) {
+								logError( "error occured in output-reference", e ); 
+							}
+						}
+					});
+				}
             };
         }
     }
