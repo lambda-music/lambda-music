@@ -911,8 +911,11 @@ HELP!
 is a procedure to execute when the user needs something which calms you down.
 When this procedure is called, this procedure will return a message which tries to
 calm the user down. Any argument specified to this procedure will be silently
-ignored.This procedure is deliberately defined as a joke and has by no means effect to the
-current system state nor any other related elements. See \(help about-main\).
+ignored. This procedure is deliberately defined as a joke and has by no means effect to
+the current system state nor any other related elements. Note that calling this
+method does not cause any side effect which is specified in Scheme name convensions
+specifies in https://www.scheme.com/tspl2d/intro.html in spite of the fact the name of
+this method is with an exclamation mark. See \(help about-main\).
 
 
 

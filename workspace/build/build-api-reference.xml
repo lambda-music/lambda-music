@@ -22,37 +22,37 @@
             <arg value="+" />
             <arg value="output-reference" />
             <arg value="--category=pulsar-procedures" />
-            <arg value="--output-file=${dir.apiref.output}/generated-pulsar-api.md" />
+            <arg value="--output-file=${dir.apiref.output}/generated-pulsar-procedures.md" />
             <arg value="+" />
             <arg value="output-reference" />
             <arg value="--category=pulsar-notations" />
-            <arg value="--output-file=${dir.apiref.output}/generated-pulsar-notations-api.md" />
+            <arg value="--output-file=${dir.apiref.output}/generated-pulsar-notations.md" />
             <arg value="+" />
             <arg value="output-reference" />
             <arg value="--category=pulsar-gui-procedures" />
-            <arg value="--output-file=${dir.apiref.output}/generated-pulsar-gui-api.md" />
+            <arg value="--output-file=${dir.apiref.output}/generated-pulsar-gui-procedures.md" />
             <arg value="+" />
             <arg value="output-reference" />
             <arg value="--category=kawapad-procedures" />
-            <arg value="--output-file=${dir.apiref.output}/generated-kawapad-api.md" />
+            <arg value="--output-file=${dir.apiref.output}/generated-kawapad-procedures.md" />
             <arg value="+" />
             <arg value="output-reference" />
             <arg value="--category=help-procedures" />
-            <arg value="--output-file=${dir.apiref.output}/generated-help-api.md" />
+            <arg value="--output-file=${dir.apiref.output}/generated-help-procedures.md" />
             <arg value="+" />
         </java>
     </target>
     <target name="concat_api_reference" depends="create_api_reference" >
-        <concat destfile="${dir.docs}/procs-api/readme.md"  >
-            <file file="${dir.apiref.input}/manual-readme-procs-api.md" />
-            <file file="${dir.apiref.output}/generated-pulsar-api.md" />
-            <file file="${dir.apiref.output}/generated-pulsar-gui-api.md" />
-            <file file="${dir.apiref.output}/generated-kawapad-api.md" />
-            <file file="${dir.apiref.output}/generated-help-api.md" />
+        <concat destfile="${dir.docs}/lamu-api-reference.md"  >
+            <file file="${dir.apiref.input}/manual-lamu-api-reference.md" />
+            <file file="${dir.apiref.output}/generated-pulsar-procedures.md" />
+            <file file="${dir.apiref.output}/generated-pulsar-gui-procedures.md" />
+            <file file="${dir.apiref.output}/generated-kawapad-procedures.md" />
+            <file file="${dir.apiref.output}/generated-help-procedures.md" />
         </concat>
-        <concat destfile="${dir.docs}/notes-api/readme.md"  >
-            <file file="${dir.apiref.input}/manual-readme-notes-api.md" />
-            <file file="${dir.apiref.output}/generated-pulsar-notations-api.md" />
+        <concat destfile="${dir.docs}/lamu-notation-reference.md"  >
+            <file file="${dir.apiref.input}/manual-lamu-notations.md" />
+            <file file="${dir.apiref.output}/generated-pulsar-notations.md" />
         </concat>
         <concat destfile="${dir.docs}/readme.md"  >
             <file file="${dir.apiref.input}/manual-readme.md" />
