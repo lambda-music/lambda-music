@@ -1,6 +1,7 @@
-package pulsar;
+package lamu;
 
 import gnu.mapping.Environment;
+import pulsar.Pulsar;
 
 public class main implements Runnable {
     @Override

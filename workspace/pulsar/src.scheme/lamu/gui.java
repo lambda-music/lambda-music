@@ -1,4 +1,4 @@
-package pulsar;
+package lamu;
 
 import gnu.mapping.Environment;
 import pulsar.lib.swing.PulsarGuiUtils;
