@@ -13,6 +13,7 @@
         <mkdir dir="${dir.apiref.output}"/>
         <mkdir dir="${dir.docs}" />
         <java jar="lamu.jar"  fork="true"   > <!-- error="generated/generated-api.log" -->
+            <arg value="do" />
             <arg value="exec" />
             <arg value="scheme" />
             <arg value="+" />

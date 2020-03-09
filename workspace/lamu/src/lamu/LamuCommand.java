@@ -31,12 +31,27 @@ abstract class LamuCommand {
 		}
 	}
 
+	static final String TRIGGER_FOR_ADVANCED_COMMAND_MODE = "do";
+	static String DEFAULT_COMMAND_NAME = "default";
+	
 	public static List<ApplicationComponent> parseArgs(
 			List<LamuCommand> availableCommands, 
-			String[] args ) throws IOException
+			String[] in_args ) throws IOException
 	{
+		// (Mon, 09 Mar 2020 23:39:18 +0900) 
+		// If the first element is not TRIGGER_FOR_ADVANCED_COMMAND_MODE,
+		// regard it as the "default mode". Let's put the TRIGGER_FOR_ADVANCED_COMMAND_MODE and
+		// the default command name. 
+		List<String> args = new ArrayList<>( Arrays.asList(in_args) );
+		if ( args.size() == 0 || ! TRIGGER_FOR_ADVANCED_COMMAND_MODE.equals( args.get( 0 ))) {
+			args.addAll( 0, Arrays.asList(  TRIGGER_FOR_ADVANCED_COMMAND_MODE, DEFAULT_COMMAND_NAME ) );
+		} 
+		
+		// Remove the first element; at this point, it always equals to TRIGGER_FOR_ADVANCED_COMMAND_MODE. 
+		args.remove(0);
+
 		List<List<String>> arrayOfSubargs = 
-				LamuBeginEndSplitter.splitBeginEnd(Arrays.asList(args), "begin",  "end");
+				LamuBeginEndSplitter.splitBeginEnd( args, "begin",  "end" );
 
 		List<ApplicationComponent> vessels = new ArrayList<>();
 		for (Iterator<List<String>> i = arrayOfSubargs.iterator(); i.hasNext();) {

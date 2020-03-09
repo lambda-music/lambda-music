@@ -23,7 +23,7 @@ Please, read [Overview of Lambda Programmable Music Sequencer][LNK_LAMBDA_MUSIC]
 
 ## Developer's Documentation ##
 - [Architecture Overview](./architecture.md)
-- [Javadoc of Lambda Programmable Music Sequencer](./workspace/build/javadoc/)
+- [JavaDoc of Lambda Programmable Music Sequencer](./workspace/build/javadoc/)
 - [Pulsar](./workspace/pulsar/readme.md)
 - [Metro](./workspace/metro/readme.md)
 - [KawaPad](./workspace/kawapad/readme.md)

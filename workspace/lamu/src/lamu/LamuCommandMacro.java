@@ -66,7 +66,7 @@ class LamuCommandMacro extends LamuCommand {
 	}
 	@Override
 	boolean match(List<String> arguments) {
-		return 0 <  arguments.size() && arguments.get(0).equals( this.getMacroName() );
+		return 0 < arguments.size() && arguments.get(0).equals( this.getMacroName() );
 	}
 
 	@Override
@@ -77,14 +77,21 @@ class LamuCommandMacro extends LamuCommand {
 
 		ArrayList<String> outArgs = new ArrayList<>();
 		HashMap<String, LamuNamedArgument> outNargs = new HashMap<>();
-		parseArgs(arguments, outArgs, outNargs);
+		
+		// parse the passed arguments
+		parseArgs(arguments.subList(1, arguments.size()), outArgs, outNargs);
+		
+		// perform macro expansion.
 		List<String> expandedArgs = execute(this.macroContent, outArgs, outNargs);
+		
 		LamuApplication.logInfo( String.format( 
 				"MacroCommand[%s] expanded the specified arguments\nfrom:%s\nto  :%s", 
 				getMacroName(),
 				arguments.toString(),
 				expandedArgs.toString() ) );
-		LamuCommand.parseSubargs( availableCommands, vessels, expandedArgs, recursiveCall );
+		
+		// Be careful : this is a recursive calling. 
+		LamuCommand.parseSubargs( availableCommands, vessels, expandedArgs, true );
 	}
 
 	public static List<String> execute(List<String> macroContent, ArrayList<String> args,
