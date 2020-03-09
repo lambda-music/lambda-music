@@ -31,6 +31,10 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
+    static final String MSG_NO_SCHEME_ERROR     = "no scheme engine was instanciated";
+    static final String MSG_OUTPUT_HELP_ERROR   = "an error occured in output-help";
+    static final String MSG_UNKNOWN_PARAM_ERROR = "unknown parameter : ";
+    
     @Override
     protected void createValueStackMap(){
         getValueStack( SCHEME_ENGINE );
@@ -61,17 +65,17 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                                 outputFile = narg.getValue();
                                 break;
                             default :
-                                throw new RuntimeException( "unknown parameter : " + narg.getKey() );
+                                throw new RuntimeException( MSG_UNKNOWN_PARAM_ERROR + narg.getKey() );
                         }
                     } else {
-                        throw new RuntimeException( "unknown parameter : " + s );
+                        throw new RuntimeException( MSG_UNKNOWN_PARAM_ERROR + s );
                     }
                     return this;
                 }
                 @Override
                 public void notifyEnd( ArgumentParser parser ) {
                     if ( parser.getValueStack( SCHEME_ENGINE ).isEmpty() ) {
-                        throw new RuntimeException( "no scheme is defined." );
+                        throw new RuntimeException( MSG_NO_SCHEME_ERROR );
                     }
                     LamuApplication.loadBasicClasses();
                     parser.getValueStack( RUNNABLE ).add( new Runnable() {
@@ -80,7 +84,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                             try {
                                 DescriptiveDocumentCategory.outputAvailableReferences( outputFile );
                             } catch (IOException e) {
-                                logError( "error occured in output-reference", e ); 
+                                logError( MSG_OUTPUT_HELP_ERROR, e ); 
                             }
                         }
                     });
@@ -90,7 +94,8 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
     }
 
     static final class OutputReferenceArgumentParserElementFactory implements ArgumentParserElementFactory {
-        @Override
+
+		@Override
         public ArgumentParserElement create() {
             return new ArgumentParserElement() {
                 String outputFile = null;
@@ -107,10 +112,10 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                                 outputFile = narg.getValue();
                                 break;
                             default :
-                                throw new RuntimeException( "unknown parameter : " + narg.getKey() );
+                                throw new RuntimeException( MSG_UNKNOWN_PARAM_ERROR  + narg.getKey() );
                         }
                     } else {
-                        throw new RuntimeException( "unknown parameter : " + s );
+                        throw new RuntimeException( MSG_UNKNOWN_PARAM_ERROR  + s );
                     }
                     return this;
                 }
@@ -141,7 +146,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 }
                 void procKeyStroke(ArgumentParser parser) {
 					if ( parser.getValueStack( SCHEME_ENGINE ).isEmpty() ) {
-						throw new RuntimeException( "no scheme is defined." );
+						throw new RuntimeException( MSG_NO_SCHEME_ERROR );
 					}
 					SchemeEngine schemeEngine = parser.getValueStack( SCHEME_ENGINE ).peek();
 
@@ -157,7 +162,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
 								o.write( s.getBytes(Charset.forName("utf-8")));
 								o.flush();
 							} catch (IOException e) {
-								logError( "error occured in output-reference", e ); 
+								logError( MSG_OUTPUT_HELP_ERROR, e ); 
 							} finally {
 								try {
 									o.close();
@@ -172,7 +177,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
 				}
 				void procDocument(ArgumentParser parser) {
 					if ( parser.getValueStack( SCHEME_ENGINE ).isEmpty() ) {
-						throw new RuntimeException( "no scheme is defined." );
+						throw new RuntimeException( MSG_NO_SCHEME_ERROR );
 					}
 					SchemeEngine schemeEngine = parser.getValueStack( SCHEME_ENGINE ).peek();
 					LamuApplication.loadBasicClasses();
@@ -184,7 +189,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
 										schemeEngine.getSchemeEvaluator().getScheme().getEnvironment(), 
 										category, outputFile );
 							} catch (IOException e) {
-								logError( "error occured in output-reference", e ); 
+								logError( MSG_OUTPUT_HELP_ERROR, e ); 
 							}
 						}
 					});
@@ -222,17 +227,17 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                                 }
                                 break;
                             default :
-                                throw new RuntimeException( "unknown parameter : " + a.getKey() );
+                                throw new RuntimeException( MSG_UNKNOWN_PARAM_ERROR + a.getKey() );
                         }
                     } else {
-                        throw new RuntimeException( "unknown parameter : " + s );
+                        throw new RuntimeException( MSG_UNKNOWN_PARAM_ERROR + s );
                     }
                     return this;
                 }
                 @Override
                 public void notifyEnd(ArgumentParser parser) {
                     if ( parser.getValueStack( SCHEME_ENGINE ).isEmpty() ) {
-                        throw new RuntimeException( "no scheme is defined." );
+                        throw new RuntimeException( MSG_NO_SCHEME_ERROR );
                     }
                     SchemeEngine schemeEngine = parser.getValueStack( SCHEME_ENGINE ).peek();
 //                        if ( pulsarStack.isEmpty() ) {
@@ -266,7 +271,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
 //                                    portNumberList.add(  Integer.parseInt( a.value ) );
 //                                    break;
                             default :
-                                throw new RuntimeException( "unknown parameter : " + a.getKey() );
+                                throw new RuntimeException( MSG_UNKNOWN_PARAM_ERROR + a.getKey() );
                         }
                     } else {
                         fileNameList.add(s);
@@ -276,7 +281,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 @Override
                 public void notifyEnd(ArgumentParser parser) {
                     if ( parser.getValueStack( SCHEME_ENGINE ).isEmpty() ) {
-                        throw new RuntimeException( "no scheme is defined." );
+                        throw new RuntimeException( MSG_NO_SCHEME_ERROR );
                     }
                     SchemeEngine schemeEngine = parser.getValueStack( SCHEME_ENGINE ).peek();
                     
@@ -309,7 +314,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
 //                                    portNumberList.add(  Integer.parseInt( a.value ) );
 //                                    break;
                             default :
-                                throw new RuntimeException( "unknown parameter : " + a.getKey() );
+                                throw new RuntimeException( MSG_UNKNOWN_PARAM_ERROR + a.getKey() );
                         }
                     } else {
                         fileNameList.add(s);
@@ -319,7 +324,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 @Override
                 public void notifyEnd(ArgumentParser parser) {
                     if ( parser.getValueStack( SCHEME_ENGINE ).isEmpty() ) {
-                        throw new RuntimeException( "no scheme is defined." );
+                        throw new RuntimeException( MSG_NO_SCHEME_ERROR );
                     }
                     SchemeEngine schemeEngine = parser.getValueStack( SCHEME_ENGINE ).peek();
                     KawapadFrame frame = LamuApplicationLibrary.createKawapad( schemeEngine );
@@ -349,12 +354,12 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
             return new ArgumentParserElement() {
                 @Override
                 public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
-                    throw new RuntimeException( "unknown parameter : " + s);
+                    throw new RuntimeException( MSG_UNKNOWN_PARAM_ERROR + s);
                 }
                 @Override
                 public void notifyEnd(ArgumentParser parser) {
                     if ( parser.getValueStack( SCHEME_ENGINE ).isEmpty() ) {
-                        throw new RuntimeException( "no scheme is defined." );
+                        throw new RuntimeException( MSG_NO_SCHEME_ERROR );
                     }
                     SchemeEngine schemeEngine = parser.getValueStack( SCHEME_ENGINE ).peek();
                     Pulsar pulsar = LamuApplicationLibrary.createPulsar( schemeEngine );
@@ -450,13 +455,29 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         }
     }
 
+    /**
+	 * Sets up the commands for the command-line parser. Please read the code of the 
+	 * {@link LamuApplicationArgumentParser#initializeParser()} 
+	 * <pre>{@code
+	 * registerFactory("scheme",           new SchemeArgumentParserElementFactory());
+	 * registerFactory("kawapad",          new KawapadGuiArgumentParserElementFactory());
+	 * registerFactory("pulsar",           new PulsarArgumentParserElementFactory());
+	 * registerFactory("gui",              new PulsarGuiArgumentParserElementFactory());
+	 * registerFactory("httpd",            new SchemeServerArgumentParserElementFactory());
+	 * registerFactory("output-help",      new OutputReferenceArgumentParserElementFactory());
+	 * registerFactory("output-help-list", new AllAvailableReferenceArgumentParserElementFactory());
+	 * }</pre>
+	 */
+	protected void initializeParser() {
+		registerFactory( "scheme",           new SchemeArgumentParserElementFactory());
+        registerFactory( "kawapad",          new KawapadGuiArgumentParserElementFactory());
+        registerFactory( "pulsar",           new PulsarArgumentParserElementFactory());
+        registerFactory( "gui",              new PulsarGuiArgumentParserElementFactory());
+        registerFactory( "httpd",            new SchemeServerArgumentParserElementFactory());
+        registerFactory( "output-help",      new OutputReferenceArgumentParserElementFactory());
+        registerFactory( "output-help-list", new AllAvailableReferenceArgumentParserElementFactory());
+	}
     {
-        registerFactory( "scheme", new SchemeArgumentParserElementFactory());
-        registerFactory( "pulsar", new PulsarArgumentParserElementFactory());
-        registerFactory( "kawapad-gui", new KawapadGuiArgumentParserElementFactory());
-        registerFactory( "pulsar-gui", new PulsarGuiArgumentParserElementFactory());
-        registerFactory( "scheme-server", new SchemeServerArgumentParserElementFactory());
-        registerFactory( "output-reference", new OutputReferenceArgumentParserElementFactory());
-        registerFactory( "all-available-references", new AllAvailableReferenceArgumentParserElementFactory());
+        initializeParser();
     }
 }
