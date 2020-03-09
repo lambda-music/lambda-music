@@ -19,6 +19,7 @@ public class LamuMetalTheme2 extends DefaultMetalTheme {
 	private static final ColorUIResource primaryHighlight = new ColorUIResource( 102, 102, 102);
 	private static final ColorUIResource secondary2       = new ColorUIResource( 204, 204, 204);
 	private static final ColorUIResource secondary3       = new ColorUIResource( 255, 255, 255);
+	@SuppressWarnings("unused")
 	private static final ColorUIResource controlHighlight = new ColorUIResource( 102, 102, 102);
 
 
@@ -90,6 +91,7 @@ public class LamuMetalTheme2 extends DefaultMetalTheme {
 	public void addCustomEntriesToTable(UIDefaults table) {
 		Border blackLineBorder = new BorderUIResource(new LineBorder(
 				getBlack()));
+		@SuppressWarnings("unused")
 		Border whiteLineBorder = new BorderUIResource(new LineBorder(
 				getWhite()));
 		Object textBorder = new BorderUIResource(new CompoundBorder(

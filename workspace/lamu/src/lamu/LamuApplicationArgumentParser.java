@@ -59,7 +59,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 @Override
                 public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
                     if ( s.startsWith( "--" ) ) {
-                        LamuApplicationNamedArgument narg = new LamuApplicationNamedArgument( s );
+                        LamuNamedArgument narg = new LamuNamedArgument( s );
                         switch ( narg.getKey() ) {
                             case "output-file" :
                                 outputFile = narg.getValue();
@@ -103,7 +103,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 @Override
                 public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
                     if ( s.startsWith( "--" ) ) {
-                        LamuApplicationNamedArgument narg = new LamuApplicationNamedArgument( s );
+                        LamuNamedArgument narg = new LamuNamedArgument( s );
                         switch ( narg.getKey() ) {
                             case "category" :
                                 category = narg.getValue();
@@ -209,7 +209,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 @Override
                 public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
                     if (s.startsWith( "--" ) ) {
-                        LamuApplicationNamedArgument a = new LamuApplicationNamedArgument(s);
+                        LamuNamedArgument a = new LamuNamedArgument(s);
                         switch ( a.getKey() ) {
                             case "port" : 
                                 this.serverPort = Integer.parseInt( a.getValue() );
@@ -265,7 +265,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 @Override
                 public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
                     if ( s.startsWith( "--" ) ) {
-                        LamuApplicationNamedArgument a = new LamuApplicationNamedArgument(s);
+                        LamuNamedArgument a = new LamuNamedArgument(s);
                         switch ( a.getKey() ) {
 //                                case "port" : 
 //                                    portNumberList.add(  Integer.parseInt( a.value ) );
@@ -308,7 +308,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 @Override
                 public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
                     if ( s.startsWith( "--" ) ) {
-                        LamuApplicationNamedArgument a = new LamuApplicationNamedArgument(s);
+                        LamuNamedArgument a = new LamuNamedArgument(s);
                         switch ( a.getKey() ) {
 //                                case "port" : 
 //                                    portNumberList.add(  Integer.parseInt( a.value ) );
@@ -390,7 +390,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 @Override
                 public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
                     if ( s.startsWith( "--"  ) ) {
-                        LamuApplicationNamedArgument a = new LamuApplicationNamedArgument( s );
+                        LamuNamedArgument a = new LamuNamedArgument( s );
                         if ( false ) {
                             //
                         } else if ( "server-url".equals( a.getKey() ) ) {
