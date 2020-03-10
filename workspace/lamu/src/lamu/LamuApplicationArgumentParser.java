@@ -22,8 +22,8 @@ import quartz.lib.log.SimpleConsoleLogger;
 import quartz.lib.scheme.EvaluatorManager;
 import quartz.lib.scheme.SchemeEngine;
 import quartz.lib.scheme.doc.DescriptiveDocumentCategory;
-import quartz.lib.scheme.http.SchemeHttp;
-import quartz.lib.scheme.http.SchemeHttp.UserAuthentication;
+import quartz.lib.scheme.socket.SchemeHttp;
+import quartz.lib.scheme.socket.SchemeHttp.UserAuthentication;
 
 class LamuApplicationArgumentParser extends ArgumentParserDefault {
     static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );

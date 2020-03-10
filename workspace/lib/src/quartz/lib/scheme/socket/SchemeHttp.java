@@ -1,4 +1,4 @@
-package quartz.lib.scheme.http;
+package quartz.lib.scheme.socket;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;

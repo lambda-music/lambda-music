@@ -8,8 +8,8 @@ import pulsar.Pulsar;
 import pulsar.PulsarFrame;
 import quartz.lib.scheme.SchemeEngine;
 import quartz.lib.scheme.doc.DescriptiveHelp;
-import quartz.lib.scheme.http.SchemeHttp;
-import quartz.lib.scheme.http.SchemeHttp.UserAuthentication;
+import quartz.lib.scheme.socket.SchemeHttp;
+import quartz.lib.scheme.socket.SchemeHttp.UserAuthentication;
 
 public class LamuApplicationLibrary {
     public static void initializeSchemeEngine( SchemeEngine schemeEngine ) {

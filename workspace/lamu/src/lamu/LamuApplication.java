@@ -1,9 +1,7 @@
 package lamu;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
@@ -130,36 +128,7 @@ public class LamuApplication {
 		owner.addAll(components);
 		owner.requestInit();
 
-		Thread thread = new Thread( new Runnable() {
-			@Override
-			public void run() {
-				BufferedReader r = new BufferedReader( new InputStreamReader(System.in) );
-				try {
-					try {
-						for (;;) {
-							String s = r.readLine();
-							if (s == null)
-								break;
-							if ("quit".equals(s) || "bye".equals(s)) {
-								System.out.println("ok");
-								owner.processQuit();
-								break;
-							} else if ("alive?".equals(s)) {
-								System.out.println("yes");
-							} else if ("hello".equals(s)) {
-								System.out.println("hello");
-							} else {
-								System.out.println("unknown-command");
-							}
-						}
-					} finally {
-						r.close();
-					}
-				} catch (IOException e) {
-					logError("", e);
-				}
-			}
-		}, "command-reception");
+		Thread thread = new Thread( new LamuSimpleSocketServer( owner, System.in, System.out), "command-reception" );
 		thread.setDaemon(true);
 		thread.start();
 	}

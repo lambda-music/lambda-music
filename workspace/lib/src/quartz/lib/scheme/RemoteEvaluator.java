@@ -10,7 +10,7 @@ import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import quartz.lib.scheme.http.SchemeHttp;
+import quartz.lib.scheme.socket.SchemeHttp;
 
 public class RemoteEvaluator implements Evaluator {
     public static String httpRequest(String urlString, String postString) throws IOException {
