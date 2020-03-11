@@ -20,21 +20,10 @@ import quartz.lib.log.SimpleConsoleLogger;
 import quartz.lib.scheme.doc.DescriptiveHelp;
 
 public class LamuApplication {
-	static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger
-			.getLogger(MethodHandles.lookup().lookupClass().getName());
-
-	static void logError(String msg, Throwable e) {
-		LOGGER.log(Level.SEVERE, msg, e);
-	}
-
-	static void logInfo(String msg) {
-		LOGGER.log(Level.INFO, msg);
-	}
-
-	static void logWarn(String msg) {
-		LOGGER.log(Level.WARNING, msg);
-	}
-
+	static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger(MethodHandles.lookup().lookupClass().getName());
+	static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+	static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
+	static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }
 	private LamuApplication() {
 	}
 
