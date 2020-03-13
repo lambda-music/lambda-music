@@ -1,14 +1,23 @@
 package lamu;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import quartz.lib.app.ApplicationComponent;
+import quartz.lib.log.SimpleConsoleLogger;
 
 abstract class LamuCommand {
+	static final Logger LOGGER = SimpleConsoleLogger.getLogger(MethodHandles.lookup().lookupClass().getName());
+	static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+	static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
+	static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }
+
 	abstract boolean match(List<String> arguments);
 	abstract void    execute(List<LamuCommand> availableCommands, List<ApplicationComponent> vessels, List<String> arguments, boolean recursiveCall);
 
@@ -56,6 +65,7 @@ abstract class LamuCommand {
 		List<ApplicationComponent> vessels = new ArrayList<>();
 		for (Iterator<List<String>> i = arrayOfSubargs.iterator(); i.hasNext();) {
 			List<String> subargs = i.next();
+			logInfo( subargs.toString() );
 			parseSubargs(availableCommands, vessels, subargs, false);
 		}
 		return vessels;

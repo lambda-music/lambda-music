@@ -4,23 +4,26 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import kawapad.Kawapad;
 import kawapad.KawapadDocuments;
 import pulsar.Pulsar;
 import pulsar.PulsarDocuments;
 import pulsar.lib.swing.PulsarGuiUtils;
-import quartz.lib.LogFormatter;
 import quartz.lib.Version;
 import quartz.lib.app.ApplicationComponent;
 import quartz.lib.app.ApplicationVessel;
 import quartz.lib.log.SimpleConsoleLogger;
 import quartz.lib.scheme.doc.DescriptiveHelp;
+import quartz.lib.scheme.socket.SimpleReplSisoServer;
+import quartz.lib.scheme.socket.SisoReceiver;
 
 public class LamuApplication {
-	static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger(MethodHandles.lookup().lookupClass().getName());
+	static final Logger LOGGER = SimpleConsoleLogger.getLogger(MethodHandles.lookup().lookupClass().getName());
 	static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
 	static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
 	static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }
@@ -37,7 +40,7 @@ public class LamuApplication {
 		availableCommands.addAll( LamuCommandMacro.load( getInitFile() ) );
 		// this is a fall back.
 		availableCommands.add( LamuCommandMacro.create( 
-				LamuCommand.DEFAULT_COMMAND_NAME + " exec scheme + pulsar + gui $*{--open @} +") );
+				LamuCommand.DEFAULT_COMMAND_NAME + " exec scheme + pulsar + repl + gui $*{--open @} +") );
 		return availableCommands;
 	}
 
@@ -107,18 +110,44 @@ public class LamuApplication {
 
 		System.err.println("*** WELCOME TO PULSAR ***");
 		System.err.println("VERSION : " + Version.get(Pulsar.class));
-		LogFormatter.init();
+//		LogFormatter.init();
 		LamuPrinter.init();
+		
+//		Logger.getGlobal().setLevel( Level.ALL );
 
 		List<LamuCommand> availableCommands = createAvailableCommandList();
 		List<ApplicationComponent> components = LamuCommand.parseArgs( availableCommands, args );
-
 		ApplicationVessel owner = new ApplicationVessel();
+
+		/**
+		 * If no reception object exists in the component list, create a default
+		 * reception object and add to the list. A reception object is the server
+		 * to receive/send via stdin/stdout.
+		 * 
+		 * Right now there is only one kind of reception objects; SisoReceiver; though
+		 * it will be changed. 
+		 */
+		
+		if ( false ) {
+			boolean found = false;
+			for ( Iterator<ApplicationComponent> i= components.iterator();i.hasNext(); ) {
+				ApplicationComponent c = i.next();
+				if ( c instanceof SisoReceiver ) {
+					found = true;
+				}
+			}
+			if ( ! found ) {
+//				Thread thread = new Thread( new LamuSimpleSocketServer( owner, System.in, System.out), "command-reception" );
+//				thread.setDaemon(true);
+//				thread.start();
+				components.add( new SisoReceiver( null, System.in, System.out, new SimpleReplSisoServer() ) );
+			}
+		}
+
 		owner.addAll(components);
 		owner.requestInit();
+		
+		
 
-		Thread thread = new Thread( new LamuSimpleSocketServer( owner, System.in, System.out), "command-reception" );
-		thread.setDaemon(true);
-		thread.start();
 	}
 }

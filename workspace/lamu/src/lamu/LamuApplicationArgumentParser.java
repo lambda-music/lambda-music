@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import kawapad.Kawapad;
 import kawapad.KawapadFrame;
@@ -22,11 +23,13 @@ import quartz.lib.log.SimpleConsoleLogger;
 import quartz.lib.scheme.EvaluatorManager;
 import quartz.lib.scheme.SchemeEngine;
 import quartz.lib.scheme.doc.DescriptiveDocumentCategory;
+import quartz.lib.scheme.socket.ReplSisoListener;
 import quartz.lib.scheme.socket.SchemeHttp;
 import quartz.lib.scheme.socket.SchemeHttp.UserAuthentication;
+import quartz.lib.scheme.socket.SisoReceiver;
 
 class LamuApplicationArgumentParser extends ArgumentParserDefault {
-    static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
@@ -40,6 +43,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         getValueStack( SCHEME_ENGINE );
         getValueStack( PULSAR );
         getValueStack( KAWAPAD );
+        getValueStack( REPL );
         getValueStack( FRAME );
         getValueStack( SCHEME_HTTP );
         getValueStack( RUNNABLE );
@@ -48,8 +52,10 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
     static final ArgumentParserStackKey<SchemeEngine> SCHEME_ENGINE = new ArgumentParserStackKey<>();
     static final ArgumentParserStackKey<Pulsar> PULSAR = new ArgumentParserStackKey<>();
     static final ArgumentParserStackKey<Kawapad> KAWAPAD = new ArgumentParserStackKey<>();
+    static final ArgumentParserStackKey<SisoReceiver> REPL = new ArgumentParserStackKey<>();
     static final ArgumentParserStackKey<KawapadFrame> FRAME = new ArgumentParserStackKey<>();
     static final ArgumentParserStackKey<SchemeHttp> SCHEME_HTTP= new ArgumentParserStackKey<>();
+    static final ArgumentParserStackKey<SisoReceiver> STPD_RECEIVER = new ArgumentParserStackKey<>();
     
     static final class AllAvailableReferenceArgumentParserElementFactory implements ArgumentParserElementFactory {
         @Override
@@ -198,7 +204,43 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         }
     }
 
-    static final class SchemeServerArgumentParserElementFactory implements ArgumentParserElementFactory {
+    static final class SchemeTransferProtocolArgumentParserElementFactory implements ArgumentParserElementFactory {
+        @Override
+        public ArgumentParserElement create() {
+            return new ArgumentParserElement() {
+//                int port = 0;
+                @Override
+                public ArgumentParserElement notifyArg( ArgumentParser parser, String s ) {
+                	if ( false ) {
+                		
+//                	} else if ( s.startsWith( "--" ) ) {
+//                        LamuNamedArgument a = new LamuNamedArgument(s);
+//                        switch ( a.getKey() ) {
+//                        case "port" : 
+//                        	port = Integer.parseInt( a.getValue() );
+//                        	break;
+//                            default :
+//                                throw new RuntimeException( MSG_UNKNOWN_PARAM_ERROR + a.getKey() );
+//                        }
+                    } else {
+                        throw new RuntimeException( MSG_UNKNOWN_PARAM_ERROR + s );
+                    }
+                    return this;
+                }
+                @Override
+                public void notifyEnd(ArgumentParser parser) {
+                    if ( parser.getValueStack( SCHEME_ENGINE ).isEmpty() ) {
+                        throw new RuntimeException( MSG_NO_SCHEME_ERROR );
+                    }
+                    SchemeEngine schemeEngine = parser.getValueStack( SCHEME_ENGINE ).peek();
+                    SisoReceiver sisoReceiver = new SisoReceiver( null, System.in, System.out, new ReplSisoListener( schemeEngine ) );
+                    parser.getValueStack( STPD_RECEIVER ).push( sisoReceiver );
+                }
+            };
+        }
+    }
+
+    static final class SchemeHttpServerArgumentParserElementFactory implements ArgumentParserElementFactory {
         @Override
         public ArgumentParserElement create() {
             return new ArgumentParserElement() {
@@ -375,6 +417,32 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
             };
         }
     }
+    static final class ReplArgumentParserElementFactory implements ArgumentParserElementFactory {
+        @Override
+        public ArgumentParserElement create() {
+            return new ArgumentParserElement() {
+                @Override
+                public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
+                    throw new RuntimeException( MSG_UNKNOWN_PARAM_ERROR + s);
+                }
+                @Override
+                public void notifyEnd(ArgumentParser parser) {
+                    if ( parser.getValueStack( SCHEME_ENGINE ).isEmpty() ) {
+                        throw new RuntimeException( MSG_NO_SCHEME_ERROR );
+                    }
+                    SchemeEngine schemeEngine = parser.getValueStack( SCHEME_ENGINE ).peek();
+                    
+                    parser.getValueStack( REPL ).push( new SisoReceiver( null, System.in, System.out, new ReplSisoListener( schemeEngine ) ) );
+                    parser.getValueStack( RUNNABLE ).push( new Runnable() {
+                        @Override
+                        public void run() {
+//                                pulsar.init();
+                        }
+                    });
+                }
+            };
+        }
+    }
 
     static final class SchemeArgumentParserElementFactory implements ArgumentParserElementFactory {
         static final String DEFAULT_REMOTE_URL = "http://localhost:";
@@ -472,8 +540,10 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
 		registerFactory( "scheme",           new SchemeArgumentParserElementFactory());
         registerFactory( "kawapad",          new KawapadGuiArgumentParserElementFactory());
         registerFactory( "pulsar",           new PulsarArgumentParserElementFactory());
+        registerFactory( "repl",             new ReplArgumentParserElementFactory());
         registerFactory( "gui",              new PulsarGuiArgumentParserElementFactory());
-        registerFactory( "httpd",            new SchemeServerArgumentParserElementFactory());
+        registerFactory( "httpd",            new SchemeHttpServerArgumentParserElementFactory());
+        registerFactory( "stpd",             new SchemeTransferProtocolArgumentParserElementFactory());
         registerFactory( "output-help",      new OutputReferenceArgumentParserElementFactory());
         registerFactory( "output-help-list", new AllAvailableReferenceArgumentParserElementFactory());
 	}

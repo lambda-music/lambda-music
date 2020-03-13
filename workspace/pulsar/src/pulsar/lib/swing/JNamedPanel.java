@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JPanel;
 
@@ -90,7 +91,7 @@ public class JNamedPanel extends JPanel implements JSelectableUserObject {
             this.nextProcedure.clear();
         }
     }
-    static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( JNamedPanel.class.getName() );
+    static final Logger LOGGER = SimpleConsoleLogger.getLogger( JNamedPanel.class.getName() );
     
     private final class JNamedPanelEntry implements Map.Entry {
         private final Entry<Component, String> entry;

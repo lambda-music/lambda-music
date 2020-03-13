@@ -17,8 +17,9 @@ public class SimpleConsoleLogger extends Logger {
     public Level getConsoleLevel() {
 		return consoleLevel;
 	}
-	public static SimpleConsoleLogger getLogger( String name ) {
-        return new SimpleConsoleLogger( name, null, Level.WARNING );
+	public static Logger getLogger( String name ) {
+		return Logger.getLogger( name );
+//        return new SimpleConsoleLogger( name, null, Level.WARNING );
     }
 	public static SimpleConsoleLogger getLogger( String name, String resourceBundleName ) {
         return new SimpleConsoleLogger( name, null, Level.WARNING );

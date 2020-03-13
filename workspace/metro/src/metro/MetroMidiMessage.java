@@ -22,6 +22,7 @@ package metro;
 
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import quartz.lib.log.SimpleConsoleLogger;
 
@@ -137,7 +138,7 @@ public class MetroMidiMessage implements MetroMidiReceiver<byte[]> {
     }
     
     /** @formatter:on */
-    static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

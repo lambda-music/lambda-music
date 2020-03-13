@@ -2,6 +2,7 @@ package quartz.lib.app;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import quartz.lib.thread.ThreadInitializerCollection;
@@ -38,7 +39,9 @@ public class ApplicationVessel implements ApplicationComponent, ThreadInitialize
             c.setParentApplicationComponent( null );
         components.remove( c );
     }
-    
+    public List<ApplicationComponent> getComponents() {
+		return Collections.unmodifiableList( components );
+	}
     @Override
     public void processInit() {
         ApplicationComponent.logInfo( "ApplicationVessel:processInit()" );

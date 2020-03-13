@@ -20,7 +20,30 @@
 
 package pulsar;
 
-import static pulsar.NoteListCommon.*;
+import static pulsar.NoteListCommon.ID_MESSAGE;
+import static pulsar.NoteListCommon.list;
+import static pulsar.NoteListCommon.readMapBooleanValueDefaultFalse;
+import static pulsar.NoteListCommon.readMapChannel;
+import static pulsar.NoteListCommon.readMapDoubleValue;
+import static pulsar.NoteListCommon.readMapEnabled;
+import static pulsar.NoteListCommon.readMapIntegerValueDefault0;
+import static pulsar.NoteListCommon.readMapKey;
+import static pulsar.NoteListCommon.readMapNote;
+import static pulsar.NoteListCommon.readMapOffset;
+import static pulsar.NoteListCommon.readMapPort;
+import static pulsar.NoteListCommon.readMapVelocity;
+import static pulsar.NoteListCommon.s;
+import static pulsar.NoteListCommon.writeMapBooleanValueDefaultFalse;
+import static pulsar.NoteListCommon.writeMapChannel;
+import static pulsar.NoteListCommon.writeMapDoubleValue;
+import static pulsar.NoteListCommon.writeMapIntegerValueDefault0;
+import static pulsar.NoteListCommon.writeMapKey;
+import static pulsar.NoteListCommon.writeMapNote;
+import static pulsar.NoteListCommon.writeMapOffset;
+import static pulsar.NoteListCommon.writeMapPort;
+import static pulsar.NoteListCommon.writeMapString;
+import static pulsar.NoteListCommon.writeMapType;
+import static pulsar.NoteListCommon.writeMapVelocity;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
@@ -29,6 +52,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import gnu.lists.LList;
 import gnu.mapping.Symbol;
@@ -103,10 +127,10 @@ import metro.MetroMidi.MetroMidiSongPositionPointer;
 import metro.MetroMidi.MetroMidiSongSelect;
 import metro.MetroMidi.MetroMidiStart;
 import metro.MetroMidi.MetroMidiStop;
-import quartz.lib.log.SimpleConsoleLogger;
 import metro.MetroMidiMessageGen;
 import metro.MetroPort;
 import metro.MetroTrack;
+import quartz.lib.log.SimpleConsoleLogger;
 
 /**
  * Defines MIDI events.
@@ -117,7 +141,7 @@ import metro.MetroTrack;
  *
  */
 public class PulsarMidiNoteListParsers {
-    static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }

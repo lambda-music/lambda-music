@@ -20,7 +20,10 @@
 
 package pulsar;
 
-import static pulsar.NoteListCommon.*;
+import static pulsar.NoteListCommon.ID_NULL;
+import static pulsar.NoteListCommon.ID_TYPE;
+import static pulsar.NoteListCommon.SYMBOL_NULL;
+import static pulsar.NoteListCommon.SYMBOL_THRU;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
@@ -30,6 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import gnu.lists.LList;
 import gnu.lists.Pair;
@@ -54,7 +58,7 @@ import quartz.lib.scheme.SchemeUtils;
  * @author ats
  */
 public class NoteListParser {
-    static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }

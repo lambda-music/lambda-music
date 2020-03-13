@@ -20,7 +20,41 @@
 
 package pulsar;
 
-import static pulsar.NoteListCommon.*;
+import static pulsar.NoteListCommon.DEFAULT_NOTE_LENGTH;
+import static pulsar.NoteListCommon.DEFAULT_VALUE_DOUBLE_0;
+import static pulsar.NoteListCommon.ID_CHANNEL;
+import static pulsar.NoteListCommon.ID_ID;
+import static pulsar.NoteListCommon.ID_LENGTH;
+import static pulsar.NoteListCommon.ID_LONG;
+import static pulsar.NoteListCommon.ID_NOTE;
+import static pulsar.NoteListCommon.ID_OFFSET;
+import static pulsar.NoteListCommon.ID_PORT;
+import static pulsar.NoteListCommon.ID_PROCEDURE;
+import static pulsar.NoteListCommon.ID_SYNC_OFFSET;
+import static pulsar.NoteListCommon.ID_SYNC_TRACK_ID;
+import static pulsar.NoteListCommon.ID_TAGS;
+import static pulsar.NoteListCommon.ID_VALUE;
+import static pulsar.NoteListCommon.ID_VELOCITY;
+import static pulsar.NoteListCommon.NULL;
+import static pulsar.NoteListCommon.S2J_DOUBLE;
+import static pulsar.NoteListCommon.S2J_PROCEDURE;
+import static pulsar.NoteListCommon.THRU;
+import static pulsar.NoteListCommon.list;
+import static pulsar.NoteListCommon.readMapChannel;
+import static pulsar.NoteListCommon.readMapCollection;
+import static pulsar.NoteListCommon.readMapDoubleValueBarLength;
+import static pulsar.NoteListCommon.readMapEnabled;
+import static pulsar.NoteListCommon.readMapNewId;
+import static pulsar.NoteListCommon.readMapNote;
+import static pulsar.NoteListCommon.readMapNoteLength;
+import static pulsar.NoteListCommon.readMapOffset;
+import static pulsar.NoteListCommon.readMapPort;
+import static pulsar.NoteListCommon.readMapProcedure;
+import static pulsar.NoteListCommon.readMapSyncType;
+import static pulsar.NoteListCommon.readMapVelocity;
+import static pulsar.NoteListCommon.s;
+import static pulsar.NoteListCommon.writeMapDoubleValue;
+import static pulsar.NoteListCommon.writeMapType;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
@@ -31,6 +65,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import gnu.lists.LList;
 import gnu.mapping.Procedure;
@@ -51,7 +86,7 @@ import quartz.lib.secretary.InvokablyRunnable;
  * @author ats
  */
 public class PulsarSpecialNoteListParsers {
-    static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }

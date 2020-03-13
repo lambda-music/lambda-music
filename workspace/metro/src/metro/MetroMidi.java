@@ -23,6 +23,7 @@ package metro;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import quartz.lib.log.SimpleConsoleLogger;
 
@@ -214,7 +215,7 @@ public abstract class MetroMidi {
     public abstract <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message );
     public abstract void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event );
      
-    static final SimpleConsoleLogger LOGGER = SimpleConsoleLogger.getLogger( MetroMidi.class.getName() );
+    static final Logger LOGGER = SimpleConsoleLogger.getLogger( MetroMidi.class.getName() );
 
     static HashMap<String,MetroMidi> infoMap = new HashMap<String,MetroMidi>();
     static void putInfo( MetroMidi info ) {

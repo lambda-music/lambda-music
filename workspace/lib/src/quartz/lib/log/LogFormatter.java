@@ -1,4 +1,4 @@
-package quartz.lib;
+package quartz.lib.log;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

@@ -4,27 +4,23 @@ import java.util.HashMap;
 
 import quartz.lib.scheme.SchemeEngine;
 import quartz.lib.scheme.SchemeResult;
-import quartz.lib.scheme.socket.SisoServer.SisoListener;
-import quartz.lib.thread.ThreadInitializerCollection;
+import quartz.lib.scheme.socket.SisoReceiver.SisoListener;
 
-public class SchemeSocketServer implements SisoListener {
+public class ReplSisoListener implements SisoListener {
 	public static final String ERROR_COMMAND = "error";
 	public static final String DEFAULT_BUFFER_KEY = "default";
 	public static final String NULL_BUFFER_KEY = "null";
 	
 	protected final SchemeEngine schemeEngine;
-	protected final ThreadInitializerCollection initializerCollection;
 	protected String prefix = ";;;";
-	public SchemeSocketServer(SchemeEngine schemeEngine, ThreadInitializerCollection initializerCollection ) {
+	public ReplSisoListener(SchemeEngine schemeEngine ) {
 		super();
 		this.schemeEngine = schemeEngine;
-		this.initializerCollection = initializerCollection;
-		this.schemeEngine.requestInit();
 	}
 	class ExecuteScheme implements Runnable {
-		final SisoServer server;
+		final SisoReceiver server;
 		final String script;
-		public ExecuteScheme(SisoServer server, String script) {
+		public ExecuteScheme(SisoReceiver server, String script) {
 			super();
 			this.server = server;
 			this.script = script;
@@ -33,8 +29,8 @@ public class SchemeSocketServer implements SisoListener {
 		@Override
 		public void run() {
 			SchemeResult result = 
-					schemeEngine.getEvaluatorManager().getCurrentEvaluator().evaluate( initializerCollection, script, "console" );
-			server.postMessage( SisoServer.createPrintMessage( result.getValueAsString() ));
+					schemeEngine.getEvaluatorManager().getCurrentEvaluator().evaluate( server.getThreadInitializerCollection(), script, "console" );
+			server.postMessage( SisoReceiver.createPrintMessage( result.getValueAsString() ));
 		}
 	}
 
@@ -71,51 +67,51 @@ public class SchemeSocketServer implements SisoListener {
 		selectCurrentBuffer( DEFAULT_BUFFER_KEY );
 	}
 
-	final HashMap<String,SisoListener> commandMap = new HashMap<String, SisoServer.SisoListener>();
+	final HashMap<String,SisoListener> commandMap = new HashMap<String, SisoReceiver.SisoListener>();
 	
 	{
 		commandMap.put( ERROR_COMMAND, new SisoListener() {
 			@Override
-			public void process(SisoServer server, String s) {
-				server.postMessage( SisoServer.createPrintMessage("'error"));
+			public void process(SisoReceiver server, String s) {
+				server.postMessage( SisoReceiver.createPrintMessage("'error"));
 			}
 		});
 		commandMap.put("quit", new SisoListener() {
 			@Override
-			public void process(SisoServer server, String s) {
-				server.postMessage( SisoServer.createQuitMessage() );
+			public void process(SisoReceiver server, String s) {
+				server.postMessage( SisoReceiver.createQuitMessage() );
 			}
 		});
 		commandMap.put("bye", new SisoListener() {
 			@Override
-			public void process(SisoServer server, String s) {
-				server.postMessage( SisoServer.createPrintMessage( "'bye" ));
-				server.postMessage( SisoServer.createQuitMessage() );
+			public void process(SisoReceiver server, String s) {
+				server.postMessage( SisoReceiver.createPrintMessage( "'bye" ));
+				server.postMessage( SisoReceiver.createQuitMessage() );
 			}
 		});
 		commandMap.put("alive?", new SisoListener() {
 			@Override
-			public void process(SisoServer server, String s) {
-				server.postMessage( SisoServer.createPrintMessage("#t"));
+			public void process(SisoReceiver server, String s) {
+				server.postMessage( SisoReceiver.createPrintMessage("#t"));
 			}
 		});
 		commandMap.put("hello", new SisoListener() {
 			@Override
-			public void process(SisoServer server, String s) {
-				server.postMessage( SisoServer.createPrintMessage("hello"));
+			public void process(SisoReceiver server, String s) {
+				server.postMessage( SisoReceiver.createPrintMessage("hello"));
 			}
 		});
 		commandMap.put("hello?", new SisoListener() {
 			@Override
-			public void process(SisoServer server, String s) {
-				server.postMessage( SisoServer.createPrintMessage("hello!"));
+			public void process(SisoReceiver server, String s) {
+				server.postMessage( SisoReceiver.createPrintMessage("hello!"));
 			}
 		});
 		commandMap.put("select-buffer", new SisoListener() {
 			@Override
-			public void process(SisoServer server, String s) {
+			public void process(SisoReceiver server, String s) {
 				StringBuffer currentBuffer = selectCurrentBuffer(s);
-				server.postMessage( SisoServer.createPrintMessage(
+				server.postMessage( SisoReceiver.createPrintMessage(
 						String.format(
 								"'(( length . %d ))" ,
 								currentBuffer.toString().split("\n").length )));
@@ -124,25 +120,25 @@ public class SchemeSocketServer implements SisoListener {
 		commandMap.put( "select", commandMap.get( "select-buffer" ));
 		commandMap.put( "show-buffer", new SisoListener() {
 			@Override
-			public void process(SisoServer server, String s) {
+			public void process(SisoReceiver server, String s) {
 				StringBuffer currentBuffer = getCurrentBuffer();
 				server.postMessage( 
-						SisoServer.createPrintMessage( currentBuffer.toString() ));
+						SisoReceiver.createPrintMessage( currentBuffer.toString() ));
 			}
 		});
 		commandMap.put( "show", commandMap.get( "show-buffer" ));
 		commandMap.put( "clear-buffer", new SisoListener() {
 			@Override
-			public void process(SisoServer server, String s) {
+			public void process(SisoReceiver server, String s) {
 				clearCurrentBuffer();
 				server.postMessage( 
-						SisoServer.createPrintMessage( "#t" ));
+						SisoReceiver.createPrintMessage( "#t" ));
 			}
 		});
 		commandMap.put( "clear", commandMap.get( "clear-buffer" ));
 		commandMap.put( "execute-buffer", new SisoListener() {
 			@Override
-			public void process( SisoServer server, String s ) {
+			public void process( SisoReceiver server, String s ) {
 				StringBuffer currentBuffer = getCurrentBuffer();
 				
 				Thread t = new Thread( createExecutor(
@@ -154,13 +150,13 @@ public class SchemeSocketServer implements SisoListener {
 				t.start();
 			}
 
-			private Runnable createExecutor(SisoServer server, String script, String scriptURI ) {
+			private Runnable createExecutor(SisoReceiver server, String script, String scriptURI ) {
 				return new Runnable() {
 					@Override
 					public void run() {
 						SchemeResult result = schemeEngine.getEvaluatorManager().getCurrentEvaluator().evaluate( script, scriptURI );
 						server.postMessage( 
-								SisoServer.createPrintMessage( result.getValueAsString() ));
+								SisoReceiver.createPrintMessage( result.getValueAsString() ));
 					}
 				};
 			}
@@ -170,7 +166,7 @@ public class SchemeSocketServer implements SisoListener {
 
 	
 	@Override
-	public void process( SisoServer server, String s ) {
+	public void process( SisoReceiver server, String s ) {
 		if ( s == null ) {
 			commandMap.get( "execute" ).process( server, getCurrentBuffer().toString() );
 			commandMap.get( "quit" ).process( server, null  );
@@ -194,7 +190,7 @@ public class SchemeSocketServer implements SisoListener {
 	}
 	public static void main(String[] args) {
 		SchemeEngine schemeEngine = new SchemeEngine();
-		ThreadInitializerCollection ic = new ThreadInitializerCollection( "hello", null );
-		new SisoServer( null, null, System.in, System.out, new SchemeSocketServer( schemeEngine, ic ) ).requestInit();
+		schemeEngine.requestInit();
+		new SisoReceiver( null, System.in, System.out, new ReplSisoListener( schemeEngine ) ).requestInit();
 	}
 }
