@@ -38,13 +38,13 @@ import java.util.logging.Logger;
 import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Symbol;
+import lamu.lib.log.LamuLogger;
+import lamu.lib.scheme.SchemePrinter;
+import lamu.lib.scheme.SchemeUtils;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroCollector;
 import metro.MetroTrack;
-import quartz.lib.log.LamuLogger;
-import quartz.lib.scheme.SchemePrinter;
-import quartz.lib.scheme.SchemeUtils;
 
 /**
  * {@link NoteListParser} receives a cons cell of Scheme language which contains

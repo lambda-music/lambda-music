@@ -4,12 +4,12 @@ import java.io.IOException;
 
 import kawapad.Kawapad;
 import kawapad.KawapadFrame;
+import lamu.lib.scheme.SchemeEngine;
+import lamu.lib.scheme.doc.DescriptiveHelp;
+import lamu.lib.scheme.socket.SchemeHttp;
+import lamu.lib.scheme.socket.SchemeHttp.UserAuthentication;
 import pulsar.Pulsar;
 import pulsar.PulsarFrame;
-import quartz.lib.scheme.SchemeEngine;
-import quartz.lib.scheme.doc.DescriptiveHelp;
-import quartz.lib.scheme.socket.SchemeHttp;
-import quartz.lib.scheme.socket.SchemeHttp.UserAuthentication;
 
 public class LamuApplicationLibrary {
     public static void initializeSchemeEngine( SchemeEngine schemeEngine ) {

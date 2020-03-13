@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import quartz.lib.app.ApplicationComponent;
+import lamu.lib.app.ApplicationComponent;
 
 class LamuCommandMacro extends LamuCommand {
 	static LamuCommandMacro create(String value) {

@@ -4,7 +4,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import quartz.lib.log.LamuLogger;
+import lamu.lib.log.LamuLogger;
 
 public interface MetroSyncTrack {
     static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );

@@ -29,13 +29,13 @@ import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
+import lamu.lib.log.LamuLogger;
+import lamu.lib.scheme.SchemeUtils;
+import lamu.lib.scheme.doc.DescriptiveDocumentCategory;
+import lamu.lib.scheme.doc.ProceduralDescriptiveBean;
+import lamu.lib.scheme.proc.MultipleNamedProcedureN;
+import lamu.lib.secretary.InvokablyRunnable;
 import pulsar.Pulsar;
-import quartz.lib.log.LamuLogger;
-import quartz.lib.scheme.SchemeUtils;
-import quartz.lib.scheme.doc.DescriptiveDocumentCategory;
-import quartz.lib.scheme.doc.ProceduralDescriptiveBean;
-import quartz.lib.scheme.proc.MultipleNamedProcedureN;
-import quartz.lib.secretary.InvokablyRunnable;
 
 public class PulsarGuiUtils {
     public static final DescriptiveDocumentCategory DOCS = 

@@ -10,9 +10,9 @@ import javax.swing.text.AttributeSet;
 
 import gnu.lists.LList;
 import gnu.mapping.Symbol;
-import quartz.lib.scheme.SchemeEngine;
-import quartz.lib.scheme.SchemeResult;
-import quartz.lib.scheme.SchemeUtils;
+import lamu.lib.scheme.SchemeEngine;
+import lamu.lib.scheme.SchemeResult;
+import lamu.lib.scheme.SchemeUtils;
 
 class KawapadSyntaxHighlighter extends SyntaxHighlighter {
     private static final boolean DEBUG=true;

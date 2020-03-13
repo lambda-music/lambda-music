@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import quartz.lib.log.LamuLogger;
+import lamu.lib.log.LamuLogger;
 
 /**
  * This class represents all events which should be processed in a bar. 

@@ -91,33 +91,33 @@ import kawapad.KawapadSelection.SideParenthesisSelector;
 import kawapad.KawapadSyntaxHighlighter.KawapadSyntaxElementType;
 import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
-import quartz.lib.CurrentObject;
-import quartz.lib.app.ApplicationComponent;
-import quartz.lib.log.LamuLogger;
-import quartz.lib.log.SimpleConsole;
-import quartz.lib.scheme.EvaluatorReceiver;
-import quartz.lib.scheme.SchemeEngine;
-import quartz.lib.scheme.SchemeEvaluator;
-import quartz.lib.scheme.SchemeEvaluator.SchemeEngineListener;
-import quartz.lib.scheme.SchemeEvaluatorUtils;
-import quartz.lib.scheme.SchemePrinter;
-import quartz.lib.scheme.SchemeUtils;
-import quartz.lib.scheme.doc.DescriptiveActions;
-import quartz.lib.scheme.doc.ProceduralDescriptiveBean;
-import quartz.lib.scheme.proc.MultipleNamedProcedure0;
-import quartz.lib.scheme.proc.MultipleNamedProcedure1;
-import quartz.lib.scheme.proc.MultipleNamedProcedure2;
-import quartz.lib.scheme.proc.MultipleNamedProcedure3;
-import quartz.lib.scheme.proc.MultipleNamedProcedureN;
-import quartz.lib.swing.AcceleratorKeyList;
-import quartz.lib.swing.Action2;
-import quartz.lib.swing.AutomatedActionField;
-import quartz.lib.swing.MenuInitializer;
-import quartz.lib.swing.TextAction2;
-import quartz.lib.thread.ThreadInitializer;
-import quartz.lib.thread.ThreadInitializerCollection;
-import quartz.lib.thread.ThreadInitializerCollectionContainer;
-import quartz.lib.thread.ThreadInitializerContainer;
+import lamu.lib.CurrentObject;
+import lamu.lib.app.ApplicationComponent;
+import lamu.lib.log.LamuLogger;
+import lamu.lib.log.SimpleConsole;
+import lamu.lib.scheme.EvaluatorReceiver;
+import lamu.lib.scheme.SchemeEngine;
+import lamu.lib.scheme.SchemeEvaluator;
+import lamu.lib.scheme.SchemeEvaluatorUtils;
+import lamu.lib.scheme.SchemePrinter;
+import lamu.lib.scheme.SchemeUtils;
+import lamu.lib.scheme.SchemeEvaluator.SchemeEngineListener;
+import lamu.lib.scheme.doc.DescriptiveActions;
+import lamu.lib.scheme.doc.ProceduralDescriptiveBean;
+import lamu.lib.scheme.proc.MultipleNamedProcedure0;
+import lamu.lib.scheme.proc.MultipleNamedProcedure1;
+import lamu.lib.scheme.proc.MultipleNamedProcedure2;
+import lamu.lib.scheme.proc.MultipleNamedProcedure3;
+import lamu.lib.scheme.proc.MultipleNamedProcedureN;
+import lamu.lib.swing.AcceleratorKeyList;
+import lamu.lib.swing.Action2;
+import lamu.lib.swing.AutomatedActionField;
+import lamu.lib.swing.MenuInitializer;
+import lamu.lib.swing.TextAction2;
+import lamu.lib.thread.ThreadInitializer;
+import lamu.lib.thread.ThreadInitializerCollection;
+import lamu.lib.thread.ThreadInitializerCollectionContainer;
+import lamu.lib.thread.ThreadInitializerContainer;
 
 /**
  * 
@@ -3602,6 +3602,6 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         map.put( "scheme"   , schemeMenuItem );
         kawapad.initMenu( map );
 
-        quartz.lib.swing.Action2.processMenuBar( menuBar );
+        lamu.lib.swing.Action2.processMenuBar( menuBar );
     }
 }

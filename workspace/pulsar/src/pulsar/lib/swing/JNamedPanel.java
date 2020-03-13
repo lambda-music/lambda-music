@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 
 import gnu.mapping.Procedure;
-import quartz.lib.log.LamuLogger;
+import lamu.lib.log.LamuLogger;
 
 public class JNamedPanel extends JPanel implements JSelectableUserObject {
     public JNamedPanel() {

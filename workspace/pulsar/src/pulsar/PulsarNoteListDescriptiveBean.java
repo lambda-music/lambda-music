@@ -3,7 +3,7 @@ package pulsar;
 import java.util.ArrayList;
 import java.util.List;
 
-import quartz.lib.scheme.doc.DescriptiveBean;
+import lamu.lib.scheme.doc.DescriptiveBean;
 
 public class PulsarNoteListDescriptiveBean extends DescriptiveBean {
     public PulsarNoteListDescriptiveBean() {

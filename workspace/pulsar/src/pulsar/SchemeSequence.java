@@ -30,15 +30,15 @@ import java.util.logging.Logger;
 import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
+import lamu.lib.log.LamuLogger;
+import lamu.lib.scheme.proc.MultipleNamedProcedureN;
+import lamu.lib.secretary.Invokable;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroCollector;
 import metro.MetroMidiEvent;
 import metro.MetroSequence;
 import metro.MetroTrack;
-import quartz.lib.log.LamuLogger;
-import quartz.lib.scheme.proc.MultipleNamedProcedureN;
-import quartz.lib.secretary.Invokable;
 
 public class SchemeSequence implements MetroSequence, SchemeSequenceReadable, Invokable {
     static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );

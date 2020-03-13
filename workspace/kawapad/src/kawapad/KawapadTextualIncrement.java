@@ -18,13 +18,13 @@ import javax.swing.text.TextAction;
 
 import gnu.mapping.Environment;
 import gnu.mapping.Values;
-import quartz.lib.scheme.SchemeUtils;
-import quartz.lib.scheme.proc.MultipleNamedProcedure0;
-import quartz.lib.scheme.proc.MultipleNamedProcedure1;
-import quartz.lib.scheme.proc.MultipleNamedProcedure2;
-import quartz.lib.swing.AcceleratorKeyList;
-import quartz.lib.swing.Action2;
-import quartz.lib.swing.MenuInitializer;
+import lamu.lib.scheme.SchemeUtils;
+import lamu.lib.scheme.proc.MultipleNamedProcedure0;
+import lamu.lib.scheme.proc.MultipleNamedProcedure1;
+import lamu.lib.scheme.proc.MultipleNamedProcedure2;
+import lamu.lib.swing.AcceleratorKeyList;
+import lamu.lib.swing.Action2;
+import lamu.lib.swing.MenuInitializer;
 
 class KawapadTextualIncrement implements MenuInitializer {
     @Override

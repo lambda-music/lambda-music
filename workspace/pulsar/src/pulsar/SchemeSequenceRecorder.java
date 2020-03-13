@@ -12,6 +12,9 @@ import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
+import lamu.lib.log.LamuLogger;
+import lamu.lib.scheme.SchemeUtils;
+import lamu.lib.secretary.Invokable;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroCollector;
@@ -20,9 +23,6 @@ import metro.MetroPort;
 import metro.MetroSequence;
 import metro.MetroTrack;
 import metro.SimpleMetroEventBuffer;
-import quartz.lib.log.LamuLogger;
-import quartz.lib.scheme.SchemeUtils;
-import quartz.lib.secretary.Invokable;
 
 
 public class SchemeSequenceRecorder implements MetroSequence, SchemeSequenceReadable, Invokable {

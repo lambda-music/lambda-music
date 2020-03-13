@@ -33,7 +33,7 @@ import java.util.logging.Logger;
 
 import org.jaudiolibs.jnajack.JackException;
 
-import quartz.lib.log.LamuLogger;
+import lamu.lib.log.LamuLogger;
 
 /*
  * To acquire further understanding about buffering of this Metro framework,

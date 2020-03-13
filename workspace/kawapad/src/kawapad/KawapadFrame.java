@@ -47,19 +47,19 @@ import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
-import quartz.lib.CurrentObject;
-import quartz.lib.Version;
-import quartz.lib.app.ApplicationComponent;
-import quartz.lib.app.ApplicationVessel;
-import quartz.lib.log.LamuLogger;
-import quartz.lib.log.LogFormatter;
-import quartz.lib.scheme.SchemeEngine;
-import quartz.lib.scheme.doc.DescriptiveDocumentCategory;
-import quartz.lib.scheme.doc.DescriptiveHelp;
-import quartz.lib.swing.AcceleratorKeyList;
-import quartz.lib.swing.Action2;
-import quartz.lib.thread.ThreadInitializer;
-import quartz.lib.thread.ThreadInitializerContainer;
+import lamu.lib.CurrentObject;
+import lamu.lib.Version;
+import lamu.lib.app.ApplicationComponent;
+import lamu.lib.app.ApplicationVessel;
+import lamu.lib.log.LamuLogger;
+import lamu.lib.log.LogFormatter;
+import lamu.lib.scheme.SchemeEngine;
+import lamu.lib.scheme.doc.DescriptiveDocumentCategory;
+import lamu.lib.scheme.doc.DescriptiveHelp;
+import lamu.lib.swing.AcceleratorKeyList;
+import lamu.lib.swing.Action2;
+import lamu.lib.thread.ThreadInitializer;
+import lamu.lib.thread.ThreadInitializerContainer;
 
 public class KawapadFrame extends JFrame implements ThreadInitializerContainer<KawapadFrame>, ApplicationComponent {
     static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );

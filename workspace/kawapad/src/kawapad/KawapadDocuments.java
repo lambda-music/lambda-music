@@ -1,6 +1,6 @@
 package kawapad;
 
-import quartz.lib.scheme.doc.DescriptiveDocumentCategory;
+import lamu.lib.scheme.doc.DescriptiveDocumentCategory;
 
 public class KawapadDocuments {
 	public static final DescriptiveDocumentCategory DOCS = 

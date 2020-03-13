@@ -3,10 +3,10 @@ package pulsar;
 import java.util.Collection;
 
 import gnu.lists.LList;
+import lamu.lib.secretary.Invokable;
 import metro.Metro;
 import metro.MetroSequence;
 import metro.MetroTrack;
-import quartz.lib.secretary.Invokable;
 
 public class PulsarTrack extends MetroTrack implements SchemeSequenceReadable, Invokable {
     public PulsarTrack(Metro metro, Object name, Collection<Object> tags, MetroSequence sequence) {

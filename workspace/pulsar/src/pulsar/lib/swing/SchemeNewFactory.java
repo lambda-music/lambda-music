@@ -59,13 +59,13 @@ import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import gnu.math.IntNum;
+import lamu.lib.log.LamuLogger;
+import lamu.lib.scheme.InvokableSchemeProcedure;
+import lamu.lib.scheme.SchemeUtils;
+import lamu.lib.scheme.proc.MultipleNamedProcedureN;
+import lamu.lib.secretary.Invokable;
+import lamu.lib.thread.ThreadInitializerCollection;
 import pulsar.Pulsar;
-import quartz.lib.log.LamuLogger;
-import quartz.lib.scheme.InvokableSchemeProcedure;
-import quartz.lib.scheme.SchemeUtils;
-import quartz.lib.scheme.proc.MultipleNamedProcedureN;
-import quartz.lib.secretary.Invokable;
-import quartz.lib.thread.ThreadInitializerCollection;
 
 public abstract class SchemeNewFactory {
     static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );

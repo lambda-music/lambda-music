@@ -12,7 +12,7 @@ import java.util.logging.Level;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
-import quartz.lib.log.LamuLogger;
+import lamu.lib.log.LamuLogger;
 
 public class FlawLayout extends FlowLayout implements LayoutManager2 {
     static void logInfo( Object msg ) {

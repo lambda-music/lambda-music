@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import quartz.lib.log.LamuLogger;
+import lamu.lib.log.LamuLogger;
 
 // DON'T PERFORM AUTOMATIC FORMAT ON THIS FILE!!! THAT GONNA BE A DISASTER!!
 /** @formatter:off */  

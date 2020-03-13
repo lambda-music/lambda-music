@@ -50,14 +50,14 @@ import org.jaudiolibs.jnajack.JackStatus;
 import org.jaudiolibs.jnajack.JackTimebaseCallback;
 import org.jaudiolibs.jnajack.JackTransportState;
 
-import quartz.lib.CurrentObject;
-import quartz.lib.log.LamuLogger;
-import quartz.lib.scheme.SchemeUtils;
-import quartz.lib.secretary.Invokable;
-import quartz.lib.thread.ThreadInitializer;
-import quartz.lib.thread.ThreadInitializerCollection;
-import quartz.lib.thread.ThreadInitializerCollectionContainer;
-import quartz.lib.thread.ThreadInitializerContainer;
+import lamu.lib.CurrentObject;
+import lamu.lib.log.LamuLogger;
+import lamu.lib.scheme.SchemeUtils;
+import lamu.lib.secretary.Invokable;
+import lamu.lib.thread.ThreadInitializer;
+import lamu.lib.thread.ThreadInitializerCollection;
+import lamu.lib.thread.ThreadInitializerCollectionContainer;
+import lamu.lib.thread.ThreadInitializerContainer;
 
 /**
  * 

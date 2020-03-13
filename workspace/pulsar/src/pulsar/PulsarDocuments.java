@@ -4,8 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import gnu.mapping.Environment;
-import quartz.lib.scheme.doc.DescriptiveBean;
-import quartz.lib.scheme.doc.DescriptiveDocumentCategory;
+import lamu.lib.scheme.doc.DescriptiveBean;
+import lamu.lib.scheme.doc.DescriptiveDocumentCategory;
 
 public class PulsarDocuments {
     public static final DescriptiveDocumentCategory DOCS = 

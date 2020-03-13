@@ -70,15 +70,15 @@ import java.util.logging.Logger;
 import gnu.lists.LList;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
+import lamu.lib.log.LamuLogger;
+import lamu.lib.scheme.SchemeUtils;
+import lamu.lib.secretary.InvokablyRunnable;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroCollector;
 import metro.MetroPort;
 import metro.MetroSyncType;
 import metro.MetroTrack;
-import quartz.lib.log.LamuLogger;
-import quartz.lib.scheme.SchemeUtils;
-import quartz.lib.secretary.InvokablyRunnable;
 
 /**
  * Defines special note events. 

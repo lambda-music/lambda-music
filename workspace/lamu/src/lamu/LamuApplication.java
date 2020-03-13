@@ -11,16 +11,16 @@ import java.util.logging.Logger;
 
 import kawapad.Kawapad;
 import kawapad.KawapadDocuments;
+import lamu.lib.Version;
+import lamu.lib.app.ApplicationComponent;
+import lamu.lib.app.ApplicationVessel;
+import lamu.lib.log.LamuLogger;
+import lamu.lib.scheme.doc.DescriptiveHelp;
+import lamu.lib.scheme.socket.SimpleReplSisoServer;
+import lamu.lib.scheme.socket.SisoReceiver;
 import pulsar.Pulsar;
 import pulsar.PulsarDocuments;
 import pulsar.lib.swing.PulsarGuiUtils;
-import quartz.lib.Version;
-import quartz.lib.app.ApplicationComponent;
-import quartz.lib.app.ApplicationVessel;
-import quartz.lib.log.LamuLogger;
-import quartz.lib.scheme.doc.DescriptiveHelp;
-import quartz.lib.scheme.socket.SimpleReplSisoServer;
-import quartz.lib.scheme.socket.SisoReceiver;
 
 public class LamuApplication {
 	static final Logger LOGGER = LamuLogger.getLogger(MethodHandles.lookup().lookupClass().getName());

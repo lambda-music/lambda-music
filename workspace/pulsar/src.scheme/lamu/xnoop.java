@@ -1,6 +1,6 @@
 package lamu;
 
-import quartz.lib.scheme.SchemeEvaluatorUtils;
+import lamu.lib.scheme.SchemeEvaluatorUtils;
 
 public class xnoop implements Runnable {
     @Override

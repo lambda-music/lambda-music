@@ -2,7 +2,7 @@ package lamu;
 
 import java.util.List;
 
-import quartz.lib.app.ApplicationComponent;
+import lamu.lib.app.ApplicationComponent;
 
 class LamuCommandExec extends LamuCommand {
 	@Override

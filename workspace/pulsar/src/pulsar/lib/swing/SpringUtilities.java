@@ -39,7 +39,7 @@ import java.util.logging.Level;
 import javax.swing.Spring;
 import javax.swing.SpringLayout;
 
-import quartz.lib.log.LamuLogger;
+import lamu.lib.log.LamuLogger;
 
 /**
  * A 1.4 file that provides utility methods for

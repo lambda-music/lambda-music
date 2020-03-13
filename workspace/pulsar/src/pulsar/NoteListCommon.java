@@ -14,9 +14,9 @@ import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import gnu.math.IntNum;
 import gnu.math.RealNum;
+import lamu.lib.scheme.SchemeUtils;
 import metro.MetroPort;
 import metro.MetroSyncType;
-import quartz.lib.scheme.SchemeUtils;
 
 /**
  * (Fri, 01 Nov 2019 06:07:56 +0900)

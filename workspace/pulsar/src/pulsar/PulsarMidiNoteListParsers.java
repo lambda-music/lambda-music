@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 
 import gnu.lists.LList;
 import gnu.mapping.Symbol;
+import lamu.lib.log.LamuLogger;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroCollector;
@@ -130,7 +131,6 @@ import metro.MetroMidi.MetroMidiStop;
 import metro.MetroMidiMessageGen;
 import metro.MetroPort;
 import metro.MetroTrack;
-import quartz.lib.log.LamuLogger;
 
 /**
  * Defines MIDI events.

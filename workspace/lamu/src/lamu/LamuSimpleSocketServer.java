@@ -7,7 +7,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
-import quartz.lib.app.ApplicationVessel;
+import lamu.lib.app.ApplicationVessel;
 
 final class LamuSimpleSocketServer implements Runnable {
 	private final ApplicationVessel owner;

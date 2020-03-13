@@ -11,7 +11,7 @@ import gnu.expr.Language;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
-import quartz.lib.log.LamuLogger;
+import lamu.lib.log.LamuLogger;
 
 public class KawapadEventHandlers {
     static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );

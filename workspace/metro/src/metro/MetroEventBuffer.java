@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 
 import org.jaudiolibs.jnajack.JackException;
 
-import quartz.lib.log.LamuLogger;
+import lamu.lib.log.LamuLogger;
 
 class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroEvent,byte[]> implements MetroDumper {
     public static MetroEventBuffer create() {

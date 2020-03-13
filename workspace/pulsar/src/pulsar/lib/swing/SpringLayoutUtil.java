@@ -10,8 +10,8 @@ import javax.swing.SpringLayout;
 
 import gnu.lists.IString;
 import gnu.mapping.Symbol;
+import lamu.lib.log.LamuLogger;
 import metro.Metro;
-import quartz.lib.log.LamuLogger;
 
 public class SpringLayoutUtil {
     final SpringLayout springLayout;

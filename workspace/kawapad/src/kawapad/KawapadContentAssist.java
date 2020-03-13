@@ -22,9 +22,9 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.Segment;
 
-import quartz.lib.log.LamuLogger;
-import quartz.lib.scheme.SchemeEvaluator;
-import quartz.lib.scheme.SchemeUtils;
+import lamu.lib.log.LamuLogger;
+import lamu.lib.scheme.SchemeEvaluator;
+import lamu.lib.scheme.SchemeUtils;
 
 public class KawapadContentAssist {
     static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );

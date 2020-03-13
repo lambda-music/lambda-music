@@ -2,8 +2,8 @@ package lamu;
 
 import java.util.List;
 
-import quartz.lib.app.ApplicationComponent;
-import quartz.lib.app.process.JavaProcess;
+import lamu.lib.app.ApplicationComponent;
+import lamu.lib.app.process.JavaProcess;
 
 class LamuCommandFork extends LamuCommand {
 	static JavaProcess forkPulsar(List<String> arguments) {
