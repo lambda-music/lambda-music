@@ -71,6 +71,7 @@ import pulsar.lib.swing.FlawLayout;
 import pulsar.lib.swing.JNamedPanel;
 import pulsar.lib.swing.PulsarGuiUtils;
 import quartz.lib.app.ApplicationComponent;
+import quartz.lib.log.SimpleConsole;
 import quartz.lib.log.SimpleConsoleLogger;
 import quartz.lib.scheme.EvaluatorReceiver;
 import quartz.lib.scheme.SchemeEngine;
@@ -245,6 +246,8 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                                     }
                                     velo = (positionEx - lastPosition) / 100;
                                 }
+                            } else {
+//                            	SimpleConsole.getConsole().addText( schemeResult.getError());
                             }
                         }
                     };
@@ -635,10 +638,14 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
             getKawapad().evaluate( "(tap-tempo)", new EvaluatorReceiver() {
                 @Override
                 public void receive(String schemeScript, SchemeResult schemeResult) {
-                    double bpm = Double.parseDouble( schemeResult.getValueAsString() );
-                    if ( 0<=bpm ) {
-                        setTempoDisplay( bpm );
-                    }
+                	if ( schemeResult.isSucceeded() ) {
+                		double bpm = Double.parseDouble( schemeResult.getValueAsString() );
+                		if ( 0<=bpm ) {
+                			setTempoDisplay( bpm );
+                		}
+                	} else {
+                    	SimpleConsole.getConsole().addText( schemeResult.getError());
+                	}
                 }
             } ); 
         }

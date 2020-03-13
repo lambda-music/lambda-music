@@ -11,6 +11,7 @@ import gnu.expr.Language;
 import gnu.kawa.io.InPort;
 import gnu.kawa.io.Path;
 import kawa.standard.Scheme;
+import quartz.lib.log.SimpleConsole;
 import quartz.lib.log.SimpleConsoleLogger;
 
 public class SchemeEvaluatorUtils {
@@ -30,7 +31,9 @@ public class SchemeEvaluatorUtils {
                 logInfo( "The " + fileType + " file \"" + scriptFile.getPath() + "\" does not exist. Ignored." );
             }
         } catch (Throwable e) {
-            logError( "Ignored an error : ", e);
+        	SimpleConsole.getConsole().addText(e);
+            logError( "Ignored an error : ", e );
+            
         }
     }
     

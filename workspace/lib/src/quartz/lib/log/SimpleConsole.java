@@ -112,7 +112,10 @@ public class SimpleConsole extends JFrame {
         }
         
     }
-    
+
+    public void addWarning( Throwable e ) {
+    }
+
     public void addText( Throwable e ) {
         try (
                 StringWriter sw = new StringWriter();

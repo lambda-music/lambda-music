@@ -2,6 +2,7 @@ package kawapad;
 
 import javax.swing.SwingUtilities;
 
+import quartz.lib.log.SimpleConsole;
 import quartz.lib.scheme.EvaluatorReceiver;
 import quartz.lib.scheme.SchemeResult;
 
@@ -86,8 +87,10 @@ public class KawapadUpdater {
                 }
             } else {
                 // if error, insert anyway unless doReportError is false;
-                if ( doReportError ) 
+                if ( doReportError ) {
                     procInsert( schemeResult, schemeScript );
+                	SimpleConsole.getConsole().addText( schemeResult.getError());
+                }
             }
         }
     }
