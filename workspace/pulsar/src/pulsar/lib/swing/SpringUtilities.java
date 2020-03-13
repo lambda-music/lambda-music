@@ -35,10 +35,11 @@ package pulsar.lib.swing;
 import java.awt.Component;
 import java.awt.Container;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.Spring;
 import javax.swing.SpringLayout;
+
+import quartz.lib.log.LamuLogger;
 
 /**
  * A 1.4 file that provides utility methods for
@@ -52,7 +53,7 @@ public class SpringUtilities {
         // Logger.getLogger(SpringUtilities.class.getName()).log(Level.INFO, msg );
     }
     static void logError( String msg, Throwable e ) {
-        Logger.getLogger(SpringUtilities.class.getName()).log(Level.SEVERE, msg, e);
+    	LamuLogger.getLogger(SpringUtilities.class.getName()).log(Level.SEVERE, msg, e);
     }
 
     /**

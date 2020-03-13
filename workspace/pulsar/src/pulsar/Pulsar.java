@@ -65,7 +65,7 @@ import metro.MetroSyncType;
 import metro.MetroTrack;
 import pulsar.lib.swing.MersenneTwisterFast;
 import quartz.lib.app.ApplicationComponent;
-import quartz.lib.log.SimpleConsoleLogger;
+import quartz.lib.log.LamuLogger;
 import quartz.lib.scheme.InvokableSchemeProcedure;
 import quartz.lib.scheme.SchemeEngine;
 import quartz.lib.scheme.SchemeEvaluator.SchemeEngineListener;
@@ -133,7 +133,7 @@ import quartz.lib.secretary.Invokable;
  * @author Atsushi Oka
  */
 public final class Pulsar extends Metro implements ApplicationComponent {
-    static final Logger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }
     static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }
     static void logWarn (String msg             ) { LOGGER.log(Level.WARNING,  msg      ); }

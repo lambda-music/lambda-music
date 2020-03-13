@@ -2,7 +2,6 @@ package pulsar.lib.swing;
 
 import java.awt.Component;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -12,6 +11,7 @@ import javax.swing.SpringLayout;
 import gnu.lists.IString;
 import gnu.mapping.Symbol;
 import metro.Metro;
+import quartz.lib.log.LamuLogger;
 
 public class SpringLayoutUtil {
     final SpringLayout springLayout;
@@ -27,7 +27,7 @@ public class SpringLayoutUtil {
         // Logger.getLogger(Metro.class.getName()).log(Level.INFO, msg );
     }
     static void logError( String msg, Throwable e ) {
-        Logger.getLogger(Metro.class.getName()).log(Level.SEVERE, msg, e);
+        LamuLogger.getLogger(Metro.class.getName()).log(Level.SEVERE, msg, e);
     }
 
     public int o2n(Object o ) {

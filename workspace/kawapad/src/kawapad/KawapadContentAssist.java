@@ -22,12 +22,12 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.Segment;
 
-import quartz.lib.log.SimpleConsoleLogger;
+import quartz.lib.log.LamuLogger;
 import quartz.lib.scheme.SchemeEvaluator;
 import quartz.lib.scheme.SchemeUtils;
 
 public class KawapadContentAssist {
-    static final Logger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

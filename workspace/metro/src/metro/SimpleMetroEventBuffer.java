@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import quartz.lib.log.SimpleConsoleLogger;
+import quartz.lib.log.LamuLogger;
 
 /**
  * This class represents all events which should be processed in a bar. 
@@ -33,7 +33,7 @@ import quartz.lib.log.SimpleConsoleLogger;
  * @author Ats Oka
  */
 public class SimpleMetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroMidiEvent,byte[]>  {
-    static final Logger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

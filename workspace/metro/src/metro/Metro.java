@@ -51,7 +51,7 @@ import org.jaudiolibs.jnajack.JackTimebaseCallback;
 import org.jaudiolibs.jnajack.JackTransportState;
 
 import quartz.lib.CurrentObject;
-import quartz.lib.log.SimpleConsoleLogger;
+import quartz.lib.log.LamuLogger;
 import quartz.lib.scheme.SchemeUtils;
 import quartz.lib.secretary.Invokable;
 import quartz.lib.thread.ThreadInitializer;
@@ -67,7 +67,7 @@ public class Metro
     implements  MetroLock, JackProcessCallback, JackShutdownCallback, JackTimebaseCallback, 
                 Runnable, ThreadInitializerContainer<Metro>, ThreadInitializerCollectionContainer 
 {
-    static final Logger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

@@ -4,10 +4,10 @@ import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import quartz.lib.log.SimpleConsoleLogger;
+import quartz.lib.log.LamuLogger;
 
 public class Secretary<R> extends SecretaryMessageQueue<R> {
-    static final Logger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }

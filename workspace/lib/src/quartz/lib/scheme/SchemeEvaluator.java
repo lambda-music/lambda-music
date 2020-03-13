@@ -14,14 +14,14 @@ import kawa.standard.Scheme;
 import kawa.standard.load;
 import quartz.lib.CurrentObject;
 import quartz.lib.app.ApplicationComponent;
-import quartz.lib.log.SimpleConsoleLogger;
+import quartz.lib.log.LamuLogger;
 import quartz.lib.scheme.proc.MultipleNamedProcedure0;
 import quartz.lib.thread.ThreadInitializer;
 import quartz.lib.thread.ThreadInitializerCollection;
 import quartz.lib.thread.ThreadInitializerContainer;
 
 public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluator>, ApplicationComponent, Evaluator, HasName {
-    static final Logger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 
 import gnu.mapping.Procedure;
-import quartz.lib.log.SimpleConsoleLogger;
+import quartz.lib.log.LamuLogger;
 
 public class JNamedPanel extends JPanel implements JSelectableUserObject {
     public JNamedPanel() {
@@ -91,7 +91,7 @@ public class JNamedPanel extends JPanel implements JSelectableUserObject {
             this.nextProcedure.clear();
         }
     }
-    static final Logger LOGGER = SimpleConsoleLogger.getLogger( JNamedPanel.class.getName() );
+    static final Logger LOGGER = LamuLogger.getLogger( JNamedPanel.class.getName() );
     
     private final class JNamedPanelEntry implements Map.Entry {
         private final Entry<Component, String> entry;

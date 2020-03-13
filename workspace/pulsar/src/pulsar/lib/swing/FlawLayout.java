@@ -8,10 +8,11 @@ import java.awt.Insets;
 import java.awt.LayoutManager2;
 import java.util.IdentityHashMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
+
+import quartz.lib.log.LamuLogger;
 
 public class FlawLayout extends FlowLayout implements LayoutManager2 {
     static void logInfo( Object msg ) {
@@ -19,7 +20,7 @@ public class FlawLayout extends FlowLayout implements LayoutManager2 {
         // Logger.getLogger(FlawLayout.class.getName()).log(Level.INFO, msg );
     }
     static void logError( String msg, Throwable e ) {
-        Logger.getLogger(FlawLayout.class.getName()).log(Level.SEVERE, msg, e);
+        LamuLogger.getLogger(FlawLayout.class.getName()).log(Level.SEVERE, msg, e);
     }
 
     static class NewLineComponent extends Component {

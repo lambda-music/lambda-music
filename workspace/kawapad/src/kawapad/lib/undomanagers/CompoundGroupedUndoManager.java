@@ -35,7 +35,7 @@ import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
 
-import quartz.lib.log.SimpleConsoleLogger;
+import quartz.lib.log.LamuLogger;
 
 /**
  * (Fri, 05 Oct 2018 14:03:54 +0900)
@@ -89,7 +89,7 @@ import quartz.lib.log.SimpleConsoleLogger;
 
 
 public class CompoundGroupedUndoManager extends UndoManager implements GroupedUndoManager {
-    public static final Logger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    public static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     public static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     public static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     public static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

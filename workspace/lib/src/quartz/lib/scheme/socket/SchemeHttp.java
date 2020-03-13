@@ -25,7 +25,7 @@ import com.sun.net.httpserver.HttpServer;
 
 import quartz.lib.CurrentObject;
 import quartz.lib.app.ApplicationComponent;
-import quartz.lib.log.SimpleConsoleLogger;
+import quartz.lib.log.LamuLogger;
 import quartz.lib.scheme.SchemeEngine;
 import quartz.lib.scheme.SchemeResult;
 import quartz.lib.thread.ThreadInitializer;
@@ -48,7 +48,7 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
     public static final String PATH_VIM = "/vim";
     public static final String PATH_RESET = "/reset";
     public static final String PATH_EVAL  = "/eval";
-    static final Logger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }

@@ -17,13 +17,13 @@ import pulsar.lib.swing.PulsarGuiUtils;
 import quartz.lib.Version;
 import quartz.lib.app.ApplicationComponent;
 import quartz.lib.app.ApplicationVessel;
-import quartz.lib.log.SimpleConsoleLogger;
+import quartz.lib.log.LamuLogger;
 import quartz.lib.scheme.doc.DescriptiveHelp;
 import quartz.lib.scheme.socket.SimpleReplSisoServer;
 import quartz.lib.scheme.socket.SisoReceiver;
 
 public class LamuApplication {
-	static final Logger LOGGER = SimpleConsoleLogger.getLogger(MethodHandles.lookup().lookupClass().getName());
+	static final Logger LOGGER = LamuLogger.getLogger(MethodHandles.lookup().lookupClass().getName());
 	static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
 	static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
 	static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }

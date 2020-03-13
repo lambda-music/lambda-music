@@ -11,11 +11,11 @@ import gnu.expr.Language;
 import gnu.kawa.io.InPort;
 import gnu.kawa.io.Path;
 import kawa.standard.Scheme;
+import quartz.lib.log.LamuLogger;
 import quartz.lib.log.SimpleConsole;
-import quartz.lib.log.SimpleConsoleLogger;
 
 public class SchemeEvaluatorUtils {
-    static final Logger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

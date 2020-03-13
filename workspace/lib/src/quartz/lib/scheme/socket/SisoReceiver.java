@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 
 import quartz.lib.CurrentObject;
 import quartz.lib.app.ApplicationComponent;
-import quartz.lib.log.SimpleConsoleLogger;
+import quartz.lib.log.LamuLogger;
 import quartz.lib.thread.ThreadInitializer;
 import quartz.lib.thread.ThreadInitializerCollection;
 import quartz.lib.thread.ThreadInitializerCollectionContainer;
@@ -26,7 +26,7 @@ import quartz.lib.thread.ThreadInitializerContainer;
  * 
  */
 public class SisoReceiver implements ThreadInitializerContainer<SisoReceiver>, ThreadInitializerCollectionContainer, ApplicationComponent {
-	protected static final Logger LOGGER = SimpleConsoleLogger.getLogger(MethodHandles.lookup().lookupClass().getName());
+	protected static final Logger LOGGER = LamuLogger.getLogger(MethodHandles.lookup().lookupClass().getName());
 	protected static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
 	protected static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
 	protected static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }

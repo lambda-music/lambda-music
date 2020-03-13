@@ -71,8 +71,8 @@ import pulsar.lib.swing.FlawLayout;
 import pulsar.lib.swing.JNamedPanel;
 import pulsar.lib.swing.PulsarGuiUtils;
 import quartz.lib.app.ApplicationComponent;
+import quartz.lib.log.LamuLogger;
 import quartz.lib.log.SimpleConsole;
-import quartz.lib.log.SimpleConsoleLogger;
 import quartz.lib.scheme.EvaluatorReceiver;
 import quartz.lib.scheme.SchemeEngine;
 import quartz.lib.scheme.SchemeEvaluator.SchemeEngineListener;
@@ -91,7 +91,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     private static final boolean ENABLED_USER_PANE = true; // (Fri, 27 Sep 2019 12:18:01 +0900)
     private static final boolean ENABLED_TEMPO_TITLE = false; // (Fri, 27 Sep 2019 12:18:01 +0900)
     
-    static final Logger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }

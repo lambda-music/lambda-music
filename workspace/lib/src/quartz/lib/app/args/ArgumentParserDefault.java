@@ -17,14 +17,14 @@ import java.util.logging.Logger;
 
 import quartz.lib.app.ApplicationComponent;
 import quartz.lib.app.ApplicationVessel;
-import quartz.lib.log.SimpleConsoleLogger;
+import quartz.lib.log.LamuLogger;
 import quartz.lib.thread.ThreadInitializer;
 import quartz.lib.thread.ThreadInitializerCollection;
 import quartz.lib.thread.ThreadInitializerCollectionContainer;
 import quartz.lib.thread.ThreadInitializerContainer;
 
 public abstract class ArgumentParserDefault implements ArgumentParser {
-    static final Logger LOGGER = SimpleConsoleLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
