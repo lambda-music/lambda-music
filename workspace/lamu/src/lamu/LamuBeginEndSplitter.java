@@ -38,23 +38,23 @@ import java.util.List;
  *  See {@link lamu.LamuBeginEndSplitter#splitBeginEnd }.
  */
 public class LamuBeginEndSplitter<T> {
-	/**
-	 * Executes the process.
-	 * 
-	 * @param list
-	 *            Specifies the list to be parsed.
-	 * @param begin
-	 *            Specifies the tag to begin a block.
-	 * @param end
-	 *            Specifies the tag to end the block.
-	 * @return Returns a list of lists that contains blocks.
-	 */
+    /**
+     * Executes the process.
+     * 
+     * @param list
+     *            Specifies the list to be parsed.
+     * @param begin
+     *            Specifies the tag to begin a block.
+     * @param end
+     *            Specifies the tag to end the block.
+     * @return Returns a list of lists that contains blocks.
+     */
     public static <T> List<List<T>> splitBeginEnd(List<T> list, T begin, T end ) {
         return new LamuBeginEndSplitter<T>( list, begin, end ).execute();
     }
-    
+
     boolean executed = false;
-	List<T> input;
+    List<T> input;
     List<List<T>> output = new ArrayList<>();
     T tokenBegin;
     T tokenEnd;
@@ -64,18 +64,18 @@ public class LamuBeginEndSplitter<T> {
         this.tokenEnd   = tokenEnd;
     }
     private void add( int start,int end ) {
-    	this.output.add( new ArrayList<T>( input.subList( start, end ) ) );
+        this.output.add( new ArrayList<T>( input.subList( start, end ) ) );
     }
     private void addEmpty() {
-    	this.output.add( new ArrayList<T>() );
+        this.output.add( new ArrayList<T>() );
     }
     private void proc() {
-    	this.executed = true;
-    	
-    	if ( this.input.isEmpty() ) {
-    		this.addEmpty();
-    		return;
-    	}
+        this.executed = true;
+
+        if ( this.input.isEmpty() ) {
+            this.addEmpty();
+            return;
+        }
         int level = 0;
         int start = 0;
         for ( int i=0; i<input.size() ; i++ ) {
@@ -102,33 +102,33 @@ public class LamuBeginEndSplitter<T> {
             throw new RuntimeException( "missing end error." );
         }
         if ( start != input.size() ) {
-        	this.add( start, input.size() );
+            this.add( start, input.size() );
         }
     }
     public List<List<T>> getResult() {
         return new ArrayList<>( output );
     }
     public List<List<T>> execute() {
-    	this.proc();
-    	return getResult();
+        this.proc();
+        return getResult();
     }
-    
+
     /**
      * This class performs the simple test for {@link LamuBeginEndSplitter}.
      */
     static class Test {
         static int counter = 0; 
         private static void testSplitter( String[] input ) {
-        	counter ++;
-        	System.out.println( "==== Test[" + counter + "] ====" );
-        	List<List<String>> output = splitBeginEnd( Arrays.asList(input), "begin", "end" );
+            counter ++;
+            System.out.println( "==== Test[" + counter + "] ====" );
+            List<List<String>> output = splitBeginEnd( Arrays.asList(input), "begin", "end" );
             for ( int i=0; i<output.size(); i++ ) {
                 List<String> a = output.get(i);
                 System.out.print( "[" + i + "]:" + String.join(",", a) );
                 System.out.println();
             }
         }
-        
+
         public static void main(String[] args) {
             testSplitter( new String[]{ "hello", "begin","foo","bar", "end", "bum", "begin","FOO","BAR", "end", } );
             testSplitter( new String[]{ "begin","foo","bar", "end", "bum", "begin","FOO","BAR", "end", } );
@@ -140,27 +140,27 @@ public class LamuBeginEndSplitter<T> {
                 testSplitter( new String[]{ "hello", "begin","foo","bar", "end", "FOO","BAR", "end", } );
                 throw new Error( "missing exception" ) ;
             } catch ( RuntimeException e ) {
-            	errorMessage( e, "an exception is throw successfully" );
+                errorMessage( e, "an exception is throw successfully" );
             }
             try {
                 testSplitter( new String[]{ "hello", "begin","foo","bar", "end", "begin", "FOO","BAR",  } );
                 throw new Error( "missing exception" ) ;
             } catch ( RuntimeException e ) { 
-            	errorMessage( e, "an exception is throw successfully" );
+                errorMessage( e, "an exception is throw successfully" );
             }
             try {
                 testSplitter( new String[]{ "hello", "begin","foo","bar", "end", "begin", "begin","FOO","end","aa","begin", "BAR", "end", "end"  } );
             } catch ( RuntimeException e ) { 
-            	errorMessage( e, "an exception is throw successfully" );
+                errorMessage( e, "an exception is throw successfully" );
             }
         }
-    	private static void errorMessage(RuntimeException e, String msg) {
-    		System.out.println( "### " + e.getMessage() + " ###" );
-    		System.out.println( "### " +msg + " ###" );
-    	}
+        private static void errorMessage(RuntimeException e, String msg) {
+            System.out.println( "### " + e.getMessage() + " ###" );
+            System.out.println( "### " +msg + " ###" );
+        }
     }
-    
-    
+
+
     static <T> int indexOf( T[] a, T v, int from ) {
         for ( int i=from; i<a.length; i++ ) {
             if ( v == a[i] || v.equals( a[i] ) )
