@@ -116,7 +116,7 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
     
     public static Runnable create(
             Runnable threadInitializer, 
-            String schemeScript, 
+            String schemeScript,
             Evaluator evaluator,
             EvaluatorReceiver receiver, 
             File currentDirectory, 

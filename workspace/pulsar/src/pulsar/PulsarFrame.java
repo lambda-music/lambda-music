@@ -236,7 +236,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                                 } else {
                                     lastPosition = position;
                                     position = Double.parseDouble( v );
-                                    
+
                                     double positionEx;
                                     if ( position < lastPosition ) {
                                         positionEx = position + Math.ceil( lastPosition );
@@ -250,25 +250,26 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                             }
                         }
                     };
-                    
-                    SchemeEngine.create( 
-                    kawapad.getThreadInitializerCollection(), 
-                    schemeScript, 
-                    getKawapad().getSchemeEngine().getEvaluatorManager().getCurrentEvaluator(), 
-                    receiver, 
-                    kawapad.getCurrentDirectory(), 
-                    kawapad.getCurrentFile(), 
-                    "scratchpad"
-                    ).run();
+
+                    Runnable runnable = Logger.temporaryDisable(
+                            SchemeEngine.create( 
+                                    kawapad.getThreadInitializerCollection(), 
+                                    schemeScript, 
+                                    getKawapad().getSchemeEngine().getEvaluatorManager().getCurrentEvaluator(), 
+                                    receiver, 
+                                    kawapad.getCurrentDirectory(), 
+                                    kawapad.getCurrentFile(), 
+                                    "scratchpad" ));
+                    runnable.run();
                 }
                 double p = position + ( velo * (double)counter);
 //                System.err.println( "position:" + p );
-                setValue( p ); 
+                setValue( p );
 
                 return Values.empty;
             }
         };
-        this.timerHandle = Pulsar.createTimer( getKawapad().getThreadInitializerCollection(), 5000, 20, invokable2 );    
+        this.timerHandle = Pulsar.createTimer( getKawapad().getThreadInitializerCollection(), 5000, 20, invokable2 );
     }
 
     enum TempoRange {
