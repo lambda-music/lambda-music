@@ -410,7 +410,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     public void evaluate( String schemeScript, EvaluatorReceiver receiver ) {
         if ( schemeScript != null ) {
             this.kawapad.getSchemeEngine().getThreadManager().startThread( 
-                SchemeEngine.create( 
+                SchemeEngine.createEvaluationRunner( 
                     kawapad.getThreadInitializerCollection(), 
                     schemeScript, 
                     this.getSchemeEngine().getEvaluatorManager().getCurrentEvaluator(), 

@@ -252,7 +252,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                     };
 
                     Runnable runnable = Logger.temporaryDisable(
-                            SchemeEngine.create( 
+                            SchemeEngine.createEvaluationRunner( 
                                     kawapad.getThreadInitializerCollection(), 
                                     schemeScript, 
                                     getKawapad().getSchemeEngine().getEvaluatorManager().getCurrentEvaluator(), 

@@ -114,7 +114,7 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
         this.getSchemeEvaluator().processQuit();
     }
     
-    public static Runnable create(
+    public static Runnable createEvaluationRunner(
             Runnable threadInitializer, 
             String schemeScript,
             Evaluator evaluator,
