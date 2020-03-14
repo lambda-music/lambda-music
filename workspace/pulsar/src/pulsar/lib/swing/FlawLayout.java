@@ -12,7 +12,7 @@ import java.util.logging.Level;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
-import lamu.lib.log.LamuLogger;
+import lamu.lib.log.Logger;
 
 public class FlawLayout extends FlowLayout implements LayoutManager2 {
     static void logInfo( Object msg ) {
@@ -20,7 +20,7 @@ public class FlawLayout extends FlowLayout implements LayoutManager2 {
         // Logger.getLogger(FlawLayout.class.getName()).log(Level.INFO, msg );
     }
     static void logError( String msg, Throwable e ) {
-        LamuLogger.getLogger(FlawLayout.class.getName()).log(Level.SEVERE, msg, e);
+        Logger.getLogger(FlawLayout.class.getName()).log(Level.SEVERE, msg, e);
     }
 
     static class NewLineComponent extends Component {

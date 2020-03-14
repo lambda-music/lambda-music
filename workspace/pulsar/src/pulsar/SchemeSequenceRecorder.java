@@ -3,7 +3,6 @@ package pulsar;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.jaudiolibs.jnajack.JackException;
 
@@ -12,7 +11,7 @@ import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
-import lamu.lib.log.LamuLogger;
+import lamu.lib.log.Logger;
 import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.secretary.Invokable;
 import metro.Metro;
@@ -26,7 +25,7 @@ import metro.SimpleMetroEventBuffer;
 
 
 public class SchemeSequenceRecorder implements MetroSequence, SchemeSequenceReadable, Invokable {
-    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }
     static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }
     static void logWarn (String msg             ) { LOGGER.log(Level.WARNING,  msg      ); }

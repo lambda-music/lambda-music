@@ -39,7 +39,7 @@ import java.util.logging.Level;
 import javax.swing.Spring;
 import javax.swing.SpringLayout;
 
-import lamu.lib.log.LamuLogger;
+import lamu.lib.log.Logger;
 
 /**
  * A 1.4 file that provides utility methods for
@@ -53,7 +53,7 @@ public class SpringUtilities {
         // Logger.getLogger(SpringUtilities.class.getName()).log(Level.INFO, msg );
     }
     static void logError( String msg, Throwable e ) {
-    	LamuLogger.getLogger(SpringUtilities.class.getName()).log(Level.SEVERE, msg, e);
+    	Logger.getLogger(SpringUtilities.class.getName()).log(Level.SEVERE, msg, e);
     }
 
     /**

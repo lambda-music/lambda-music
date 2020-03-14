@@ -7,14 +7,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import kawapad.Kawapad;
 import kawapad.KawapadDocuments;
 import lamu.lib.Version;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.app.ApplicationVessel;
-import lamu.lib.log.LamuLogger;
+import lamu.lib.log.Logger;
 import lamu.lib.scheme.doc.DescriptiveHelp;
 import lamu.lib.scheme.socket.SimpleReplSisoServer;
 import lamu.lib.scheme.socket.SisoReceiver;
@@ -23,7 +22,7 @@ import pulsar.PulsarDocuments;
 import pulsar.lib.swing.PulsarGuiUtils;
 
 public class LamuApplication {
-	static final Logger LOGGER = LamuLogger.getLogger(MethodHandles.lookup().lookupClass().getName());
+	static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
 	static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
 	static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
 	static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }

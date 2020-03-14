@@ -23,7 +23,6 @@ package kawapad.lib.undomanagers;
 
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.UndoableEditEvent;
@@ -35,7 +34,7 @@ import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
 
-import lamu.lib.log.LamuLogger;
+import lamu.lib.log.Logger;
 
 /**
  * (Fri, 05 Oct 2018 14:03:54 +0900)
@@ -89,7 +88,7 @@ import lamu.lib.log.LamuLogger;
 
 
 public class CompoundGroupedUndoManager extends UndoManager implements GroupedUndoManager {
-    public static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    public static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     public static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     public static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     public static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

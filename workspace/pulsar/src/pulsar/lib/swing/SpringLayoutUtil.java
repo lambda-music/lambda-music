@@ -10,7 +10,7 @@ import javax.swing.SpringLayout;
 
 import gnu.lists.IString;
 import gnu.mapping.Symbol;
-import lamu.lib.log.LamuLogger;
+import lamu.lib.log.Logger;
 import metro.Metro;
 
 public class SpringLayoutUtil {
@@ -27,7 +27,7 @@ public class SpringLayoutUtil {
         // Logger.getLogger(Metro.class.getName()).log(Level.INFO, msg );
     }
     static void logError( String msg, Throwable e ) {
-        LamuLogger.getLogger(Metro.class.getName()).log(Level.SEVERE, msg, e);
+        Logger.getLogger(Metro.class.getName()).log(Level.SEVERE, msg, e);
     }
 
     public int o2n(Object o ) {

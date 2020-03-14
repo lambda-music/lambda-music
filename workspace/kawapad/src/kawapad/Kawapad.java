@@ -41,7 +41,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -93,15 +92,15 @@ import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
 import lamu.lib.CurrentObject;
 import lamu.lib.app.ApplicationComponent;
-import lamu.lib.log.LamuLogger;
+import lamu.lib.log.Logger;
 import lamu.lib.log.SimpleConsole;
 import lamu.lib.scheme.EvaluatorReceiver;
 import lamu.lib.scheme.SchemeEngine;
 import lamu.lib.scheme.SchemeEvaluator;
+import lamu.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import lamu.lib.scheme.SchemeEvaluatorUtils;
 import lamu.lib.scheme.SchemePrinter;
 import lamu.lib.scheme.SchemeUtils;
-import lamu.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import lamu.lib.scheme.doc.DescriptiveActions;
 import lamu.lib.scheme.doc.ProceduralDescriptiveBean;
 import lamu.lib.scheme.proc.MultipleNamedProcedure0;
@@ -143,7 +142,7 @@ import lamu.lib.thread.ThreadInitializerContainer;
  * @author Ats Oka
  */
 public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kawapad>, ThreadInitializerCollectionContainer, MenuInitializer, ApplicationComponent {
-    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

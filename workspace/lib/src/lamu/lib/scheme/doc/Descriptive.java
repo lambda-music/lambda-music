@@ -2,7 +2,6 @@ package lamu.lib.scheme.doc;
 
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -10,10 +9,10 @@ import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 import gnu.mapping.SimpleSymbol;
 import gnu.mapping.Symbol;
-import lamu.lib.log.LamuLogger;
+import lamu.lib.log.Logger;
 
 public class Descriptive {
-    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }

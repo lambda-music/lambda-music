@@ -14,7 +14,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
@@ -29,7 +28,7 @@ import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
-import lamu.lib.log.LamuLogger;
+import lamu.lib.log.Logger;
 import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.scheme.doc.DescriptiveDocumentCategory;
 import lamu.lib.scheme.doc.ProceduralDescriptiveBean;
@@ -46,7 +45,7 @@ public class PulsarGuiUtils {
             	}
             });
 
-    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }

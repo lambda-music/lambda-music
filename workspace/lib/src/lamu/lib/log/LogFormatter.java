@@ -10,7 +10,6 @@ import java.util.Optional;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 import javax.swing.SwingUtilities;
@@ -96,7 +95,7 @@ public class LogFormatter extends SimpleFormatter {
     static List<java.util.logging.Handler> getDefaultConsoleHandler() {
         // All the loggers inherit configuration from the root logger. See:
         // https://docs.oracle.com/javase/8/docs/technotes/guides/logging/overview.html#a1.3
-        Logger rootLogger = Logger.getLogger("");
+        java.util.logging.Logger rootLogger = java.util.logging.Logger.getLogger("");
         // The root logger's first handler is the default ConsoleHandler
         return Arrays.asList( rootLogger.getHandlers() );
     }

@@ -4,7 +4,6 @@ import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -13,10 +12,10 @@ import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
 
-import lamu.lib.log.LamuLogger;
+import lamu.lib.log.Logger;
 
 public class AcceleratorKeyList {
-    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

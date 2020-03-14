@@ -11,11 +11,10 @@ import java.lang.invoke.MethodHandles;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import lamu.lib.CurrentObject;
 import lamu.lib.app.ApplicationComponent;
-import lamu.lib.log.LamuLogger;
+import lamu.lib.log.Logger;
 import lamu.lib.thread.ThreadInitializer;
 import lamu.lib.thread.ThreadInitializerCollection;
 import lamu.lib.thread.ThreadInitializerCollectionContainer;
@@ -26,7 +25,7 @@ import lamu.lib.thread.ThreadInitializerContainer;
  * 
  */
 public class SisoReceiver implements ThreadInitializerContainer<SisoReceiver>, ThreadInitializerCollectionContainer, ApplicationComponent {
-	protected static final Logger LOGGER = LamuLogger.getLogger(MethodHandles.lookup().lookupClass().getName());
+	protected static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
 	protected static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
 	protected static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
 	protected static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }

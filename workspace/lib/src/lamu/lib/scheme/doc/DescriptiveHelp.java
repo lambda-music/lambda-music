@@ -16,8 +16,8 @@ import gnu.mapping.Values;
 import gnu.mapping.WrongArguments;
 import kawa.standard.Scheme;
 import lamu.lib.scheme.SchemeEngine;
-import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.scheme.SchemeEvaluator.SchemeEngineListener;
+import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.scheme.proc.MultipleNamedProcedure2;
 import lamu.lib.scheme.proc.MultipleNamedProcedureN;
 

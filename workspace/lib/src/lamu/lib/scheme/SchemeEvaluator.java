@@ -6,7 +6,6 @@ import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import gnu.expr.Language;
 import gnu.mapping.Environment;
@@ -14,14 +13,14 @@ import kawa.standard.Scheme;
 import kawa.standard.load;
 import lamu.lib.CurrentObject;
 import lamu.lib.app.ApplicationComponent;
-import lamu.lib.log.LamuLogger;
+import lamu.lib.log.Logger;
 import lamu.lib.scheme.proc.MultipleNamedProcedure0;
 import lamu.lib.thread.ThreadInitializer;
 import lamu.lib.thread.ThreadInitializerCollection;
 import lamu.lib.thread.ThreadInitializerContainer;
 
 public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluator>, ApplicationComponent, Evaluator, HasName {
-    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

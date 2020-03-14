@@ -4,14 +4,13 @@ import java.io.File;
 import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import kawa.standard.Scheme;
 import lamu.lib.CurrentObject;
 import lamu.lib.app.ApplicationComponent;
-import lamu.lib.log.LamuLogger;
+import lamu.lib.log.Logger;
 import lamu.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import lamu.lib.scheme.proc.MultipleNamedProcedure0;
 import lamu.lib.scheme.proc.MultipleNamedProcedure1;
@@ -20,7 +19,7 @@ import lamu.lib.thread.ThreadInitializer;
 import lamu.lib.thread.ThreadInitializerContainer;
 
 public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, ApplicationComponent {
-    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

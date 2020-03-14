@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.jaudiolibs.jnajack.Jack;
 import org.jaudiolibs.jnajack.JackClient;
@@ -51,7 +50,7 @@ import org.jaudiolibs.jnajack.JackTimebaseCallback;
 import org.jaudiolibs.jnajack.JackTransportState;
 
 import lamu.lib.CurrentObject;
-import lamu.lib.log.LamuLogger;
+import lamu.lib.log.Logger;
 import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.secretary.Invokable;
 import lamu.lib.thread.ThreadInitializer;
@@ -67,7 +66,7 @@ public class Metro
     implements  MetroLock, JackProcessCallback, JackShutdownCallback, JackTimebaseCallback, 
                 Runnable, ThreadInitializerContainer<Metro>, ThreadInitializerCollectionContainer 
 {
-    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

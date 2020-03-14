@@ -52,11 +52,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import gnu.lists.LList;
 import gnu.mapping.Symbol;
-import lamu.lib.log.LamuLogger;
+import lamu.lib.log.Logger;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroCollector;
@@ -141,7 +140,7 @@ import metro.MetroTrack;
  *
  */
 public class PulsarMidiNoteListParsers {
-    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }

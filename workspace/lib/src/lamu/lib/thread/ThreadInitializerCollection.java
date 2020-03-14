@@ -5,13 +5,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import lamu.lib.CurrentObject;
-import lamu.lib.log.LamuLogger;
+import lamu.lib.log.Logger;
 
 public class ThreadInitializerCollection implements Runnable, ThreadInitializerOwner, ThreadInitializerContainer {
-    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }

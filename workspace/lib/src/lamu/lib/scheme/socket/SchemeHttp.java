@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -25,7 +24,7 @@ import com.sun.net.httpserver.HttpServer;
 
 import lamu.lib.CurrentObject;
 import lamu.lib.app.ApplicationComponent;
-import lamu.lib.log.LamuLogger;
+import lamu.lib.log.Logger;
 import lamu.lib.scheme.SchemeEngine;
 import lamu.lib.scheme.SchemeResult;
 import lamu.lib.thread.ThreadInitializer;
@@ -48,7 +47,7 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
     public static final String PATH_VIM = "/vim";
     public static final String PATH_RESET = "/reset";
     public static final String PATH_EVAL  = "/eval";
-    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }

@@ -29,11 +29,10 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.jaudiolibs.jnajack.JackException;
 
-import lamu.lib.log.LamuLogger;
+import lamu.lib.log.Logger;
 
 /*
  * To acquire further understanding about buffering of this Metro framework,
@@ -47,7 +46,7 @@ import lamu.lib.log.LamuLogger;
  *
  */
 public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, MetroNamedTrack {
-    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

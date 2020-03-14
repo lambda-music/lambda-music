@@ -22,9 +22,8 @@ package metro;
 
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import lamu.lib.log.LamuLogger;
+import lamu.lib.log.Logger;
 
 /** @formatter:off */
 /**
@@ -138,7 +137,7 @@ public class MetroMidiMessage implements MetroMidiReceiver<byte[]> {
     }
     
     /** @formatter:on */
-    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

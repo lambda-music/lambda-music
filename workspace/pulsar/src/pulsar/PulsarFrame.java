@@ -38,7 +38,6 @@ import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -68,13 +67,13 @@ import gnu.mapping.Values;
 import kawa.standard.Scheme;
 import kawapad.KawapadFrame;
 import lamu.lib.app.ApplicationComponent;
-import lamu.lib.log.LamuLogger;
+import lamu.lib.log.Logger;
 import lamu.lib.log.SimpleConsole;
 import lamu.lib.scheme.EvaluatorReceiver;
 import lamu.lib.scheme.SchemeEngine;
+import lamu.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import lamu.lib.scheme.SchemeResult;
 import lamu.lib.scheme.SchemeUtils;
-import lamu.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import lamu.lib.scheme.proc.MultipleNamedProcedure0;
 import lamu.lib.scheme.proc.MultipleNamedProcedure1;
 import lamu.lib.scheme.proc.MultipleNamedProcedureN;
@@ -91,7 +90,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     private static final boolean ENABLED_USER_PANE = true; // (Fri, 27 Sep 2019 12:18:01 +0900)
     private static final boolean ENABLED_TEMPO_TITLE = false; // (Fri, 27 Sep 2019 12:18:01 +0900)
     
-    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }

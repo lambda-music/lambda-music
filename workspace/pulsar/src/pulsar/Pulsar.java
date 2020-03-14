@@ -35,7 +35,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -58,11 +57,11 @@ import gnu.math.IntNum;
 import kawa.Shell;
 import kawa.standard.Scheme;
 import lamu.lib.app.ApplicationComponent;
-import lamu.lib.log.LamuLogger;
+import lamu.lib.log.Logger;
 import lamu.lib.scheme.InvokableSchemeProcedure;
 import lamu.lib.scheme.SchemeEngine;
-import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.scheme.SchemeEvaluator.SchemeEngineListener;
+import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.scheme.doc.ProceduralDescriptiveBean;
 import lamu.lib.scheme.proc.MultipleNamedProcedure0;
 import lamu.lib.scheme.proc.MultipleNamedProcedure1;
@@ -133,7 +132,7 @@ import pulsar.lib.swing.MersenneTwisterFast;
  * @author Atsushi Oka
  */
 public final class Pulsar extends Metro implements ApplicationComponent {
-    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }
     static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }
     static void logWarn (String msg             ) { LOGGER.log(Level.WARNING,  msg      ); }

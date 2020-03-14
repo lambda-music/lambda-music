@@ -25,12 +25,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
-import lamu.lib.log.LamuLogger;
+import lamu.lib.log.Logger;
 import lamu.lib.scheme.proc.MultipleNamedProcedureN;
 import lamu.lib.secretary.Invokable;
 import metro.Metro;
@@ -41,7 +40,7 @@ import metro.MetroSequence;
 import metro.MetroTrack;
 
 public class SchemeSequence implements MetroSequence, SchemeSequenceReadable, Invokable {
-    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
     }

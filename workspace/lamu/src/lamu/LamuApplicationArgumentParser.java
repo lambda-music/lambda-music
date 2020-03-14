@@ -8,7 +8,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import kawapad.Kawapad;
 import kawapad.KawapadFrame;
@@ -17,19 +16,19 @@ import lamu.lib.app.args.ArgumentParserDefault;
 import lamu.lib.app.args.ArgumentParserElement;
 import lamu.lib.app.args.ArgumentParserElementFactory;
 import lamu.lib.app.args.ArgumentParserStackKey;
-import lamu.lib.log.LamuLogger;
+import lamu.lib.log.Logger;
 import lamu.lib.scheme.EvaluatorManager;
 import lamu.lib.scheme.SchemeEngine;
 import lamu.lib.scheme.doc.DescriptiveDocumentCategory;
 import lamu.lib.scheme.socket.ReplSisoListener;
 import lamu.lib.scheme.socket.SchemeHttp;
-import lamu.lib.scheme.socket.SisoReceiver;
 import lamu.lib.scheme.socket.SchemeHttp.UserAuthentication;
+import lamu.lib.scheme.socket.SisoReceiver;
 import pulsar.Pulsar;
 import pulsar.PulsarFrame;
 
 class LamuApplicationArgumentParser extends ArgumentParserDefault {
-    static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

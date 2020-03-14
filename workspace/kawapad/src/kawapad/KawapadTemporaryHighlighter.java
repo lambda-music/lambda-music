@@ -23,19 +23,17 @@ package kawapad;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayDeque;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import javax.swing.text.Highlighter.HighlightPainter;
-
-import lamu.lib.log.LamuLogger;
-
 import javax.swing.text.JTextComponent;
 
+import lamu.lib.log.Logger;
+
 public class KawapadTemporaryHighlighter {
-    protected static final Logger LOGGER = LamuLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    protected static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     protected static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     protected static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     protected static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }

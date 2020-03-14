@@ -10,12 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.swing.JPanel;
 
 import gnu.mapping.Procedure;
-import lamu.lib.log.LamuLogger;
+import lamu.lib.log.Logger;
 
 public class JNamedPanel extends JPanel implements JSelectableUserObject {
     public JNamedPanel() {
@@ -91,7 +90,7 @@ public class JNamedPanel extends JPanel implements JSelectableUserObject {
             this.nextProcedure.clear();
         }
     }
-    static final Logger LOGGER = LamuLogger.getLogger( JNamedPanel.class.getName() );
+    static final Logger LOGGER = Logger.getLogger( JNamedPanel.class.getName() );
     
     private final class JNamedPanelEntry implements Map.Entry {
         private final Entry<Component, String> entry;
