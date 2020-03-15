@@ -70,8 +70,7 @@ advanced-mode.  Note that there are two keywords : `begin` and `end`. Commands
 which surrounded by `begin` and `end` becomes a statement. 
 
 This creates two distinctive Scheme engines and then connect a Scheme editor to 
-each in a same Java Virtual Machine. That is, both editor has its own variable 
-scope.
+each in a same JVM. That is, both editor has its own variable scope.
 
 In editor one, execute the following code.
 
@@ -100,7 +99,7 @@ Then back to the editor one, execute the following code.
 
 ## `fork` Command ##
 
-`fork` command invokes new Java Virtual Machine and load Lamu with
+`fork` command invokes a new JVM instance and loads Lamu with
 the specified arguments. Its primary usage is to configure Lamu
 in client-server model. See the following example:
 
@@ -112,8 +111,7 @@ The above is an example to invoke and configure Lamu as client-server model.
 Lamu can run in client-server model. A Java editor is sometimes a burden for 
 the garbage collection and obstructs JACKAudio's real-time processing. This 
 causes unpredictable skips on the generated sound.  Therefore, Kawapad is 
-designed that to be able to be separately executed in another Java Virtual 
-Machine.
+designed that to be able to be separately executed in another JVM.
 
 ## Nested Multiple-Statements ##
 
@@ -146,13 +144,13 @@ local exec scheme + pulsar + repl + gui $open{$} +
 The first column denotes the name of macro-command.
 
 ```
-lamu do local --open=/foo/bar/bum.scm
+> lamu do local --open=/foo/bar/bum.scm
 ```
 
 The above example is expanded as
 
 ```
-lamu do exec scheme + pulsar + repl + gui /foo/bar/bum.scm
+> lamu do exec scheme + pulsar + repl + gui /foo/bar/bum.scm
 ```
 
 `default` macro-command can override the behavior of the default-mode 
