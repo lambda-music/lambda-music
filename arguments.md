@@ -126,10 +126,10 @@ Note that `fork` command itself is surrounded by `begin` and `end` and its
 arguments also consist `begin` and `end`; this example works as expected.
 
 
-## Extend Commands ##
+## Defining User Commands ##
 
-It is able to define new commands by defining macro commands in the 
-configuration file.  The path of the configuration file is: 
+You can define new commands by creating macro-commands in the default-argument 
+configuration file. The path of the configuration file is: 
 `~/.lamu/default-arguments.conf` .
 
 The following is an example of the configuration file.
@@ -141,7 +141,7 @@ cs exec begin scheme --server-port=8193 + gui $* end begin scheme + pulsar + htt
 local exec scheme + pulsar + repl + gui $open{$} +
 ```
 
-The first column denotes the name of macro-command.
+The first column of each line denotes the name of macro-command.
 
 ```
 > lamu do local --open=/foo/bar/bum.scm
