@@ -295,9 +295,9 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     if ( s.startsWith( "--" ) ) {
                         LamuNamedArgument a = new LamuNamedArgument(s);
                         switch ( a.getKey() ) {
-                        //                                case "port" : 
-                        //                                    portNumberList.add(  Integer.parseInt( a.value ) );
-                        //                                    break;
+                        case "open" : 
+                            fileNameList.add( a.getValue() );
+                            break;
                         default :
                             throw new RuntimeException( MSG_UNKNOWN_PARAM_ERROR + a.getKey() );
                         }

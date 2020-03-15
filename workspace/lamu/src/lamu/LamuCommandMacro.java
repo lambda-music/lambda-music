@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -34,7 +35,8 @@ class LamuCommandMacro extends LamuCommand {
                 String s = r.readLine();
                 if (s == null)
                     break;
-                result.add(create(s));
+                if ( ! s.trim().startsWith(";"))
+                    result.add(create(s));
             }
         }
         return result;
@@ -85,13 +87,26 @@ class LamuCommandMacro extends LamuCommand {
         List<String> expandedArgs = execute(this.macroContent, outArgs, outNargs);
 
         LamuApplication.logInfo( String.format( 
-                "MacroCommand[%s] expanded the specified arguments\nfrom:%s\nto  :%s", 
+                "MacroCommand[%s] expanded the specified arguments\nfrom:%s\nto  :%s\nmacro:%s\n", 
                 getMacroName(),
                 arguments.toString(),
-                expandedArgs.toString() ) );
+                expandedArgs.toString(),
+                this.macroContent.toString()
+            ) );
 
         // Be careful : this is a recursive calling. 
         LamuCommand.parseSubargs( availableCommands, vessels, expandedArgs, true );
+    }
+    
+    static void replaceProc( List<String> result, String tokenToAdd, String replaceFrom, List<String> replaceTo ) {
+        if ( tokenToAdd.equals( replaceFrom )) {
+            result.addAll( replaceTo );
+        } else {
+            result.add(
+                tokenToAdd.replaceAll( 
+                    Pattern.quote( replaceFrom ), 
+                    String.join( " ", replaceTo )));
+        }
     }
 
     public static List<String> execute(List<String> macroContent, ArrayList<String> args,
@@ -129,35 +144,24 @@ class LamuCommandMacro extends LamuCommand {
                 if (expectationForContains == contains) {
                     for (Iterator<String> j = substList.iterator(); j.hasNext();) {
                         String substToken = j.next();
-                        if (substToken.equals("$")) {
-                            result.add(namedArgs.get(token).getValue());
-                        } else {
-                            result.add(substToken);
-                        }
+                        String replaceTo = namedArgs.get(token).getValue();
+                        replaceProc(result, substToken, "$", Arrays.asList( replaceTo ));
                     }
                 } else if (Pattern.compile("[0-9]+").matcher(token).matches()) {
                     int idx = Integer.valueOf(token);
                     if (expectationForContains == (0 <= idx && idx < result.size())) {
-                        String value = args.get(idx);
-
+                        String replaceTo = args.get(idx);
                         for (Iterator<String> j = substList.iterator(); j.hasNext();) {
                             String substToken = j.next();
-                            if (substToken.equals("$")) {
-                                result.add(value);
-                            } else {
-                                result.add(substToken);
-                            }
+                            replaceProc(result, substToken, "$", Arrays.asList( replaceTo ));
                         }
                     }
                 } else if (token.equals("*")) {
-                    if (expectationForContains == (!result.isEmpty())) {
+                    if (expectationForContains == (! args.isEmpty())) {
                         for (Iterator<String> j = substList.iterator(); j.hasNext();) {
                             String substToken = j.next();
-                            if (substToken.equals("$")) {
-                                result.addAll(args);
-                            } else {
-                                result.add(substToken);
-                            }
+                            List<String> replaceTo = args;
+                            replaceProc(result, substToken, "$", replaceTo );
                         }
                     }
                 }
