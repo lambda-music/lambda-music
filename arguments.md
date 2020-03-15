@@ -163,7 +163,51 @@ default exec scheme + pulsar + repl +
 For example, setting as above makes `lamu` to execute without GUI as default.
 
 
+## Available Lamu Component Reference ##
 
+The following is the list of available components in `exec` command.
+
+- kawapad
+- pulsar
+- repl
+- gui
+- httpd
+- simple-repl
+- output-help
+- output-help-list
+
+### `kawapad` ###
+Instantiate Kawapad.
+- `--server-url=[url]` specifies remote-server's URL.
+- `--server-port=[port]` specifies remote-server's port. The address defaults 
+  to `localhost`.
+
+### `pulsar` ###
+Instantiate Pulsar. No argument is available.
+
+### `repl` ###
+Instantiate a Scheme REPL processor. No argument is available.
+
+### `gui` ###
+Instantiate Lamu's default GUI. No argument is available.
+
+### `httpd` ###
+Instantiate a Scheme remote HTTP server.
+- `--port=[port]` specifies the port to listen.
+- `--path=[path]` specifies the server path to accept.
+
+### `simple-repl` ###
+Instantiate a simple REPL processor. 
+
+### `output-help` ###
+Output the specified command reference.
+- `--category=[category-name]` specifies the category to output.
+- `--output-file=[filename]` specifies the filename to output.
+
+### `output-help-list` ###
+Output the list of available command reference.
+- `--output-file=[filename]` specifies the filename to output. If no output 
+  file was specified, it outputs to `stdout`.
 
 
 
