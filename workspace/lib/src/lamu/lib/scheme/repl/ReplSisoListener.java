@@ -14,9 +14,8 @@ import lamu.lib.scheme.SchemeResult;
 
 public class ReplSisoListener implements SisoProcessor, SisoListener {
     public static final String ERROR_COMMAND = "error";
-    public static final String DEFAULT_BUFFER_KEY = "default";
-    public static final String NULL_BUFFER_KEY = "null";
-    public static final String DEFAULT_COMMAND_STRING = "show";
+    public static final String DEFAULT_COMMAND_STRING = "echo";
+    private static final String DEFAULT_BUFFER = ".";
 
     protected final SchemeEngine schemeEngine;
     protected String prefix = ";lamu:";
@@ -30,36 +29,15 @@ public class ReplSisoListener implements SisoProcessor, SisoListener {
         this.prefix = prefix;
     }
 
-    final HashMap<String,StringBuffer> bufferMap = new HashMap<>();
-    String currentBufferKey;
-    List<Thread> threadList = Collections.synchronizedList( new ArrayList<>() );
+    final HashMap<String,String> bufferMap = new HashMap<>();
+    final StringBuffer buffer = new StringBuffer();
+    final List<Thread> threadList = Collections.synchronizedList( new ArrayList<>() );
 
-    void initBufferMap() {
-        // Reset the null buffer to empty.
-        bufferMap.put( NULL_BUFFER_KEY, new StringBuffer() );
-
-        // Reset the default buffer.
-        if ( bufferMap.containsKey( DEFAULT_BUFFER_KEY ) ) {
-            bufferMap.get( DEFAULT_BUFFER_KEY ).setLength(0);
-        } else {
-            bufferMap.put( DEFAULT_BUFFER_KEY, new StringBuffer() );
-        }
-        
-//        // Reset the current buffer key to the default.
-//        if ( bufferMap.containsKey( currentBufferKey )) {
-//            currentBufferKey = DEFAULT_BUFFER_KEY;
-//        }
-    }
-
-    public String filterKey(String key) {
-        if ( key == null || "".equals( key ) ) {
-            key = currentBufferKey;
+    private String filterKey(String key) {
+        if ( "".equals( key ) ) {
+            key = DEFAULT_BUFFER;
         }
         return key;
-    }
-
-    public StringBuffer getBuffer() {
-        return getBuffer( "" );
     }
 
     /**
@@ -73,79 +51,86 @@ public class ReplSisoListener implements SisoProcessor, SisoListener {
      * @return
      *    the {@link StringBuffer } object corresponding to the specified key.
      */
-    public StringBuffer getBuffer( String key ) {
+    public String getBuffer( String key ) {
         key = filterKey(key);
-
-        if ( key.equals( NULL_BUFFER_KEY )) {
-            return new StringBuffer();
-        } else if ( bufferMap.containsKey(key)) {
-            return bufferMap.get( key );
-        } else {
-            StringBuffer value = new StringBuffer();
-            bufferMap.put( key, value );
-            return value;
-        }
+        return bufferMap.get(key); 
     }
     public boolean hasBuffer( String key ) {
         key = filterKey(key);
         return bufferMap.containsKey(key);
     }
-
-    public boolean clearBuffer( String key ) {
+    public boolean deleteBuffer( String key ) {
+        key = filterKey(key);
+        Object result = bufferMap.remove(key);
+        return result != null;
+    }
+    public boolean loadBuffer( String key ) {
         key = filterKey(key);
         if ( bufferMap.containsKey(key)) {
-            getBuffer(key).setLength(0);
+            String s = bufferMap.get(key);
+            this.buffer.setLength(0);
+            this.buffer.append(s);
             return true;
         } else {
             return false;
         }
     }
-    public boolean deleteBuffer( String key ) {
+    public boolean saveBuffer( String key ) {
         key = filterKey(key);
-        Object result = bufferMap.remove(key);
-        initBufferMap();
-        return result != null;
+        bufferMap.put( key, this.buffer.toString());
+        this.buffer.setLength(0);
+        return true;
     }
 
-    public String currentBufferKey() {
-        return currentBufferKey;
+    public void clearCurrentBuffer() {
+        saveBuffer( DEFAULT_BUFFER );
+        this.buffer.setLength(0);
     }
-    public String currentBufferKey( String key ) {
-        if ( key == null || "".equals( key ) ) {
-            key = DEFAULT_BUFFER_KEY;
-        }
-        this.currentBufferKey = key;
-        return key;
+    public String getCurrentBuffer() {
+        return ReplSisoListener.this.buffer.toString();
     }
-    
+    public void appendCurrentBuffer( String s ) {
+        ReplSisoListener.this.buffer.append( s );
+    }
+
+    public static String doubleQuote( String s ) {
+        return "\"" + escapeDoubleQuotation(s) + "\"";
+    }
     private static Pattern ESCAPE_DOUBLE_QUOTATIONS = Pattern.compile( "\"" );
     public static String escapeDoubleQuotation( String s ) {
         return ESCAPE_DOUBLE_QUOTATIONS.matcher(s).replaceAll( "\\\\\"" );
     }
-
-    {
-        initBufferMap();
-        currentBufferKey( DEFAULT_BUFFER_KEY );
-    }
-
     public void hello(SisoReceiver receiver) {
-        receiver.postMessage( SisoReceiver.createPrintMessage( "; ======================================" ));
-        receiver.postMessage( SisoReceiver.createPrintMessage( "; ======= LAMU-REPL PREPROCESSOR =======" ));
-        receiver.postMessage( SisoReceiver.createPrintMessage( "; ======================================" ));
-        receiver.postMessage( 
-            SisoReceiver.createPrintMessage( 
-                String.format( 
-                      "; Now Lamu-REPL Preprocessor is ready.\n"
-                    + "; For further information, type %s\n"
-                    , prefix + "help" )));
+        receiver.postMessage( SisoReceiver.createPrintMessage(
+            "; ======================================\n" + 
+            "; ======= LAMU-REPL PREPROCESSOR =======\n" +
+            "; ======================================\n" +
+            ";"  ));
+        
         receiver.postMessage( SisoReceiver.createPrintMessage( 
             String.format( 
-                  "; Please note that all commands need these leading characters.\n"
-                + "; The current leading characters are:\n"
-                + "; %s\n"
-                + "; You can change the leading characters by %s command."
-                , prefix
-                , "prefix" )));
+                "; Now Lamu-REPL Preprocessor is ready.\n" +
+                "; For further information, type %s\n" +
+                ";",
+                prefix + "help"
+                )));
+
+        receiver.postMessage( SisoReceiver.createPrintMessage( 
+            String.format("; # About Prefix #\n" +
+                          "; Please note that all commands need these leading characters.\n" +
+                          "; The current leading characters are: '%s' (without the quote characters.)\n" +
+                          "; You can change the leading characters by '%s%s' command.\n" +
+                          ";",
+                prefix, prefix, "prefix")));
+
+        receiver.postMessage( SisoReceiver.createPrintMessage( 
+            String.format( 
+                "; # About Execution on EOF #\n" +
+                "; Please note that it executes the data on the current stream\n" +
+                "; when EOF is arrived on the input stream.\n" +
+                "; If this behavior is not desirable, execute '%s%s' before the EOF.\n"
+                , prefix , "clear" )));
+
     }
     
     static String sortJoin( String delimitor, Collection<String> collection ) {
@@ -158,6 +143,16 @@ public class ReplSisoListener implements SisoProcessor, SisoListener {
         });
         return String.join( delimitor, list );
     }
+    
+    static String createMessage( String status, String messageType, String message ) {
+        return String.format( 
+            "'((status . %s )\n"
+                + "  (message-type . %s)\n"
+                + "  (message . %s )))"
+                , escapeDoubleQuotation( status )
+                , escapeDoubleQuotation( messageType ) 
+                ,  message );
+    }
 
     final HashMap<String,SisoProcessor> commandMap = new HashMap<String, SisoProcessor>();
     {
@@ -166,7 +161,7 @@ public class ReplSisoListener implements SisoProcessor, SisoListener {
             public void process(SisoReceiver receiver, String s) {
                 receiver.postMessage( 
                     SisoReceiver.createPrintMessage(
-                        "'((status . failed)\n (message-type . comment)\n ( message . \"unknown command\" ))"));
+                        "'((status . failed)\n (message-type . reason)\n ( message . \"unknown command\" ))"));
             }
         });
         commandMap.put("quit", new SisoProcessor() {
@@ -194,41 +189,57 @@ public class ReplSisoListener implements SisoProcessor, SisoListener {
                 receiver.postMessage( SisoReceiver.createPrintMessage("'((status . succeeded)\n (message-type . comment)\n (message . hello! ))" ));
             }
         });
-        commandMap.put("hello?", new SisoProcessor() {
+        commandMap.put("hello!", new SisoProcessor() {
             @Override
             public void process(SisoReceiver receiver, String s) {
                 hello( receiver );
                 receiver.postMessage( SisoReceiver.createPrintMessage("'((status . succeeded)\n (message-type . comment)\n (message . hello!!! ))"));
             }
         });
-        /**
-         * Set the current buffer to the specified buffer.
-         * If no argument is specified, it sets to the default buffer. 
-         */
-        commandMap.put( "select", new SisoProcessor() {
+        
+        commandMap.put( "echo", new SisoProcessor() {
             @Override
             public void process(SisoReceiver receiver, String s) {
                 s = s.trim();
-                currentBufferKey(s);
+                String content = getCurrentBuffer();
+                clearCurrentBuffer();
                 receiver.postMessage( 
                     SisoReceiver.createPrintMessage(
-                        String.format(
-                            "'((status . succeeded)\n (message-type . current-buffer-key)\n (message . \"%s\" ))", s )));
+                        createMessage( "succeeded"
+                            , "buffer-content"
+                            , "\""+escapeDoubleQuotation( content ) + "\"" )));
             }
         });
-        commandMap.put( DEFAULT_COMMAND_STRING, new SisoProcessor() {
+
+        commandMap.put( "show", new SisoProcessor() {
             @Override
             public void process(SisoReceiver receiver, String s) {
-                StringBuffer buffer = getBuffer( s );
-                receiver.postMessage( 
-                    SisoReceiver.createPrintMessage(
-                        String.format( 
-                            "'((status . succeeded )\n"
-                          + "  (message-type . 'buffer-content)\n"
-                          + "  (message . \""
-                          + "%s\" )))" 
-                          , escapeDoubleQuotation( buffer.toString() ) )
-                        ));
+                s = s.trim();
+                String content;
+                if ( "".equals( s ) ) {
+                    content = getCurrentBuffer();
+                } else {
+                    if (hasBuffer(s)) {
+                        content = getBuffer(s);
+                    } else {
+                        content = null;
+                    }
+                }
+                
+                if ( content != null ) {
+                    receiver.postMessage( 
+                        SisoReceiver.createPrintMessage(
+                            createMessage( "succeeded"
+                                , "buffer-content"
+                                , "\""+escapeDoubleQuotation( content ) + "\"" )));
+                            
+                } else {
+                    receiver.postMessage( 
+                        SisoReceiver.createPrintMessage(
+                            createMessage( "failed"
+                                , "reason"
+                                , "specified-buffer-does-not-exist" )));
+                }
             }
         });
 
@@ -240,43 +251,44 @@ public class ReplSisoListener implements SisoProcessor, SisoListener {
                     SisoReceiver.createPrintMessage( 
                         String.format( 
                             "'((status . succeeded )\n"
-                          + "  (message-type . 'buffer-list)\n"
+                          + "  (message-type . 'available-buffer-list)\n"
                           + "  (message . ("
                           + "%s)))" 
                           , str )));
             }
         });
 
-        /**
-         * Set the current buffer to the specified buffer.
-         * If no argument is specified, returns the current buffer key. 
-         */
-        commandMap.put( "buffer", new SisoProcessor() {
-            @Override
-            public void process(SisoReceiver receiver, String s) {
-                s=s.trim();
-                String result;
-                if ( s.equals("")) {
-                    result = currentBufferKey();
-                } else {
-                    result = currentBufferKey(s);
-                }
-                receiver.postMessage( 
-                    SisoReceiver.createPrintMessage( 
-                        String.format( "'((status . succeeded)\n (message-type . current-buffer-key)\n (message . %s))", result ) ));
-            }
-        });
-
         commandMap.put( "clear", new SisoProcessor() {
             @Override
             public void process(SisoReceiver receiver, String s) {
-                s=s.trim();
-                boolean result = deleteBuffer( s );
+                clearCurrentBuffer();
+                boolean result=true;
                 receiver.postMessage( 
                     SisoReceiver.createPrintMessage(
-                        String.format(
-                            "'((status . succeeded)\n (message-type . exists)\n (message . %s))"
-                            , result ? "#t" : "#f" )));
+                        createMessage( 
+                            "succeeded" , "exists?", result ? "#t" : "#f" )));
+            }
+        });
+        commandMap.put( "save", new SisoProcessor() {
+            @Override
+            public void process(SisoReceiver receiver, String s) {
+                s=s.trim();
+                boolean result = saveBuffer( s );
+                receiver.postMessage( 
+                    SisoReceiver.createPrintMessage(
+                        createMessage( 
+                            "succeeded" , "exists?", result ? "#t" : "#f" )));
+            }
+        });
+        commandMap.put( "load", new SisoProcessor() {
+            @Override
+            public void process(SisoReceiver receiver, String s) {
+                s=s.trim();
+                boolean result = loadBuffer( s );
+                receiver.postMessage( 
+                    SisoReceiver.createPrintMessage(
+                        createMessage( 
+                            "succeeded" , "exists?", result ? "#t" : "#f" )));
             }
         });
 
@@ -287,22 +299,37 @@ public class ReplSisoListener implements SisoProcessor, SisoListener {
                 boolean result = deleteBuffer( s );
                 receiver.postMessage( 
                     SisoReceiver.createPrintMessage(
-                        String.format(
-                            "'((status . succeeded)\n (message-type . exists)\n (message . %s))"
-                            , result ? "#t" : "#f" )));
+                        createMessage( 
+                            "succeeded" , "exists?", result ? "#t" : "#f" )));
             }
         });
         commandMap.put( "exec", new SisoProcessor() {
             @Override
             public void process( SisoReceiver receiver, String s ) {
-                StringBuffer buffer = getBuffer( s.trim() );
-                String script = buffer.toString();
+//                s=s.trim();
+//                loadBuffer(s);
+                
+                String script = getCurrentBuffer().trim();
+                clearCurrentBuffer();
 
+                if ( "".equals( script )) {
+                    receiver.postMessage( 
+                        SisoReceiver.createPrintMessage(
+                            createMessage( 
+                                "succeeded" , "empty", "'ignored-empty-script" )));
+                    return;
+                }
+                
                 EvaluatorReceiver resultReceiver = new EvaluatorReceiver() {
                     @Override
                     public void receive(String schemeScript, SchemeResult schemeResult) {
                         receiver.postMessage( 
-                            SisoReceiver.createPrintMessage( schemeResult.getValueAsString()));
+                            SisoReceiver.createPrintMessage(
+                                createMessage(
+                                    schemeResult.isSucceeded() ? "succeeded" : "failed" ,
+                                        "sexpr",
+                                        schemeResult.isEmpty() ? "'()" : schemeResult.getValueAsString()
+                                    )));
                     }
                 };
 
@@ -372,8 +399,8 @@ public class ReplSisoListener implements SisoProcessor, SisoListener {
     public void process( SisoReceiver receiver, String s ) {
         if ( s == null ) {
             // Execute the current buffer when the stream is terminated.
-            commandMap.get( "exec" ).process( receiver, getBuffer().toString() );
-            commandMap.get( "quit" ).process( receiver, null  );
+            commandMap.get( "exec" ).process( receiver, "" );
+            commandMap.get( "quit" ).process( receiver, ""  );
             // end the process
             return;
         } else if ( s.startsWith(prefix)) {
@@ -384,9 +411,10 @@ public class ReplSisoListener implements SisoProcessor, SisoListener {
                 paramString = commandString.substring(i+1).trim();
                 commandString = commandString.substring(0,i).trim();
             }
-            if ("".equals( commandString )) {
-               commandString = DEFAULT_COMMAND_STRING; 
-            }
+            
+//            if ( "".equals( commandString )) {
+//               commandString = DEFAULT_COMMAND_STRING; 
+//            }
             
             if ( commandMap.containsKey( commandString ) ) {
                 commandMap.get( commandString ).process( receiver, paramString );
@@ -394,7 +422,7 @@ public class ReplSisoListener implements SisoProcessor, SisoListener {
                 commandMap.get( ERROR_COMMAND ).process( receiver, paramString );
             }
         } else {
-            getBuffer().append( s ).append( "\n" );
+            appendCurrentBuffer( s );
         }
     }
 

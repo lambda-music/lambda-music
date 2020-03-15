@@ -129,7 +129,7 @@ public class SisoReceiver implements ThreadInitializerContainer<SisoReceiver>, T
                 logError("", e);
             }
             if ( processor instanceof SisoListener ) {
-                ((SisoListener)processor).start( SisoReceiver.this );
+                ((SisoListener)processor).end( SisoReceiver.this );
             }
             logInfo( "Exited the input-loop." );
             //			requestQuit();

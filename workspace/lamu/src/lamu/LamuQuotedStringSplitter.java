@@ -75,7 +75,9 @@ public class LamuQuotedStringSplitter {
                         found = true;
                         int idx = Integer.valueOf( m.group(1), 16);
                         String replacement = substitution.get(idx);
-                        m.appendReplacement( sb,  replacement );
+//                        System.err.println( replacement );
+//                        System.err.println( replacement.replaceAll( "\\$", "\\\\\\$" ) );
+                        m.appendReplacement( sb,  replacement.replaceAll("\\$", "\\\\\\$") );
                     }
                     m.appendTail(sb);
                     stagedValue = sb.toString();

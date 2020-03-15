@@ -21,6 +21,7 @@ import lamu.lib.scheme.EvaluatorManager;
 import lamu.lib.scheme.SchemeEngine;
 import lamu.lib.scheme.doc.DescriptiveDocumentCategory;
 import lamu.lib.scheme.repl.ReplSisoListener;
+import lamu.lib.scheme.repl.SimpleReplListener;
 import lamu.lib.scheme.repl.SisoReceiver;
 import lamu.lib.scheme.socket.SchemeHttp;
 import lamu.lib.scheme.socket.SchemeHttp.UserAuthentication;
@@ -211,16 +212,6 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 @Override
                 public ArgumentParserElement notifyArg( ArgumentParser parser, String s ) {
                     if ( false ) {
-
-                        //                	} else if ( s.startsWith( "--" ) ) {
-                        //                        LamuNamedArgument a = new LamuNamedArgument(s);
-                        //                        switch ( a.getKey() ) {
-                        //                        case "port" : 
-                        //                        	port = Integer.parseInt( a.getValue() );
-                        //                        	break;
-                        //                            default :
-                        //                                throw new RuntimeException( MSG_UNKNOWN_PARAM_ERROR + a.getKey() );
-                        //                        }
                     } else {
                         throw new RuntimeException( MSG_UNKNOWN_PARAM_ERROR + s );
                     }
@@ -228,11 +219,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 }
                 @Override
                 public void notifyEnd(ArgumentParser parser) {
-                    if ( parser.getValueStack( SCHEME_ENGINE ).isEmpty() ) {
-                        throw new RuntimeException( MSG_NO_SCHEME_ERROR );
-                    }
-                    SchemeEngine schemeEngine = parser.getValueStack( SCHEME_ENGINE ).peek();
-                    SisoReceiver sisoReceiver = new SisoReceiver( null, System.in, System.out, new ReplSisoListener( schemeEngine ) );
+                    SisoReceiver sisoReceiver = new SisoReceiver( null, System.in, System.out, new SimpleReplListener() );
                     parser.getValueStack( STPD_RECEIVER ).push( sisoReceiver );
                 }
             };

@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 
 import gnu.mapping.Values;
 import lamu.lib.log.Logger;
@@ -15,6 +16,14 @@ public final class SchemeResult {
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }
     static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }
     static void logWarn (String msg             ) { LOGGER.log(Level.WARNING,  msg      ); }
+
+    static String doubleQuote( String s ) {
+        return "\"" + escapeDoubleQuotation(s) + "\"";
+    }
+    static Pattern ESCAPE_DOUBLE_QUOTATIONS = Pattern.compile( "\"" );
+    static String escapeDoubleQuotation( String s ) {
+        return ESCAPE_DOUBLE_QUOTATIONS.matcher(s).replaceAll( "\\\\\"" );
+    }
 
     public static SchemeResult create(boolean isDocument, Object value, String valueAsString, Throwable error) {
         return new SchemeResult( isDocument, value, valueAsString, error );
@@ -46,7 +55,7 @@ public final class SchemeResult {
             e.printStackTrace( w );
             w.flush();
             sw.flush();
-            return SchemeResult.create( false, null, sw.toString(), e );
+            return SchemeResult.create( false, null, doubleQuote( sw.toString() ), e );
         } finally {
             try {
                 sw.close();

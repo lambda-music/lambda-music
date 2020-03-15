@@ -106,7 +106,7 @@ class LamuCommandMacro extends LamuCommand {
                 token = token.substring(1);
 
                 // the default value as the substitutional string for the variable token.
-                String subst = "@";
+                String subst = "$";
 
                 // this enables negation of checking existence of the namedArgs.
                 boolean expectationForContains = true;
@@ -129,7 +129,7 @@ class LamuCommandMacro extends LamuCommand {
                 if (expectationForContains == contains) {
                     for (Iterator<String> j = substList.iterator(); j.hasNext();) {
                         String substToken = j.next();
-                        if (substToken.equals("@")) {
+                        if (substToken.equals("$")) {
                             result.add(namedArgs.get(token).getValue());
                         } else {
                             result.add(substToken);
@@ -142,18 +142,18 @@ class LamuCommandMacro extends LamuCommand {
 
                         for (Iterator<String> j = substList.iterator(); j.hasNext();) {
                             String substToken = j.next();
-                            if (substToken.equals("@")) {
+                            if (substToken.equals("$")) {
                                 result.add(value);
                             } else {
                                 result.add(substToken);
                             }
                         }
                     }
-                } else if (token.equals("@")) {
+                } else if (token.equals("*")) {
                     if (expectationForContains == (!result.isEmpty())) {
                         for (Iterator<String> j = substList.iterator(); j.hasNext();) {
                             String substToken = j.next();
-                            if (substToken.equals("@")) {
+                            if (substToken.equals("$")) {
                                 result.addAll(args);
                             } else {
                                 result.add(substToken);
