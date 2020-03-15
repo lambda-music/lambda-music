@@ -20,10 +20,10 @@ import lamu.lib.log.Logger;
 import lamu.lib.scheme.EvaluatorManager;
 import lamu.lib.scheme.SchemeEngine;
 import lamu.lib.scheme.doc.DescriptiveDocumentCategory;
-import lamu.lib.scheme.socket.ReplSisoListener;
+import lamu.lib.scheme.repl.ReplSisoListener;
+import lamu.lib.scheme.repl.SisoReceiver;
 import lamu.lib.scheme.socket.SchemeHttp;
 import lamu.lib.scheme.socket.SchemeHttp.UserAuthentication;
-import lamu.lib.scheme.socket.SisoReceiver;
 import pulsar.Pulsar;
 import pulsar.PulsarFrame;
 
@@ -203,7 +203,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         }
     }
 
-    static final class SchemeTransferProtocolArgumentParserElementFactory implements ArgumentParserElementFactory {
+    static final class SimpleReplArgumentParserElementFactory implements ArgumentParserElementFactory {
         @Override
         public ArgumentParserElement create() {
             return new ArgumentParserElement() {
@@ -542,7 +542,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         registerFactory( "repl",             new ReplArgumentParserElementFactory());
         registerFactory( "gui",              new PulsarGuiArgumentParserElementFactory());
         registerFactory( "httpd",            new SchemeHttpServerArgumentParserElementFactory());
-        registerFactory( "stpd",             new SchemeTransferProtocolArgumentParserElementFactory());
+        registerFactory( "simple-repl",      new SimpleReplArgumentParserElementFactory());
         registerFactory( "output-help",      new OutputReferenceArgumentParserElementFactory());
         registerFactory( "output-help-list", new AllAvailableReferenceArgumentParserElementFactory());
     }

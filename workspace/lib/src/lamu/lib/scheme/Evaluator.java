@@ -17,6 +17,22 @@ public interface Evaluator {
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
+    /**
+     * @param threadInitializer
+     *    Specifies the thread initializers  
+     * @param schemeScript
+     *    The scheme script to be executed. 
+     * @param currentDirectory
+     *    This parameter is ignored.
+     * @param currentFile
+     *    Specifies the current executing file if it actually exists; this can be null if it does not exist.
+     * @param currentURI
+     *    Specifies the current executing file by URI; this can be any arbitrary value.
+     *    This value will be used to report the current line number when any exception is thronw duruing the execution;
+     *    that is, this can be practically any string value as long as it is clear that where the execption happens.
+     * @return
+     *    The {@link SchemeResult} object which contains the information of the result of the execution.  
+     */
     abstract SchemeResult evaluate(
             Runnable threadInitializer, 
             Reader schemeScript, 

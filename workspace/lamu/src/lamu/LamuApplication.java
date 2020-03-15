@@ -15,8 +15,8 @@ import lamu.lib.app.ApplicationComponent;
 import lamu.lib.app.ApplicationVessel;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.doc.DescriptiveHelp;
-import lamu.lib.scheme.socket.SimpleReplSisoServer;
-import lamu.lib.scheme.socket.SisoReceiver;
+import lamu.lib.scheme.repl.SimpleReplListener;
+import lamu.lib.scheme.repl.SisoReceiver;
 import pulsar.Pulsar;
 import pulsar.PulsarDocuments;
 import pulsar.lib.swing.PulsarGuiUtils;
@@ -139,7 +139,7 @@ public class LamuApplication {
                 //				Thread thread = new Thread( new LamuSimpleSocketServer( owner, System.in, System.out), "command-reception" );
                 //				thread.setDaemon(true);
                 //				thread.start();
-                components.add( new SisoReceiver( null, System.in, System.out, new SimpleReplSisoServer() ) );
+                components.add( new SisoReceiver( null, System.in, System.out, new SimpleReplListener() ) );
             }
         }
 
