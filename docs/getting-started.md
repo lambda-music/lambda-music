@@ -59,7 +59,7 @@ Lamu is composed by several components. And Lamu's command-line parameter can
 specify which of these components to be instantiated on at the start-up.
 
 For further information, please read [Lamu Command-line Parameter 
-Specification](./lamu-arguments.md)
+Specification](./arguments.md)
 
 
 ### Execute Scheme Commands from Your Editors ###
