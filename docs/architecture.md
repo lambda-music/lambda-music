@@ -27,7 +27,7 @@ Lamu depends on following projects :
 
 Lamu includes following projects:
 
-- [Lamu/Kawapad](./workspace/kawapad/)
+- [Lamu/Kawapad](../workspace/kawapad/)
   KawaPad is an Scheme editor which can write and run Scheme code on-the-fly.  
   The editor can be extended by Scheme itself.  Kawapad has a number of useful 
   features for editing Scheme programs. Kawapad is written in Java and 
@@ -37,18 +37,18 @@ Lamu includes following projects:
   A HTTP interface for Kawa. This allows remote processes to execute any Scheme 
   code remotely.
 
-- [Lamu/Metro](./workspace/metro/)
+- [Lamu/Metro](../workspace/metro/)
   Metro is a multi-track MIDI sequencer framework which is written in Java.
   Metro provides a simple framework to build music sequencing systems. Metro
   encapsulates the access to JACKAudio and offers mechanisms to send notation 
   data to JACKAudio.
 
-- [Lamu/Pulsar](./workspace/pulsar/)
+- [Lamu/Pulsar](../workspace/pulsar/)
   Pulsar is the main component of this application; Pulsar works as a bridge 
-  between [Metro](./workspace/metro/) and [Kawa Scheme][LNK_KAWA]. Pulsar also
+  between [Metro](../workspace/metro/) and [Kawa Scheme][LNK_KAWA]. Pulsar also
   provides several sets of API for Scheme to control JACKAudio and others.
 
-- [Lamu](./workspace/lamu/)
+- [Lamu](../workspace/lamu/)
   The project for Lamu application class which manages command-line parsing,
   starting up and others.
 
