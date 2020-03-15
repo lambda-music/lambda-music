@@ -51,7 +51,7 @@ Specifying a path to an arbitrary file as command-line parameter causes the
 Lamu editor to open the specified file.
 
 ```bash
-> java jar lamu.jar any-scheme-program.scm
+> java -jar lamu.jar any-scheme-program.scm
 ```
 
 ## Advanced Command-line Parameter ##
