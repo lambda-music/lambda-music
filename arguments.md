@@ -33,7 +33,7 @@ In order to enable the advanced-mode of command-line parameter, add a keyword
 `do` in front of other arguments. 
 
 ```bash
-> lamu do (....)
+> lamu do ([exec|fork|...]) ([argument]...)
 ```
 
 ## `exec` Command ##
@@ -61,16 +61,19 @@ components, and then the main editor opens the specified file
 tokens contains multiple elements. And the first element of a region
 denotes the name of the component to instantiate.
 
-### Multi-Statements ###
+## Multi-Statements ##
 
 ```bash
 > lamu do begin exec scheme + pulsar + gui + end begin exec scheme + pulsar + gui + end
 ```
 
-The above is an example of multiple commands. It is able to specify multiple 
-sessions of advanced commands. This creates two distinctive Scheme engines and 
-then connect a Scheme editor to each in a same Java Virtual Machine. That is, 
-both editor has its own variable scope.
+The above is an example to demonstrate how to use multiple-statements in the 
+advanced mode.  Note that there are two keywords : `begin` and `end`. Commands 
+which surrounded by `begin` and `end` becomes a statement. 
+
+This creates two distinctive Scheme engines and then connect a Scheme editor to 
+each in a same Java Virtual Machine. That is, both editor has its own variable 
+scope.
 
 In editor one, execute the following code.
 
@@ -114,19 +117,60 @@ causes unpredictable skips on the generated sound.  Therefore, Kawapad is
 designed that to be able to be separately executed in another Java Virtual 
 Machine.
 
-### Nested Multiple-Statements ###
+## Nested Multiple-Statements ##
 
-Multiple-Statements can be nested; it can be used in `fork` command to give 
-multiple-statements as its arguments.
+Multiple-statements can be nested; a typical scenario of the usage of 
+multiple-statement is using with `fork` command.
 
 ```bash
 > lamu do begin exec scheme --server-port=8193 + kawapad + end begin fork do begin exec scheme + httpd --port=8193 + end begin exec scheme + kawapad end end
 ```
 
+Note that `fork` command itself is surrounded by `begin` and `end` and its 
+arguments also consist `begin` and `end`; this example works as expected.
+
+
+## Extend Commands ##
+
+It is able to define new commands by defining macro commands in the 
+configuration file.  The path of the configuration file is: 
+`~/.lamu/default-arguments.conf` .
+
+The following is an example of the configuration file.
+
+```
+default exec scheme + pulsar + repl + gui $*{--open=$} +
+simple exec scheme + pulsar + simple-repl + gui $*{--open=$} +
+cs exec begin scheme --server-port=8193 + gui $* end begin scheme + pulsar + httpd --port=8193 end
+local exec scheme + pulsar + repl + gui $open{$} +
+```
+
+The first column denotes the name of macro-command.
 
 ```bash
-> lamu do ([exec|fork|...]) ([argument]...)
+lamu do local --open=/foo/bar/bum.scm
 ```
+
+The above example is expanded as
+
+```bash
+lamu do exec scheme + pulsar + repl + gui /foo/bar/bum.scm
+```
+
+`default` macro-command can override the behavior of the default-mode 
+command-line parameter.
+
+```
+default exec scheme + pulsar + repl +
+```
+
+For example, setting as above makes `lamu` to execute without GUI as default.
+
+
+
+
+
+
 
 <!--
 # Command Specifier #
