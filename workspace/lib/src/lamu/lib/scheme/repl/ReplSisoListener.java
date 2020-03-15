@@ -159,9 +159,16 @@ public class ReplSisoListener implements SisoProcessor, SisoListener {
         commandMap.put( ERROR_COMMAND, new SisoProcessor() {
             @Override
             public void process(SisoReceiver receiver, String s) {
+                s  = s.trim();
+                if ( "".equals(s)) {
+                    s = "unknown command";
+                }
                 receiver.postMessage( 
                     SisoReceiver.createPrintMessage(
-                        "'((status . failed)\n (message-type . reason)\n ( message . \"unknown command\" ))"));
+                        String.format( 
+                            "'((status . failed)\n (message-type . reason)\n ( message . \"%s\" ))"
+                            ,s
+                            )));
             }
         });
         commandMap.put("quit", new SisoProcessor() {
@@ -419,7 +426,7 @@ public class ReplSisoListener implements SisoProcessor, SisoListener {
             if ( commandMap.containsKey( commandString ) ) {
                 commandMap.get( commandString ).process( receiver, paramString );
             } else {
-                commandMap.get( ERROR_COMMAND ).process( receiver, paramString );
+                commandMap.get( ERROR_COMMAND ).process( receiver, "unknown-command (" + paramString +")" );
             }
         } else {
             appendCurrentBuffer( s );
