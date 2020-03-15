@@ -38,15 +38,15 @@ treated as an argument.
 - show
 - error
 
-# `hello` #
+#`hello`#
 Returns a simple greeting. This command has no effect to the current state.
 ```
 ;lamu:hello
 ```
-# `alive?` #
+#`alive?`#
 This always returns #t unless the application is malfunctioning.
 
-# `prefix` #
+#`prefix`#
 Change the command-line prefix.
 
 ```
@@ -58,46 +58,46 @@ After executing above, you can execute a command by the following.
 ;lambda-music:hello
 ```
 
-# `help` #
+#`help`#
 Returns a list of available command names.
 
-# `?` #
+#`?`#
 Same as `help`
 
-# `bye` #
+#`bye`#
 End the program.
 
-# `quit` #
+#`quit`#
 End the program.
 
-# `show` #
+#`show`#
 Returns the content of the buffer.
 
-# `clear` #
+#`clear`#
 Clear the buffer.
 
-# `exec` #
+#`exec`#
 Executes the content of the buffer. After executing this command, the buffer 
 will be cleared.
 
-# `save` #
+#`save`#
 Save the content of the buffer to the specified buffer-storage. After executing 
 this command, the buffer will be cleared.
 
-# `load` #
+#`load`#
 Load data from the specified buffer-storage and set it to the buffer.
 
-# `delete` #
+#`delete`#
 Delete the specified buffer-storage.
 
-# `echo` #
+#`echo`#
 Output the content of the buffer. After executing this command, the buffer will 
 be cleared.
 
-# `list` #
+#`list`#
 Output the list of the available buffer-storages. 
 
-# `error` #
+#`error` #
 Returns an error message with the specified reason.
 
 
