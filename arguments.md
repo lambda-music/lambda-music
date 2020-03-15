@@ -1,28 +1,26 @@
 Command-line Parameter Reference
 =================================
 
-Lamu's command-line parameter has two modes; one is `default mode` and the 
-other is `advanced mode`.
+Lamu's command-line parameter has two modes: `default-mode` and `advanced-
+mode`.
 
-# Command-line Parameter in Default Mode #
+# Command-line Parameter in Default-Mode #
 
 ```bash
-lamu [Scheme filename]
+lamu [filename]
 ```
 
 This demonstrates how to start the new Lamu application instance in the 
-default-mode. The filename argument is optional; if the filename argument is 
-given, then the Lamu's main-editor opens
-the specified file.
+default-mode. The filename argument is optional. If the filename argument is 
+given, then the Lamu's main-editor opens the specified file.
 
 
-# Command-line Parameter in Advanced Mode #
+# Command-line Parameter in Advanced-Mode #
 
 ## Overview ##
 Lamu is formed by several components. Lamu's command-line parameter can specify 
-which components to be instantiated at the start-up. Please read the overview 
-of Lamu's architecture; it can be read at [The architecture of 
-Lamu](./architecture.md).
+which components to be instantiated at the start-up. Please read the 
+description at [The architecture of Lamu](./architecture.md).
 
 For example, Lamu has a HTTP server component which enables remote clients to 
 execute Scheme command on the server where Lamu is running. And Lamu also has a 
@@ -32,26 +30,26 @@ command-line parameter cant specify how Lamu should run at the boot-time.
 In order to enable the advanced-mode of command-line parameter, add a keyword 
 `do` in front of other arguments. 
 
-```bash
+```
 > lamu do ([exec|fork|...]) ([argument]...)
 ```
 
 ## `exec` Command ##
 
-In advanced mode, more complicated commands can be specified after the `do` 
+In advanced-mode, more complicated commands can be specified after the `do` 
 keyword.
 
-```bash
+```
 > lamu do exec scheme + pulsar + gui +
 ```
 
 The above is an example which demonstrates how to use `exec` command of the 
-advanced mode.  `exec` instantiates the specified components of Lamu. This 
+advanced-mode.  `exec` instantiates the specified components of Lamu. This 
 example instantiates a Scheme engine, a Pulsar instance and a GUI frame. They  
 are the most basic set of components in Lamu. Note that the every component 
 name is separated by keyword `+`.  These `+` tokens separates their regions. 
 
-```bash
+```
 > lamu do exec scheme + pulsar + gui /path/to/file.scm +
 ```
 
@@ -63,12 +61,12 @@ denotes the name of the component to instantiate.
 
 ## Multi-Statements ##
 
-```bash
+```
 > lamu do begin exec scheme + pulsar + gui + end begin exec scheme + pulsar + gui + end
 ```
 
 The above is an example to demonstrate how to use multiple-statements in the 
-advanced mode.  Note that there are two keywords : `begin` and `end`. Commands 
+advanced-mode.  Note that there are two keywords : `begin` and `end`. Commands 
 which surrounded by `begin` and `end` becomes a statement. 
 
 This creates two distinctive Scheme engines and then connect a Scheme editor to 
@@ -106,7 +104,7 @@ Then back to the editor one, execute the following code.
 the specified arguments. Its primary usage is to configure Lamu
 in client-server model. See the following example:
 
-```bash
+```
 > lamu do begin exec scheme --server-port=8193 + kawapad + end begin fork do exec scheme + httpd --port=8193 + end
 ```
 The above is an example to invoke and configure Lamu as client-server model. 
@@ -122,7 +120,7 @@ Machine.
 Multiple-statements can be nested; a typical scenario of the usage of 
 multiple-statement is using with `fork` command.
 
-```bash
+```
 > lamu do begin exec scheme --server-port=8193 + kawapad + end begin fork do begin exec scheme + httpd --port=8193 + end begin exec scheme + kawapad end end
 ```
 
@@ -147,13 +145,13 @@ local exec scheme + pulsar + repl + gui $open{$} +
 
 The first column denotes the name of macro-command.
 
-```bash
+```
 lamu do local --open=/foo/bar/bum.scm
 ```
 
 The above example is expanded as
 
-```bash
+```
 lamu do exec scheme + pulsar + repl + gui /foo/bar/bum.scm
 ```
 
