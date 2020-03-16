@@ -69,13 +69,14 @@ import lamu.lib.scheme.proc.MultipleNamedProcedure2;
 import lamu.lib.scheme.proc.MultipleNamedProcedure3;
 import lamu.lib.scheme.proc.MultipleNamedProcedureN;
 import lamu.lib.secretary.Invokable;
+import lamu.utils.lib.MersenneTwisterFast;
+import lamu.utils.lib.PulsarSharedTimer;
 import metro.EventListenable;
 import metro.Metro;
 import metro.MetroPort;
 import metro.MetroSequence;
 import metro.MetroSyncType;
 import metro.MetroTrack;
-import pulsar.lib.swing.MersenneTwisterFast;
 
 /**
  * Pulsar is a MIDI sequencer program which is controlled by a powerful computer
@@ -384,51 +385,6 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             }
         }
         return historyFile;
-    }
-
-    static final java.util.Timer timer = new java.util.Timer("PulsarTimer", true );
-    static {
-//        addCleanupHook( new Runnable() {
-//            @Override
-//            public void run() {
-//                timer.cancel();
-//            }
-//        });
-    }
-    
-    public static Runnable createTimer( Runnable threadInitializer, long delay, long interval, Invokable invokable ) {
-        if ( 0 < interval  ){
-            timer.scheduleAtFixedRate( new java.util.TimerTask() {
-                @Override
-                public void run() {
-                    threadInitializer.run();
-                    
-                    // Execute the specified process.
-                    Object result = invokable.invoke();
-
-                    if ( Boolean.FALSE.equals( result ) ) {
-                        timer.cancel();
-                    }
-                }
-            }, delay, interval );
-        } else {
-            timer.schedule( new java.util.TimerTask() {
-                @Override
-                public void run() {
-                    threadInitializer.run();
-
-                    // Execute the specified process.
-                    invokable.invoke();
-                }
-            }, delay );
-        }
-        
-        return new Runnable() {
-            @Override
-            public void run() {
-                timer.cancel();
-            }
-        };
     }
 
     private static final class TagSearchIsProcedure extends MultipleNamedProcedure2 {
@@ -1936,7 +1892,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
 
         SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "schedule", "make-timer" ) {
             public Object apply2(Object arg1, Object arg2) {
-                Runnable runnable = createTimer( getCurrent(), 
+                Runnable runnable = PulsarSharedTimer.createTimer( getCurrent(), 
                     SchemeUtils.toInteger( arg1 ), 
                     -1, 
                     InvokableSchemeProcedure.createSecretarillyInvokable( (Procedure)arg2 ) );
@@ -1950,7 +1906,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             };
             @Override
             public Object apply3(Object arg0, Object arg1,Object arg2 ) throws Throwable {
-                Runnable runnable = createTimer( getCurrent(), 
+                Runnable runnable = PulsarSharedTimer.createTimer( getCurrent(), 
                     SchemeUtils.toInteger( arg0 ), 
                     SchemeUtils.toInteger( arg1 ), 
                     InvokableSchemeProcedure.createSecretarillyInvokable( (Procedure)arg2 ) );

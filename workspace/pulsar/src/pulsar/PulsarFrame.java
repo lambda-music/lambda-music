@@ -81,9 +81,10 @@ import lamu.lib.secretary.Invokable;
 import lamu.lib.swing.AcceleratorKeyList;
 import lamu.lib.swing.Action2;
 import lamu.lib.swing.AutomatedActionField;
-import pulsar.lib.swing.FlawLayout;
-import pulsar.lib.swing.JNamedPanel;
-import pulsar.lib.swing.PulsarGuiUtils;
+import lamu.utils.lib.FlawLayout;
+import lamu.utils.lib.JNamedPanel;
+import lamu.utils.lib.PulsarGuiUtils;
+import lamu.utils.lib.PulsarSharedTimer;
 
 public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     private static final String PULSAR_DEFAULT_CAPTION = "Pulsar - a Lisp Scheme Music Sequencer";
@@ -269,7 +270,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                 return Values.empty;
             }
         };
-        this.timerHandle = Pulsar.createTimer( getKawapad().getThreadInitializerCollection(), 5000, 20, invokable2 );
+        this.timerHandle = PulsarSharedTimer.createTimer( getKawapad().getThreadInitializerCollection(), 5000, 20, invokable2 );
     }
 
     enum TempoRange {

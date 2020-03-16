@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="src.scheme"/>
+	<classpathentry kind="src" path="src.gui-utils"/>
 	<classpathentry exported="true" kind="lib" path="lib/jna-4.5.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jna-platform-4.5.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jnajack-1.3.0.jar" sourcepath="src.archive/jnajack-1.3.0.zip"/>

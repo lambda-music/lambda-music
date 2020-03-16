@@ -20,11 +20,11 @@ import lamu.lib.log.Logger;
 import lamu.lib.scheme.EvaluatorManager;
 import lamu.lib.scheme.SchemeEngine;
 import lamu.lib.scheme.doc.DescriptiveDocumentCategory;
-import lamu.lib.scheme.repl.ReplSisoListener;
-import lamu.lib.scheme.repl.SimpleReplListener;
-import lamu.lib.scheme.repl.SisoReceiver;
+import lamu.lib.scheme.repl.ReplServer;
+import lamu.lib.scheme.repl.SimpleReplService;
 import lamu.lib.scheme.socket.SchemeHttp;
 import lamu.lib.scheme.socket.SchemeHttp.UserAuthentication;
+import lamu.lib.stream.SisoReceiver;
 import pulsar.Pulsar;
 import pulsar.PulsarFrame;
 
@@ -219,7 +219,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 }
                 @Override
                 public void notifyEnd(ArgumentParser parser) {
-                    SisoReceiver sisoReceiver = new SisoReceiver( null, System.in, System.out, new SimpleReplListener() );
+                    SisoReceiver sisoReceiver = new SisoReceiver( null, System.in, System.out, new SimpleReplService() );
                     parser.getValueStack( STPD_RECEIVER ).push( sisoReceiver );
                 }
             };
@@ -418,7 +418,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     }
                     SchemeEngine schemeEngine = parser.getValueStack( SCHEME_ENGINE ).peek();
 
-                    parser.getValueStack( REPL ).push( new SisoReceiver( null, System.in, System.out, new ReplSisoListener( schemeEngine ) ) );
+                    parser.getValueStack( REPL ).push( new SisoReceiver( null, System.in, System.out, new ReplServer( schemeEngine ) ) );
                     parser.getValueStack( RUNNABLE ).push( new Runnable() {
                         @Override
                         public void run() {

@@ -15,11 +15,11 @@ import lamu.lib.app.ApplicationComponent;
 import lamu.lib.app.ApplicationVessel;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.doc.DescriptiveHelp;
-import lamu.lib.scheme.repl.SimpleReplListener;
-import lamu.lib.scheme.repl.SisoReceiver;
+import lamu.lib.scheme.repl.SimpleReplService;
+import lamu.lib.stream.SisoReceiver;
+import lamu.utils.lib.PulsarGuiUtils;
 import pulsar.Pulsar;
 import pulsar.PulsarDocuments;
-import pulsar.lib.swing.PulsarGuiUtils;
 
 public class LamuApplication {
     static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
@@ -139,7 +139,7 @@ public class LamuApplication {
                 //				Thread thread = new Thread( new LamuSimpleSocketServer( owner, System.in, System.out), "command-reception" );
                 //				thread.setDaemon(true);
                 //				thread.start();
-                components.add( new SisoReceiver( null, System.in, System.out, new SimpleReplListener() ) );
+                components.add( new SisoReceiver( null, System.in, System.out, new SimpleReplService() ) );
             }
         }
 
