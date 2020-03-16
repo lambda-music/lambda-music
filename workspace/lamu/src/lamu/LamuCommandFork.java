@@ -1,5 +1,6 @@
 package lamu;
 
+import java.util.Deque;
 import java.util.List;
 
 import lamu.lib.app.ApplicationComponent;
@@ -17,9 +18,11 @@ class LamuCommandFork extends LamuCommand {
     }
 
     @Override
-    void execute(List<LamuCommand> availableCommands, List<ApplicationComponent> vessels, List<String> arguments, boolean recursiveCall) {
+    void execute(Deque<Object> globalValueStack, List<LamuCommand> availableCommands, List<ApplicationComponent> vessels, List<String> arguments, boolean recursiveCall) {
         List<String> subArguments = arguments.subList(1, arguments.size());
         // fork
-        vessels.add( forkPulsar(subArguments) );
+        JavaProcess javaProcess = forkPulsar(subArguments);
+        globalValueStack.push( javaProcess );
+        vessels.add( javaProcess );
     }
 }

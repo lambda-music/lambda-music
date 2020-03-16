@@ -120,9 +120,13 @@ public class SisoReceiver implements ThreadInitializerContainer<SisoReceiver>, T
                 }
                 for (;;) {
                     String s = i.readLine();
-                    listener.process( SisoReceiver.this, s);
-                    if ( s == null) {
-                        break;
+                    try {
+                        listener.process( SisoReceiver.this, s);
+                        if ( s == null) {
+                            break;
+                        }
+                    } catch ( Throwable t ) {
+                        logError("",t);
                     }
                 }
             } catch (IOException e) {
@@ -142,11 +146,15 @@ public class SisoReceiver implements ThreadInitializerContainer<SisoReceiver>, T
             logInfo( "Now start the output-loop." );
             try  {
                 for (;;) {
-                    SisoReceiverMessage message = outputMessageQueue.take();
-                    message.process( SisoReceiver.this, o );
+                    try {
+                        SisoReceiverMessage message = outputMessageQueue.take();
+                        message.process( SisoReceiver.this, o );
+                    } catch ( InterruptedException e ) {
+                        throw e;
+                    } catch ( Throwable t ) {
+                        logError("",t);
+                    }
                 }
-            } catch (IOException e) {
-                logError("", e);
             } catch (InterruptedException e) {
                 //				logError("", e);
             } catch (Throwable e ) {

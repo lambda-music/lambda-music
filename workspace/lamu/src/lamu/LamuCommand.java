@@ -2,8 +2,10 @@ package lamu;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -17,17 +19,17 @@ abstract class LamuCommand {
     static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
     static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }
 
-    abstract boolean match(List<String> arguments);
-    abstract void    execute(List<LamuCommand> availableCommands, List<ApplicationComponent> vessels, List<String> arguments, boolean recursiveCall);
+    abstract boolean match(   List<String> arguments );
+    abstract void    execute( Deque<Object> globalValueStack, List<LamuCommand> availableCommands, List<ApplicationComponent> vessels, List<String> arguments, boolean recursiveCall);
 
     public static void parseSubargs( 
-            List<LamuCommand> availableCommands, 
-            List<ApplicationComponent> vessels, List<String> args, boolean recursiveCall )  
+            Deque<Object> globalValueStack, 
+            List<LamuCommand> availableCommands, List<ApplicationComponent> vessels, List<String> args, boolean isRecursiveCall )  
     {
         boolean done = false;
         for (LamuCommand c : availableCommands ) {
             if ( c.match( args ) ) {
-                c.execute( availableCommands, vessels, args, recursiveCall );
+                c.execute( globalValueStack, availableCommands, vessels, args, isRecursiveCall );
                 done = true;
                 break;
             }
@@ -62,10 +64,11 @@ abstract class LamuCommand {
                 LamuBeginEndSplitter.splitBeginEnd( args, "begin",  "end" );
 
         List<ApplicationComponent> vessels = new ArrayList<>();
+        Deque<Object> globalValueStack = new ArrayDeque<>();
         for (Iterator<List<String>> i = arrayOfSubargs.iterator(); i.hasNext();) {
             List<String> subargs = i.next();
             logInfo( subargs.toString() );
-            parseSubargs(availableCommands, vessels, subargs, false);
+            parseSubargs(globalValueStack, availableCommands, vessels, subargs, false);
         }
         return vessels;
     }

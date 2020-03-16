@@ -49,6 +49,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         getValueStack( RUNNABLE );
     }
 
+    static final ArgumentParserStackKey<Object> GLOBAL_STACK = new ArgumentParserStackKey<>();
     static final ArgumentParserStackKey<SchemeEngine> SCHEME_ENGINE = new ArgumentParserStackKey<>();
     static final ArgumentParserStackKey<Pulsar> PULSAR = new ArgumentParserStackKey<>();
     static final ArgumentParserStackKey<Kawapad> KAWAPAD = new ArgumentParserStackKey<>();

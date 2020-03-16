@@ -1,5 +1,6 @@
 package lamu;
 
+import java.util.Deque;
 import java.util.List;
 
 import lamu.lib.app.ApplicationComponent;
@@ -11,11 +12,19 @@ class LamuCommandExec extends LamuCommand {
     }
 
     @Override
-    void execute(List<LamuCommand> availableCommands, List<ApplicationComponent> vessels, List<String> arguments, boolean recursiveCall) {
+    void execute(Deque<Object> globalValueStack, List<LamuCommand> availableCommands, List<ApplicationComponent> vessels, List<String> arguments, boolean recursiveCall) {
         List<String> subArguments = arguments.subList(1, arguments.size());
         // exec
         LamuApplicationArgumentParser argumentParser = new LamuApplicationArgumentParser();
-        argumentParser.parse(subArguments);
-        vessels.addAll(argumentParser.getApplicationVesselList());
+        Deque<Object> valueStack = argumentParser.getValueStack( LamuApplicationArgumentParser.GLOBAL_STACK );
+        
+        valueStack.clear();
+        valueStack.addAll( globalValueStack );
+        
+        argumentParser.parse( subArguments );
+        
+        globalValueStack.clear();
+        globalValueStack.addAll( valueStack );
+        vessels.addAll( argumentParser.getApplicationVesselList());
     }
 }

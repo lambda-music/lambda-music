@@ -19,6 +19,7 @@ public class ReplServer implements SisoReceiverListener, SisoReceiverServiceList
     public static final String ERROR_COMMAND = "error";
     public static final String DEFAULT_COMMAND_STRING = "echo";
     private static final String DEFAULT_BUFFER = ".";
+    private static final String RESULT_MESSAGE = "done";
 
     protected final SchemeEngine schemeEngine;
     protected String prefix = ";lamu:";
@@ -30,6 +31,19 @@ public class ReplServer implements SisoReceiverListener, SisoReceiverServiceList
         super();
         this.schemeEngine = schemeEngine;
         this.prefix = prefix;
+    }
+
+    String currentSession = null;
+    String fetchCurrentSession() {
+        String s = this.currentSession;
+        this.currentSession = null;
+        return s;
+    }
+    public String getCurrentSession() {
+        return currentSession;
+    }
+    void setCurrentSession(String currentSession) {
+        this.currentSession = currentSession;
     }
 
     final HashMap<String,String> bufferMap = new HashMap<>();
@@ -93,7 +107,7 @@ public class ReplServer implements SisoReceiverListener, SisoReceiverServiceList
         return ReplServer.this.buffer.toString();
     }
     public void appendCurrentBuffer( String s ) {
-        ReplServer.this.buffer.append( s );
+        ReplServer.this.buffer.append( s ).append("\n");
     }
 
     public static String doubleQuote( String s ) {
@@ -147,14 +161,24 @@ public class ReplServer implements SisoReceiverListener, SisoReceiverServiceList
         return String.join( delimitor, list );
     }
     
-    static String createMessage( String status, String messageType, String message ) {
-        return String.format( 
+    String createMessage( String currentSession, String status, String messageType, String message ) {
+        String base = String.format( 
             "'((status . %s )\n"
                 + "  (message-type . %s)\n"
                 + "  (message . %s )))"
                 , escapeDoubleQuotation( status )
                 , escapeDoubleQuotation( messageType ) 
                 ,  message );
+        
+        if ( currentSession != null ) {
+            return 
+                base + "\n" +
+                prefix + RESULT_MESSAGE + " " + currentSession;
+        } else {
+            return 
+                base + "\n" +
+                prefix + RESULT_MESSAGE;
+        }
     }
 
     final HashMap<String,SisoReceiverListener> commandMap = new HashMap<String, SisoReceiverListener>();
@@ -183,27 +207,61 @@ public class ReplServer implements SisoReceiverListener, SisoReceiverServiceList
         commandMap.put("bye", new SisoReceiverListener() {
             @Override
             public void process(SisoReceiver receiver, String s) {
-                receiver.postMessage( SisoReceiver.createPrintMessage( "'((status . succeeded)\n (message-type . comment)\n (message . bye))" ));
+                receiver.postMessage( SisoReceiver.createPrintMessage( 
+                    "'((status . succeeded)\n (message-type . comment)\n (message . bye))" ));
                 receiver.postMessage( SisoReceiver.createQuitMessage() );
             }
         });
         commandMap.put("alive?", new SisoReceiverListener() {
             @Override
             public void process(SisoReceiver receiver, String s) {
-                receiver.postMessage( SisoReceiver.createPrintMessage("'((status . succeeded)\n (message-type . result)\n (message . #t))" ));
+                receiver.postMessage( SisoReceiver.createPrintMessage(
+                    "'((status . succeeded)\n (message-type . result)\n (message . #t))" ));
             }
         });
         commandMap.put("hello", new SisoReceiverListener() {
             @Override
             public void process(SisoReceiver receiver, String s) {
-                receiver.postMessage( SisoReceiver.createPrintMessage("'((status . succeeded)\n (message-type . comment)\n (message . hello! ))" ));
+                receiver.postMessage( SisoReceiver.createPrintMessage(
+                    "'((status . succeeded)\n (message-type . comment)\n (message . hello! ))" ));
             }
         });
         commandMap.put("hello!", new SisoReceiverListener() {
             @Override
             public void process(SisoReceiver receiver, String s) {
                 hello( receiver );
-                receiver.postMessage( SisoReceiver.createPrintMessage("'((status . succeeded)\n (message-type . comment)\n (message . hello!!! ))"));
+                receiver.postMessage( SisoReceiver.createPrintMessage(
+                    "'((status . succeeded)\n (message-type . comment)\n (message . hello!!! ))"));
+            }
+        });
+        commandMap.put("session", new SisoReceiverListener() {
+            @Override
+            public void process(SisoReceiver receiver, String s) {
+                s = s.trim();
+                if ( "".equals(s) ) {
+                } else {
+                    setCurrentSession(s);
+                }
+
+                // Maybe this should not return any value to the peer.
+                if ( false ) {
+                    String session = getCurrentSession();
+                    if ( session == null ) {
+                        receiver.postMessage( 
+                            SisoReceiver.createPrintMessage(
+                                createMessage( 
+                                    session
+                                    , "succeeded"
+                                    , "session-id", "#f" )));
+                    } else {                    
+                        receiver.postMessage( 
+                            SisoReceiver.createPrintMessage(
+                                createMessage( 
+                                    session
+                                    , "succeeded"
+                                    , "session-id", "\""+escapeDoubleQuotation( session ) + "\"" )));
+                    }
+                }
             }
         });
         
@@ -215,9 +273,10 @@ public class ReplServer implements SisoReceiverListener, SisoReceiverServiceList
                 clearCurrentBuffer();
                 receiver.postMessage( 
                     SisoReceiver.createPrintMessage(
-                        createMessage( "succeeded"
-                            , "buffer-content"
-                            , "\""+escapeDoubleQuotation( content ) + "\"" )));
+                        createMessage( 
+                            fetchCurrentSession()
+                            , "succeeded"
+                            , "buffer-content", "\""+escapeDoubleQuotation( content ) + "\"" )));
             }
         });
 
@@ -239,16 +298,18 @@ public class ReplServer implements SisoReceiverListener, SisoReceiverServiceList
                 if ( content != null ) {
                     receiver.postMessage( 
                         SisoReceiver.createPrintMessage(
-                            createMessage( "succeeded"
-                                , "buffer-content"
-                                , "\""+escapeDoubleQuotation( content ) + "\"" )));
+                            createMessage( 
+                                fetchCurrentSession()
+                                , "succeeded"
+                                , "buffer-content", "\""+escapeDoubleQuotation( content ) + "\"" )));
                             
                 } else {
                     receiver.postMessage( 
                         SisoReceiver.createPrintMessage(
-                            createMessage( "failed"
-                                , "reason"
-                                , "specified-buffer-does-not-exist" )));
+                            createMessage(
+                                fetchCurrentSession()
+                                , "failed"
+                                , "reason", "specified-buffer-does-not-exist" )));
                 }
             }
         });
@@ -259,12 +320,12 @@ public class ReplServer implements SisoReceiverListener, SisoReceiverServiceList
                 String str = sortJoin( " ", bufferMap.keySet() );
                 receiver.postMessage( 
                     SisoReceiver.createPrintMessage( 
-                        String.format( 
-                            "'((status . succeeded )\n"
-                          + "  (message-type . 'available-buffer-list)\n"
-                          + "  (message . ("
-                          + "%s)))" 
-                          , str )));
+                        createMessage(
+                            fetchCurrentSession()
+                            , "succeeded"
+                            , "available-buffer-list",
+                            "(" + str +  ")" )
+                        ));
             }
         });
 
@@ -276,7 +337,7 @@ public class ReplServer implements SisoReceiverListener, SisoReceiverServiceList
                 receiver.postMessage( 
                     SisoReceiver.createPrintMessage(
                         createMessage( 
-                            "succeeded" , "exists?", result ? "#t" : "#f" )));
+                            fetchCurrentSession() , "succeeded", "exists?", result ? "#t" : "#f" )));
             }
         });
         commandMap.put( "save", new SisoReceiverListener() {
@@ -287,7 +348,7 @@ public class ReplServer implements SisoReceiverListener, SisoReceiverServiceList
                 receiver.postMessage( 
                     SisoReceiver.createPrintMessage(
                         createMessage( 
-                            "succeeded" , "exists?", result ? "#t" : "#f" )));
+                            fetchCurrentSession() , "succeeded", "exists?", result ? "#t" : "#f" )));
             }
         });
         commandMap.put( "load", new SisoReceiverListener() {
@@ -298,7 +359,7 @@ public class ReplServer implements SisoReceiverListener, SisoReceiverServiceList
                 receiver.postMessage( 
                     SisoReceiver.createPrintMessage(
                         createMessage( 
-                            "succeeded" , "exists?", result ? "#t" : "#f" )));
+                            fetchCurrentSession() , "succeeded", "exists?", result ? "#t" : "#f" )));
             }
         });
 
@@ -310,7 +371,7 @@ public class ReplServer implements SisoReceiverListener, SisoReceiverServiceList
                 receiver.postMessage( 
                     SisoReceiver.createPrintMessage(
                         createMessage( 
-                            "succeeded" , "exists?", result ? "#t" : "#f" )));
+                            fetchCurrentSession() , "succeeded", "exists?", result ? "#t" : "#f" )));
             }
         });
         commandMap.put( "exec", new SisoReceiverListener() {
@@ -326,7 +387,7 @@ public class ReplServer implements SisoReceiverListener, SisoReceiverServiceList
                     receiver.postMessage( 
                         SisoReceiver.createPrintMessage(
                             createMessage( 
-                                "succeeded" , "empty", "'ignored-empty-script" )));
+                                fetchCurrentSession() , "succeeded", "empty", "'ignored-empty-script" )));
                     return;
                 }
                 
@@ -336,9 +397,9 @@ public class ReplServer implements SisoReceiverListener, SisoReceiverServiceList
                         receiver.postMessage( 
                             SisoReceiver.createPrintMessage(
                                 createMessage(
-                                    schemeResult.isSucceeded() ? "succeeded" : "failed" ,
-                                        "sexpr",
-                                        schemeResult.isEmpty() ? "'()" : schemeResult.getValueAsString()
+                                    fetchCurrentSession() ,
+                                        schemeResult.isSucceeded() ? "succeeded" : "failed",
+                                        "sexpr", schemeResult.isEmpty() ? "'()" : schemeResult.getValueAsString()
                                     )));
                     }
                 };
@@ -369,13 +430,12 @@ public class ReplServer implements SisoReceiverListener, SisoReceiverServiceList
             public void process(SisoReceiver receiver, String s) {
                 String str = sortJoin( " ", commandMap.keySet() );
                 receiver.postMessage( 
-                    SisoReceiver.createPrintMessage( 
-                        String.format( 
-                              "'((status . succeeded )\n"
-                            + "  (message-type . 'available-commands)\n"
-                            + "  (message . ("
-                            + "%s)))" 
-                            , str )));
+                    SisoReceiver.createPrintMessage(
+                        createMessage(
+                            fetchCurrentSession() ,
+                                "succeeded",
+                                "available-commands",
+                                "(" + str + ")" )));
             }
         });
         commandMap.put( "?", commandMap.get( "help" ));
@@ -410,7 +470,7 @@ public class ReplServer implements SisoReceiverListener, SisoReceiverServiceList
         if ( s == null ) {
             // Execute the current buffer when the stream is terminated.
             commandMap.get( "exec" ).process( receiver, "" );
-            commandMap.get( "quit" ).process( receiver, ""  );
+            commandMap.get( "quit" ).process( receiver, "" );
             // end the process
             return;
         } else if ( s.startsWith(prefix)) {
@@ -429,7 +489,7 @@ public class ReplServer implements SisoReceiverListener, SisoReceiverServiceList
             if ( commandMap.containsKey( commandString ) ) {
                 commandMap.get( commandString ).process( receiver, paramString );
             } else {
-                commandMap.get( ERROR_COMMAND ).process( receiver, "unknown-command (" + paramString + ")" );
+                commandMap.get( ERROR_COMMAND ).process( receiver, "unknown-command (" + commandString + ")" );
             }
         } else {
             appendCurrentBuffer( s );

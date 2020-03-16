@@ -15,8 +15,9 @@ import java.util.logging.Level;
 
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.log.Logger;
+import lamu.lib.stream.StandardIO;
 
-public class JavaProcess implements ApplicationComponent{
+public class JavaProcess implements ApplicationComponent, StandardIO {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
@@ -114,12 +115,15 @@ public class JavaProcess implements ApplicationComponent{
     private OutputStream outputStream=null;
     private InputStream inputStream=null;
     private InputStream errorStream=null;
+    @Override
     public InputStream getErrorStream() {
         return errorStream;
     }
+    @Override
     public OutputStream getOutputStream() {
         return outputStream;
     }
+    @Override
     public InputStream getInputStream() {
         return inputStream;
     }
