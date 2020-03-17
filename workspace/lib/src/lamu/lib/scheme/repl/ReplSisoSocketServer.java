@@ -22,7 +22,7 @@ public class ReplSisoSocketServer extends SisoSocketServer {
                     socket, 
                     socket.getInputStream(), 
                     socket.getOutputStream(),
-                    new ReplServer( schemeEngine ) );
+                    new ReplServer( schemeEngine) );
         } catch (IOException e) {
             e.printStackTrace();
         }

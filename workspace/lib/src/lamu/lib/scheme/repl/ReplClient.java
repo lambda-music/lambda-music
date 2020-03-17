@@ -6,13 +6,13 @@ import lamu.lib.scheme.SchemeResult;
 import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.SisoReceiverListener;
 
-public class ReplServer extends ReplClientServerBasic {
+public class ReplClient extends ReplClientServerBasic {
     protected final SchemeEngine schemeEngine;
-    public ReplServer( String prefix, SchemeEngine schemeEngine ) {
+    public ReplClient( String prefix, SchemeEngine schemeEngine ) {
         super( prefix );
         this.schemeEngine = schemeEngine;
     }
-    public ReplServer( SchemeEngine schemeEngine ) {
+    public ReplClient( SchemeEngine schemeEngine ) {
         super();
         this.schemeEngine = schemeEngine;
     }
@@ -88,6 +88,6 @@ public class ReplServer extends ReplClientServerBasic {
     public static void main(String[] args) {
         SchemeEngine schemeEngine = new SchemeEngine();
         schemeEngine.requestInit();
-        new SisoReceiver( null, System.in, System.out, new ReplServer( ";", schemeEngine ) ).requestInit();
+        new SisoReceiver( null, System.in, System.out, new ReplClient( ";", schemeEngine ) ).requestInit();
     }
 }
