@@ -118,35 +118,32 @@ public class ReplServer implements SisoReceiverListener, SisoReceiverServiceList
         return ESCAPE_DOUBLE_QUOTATIONS.matcher(s).replaceAll( "\\\\\"" );
     }
     public void hello(SisoReceiver receiver) {
-        receiver.postMessage( SisoReceiver.createPrintMessage(
-            "; ======================================\n" + 
-            "; ======= LAMU-REPL PREPROCESSOR =======\n" +
-            "; ======================================\n" +
-            ";"  ));
-        
-        receiver.postMessage( SisoReceiver.createPrintMessage( 
+        String message =
+            String.format(
+                "; ======================================\n" + 
+                "; ======= LAMU-REPL PREPROCESSOR =======\n" +
+                "; ======================================\n" +
+                ";" ) + "\n" +
             String.format( 
                 "; Now Lamu-REPL Preprocessor is ready.\n" +
                 "; For further information, type %s\n" +
-                ";",
-                prefix + "help"
-                )));
-
-        receiver.postMessage( SisoReceiver.createPrintMessage( 
-            String.format("; # About Prefix #\n" +
-                          "; Please note that all commands need these leading characters.\n" +
-                          "; The current leading characters are: '%s' (without the quote characters.)\n" +
-                          "; You can change the leading characters by '%s%s' command.\n" +
-                          ";",
-                prefix, prefix, "prefix")));
-
-        receiver.postMessage( SisoReceiver.createPrintMessage( 
-            String.format( 
+                ";", prefix + "help" ) + "\n" +
+            String.format( "; # About Prefix #\n" +
+                "; Please note that all commands need these leading characters.\n" +
+                "; The current leading characters are: '%s' (without the quote characters.)\n" +
+                "; You can change the leading characters by '%s%s' command.\n" +
+                ";", prefix, prefix, "prefix" ) + "\n" +
+            String.format(
                 "; # About Execution on EOF #\n" +
-                "; Please note that it executes the data on the current stream\n" +
-                "; when EOF is arrived on the input stream.\n" +
-                "; If this behavior is not desirable, execute '%s%s' before the EOF.\n"
-                , prefix , "clear" )));
+                "; Please note that when the processor detect EOF on the input stream, \n" +
+                "; it executes the data on the current buffer.\n" +
+                "; If this behavior is not desirable, execute '%s%s' before EOF is sent.\n"
+                , prefix , "clear" );
+
+        // put prefix on every line.
+        message = Pattern.compile( "^", Pattern.MULTILINE ).matcher(message).replaceAll( prefix );
+        
+        receiver.postMessage( SisoReceiver.createPrintMessage( message ));
 
     }
     
@@ -190,12 +187,13 @@ public class ReplServer implements SisoReceiverListener, SisoReceiverServiceList
                 if ( "".equals(s)) {
                     s = "unknown command";
                 }
+                
                 receiver.postMessage( 
                     SisoReceiver.createPrintMessage(
-                        String.format( 
-                            "'((status . failed)\n (message-type . reason)\n ( message . \"%s\" ))"
-                            ,s
-                            )));
+                        createMessage( 
+                            fetchCurrentSession()
+                            , "failed"
+                            , "reason", "\""+escapeDoubleQuotation( s ) + "\"" )));
             }
         });
         commandMap.put("quit", new SisoReceiverListener() {
@@ -207,31 +205,45 @@ public class ReplServer implements SisoReceiverListener, SisoReceiverServiceList
         commandMap.put("bye", new SisoReceiverListener() {
             @Override
             public void process(SisoReceiver receiver, String s) {
-                receiver.postMessage( SisoReceiver.createPrintMessage( 
-                    "'((status . succeeded)\n (message-type . comment)\n (message . bye))" ));
+                receiver.postMessage( 
+                    SisoReceiver.createPrintMessage(
+                        createMessage( 
+                            fetchCurrentSession() , "succeeded" , "result", "bye" )));
                 receiver.postMessage( SisoReceiver.createQuitMessage() );
             }
         });
         commandMap.put("alive?", new SisoReceiverListener() {
             @Override
             public void process(SisoReceiver receiver, String s) {
-                receiver.postMessage( SisoReceiver.createPrintMessage(
-                    "'((status . succeeded)\n (message-type . result)\n (message . #t))" ));
+                receiver.postMessage( 
+                    SisoReceiver.createPrintMessage(
+                        createMessage( 
+                            fetchCurrentSession()
+                            , "succeeded"
+                            , "result", "#t" )));
             }
         });
         commandMap.put("hello", new SisoReceiverListener() {
             @Override
             public void process(SisoReceiver receiver, String s) {
-                receiver.postMessage( SisoReceiver.createPrintMessage(
-                    "'((status . succeeded)\n (message-type . comment)\n (message . hello! ))" ));
+                receiver.postMessage( 
+                    SisoReceiver.createPrintMessage(
+                        createMessage( 
+                            fetchCurrentSession()
+                            , "succeeded"
+                            , "comment", "hello!" )));
             }
         });
         commandMap.put("hello!", new SisoReceiverListener() {
             @Override
             public void process(SisoReceiver receiver, String s) {
                 hello( receiver );
-                receiver.postMessage( SisoReceiver.createPrintMessage(
-                    "'((status . succeeded)\n (message-type . comment)\n (message . hello!!! ))"));
+                receiver.postMessage( 
+                    SisoReceiver.createPrintMessage(
+                        createMessage( 
+                            fetchCurrentSession()
+                            , "succeeded"
+                            , "comment", "hello!!!" )));
             }
         });
         commandMap.put("session", new SisoReceiverListener() {
@@ -476,6 +488,14 @@ public class ReplServer implements SisoReceiverListener, SisoReceiverServiceList
         } else if ( s.startsWith(prefix)) {
             String commandString = s.substring( prefix.length() ).trim();
             String paramString = "";
+
+            // (Tue, 17 Mar 2020 02:35:48 +0900)
+            // if the command string starts with ; , treat it as a comment.
+            if ( commandString.startsWith(";" )) {
+                // do nothing
+                return;
+            }
+            
             int i = commandString.indexOf( " " );
             if ( 0<=i ) {
                 paramString = commandString.substring(i+1).trim();
