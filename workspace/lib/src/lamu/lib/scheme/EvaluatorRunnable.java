@@ -31,12 +31,11 @@ class EvaluatorRunnable implements Runnable {
     @Override
     public void run() {
         Evaluator.logInfo( schemeScript );
-        receiver.receive( schemeScript, 
-            this.evaluator.evaluate( 
-                threadInitializer, 
-                schemeScript, 
-                currentDirectory, 
-                currentFile, 
-                currentURI ) );
+        receiver.receive( this.evaluator.evaluate( 
+            threadInitializer, 
+            schemeScript, 
+            currentDirectory, 
+            currentFile, 
+            currentURI ) );
     }
 }

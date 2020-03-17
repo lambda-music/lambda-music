@@ -229,7 +229,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                     String schemeScript = "(if (open?) (get-track-position (get-main-track)) #f)";
                     EvaluatorReceiver receiver = new EvaluatorReceiver() {
                         @Override
-                        public void receive(String schemeScript, SchemeResult schemeResult) {
+                        public void receive(SchemeResult schemeResult) {
                             if ( schemeResult.isSucceeded() ) {
                                 String v = schemeResult.getValueAsString();
                                 if ( "#f".equals( v ) ) {
@@ -638,7 +638,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
 //            pulsar.getTempoTapper().tap();
             getKawapad().evaluate( "(tap-tempo)", new EvaluatorReceiver() {
                 @Override
-                public void receive(String schemeScript, SchemeResult schemeResult) {
+                public void receive(SchemeResult schemeResult) {
                 	if ( schemeResult.isSucceeded() ) {
                 		double bpm = Double.parseDouble( schemeResult.getValueAsString() );
                 		if ( 0<=bpm ) {

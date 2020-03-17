@@ -5,7 +5,7 @@ import lamu.lib.log.SimpleConsole;
 public interface EvaluatorReceiver {
     EvaluatorReceiver REPORT_ERROR = new EvaluatorReceiver() {
         @Override
-        public void receive(String schemeScript, SchemeResult schemeResult) {
+        public void receive(SchemeResult schemeResult) {
 //        	  MODIFIED (Fri, 13 Mar 2020 17:29:37 +0900) >>>
 //            if ( ! schemeResult.isSucceeded() ) {
 //                Evaluator.logError( "failed", schemeResult.getError() );
@@ -15,5 +15,5 @@ public interface EvaluatorReceiver {
         	SimpleConsole.getConsole().addWarning( schemeResult.getError());
         }
     };
-    void receive( String schemeScript, SchemeResult schemeResult );
+    void receive( SchemeResult schemeResult );
 }

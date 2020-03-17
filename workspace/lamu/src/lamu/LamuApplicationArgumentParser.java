@@ -20,7 +20,7 @@ import lamu.lib.log.Logger;
 import lamu.lib.scheme.EvaluatorManager;
 import lamu.lib.scheme.SchemeEngine;
 import lamu.lib.scheme.doc.DescriptiveDocumentCategory;
-import lamu.lib.scheme.repl.ReplClientServerBasic;
+import lamu.lib.scheme.repl.ReplClient;
 import lamu.lib.scheme.repl.SimpleReplService;
 import lamu.lib.scheme.socket.SchemeHttp;
 import lamu.lib.scheme.socket.SchemeHttp.UserAuthentication;
@@ -419,7 +419,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     }
                     SchemeEngine schemeEngine = parser.getValueStack( SCHEME_ENGINE ).peek();
 
-                    parser.getValueStack( REPL ).push( new SisoReceiver( null, System.in, System.out, new ReplClientServerBasic( schemeEngine ) ) );
+                    parser.getValueStack( REPL ).push( new SisoReceiver( null, System.in, System.out, new ReplClient( schemeEngine ) ) );
                     parser.getValueStack( RUNNABLE ).push( new Runnable() {
                         @Override
                         public void run() {

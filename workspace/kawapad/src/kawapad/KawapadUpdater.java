@@ -8,21 +8,24 @@ import lamu.lib.scheme.SchemeResult;
 
 public class KawapadUpdater {
     public static EvaluatorReceiver create(
-            Kawapad kawapad, boolean doInsertText,
-            boolean doReplaceText, boolean doReportError, boolean doResetFileModified) 
+            Kawapad kawapad,
+            String schemeScript,
+            boolean doInsertText, boolean doReplaceText, boolean doReportError, boolean doResetFileModified ) 
     {
         return new InsertingUpdatingText( 
-            kawapad, doInsertText, doReplaceText, doReportError, doResetFileModified );
+            kawapad, schemeScript, doInsertText, doReplaceText, doReportError, doResetFileModified );
     }
     
     static final class InsertingUpdatingText implements EvaluatorReceiver {
         private Kawapad kawapad;
+        private String schemeScript;
         private boolean doInsertText;
         private boolean doReplaceText;
         private boolean doReportError;
         private boolean doResetFileModified;
         InsertingUpdatingText( 
                 Kawapad kawapad,
+                String schemeScript,
                 boolean doInsertText, 
                 boolean doReplaceText, 
                 boolean doReportError, 
@@ -30,6 +33,7 @@ public class KawapadUpdater {
         {
             super();
             this.kawapad       = kawapad;
+            this.schemeScript  = schemeScript;
             this.doInsertText  = doInsertText;
             this.doReplaceText = doReplaceText;
             this.doReportError = doReportError;
@@ -42,7 +46,7 @@ public class KawapadUpdater {
                 schemeResult.getValueAsString().replaceFirst( "\n$", "" ),
                 false,
                 doResetFileModified
-                    ));
+                ));
         }
         private void procInsert( SchemeResult schemeResult, String schemeScript ) {
             if ( ! schemeResult.isEmpty() ) {
@@ -71,7 +75,7 @@ public class KawapadUpdater {
             }
         }
         @Override
-        public void receive( String schemeScript, SchemeResult schemeResult ) {
+        public void receive( SchemeResult schemeResult ) {
             if ( schemeResult.isSucceeded() ) {
                 if ( schemeResult.isDocument() ) {
                     procDocument( schemeResult );

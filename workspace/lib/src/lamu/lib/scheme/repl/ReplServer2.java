@@ -316,7 +316,7 @@ public class ReplServer2 implements SisoReceiverListener, SisoReceiverServiceLis
 
                 EvaluatorReceiver resultReceiver = new EvaluatorReceiver() {
                     @Override
-                    public void receive(String schemeScript, SchemeResult schemeResult) {
+                    public void receive(SchemeResult schemeResult) {
                         receiver.postMessage( 
                             SisoReceiver.createPrintMessage( schemeResult.getValueAsString()));
                     }

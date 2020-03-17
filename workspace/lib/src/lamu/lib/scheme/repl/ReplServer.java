@@ -45,7 +45,7 @@ public class ReplServer extends ReplClientServerBasic {
                 
                 EvaluatorReceiver resultReceiver = new EvaluatorReceiver() {
                     @Override
-                    public void receive(String schemeScript, SchemeResult schemeResult) {
+                    public void receive(SchemeResult schemeResult) {
                         receiver.postMessage( 
                             SisoReceiver.createPrintMessage(
                                 createMessage(

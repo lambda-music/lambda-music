@@ -426,7 +426,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     public void evaluate( String schemeScript,  boolean doInsertText, boolean doReplaceText, boolean doReset ) {
         this.evaluate( 
             schemeScript, 
-            KawapadUpdater.create( kawapad, doInsertText, doReplaceText, true, doReset ) );
+            KawapadUpdater.create( kawapad, schemeScript, doInsertText, doReplaceText, true, doReset ) );
     }
     
     //////////////////////////////////////////////////////////////////////////////////////////
