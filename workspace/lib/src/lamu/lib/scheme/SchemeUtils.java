@@ -547,9 +547,16 @@ public class SchemeUtils {
     }
     
     /////////////////////////////////////////////////////////////////////////////////////////
+    // srfi1
+    /////////////////////////////////////////////////////////////////////////////////////////
+
+    public static final Procedure assq = (Procedure)srfi1.assq.get();
+    public static final Procedure car = (Procedure)srfi1.car.get();
+    public static final Procedure cdr = (Procedure)srfi1.cdr.get();
+
+    /////////////////////////////////////////////////////////////////////////////////////////
     // alist
     /////////////////////////////////////////////////////////////////////////////////////////
-    private static final Procedure assq = (Procedure) srfi1.assq.get();
     public static Object alistGet( Object key, LList alist, Object defaultValue ) {
         try {
             Object value = assq.apply2( key, alist );
@@ -562,7 +569,7 @@ public class SchemeUtils {
             throw new RuntimeException(e);
         }
     }
-    public static void main(String[] args) throws Throwable {
+    public static void main3(String[] args) throws Throwable {
         LList alist = LList.makeList( Arrays.asList( 
             Pair.make( Symbol.valueOf( "a" ), Symbol.valueOf( "HELLO" ) ),
             Pair.make( Symbol.valueOf( "b" ), Symbol.valueOf( "WORLD" ) ) ) );
@@ -575,5 +582,47 @@ public class SchemeUtils {
         }
         return strings;
     }
+    
+    public static Object assq( String key, Object alist ) throws Throwable {
+        return assq( gnu.mapping.Symbol.valueOf(key), alist );
+    }
+    public static Object assq( Object key, Object alist ) throws Throwable {
+        return assq.apply2( key, alist );
+    }
+    public static Object car( Object object ) throws Throwable {
+        return car.apply1(object);
+    }
+    public static Object cdr( Object object ) throws Throwable {
+        return cdr.apply1(object);
+    }
+
+    
+
+    // ADDED (Tue, 17 Mar 2020 23:58:15 +0900) >>>
+    public static Object string2lisp( String input ) throws IOException {
+        Object result;
+        try (
+            gnu.kawa.io.CharArrayInPort port = new gnu.kawa.io.CharArrayInPort( input ); 
+            gnu.kawa.lispexpr.LispReader reader = new gnu.kawa.lispexpr.LispReader(port);
+            )
+        {
+            result= reader.readObject();
+        }
+        return result;
+    }
+    public static String lisp2string( Object schemeValue ) {
+        return gnu.kawa.functions.DisplayFormat.schemeWriteFormat.format( schemeValue );
+    }
+    static void test_lispt2string() throws Throwable {
+        Object schemeValue = SchemeUtils.string2lisp( "(( a . hello )\n( b . foo )\n;hello world\n( c . 4 )(d . 5)( e . \"world\") )\n" );
+        System.out.println( SchemeUtils.cdr( SchemeUtils.assq( "b", schemeValue ) ) );
+        String stringValue = SchemeUtils.lisp2string( schemeValue );
+        System.out.println( stringValue );; 
+        System.out.println( stringValue.getClass() );; 
+    }
+    public static void main(String[] args) throws Throwable {
+        test_lispt2string();
+    }
+    // ADDED (Tue, 17 Mar 2020 23:58:15 +0900) <<<
 
 }

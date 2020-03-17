@@ -1,13 +1,34 @@
 package lamu.lib.scheme.repl;
 
-import lamu.lib.scheme.EvaluatorReceiver;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.lang.invoke.MethodHandles;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+
+import lamu.lib.log.Logger;
 import lamu.lib.scheme.SchemeEngine;
-import lamu.lib.scheme.SchemeResult;
 import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.SisoReceiverListener;
+import lamu.lib.stream.SisoReceiverMessage;
 
-public class ReplClient extends ReplClientServerBasic {
+public class ReplClient extends ReplClientServer {
+    public static interface ReplClientResultReceiver {
+        void receive( String result );
+    }
+
+    protected static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
+    protected static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+    protected static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
+    protected static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }
+    protected static void logWarn(Throwable e) { LOGGER.log(Level.WARNING, "warning", e); }
+
     protected final SchemeEngine schemeEngine;
+    protected SisoReceiver receiver;
     public ReplClient( String prefix, SchemeEngine schemeEngine ) {
         super( prefix );
         this.schemeEngine = schemeEngine;
@@ -19,63 +40,69 @@ public class ReplClient extends ReplClientServerBasic {
 
     @Override
     public void start(SisoReceiver receiver ) {
-        hello( receiver );
     }
     @Override
     public void end(SisoReceiver receiver) {
     }
     
+    @Override
+    public void notifyParent(SisoReceiver receiver) {
+        this.receiver = receiver;
+    }
+    
+    final Map<String,ReplClientResultReceiver> resultReceiverMap = new HashMap<>();
+    
+    public void exec( String schemeScript, ReplClientResultReceiver resultReceiver ) {
+        if ( resultReceiver == null )
+            throw new IllegalArgumentException( "null is not allowed" );
+        
+        String sessionName = createSession();
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append( createCommandString( "session", sessionName ) );
+        sb.append( "\n" );
+        sb.append( escapeText( schemeScript ) );
+        sb.append( "\n" );
+        sb.append( createCommandString( "exec", "" ) );
+        
+        SisoReceiverMessage message = SisoReceiver.createPrintMessage( sb.toString() );
+        
+        resultReceiverMap.put( sessionName, resultReceiver );
+        
+        receiver.postMessage( message );
+    }
+    public String createSession() {
+        return String.format( "session-%08x", random.nextInt() );
+    }
+    
     {
-        registerCommand( "exec", new SisoReceiverListener() {
+        registerCommand( "done", new SisoReceiverListener() {
             @Override
-            public void process( SisoReceiver receiver, String s ) {
-//                s=s.trim();
-//                loadBuffer(s);
-                
-                String script = getCurrentBuffer().trim();
-                clearCurrentBuffer();
+            public void process( SisoReceiver receiver, String argument ) {
+                argument = argument.trim();
 
-                if ( "".equals( script )) {
-                    receiver.postMessage( 
-                        SisoReceiver.createPrintMessage(
-                            createMessage( 
-                                fetchCurrentSession() , "succeeded", "empty", "'ignored-empty-script" )));
+                String result = getCurrentBuffer().trim();
+                clearCurrentBuffer();
+                
+                String currentSession = fetchCurrentSession();
+
+                if ( currentSession == null ) {
+                    logInfo("ignored session: [default-session]");
+                    return;
+                } else if (  ! resultReceiverMap.containsKey( currentSession ) ) {
+                    // if the session name is unknown, just ignore it.
+                    // this would happen if the stream is shared with other processes.
+                    logInfo("ignored session:" + currentSession);
                     return;
                 }
+
+                ReplClientResultReceiver resultReceiver = resultReceiverMap.remove( currentSession );
                 
-                EvaluatorReceiver resultReceiver = new EvaluatorReceiver() {
-                    @Override
-                    public void receive(SchemeResult schemeResult) {
-                        receiver.postMessage( 
-                            SisoReceiver.createPrintMessage(
-                                createMessage(
-                                    fetchCurrentSession() ,
-                                        schemeResult.isSucceeded() ? "succeeded" : "failed",
-                                        "sexpr", schemeResult.isEmpty() ? "'()" : schemeResult.getValueAsString()
-                                    )));
-                    }
-                };
-
-                Runnable evaluationRunner = SchemeEngine.createEvaluationRunner(
-                    receiver.getThreadInitializerCollection(), script,
-                    schemeEngine.getEvaluatorManager().getCurrentEvaluator(),
-                    resultReceiver, null , null, "console(repl)" );
-
-                Thread t = new Thread( new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            evaluationRunner.run();
-                        } finally {
-                            threadList.remove( Thread.currentThread() );
-                        }
-                    }
-                });
-                threadList.add( t );
-                t.start();
+                resultReceiver.receive( result );
             }
         });
     }
+    
 
     @Override
     protected void onTerminate( SisoReceiver receiver, String s ) {
@@ -85,9 +112,31 @@ public class ReplClient extends ReplClientServerBasic {
     }
 
 
+    
     public static void main(String[] args) {
         SchemeEngine schemeEngine = new SchemeEngine();
         schemeEngine.requestInit();
-        new SisoReceiver( null, System.in, System.out, new ReplClient( ";", schemeEngine ) ).requestInit();
+        ReplClient c = new ReplClient( ";", schemeEngine );
+        new SisoReceiver( null, System.in, System.out, c ).requestInit();
+        {
+            JFrame frame = new JFrame();
+            frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
+            JButton b = new JButton();
+            b.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    c.exec("hello", new ReplClientResultReceiver( ) {
+                        @Override
+                        public void receive(String result) {
+                            System.err.println( result );
+                        }
+                    });
+                }
+            });
+            frame.getContentPane().add( b );
+            frame.setSize(300, 300);
+            frame.setVisible(true);
+        }
+       
     }
 }

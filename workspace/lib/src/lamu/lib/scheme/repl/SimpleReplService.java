@@ -19,6 +19,9 @@ public class SimpleReplService implements SisoReceiverListener, SisoReceiverServ
         }
     }
     @Override
+    public void notifyParent(SisoReceiver receiver) {
+    }
+   @Override
     public void start(SisoReceiver receiver) {
     }
     @Override

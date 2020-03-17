@@ -16,7 +16,7 @@ import lamu.lib.stream.SisoReceiverListener;
 import lamu.lib.stream.SisoReceiverServiceListener;
 
 /**
- * An older version of {@link ReplClientServerBasic}. This version adopts the
+ * An older version of {@link ReplClientServer}. This version adopts the
  * multi-buffer model; it keeps the key name of the current buffer and the
  * incoming stream data will go to the current buffer. And these buffers are
  * stored in a map. Later it appeared that this system is ineffective.
@@ -26,7 +26,7 @@ import lamu.lib.stream.SisoReceiverServiceListener;
  * are defined operations on the buffer such as exec, load and save. These
  * operation resets the current buffer.
  * 
- * For further information, see the new {@link ReplClientServerBasic}.
+ * For further information, see the new {@link ReplClientServer}.
  */
 public class ReplServer2 implements SisoReceiverListener, SisoReceiverServiceListener {
     public static final String ERROR_COMMAND = "error";
@@ -375,6 +375,9 @@ public class ReplServer2 implements SisoReceiverListener, SisoReceiverServiceLis
                             , prefix )));
             }
         });
+    }
+    @Override
+    public void notifyParent(SisoReceiver receiver) {
     }
     @Override
     public void start(SisoReceiver receiver ) {

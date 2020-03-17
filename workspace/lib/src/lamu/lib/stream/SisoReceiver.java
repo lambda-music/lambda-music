@@ -24,7 +24,7 @@ import lamu.lib.thread.ThreadInitializerContainer;
  * SisoServer stands for SImple SOcket Server.
  * 
  */
-public class SisoReceiver implements ThreadInitializerContainer<SisoReceiver>, ThreadInitializerCollectionContainer, ApplicationComponent {
+public class SisoReceiver<T extends SisoReceiverServiceListener> implements ThreadInitializerContainer<SisoReceiver>, ThreadInitializerCollectionContainer, ApplicationComponent {
     protected static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
     protected static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     protected static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
@@ -38,11 +38,11 @@ public class SisoReceiver implements ThreadInitializerContainer<SisoReceiver>, T
     protected final OutputStream out;
     protected BufferedReader i;
     protected PrintStream o;
-    protected SisoReceiverListener listener;
-    public SisoReceiver( InputStream in, OutputStream out, SisoReceiverListener listener ) {
+    protected T listener;
+    public SisoReceiver( InputStream in, OutputStream out, T listener ) {
         this( null, in, out, listener );
     }
-    public SisoReceiver( Closeable resource, InputStream in, OutputStream out, SisoReceiverListener listener ) {
+    public SisoReceiver( Closeable resource, InputStream in, OutputStream out, T listener ) {
         this.resource = resource;
         this.in = in;
         this.out = out;
@@ -60,6 +60,13 @@ public class SisoReceiver implements ThreadInitializerContainer<SisoReceiver>, T
         this.o = out instanceof PrintStream ? (PrintStream)out : new PrintStream( out );
         this.i = new BufferedReader( new InputStreamReader(in));
         this.listener = listener;
+        
+        //
+        this.listener.notifyParent( this );
+    }
+    
+    public T getListener() {
+        return listener;
     }
 
     protected final BlockingDeque<SisoReceiverMessage> outputMessageQueue = new LinkedBlockingDeque<>();
@@ -103,10 +110,10 @@ public class SisoReceiver implements ThreadInitializerContainer<SisoReceiver>, T
         postMessage( createQuitMessage() );
     }
 
-    public static SimpleQuitMessage createQuitMessage() {
+    public static SisoReceiverMessage createQuitMessage() {
         return new SimpleQuitMessage();
     }
-    public static SimplePrintMessage createPrintMessage(String message) {
+    public static SisoReceiverMessage createPrintMessage(String message) {
         return new SimplePrintMessage(message);
     }
 
@@ -115,9 +122,7 @@ public class SisoReceiver implements ThreadInitializerContainer<SisoReceiver>, T
         public void run() {
             logInfo( "Now start the input-loop." );
             try {
-                if ( listener instanceof SisoReceiverServiceListener ) {
-                    ((SisoReceiverServiceListener)listener).start( SisoReceiver.this );
-                }
+                listener.start( SisoReceiver.this );
                 for (;;) {
                     String s = i.readLine();
                     try {
@@ -132,9 +137,7 @@ public class SisoReceiver implements ThreadInitializerContainer<SisoReceiver>, T
             } catch (IOException e) {
                 logError("", e);
             }
-            if ( listener instanceof SisoReceiverServiceListener ) {
-                ((SisoReceiverServiceListener)listener).end( SisoReceiver.this );
-            }
+            listener.end( SisoReceiver.this );
             logInfo( "Exited the input-loop." );
             //			requestQuit();
         }

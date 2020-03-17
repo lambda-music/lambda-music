@@ -11,20 +11,30 @@ import java.util.regex.Pattern;
 import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.SisoReceiverListener;
 import lamu.lib.stream.SisoReceiverServiceListener;
+import lamu.utils.lib.MersenneTwisterFast;
 
-public abstract class ReplClientServerBasic implements SisoReceiverListener, SisoReceiverServiceListener {
+public abstract class ReplClientServer implements SisoReceiverListener, SisoReceiverServiceListener {
     public static final String ERROR_COMMAND = "error";
     private static final String DEFAULT_BUFFER = ".";
     private static final String RESULT_MESSAGE = "done";
     private static final String DEFAULT_PREFIX = ";lamu:";
+    private static final String APPEND_COMMAND = "append";
 
     protected String prefix = DEFAULT_PREFIX;
-    
-    public ReplClientServerBasic() {
+
+    protected final MersenneTwisterFast random = new MersenneTwisterFast( new int[] { 
+        ((int)(Math.random() * Integer.MAX_VALUE)) << (int) System.currentTimeMillis(),
+        ((int)(Math.random() * Integer.MAX_VALUE)) << (int) System.currentTimeMillis(),
+        ((int)(Math.random() * Integer.MAX_VALUE)) << (int) System.currentTimeMillis(),
+        ((int)(Math.random() * Integer.MAX_VALUE)) << (int) System.currentTimeMillis(),
+        0xbcd, 0xcde, 0xdef, 0xabc, 
+    });
+
+    public ReplClientServer() {
         super();
         this.prefix = DEFAULT_PREFIX;
     }
-    public ReplClientServerBasic( String prefix ) {
+    public ReplClientServer( String prefix ) {
         super();
         this.prefix = prefix;
     }
@@ -51,6 +61,23 @@ public abstract class ReplClientServerBasic implements SisoReceiverListener, Sis
             key = DEFAULT_BUFFER;
         }
         return key;
+    }
+
+    protected String escapeText( String s ) {
+        return escapeText( this.prefix, s ); 
+    }
+
+    static String escapeText( String prefix, String s ) {
+        Pattern ESCAPE = Pattern.compile( "^(" + Pattern.quote( prefix ) + ".*)$", Pattern.MULTILINE );
+        return ESCAPE.matcher( s ).replaceAll( prefix.replaceAll( "\\$", "\\\\\\$" ) +  APPEND_COMMAND+ "$1" );
+    }
+    
+    protected String createCommandString( String commandName, String parameter ) {
+        if ( parameter == null || parameter.trim().equals("") ) {
+            return this.prefix + commandName;
+        } else {
+            return this.prefix + commandName + " " + parameter;
+        }
     }
 
     /**
@@ -100,10 +127,10 @@ public abstract class ReplClientServerBasic implements SisoReceiverListener, Sis
         this.buffer.setLength(0);
     }
     public String getCurrentBuffer() {
-        return ReplClientServerBasic.this.buffer.toString();
+        return ReplClientServer.this.buffer.toString();
     }
     public void appendCurrentBuffer( String s ) {
-        ReplClientServerBasic.this.buffer.append( s ).append("\n");
+        ReplClientServer.this.buffer.append( s ).append("\n");
     }
 
     public static String doubleQuote( String s ) {
@@ -112,39 +139,6 @@ public abstract class ReplClientServerBasic implements SisoReceiverListener, Sis
     private static Pattern ESCAPE_DOUBLE_QUOTATIONS = Pattern.compile( "\"" );
     public static String escapeDoubleQuotation( String s ) {
         return ESCAPE_DOUBLE_QUOTATIONS.matcher(s).replaceAll( "\\\\\"" );
-    }
-    public void hello(SisoReceiver receiver) {
-        StringBuilder message = new StringBuilder();
-
-        message.append( String.format(
-            "; ======================================\n" + 
-            "; ======= LAMU-REPL PREPROCESSOR =======\n" +
-            "; ======================================\n" +
-            ";" ) + "\n" );
-
-        message.append( String.format( 
-            "; Now Lamu-REPL Preprocessor is ready.\n" +
-            "; For further information, type %s\n" +
-            ";", prefix + "help" ) + "\n" );
-
-        message.append( String.format( 
-            "; # About Prefix #\n" +
-            "; Please note that all commands need these leading characters.\n" +
-            "; The current leading characters are: '%s' (without the quote characters.)\n" +
-            "; You can change the leading characters by '%s%s' command.\n" +
-            ";", prefix, prefix, "prefix" ) + "\n" );
-
-        message.append( String.format(
-            "; # About Execution on EOF #\n" +
-            "; Please note that when the processor detect EOF on the input stream, \n" +
-            "; it executes the data on the current buffer.\n" +
-            "; If this behavior is not desirable, execute '%s%s' before EOF is sent.\n"
-            , prefix , "clear" ));
-
-        // put prefix on every line.
-        String result = Pattern.compile( "^", Pattern.MULTILINE ).matcher( message.toString() ).replaceAll( prefix );
-
-        receiver.postMessage( SisoReceiver.createPrintMessage( result ));
     }
     
     static String sortJoin( String delimitor, Collection<String> collection ) {
@@ -158,27 +152,26 @@ public abstract class ReplClientServerBasic implements SisoReceiverListener, Sis
         return String.join( delimitor, list );
     }
     
-    String createMessage( String currentSession, String status, String messageType, String message ) {
-        String base = String.format( 
+    protected String createMessage( String currentSession, String status, String messageType, String message ) {
+        StringBuilder sb = new StringBuilder();
+        if ( currentSession != null ) {
+            sb.append( createCommandString( "session", currentSession ) ).append( "\n" );
+        }
+
+        sb.append( String.format( 
             "'((status . %s )\n"
                 + "  (message-type . %s)\n"
                 + "  (message . %s )))"
                 , escapeDoubleQuotation( status )
                 , escapeDoubleQuotation( messageType ) 
-                ,  message );
+                ,  message )).append("\n");
         
-        if ( currentSession != null ) {
-            return 
-                base + "\n" +
-                prefix + RESULT_MESSAGE + " " + currentSession;
-        } else {
-            return 
-                base + "\n" +
-                prefix + RESULT_MESSAGE;
-        }
+        sb.append( createCommandString( RESULT_MESSAGE , null ) ).append("\n");
+
+        return sb.toString(); 
     }
     
-    private final HashMap<String,SisoReceiverListener> commandMap = new HashMap<String, SisoReceiverListener>();
+    protected final HashMap<String,SisoReceiverListener> commandMap = new HashMap<String, SisoReceiverListener>();
     public void registerCommand( String commandName ,SisoReceiverListener listener ) {
         commandMap.put( commandName, listener );
     }
@@ -233,29 +226,6 @@ public abstract class ReplClientServerBasic implements SisoReceiverListener, Sis
                             fetchCurrentSession()
                             , "succeeded"
                             , "result", "#t" )));
-            }
-        });
-        registerCommand("hello", new SisoReceiverListener() {
-            @Override
-            public void process(SisoReceiver receiver, String s) {
-                receiver.postMessage( 
-                    SisoReceiver.createPrintMessage(
-                        createMessage( 
-                            fetchCurrentSession()
-                            , "succeeded"
-                            , "comment", "hello!" )));
-            }
-        });
-        registerCommand("hello!", new SisoReceiverListener() {
-            @Override
-            public void process(SisoReceiver receiver, String s) {
-                hello( receiver );
-                receiver.postMessage( 
-                    SisoReceiver.createPrintMessage(
-                        createMessage( 
-                            fetchCurrentSession()
-                            , "succeeded"
-                            , "comment", "hello!!!" )));
             }
         });
         registerCommand("session", new SisoReceiverListener() {
@@ -320,7 +290,15 @@ public abstract class ReplClientServerBasic implements SisoReceiverListener, Sis
                             , prefix )));
             }
         });
-        
+
+        registerCommand( "append", new SisoReceiverListener() {
+            @Override
+            public void process(SisoReceiver receiver, String s) {
+                s = s.trim();
+                appendCurrentBuffer( s );
+            }
+        });
+
         // ==============================================
         
         registerCommand( "echo", new SisoReceiverListener() {
@@ -471,5 +449,15 @@ public abstract class ReplClientServerBasic implements SisoReceiverListener, Sis
         } else {
             appendCurrentBuffer( s );
         }
+    }
+    public static void main2(String[] args) {
+        String s =
+            "hello\n" +
+                "hello\n" +
+                "f$o$o:hello\n" +
+                "hello\n" +
+                "hello\n" +
+        "";
+        System.out.println( escapeText( "f$o$o:", s ) );
     }
 }

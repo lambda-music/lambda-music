@@ -1,12 +1,14 @@
 package lamu.lib.scheme.repl;
 
+import java.util.regex.Pattern;
+
 import lamu.lib.scheme.EvaluatorReceiver;
 import lamu.lib.scheme.SchemeEngine;
 import lamu.lib.scheme.SchemeResult;
 import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.SisoReceiverListener;
 
-public class ReplServer extends ReplClientServerBasic {
+public class ReplServer extends ReplClientServer {
     protected final SchemeEngine schemeEngine;
     public ReplServer( String prefix, SchemeEngine schemeEngine ) {
         super( prefix );
@@ -15,6 +17,44 @@ public class ReplServer extends ReplClientServerBasic {
     public ReplServer( SchemeEngine schemeEngine ) {
         super();
         this.schemeEngine = schemeEngine;
+    }
+
+    public void hello( SisoReceiver receiver ) {
+        StringBuilder message = new StringBuilder();
+
+        message.append( String.format(
+            "; ======================================\n" + 
+            "; ======= LAMU-REPL PREPROCESSOR =======\n" +
+            "; ======================================\n" +
+            ";" ) + "\n" );
+
+        message.append( String.format( 
+            "; Now Lamu-REPL Preprocessor is ready.\n" +
+            "; For further information, type %s\n" +
+            ";", prefix + "help" ) + "\n" );
+
+        message.append( String.format( 
+            "; # About Prefix #\n" +
+            "; Please note that all commands need these leading characters.\n" +
+            "; The current leading characters are: '%s' (without the quote characters.)\n" +
+            "; You can change the leading characters by '%s%s' command.\n" +
+            ";", prefix, prefix, "prefix" ) + "\n" );
+
+        message.append( String.format(
+            "; # About Execution on EOF #\n" +
+            "; Please note that when the processor detect EOF on the input stream, \n" +
+            "; it executes the data on the current buffer.\n" +
+            "; If this behavior is not desirable, execute '%s%s' before EOF is sent.\n"
+            , prefix , "clear" ));
+
+        // put prefix on every line.
+        String result = Pattern.compile( "^", Pattern.MULTILINE ).matcher( message.toString() ).replaceAll( prefix );
+
+        receiver.postMessage( SisoReceiver.createPrintMessage( result ));
+    }
+
+    @Override
+    public void notifyParent(SisoReceiver receiver) {
     }
 
     @Override
@@ -26,6 +66,30 @@ public class ReplServer extends ReplClientServerBasic {
     }
     
     {
+        registerCommand("hello", new SisoReceiverListener() {
+            @Override
+            public void process(SisoReceiver receiver, String s) {
+                receiver.postMessage( 
+                    SisoReceiver.createPrintMessage(
+                        createMessage( 
+                            fetchCurrentSession()
+                            , "succeeded"
+                            , "comment", "hello!" )));
+            }
+        });
+        registerCommand("hello!", new SisoReceiverListener() {
+            @Override
+            public void process(SisoReceiver receiver, String s) {
+                hello( receiver );
+                receiver.postMessage( 
+                    SisoReceiver.createPrintMessage(
+                        createMessage( 
+                            fetchCurrentSession()
+                            , "succeeded"
+                            , "comment", "hello!!!" )));
+            }
+        });
+
         registerCommand( "exec", new SisoReceiverListener() {
             @Override
             public void process( SisoReceiver receiver, String s ) {
@@ -35,11 +99,13 @@ public class ReplServer extends ReplClientServerBasic {
                 String script = getCurrentBuffer().trim();
                 clearCurrentBuffer();
 
+                String currentSession = fetchCurrentSession();
+                
                 if ( "".equals( script )) {
                     receiver.postMessage( 
                         SisoReceiver.createPrintMessage(
                             createMessage( 
-                                fetchCurrentSession() , "succeeded", "empty", "'ignored-empty-script" )));
+                                currentSession , "succeeded", "empty", "'ignored-empty-script" )));
                     return;
                 }
                 
@@ -49,7 +115,7 @@ public class ReplServer extends ReplClientServerBasic {
                         receiver.postMessage( 
                             SisoReceiver.createPrintMessage(
                                 createMessage(
-                                    fetchCurrentSession() ,
+                                    currentSession ,
                                         schemeResult.isSucceeded() ? "succeeded" : "failed",
                                         "sexpr", schemeResult.isEmpty() ? "'()" : schemeResult.getValueAsString()
                                     )));
