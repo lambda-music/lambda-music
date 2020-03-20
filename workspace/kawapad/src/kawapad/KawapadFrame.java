@@ -359,7 +359,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
         Kawapad.registerSchemeInitializer( schemeEngine );
         schemeEngine.getSchemeEvaluator().newScheme();
         KawapadFrame kawapadFrame = new KawapadFrame( schemeEngine, true, "Scheme Scratch Pad" );
-        ApplicationVessel v = new ApplicationVessel();
+        ApplicationVessel v = new ApplicationVessel("KawapadVessel");
         v.add( kawapadFrame );
         kawapadFrame.setParentApplicationComponent( kawapadFrame );
         v.requestInit();

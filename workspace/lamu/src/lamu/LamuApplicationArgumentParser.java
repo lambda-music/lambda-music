@@ -16,7 +16,6 @@ import lamu.lib.app.args.ArgumentParserDefault;
 import lamu.lib.app.args.ArgumentParserElement;
 import lamu.lib.app.args.ArgumentParserElementFactory;
 import lamu.lib.app.args.ArgumentParserStackKey;
-import lamu.lib.app.process.JavaProcess;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.Evaluator;
 import lamu.lib.scheme.RemoteEvaluator;
@@ -28,6 +27,8 @@ import lamu.lib.scheme.repl.SimpleReplService;
 import lamu.lib.scheme.socket.SchemeHttp;
 import lamu.lib.scheme.socket.SchemeHttp.UserAuthentication;
 import lamu.lib.stream.SisoReceiver;
+import lamu.lib.stream.StandardStream;
+import lamu.lib.stream.StreamableApplicationVessel;
 import pulsar.Pulsar;
 import pulsar.PulsarFrame;
 
@@ -52,7 +53,6 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         getValueStack( RUNNABLE );
     }
 
-    static final ArgumentParserStackKey<Object> GLOBAL_STACK = new ArgumentParserStackKey<>();
     static final ArgumentParserStackKey<SchemeEngine> SCHEME_ENGINE = new ArgumentParserStackKey<>();
     static final ArgumentParserStackKey<Pulsar> PULSAR = new ArgumentParserStackKey<>();
     static final ArgumentParserStackKey<Kawapad> KAWAPAD = new ArgumentParserStackKey<>();
@@ -433,7 +433,6 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
             };
         }
     }
-
     static final class SchemeArgumentParserElementFactory implements ArgumentParserElementFactory {
         static final String DEFAULT_REMOTE_URL = "http://localhost:";
         @Override
@@ -447,8 +446,8 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 Evaluator createRemoteHttp( String url ) {
                     return new RemoteEvaluator( url );
                 }
-                Evaluator createRemoteStdio( JavaProcess process ) {
-                    return new StdioEvaluator( process );
+                Evaluator createRemoteStdio( StandardStream stream ) {
+                    return new StdioEvaluator( stream );
                 }
                 
                 List<Evaluator> evaluatorList = new ArrayList<>();
@@ -467,7 +466,8 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                         } else if ( "--remote-http".equals( a.getKey() ) ) {
                             evaluatorList.add( createRemoteHttp( a.getValue() ) );
                         } else if ( "--remote-stdio".equals( a.getKey() ) ) {
-                            evaluatorList.add( createRemoteStdio( (JavaProcess)parser.getValueStack( GLOBAL_STACK ).peek() ) );
+                            evaluatorList.add( createRemoteStdio( 
+                                StreamableApplicationVessel.vessel2stream( parser.getValueStack( VESSELS ).peek() )) );
                         } else {
                             throw new RuntimeException( "unknown argument " + s );
                         }

@@ -2,15 +2,15 @@ package lamu;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 
-import lamu.lib.app.ApplicationComponent;
+import lamu.lib.app.ApplicationVessel;
 import lamu.lib.log.Logger;
 
 abstract class LamuCommand {
@@ -20,22 +20,24 @@ abstract class LamuCommand {
     static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }
 
     abstract boolean match(   List<String> arguments );
-    abstract void    execute( Deque<Object> globalValueStack, List<LamuCommand> availableCommands, List<ApplicationComponent> vessels, List<String> arguments, boolean recursiveCall);
+    abstract void    execute( Collection<LamuCommand> availableCommands, Deque<ApplicationVessel> vessels, List<String> arguments, boolean recursiveCall);
 
     public static void parseSubargs( 
-            Deque<Object> globalValueStack, 
-            List<LamuCommand> availableCommands, List<ApplicationComponent> vessels, List<String> args, boolean isRecursiveCall )  
+        Collection<LamuCommand> availableCommands, 
+        Deque<ApplicationVessel> vessels, 
+        List<String> args, boolean isRecursiveCall )  
     {
-        boolean done = false;
+        LamuCommand command = null;
         for (LamuCommand c : availableCommands ) {
             if ( c.match( args ) ) {
-                c.execute( globalValueStack, availableCommands, vessels, args, isRecursiveCall );
-                done = true;
+                command = c;
                 break;
             }
         }
 
-        if (!done) {
+        if ( command != null ) {
+            command.execute( availableCommands, vessels, args, isRecursiveCall );
+        } else {
             // This should not happen because default command always matches.
             throw new Error("unknown command");
         }
@@ -44,9 +46,10 @@ abstract class LamuCommand {
     static final String TRIGGER_FOR_ADVANCED_COMMAND_MODE = "do";
     static String DEFAULT_COMMAND_NAME = "default";
 
-    public static List<ApplicationComponent> parseArgs(
-            List<LamuCommand> availableCommands, 
-            String[] in_args ) throws IOException
+    public static void parseArgs(
+        Collection<LamuCommand> availableCommands, 
+        Deque<ApplicationVessel> vessels,
+        String[] in_args ) throws IOException
     {
         // (Mon, 09 Mar 2020 23:39:18 +0900) 
         // If the first element is not TRIGGER_FOR_ADVANCED_COMMAND_MODE,
@@ -63,13 +66,10 @@ abstract class LamuCommand {
         List<List<String>> arrayOfSubargs = 
                 LamuBeginEndSplitter.splitBeginEnd( args, "begin",  "end" );
 
-        List<ApplicationComponent> vessels = new ArrayList<>();
-        Deque<Object> globalValueStack = new ArrayDeque<>();
         for (Iterator<List<String>> i = arrayOfSubargs.iterator(); i.hasNext();) {
             List<String> subargs = i.next();
             logInfo( subargs.toString() );
-            parseSubargs(globalValueStack, availableCommands, vessels, subargs, false);
+            parseSubargs( availableCommands, vessels, subargs, false );
         }
-        return vessels;
     }
 }

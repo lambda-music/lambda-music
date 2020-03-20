@@ -1,9 +1,10 @@
 package lamu;
 
+import java.util.Collection;
 import java.util.Deque;
 import java.util.List;
 
-import lamu.lib.app.ApplicationComponent;
+import lamu.lib.app.ApplicationVessel;
 import lamu.lib.app.process.JavaProcess;
 
 class LamuCommandFork extends LamuCommand {
@@ -18,11 +19,12 @@ class LamuCommandFork extends LamuCommand {
     }
 
     @Override
-    void execute(Deque<Object> globalValueStack, List<LamuCommand> availableCommands, List<ApplicationComponent> vessels, List<String> arguments, boolean recursiveCall) {
+    void execute( Collection<LamuCommand> availableCommands, Deque<ApplicationVessel> vessels, List<String> arguments, boolean recursiveCall) {
         List<String> subArguments = arguments.subList(1, arguments.size());
         // fork
         JavaProcess javaProcess = forkPulsar(subArguments);
-        globalValueStack.push( javaProcess );
-        vessels.add( javaProcess );
+        ApplicationVessel vessel = new ApplicationVessel( "ForkedVessel" );
+        vessel.add( javaProcess );
+        vessels.push( vessel );
     }
 }

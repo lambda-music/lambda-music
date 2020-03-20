@@ -9,6 +9,16 @@ import lamu.lib.thread.ThreadInitializerCollection;
 import lamu.lib.thread.ThreadInitializerCollectionContainer;
 
 public class ApplicationVessel implements ApplicationComponent, ThreadInitializerCollectionContainer {
+    final String name;
+    public ApplicationVessel(String name) {
+        super();
+        this.name = name;
+    }
+    @Override
+    public String toString() {
+        return "[" + getClass().getSimpleName() +":"+  this.name + "]";
+    }
+
     private List<ApplicationComponent> components = new ArrayList<>();
     private ApplicationComponent parent;
     @Override

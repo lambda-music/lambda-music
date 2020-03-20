@@ -117,14 +117,21 @@ public class JavaProcess implements ApplicationComponent, StandardStream {
     private InputStream errorStream=null;
     @Override
     public InputStream getErrorStream() {
+        if ( errorStream == null )
+            throw new IllegalStateException();
         return errorStream;
     }
     @Override
     public OutputStream getOutputStream() {
+        if ( outputStream == null )
+            throw new IllegalStateException();
+        
         return outputStream;
     }
     @Override
     public InputStream getInputStream() {
+        if ( inputStream == null )
+            throw new IllegalStateException();
         return inputStream;
     }
     public Process getProcess() {

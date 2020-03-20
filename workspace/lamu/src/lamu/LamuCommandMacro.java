@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
@@ -15,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import lamu.lib.app.ApplicationComponent;
+import lamu.lib.app.ApplicationVessel;
 
 class LamuCommandMacro extends LamuCommand {
     static LamuCommandMacro create(String value) {
@@ -73,7 +74,7 @@ class LamuCommandMacro extends LamuCommand {
     }
 
     @Override
-    void execute(Deque<Object> globalValueStack, List<LamuCommand> availableCommands, List<ApplicationComponent> vessels, List<String> arguments, boolean recursiveCall) {
+    void execute(Collection<LamuCommand> availableCommands, Deque<ApplicationVessel> vessels, List<String> arguments, boolean recursiveCall) {
         if (recursiveCall) {
             throw new Error( "a malformed default value in the default argument configuration." );
         }
@@ -96,7 +97,7 @@ class LamuCommandMacro extends LamuCommand {
             ) );
 
         // Be careful : this is a recursive calling. 
-        LamuCommand.parseSubargs( globalValueStack, availableCommands, vessels, expandedArgs, true );
+        LamuCommand.parseSubargs( availableCommands, vessels, expandedArgs, true );
     }
     
     static void replaceProc( List<String> result, String tokenToAdd, String replaceFrom, List<String> replaceTo ) {

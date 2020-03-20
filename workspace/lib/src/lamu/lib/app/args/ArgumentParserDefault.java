@@ -29,6 +29,7 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
     public static final ArgumentParserStackKey<Runnable> RUNNABLE  = new ArgumentParserStackKey<>();
+    public static final ArgumentParserStackKey<ApplicationVessel> VESSELS = new ArgumentParserStackKey<>();
 
     static final class DefaultArgumentParserElementFactory implements ArgumentParserElementFactory {
         @Override
@@ -84,10 +85,6 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
     }
     
 
-    private ArrayList<ApplicationVessel> applicationVesselList = new ArrayList<>();
-    public List<ApplicationVessel> getApplicationVesselList() {
-        return Collections.unmodifiableList( applicationVesselList );
-    }
     private ArrayList<Deque> stackList = new ArrayList<>();
     private Map<ArgumentParserStackKey,ArrayDeque> stackMap = new LinkedHashMap<>();
     @Override
@@ -177,13 +174,23 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
             }
         }
         
-        ApplicationVessel vessel = new ApplicationVessel();
-        
+        ApplicationVessel vessel = new ApplicationVessel( "ExecVessel" );
         vessel.getThreadInitializerCollection().addAllThreadInitializer( threadInitializerList );
-        for ( Deque stack : stackList ) {
-            for ( Object o : stack ) {
-                if ( o instanceof ApplicationComponent ) {
-                    vessel.add((ApplicationComponent) o );
+        
+        
+        
+        {
+            ArrayList<Deque> stackList2 = new ArrayList<>( stackList );
+            
+            // Collect all application compnents.
+            // Though, the vessels are not necessary here; therefore exclude it from the list.
+            stackList2.remove( this.getValueStack( VESSELS ) );
+            
+            for ( Deque stack : stackList2 ) {
+                for ( Object o : stack ) {
+                    if ( o instanceof ApplicationComponent ) {
+                        vessel.add((ApplicationComponent) o );
+                    }
                 }
             }
         }
@@ -201,7 +208,7 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
             vessel.add( new RunnableInitializer( list ) );
         }
  
-        applicationVesselList.add( vessel );
+        this.getValueStack( VESSELS ).push( vessel );
 
 //        vessel.getThreadInitializerCollection().initialize();
 //        
