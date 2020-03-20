@@ -11,7 +11,6 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 
 import lamu.lib.log.Logger;
-import lamu.lib.scheme.SchemeEngine;
 import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.SisoReceiverListener;
 import lamu.lib.stream.SisoReceiverMessage;
@@ -27,19 +26,16 @@ public class ReplClient extends ReplClientServer {
     protected static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }
     protected static void logWarn(Throwable e) { LOGGER.log(Level.WARNING, "warning", e); }
 
-    protected final SchemeEngine schemeEngine;
     protected SisoReceiver receiver;
-    public ReplClient( String prefix, SchemeEngine schemeEngine ) {
+    public ReplClient( String prefix ) {
         super( prefix );
-        this.schemeEngine = schemeEngine;
     }
-    public ReplClient( SchemeEngine schemeEngine ) {
+    public ReplClient() {
         super();
-        this.schemeEngine = schemeEngine;
     }
 
     @Override
-    public void start(SisoReceiver receiver ) {
+    public void start( SisoReceiver receiver ) {
     }
     @Override
     public void end(SisoReceiver receiver) {
@@ -71,6 +67,10 @@ public class ReplClient extends ReplClientServer {
         
         receiver.postMessage( message );
     }
+    public void reset() {
+        // TODO
+    }
+    
     public String createSession() {
         return String.format( "session-%08x", random.nextInt() );
     }
@@ -105,7 +105,7 @@ public class ReplClient extends ReplClientServer {
     
 
     @Override
-    protected void onTerminate( SisoReceiver receiver, String s ) {
+    protected void onReplTerminate( SisoReceiver receiver, String s ) {
         // Execute the current buffer when the stream is terminated.
         callCommand( "exec" , receiver, "" );
         callCommand( "quit" , receiver, "" );
@@ -114,9 +114,7 @@ public class ReplClient extends ReplClientServer {
 
     
     public static void main(String[] args) {
-        SchemeEngine schemeEngine = new SchemeEngine();
-        schemeEngine.requestInit();
-        ReplClient c = new ReplClient( ";", schemeEngine );
+        ReplClient c = new ReplClient( ";" );
         new SisoReceiver( null, System.in, System.out, c ).requestInit();
         {
             JFrame frame = new JFrame();

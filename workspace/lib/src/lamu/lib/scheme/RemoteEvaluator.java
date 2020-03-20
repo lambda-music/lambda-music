@@ -59,7 +59,7 @@ public class RemoteEvaluator implements Evaluator {
     {
         String schemeScriptString;
         try {
-            schemeScriptString = readAll( schemeScript );
+            schemeScriptString = readAllSchemeScript( schemeScript );
         } catch (IOException e1) {
             throw new RuntimeException(e1);
         }
@@ -82,7 +82,7 @@ public class RemoteEvaluator implements Evaluator {
         }
     }
     
-    private static String readAll(Reader schemeScript) throws IOException {
+    private static String readAllSchemeScript( Reader schemeScript ) throws IOException {
         try ( StringWriter w = new StringWriter();    
               Reader r = schemeScript ) 
         {

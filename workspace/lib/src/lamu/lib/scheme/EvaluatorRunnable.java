@@ -11,13 +11,13 @@ class EvaluatorRunnable implements Runnable {
     final File currentFile;
     final String currentURI;
     EvaluatorRunnable(
-            Runnable threadInitializer,
-            String schemeScript,
-            Evaluator evaluator, 
-            EvaluatorReceiver receiver, 
-            File currentDirectory, 
-            File currentFile,
-            String currentURI )
+        Runnable threadInitializer,
+        String schemeScript,
+        Evaluator evaluator, 
+        EvaluatorReceiver receiver, 
+        File currentDirectory, 
+        File currentFile,
+        String currentURI )
     {
         super();
         this.threadInitializer = threadInitializer;
@@ -30,12 +30,16 @@ class EvaluatorRunnable implements Runnable {
     }
     @Override
     public void run() {
-        Evaluator.logInfo( schemeScript );
-        receiver.receive( this.evaluator.evaluate( 
-            threadInitializer, 
-            schemeScript, 
-            currentDirectory, 
-            currentFile, 
-            currentURI ) );
+        try {
+            Evaluator.logInfo( schemeScript );
+            receiver.receive( this.evaluator.evaluate( 
+                threadInitializer, 
+                schemeScript, 
+                currentDirectory, 
+                currentFile, 
+                currentURI ) );
+        } catch ( Throwable t ) {
+            Evaluator.logError("error:" + this.getClass(), t);
+        }
     }
 }

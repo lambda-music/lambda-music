@@ -48,6 +48,10 @@ public final class SchemeResult {
         }
     }
 
+    public static SchemeResult createError( String message ) {
+        return SchemeResult.create( false, null, doubleQuote( message ) , null /* THIS IS BOGUS */ );
+    }
+
     public static SchemeResult createError( Throwable e ) {
         StringWriter sw = new StringWriter();
         PrintWriter w = new PrintWriter( sw );

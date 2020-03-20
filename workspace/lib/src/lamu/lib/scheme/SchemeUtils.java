@@ -583,23 +583,38 @@ public class SchemeUtils {
         return strings;
     }
     
-    public static Object assq( String key, Object alist ) throws Throwable {
-        return assq( gnu.mapping.Symbol.valueOf(key), alist );
+    public static Object assq( String key, Object alist ) {
+        try {
+            return assq( gnu.mapping.Symbol.valueOf(key), alist );
+        } catch (Throwable e) {
+            throw new Error("internal error", e);
+        }
     }
-    public static Object assq( Object key, Object alist ) throws Throwable {
-        return assq.apply2( key, alist );
+    public static Object assq( Object key, Object alist ) {
+        try {
+            return assq.apply2( key, alist );
+        } catch (Throwable e) {
+            throw new Error("internal error", e);
+        }
     }
-    public static Object car( Object object ) throws Throwable {
-        return car.apply1(object);
+    public static Object car( Object object ) {
+        try {
+            return car.apply1(object);
+        } catch (Throwable e) {
+            throw new Error("internal error", e);
+        }
     }
-    public static Object cdr( Object object ) throws Throwable {
-        return cdr.apply1(object);
+    public static Object cdr( Object object ) {
+        try {
+            return cdr.apply1(object);
+        } catch (Throwable e) {
+            throw new Error("internal error", e);
+        }
     }
-
     
 
     // ADDED (Tue, 17 Mar 2020 23:58:15 +0900) >>>
-    public static Object string2lisp( String input ) throws IOException {
+    public static Object string2scheme( String input ) throws IOException {
         Object result;
         try (
             gnu.kawa.io.CharArrayInPort port = new gnu.kawa.io.CharArrayInPort( input ); 
@@ -610,13 +625,13 @@ public class SchemeUtils {
         }
         return result;
     }
-    public static String lisp2string( Object schemeValue ) {
+    public static String scheme2string( Object schemeValue ) {
         return gnu.kawa.functions.DisplayFormat.schemeWriteFormat.format( schemeValue );
     }
     static void test_lispt2string() throws Throwable {
-        Object schemeValue = SchemeUtils.string2lisp( "(( a . hello )\n( b . foo )\n;hello world\n( c . 4 )(d . 5)( e . \"world\") )\n" );
+        Object schemeValue = SchemeUtils.string2scheme( "(( a . hello )\n( b . foo )\n;hello world\n( c . 4 )(d . 5)( e . \"world\") )\n" );
         System.out.println( SchemeUtils.cdr( SchemeUtils.assq( "b", schemeValue ) ) );
-        String stringValue = SchemeUtils.lisp2string( schemeValue );
+        String stringValue = SchemeUtils.scheme2string( schemeValue );
         System.out.println( stringValue );; 
         System.out.println( stringValue.getClass() );; 
     }

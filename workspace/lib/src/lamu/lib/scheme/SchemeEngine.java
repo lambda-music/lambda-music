@@ -108,10 +108,12 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
     @Override
     public void processInit() {
         this.getSchemeEvaluator().processInit();
+        this.getEvaluatorManager().initialize();
     }
     @Override
     public void processQuit() {
         this.getSchemeEvaluator().processQuit();
+        this.getEvaluatorManager().finalize();
     }
     
     public static Runnable createEvaluationRunner(

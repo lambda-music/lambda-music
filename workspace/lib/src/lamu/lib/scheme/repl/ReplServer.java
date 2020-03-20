@@ -144,7 +144,7 @@ public class ReplServer extends ReplClientServer {
     }
 
     @Override
-    protected void onTerminate( SisoReceiver receiver, String s ) {
+    protected void onReplTerminate( SisoReceiver receiver, String s ) {
         // Execute the current buffer when the stream is terminated.
         callCommand( "exec" , receiver, "" );
         callCommand( "quit" , receiver, "" );

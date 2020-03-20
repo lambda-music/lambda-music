@@ -16,9 +16,12 @@ import lamu.lib.app.args.ArgumentParserDefault;
 import lamu.lib.app.args.ArgumentParserElement;
 import lamu.lib.app.args.ArgumentParserElementFactory;
 import lamu.lib.app.args.ArgumentParserStackKey;
+import lamu.lib.app.process.JavaProcess;
 import lamu.lib.log.Logger;
-import lamu.lib.scheme.EvaluatorManager;
+import lamu.lib.scheme.Evaluator;
+import lamu.lib.scheme.RemoteEvaluator;
 import lamu.lib.scheme.SchemeEngine;
+import lamu.lib.scheme.StdioEvaluator;
 import lamu.lib.scheme.doc.DescriptiveDocumentCategory;
 import lamu.lib.scheme.repl.ReplServer;
 import lamu.lib.scheme.repl.SimpleReplService;
@@ -440,18 +443,31 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 {
                     LamuApplicationLibrary.initializeSchemeEngine( schemeEngine );
                 }
-
-                List<String> urlList = new ArrayList<>();
+                
+                Evaluator createRemoteHttp( String url ) {
+                    return new RemoteEvaluator( url );
+                }
+                Evaluator createRemoteStdio( JavaProcess process ) {
+                    return new StdioEvaluator( process );
+                }
+                
+                List<Evaluator> evaluatorList = new ArrayList<>();
                 @Override
                 public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
                     if ( s.startsWith( "--"  ) ) {
                         LamuNamedArgument a = new LamuNamedArgument( s );
                         if ( false ) {
                             //
-                        } else if ( "server-url".equals( a.getKey() ) ) {
-                            urlList.add( a.getValue() );
-                        } else if ( "server-port".equals( a.getKey() ) ) {
-                            urlList.add( DEFAULT_REMOTE_URL + a.getValue() );
+                        } else if ( "--server-url".equals( a.getKey() ) ) {
+                            // deprecated
+                            evaluatorList.add( createRemoteHttp( a.getValue() ) );
+                        } else if ( "--server-port".equals( a.getKey() ) ) {
+                            // deprecated
+                            evaluatorList.add( createRemoteHttp( DEFAULT_REMOTE_URL + a.getValue() ) );
+                        } else if ( "--remote-http".equals( a.getKey() ) ) {
+                            evaluatorList.add( createRemoteHttp( a.getValue() ) );
+                        } else if ( "--remote-stdio".equals( a.getKey() ) ) {
+                            evaluatorList.add( createRemoteStdio( (JavaProcess)parser.getValueStack( GLOBAL_STACK ).peek() ) );
                         } else {
                             throw new RuntimeException( "unknown argument " + s );
                         }
@@ -462,9 +478,8 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 }
                 @Override
                 public void notifyEnd(ArgumentParser parser) {
-                    EvaluatorManager.initEvaluatorManager( 
-                            schemeEngine.getEvaluatorManager(), 
-                            this.urlList );
+                     //  lamu.lib.scheme.EvaluatorManager.initEvaluatorManager()
+                    schemeEngine.getEvaluatorManager().getEvaluatorList().addAll( this.evaluatorList );
 
                     //                        schemeSecretary.setDirectMeeting( directMeeting );
                     parser.getValueStack( SCHEME_ENGINE ).push( this.schemeEngine );

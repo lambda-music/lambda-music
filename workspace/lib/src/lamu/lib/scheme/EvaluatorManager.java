@@ -2,16 +2,25 @@ package lamu.lib.scheme;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 
+import lamu.lib.log.Logger;
+
 
 public class EvaluatorManager {
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+    static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
+    static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
+
     Evaluator primaryEvaluator;
     public Evaluator getPrimaryEvaluator() {
         return primaryEvaluator;
@@ -85,5 +94,21 @@ public class EvaluatorManager {
             list.add( new RemoteEvaluator( url ) );
         }
         manager.getEvaluatorList().addAll( list );
+    }
+
+    public void initialize() {
+        logInfo( "EvaluatorManager.initialize()" );
+        for ( Evaluator e :  this.evaluatorList ) {
+            if ( e instanceof ServicingEvaluator ) {
+                ((ServicingEvaluator)e).initializeEvaluator();
+            }
+        }
+    }
+    public void finalize() {
+        for ( Evaluator e :  this.evaluatorList ) {
+            if ( e instanceof ServicingEvaluator ) {
+                ((ServicingEvaluator)e).finalizeEvaluator();
+            }
+        }
     }
 }

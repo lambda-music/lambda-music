@@ -180,6 +180,7 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Thre
 
     @Override
     public void processInit() {
+        getListener().start(this);
         inThread.start();
         outThread.start();
     }
@@ -222,6 +223,12 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Thre
                     e.printStackTrace();
                 }
                 System.err.println("closed");
+                
+                try {
+                    getListener().end( SisoReceiver.this );
+                } catch ( Throwable e ) {
+                    e.printStackTrace();
+                }
             }
         };
         Thread t = new Thread( r , "clean-up" );

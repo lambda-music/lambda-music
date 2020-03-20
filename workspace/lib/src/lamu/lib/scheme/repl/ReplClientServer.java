@@ -412,13 +412,13 @@ public abstract class ReplClientServer implements SisoReceiverListener, SisoRece
         });
     }
     
-    protected abstract void onTerminate(SisoReceiver receiver, String paramString);
+    protected abstract void onReplTerminate(SisoReceiver receiver, String paramString);
     
 
     @Override
     public void process( SisoReceiver receiver, String s ) {
         if ( s == null ) {
-            onTerminate( receiver, s );
+            onReplTerminate( receiver, s );
             return;
         } else if ( s.startsWith( prefix )) {
             String commandName = s.substring( prefix.length() ).trim();

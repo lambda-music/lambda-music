@@ -10,15 +10,17 @@ import java.util.Optional;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.logging.SimpleFormatter;
 
 import javax.swing.SwingUtilities;
 
-public class LogFormatter extends SimpleFormatter {
+public class LogFormatter extends Formatter {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }
     static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }
     static void logWarn (String msg             ) { LOGGER.log(Level.WARNING,  msg      ); }
+    
+    public LogFormatter() {
+    }
     
     static Optional<Thread> getThread(long threadId) {
         return Thread.getAllStackTraces().keySet().stream()
