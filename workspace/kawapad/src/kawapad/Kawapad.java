@@ -2766,24 +2766,24 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
 
     ////////////////////////////////////////////////////////////////////////////
     public static Font loadFont(String filePath, float fontSize) throws FontFormatException, IOException {
-		Font font = Font.createFont(Font.TRUETYPE_FONT, new File( filePath )).deriveFont( fontSize );
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		ge.registerFont(font);
-		return font;
-	}
+        Font font = Font.createFont(Font.TRUETYPE_FONT, new File( filePath )).deriveFont( fontSize );
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        ge.registerFont(font);
+        return font;
+    }
     public static void setUIFont( Font f ){
-    	setUIFont( new javax.swing.plaf.FontUIResource( f ) );
+        setUIFont( new javax.swing.plaf.FontUIResource( f ) );
     }
 
     // https://stackoverflow.com/questions/7434845/setting-the-default-font-of-swing-program
     public static void setUIFont( javax.swing.plaf.FontUIResource f ){
-    	java.util.Enumeration keys = javax.swing.UIManager.getDefaults().keys();
-    	while (keys.hasMoreElements()) {
-    		Object key = keys.nextElement();
-    		Object value = javax.swing.UIManager.get(key);
-    		if (value instanceof javax.swing.plaf.FontUIResource)
-    			javax.swing.UIManager.put (key, f);
-    	}
+        java.util.Enumeration keys = javax.swing.UIManager.getDefaults().keys();
+        while (keys.hasMoreElements()) {
+            Object key = keys.nextElement();
+            Object value = javax.swing.UIManager.get(key);
+            if (value instanceof javax.swing.plaf.FontUIResource)
+                javax.swing.UIManager.put (key, f);
+        }
     } 
 
     ////////////////////////////////////////////////////////////////////////////

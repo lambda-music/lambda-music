@@ -26,7 +26,7 @@ class LamuCommandFork extends LamuCommand {
         state.streamables.push( javaProcess );
 
         // Create a vessel and put it to the vessel list.
-        ApplicationVessel vessel = new ForkedApplicationVessel( "ForkedVessel" );
+        ApplicationVessel vessel = new ApplicationVessel( "ForkedVessel" );
         vessel.add( javaProcess );
         state.vessels.push( vessel );
     }
