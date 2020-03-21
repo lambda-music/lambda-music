@@ -99,7 +99,7 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Thre
         }
         @Override
         public void process(SisoReceiver server, PrintStream out) {
-            out.println( message ); 
+            out.println( message );
         }
     }
 
@@ -152,6 +152,7 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Thre
                     try {
                         SisoReceiverMessage message = outputMessageQueue.take();
                         message.process( SisoReceiver.this, o );
+                        o.flush();
                     } catch ( InterruptedException e ) {
                         throw e;
                     } catch ( Throwable t ) {
@@ -180,7 +181,6 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Thre
 
     @Override
     public void processInit() {
-        getListener().start(this);
         inThread.start();
         outThread.start();
     }

@@ -1,6 +1,7 @@
 package lamu;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
@@ -26,6 +27,8 @@ import lamu.lib.scheme.repl.ReplServer;
 import lamu.lib.scheme.repl.SimpleReplService;
 import lamu.lib.scheme.socket.SchemeHttp;
 import lamu.lib.scheme.socket.SchemeHttp.UserAuthentication;
+import lamu.lib.stream.LoggingStreamable;
+import lamu.lib.stream.NullOutputStream;
 import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.Streamable;
 import pulsar.Pulsar;
@@ -474,7 +477,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 @Override
                 public void notifyEnd(ArgumentParser parser) {
                      //  lamu.lib.scheme.EvaluatorManager.initEvaluatorManager()
-                    schemeEngine.getEvaluatorManager().getEvaluatorList().addAll( this.evaluatorList );
+                    this.schemeEngine.getEvaluatorManager().getEvaluatorList().addAll( this.evaluatorList );
 
                     //                        schemeSecretary.setDirectMeeting( directMeeting );
                     parser.getValueStack( SCHEME ).push( this.schemeEngine );
@@ -519,6 +522,57 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
             }
         }
     }
+    
+    static final class LoggerArgumentParserElementFactory implements ArgumentParserElementFactory {
+        @Override
+        public ArgumentParserElement create() {
+            return new ArgumentParserElement() {
+                private String outFile;
+                private String errFile;
+                private String inFile;
+                @Override
+                public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
+                    if ( s.startsWith( "--" ) ) {
+                        LamuNamedArgument narg = new LamuNamedArgument( s );
+                        switch ( narg.getKey() ) {
+                        case "out" :
+                            outFile = narg.getValue();
+                            break;
+                        case "err" :
+                            errFile = narg.getValue();
+                            break;
+                        case "in" :
+                            inFile = narg.getValue();
+                            break;
+                        default :
+                            throw new RuntimeException( MSG_UNKNOWN_PARAM_ERROR + narg.getKey() );
+                        }
+                    } else {
+                        throw new RuntimeException( MSG_UNKNOWN_PARAM_ERROR + s );
+                    }
+                    return this;
+                }
+                @Override
+                public void notifyEnd( ArgumentParser parser ) {
+                    if ( parser.getValueStack( STREAMABLES ).isEmpty() ) {
+                        throw new RuntimeException( MSG_NO_SCHEME_ERROR );
+                    }
+                    Streamable streamable = parser.getValueStack( STREAMABLES ).peek();
+                    
+                    try {
+                        parser.getValueStack( STREAMABLES ).push(
+                            new LoggingStreamable( streamable,
+                                ( inFile  == null ? new NullOutputStream() : new FileOutputStream( inFile  )),
+                                ( outFile == null ? new NullOutputStream() : new FileOutputStream( outFile )),
+                                ( errFile == null ? new NullOutputStream() : new FileOutputStream( errFile ))));
+                    } catch ( FileNotFoundException e ) {
+                        throw new Error(e);
+                    } 
+                }
+            };
+        }
+    }
+
 
     /**
      * Sets up the commands for the command-line parser. Please read the code of the 
@@ -543,6 +597,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         registerFactory( "simple-repl",      new SimpleReplArgumentParserElementFactory());
         registerFactory( "output-help",      new OutputReferenceArgumentParserElementFactory());
         registerFactory( "output-help-list", new AllAvailableReferenceArgumentParserElementFactory());
+        registerFactory( "logger",           new LoggerArgumentParserElementFactory());
     }
     {
         initializeParser();

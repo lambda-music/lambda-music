@@ -10,6 +10,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -58,16 +59,28 @@ public class JavaProcess implements ApplicationComponent, Streamable {
         ArrayList<String> fullArguments = new ArrayList<>();
         RuntimeMXBean r = ManagementFactory.getRuntimeMXBean();
         fullArguments.add( "java" );
-        fullArguments.addAll( r.getInputArguments() );
+        fullArguments.addAll( argFilter( r.getInputArguments()) );
         fullArguments.add("-classpath");
         fullArguments.add( r.getClassPath() );
         fullArguments.add( canonicalNameOfMainClass );
         fullArguments.addAll( arguments );
-        logInfo( fullArguments.toString() );
+        logInfo( String.join( " " , fullArguments ) );
         ProcessBuilder b = new ProcessBuilder( fullArguments );
-        b.inheritIO();
+//        b.inheritIO();
         
         return b.start();
+    }
+    private static Collection<? extends String> argFilter(List<String> args) {
+        ArrayList<String> result = new ArrayList<>();
+        
+        for ( String arg : args ) {
+            if ( arg.startsWith("-agentlib:jdwp=") ) {
+                continue;
+            }
+            result.add( arg );
+        }
+        
+        return result;
     }
     static void testMethod(String[] args) throws IOException, InterruptedException {
         if ( args.length == 0 ) {

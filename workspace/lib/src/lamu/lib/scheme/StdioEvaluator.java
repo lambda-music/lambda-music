@@ -16,6 +16,7 @@ import lamu.lib.log.Logger;
 import lamu.lib.scheme.repl.ReplClient;
 import lamu.lib.scheme.repl.ReplClient.ReplClientResultReceiver;
 import lamu.lib.stream.SisoReceiver;
+import lamu.lib.stream.StreamPump;
 import lamu.lib.stream.Streamable;
 
 public class StdioEvaluator implements ServicingEvaluator {
@@ -43,10 +44,12 @@ public class StdioEvaluator implements ServicingEvaluator {
         @Override
         public void receive( String scriptResult ) {
             this.scriptResult = scriptResult;
+            this.latch.countDown();
         }
     }
     static final SimpleSymbol SUCCEEDED = Symbol.valueOf("succeeded");
     static final SimpleSymbol FAILED = Symbol.valueOf("failed");
+    private StreamPump errorPump;
 
     @Override
     public SchemeResult evaluate( 
@@ -73,8 +76,8 @@ public class StdioEvaluator implements ServicingEvaluator {
         } catch (IOException e) {
             throw new RuntimeException( e );
         }
-        Object lispValueStatus = SchemeUtils.car( SchemeUtils.assq( "status" ,  lispValue ) );
-        Object lispValueMessage= SchemeUtils.car( SchemeUtils.assq( "message" , lispValue ) );
+        Object lispValueStatus = SchemeUtils.cdr( SchemeUtils.assq( "status" ,  lispValue ) );
+        Object lispValueMessage= SchemeUtils.cdr( SchemeUtils.assq( "message" , lispValue ) );
         if ( SUCCEEDED.equals( lispValueStatus ) ) {
             return SchemeResult.createSucceededByObject( lispValueMessage );
             
@@ -118,11 +121,14 @@ public class StdioEvaluator implements ServicingEvaluator {
         this.sisoReceiver = new SisoReceiver( null, this.in, this.out, this.replClient );
         this.sisoReceiver.requestInit();
 
-        
+        this.errorPump = new StreamPump( this.err );
+        this.errorPump.requestInit();
     }
+    
     @Override
     public void finalizeEvaluator() {
         this.sisoReceiver.requestQuit();
+        this.errorPump.requestQuit();
         try {
             this.in.close();
         } catch (IOException e) {

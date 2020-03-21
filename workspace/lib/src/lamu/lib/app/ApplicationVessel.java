@@ -42,6 +42,8 @@ public class ApplicationVessel implements ApplicationComponent, ThreadInitialize
     }
     public <T extends ApplicationComponent> void add( T c ) {
         c.setParentApplicationComponent( this );
+        if ( components.contains(c))
+            throw new IllegalArgumentException( "this container already has the specified element " + c );
         components.add(c);
     }
     public void remove( ApplicationComponent c ) {

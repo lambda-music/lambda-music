@@ -27,9 +27,9 @@ public class LogFormatter extends Formatter {
                 .filter(t -> t.getId() == threadId)
                 .findFirst();
     }
-    static int MAX_CLASS_NAME = 8;
+    static int MAX_CLASS_NAME = 32;
     //                      private final String format = LoggingSupport.getSimpleFormat();
-    private final String format = "%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS %4$4s:%7$-20s %3$-"+MAX_CLASS_NAME+"s || %5$s%6$s%n";
+    private final String format = "%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS[THREAD:%7$-20s|CLASS:%3$-"+MAX_CLASS_NAME+"s] [%4$4s] %5$s%6$s%n";
     private final Date dat = new Date();
     public synchronized String format(LogRecord record) {
         dat.setTime(record.getMillis());

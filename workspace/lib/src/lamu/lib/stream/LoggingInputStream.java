@@ -8,87 +8,89 @@ import java.util.logging.Level;
 
 import lamu.lib.log.Logger;
 
-public class LoggingInputStream extends InputStream {
+public abstract class LoggingInputStream extends InputStream {
     protected static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
     protected static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     protected static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
     protected static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }
     protected static void logWarn(Throwable e) { LOGGER.log(Level.WARNING, "warning", e); }
-    final InputStream in;
-    final OutputStream log;
-    public LoggingInputStream(InputStream in, OutputStream log) {
-        super();
-        this.in = in;
-        this.log = log;
-    }
+    public abstract InputStream in();
+    public abstract OutputStream log();
+
     public int read() throws IOException {
-        int b = in.read();
+        int b = in().read();
         try {
-            log.write(b);
+            log().write(b);
+            log().flush();
         } catch ( IOException e ) {
             logError( "failed logging",e);
         }
         return b;
     }
     public int read(byte[] b) throws IOException {
-        int s = in.read(b);
+        int s = in().read(b);
         try {
-            log.write(b,0,s);
+            log().write(b,0,s);
+            log().flush();
         } catch ( IOException e ) {
             logError( "failed logging",e);
         }
         return s;
     }
     public int read(byte[] b, int off, int len) throws IOException {
-        int s = in.read(b, off, len);
+        int s = in().read(b, off, len);
         try {
-            log.write(b,off,s);
+            log().write(b,off,s);
+            log().flush();
         } catch ( IOException e ) {
             logError( "failed logging",e);
         }
         return s;
     }
     public long skip(long n) throws IOException {
-        long s = in.skip(n);
+        long s = in().skip(n);
         try {
-            log.write(new byte[(int)s],0,(int) s);
+            log().write(new byte[(int)s],0,(int) s);
+            log().flush();
         } catch ( IOException e ) {
             logError( "failed logging",e);
         }
         return s;
     }
     public int available() throws IOException {
-        return in.available();
+        return in().available();
     }
     public void close() throws IOException {
         try {
-            in.close();
+            in().close();
         } finally {
             try {
-                log.close();
+                log().close();
             } catch ( IOException e ) {
                 logError( "failed logging",e);
             }
         }
     }
     public void mark(int readlimit) {
-        in.mark(readlimit);
+        in().mark(readlimit);
         try {
-            log.write( "\n(marked)\n".getBytes() );
+            log().write( "\n(marked)\n".getBytes() );
+            log().flush();
         } catch ( IOException e ) {
             logError( "failed logging",e);
         }
     }
     public void reset() throws IOException {
-        in.reset();
+        in().reset();
         try {
-            log.write( "\n(reset)\n".getBytes() );
+            log().write( "\n(reset)\n".getBytes() );
+            log().flush();
         } catch ( IOException e ) {
             logError( "failed logging",e);
         }
     }
     public boolean markSupported() {
-        return in.markSupported();
+        return in().markSupported();
     }
     
 }

@@ -159,7 +159,7 @@ public abstract class ReplClientServer implements SisoReceiverListener, SisoRece
         }
 
         sb.append( String.format( 
-            "'((status . %s )\n"
+            "((status . %s )\n"
                 + "  (message-type . %s)\n"
                 + "  (message . %s )))"
                 , escapeDoubleQuotation( status )
