@@ -1,7 +1,5 @@
 package lamu;
 
-import java.util.Collection;
-import java.util.Deque;
 import java.util.List;
 
 import lamu.lib.app.ApplicationVessel;
@@ -14,17 +12,22 @@ class LamuCommandFork extends LamuCommand {
     }
 
     @Override
-    boolean match(List<String> arguments) {
+    boolean match(State state, List<String> arguments) {
         return !arguments.isEmpty() && arguments.get(0).equals("fork");
     }
 
     @Override
-    void execute( Collection<LamuCommand> availableCommands, Deque<ApplicationVessel> vessels, List<String> arguments, boolean recursiveCall) {
+    void execute( LamuCommand.State state, List<String> arguments, boolean recursiveCall) {
         List<String> subArguments = arguments.subList(1, arguments.size());
         // fork
         JavaProcess javaProcess = forkPulsar(subArguments);
-        ApplicationVessel vessel = new ApplicationVessel( "ForkedVessel" );
+        
+        // Add the forked process to the streamables.
+        state.streamables.push( javaProcess );
+
+        // Create a vessel and put it to the vessel list.
+        ApplicationVessel vessel = new ForkedApplicationVessel( "ForkedVessel" );
         vessel.add( javaProcess );
-        vessels.push( vessel );
+        state.vessels.push( vessel );
     }
 }

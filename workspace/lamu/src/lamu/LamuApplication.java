@@ -3,11 +3,8 @@ package lamu;
 import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -112,17 +109,17 @@ public class LamuApplication {
         loadBasicClasses();
 
         System.err.println("*** WELCOME TO PULSAR ***");
-        System.err.println("VERSION : " + Version.get(Pulsar.class));
+        System.err.println("VERSION : " + Version.get( Pulsar.class ));
         //		LogFormatter.init();
         LamuPrinter.init();
 
         //		Logger.getGlobal().setLevel( Level.ALL );
 
-        Collection<LamuCommand> availableCommands = createAvailableCommandList();
-        Deque<ApplicationVessel> vessels = new ArrayDeque<>();
-        LamuCommand.parseArgs( availableCommands, vessels, args );
+        List<LamuCommand> availableCommands = createAvailableCommandList();
+        LamuCommand.State state = new LamuCommand.State( availableCommands );
+        LamuCommand.parseArgs( state, args );
 
-        List<ApplicationVessel> vesselList=  new ArrayList<>( vessels );
+        List<ApplicationVessel> vesselList = new ArrayList<>( state.vessels );
         Collections.reverse( vesselList );
 
         for ( ApplicationVessel vessel : vesselList ) {

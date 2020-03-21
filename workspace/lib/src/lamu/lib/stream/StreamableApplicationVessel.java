@@ -4,8 +4,8 @@ import lamu.lib.app.ApplicationVessel;
 
 public class StreamableApplicationVessel {
 
-    public static StandardStream vessel2stream( ApplicationVessel vessel ) {
-        return (StandardStream)vessel.getComponents().get(0);
+    public static Streamable vessel2stream( ApplicationVessel vessel ) {
+        return (Streamable)vessel.getComponents().get(0);
     }
 
 }

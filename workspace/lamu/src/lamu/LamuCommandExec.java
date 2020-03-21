@@ -1,14 +1,11 @@
 package lamu;
 
 import java.util.Collection;
-import java.util.Deque;
 import java.util.List;
-
-import lamu.lib.app.ApplicationVessel;
 
 class LamuCommandExec extends LamuCommand {
     @Override
-    boolean match(List<String> arguments) {
+    boolean match(State state, List<String> arguments) {
         return !arguments.isEmpty() && arguments.get(0).equals("exec");
     }
     
@@ -18,14 +15,15 @@ class LamuCommandExec extends LamuCommand {
     }
 
     @Override
-    void execute( Collection<LamuCommand> availableCommands, Deque<ApplicationVessel> vessels, List<String> arguments, boolean recursiveCall ) {
+    void execute( LamuCommand.State state, List<String> arguments, boolean recursiveCall ) {
         
         List<String> subArguments = arguments.subList(1, arguments.size());
         // exec
         LamuApplicationArgumentParser argumentParser = new LamuApplicationArgumentParser();
-        Deque<ApplicationVessel> valueStack = argumentParser.getValueStack( LamuApplicationArgumentParser.VESSELS );
-        setCollection( vessels, valueStack );
+        setCollection( state.vessels,     argumentParser.getValueStack( LamuApplicationArgumentParser.VESSELS ) );
+        setCollection( state.streamables, argumentParser.getValueStack( LamuApplicationArgumentParser.STREAMABLES ) );
         argumentParser.parse( subArguments );
-        setCollection( valueStack, vessels );
+        setCollection( argumentParser.getValueStack( LamuApplicationArgumentParser.VESSELS ),     state.vessels  );
+        setCollection( argumentParser.getValueStack( LamuApplicationArgumentParser.STREAMABLES ), state.streamables );
     }
 }

@@ -15,9 +15,9 @@ import java.util.logging.Level;
 
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.log.Logger;
-import lamu.lib.stream.StandardStream;
+import lamu.lib.stream.Streamable;
 
-public class JavaProcess implements ApplicationComponent, StandardStream {
+public class JavaProcess implements ApplicationComponent, Streamable {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);

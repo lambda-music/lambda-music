@@ -17,6 +17,7 @@ import java.util.logging.Level;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.app.ApplicationVessel;
 import lamu.lib.log.Logger;
+import lamu.lib.stream.Streamable;
 import lamu.lib.thread.ThreadInitializer;
 import lamu.lib.thread.ThreadInitializerCollection;
 import lamu.lib.thread.ThreadInitializerCollectionContainer;
@@ -30,6 +31,7 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
 
     public static final ArgumentParserStackKey<Runnable> RUNNABLE  = new ArgumentParserStackKey<>();
     public static final ArgumentParserStackKey<ApplicationVessel> VESSELS = new ArgumentParserStackKey<>();
+    public static final ArgumentParserStackKey<Streamable> STREAMABLES = new ArgumentParserStackKey<>();
 
     static final class DefaultArgumentParserElementFactory implements ArgumentParserElementFactory {
         @Override
@@ -99,11 +101,17 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
 
     protected void initValueStackState() {
         clearValueStackMap();
+        createDefaultValueStackMap();
         createValueStackMap();
     }
-    protected void clearValueStackMap() {
+    private void clearValueStackMap() {
         stackMap.clear();
         stackList.clear();
+    }
+    private void createDefaultValueStackMap() {
+        getValueStack( VESSELS );
+        getValueStack( STREAMABLES );
+        getValueStack( RUNNABLE );
     }
     
     protected abstract void createValueStackMap();
@@ -156,16 +164,23 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
     }
 
     void deploy() {
+        ArrayList<Deque> stackList2 = new ArrayList<>( this.stackList );
+        
+        // The vessels are not necessary here; therefore exclude it from the list.
+        stackList2.remove( this.getValueStack( VESSELS ) );
+        stackList2.remove( this.getValueStack( STREAMABLES ) );
+        
+        
         // Collect thread initializers and set to collections.
         ArrayList<ThreadInitializer> threadInitializerList = new ArrayList<>(); 
         ArrayList<ThreadInitializerCollection> threadInitializerCollectionList = new ArrayList<>(); 
         {
             // Collect all thread initializers.
-            for ( Deque stack : this.stackList ) {
+            for ( Deque stack : stackList2 ) {
                 addInitializerContainer( threadInitializerList, stack );
             }
             // Collect all thread initializer collections.
-            for ( Deque stack : this.stackList ) {
+            for ( Deque stack : stackList2 ) {
                 addInitializerCollectionContainer( threadInitializerCollectionList, stack );
             }
             // then, add the initializers to the collections.
@@ -178,14 +193,10 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
         vessel.getThreadInitializerCollection().addAllThreadInitializer( threadInitializerList );
         
         
-        
+        // Collect all application compnents.
         {
-            ArrayList<Deque> stackList2 = new ArrayList<>( stackList );
             
-            // Collect all application compnents.
-            // Though, the vessels are not necessary here; therefore exclude it from the list.
-            stackList2.remove( this.getValueStack( VESSELS ) );
-            
+            // All components go to the vessels.
             for ( Deque stack : stackList2 ) {
                 for ( Object o : stack ) {
                     if ( o instanceof ApplicationComponent ) {
@@ -195,12 +206,6 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
             }
         }
         
-//        vessel.addAll( getValueStack( SCHEME_ENGINE ) );
-//        vessel.addAll( getValueStack( PULSAR ) );
-//        vessel.addAll( getValueStack( KAWAPAD ) );
-//        vessel.addAll( getValueStack( FRAME ) );
-//        vessel.addAll( getValueStack( SCHEME_HTTP ) );
-        
         // Executing runnable stack;
         {
             ArrayList<Runnable> list = new ArrayList<Runnable>( this.getValueStack( RUNNABLE ) );
@@ -209,18 +214,8 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
         }
  
         this.getValueStack( VESSELS ).push( vessel );
-
-//        vessel.getThreadInitializerCollection().initialize();
-//        
-//        for ( ThreadInitializerCollection c : threadInitializerCollectionList ) {
-//            logInfo( "deploy : "+ c.id + ":" + c.toString() );
-//        }
-//        vessel.processInit();
-
-        //
-
-        initValueStackState();
     }
+    
     private void notifyArg(String s) {
         ArgumentParserElement nextArgumentParserElement;
         if ( "+".equals( s ) ) {

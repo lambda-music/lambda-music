@@ -7,16 +7,12 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-
-import lamu.lib.app.ApplicationVessel;
 
 class LamuCommandMacro extends LamuCommand {
     static LamuCommandMacro create(String value) {
@@ -69,12 +65,12 @@ class LamuCommandMacro extends LamuCommand {
         return macroContent;
     }
     @Override
-    boolean match(List<String> arguments) {
+    boolean match( LamuCommand.State state, List<String> arguments) {
         return 0 < arguments.size() && arguments.get(0).equals( this.getMacroName() );
     }
 
     @Override
-    void execute(Collection<LamuCommand> availableCommands, Deque<ApplicationVessel> vessels, List<String> arguments, boolean recursiveCall) {
+    void execute( LamuCommand.State state, List<String> arguments, boolean recursiveCall) {
         if (recursiveCall) {
             throw new Error( "a malformed default value in the default argument configuration." );
         }
@@ -86,7 +82,7 @@ class LamuCommandMacro extends LamuCommand {
         parseArgs(arguments.subList(1, arguments.size()), outArgs, outNargs);
 
         // perform macro expansion.
-        List<String> expandedArgs = execute(this.macroContent, outArgs, outNargs);
+        List<String> expandedArgs = execute( this.macroContent, outArgs, outNargs );
 
         LamuApplication.logInfo( String.format( 
                 "MacroCommand[%s] expanded the specified arguments\nfrom:%s\nto  :%s\nmacro:%s\n", 
@@ -97,7 +93,7 @@ class LamuCommandMacro extends LamuCommand {
             ) );
 
         // Be careful : this is a recursive calling. 
-        LamuCommand.parseSubargs( availableCommands, vessels, expandedArgs, true );
+        LamuCommand.parseSubargs( state, expandedArgs, true );
     }
     
     static void replaceProc( List<String> result, String tokenToAdd, String replaceFrom, List<String> replaceTo ) {

@@ -16,7 +16,7 @@ import lamu.lib.log.Logger;
 import lamu.lib.scheme.repl.ReplClient;
 import lamu.lib.scheme.repl.ReplClient.ReplClientResultReceiver;
 import lamu.lib.stream.SisoReceiver;
-import lamu.lib.stream.StandardStream;
+import lamu.lib.stream.Streamable;
 
 public class StdioEvaluator implements ServicingEvaluator {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -24,13 +24,13 @@ public class StdioEvaluator implements ServicingEvaluator {
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
-    private StandardStream stream;
+    private Streamable stream;
     private InputStream in;
     private OutputStream out;
     private InputStream err;
     private SisoReceiver sisoReceiver;
     private ReplClient replClient;
-    public StdioEvaluator( StandardStream stream ) {
+    public StdioEvaluator( Streamable stream ) {
         this.stream = stream;
     }
 
