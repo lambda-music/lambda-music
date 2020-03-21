@@ -155,8 +155,8 @@ public class LamuBeginEndSplitter<T> {
             }
         }
         private static void errorMessage(RuntimeException e, String msg) {
-            System.out.println( "### " + e.getMessage() + " ###" );
-            System.out.println( "### " +msg + " ###" );
+            System.err.println( "### " + e.getMessage() + " ###" );
+            System.err.println( "### " +msg + " ###" );
         }
     }
 

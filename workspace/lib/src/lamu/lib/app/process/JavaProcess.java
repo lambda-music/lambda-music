@@ -19,15 +19,9 @@ import lamu.lib.stream.Streamable;
 
 public class JavaProcess implements ApplicationComponent, Streamable {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
-    static void logError(String msg, Throwable e) {
-        LOGGER.log(Level.SEVERE, msg, e);
-    }
-    static void logInfo(String msg) {
-        LOGGER.log(Level.INFO, msg);
-    }
-    static void logWarn(String msg) {
-        LOGGER.log(Level.WARNING, msg);
-    }
+    static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+    static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
+    static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }
 
     private ApplicationComponent parent;
     @Override
@@ -69,7 +63,7 @@ public class JavaProcess implements ApplicationComponent, Streamable {
         fullArguments.add( r.getClassPath() );
         fullArguments.add( canonicalNameOfMainClass );
         fullArguments.addAll( arguments );
-        System.out.println( fullArguments );
+        logInfo( fullArguments.toString() );
         ProcessBuilder b = new ProcessBuilder( fullArguments );
         b.inheritIO();
         

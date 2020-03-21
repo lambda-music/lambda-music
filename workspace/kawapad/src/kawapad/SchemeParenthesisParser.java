@@ -349,7 +349,7 @@ public class SchemeParenthesisParser {
     
             for(;; parserState.getIterator().next() ) {
                 if ( DEBUG )
-                    System.out.print( parserState.getIterator().getCurrentChar() );
+                    System.err.print( parserState.getIterator().getCurrentChar() );
     
                 if ( parserState.getIterator().getCurrentChar() == 0 ) {
                     break;

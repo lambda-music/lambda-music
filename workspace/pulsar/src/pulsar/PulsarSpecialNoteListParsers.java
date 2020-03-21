@@ -481,7 +481,7 @@ public class PulsarSpecialNoteListParsers {
         @Override
         void processTrack( Pulsar pulsar, Object id, List<Object> tags, Procedure procedure,
                 MetroSyncType syncType, Object syncTrackId, double syncOffset ) {
-            System.out.println( "putt id:" + id );
+            logInfo( "putt id:" + id );
             
             // if the target procedure is null, just ignore it.
             if ( procedure == null )
@@ -520,7 +520,7 @@ public class PulsarSpecialNoteListParsers {
         void processTrack( Pulsar pulsar, Object id, List<Object> tags, Procedure procedure,
                 MetroSyncType syncType, Object syncTrackId, double syncOffset ) {
 
-            System.out.println( "remt id:" + id );
+            logInfo( "remt id:" + id );
             synchronized ( pulsar.getMetroLock() ) {
                 List<MetroTrack> trackList;
                 MetroTrack syncTrack;

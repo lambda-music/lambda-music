@@ -195,15 +195,18 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
         
         // Collect all application compnents.
         {
+            logInfo( "deploy:==== COLLECT COMPONENTS ==============================" );
             
             // All components go to the vessels.
             for ( Deque stack : stackList2 ) {
                 for ( Object o : stack ) {
+                    logInfo( "deploy:"  + o.toString() );
                     if ( o instanceof ApplicationComponent ) {
                         vessel.add((ApplicationComponent) o );
                     }
                 }
             }
+            logInfo( "deploy:======================================================" );
         }
         
         // Executing runnable stack;
