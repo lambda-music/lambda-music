@@ -16,9 +16,9 @@ import java.util.logging.Level;
 
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.log.Logger;
-import lamu.lib.stream.Streamable;
+import lamu.lib.stream.ServersideStream;
 
-public class JavaProcess implements ApplicationComponent, Streamable {
+public class JavaProcess implements ApplicationComponent, ServersideStream {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
@@ -104,7 +104,7 @@ public class JavaProcess implements ApplicationComponent, Streamable {
                 JavaProcess.class.getCanonicalName(),
                 Arrays.asList( "foo", "bar" ) );
             process.processInit();
-            String out =  new BufferedReader( new InputStreamReader( process.getInputStream() ) ).readLine();
+            String out =  new BufferedReader( new InputStreamReader( process.getDownwardStream() ) ).readLine();
             String s = new BufferedReader( new InputStreamReader( System.in ) ).readLine();
             process.processQuit();
             System.out.println( s );
@@ -123,20 +123,20 @@ public class JavaProcess implements ApplicationComponent, Streamable {
     private InputStream inputStream=null;
     private InputStream errorStream=null;
     @Override
-    public InputStream getErrorStream() {
+    public InputStream getDownwardErrorStream() {
         if ( errorStream == null )
             throw new IllegalStateException();
         return errorStream;
     }
     @Override
-    public OutputStream getOutputStream() {
+    public OutputStream getUpwardStream() {
         if ( outputStream == null )
             throw new IllegalStateException();
         
         return outputStream;
     }
     @Override
-    public InputStream getInputStream() {
+    public InputStream getDownwardStream() {
         if ( inputStream == null )
             throw new IllegalStateException();
         return inputStream;

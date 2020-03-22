@@ -7,31 +7,31 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 
-public class LoggingStreamable implements Streamable {
-    Streamable streamable;
+public class ServersideStreamLogger implements ServersideStream {
+    ServersideStream streamable;
     InputStream inputStream;
     OutputStream outputStream;
     InputStream errorStream;
     OutputStream inputStreamLog;
     OutputStream outputStreamLog;
     OutputStream errorStreamLog;
-    public LoggingStreamable( Streamable streamable, File inputStreamLogFile, File outputStreamLogFile, File errorStreamLogFile) throws FileNotFoundException {
+    public ServersideStreamLogger( ServersideStream streamable, File inputStreamLogFile, File outputStreamLogFile, File errorStreamLogFile) throws FileNotFoundException {
         this(streamable, 
             new FileOutputStream( inputStreamLogFile ), 
             new FileOutputStream( outputStreamLogFile ), 
             new FileOutputStream( errorStreamLogFile ));
     }
 
-    public LoggingStreamable( Streamable streamable, OutputStream inputStreamLog, OutputStream outputStreamLog, OutputStream errorStreamLog ) throws FileNotFoundException {
+    public ServersideStreamLogger( ServersideStream streamable, OutputStream inputStreamLog, OutputStream outputStreamLog, OutputStream errorStreamLog ) throws FileNotFoundException {
         super();
-        this.streamable = streamable;
-        this.inputStreamLog = inputStreamLog;
+        this.streamable      = streamable;
+        this.inputStreamLog  = inputStreamLog;
         this.outputStreamLog = outputStreamLog;
-        this.errorStreamLog = errorStreamLog;
-        this.inputStream = new LoggingInputStream() {
+        this.errorStreamLog  = errorStreamLog;
+        this.inputStream     = new LoggingInputStream() {
             @Override
             public InputStream in() {
-                return streamable.getInputStream();
+                return streamable.getDownwardStream();
             }
             @Override
             public OutputStream log() {
@@ -41,7 +41,7 @@ public class LoggingStreamable implements Streamable {
         this.outputStream = new LoggingOutputStream() {
             @Override
             public OutputStream out() {
-                return streamable.getOutputStream();
+                return streamable.getUpwardStream();
             }
             @Override
             public OutputStream log() {
@@ -51,7 +51,7 @@ public class LoggingStreamable implements Streamable {
         this.errorStream = new LoggingInputStream() {
             @Override
             public InputStream in() {
-                return streamable.getErrorStream();
+                return streamable.getDownwardErrorStream();
             }
             @Override
             public OutputStream log() {
@@ -61,17 +61,17 @@ public class LoggingStreamable implements Streamable {
     }
 
     @Override
-    public InputStream getInputStream() {
+    public InputStream getDownwardStream() {
         return inputStream;
     }
 
     @Override
-    public InputStream getErrorStream() {
+    public InputStream getDownwardErrorStream() {
         return errorStream;
     }
 
     @Override
-    public OutputStream getOutputStream() {
+    public OutputStream getUpwardStream() {
         return outputStream;
     }
 

@@ -2,6 +2,7 @@ package lamu.lib.stream;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
 
@@ -17,10 +18,12 @@ public class StreamPump implements ApplicationComponent, Runnable {
 
     int bufSize = 1024*1024;
     InputStream in;
+    OutputStream out;
     transient Thread thread;
-    public StreamPump( InputStream in ) {
+    public StreamPump( InputStream in, OutputStream out ) {
         super();
         this.in = in;
+        this.out=out;
     }
 
     ApplicationComponent parent;
@@ -57,11 +60,11 @@ public class StreamPump implements ApplicationComponent, Runnable {
         byte[] buf = new byte[ bufSize ];
         try {
             for(;;) {
-                int size;
-                size = in.read( buf );
+                int size = in.read( buf, 0 ,buf.length );
                 if ( size < 0 ) {
                     break;
                 }
+                out.write( buf,0, size );
             }
         } catch (IOException e) {
             LOGGER.log( Level.SEVERE, "an exception at a pump object occured", e );

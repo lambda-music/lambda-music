@@ -15,23 +15,24 @@ import gnu.mapping.Symbol;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.repl.ReplClient;
 import lamu.lib.scheme.repl.ReplClient.ReplClientResultReceiver;
+import lamu.lib.stream.NullOutputStream;
 import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.StreamPump;
-import lamu.lib.stream.Streamable;
+import lamu.lib.stream.ServersideStream;
 
-public class StdioEvaluator implements ServicingEvaluator {
+public class StreamEvaluator implements ServicingEvaluator {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
-    private Streamable stream;
+    private ServersideStream stream;
     private InputStream in;
     private OutputStream out;
     private InputStream err;
     private SisoReceiver sisoReceiver;
     private ReplClient replClient;
-    public StdioEvaluator( Streamable stream ) {
+    public StreamEvaluator( ServersideStream stream ) {
         this.stream = stream;
     }
 
@@ -113,15 +114,15 @@ public class StdioEvaluator implements ServicingEvaluator {
     @Override
     public void initializeEvaluator() {
         logInfo("StdioEvaluator:initializeEvaluator");
-        this.err = stream.getErrorStream();
-        this.in = stream.getInputStream();
-        this.out = stream.getOutputStream();
+        this.err = stream.getDownwardErrorStream();
+        this.in = stream.getDownwardStream();
+        this.out = stream.getUpwardStream();
         
         this.replClient = new ReplClient();
         this.sisoReceiver = new SisoReceiver( null, this.in, this.out, this.replClient );
         this.sisoReceiver.requestInit();
 
-        this.errorPump = new StreamPump( this.err );
+        this.errorPump = new StreamPump( this.err, NullOutputStream.INSTANCE );
         this.errorPump.requestInit();
     }
     

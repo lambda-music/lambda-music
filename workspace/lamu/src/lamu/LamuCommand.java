@@ -13,7 +13,7 @@ import java.util.logging.Level;
 
 import lamu.lib.app.ApplicationVessel;
 import lamu.lib.log.Logger;
-import lamu.lib.stream.Streamable;
+import lamu.lib.stream.ServersideStream;
 
 abstract class LamuCommand {
     static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
@@ -27,7 +27,7 @@ abstract class LamuCommand {
     public static final class State {
         Collection<LamuCommand> availableCommands; 
         Deque<ApplicationVessel> vessels;
-        Deque<Streamable> streamables;
+        Deque<ServersideStream> streamables;
         public State( Collection<LamuCommand> availableCommands ) {
             super();
             this.availableCommands = availableCommands;

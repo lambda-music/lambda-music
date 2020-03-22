@@ -219,8 +219,7 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Thre
                 try {
                     in.close();
                 } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    logWarn( e );
                 }
                 System.err.println("closed");
                 

@@ -21,16 +21,16 @@ import lamu.lib.log.Logger;
 import lamu.lib.scheme.Evaluator;
 import lamu.lib.scheme.RemoteEvaluator;
 import lamu.lib.scheme.SchemeEngine;
-import lamu.lib.scheme.StdioEvaluator;
+import lamu.lib.scheme.StreamEvaluator;
 import lamu.lib.scheme.doc.DescriptiveDocumentCategory;
 import lamu.lib.scheme.repl.ReplServer;
 import lamu.lib.scheme.repl.SimpleReplService;
 import lamu.lib.scheme.socket.SchemeHttp;
 import lamu.lib.scheme.socket.SchemeHttp.UserAuthentication;
-import lamu.lib.stream.LoggingStreamable;
+import lamu.lib.stream.ServersideStreamLogger;
 import lamu.lib.stream.NullOutputStream;
 import lamu.lib.stream.SisoReceiver;
-import lamu.lib.stream.Streamable;
+import lamu.lib.stream.ServersideStream;
 import pulsar.Pulsar;
 import pulsar.PulsarFrame;
 
@@ -445,8 +445,8 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 Evaluator createRemoteHttp( String url ) {
                     return new RemoteEvaluator( url );
                 }
-                Evaluator createRemoteStdio( Streamable streamable ) {
-                    return new StdioEvaluator( streamable );
+                Evaluator createRemoteStdio( ServersideStream streamable ) {
+                    return new StreamEvaluator( streamable );
                 }
                 
                 List<Evaluator> evaluatorList = new ArrayList<>();
@@ -557,11 +557,11 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     if ( parser.getValueStack( STREAMABLES ).isEmpty() ) {
                         throw new RuntimeException( MSG_NO_SCHEME_ERROR );
                     }
-                    Streamable streamable = parser.getValueStack( STREAMABLES ).peek();
+                    ServersideStream streamable = parser.getValueStack( STREAMABLES ).peek();
                     
                     try {
                         parser.getValueStack( STREAMABLES ).push(
-                            new LoggingStreamable( streamable,
+                            new ServersideStreamLogger( streamable,
                                 ( inFile  == null ? new NullOutputStream() : new FileOutputStream( inFile  )),
                                 ( outFile == null ? new NullOutputStream() : new FileOutputStream( outFile )),
                                 ( errFile == null ? new NullOutputStream() : new FileOutputStream( errFile ))));
