@@ -25,6 +25,7 @@ import lamu.lib.thread.ThreadInitializerContainer;
  * 
  */
 public class SisoReceiver<T extends SisoReceiverServiceListener> implements ThreadInitializerContainer<SisoReceiver>, ThreadInitializerCollectionContainer, ApplicationComponent {
+    private static final String SHEBANG = "#!";
     protected static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
     protected static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     protected static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
@@ -64,6 +65,17 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Thre
         //
         this.listener.notifyParent( this );
     }
+    
+    boolean isClosedStreamException( Throwable e ) {
+        if ( e.getMessage().contains( "Stream closed") ) {
+            LOGGER.log( Level.INFO,    "Stream closed:"+ e.getMessage() );
+            return true;
+        } else {
+            return false;
+        }
+        
+    }
+
     
     public T getListener() {
         return listener;
@@ -123,8 +135,19 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Thre
             logInfo( "Now start the input-loop." );
             try {
                 listener.start( SisoReceiver.this );
+                
+                boolean first = true;
                 for (;;) {
                     String s = i.readLine();
+
+                    //
+                    if ( first ) {
+                        first = false;
+                        if ( s.startsWith( SHEBANG )) {
+                            continue;
+                        }
+                    }
+                    
                     try {
                         listener.process( SisoReceiver.this, s);
                         if ( s == null) {
@@ -135,7 +158,8 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Thre
                     }
                 }
             } catch (IOException e) {
-                logError("", e);
+                if ( ! isClosedStreamException(e) )
+                    logError("", e);
             }
             listener.end( SisoReceiver.this );
             logInfo( "Exited the input-loop." );
@@ -162,7 +186,8 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Thre
             } catch (InterruptedException e) {
                 //				logError("", e);
             } catch (Throwable e ) {
-                logError("", e);
+                if ( ! isClosedStreamException(e) )
+                    logError("", e);
             }
             //			requestQuit();
             logInfo( "Exited the output-loop." );

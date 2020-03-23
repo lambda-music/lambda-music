@@ -67,7 +67,10 @@ public class StreamPump implements ApplicationComponent, Runnable {
                 out.write( buf,0, size );
             }
         } catch (IOException e) {
-            LOGGER.log( Level.SEVERE, "an exception at a pump object occured", e );
+            if ( e.getMessage().contains( "Stream closed") )
+                LOGGER.log( Level.INFO,    "Stream closed:"+ e.getMessage() );
+            else
+                LOGGER.log( Level.WARNING, "an exception at a pump object occured", e );
         }
     }
     
