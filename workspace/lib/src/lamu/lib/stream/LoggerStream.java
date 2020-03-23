@@ -7,22 +7,22 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 
-public class ServersideStreamLogger implements ServersideStream {
-    ServersideStream streamable;
+public class LoggerStream implements Stream {
+    Stream streamable;
     InputStream inputStream;
     OutputStream outputStream;
     InputStream errorStream;
     OutputStream inputStreamLog;
     OutputStream outputStreamLog;
     OutputStream errorStreamLog;
-    public ServersideStreamLogger( ServersideStream streamable, File inputStreamLogFile, File outputStreamLogFile, File errorStreamLogFile) throws FileNotFoundException {
+    public LoggerStream( Stream streamable, File inputStreamLogFile, File outputStreamLogFile, File errorStreamLogFile) throws FileNotFoundException {
         this(streamable, 
             new FileOutputStream( inputStreamLogFile ), 
             new FileOutputStream( outputStreamLogFile ), 
             new FileOutputStream( errorStreamLogFile ));
     }
 
-    public ServersideStreamLogger( ServersideStream streamable, OutputStream inputStreamLog, OutputStream outputStreamLog, OutputStream errorStreamLog ) throws FileNotFoundException {
+    public LoggerStream( Stream streamable, OutputStream inputStreamLog, OutputStream outputStreamLog, OutputStream errorStreamLog ) throws FileNotFoundException {
         super();
         this.streamable      = streamable;
         this.inputStreamLog  = inputStreamLog;

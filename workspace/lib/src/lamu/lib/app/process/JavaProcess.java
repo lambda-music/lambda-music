@@ -16,9 +16,9 @@ import java.util.logging.Level;
 
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.log.Logger;
-import lamu.lib.stream.ServersideStream;
+import lamu.lib.stream.Stream;
 
-public class JavaProcess implements ApplicationComponent, ServersideStream {
+public class JavaProcess implements ApplicationComponent, Stream {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
@@ -57,6 +57,7 @@ public class JavaProcess implements ApplicationComponent, ServersideStream {
     static Process executeJavaProcess( String canonicalNameOfMainClass, List<String> arguments ) throws IOException{
         // https://stackoverflow.com/questions/1490869/how-to-get-vm-arguments-from-inside-of-java-application
         ArrayList<String> fullArguments = new ArrayList<>();
+
         RuntimeMXBean r = ManagementFactory.getRuntimeMXBean();
         fullArguments.add( "java" );
         fullArguments.addAll( argFilter( r.getInputArguments()) );
@@ -64,6 +65,7 @@ public class JavaProcess implements ApplicationComponent, ServersideStream {
         fullArguments.add( r.getClassPath() );
         fullArguments.add( canonicalNameOfMainClass );
         fullArguments.addAll( arguments );
+        
         logInfo( String.join( " " , fullArguments ) );
         ProcessBuilder b = new ProcessBuilder( fullArguments );
 //        b.inheritIO();

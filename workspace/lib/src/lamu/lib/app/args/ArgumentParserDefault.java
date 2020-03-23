@@ -17,7 +17,7 @@ import java.util.logging.Level;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.app.ApplicationVessel;
 import lamu.lib.log.Logger;
-import lamu.lib.stream.ServersideStream;
+import lamu.lib.stream.Stream;
 import lamu.lib.thread.ThreadInitializer;
 import lamu.lib.thread.ThreadInitializerCollection;
 import lamu.lib.thread.ThreadInitializerCollectionContainer;
@@ -31,7 +31,7 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
 
     public static final ArgumentParserStackKey<Runnable> RUNNABLE  = new ArgumentParserStackKey<>();
     public static final ArgumentParserStackKey<ApplicationVessel> VESSELS = new ArgumentParserStackKey<>();
-    public static final ArgumentParserStackKey<ServersideStream> STREAMABLES = new ArgumentParserStackKey<>();
+    public static final ArgumentParserStackKey<Stream> STREAMABLES = new ArgumentParserStackKey<>();
 
     static final class DefaultArgumentParserElementFactory implements ArgumentParserElementFactory {
         @Override

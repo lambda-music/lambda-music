@@ -12,6 +12,7 @@ import java.util.logging.Level;
 
 import kawapad.Kawapad;
 import kawapad.KawapadFrame;
+import lamu.lib.app.ApplicationVessel;
 import lamu.lib.app.args.ArgumentParser;
 import lamu.lib.app.args.ArgumentParserDefault;
 import lamu.lib.app.args.ArgumentParserElement;
@@ -27,10 +28,11 @@ import lamu.lib.scheme.repl.ReplServer;
 import lamu.lib.scheme.repl.SimpleReplService;
 import lamu.lib.scheme.socket.SchemeHttp;
 import lamu.lib.scheme.socket.SchemeHttp.UserAuthentication;
-import lamu.lib.stream.ServersideStreamLogger;
+import lamu.lib.stream.LoggerStream;
 import lamu.lib.stream.NullOutputStream;
 import lamu.lib.stream.SisoReceiver;
-import lamu.lib.stream.ServersideStream;
+import lamu.lib.stream.StdioStream;
+import lamu.lib.stream.Stream;
 import pulsar.Pulsar;
 import pulsar.PulsarFrame;
 
@@ -60,6 +62,14 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
     static final ArgumentParserStackKey<SisoReceiver> REPL = new ArgumentParserStackKey<>();
     static final ArgumentParserStackKey<KawapadFrame> FRAME = new ArgumentParserStackKey<>();
     static final ArgumentParserStackKey<SchemeHttp> HTTP = new ArgumentParserStackKey<>();
+
+    static Stream vessel2stream( ApplicationVessel vessel ) {
+        return (Stream)vessel.getComponents()
+            .stream()
+            .filter( item-> item instanceof Stream )
+            .findAny()
+            .orElse(null);
+    }
 
     static final class AllAvailableReferenceArgumentParserElementFactory implements ArgumentParserElementFactory {
         @Override
@@ -445,7 +455,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 Evaluator createRemoteHttp( String url ) {
                     return new RemoteEvaluator( url );
                 }
-                Evaluator createRemoteStdio( ServersideStream streamable ) {
+                Evaluator createRemoteStream( Stream streamable ) {
                     return new StreamEvaluator( streamable );
                 }
                 
@@ -462,10 +472,10 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                         } else if ( "--server-port".equals( a.getKey() ) ) {
                             // deprecated
                             evaluatorList.add( createRemoteHttp( DEFAULT_REMOTE_URL + a.getValue() ) );
-                        } else if ( "--remote-http".equals( a.getKey() ) ) {
+                        } else if ( "--http".equals( a.getKey() ) ) {
                             evaluatorList.add( createRemoteHttp( a.getValue() ) );
-                        } else if ( "--remote-stdio".equals( a.getKey() ) ) {
-                            evaluatorList.add( createRemoteStdio( parser.getValueStack( STREAMABLES ).peek()));
+                        } else if ( "--stream".equals( a.getKey() ) ) {
+                            evaluatorList.add( createRemoteStream( parser.getValueStack( STREAMABLES ).peek()));
                         } else {
                             throw new RuntimeException( "unknown argument " + s );
                         }
@@ -557,17 +567,56 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     if ( parser.getValueStack( STREAMABLES ).isEmpty() ) {
                         throw new RuntimeException( MSG_NO_SCHEME_ERROR );
                     }
-                    ServersideStream streamable = parser.getValueStack( STREAMABLES ).peek();
+                    Stream streamable = parser.getValueStack( STREAMABLES ).peek();
                     
                     try {
                         parser.getValueStack( STREAMABLES ).push(
-                            new ServersideStreamLogger( streamable,
+                            new LoggerStream( streamable,
                                 ( inFile  == null ? new NullOutputStream() : new FileOutputStream( inFile  )),
                                 ( outFile == null ? new NullOutputStream() : new FileOutputStream( outFile )),
                                 ( errFile == null ? new NullOutputStream() : new FileOutputStream( errFile ))));
                     } catch ( FileNotFoundException e ) {
                         throw new Error(e);
                     } 
+                }
+            };
+        }
+
+    }
+    static final class StdioArgumentParserElementFactory implements ArgumentParserElementFactory {
+        @Override
+        public ArgumentParserElement create() {
+            return new ArgumentParserElement() {
+                @Override
+                public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
+                    return this;
+                }
+                @Override
+                public void notifyEnd( ArgumentParser parser ) {
+                    parser.getValueStack( STREAMABLES ).push( StdioStream.INSTANCE );
+                }
+            };
+        }
+    }
+    static final class ForkedArgumentParserElementFactory implements ArgumentParserElementFactory {
+        @Override
+        public ArgumentParserElement create() {
+            return new ArgumentParserElement() {
+                @Override
+                public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
+                    return this;
+                }
+                @Override
+                public void notifyEnd( ArgumentParser parser ) {
+                    ApplicationVessel vessel = parser.getValueStack( VESSELS ).peek();
+                    if ( vessel == null ) {
+                        throw new Error( "no vessel was found" );
+                    }
+                    Stream stream = vessel2stream(vessel);
+                    if ( stream == null ) {
+                        throw new Error( "no stream was found" );
+                    }
+                    parser.getValueStack( STREAMABLES ).push( stream );
                 }
             };
         }
@@ -597,7 +646,9 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         registerFactory( "simple-repl",      new SimpleReplArgumentParserElementFactory());
         registerFactory( "output-help",      new OutputReferenceArgumentParserElementFactory());
         registerFactory( "output-help-list", new AllAvailableReferenceArgumentParserElementFactory());
-        registerFactory( "logger",           new LoggerArgumentParserElementFactory());
+        registerFactory( "logger-stream",    new LoggerArgumentParserElementFactory());
+        registerFactory( "stdio-stream",     new StdioArgumentParserElementFactory());
+        registerFactory( "forked-stream",    new ForkedArgumentParserElementFactory());
     }
     {
         initializeParser();

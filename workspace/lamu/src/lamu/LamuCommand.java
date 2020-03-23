@@ -13,7 +13,7 @@ import java.util.logging.Level;
 
 import lamu.lib.app.ApplicationVessel;
 import lamu.lib.log.Logger;
-import lamu.lib.stream.ServersideStream;
+import lamu.lib.stream.Stream;
 
 abstract class LamuCommand {
     static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
@@ -27,7 +27,7 @@ abstract class LamuCommand {
     public static final class State {
         Collection<LamuCommand> availableCommands; 
         Deque<ApplicationVessel> vessels;
-        Deque<ServersideStream> streamables;
+        Deque<Stream> streamables;
         public State( Collection<LamuCommand> availableCommands ) {
             super();
             this.availableCommands = availableCommands;
@@ -54,7 +54,7 @@ abstract class LamuCommand {
     }
 
     static final String TRIGGER_FOR_ADVANCED_COMMAND_MODE = "do";
-    static String DEFAULT_COMMAND_NAME = "default";
+    static final String DEFAULT_COMMAND_NAME = "default";
 
     public static void parseArgs( LamuCommand.State state, String[] in_args ) throws IOException {
         // (Mon, 09 Mar 2020 23:39:18 +0900) 

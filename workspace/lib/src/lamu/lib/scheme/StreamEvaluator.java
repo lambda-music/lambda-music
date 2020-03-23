@@ -18,7 +18,7 @@ import lamu.lib.scheme.repl.ReplClient.ReplClientResultReceiver;
 import lamu.lib.stream.NullOutputStream;
 import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.StreamPump;
-import lamu.lib.stream.ServersideStream;
+import lamu.lib.stream.Stream;
 
 public class StreamEvaluator implements ServicingEvaluator {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -26,13 +26,13 @@ public class StreamEvaluator implements ServicingEvaluator {
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
-    private ServersideStream stream;
+    private Stream stream;
     private InputStream in;
     private OutputStream out;
     private InputStream err;
     private SisoReceiver sisoReceiver;
     private ReplClient replClient;
-    public StreamEvaluator( ServersideStream stream ) {
+    public StreamEvaluator( Stream stream ) {
         this.stream = stream;
     }
 
