@@ -16,6 +16,9 @@ import lamu.lib.log.Logger;
 import lamu.lib.stream.Stream;
 
 abstract class LamuCommand {
+    static final String TRIGGER_FOR_ADVANCED_COMMAND_MODE = "advanced";
+    static final String DEFAULT_COMMAND_NAME = "default";
+    
     static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
@@ -53,8 +56,6 @@ abstract class LamuCommand {
         }
     }
 
-    static final String TRIGGER_FOR_ADVANCED_COMMAND_MODE = "do";
-    static final String DEFAULT_COMMAND_NAME = "default";
 
     public static void parseArgs( LamuCommand.State state, String[] in_args ) throws IOException {
         // (Mon, 09 Mar 2020 23:39:18 +0900) 

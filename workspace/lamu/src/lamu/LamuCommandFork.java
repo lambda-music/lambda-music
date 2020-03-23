@@ -1,16 +1,14 @@
 package lamu;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import lamu.lib.app.ApplicationVessel;
-import lamu.lib.app.process.JavaProcess;
+import lamu.lib.app.process.ForkedProcess;
+import lamu.lib.app.process.ForkedProcessUtil;
 
 class LamuCommandFork extends LamuCommand {
-    static JavaProcess forkPulsar(List<String> arguments) {
-        JavaProcess process = new JavaProcess(LamuApplication.class.getCanonicalName(), arguments);
-        return process;
-    }
-
     @Override
     boolean match(State state, List<String> arguments) {
         return !arguments.isEmpty() && arguments.get(0).equals("fork");
@@ -18,16 +16,33 @@ class LamuCommandFork extends LamuCommand {
 
     @Override
     void execute( LamuCommand.State state, List<String> arguments, boolean recursiveCall) {
-        List<String> subArguments = arguments.subList(1, arguments.size());
-        // fork
-        JavaProcess javaProcess = forkPulsar(subArguments);
+        List<String> fullArguments = new ArrayList<>();
+        boolean first=true;
+        for ( Iterator<String> i = arguments.iterator();i.hasNext(); ) {
+            String arg = i.next();
+            if ( first ) {
+                first = false;
+                continue;
+            }
+            
+            if ( arg.equals( "lamu" ) ) {
+                fullArguments.addAll( ForkedProcessUtil.getJavaArguments( LamuApplication.class.getCanonicalName() ) );
+            } else {
+                fullArguments.add( arg );
+            }
+        }
         
+        // fork it
+        ForkedProcess javaProcess = ForkedProcess.forkProcess( fullArguments );
+                
         // Add the forked process to the streamables.
         state.streamables.push( javaProcess );
 
         // Create a vessel and put it to the vessel list.
         ApplicationVessel vessel = new ApplicationVessel( "ForkedVessel" );
         vessel.add( javaProcess );
+        
+        // Push it to the stack for vessels.
         state.vessels.push( vessel );
     }
 }
