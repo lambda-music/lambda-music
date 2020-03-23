@@ -17,10 +17,10 @@ import lamu.lib.scheme.repl.ReplClient;
 import lamu.lib.scheme.repl.ReplClient.ReplClientResultReceiver;
 import lamu.lib.stream.NullOutputStream;
 import lamu.lib.stream.SisoReceiver;
-import lamu.lib.stream.StreamPump;
 import lamu.lib.stream.Stream;
+import lamu.lib.stream.StreamPump;
 
-public class StreamEvaluator implements ServicingEvaluator {
+public class StreamEvaluator implements ServicingEvaluator, NameCaptionHolder {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -145,5 +145,14 @@ public class StreamEvaluator implements ServicingEvaluator {
         } catch (IOException e) {
             logError("warning",e);
         }
+    }
+    
+    @Override
+    public String toString() {
+        return "[" + stream.toString() + "]";
+    }
+    @Override
+    public String getNameCaption() {
+        return "" + stream.toString() + "";
     }
 }

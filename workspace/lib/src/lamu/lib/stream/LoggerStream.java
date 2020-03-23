@@ -74,5 +74,8 @@ public class LoggerStream implements Stream {
     public OutputStream getUpwardStream() {
         return outputStream;
     }
-
+    @Override
+    public String toString() {
+        return streamable.toString() + " w/logger";
+    }
 }

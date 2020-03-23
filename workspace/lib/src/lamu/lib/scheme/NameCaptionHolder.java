@@ -1,12 +1,12 @@
 package lamu.lib.scheme;
 
-public interface HasName {
-    abstract String getName();
+public interface NameCaptionHolder {
+    abstract String getNameCaption();
     public static String getCaption(Object o) {
         if ( o == null ) {
             return "null";
-        } else if ( o instanceof HasName ) { 
-            return ((HasName)o).getName();
+        } else if ( o instanceof NameCaptionHolder ) { 
+            return ((NameCaptionHolder)o).getNameCaption();
         } else {
             return o.toString();
         }

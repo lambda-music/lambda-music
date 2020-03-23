@@ -12,7 +12,7 @@ import java.net.URL;
 
 import lamu.lib.scheme.socket.SchemeHttp;
 
-public class RemoteEvaluator implements Evaluator {
+public class RemoteEvaluator implements Evaluator, NameCaptionHolder {
     public static String httpRequest(String urlString, String postString) throws IOException {
         String outputString = postString; 
         URL url = new URL( urlString );
@@ -44,10 +44,7 @@ public class RemoteEvaluator implements Evaluator {
         this.urlEval  = url + SchemeHttp.PATH_EVAL;
         this.urlReset = url + SchemeHttp.PATH_RESET;
     }
-    @Override
-    public String toString() {
-        return this.urlEval;
-    }
+    
 
     @Override
     public SchemeResult evaluate(
@@ -97,5 +94,13 @@ public class RemoteEvaluator implements Evaluator {
             }
             return w.getBuffer().toString();
         }
+    }
+    @Override
+    public String toString() {
+        return "[http " +  this.urlEval + "]";
+    }
+    @Override
+    public String getNameCaption() {
+        return "http " +  this.urlEval + "";
     }
 }

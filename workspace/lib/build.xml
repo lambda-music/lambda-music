@@ -28,6 +28,18 @@
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src.scheme">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src.gui-utils">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
     </target>
     <target name="clean">
         <delete dir="bin"/>
@@ -39,17 +51,9 @@
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
             <src path="src"/>
+            <src path="src.scheme"/>
+            <src path="src.gui-utils"/>
             <classpath refid="lib.classpath"/>
         </javac>
-    </target>
-    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects">
-        <ant antfile="build.xml" dir="${kawapad.location}" inheritAll="false" target="clean"/>
-        <ant antfile="build.xml" dir="${kawapad.location}" inheritAll="false" target="build"/>
-        <ant antfile="build.xml" dir="${lamu.location}" inheritAll="false" target="clean"/>
-        <ant antfile="build.xml" dir="${lamu.location}" inheritAll="false" target="build"/>
-        <ant antfile="build.xml" dir="${metro.location}" inheritAll="false" target="clean"/>
-        <ant antfile="build.xml" dir="${metro.location}" inheritAll="false" target="build"/>
-        <ant antfile="build.xml" dir="${pulsar.location}" inheritAll="false" target="clean"/>
-        <ant antfile="build.xml" dir="${pulsar.location}" inheritAll="false" target="build"/>
     </target>
 </project>

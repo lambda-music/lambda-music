@@ -69,7 +69,7 @@ public class EvaluatorManager {
     }
 
     private JMenuItem createServerMenuItem( Evaluator evaluator ) {
-        JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem( HasName.getCaption( evaluator ) );
+        JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem( NameCaptionHolder.getCaption( evaluator ) );
         menuItem.addActionListener( new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {

@@ -19,5 +19,8 @@ public class StdioStream implements Stream {
     public OutputStream getUpwardStream() {
         return System.out;
     }
-
+    @Override
+    public String toString() {
+        return "stdio";
+    }
 }

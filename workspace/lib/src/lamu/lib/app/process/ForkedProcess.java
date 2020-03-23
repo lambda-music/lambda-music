@@ -100,7 +100,10 @@ public class ForkedProcess implements ApplicationComponent, Stream {
         }
         this.process.destroyForcibly();
     }
-    
+    @Override
+    public String toString() {
+        return "process";
+    }
     static void testMethod(String[] args) throws IOException, InterruptedException {
         if ( args.length == 0 ) {
             Process p =  ForkedProcessUtil.executeJavaProcess( ForkedProcess.class.getCanonicalName(), Arrays.asList("hello") );
