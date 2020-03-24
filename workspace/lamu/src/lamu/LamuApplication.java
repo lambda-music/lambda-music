@@ -42,7 +42,7 @@ public class LamuApplication {
         availableCommands.addAll( LamuCommandMacro.load( getInitFile() ) );
         // this is a fall back.
         availableCommands.add( LamuCommandMacro.create( 
-                LamuCommand.DEFAULT_COMMAND_NAME + " exec scheme + pulsar + repl + gui $*{$} +") );
+                LamuCommand.DEFAULT_COMMAND_NAME + " create scheme + pulsar + repl + gui $*{$} +") );
         return availableCommands;
     }
 

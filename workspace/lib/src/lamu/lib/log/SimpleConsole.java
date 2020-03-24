@@ -70,6 +70,10 @@ public class SimpleConsole extends JFrame {
     }
 
     public synchronized void addText(String s) {
+        s=s.trim();
+        if ( s.isEmpty() )
+            return;
+            
         String string = "\n"+ s;
         
         Document document = this.textArea.getDocument();
