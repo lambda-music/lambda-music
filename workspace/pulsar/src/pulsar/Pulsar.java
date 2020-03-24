@@ -2074,9 +2074,15 @@ public final class Pulsar extends Metro implements ApplicationComponent {
                 
                 List<String> list = SchemeUtils.anySchemeValueListToStringList( Arrays.asList(args) );
                 ProcessBuilder sb = new ProcessBuilder( list );
+                
+                // XXX ??? (Tue, 24 Mar 2020 06:09:27 +0900) <<< This should be integrated.
                 sb.directory( ((Path) Shell.currentLoadPath.get()).toFile() );
-                sb.inheritIO();
-                return new PulsarProcessWrapper( sb.start() );
+                
+                // TODO the IO should be able to controlled. this is bogus.
+                // REMOVED (Tue, 24 Mar 2020 05:20:12 +0900) >>>
+                // sb.inheritIO();
+                // REMOVED (Tue, 24 Mar 2020 05:20:12 +0900) <<<
+                return new PulsarProcessWrapper( sb.start(), new ArrayList( list ) );
             }
         });
 

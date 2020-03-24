@@ -121,7 +121,7 @@ public class LamuApplication {
 
         List<ApplicationVessel> vesselList = new ArrayList<>( state.vessels );
         Collections.reverse( vesselList );
-
+        
         logInfo( "initialize:======= Application:requestInit ==============================" );
         for ( ApplicationVessel vessel : vesselList ) {
             if ( false ) {

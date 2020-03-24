@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
+import lamu.lib.InstanceManager;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.log.Logger;
 import lamu.lib.stream.Stream;
@@ -32,6 +33,26 @@ public class ForkedProcess implements ApplicationComponent, Stream {
     static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
     static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }
 
+    
+    static final InstanceManager<ForkedProcess> manager = InstanceManager.create(new InstanceManager.Processor<ForkedProcess>() {
+        public void quit(ForkedProcess o) {
+            o.requestQuit();
+        }; 
+        @Override
+        public void kill(ForkedProcess o) {
+            o.quitProcess();
+        }
+        @Override
+        public boolean isAlive(ForkedProcess o) {
+            return o.isAlive();
+        }
+        @Override
+        public String getName(ForkedProcess o) {
+            return String.join( " " , o.arguments );
+        }
+    });
+
+    
     private ApplicationComponent parent;
     @Override
     public void setParentApplicationComponent(ApplicationComponent parent) {
@@ -86,6 +107,8 @@ public class ForkedProcess implements ApplicationComponent, Stream {
             this.outputStream = this.process.getOutputStream();
             this.inputStream = this.process.getInputStream();
             this.errorStream = this.process.getErrorStream();
+
+            ForkedProcess.manager.register(this);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -98,8 +121,23 @@ public class ForkedProcess implements ApplicationComponent, Stream {
             System.err.println( "this object is not initialized." );
             return;
         }
-        this.process.destroyForcibly();
+        quitProcess();
     }
+    
+    public boolean isAlive() {
+        return this.process != null && this.process.isAlive();
+    }
+    public void killProcess() {
+        if ( this.process != null ) {
+            this.process.destroyForcibly();
+        }
+    }
+    public void quitProcess() {
+        if ( this.process != null ) {
+            this.process.destroy();
+        }
+    }
+    
     @Override
     public String toString() {
         return "process";

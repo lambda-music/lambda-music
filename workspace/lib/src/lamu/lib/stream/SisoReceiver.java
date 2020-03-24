@@ -121,7 +121,6 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Thre
     public final void postMessageQuit() {
         postMessage( createQuitMessage() );
     }
-
     public static SisoReceiverMessage createQuitMessage() {
         return new SimpleQuitMessage();
     }
@@ -129,13 +128,48 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Thre
         return new SimplePrintMessage(message);
     }
 
+    class EventManager {
+        transient boolean startDone = false;
+        transient boolean endDone = false;
+        void callStart() {
+            if ( ! this.startDone ) {
+                this.startDone = true;
+                SisoReceiver.this.listener.start( SisoReceiver.this );
+            }
+        }
+        void callEnd() {
+            if ( ! this.endDone ) {
+                this.endDone = true;
+                SisoReceiver.this.listener.end( SisoReceiver.this );
+            }
+        }
+        transient boolean quitWhenInputExited = true;
+        synchronized void setQuitWhenInputExited( boolean quitWhenInputExited ) {
+            this.quitWhenInputExited = quitWhenInputExited;
+
+            if ( this.exitedInput && this.quitWhenInputExited ) {
+                callEnd();
+            }
+        }
+        transient boolean exitedInput = false;
+        synchronized void notifyStartInput() {
+            callStart();
+        }
+        synchronized void notifyEndInput() {
+            this.exitedInput = true;
+            if ( this.quitWhenInputExited ) {
+                callEnd();
+            }
+        }
+    }
+    final EventManager eventManager = new EventManager();
+    
     private class InputLoop implements Runnable {
         @Override
         public void run() {
             logInfo( "Now start the input-loop." );
             try {
-                listener.start( SisoReceiver.this );
-                
+                eventManager.notifyStartInput();
                 boolean first = true;
                 for (;;) {
                     String s = i.readLine();
@@ -161,7 +195,8 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Thre
                 if ( ! isClosedStreamException(e) )
                     logError("", e);
             }
-            listener.end( SisoReceiver.this );
+            eventManager.notifyEndInput();
+            
             logInfo( "Exited the input-loop." );
             //			requestQuit();
         }
