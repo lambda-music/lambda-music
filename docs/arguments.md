@@ -30,7 +30,7 @@ command-line parameter cant specify how Lamu should run at the boot-time.
 In order to enable the advanced-mode of command-line parameter, add a keyword 
 `advanced` in front of other arguments. 
 
-```
+```bash
 > lamu advanced ([create|fork|...]) ([argument]...)
 ```
 
@@ -39,7 +39,7 @@ In order to enable the advanced-mode of command-line parameter, add a keyword
 In advanced-mode, more complicated commands can be specified after the `advanced` 
 keyword.
 
-```
+```bash
 > lamu advanced create scheme + pulsar + gui +
 ```
 
@@ -50,7 +50,7 @@ frame.  They are the most basic set of components in Lamu. Note that the every
 component name is separated by keyword `+`.  These `+` tokens separates their 
 regions. 
 
-```
+```bash
 > lamu advanced create scheme + pulsar + gui /path/to/file.scm +
 ```
 
@@ -67,7 +67,7 @@ the commands when they come to certain length by using Shell's escape sequence
 character as:
 
 Before:
-```
+```bash
 > lamu advanced create scheme + pulsar + gui /path/to/file.scm +
 ```
 
@@ -130,7 +130,7 @@ Then back to the editor one, execute the following code.
 the specified arguments. Its primary usage is to configure Lamu
 in client-server mode. See the following example:
 
-```
+```bash
 > lamu advanced \
     begin \
         fork lamu advanced create scheme + pulsar + http --port=8193 \
@@ -151,7 +151,7 @@ designed that to be able to be separately executed in another JVM.
 Multiple-statements can be nested; a typical scenario of the usage of 
 multiple-statement is using with `fork` command.
 
-```
+```bash
 > lamu advanced \
     begin \
         create scheme --server-port=8193 + kawapad + \
@@ -188,13 +188,13 @@ local create scheme + pulsar + repl + gui $open{$} +
 
 The first column of each line denotes the name of macro-command.
 
-```
+```bash
 > lamu advanced local --open=/foo/bar/bum.scm
 ```
 
 The above example is expanded as
 
-```
+```bash
 > lamu advanced create scheme + pulsar + repl + gui /foo/bar/bum.scm
 ```
 
