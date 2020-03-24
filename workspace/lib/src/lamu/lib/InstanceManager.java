@@ -113,8 +113,13 @@ public class InstanceManager<T> {
             report();
         }
     }
+    transient boolean destroyed =false;
     public void destroyAll() {
         synchronized ( getInstances() ) {
+            if ( destroyed )
+                return ;
+            destroyed = true;
+            
             logInfo( "==== destroyInstances() target count=" + getInstances().size() );
             for ( Iterator<T> i= getInstances().iterator(); i.hasNext(); ) {
                 T o = i.next();

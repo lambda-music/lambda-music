@@ -466,15 +466,15 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                         LamuNamedArgument a = new LamuNamedArgument( s );
                         if ( false ) {
                             //
-                        } else if ( "--server-url".equals( a.getKey() ) ) {
+                        } else if ( "server-url".equals( a.getKey() ) ) {
                             // deprecated
                             evaluatorList.add( createRemoteHttp( a.getValue() ) );
-                        } else if ( "--server-port".equals( a.getKey() ) ) {
+                        } else if ( "server-port".equals( a.getKey() ) ) {
                             // deprecated
                             evaluatorList.add( createRemoteHttp( DEFAULT_REMOTE_URL + a.getValue() ) );
-                        } else if ( "--http".equals( a.getKey() ) ) {
+                        } else if ( "http".equals( a.getKey() ) ) {
                             evaluatorList.add( createRemoteHttp( a.getValue() ) );
-                        } else if ( "--stream".equals( a.getKey() ) ) {
+                        } else if ( "stream".equals( a.getKey() ) ) {
                             evaluatorList.add( createRemoteStream( parser.getValueStack( STREAMABLES ).peek()));
                         } else {
                             throw new RuntimeException( "unknown argument " + s );
