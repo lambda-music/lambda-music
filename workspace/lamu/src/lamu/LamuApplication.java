@@ -38,7 +38,7 @@ public class LamuApplication {
     static List<LamuCommand> createAvailableCommandList() throws IOException {
         List<LamuCommand> availableCommands = new ArrayList<>();
         availableCommands.add( new LamuCommandFork() );
-        availableCommands.add( new LamuCommandExec() );
+        availableCommands.add( new LamuCommandCreate() );
         availableCommands.addAll( LamuCommandMacro.load( getInitFile() ) );
         // this is a fall back.
         availableCommands.add( LamuCommandMacro.create( 

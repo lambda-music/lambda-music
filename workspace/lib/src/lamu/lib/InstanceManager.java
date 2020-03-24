@@ -35,7 +35,7 @@ public class InstanceManager<T> {
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
-    static final int CLEANUP_FREQUENCY = 10*1000;
+    static final int CLEANUP_FREQUENCY = 60*1000;
     
     static final PlainLogger LOGGER = PlainLogger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }

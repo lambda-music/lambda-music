@@ -631,7 +631,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
      * registerFactory("kawapad",          new KawapadGuiArgumentParserElementFactory());
      * registerFactory("pulsar",           new PulsarArgumentParserElementFactory());
      * registerFactory("gui",              new PulsarGuiArgumentParserElementFactory());
-     * registerFactory("httpd",            new SchemeServerArgumentParserElementFactory());
+     * registerFactory("http",            new SchemeServerArgumentParserElementFactory());
      * registerFactory("output-help",      new OutputReferenceArgumentParserElementFactory());
      * registerFactory("output-help-list", new AllAvailableReferenceArgumentParserElementFactory());
      * }</pre>
@@ -642,14 +642,14 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         registerFactory( "pulsar",           new PulsarArgumentParserElementFactory());
         registerFactory( "repl",             new ReplArgumentParserElementFactory());
         registerFactory( "gui",              new PulsarGuiArgumentParserElementFactory());
-        registerFactory( "httpd",            new SchemeHttpServerArgumentParserElementFactory());
+        registerFactory( "http",             new SchemeHttpServerArgumentParserElementFactory());
         registerFactory( "simple-repl",      new SimpleReplArgumentParserElementFactory());
         registerFactory( "logger-stream",    new LoggerArgumentParserElementFactory());
         registerFactory( "stdio-stream",     new StdioArgumentParserElementFactory());
         registerFactory( "forked-stream",    new ForkedArgumentParserElementFactory());
         
-        registerFactory( "output-help",      new OutputReferenceArgumentParserElementFactory());
-        registerFactory( "output-help-list", new AllAvailableReferenceArgumentParserElementFactory());
+        registerFactory( "reference",        new OutputReferenceArgumentParserElementFactory());
+        registerFactory( "reference-list",   new AllAvailableReferenceArgumentParserElementFactory());
     }
     {
         initializeParser();

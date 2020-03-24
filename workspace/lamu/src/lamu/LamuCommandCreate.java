@@ -3,10 +3,10 @@ package lamu;
 import java.util.Collection;
 import java.util.List;
 
-class LamuCommandExec extends LamuCommand {
+class LamuCommandCreate extends LamuCommand {
     @Override
     boolean match(State state, List<String> arguments) {
-        return !arguments.isEmpty() && arguments.get(0).equals("exec");
+        return !arguments.isEmpty() && arguments.get(0).equals( "create" );
     }
     
     static <T> void setCollection( Collection<T> from, Collection<T> to ) {

@@ -14,32 +14,32 @@
         <mkdir dir="${dir.docs}" />
         <java jar="lamu.jar"  fork="true"   > <!-- error="generated/generated-api.log" -->
             <arg value="advanced" />
-            <arg value="exec" />
+            <arg value="create" />
             <arg value="scheme" />
             <arg value="+" />
-            <arg value="output-help-list" />
+            <arg value="reference-list" />
             <arg value="+" />
-            <arg value="output-help" />
+            <arg value="reference" />
             <arg value="--category=pulsar-procedures" />
             <arg value="--output-file=${dir.apiref.output}/generated-pulsar-procedures.md" />
             <arg value="+" />
-            <arg value="output-help" />
+            <arg value="reference" />
             <arg value="--category=pulsar-notations" />
             <arg value="--output-file=${dir.apiref.output}/generated-pulsar-notations.md" />
             <arg value="+" />
-            <arg value="output-help" />
+            <arg value="reference" />
             <arg value="--category=pulsar-gui-procedures" />
             <arg value="--output-file=${dir.apiref.output}/generated-pulsar-gui-procedures.md" />
             <arg value="+" />
-            <arg value="output-help" />
+            <arg value="reference" />
             <arg value="--category=kawapad-procedures" />
             <arg value="--output-file=${dir.apiref.output}/generated-kawapad-procedures.md" />
             <arg value="+" />
-            <arg value="output-help" />
+            <arg value="reference" />
             <arg value="--category=kawapad-keystrokes" />
             <arg value="--output-file=${dir.apiref.output}/generated-kawapad-keystrokes.md" />
             <arg value="+" />
-            <arg value="output-help" />
+            <arg value="reference" />
             <arg value="--category=help-procedures" />
             <arg value="--output-file=${dir.apiref.output}/generated-help-procedures.md" />
             <arg value="+" />

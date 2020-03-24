@@ -34,9 +34,10 @@ class LamuCommandFork extends LamuCommand {
         
         // fork it
         ForkedProcess javaProcess = ForkedProcess.forkProcess( fullArguments );
-                
-        // Add the forked process to the streamables.
-        state.streamables.push( javaProcess );
+
+//      Let it manually convert processes to streams (Tue, 24 Mar 2020 23:09:53 +0900)  
+//        // Add the forked process to the streamables.
+//        state.streamables.push( javaProcess );
 
         // Create a vessel and put it to the vessel list.
         ApplicationVessel vessel = new ApplicationVessel( "ForkedVessel" );
