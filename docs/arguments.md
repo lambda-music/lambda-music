@@ -44,10 +44,11 @@ keyword.
 ```
 
 The above is an example which demonstrates how to use `create` command of the 
-advanced-mode.  `create` instantiates the specified components of Lamu. This 
-example instantiates a Scheme engine, a Pulsar instance and a GUI frame. They  
-are the most basic set of components in Lamu. Note that the every component 
-name is separated by keyword `+`.  These `+` tokens separates their regions. 
+advanced-mode. The `create` command instantiates the specified components of 
+Lamu. This example instantiates a Scheme engine, a Pulsar instance and a GUI 
+frame.  They are the most basic set of components in Lamu. Note that the every 
+component name is separated by keyword `+`.  These `+` tokens separates their 
+regions. 
 
 ```
 > lamu advanced create scheme + pulsar + gui /path/to/file.scm +
@@ -59,9 +60,29 @@ components, and then the main editor opens the specified file
 tokens contains multiple elements. And the first element of a region
 denotes the name of the component to instantiate.
 
-## Multi-Statements ##
+## Multi-Line ##
 
+Lamu's advanced commands sometimes become very long. It is recommended to split
+the commands when they come to certain length by using Shell's escape sequence 
+character as:
+
+Before:
 ```
+> lamu advanced create scheme + pulsar + gui /path/to/file.scm +
+```
+
+After:
+```bash
+> lamu advanced \
+    create scheme + pulsar + \
+    gui /path/to/file.scm
+```
+
+## Multi-Statements ##
+In advanced-mode, it is able to pass two or more commands at once. Let's call 
+it `multi-statements`.
+
+```bash
 > lamu advanced \
     begin \
         create scheme + pulsar + gui + \
@@ -72,7 +93,7 @@ denotes the name of the component to instantiate.
 ```
 
 The above is an example to demonstrate how to use multiple-statements in the 
-advanced-mode.  Note that there are two keywords : `begin` and `end`. Commands 
+advanced-mode. Note that there are two keywords : `begin` and `end`. Commands 
 which surrounded by `begin` and `end` becomes a statement. 
 
 This creates two distinctive Scheme engines and then connect a Scheme editor to 
@@ -197,8 +218,8 @@ The following is the list of available components in `create` command.
 - gui
 - http
 - simple-repl
-- output-help
-- output-help-list
+- reference
+- reference-list
 
 ### `kawapad` ###
 Instantiate Kawapad.
@@ -223,12 +244,12 @@ Instantiate a Scheme remote HTTP server.
 ### `simple-repl` ###
 Instantiate a simple REPL processor. 
 
-### `output-help` ###
+### `reference` ###
 Output the specified command reference.
 - `--category=[category-name]` specifies the category to output.
 - `--output-file=[filename]` specifies the filename to output.
 
-### `output-help-list` ###
+### `reference-list` ###
 Output the list of available command reference.
 - `--output-file=[filename]` specifies the filename to output. If no output 
   file was specified, it outputs to `stdout`.
