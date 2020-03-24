@@ -11,6 +11,7 @@ import java.util.logging.Level;
 
 import kawapad.Kawapad;
 import kawapad.KawapadDocuments;
+import lamu.lib.InstanceManager;
 import lamu.lib.Version;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.app.ApplicationVessel;
@@ -23,6 +24,7 @@ import pulsar.Pulsar;
 import pulsar.PulsarDocuments;
 
 public class LamuApplication {
+
     static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
@@ -80,6 +82,27 @@ public class LamuApplication {
         }
     }
 
+    private static final class InstanceManagerComponent implements ApplicationComponent {
+        @Override
+        public void processInit() {
+        }
+
+        @Override
+        public void processQuit() {
+            InstanceManager.shutdown();
+        }
+
+        ApplicationComponent parent= null;
+        @Override
+        public void setParentApplicationComponent(ApplicationComponent parent) {
+            this.parent = parent;
+        }
+        @Override
+        public ApplicationComponent getParentApplicationComponent() {
+            return parent;
+        }
+    }
+
     public static void main(String[] args) throws IOException {
         // javax.swing.UIManager.getLookAndFeelDefaults()
         // .put("defaultFont", new java.awt.Font("Data Senenty LET", java.awt.Font.BOLD,
@@ -118,19 +141,26 @@ public class LamuApplication {
         List<LamuCommand> availableCommands = createAvailableCommandList();
         LamuCommand.State state = new LamuCommand.State( availableCommands );
         LamuCommand.parseArgs( state, args );
+        
 
         List<ApplicationVessel> vesselList = new ArrayList<>( state.vessels );
         Collections.reverse( vesselList );
+
         
-        logInfo( "initialize:======= Application:requestInit ==============================" );
-        for ( ApplicationVessel vessel : vesselList ) {
-            if ( false ) {
-                checkRepl( vessel );
-            }
-            logInfo( "initialize:" + vessel );
-            vessel.requestInit();
-        }
-        logInfo( "initialize:==============================================================" );
+        ApplicationVessel lamu = new ApplicationVessel("lamu-main");
+        lamu.add( new InstanceManagerComponent());
+        lamu.addAll( vesselList );
+        lamu.requestInit();
+
+//        logInfo( "initialize:======= Application:requestInit ==============================" );
+//        for ( ApplicationVessel vessel : vesselList ) {
+//            if ( false ) {
+//                checkRepl( vessel );
+//            }
+//            logInfo( "initialize:" + vessel );
+//            vessel.requestInit();
+//        }
+//        logInfo( "initialize:==============================================================" );
     }
 
     /**

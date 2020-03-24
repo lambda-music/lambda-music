@@ -644,11 +644,12 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         registerFactory( "gui",              new PulsarGuiArgumentParserElementFactory());
         registerFactory( "httpd",            new SchemeHttpServerArgumentParserElementFactory());
         registerFactory( "simple-repl",      new SimpleReplArgumentParserElementFactory());
-        registerFactory( "output-help",      new OutputReferenceArgumentParserElementFactory());
-        registerFactory( "output-help-list", new AllAvailableReferenceArgumentParserElementFactory());
         registerFactory( "logger-stream",    new LoggerArgumentParserElementFactory());
         registerFactory( "stdio-stream",     new StdioArgumentParserElementFactory());
         registerFactory( "forked-stream",    new ForkedArgumentParserElementFactory());
+        
+        registerFactory( "output-help",      new OutputReferenceArgumentParserElementFactory());
+        registerFactory( "output-help-list", new AllAvailableReferenceArgumentParserElementFactory());
     }
     {
         initializeParser();

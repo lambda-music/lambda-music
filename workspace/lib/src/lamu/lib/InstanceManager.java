@@ -26,6 +26,7 @@ public class InstanceManager<T> {
     
     public static void shutdown() {
         synchronized ( ALL ) {
+            logInfo( "InstanceManager shutdown-all request" );
             for ( InstanceManager<?> i : ALL ) {
                 i.destroyAll();
             }
