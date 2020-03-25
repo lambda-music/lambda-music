@@ -20,6 +20,7 @@ class KawapadSyntaxHighlighter extends SyntaxHighlighter {
         KEYWORD,
         PUNCTUATION,
         STRING,
+        SHEBANG,
         LINE_COMMENT,
         BLOCK_COMMENT;
         static KawapadSyntaxHighlighter.KawapadSyntaxElementType schemeValueOf( Symbol symbol ) {
@@ -29,6 +30,7 @@ class KawapadSyntaxHighlighter extends SyntaxHighlighter {
     }
     private static final String REGEX_NON_WORD_L = "(?<=[^a-zA-Z0-9-_])";
     private static final String REGEX_NON_WORD_R = "(?=[^a-zA-Z0-9-_])";
+    final AttributeSet defaultShebangColor       = SyntaxHighlighter.darkGreenAttributeSet;
     final AttributeSet defaultBlockCommentColor  = SyntaxHighlighter.grayAttributeSet;
     final AttributeSet defaultLineCommentColor   = SyntaxHighlighter.grayAttributeSet;
     final AttributeSet defaultStringColor        = SyntaxHighlighter.darkGreenAttributeSet;
@@ -112,6 +114,10 @@ class KawapadSyntaxHighlighter extends SyntaxHighlighter {
                 KawapadSyntaxElementType.KEYWORD,
                 createKeywordPattern(), 
                 defaultKeywordColor )); 
+        list.add( SyntaxHighlighter.createSyntaxElement(
+            KawapadSyntaxElementType.SHEBANG,
+            Pattern.compile( "^\\#\\!.*\\R" ),
+            defaultShebangColor )); 
         list.add( SyntaxHighlighter.createSyntaxElement(
             KawapadSyntaxElementType.STRING,
             Pattern.compile( "\\\"[\\s\\S]*?\\\"", Pattern.MULTILINE ),
