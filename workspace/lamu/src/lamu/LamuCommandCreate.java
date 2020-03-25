@@ -15,7 +15,7 @@ class LamuCommandCreate extends LamuCommand {
     }
 
     @Override
-    protected void execute( LamuCommand.State state, List<String> arguments, boolean recursiveCall ) {
+    protected void execute( LamuScript.State state, List<String> arguments, boolean recursiveCall ) {
         // exec
         LamuApplicationArgumentParser argumentParser = new LamuApplicationArgumentParser();
         setCollection( state.vessels,     argumentParser.getValueStack( LamuApplicationArgumentParser.VESSELS ) );

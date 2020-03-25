@@ -64,12 +64,12 @@ class LamuCommandMacro extends LamuCommand {
         return this.getMacroName();
     }
     @Override
-    protected void execute( LamuCommand.State state, List<String> arguments, boolean recursiveCall) {
+    protected void execute( LamuScript.State state, List<String> arguments, boolean recursiveCall) {
         if (recursiveCall) {
             throw new Error( "a malformed default value in the default argument configuration." );
         }
 
-        LamuScript.execute( state, getMacroName(), getMacroContent(), arguments );
+        LamuScript.executeMacro( state, getMacroName(), getMacroContent(), arguments );
     }
 
 

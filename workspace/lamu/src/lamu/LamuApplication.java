@@ -39,10 +39,11 @@ public class LamuApplication {
         availableCommands.add( new LamuCommandCreate() );
         availableCommands.add( new LamuCommandFork() );
         availableCommands.add( new LamuCommandLoad() );
+        availableCommands.add( new LamuCommandEcho() );
         availableCommands.addAll( LamuCommandMacro.load( getInitFile() ) );
         // this is a fall back.
         availableCommands.add( LamuCommandMacro.create( 
-                LamuCommand.DEFAULT_COMMAND_NAME + " create scheme + pulsar + repl + gui $*{$} +") );
+                LamuScript.DEFAULT_COMMAND_NAME + " create scheme + pulsar + repl + gui $*{$} +") );
         return availableCommands;
     }
 
@@ -167,8 +168,8 @@ public class LamuApplication {
         //		Logger.getGlobal().setLevel( Level.ALL );
 
         List<LamuCommand> availableCommands = createAvailableCommandList();
-        LamuCommand.State state = new LamuCommand.State( availableCommands );
-        LamuCommand.parseArgs( state, args );
+        LamuScript.State state = new LamuScript.State( availableCommands );
+        LamuScript.parse( state, args );
         
 
         List<ApplicationVessel> vesselList = new ArrayList<>( state.vessels );

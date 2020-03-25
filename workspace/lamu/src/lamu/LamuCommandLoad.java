@@ -20,7 +20,7 @@ class LamuCommandLoad extends LamuCommand {
     }
 
     @Override
-    protected void execute( LamuCommand.State state, List<String> arguments, boolean recursiveCall ) {
+    protected void execute( LamuScript.State state, List<String> arguments, boolean recursiveCall ) {
         List<String> subArguments = new ArrayList<>( arguments );
         if ( subArguments.isEmpty() ) {
             throw new Error( "no argument was specified" );
@@ -30,7 +30,7 @@ class LamuCommandLoad extends LamuCommand {
                 String content = new String(Files.readAllBytes( Paths.get(uri)), StandardCharsets.UTF_8 );
                 List<String> scriptContent = LamuQuotedStringSplitter.splitString( content ); 
                 
-                LamuScript.execute( state, uri, scriptContent, subArguments  );
+                LamuScript.executeMacro( state, uri, scriptContent, subArguments  );
 
             } catch (IOException e) {
                 throw new Error(e);
