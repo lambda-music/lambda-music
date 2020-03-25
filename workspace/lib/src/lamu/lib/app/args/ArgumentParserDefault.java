@@ -245,9 +245,9 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
         deploy();
     }
     
-    public void parse( List<String> args ) {
-        for ( int i=0; i<args.size(); i++ ) {
-            String s = args.get( i );
+    public void parse( List<String> arguments ) {
+        for ( int i=0; i<arguments.size(); i++ ) {
+            String s = arguments.get( i );
             logInfo( "args[" + i +"]=\"" + s  + "\"");
             notifyArg( s );
         }

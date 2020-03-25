@@ -10,21 +10,15 @@ import lamu.lib.app.process.ForkedProcessUtil;
 
 class LamuCommandFork extends LamuCommand {
     @Override
-    boolean match(State state, List<String> arguments) {
-        return !arguments.isEmpty() && arguments.get(0).equals("fork");
+    protected String commandName() {
+        return "fork";
     }
 
     @Override
-    void execute( LamuCommand.State state, List<String> arguments, boolean recursiveCall) {
+    protected void execute( LamuCommand.State state, List<String> arguments, boolean recursiveCall) {
         List<String> fullArguments = new ArrayList<>();
-        boolean first=true;
         for ( Iterator<String> i = arguments.iterator();i.hasNext(); ) {
             String arg = i.next();
-            if ( first ) {
-                first = false;
-                continue;
-            }
-            
             if ( arg.equals( "lamu" ) ) {
                 fullArguments.addAll( ForkedProcessUtil.getJavaArguments( LamuApplication.class.getCanonicalName() ) );
             } else {

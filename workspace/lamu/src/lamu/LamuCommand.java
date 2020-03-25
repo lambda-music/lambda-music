@@ -16,17 +16,12 @@ import lamu.lib.log.Logger;
 import lamu.lib.stream.Stream;
 
 abstract class LamuCommand {
-    static final String TRIGGER_FOR_ADVANCED_COMMAND_MODE = "advanced";
-    static final String DEFAULT_COMMAND_NAME = "default";
+    protected abstract void    execute( LamuCommand.State state, List<String> arguments, boolean recursiveCall );
+    protected abstract String  commandName();
+    protected          boolean match(State state, List<String> arguments) {
+        return ! arguments.isEmpty() && arguments.get(0).equals( commandName() );
+    }
     
-    static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
-    static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
-    static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
-    static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }
-
-    abstract boolean match(   LamuCommand.State state, List<String> arguments );
-    abstract void    execute( LamuCommand.State state, List<String> arguments, boolean recursiveCall );
-
     public static final class State {
         Collection<LamuCommand> availableCommands; 
         Deque<ApplicationVessel> vessels;
@@ -39,23 +34,33 @@ abstract class LamuCommand {
         }
     }
     
-    public static void parseSubargs( LamuCommand.State state, List<String> args, boolean isRecursiveCall ) {
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    static final String TRIGGER_FOR_ADVANCED_COMMAND_MODE = "advanced";
+    static final String DEFAULT_COMMAND_NAME = "default";
+    
+    static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
+    static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+    static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
+    static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }
+    
+    public static void parseSubargs( LamuCommand.State state, List<String> arguments, boolean isRecursiveCall ) {
         LamuCommand command = null;
         for (LamuCommand c : state.availableCommands ) {
-            if ( c.match( state, args ) ) {
+            if ( c.match( state, arguments ) ) {
                 command = c;
                 break;
             }
         }
 
         if ( command != null ) {
-            command.execute( state, args, isRecursiveCall );
+            List<String> subArguments = arguments.subList(1, arguments.size());
+            command.execute( state, subArguments, isRecursiveCall );
         } else {
             // This should not happen because default command always matches.
             throw new Error("unknown command");
         }
     }
-
 
     public static void parseArgs( LamuCommand.State state, String[] in_args ) throws IOException {
         // (Mon, 09 Mar 2020 23:39:18 +0900) 

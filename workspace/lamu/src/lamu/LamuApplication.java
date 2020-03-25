@@ -24,7 +24,6 @@ import pulsar.Pulsar;
 import pulsar.PulsarDocuments;
 
 public class LamuApplication {
-
     static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
@@ -37,8 +36,9 @@ public class LamuApplication {
     }
     static List<LamuCommand> createAvailableCommandList() throws IOException {
         List<LamuCommand> availableCommands = new ArrayList<>();
-        availableCommands.add( new LamuCommandFork() );
         availableCommands.add( new LamuCommandCreate() );
+        availableCommands.add( new LamuCommandFork() );
+        availableCommands.add( new LamuCommandLoad() );
         availableCommands.addAll( LamuCommandMacro.load( getInitFile() ) );
         // this is a fall back.
         availableCommands.add( LamuCommandMacro.create( 
@@ -103,6 +103,34 @@ public class LamuApplication {
         }
     }
 
+
+    /**
+     * If no reception object exists in the component list, create a default
+     * reception object and add to the list. A reception object is the server
+     * to receive/send via stdin/stdout.
+     * 
+     * Right now there is only one kind of reception objects; SisoReceiver; though
+     * it will be changed. 
+     * 
+     * And this spec is currently disabled. (Fri, 20 Mar 2020 21:43:54 +0900)
+     */
+    static void checkRepl( ApplicationVessel vessel ) {
+        boolean found = false;
+        List<ApplicationComponent> components = vessel.getComponents();
+        for ( Iterator<ApplicationComponent> i= components.iterator();i.hasNext(); ) {
+            ApplicationComponent c = i.next();
+            if ( c instanceof SisoReceiver ) {
+                found = true;
+            }
+        }
+        if ( ! found ) {
+            //              Thread thread = new Thread( new LamuSimpleSocketServer( owner, System.in, System.out), "command-reception" );
+            //              thread.setDaemon(true);
+            //              thread.start();
+            vessel.add( new SisoReceiver( null, System.in, System.out, new SimpleReplService() ) );
+        }
+    }
+
     public static void main(String[] args) throws IOException {
         // javax.swing.UIManager.getLookAndFeelDefaults()
         // .put("defaultFont", new java.awt.Font("Data Senenty LET", java.awt.Font.BOLD,
@@ -161,32 +189,5 @@ public class LamuApplication {
 //            vessel.requestInit();
 //        }
 //        logInfo( "initialize:==============================================================" );
-    }
-
-    /**
-     * If no reception object exists in the component list, create a default
-     * reception object and add to the list. A reception object is the server
-     * to receive/send via stdin/stdout.
-     * 
-     * Right now there is only one kind of reception objects; SisoReceiver; though
-     * it will be changed. 
-     * 
-     * And this spec is currently disabled. (Fri, 20 Mar 2020 21:43:54 +0900)
-     */
-    static void checkRepl( ApplicationVessel vessel ) {
-        boolean found = false;
-        List<ApplicationComponent> components = vessel.getComponents();
-        for ( Iterator<ApplicationComponent> i= components.iterator();i.hasNext(); ) {
-            ApplicationComponent c = i.next();
-            if ( c instanceof SisoReceiver ) {
-                found = true;
-            }
-        }
-        if ( ! found ) {
-            //				Thread thread = new Thread( new LamuSimpleSocketServer( owner, System.in, System.out), "command-reception" );
-            //				thread.setDaemon(true);
-            //				thread.start();
-            vessel.add( new SisoReceiver( null, System.in, System.out, new SimpleReplService() ) );
-        }
     }
 }
