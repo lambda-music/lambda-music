@@ -206,6 +206,10 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     public void processQuit() {
     }
     
+    {
+        logInfo("****************8" + getEditorKit().toString() );
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
 
     Kawapad kawapad=this;
@@ -215,11 +219,14 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // This must be done before the constructor and other initializers.
-    // (Sun, 15 Sep 2019 09:16:53 +0900)
-    {
-        this.setDocument( new SyntaxHighlighterStyledDocument() );
-    }
+
+    // This is no longer necessary. (Thu, 26 Mar 2020 04:24:28 +0900)
+    //  // This must be done before the constructor and other initializers.
+    //  // (Sun, 15 Sep 2019 09:16:53 +0900)
+    //  {
+    //      this.setDocument( new SyntaxHighlighterStyledDocument() );
+    //  }
+    //    
     
     ////////////////////////////////////////////////////////////////////////////
 
@@ -270,12 +277,17 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     };
 
     ////////////////////////////////////////////////////////////////////////////
+    
     static ArrayList<Kawapad> kawapadList = new ArrayList<>();
     public Kawapad( SchemeEngine schemeEngine ) {
         super();
         this.schemeEngine = schemeEngine;
         // Added (Mon, 23 Dec 2019 02:11:34 +0900)      
         this.schemeEngine.getSchemeEvaluator().registerSchemeInitializer( variableInitializer01 );
+        
+
+        this.setEditorKit( new KawapadStyledEditorKit() );
+
         
         // init font
         // kawapad.setFont( new Font("monospaced", Font.PLAIN, 12));
@@ -3495,7 +3507,6 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
             this.documentFilter.resetSyntaxElementList();
         }
     }
-    
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 
