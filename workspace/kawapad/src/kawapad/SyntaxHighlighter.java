@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -21,6 +22,7 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 
+import kawapad.SyntaxHighlighterDocumentAttribute.ArrayDocumentAttribute;
 import lamu.lib.log.Logger;
 
 /**
@@ -29,19 +31,46 @@ import lamu.lib.log.Logger;
  * This answer is great and extremely precious. Without the answer, this could
  * not be implemented. I would like to state the best appreciation here. Thank
  * you. Even though the answer is not taken as an accepted answer, in fact it
- * is the correct anser. This should be accepted and deserves more likes.
+ * is the correct answer. This should be accepted and deserves more likes.
  */
 public abstract class SyntaxHighlighter extends DocumentFilter {
-    private static final boolean DEBUG = false;
+    public static final String GROUP = "K";
+
+    // =================================================================================================================
+    
+    static final boolean DEBUG = false;
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
     private static final StyleContext styleContext = StyleContext.getDefaultStyleContext();
-    public static AttributeSet createAttributeSet(Color foreground) {
+    public static AttributeSet createAttributeSet( Color foreground ) {
         return styleContext.addAttribute( styleContext.getEmptySet(), StyleConstants.Foreground, foreground );
     }
-    public static AttributeSet createAttributeSet(Color foreground, Color background) {
+    
+    static class SyntaxElementConstant {
+        String name;
+        SyntaxElementConstant(String name) {
+            super();
+            this.name = name;
+        }
+        @Override
+        public String toString() {
+            return this.name;
+        }
+    }
+    public static final Object KEY_SYNTAX_ELEMENT = new SyntaxElementConstant( "syntax-element" );
+    public static AttributeSet setSyntaxElement(AttributeSet attr, SyntaxElement se) {
+        return styleContext.addAttribute( attr, KEY_SYNTAX_ELEMENT, se );
+    }
+    public static SyntaxElement getSyntaxElement( AttributeSet attr ) {
+        SyntaxElement element = (SyntaxElement) attr.getAttribute( KEY_SYNTAX_ELEMENT );
+        if ( element == null )
+            element = DEFAULT_SYNTAX_ELEMENT;
+        return element;
+    }
+
+    public static AttributeSet createAttributeSet( Color foreground, Color background) {
         return 
                 styleContext.addAttribute(
                     styleContext.addAttribute(
@@ -61,13 +90,17 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
         return (Color) attr.getAttribute( StyleConstants.Background );
     }
     public static final AttributeSet    darkGreenAttributeSet   = createAttributeSet( new Color(0x00008800 ) );
-    public static final AttributeSet    greenAttributeSet   = createAttributeSet( Color.GREEN );
-    public static final AttributeSet    blueAttributeSet    = createAttributeSet( Color.BLUE );
-    public static final AttributeSet    redAttributeSet     = createAttributeSet( Color.RED );
-    public static final AttributeSet    grayAttributeSet    = createAttributeSet( Color.GRAY );
-    public static final AttributeSet    orangeAttributeSet  = createAttributeSet( Color.ORANGE );
-    public static final AttributeSet    whiteAttributeSet   = createAttributeSet( Color.WHITE );
+    public static final AttributeSet    greenAttributeSet       = createAttributeSet( Color.GREEN );
+    public static final AttributeSet    blueAttributeSet        = createAttributeSet( Color.BLUE );
+    public static final AttributeSet    redAttributeSet         = createAttributeSet( Color.RED );
+    public static final AttributeSet    grayAttributeSet        = createAttributeSet( Color.GRAY );
+    public static final AttributeSet    orangeAttributeSet      = createAttributeSet( Color.ORANGE );
+    public static final AttributeSet    whiteAttributeSet       = createAttributeSet( Color.WHITE );
 
+    
+    public static final SyntaxElement DEFAULT_SYNTAX_ELEMENT = 
+        SyntaxHighlighter.createSyntaxElement( "DEFAULT_SYNTAX", null, styleContext.getEmptySet() );
+    
     private JTextComponent textComponent;
     public SyntaxHighlighter(JTextComponent kawapad) {
         this.textComponent = kawapad;
@@ -91,7 +124,7 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
                 super();
                 this.name = name;
                 this.pattern = pattern;
-                this.attributeSet = attributeSet;
+                this.attributeSet = setSyntaxElement( attributeSet , this );
             }
             @Override
             public Object getName() {
@@ -115,11 +148,11 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
             }
             @Override
             public void setColor( Color foreground, Color background ) {
-                this.attributeSet = createAttributeSet( foreground, background );
+                this.attributeSet = setSyntaxElement( createAttributeSet( foreground, background ), this );
             }
             @Override
             public void setColor( Color foreground) {
-                this.attributeSet = createAttributeSet( foreground );
+                this.attributeSet = setSyntaxElement( createAttributeSet( foreground ), this );
             }
             @Override
             public Color getForegroundColor() {
@@ -128,6 +161,10 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
             @Override
             public Color getBackgroundColor() {
                 return SyntaxHighlighter.getBackgroundColor( this.attributeSet );
+            }
+            @Override
+            public String toString() {
+                return String.format("%s",name);
             }
         }
     }
@@ -166,33 +203,32 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
         return syntaxElementList;
     }
     
-    public abstract AttributeSet getDefaultAttributeSet();  
+    public abstract SyntaxElement getDefaultAttributeSet();  
     
     @Override
-    public void insertString(FilterBypass fb, int offset, String text, AttributeSet attributeSet)
-            throws BadLocationException {
-        
+    public void insertString(FilterBypass fb, int offset, String text, AttributeSet attributeSet) throws BadLocationException {
         super.insertString( fb, offset, text, attributeSet );
-        handleTextChanged();
+        handleTextChanged(fb, offset, text.length());
     }
     
     @Override
     public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
         super.remove( fb, offset, length );
-        handleTextChanged();
+        handleTextChanged(fb, offset, length);
     }
     
     @Override
-    public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attributeSet)
-            throws BadLocationException {
+    public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attributeSet) throws BadLocationException {
         super.replace( fb, offset, length, text, attributeSet );
-        handleTextChanged();
+        handleTextChanged(fb, offset, length);
     }
-    
-    Timer timer = new Timer(true);
+
+    final StyledDocument emptyDocument = new DefaultStyledDocument();
+    final Timer timer = new Timer(true);
     final Object lock = new Object();
     transient TimerTask theLastRunnable = null;
-    private void handleTextChanged() {
+    
+    private void handleTextChanged( FilterBypass fb, int offset, int length ) {
         TimerTask r = null;
         synchronized (lock){
             r= new TimerTask() {
@@ -209,7 +245,15 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
                         SwingUtilities.invokeLater( new Runnable() {
                             @Override
                             public void run() {
-                                update();
+                                updateTextStyles( 
+//                                    DefaultSyntaxHighlighterProcessor.INSTANCE,
+                                    NewSyntaxHighlighterProcessor.INSTANCE,
+                                    textComponent,
+                                    (SyntaxHighlighterStyledDocument)textComponent.getDocument(),
+                                    emptyDocument,
+                                    getSyntaxElementList(), 
+                                    getDefaultAttributeSet(), 
+                                    offset, length);
                             }
                         } );
                     }
@@ -220,51 +264,62 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
         if ( r != null )
             timer.schedule( r, 500 );
     }
-
-    ElapsedTime ep = new ElapsedTime();
     
-    StyledDocument emptyDocument = new DefaultStyledDocument();
-    void update() {
-        AttributeSet defaultAttr = getDefaultAttributeSet();
-        SyntaxHighlighterStyledDocument document = (SyntaxHighlighterStyledDocument)textComponent.getDocument();
+    interface SyntaxHighlighterProcessor {
+        void process(
+            SyntaxHighlighterStyledDocument document, 
+            SyntaxElementList syntaxElementList,
+            SyntaxElement defaultSyntaxElement );
+    }
+    
+    static void updateTextStyles(
+        SyntaxHighlighterProcessor processor,
+        JTextComponent textComponent, 
+        SyntaxHighlighterStyledDocument document, 
+        StyledDocument emptyDocument, 
+        SyntaxElementList syntaxElementList, 
+        SyntaxElement defaultSyntaxElement, 
+        int offset, 
+        int length ) 
+    {
         synchronized ( document ) {
             int dot = textComponent.getCaret().getDot();
             int mark = textComponent.getCaret().getMark();
             textComponent.setDocument( emptyDocument );
             ((SyntaxHighlighterStyledDocument)document).callWriteLock();
             try {
-                // clear
-                if ( DEBUG ) ep.start();
-                document.setCharacterAttributes(0, document.getLength(), defaultAttr , true);
-                if ( DEBUG ) ep.end();
-                if ( DEBUG ) logInfo( ep.getMessage( "Syntax Clear" ));
-                // 
-                Segment text = KawapadSelection.getText( document );
-                for ( SyntaxElement e : getSyntaxElementList() ) {
-                    if ( DEBUG ) ep.start();
-                    updateTextStyles( document, text, e.getPattern(), defaultAttr, e.getAttributeSet() );
-                    if ( DEBUG ) ep.end();
-                    if ( DEBUG ) logInfo( ep.getMessage( "Syntax Set:" + e.getName() ));
-                }
+                processor.process( document, syntaxElementList, defaultSyntaxElement );
             } finally {
                 ((SyntaxHighlighterStyledDocument)document).callWriteUnlock();
                 textComponent.setDocument( document );
                 textComponent.getCaret().setDot( mark );
                 if ( mark!=dot)
                     textComponent.getCaret().moveDot( dot );
-                
             }
         }
     }
     
-    
-    public static final String GROUP = "K";
-    static void updateTextStyles( StyledDocument document, Segment text, Pattern pattern, AttributeSet defaultAttr, AttributeSet attr ) {
+    static void updateTextStylesWithAllSyntaxElement(
+        Segment text,
+        SyntaxHighlighterDocumentAttribute document, 
+        SyntaxElementList syntaxElementList,
+        ElapsedTime ep ) 
+    {
+        for ( SyntaxElement element : syntaxElementList ) {
+            if ( DEBUG ) ep.start();
+            updateTextStylesWithSyntaxElement( document, text, element  );
+            if ( DEBUG ) ep.end();
+            if ( DEBUG ) logInfo( ep.getMessage( "Syntax Set:" + element.getName() ));
+        }
+    }
+
+    static void updateTextStylesWithSyntaxElement( SyntaxHighlighterDocumentAttribute document, Segment text, SyntaxElement element ) {
         // Look for tokens and highlight them
-        Matcher matcher = pattern.matcher( text );
+        Matcher matcher = element.getPattern().matcher( text );
         ElapsedTime ep = new ElapsedTime();
         @SuppressWarnings("unused")
         double t =0;
+        
         while (matcher.find()) {
             // Change the color of recognized tokens
             int start;
@@ -278,13 +333,127 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
             }
             if ( DEBUG )
                 ep.start();
-            document.setCharacterAttributes( start, end - start, attr, true );
+            document.setCharacterAttributes( start, end - start, element, true );
             if ( DEBUG )
                 ep.end();
+            
             t+=ep.elapsedTime();
         }
         if ( DEBUG )
             logInfo( ElapsedTime.format( "set-total", t) );
     }
 
+    
+    /**
+     *  The old version of syntax highlighter. This class is not used anymore.
+     */
+    static class DefaultSyntaxHighlighterProcessor implements SyntaxHighlighterProcessor {
+        static final SyntaxHighlighterProcessor INSTANCE = new DefaultSyntaxHighlighterProcessor();
+        @Override
+        public void process(SyntaxHighlighterStyledDocument document, SyntaxElementList syntaxElementList, 
+            SyntaxElement defaultSyntaxElement ) 
+        {
+            proc(document, syntaxElementList, defaultSyntaxElement);
+        }
+
+        public static void clearAttributes(SyntaxHighlighterStyledDocument document, SyntaxElement defaultSyntaxElement,
+            ElapsedTime ep) {
+            // clear
+            if ( DEBUG ) ep.start();
+            document.setCharacterAttributes( 0, document.getLength(), defaultSyntaxElement.getAttributeSet() , true);
+            if ( DEBUG ) ep.end();
+            if ( DEBUG ) logInfo( ep.getMessage( "Syntax Clear" ));
+        }
+
+        public static void proc(SyntaxHighlighterStyledDocument document, 
+            SyntaxElementList syntaxElementList, SyntaxElement defaultSyntaxElement ) 
+        {
+            if ( DEBUG ) logInfo( "NewSyntaxHighlighterProcessor" );
+            
+            ElapsedTime ep = new ElapsedTime();
+            clearAttributes(document, defaultSyntaxElement, ep);
+            
+            //
+            SyntaxHighlighterDocumentAttribute doc = 
+                SyntaxHighlighterDocumentAttribute.create( document );
+            
+            updateTextStylesWithAllSyntaxElement( 
+                KawapadSelection.getText( document ), 
+                doc, syntaxElementList, ep);
+        }
+
+    }
+
+    public static void differentialUpdate( ArrayDocumentAttribute from, ArrayDocumentAttribute to, 
+        SyntaxHighlighterDocumentAttribute result, SyntaxElement defaultSyntaxElement ) 
+    {
+        if ( DEBUG ) SyntaxHighlighter.logInfo("differentialUpdate");
+        
+        SyntaxElement[] arrFrom = from.getArray();
+        SyntaxElement[] arrTo = to.getArray();
+        
+        int prevPos = -1;
+        SyntaxElement prevValue = null;
+        for ( int currPos=0; currPos<arrTo.length; currPos++ ) {
+            SyntaxElement currValue ;
+            
+            //
+            // it denotes that two values are identical when currValue is null,
+            //
+            
+            if ( Objects.equals( arrFrom[currPos], arrTo[currPos] ) ) {
+                currValue = null;
+            } else {
+                currValue = arrTo[currPos];
+            }
+            
+            if ( prevValue == currValue ) {
+                
+            } else {
+//                logInfo( "prevValue:" + prevValue );
+                if ( prevValue != null ) {
+                    result.setCharacterAttributes( prevPos, currPos-prevPos, prevValue, true );
+                }
+
+                prevValue = currValue;
+                prevPos = currPos;
+            }
+        }
+
+    }
+    
+    /**
+     * This class is the new version of Syntax Highlighter. This version works a lot faster than the old one. 
+     */
+    static class NewSyntaxHighlighterProcessor implements SyntaxHighlighterProcessor {
+        static final NewSyntaxHighlighterProcessor INSTANCE = new NewSyntaxHighlighterProcessor();
+        @Override
+        public void process(SyntaxHighlighterStyledDocument document, SyntaxElementList syntaxElementList, SyntaxElement defaultSyntaxElement ) {
+            proc(document, syntaxElementList, defaultSyntaxElement);
+        }
+        public static void proc(SyntaxHighlighterStyledDocument document, SyntaxElementList syntaxElementList, SyntaxElement defaultSyntaxElement) {
+            ElapsedTime ep = new ElapsedTime();
+            if ( DEBUG ) 
+                logInfo( ep.getMessage( "NewSyntaxHighlighterProcessor" ));
+
+            // read
+            if ( DEBUG ) ep.start();
+            SyntaxHighlighterDocumentAttribute orig = SyntaxHighlighterDocumentAttribute.create( document );
+            ArrayDocumentAttribute from = SyntaxHighlighterDocumentAttribute.create( orig.getLength() );
+            orig.copyTo( from );
+            ArrayDocumentAttribute to = SyntaxHighlighterDocumentAttribute.create( orig.getLength(), DEFAULT_SYNTAX_ELEMENT );
+            if ( DEBUG ) ep.end();
+            if ( DEBUG ) logInfo( ep.getMessage( "Read and Duplicate" ));
+            
+//            logInfo( to .toString() );
+            updateTextStylesWithAllSyntaxElement( 
+                KawapadSelection.getText( document ), 
+                to, syntaxElementList, ep);
+ 
+            if ( DEBUG ) ep.start();
+            differentialUpdate(from, to, orig, defaultSyntaxElement );
+            if ( DEBUG ) ep.end();
+            if ( DEBUG ) logInfo( ep.getMessage( "differentialUpdate" ));
+        }
+    }
 }

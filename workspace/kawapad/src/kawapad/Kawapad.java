@@ -162,8 +162,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
 
     private static final String FLAG_DONE_INIT_PULSAR_SCRATCHPAD = "flag-done-init-pulsar-scratchpad";
     private static final boolean DEBUG_UNDO_BUFFER = true;
-    @SuppressWarnings("unused")
-    private static final boolean DEBUG = false;
+    static final boolean DEBUG = false;
     static final boolean DEBUG_PARENTHESIS = false;
     private static final boolean ENABLED_PARENTHESIS_HIGHLIGHT = true;
     static final boolean ENABLED_SHOW_CORRESPONDING_PARENTHESES = true;

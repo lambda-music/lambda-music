@@ -14,7 +14,7 @@ import javax.swing.text.Segment;
 
 import kawapad.CaretTransformer.CaretPos;
 
-public class KawapadTemporarySearchHighlighter extends KawapadTemporaryHighlighter {
+public class KawapadTemporarySearchHighlighter extends KawapadTemporaryHighlighter {    
     static transient Color searchHighlightColor;
     static transient HighlightPainter searchHighlightPainter;
     synchronized static void setSearchHighlightColor( Color color ) {
@@ -70,7 +70,9 @@ public class KawapadTemporarySearchHighlighter extends KawapadTemporaryHighlight
     public static final String GROUP_ID = "HELLO";
 
     static String searchStringToPattern( String searchString, boolean wordSearch ) {
-        logInfo( "searchStringToPattern=" +  wordSearch );
+        if ( DEBUG )
+            logInfo( "searchStringToPattern=" +  wordSearch );
+        
         if ( wordSearch ) {
             return "(?:^|\"|\\s|\\(|\\))" + "(?<"+GROUP_ID+">" + Pattern.quote( searchString ) + ")" + "(?=$|\"|\\s|\\(|\\))"  ;
 //            return "(?=^|\\s?|\\(?|\\)?)" + "(?<"+GROUP_ID+">" + Pattern.quote( searchString ) + ")"; // + "(?<=$|\\s|\\(|\\))"  ;

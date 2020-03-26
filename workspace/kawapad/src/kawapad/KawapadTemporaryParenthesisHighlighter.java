@@ -37,6 +37,7 @@ public class KawapadTemporaryParenthesisHighlighter extends KawapadTemporaryHigh
                     SchemeParenthesisParser.lookupParenthesis( text, position );
             if ( Kawapad.DEBUG_PARENTHESIS )
                 logInfo( "highlightMatchingParenthesis:" + position + "=>"+ parserState.isFound() );
+            
             if ( parserState.isFound() )
                 addParenthesisHighlight( component, 
                     parserState.getIterator().getInitialIndex(), 

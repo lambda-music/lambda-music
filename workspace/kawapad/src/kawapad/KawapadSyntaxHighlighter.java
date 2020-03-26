@@ -15,8 +15,9 @@ import lamu.lib.scheme.SchemeResult;
 import lamu.lib.scheme.SchemeUtils;
 
 class KawapadSyntaxHighlighter extends SyntaxHighlighter {
-    private static final boolean DEBUG=true;
+    private static final boolean DEBUG=false;
     public static enum KawapadSyntaxElementType {
+        NONE,
         KEYWORD,
         PUNCTUATION,
         STRING,
@@ -87,8 +88,8 @@ class KawapadSyntaxHighlighter extends SyntaxHighlighter {
         }
     }
 
-    boolean enabledPunctuation = false;
-    boolean enabledKeyword = false;
+    boolean enabledPunctuation = true;
+    boolean enabledKeyword = true;
     public boolean isEnabledPunctuation() {
         return enabledPunctuation;
     }
@@ -132,8 +133,16 @@ class KawapadSyntaxHighlighter extends SyntaxHighlighter {
             defaultLineCommentColor ));
         return list;
     }
+    
+    /**
+     * this method may not be necessary anymore.
+     * (Fri, 27 Mar 2020 04:36:53 +0900)
+     */
     @Override
-    public AttributeSet getDefaultAttributeSet() {
-        return SyntaxHighlighter.createAttributeSet( kawapad.getForeground() );
+    public SyntaxElement getDefaultAttributeSet() {
+        AttributeSet attr =  SyntaxHighlighter.createAttributeSet( kawapad.getForeground() );
+        SyntaxElement element = SyntaxHighlighter.createSyntaxElement( KawapadSyntaxElementType.NONE, null, attr );
+        SyntaxHighlighter.setSyntaxElement( attr, element ); 
+        return element;
     }
 }
