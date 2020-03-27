@@ -76,6 +76,9 @@ components, and then the main editor opens the specified file
 tokens contains multiple elements. And the first element of a region
 denotes the name of the component to instantiate.
 
+The available components are explained later.
+
+
 # Multi-Line Arguments #
 Lamu's advanced commands sometimes become very long. It is recommended to split
 the commands when they come to certain length by using Shell's escape sequence 
@@ -137,7 +140,6 @@ the garbage collection and obstructs JACKAudio's real-time processing. This
 causes unpredictable skips on the generated sound.  Therefore, Kawapad is 
 designed that to be able to be separately executed in another JVM.
 
-
 # Nested Multiple-Statements #
 Multiple-statements can be nested; a typical scenario of the usage of 
 multiple-statement is using with `fork` command.
@@ -161,6 +163,84 @@ multiple-statement is using with `fork` command.
 Note that `fork` command itself is surrounded by `begin` and `end` and its 
 arguments also consist `begin` and `end`; this example works as expected.
 
+# `echo` Command #
+Print the specified message.
+```bash
+> lamu advanced echo HELLO WORLD FOO BAR!
+```
+
+This command causes `HELLO WORLD FOO BAR!` to be printed.
+
+
+# `load` Command #
+Lamu can execute external files as command-line arguments.
+This file is called Lamu External Argument Script.
+The `load` command Load the specified file and execute it as arguments.
+For example, when there is a file `foo/bar/bum.lamu` as:
+
+```bash
+advanced
+begin
+    echo foo bar
+end
+begin
+    create scheme + pulsar + repl + gui $*{$}
+end
+begin
+    echo foo bar
+end
+```
+And then execute the file as:
+
+```bash
+> lamu advanced load foo/bar/bum.lamu
+```
+This causes Lamu to run with basic components with `foo bar` printed in
+the standard stream.
+
+Note that in the Lamu external argument file, multiple-line command-line are 
+available without escape sequence characters.
+
+# Dynamic Parameter in Lamu External Argument File #
+Lamu External Argument File itself can accept arguments.
+
+Create a file which name is `example.lamu` as:
+
+```bash
+advanced
+begin
+    echo $hello{FOO $ BAR}
+end
+```
+
+And then execute it as
+
+```bash
+advanced load 'example.lamu' --hello='HELLO WORLD' 2> /dev/null
+```
+
+This causes `FOO HELLO WORLD BAR' to be printed.
+
+```
+$VARIABLE-NAME{ ANY VALUE FORMAT SPEC $ FORMAT SPEC }
+```
+
+## Specification ##
+- Any argument starts with `$` is treated as a variable.
+- The alphabet characters after the `$` are treated as a name of the variable.
+- When the command-line processor encounters a variable in Lamu external 
+  argument script, the processor replaces it to the content of the 
+  corresponding runtime-named-argument only when the corresponding 
+  runtime-named-argument exists in the runtime-arguments.
+  Otherwise the variable will be silently ignored.
+- When there are a block which is surrounded by curly-braces after a variable,
+  it is treated as a format-specification. The variable is replaced with the 
+  content of the format-specification. If there is a `$` in the 
+  format-specification, the `$` will be replaced with the corresponding 
+  runtime-named-argument.
+
+
+
 # Defining User Commands #
 You can define new commands by creating macro-commands in the default-argument 
 configuration file. The path of the configuration file is: 
@@ -168,10 +248,10 @@ configuration file. The path of the configuration file is:
 
 The following is an example of the configuration file.
 
-```
-default create scheme + pulsar + repl + gui $\*{--open=$} +
-simple create scheme + pulsar + simple-repl + gui $\*{--open=$} +
-cs create begin scheme --server-port=8193 + gui $\* end begin scheme + pulsar + http --port=8193 end
+```bash
+default create scheme + pulsar + repl + gui $*{--open=$} +
+simple create scheme + pulsar + simple-repl + gui $*{--open=$} +
+cs create begin scheme --server-port=8193 + gui $* end begin scheme + pulsar + http --port=8193 end
 local create scheme + pulsar + repl + gui $open{$} +
 ```
 
@@ -197,39 +277,7 @@ default create scheme + pulsar + repl +
 For example, setting as above makes `lamu` to execute without GUI as default.
 
 
-# `echo` Command #
-Print the specified message.
-```bash
-> lamu advanced echo HELLO WORLD FOO BAR!
-```
-
-This command causes `HELLO WORLD FOO BAR!` to be printed.
-
-
-# `load` Command #
-Load the specified file and execute it as arguments.
-For example, there is a file `foo/bar/bum.lamu` as:
-
-```bash
-advanced
-begin
-    echo foo bar
-end
-begin
-    create scheme + pulsar + repl + gui $*{$}
-end
-begin
-    echo foo bar
-end
-```
-And then execute the file as:
-
-```bash
-> lamu advanced load foo/bar/bum.lamu
-```
-
 # Lamu Component Reference #
-
 The following is the list of available components in `create` command.
 
 - kawapad

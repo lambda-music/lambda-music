@@ -10,6 +10,7 @@ class LamuCommandEcho extends LamuCommand {
 
     @Override
     protected void execute( LamuScript.State state, List<String> arguments, boolean recursiveCall) {
-        LamuScript.logInfo( String.format( "echo:%s", arguments.toString() ));
+//        LamuScript.logInfo( String.format( "echo:%s", arguments.toString() ));
+        System.out.println( String.join( " " , arguments ) );
     }
 }
