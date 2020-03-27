@@ -88,6 +88,7 @@ import kawapad.KawapadSelection.SearchNextWordTransformer;
 import kawapad.KawapadSelection.ShrinkParenthesisSelector;
 import kawapad.KawapadSelection.SideParenthesisSelector;
 import kawapad.KawapadSyntaxHighlighter.KawapadSyntaxElementType;
+import kawapad.SyntaxHighlighter.SyntaxElement;
 import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
 import lamu.lib.CurrentObject;
@@ -310,9 +311,9 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         // This action intercepts our customization so delete it.
         AcceleratorKeyList.purgeKeyFromActionMap( kawapad, DefaultEditorKit.insertTabAction );
         
-        documentFilter = new KawapadSyntaxHighlighter( this );
+        this.syntaxHighlighter = new KawapadSyntaxHighlighter( this );
         if ( ENABLED_SYNTAX_HIGHLIGHTING ) {
-            ((AbstractDocument)getDocument()).setDocumentFilter(documentFilter);
+            ((AbstractDocument)getDocument()).setDocumentFilter(getSyntaxHighlighter());
         }
         
         // https://stackoverflow.com/questions/6189599/automatically-causing-a-subclassed-jpanels-resources-to-be-released
@@ -2993,21 +2994,22 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
             SchemeUtils.defineLambda(env, new MultipleNamedProcedureN( "set-syntax-color" ) {
                 @Override
                 public Object apply2(Object arg1, Object arg2) throws Throwable {
-                    getCurrent().documentFilter.getSyntaxElementList().get(
-                        KawapadSyntaxElementType.schemeValueOf((Symbol)arg1)).setColor((Color)arg2);
-                    
+                    SyntaxElement syntaxElement = getCurrent().getSyntaxHighlighter().getSyntaxElementList().get(
+                        KawapadSyntaxElementType.schemeValueOf((Symbol)arg1));
+                    syntaxElement.setForegroundColor((Color)arg2);
                     return Values.empty; 
                 }
                 @Override
                 public Object apply3(Object arg1, Object arg2, Object arg3) throws Throwable {
-                    getCurrent().documentFilter.getSyntaxElementList().get(
-                        KawapadSyntaxElementType.schemeValueOf((Symbol)arg1)).setColor((Color)arg2,(Color)arg3);
+                    SyntaxElement syntaxElement = getCurrent().getSyntaxHighlighter().getSyntaxElementList().get(
+                        KawapadSyntaxElementType.schemeValueOf((Symbol)arg1));
+                    syntaxElement.setForegroundColor((Color)arg2);
+                    syntaxElement.setBackgroundColor((Color)arg3);
                     return Values.empty; 
                 }
                 @Override
                 public Object applyN(Object[] args) throws Throwable {
                     WrongArguments.checkArgCount( this.getName() , 2, 3, args.length );
-
                     if ( args.length == 2 )
                         return apply2( args[0], args[1] );
                     else if ( args.length == 3 )
@@ -3406,7 +3408,10 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    private KawapadSyntaxHighlighter documentFilter; // See the constructor how this field is initialized.
+    private KawapadSyntaxHighlighter syntaxHighlighter; // See the constructor how this field is initialized.
+    public KawapadSyntaxHighlighter getSyntaxHighlighter() {
+        return syntaxHighlighter;
+    }
 
     static void highlightMatchningParentheses( Kawapad kawapad, int offset ) {
         if ( DEBUG_PARENTHESIS ) 
@@ -3505,7 +3510,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     }
     void notifySyntaxChange() {
         synchronized ( Kawapad.this ) {
-            this.documentFilter.resetSyntaxElementList();
+            this.getSyntaxHighlighter().resetSyntaxElementList();
         }
     }
 

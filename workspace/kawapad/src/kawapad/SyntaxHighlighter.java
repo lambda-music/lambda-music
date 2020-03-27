@@ -4,6 +4,9 @@ import java.awt.Color;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -14,8 +17,10 @@ import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.DocumentFilter;
+import javax.swing.text.Highlighter.HighlightPainter;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Segment;
 import javax.swing.text.StyleConstants;
@@ -47,19 +52,31 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
     // =================================================================================================================
 
     private static final StyleContext styleContext = StyleContext.getDefaultStyleContext();
-    
+    public static AttributeSet createAttributeSet() {
+        return styleContext.getEmptySet();
+    }
     public static AttributeSet createAttributeSet( Color foreground ) {
-        return styleContext.addAttribute( styleContext.getEmptySet(), StyleConstants.Foreground, foreground );
+        return setForeground( foreground, createAttributeSet() );
     }
     public static AttributeSet createAttributeSet( Color foreground, Color background ) {
         AttributeSet element = styleContext.getEmptySet();
         if ( foreground != null)
-            styleContext.addAttribute(element, StyleConstants.Foreground, foreground );
-        
+            element = setForeground(foreground, element);
         if ( background != null)
-            styleContext.addAttribute( element , StyleConstants.Background, background );
-        
+            element = setBackground(background, element);
         return element;
+    }
+    public static AttributeSet setBackground( Color background, AttributeSet element ) {
+        return styleContext.addAttribute( element , StyleConstants.Background, background );
+    }
+    public static AttributeSet setForeground( Color foreground, AttributeSet element ) {
+        return styleContext.addAttribute(element, StyleConstants.Foreground, foreground );
+    }
+    public static Color getForegroundColor(AttributeSet attr) {
+        return (Color) attr.getAttribute( StyleConstants.Foreground );
+    }
+    public static Color getBackgroundColor(AttributeSet attr) {
+        return (Color) attr.getAttribute( StyleConstants.Background );
     }
     
     static class SyntaxElementConstant {
@@ -73,7 +90,6 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
             return this.name;
         }
     }
-    
     public static final Object KEY_SYNTAX_ELEMENT = new SyntaxElementConstant( "syntax-element" );
     public static AttributeSet setSyntaxElement(AttributeSet attr, SyntaxElement se) {
         return styleContext.addAttribute( attr, KEY_SYNTAX_ELEMENT, se );
@@ -85,15 +101,6 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
         return element;
     }
 
-    public static Color getColorFromAttributeSet(AttributeSet attr) {
-        return (Color) attr.getAttribute( StyleConstants.Foreground );
-    }
-    public static Color getForegroundColor(AttributeSet attr) {
-        return (Color) attr.getAttribute( StyleConstants.Foreground );
-    }
-    public static Color getBackgroundColor(AttributeSet attr) {
-        return (Color) attr.getAttribute( StyleConstants.Background );
-    }
     
     public static final SyntaxElement DEFAULT_SYNTAX_ELEMENT = 
         SyntaxHighlighter.createSyntaxElement( "DEFAULT_SYNTAX", null, styleContext.getEmptySet() );
@@ -102,26 +109,58 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
     public SyntaxHighlighter(JTextComponent kawapad) {
         this.textComponent = kawapad;
     }
+
     public interface SyntaxElement {
+        /*
+         * It appeared that setting AttributeSet destroy the consistency. The set
+         * AttributeSet object does not exist in Editor's AttributeSet list; it is
+         * necessary to replace all AttributeSet objects in the list. If the replacemet
+         * is not done, the color modification done to this object will not reflect to
+         * the editor.
+         */
         Object getName();
         void setPattern(Pattern pattern);
         Pattern getPattern();
         AttributeSet getAttributeSet();
         void setAttributeSet(AttributeSet attributeSet);
-        void setColor(Color foreground, Color background);
-        void setColor(Color foreground);
-        Color getForegroundColor();
-        Color getBackgroundColor();
+        HighlightPainter getHighlightPainter();
+        
+        default public Color getForegroundColor() {
+            return SyntaxHighlighter.getForegroundColor( getAttributeSet() );
+        }
+        default public Color getBackgroundColor() {
+            return SyntaxHighlighter.getBackgroundColor( getAttributeSet() );
+        }
+        default public void setBackgroundColor(Color color) {
+            this.setAttributeSet( setBackground( color, getAttributeSet() ));
+        }
+        default public void setForegroundColor(Color color) {
+            this.setAttributeSet( setForeground( color, getAttributeSet() ));
+        }
         
         public static final class Default implements SyntaxElement {
             Object name;
             Pattern pattern;
             AttributeSet attributeSet;
-            public Default(Object name, Pattern pattern, AttributeSet attributeSet) {
+            HighlightPainter highlightPainter;
+            public Default( Object name, Pattern pattern, AttributeSet attributeSet ) {
                 super();
                 this.name = name;
                 this.pattern = pattern;
                 this.attributeSet = setSyntaxElement( attributeSet , this );
+                this.updateHighlightPainter();
+            }
+            public void updateHighlightPainter() {
+                this.highlightPainter = 
+                    new DefaultHighlighter.DefaultHighlightPainter(
+                        SyntaxHighlighter.getBackgroundColor( this.getAttributeSet() ) );
+            }
+            public Default(Object name, HighlightPainter highlightPainter ) {
+                super();
+                this.name = name;
+                this.pattern = null;
+                this.attributeSet = null;
+                this.highlightPainter =  highlightPainter ;
             }
             @Override
             public Object getName() {
@@ -136,28 +175,26 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
                 return pattern;
             }
             @Override
+            public void setAttributeSet(AttributeSet attributeSet) {
+                this.attributeSet = attributeSet;
+            }
+            @Override
             public AttributeSet getAttributeSet() {
                 return attributeSet;
             }
             @Override
-            public void setAttributeSet( AttributeSet attributeSet ) {
-                this.attributeSet = attributeSet;
+            public HighlightPainter getHighlightPainter() {
+                return this.highlightPainter;
             }
             @Override
-            public void setColor( Color foreground, Color background ) {
-                this.attributeSet = setSyntaxElement( createAttributeSet( foreground, background ), this );
+            public void setBackgroundColor(Color color) {
+                SyntaxElement.super.setBackgroundColor(color);
+                this.updateHighlightPainter();
             }
             @Override
-            public void setColor( Color foreground) {
-                this.attributeSet = setSyntaxElement( createAttributeSet( foreground ), this );
-            }
-            @Override
-            public Color getForegroundColor() {
-                return SyntaxHighlighter.getForegroundColor( this.attributeSet );
-            }
-            @Override
-            public Color getBackgroundColor() {
-                return SyntaxHighlighter.getBackgroundColor( this.attributeSet );
+            public void setForegroundColor(Color color) {
+                SyntaxElement.super.setForegroundColor(color);
+                this.updateHighlightPainter();
             }
             @Override
             public String toString() {
@@ -169,27 +206,31 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
         return new SyntaxElement.Default( name, pattern, attributeSet );
     }
     
-    public static class SyntaxElementList extends ArrayList<SyntaxElement> {
-        public SyntaxElementList() {
-            super();
-        }
-        public SyntaxElementList(Collection<? extends SyntaxElement> c) {
-            super( c );
+    public static class SyntaxElementList implements Iterable<SyntaxElement> {
+        private final ArrayList<SyntaxElement> list;
+        private final HashMap<Object,SyntaxElement> map;
+        public SyntaxElementList( Collection<SyntaxElement> c ) {
+            this.list = new ArrayList<>( c );
+            this.map = new HashMap<>();
+            for ( SyntaxElement e : this.list ) {
+                this.map.put( e.getName(), e );
+            }
         }
         public SyntaxElement get( Object name ) {
-            for ( SyntaxElement se : this ) {
-                if ( name.equals( se.getName() ) ) {
-                    return se;
-                }
-            }
-            throw new IllegalArgumentException( "could not find " + name + "." );
+            SyntaxElement e =  this.map.get( name );
+            if ( e == null )
+                throw new IllegalArgumentException( "could not find " + name + "." );
+            else
+                return e;
+        }
+        @Override
+        public Iterator<SyntaxElement> iterator() {
+            return Collections.unmodifiableList( this.list ).iterator();
         }
     }
     
     protected abstract Collection<SyntaxElement> createSyntaxElementList();
-
     private SyntaxElementList syntaxElementList;
-    
     public void resetSyntaxElementList() {
         this.syntaxElementList = null;
     }
@@ -311,12 +352,12 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
     }
 
     static void updateTextStylesWithSyntaxElement( SyntaxHighlighterDocumentAttribute document, Segment text, SyntaxElement element ) {
-        
         // Look for tokens and highlight them
         Pattern pattern = element.getPattern();
+        
+        // if its pattern is null, it means that it is a pseudo element.
+        // (Fri, 27 Mar 2020 09:39:14 +0900)
         if ( pattern == null ) {
-            // if its pattern is null, it means that it is a pseudo element.
-            // (Fri, 27 Mar 2020 09:39:14 +0900)
             return ;
         }
         

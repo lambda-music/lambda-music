@@ -87,7 +87,7 @@ public class KawapadTemporaryHighlighter {
             highlighter.addHighlight( startPos, endPos, painter ) );
     }
     
-    protected static void addParenthesisHighlight(JTextComponent tc, int open_pos, int close_pos, HighlightPainter painter ) throws BadLocationException {
+    protected static void addParenthesisHighlight( JTextComponent tc, int open_pos, int close_pos, HighlightPainter painter ) throws BadLocationException {
         if ( DEBUG )
             logInfo( "highlightParentheses: " + open_pos + "/" + close_pos );
         
