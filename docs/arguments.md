@@ -315,14 +315,14 @@ Instantiate a Scheme remote HTTP server.
 ## `simple-repl` ##
 Instantiate a simple REPL processor. 
 
-## stdio-stream ##
+## `stdio-stream` ##
 Create a standard stream object and push it on the stack.
 
-## forked-stream ##
+## `forked-stream` ##
 Retrieve the last forked process and create a stream object from it and push it 
 on the stack.
 
-## logger-stream ##
+## `logger-stream` ##
 A logger-stream is a stream-wrapper which intercepts the data streams and save 
 them to the specified files. The intercepted data are transparently passed to 
 the following stream.
