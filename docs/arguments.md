@@ -221,11 +221,11 @@ advanced load 'example.lamu' --hello='HELLO WORLD' 2> /dev/null
 
 This causes `FOO HELLO WORLD BAR' to be printed.
 
+
+## Specification ##
 ```
 $VARIABLE-NAME{ ANY VALUE FORMAT SPEC $ FORMAT SPEC }
 ```
-
-## Specification ##
 - Any argument starts with `$` is treated as a variable.
 - The alphabet characters after the `$` are treated as a name of the variable.
 - When the command-line processor encounters a variable in Lamu external 
