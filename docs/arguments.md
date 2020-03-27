@@ -1,8 +1,13 @@
-Command-line Parameter Reference
-=================================
+Lamu Command-line Parameter Reference
+======================================
 
-Lamu's command-line parameter has two modes: `default-mode` and `advanced-
-mode`.
+Lamu command-line parameter has two modes: `default-mode` and `advanced-
+mode`. If the first argument is 'advanced', Lamu processes the arguments
+in the `advanced-mode`; otherwise Lamu processes them as `default-mode`.
+
+In this section, it presumes that the knowledge for the architecture of Lamu.
+Please also read the description at [The architecture of 
+Lamu](./architecture.md).
 
 # Command-line Parameter in Default-Mode #
 
@@ -14,41 +19,52 @@ This demonstrates how to start the new Lamu application instance in the
 default-mode. The filename argument is optional. If the filename argument is 
 given, then the Lamu's main-editor opens the specified file.
 
+This Lamu's default behavior can be customised. The way how to customize the 
+behavior is described later. 
 
 # Command-line Parameter in Advanced-Mode #
-
-## Overview ##
-Lamu is formed by several components. Lamu's command-line parameter can specify 
-which components to be instantiated at the start-up. Please read the 
-description at [The architecture of Lamu](./architecture.md).
+Lamu consists a number of components and its command-line parameter can specify 
+which components to be instantiated at boot-time. 
 
 For example, Lamu has a HTTP server component which enables remote clients to 
 execute Scheme command on the server where Lamu is running. And Lamu also has a 
-HTTP client component which enables accessing to the HTTP server. Lamu's 
-command-line parameter cant specify how Lamu should run at the boot-time.
+HTTP client component which enables accessing to the HTTP server. The Lamu's 
+advanced-mode command-line parameter can specify how Lamu should run.
 
 In order to enable the advanced-mode of command-line parameter, add a keyword 
 `advanced` in front of other arguments. 
 
 ```bash
-> lamu advanced ([create|fork|...]) ([argument]...)
+> lamu advanced ([create|fork|load|...]) ([argument]...)
 ```
 
-## `create` Command ##
+Currently, there are three commands available:
 
-In advanced-mode, more complicated commands can be specified after the `advanced` 
-keyword.
+- `create`
+  Specify components to be instantiated.
+
+- `fork`
+  Execute external commands.
+
+- `echo`
+  Print the specified message.
+
+- `load`
+  Load the arguments from the specified file.
+
+# `create` Command #
+The `create` command specifies which component to be instantiated. For example:
 
 ```bash
 > lamu advanced create scheme + pulsar + gui +
 ```
 
-The above is an example which demonstrates how to use `create` command of the 
-advanced-mode. The `create` command instantiates the specified components of 
-Lamu. This example instantiates a Scheme engine, a Pulsar instance and a GUI 
-frame.  They are the most basic set of components in Lamu. Note that the every 
-component name is separated by keyword `+`.  These `+` tokens separates their 
-regions. 
+The above is an example which demonstrates how to use `create` command.  This 
+example instantiates a Scheme engine, a Pulsar instance and a GUI frame.  They 
+are the most basic set of components in Lamu. Note that the every component 
+name is separated by keyword `+`.  These `+` tokens separates sections. Each 
+section contains one or more arguments. The first argument denotes the name of 
+the components to be instantiated and others are arguments for the component.
 
 ```bash
 > lamu advanced create scheme + pulsar + gui /path/to/file.scm +
@@ -60,8 +76,7 @@ components, and then the main editor opens the specified file
 tokens contains multiple elements. And the first element of a region
 denotes the name of the component to instantiate.
 
-## Multi-Line ##
-
+# Multi-Line Arguments #
 Lamu's advanced commands sometimes become very long. It is recommended to split
 the commands when they come to certain length by using Shell's escape sequence 
 character as:
@@ -78,7 +93,7 @@ After:
     gui /path/to/file.scm
 ```
 
-## Multi-Statements ##
+# Multi-Statements #
 In advanced-mode, it is able to pass two or more commands at once. Let's call 
 it `multi-statements`.
 
@@ -97,36 +112,12 @@ advanced-mode. Note that there are two keywords : `begin` and `end`. Commands
 which surrounded by `begin` and `end` becomes a statement. 
 
 This creates two distinctive Scheme engines and then connect a Scheme editor to 
-each in a same JVM. That is, both editor has its own variable scope.
+each in a same JVM. That is, both editor has its own variable scope. This usage 
+is explained later.
 
-In editor one, execute the following code.
 
-```scheme
-(define v 'hello)
-(display v)
-(newline)
-; => hello
-```
-And then in editor two, execute the following code.
-
-```scheme
-(define v 'world)
-(display v)
-(newline)
-; => world
-```
-
-Then back to the editor one, execute the following code.
-
-```scheme
-(display v)
-(newline)
-; => hello
-```
-
-## `fork` Command ##
-
-`fork` command invokes a new JVM instance and loads Lamu with
+# `fork` Command #
+The `fork` command invokes a new JVM instance and loads Lamu with
 the specified arguments. Its primary usage is to configure Lamu
 in client-server mode. See the following example:
 
@@ -146,8 +137,8 @@ the garbage collection and obstructs JACKAudio's real-time processing. This
 causes unpredictable skips on the generated sound.  Therefore, Kawapad is 
 designed that to be able to be separately executed in another JVM.
 
-## Nested Multiple-Statements ##
 
+# Nested Multiple-Statements #
 Multiple-statements can be nested; a typical scenario of the usage of 
 multiple-statement is using with `fork` command.
 
@@ -170,9 +161,7 @@ multiple-statement is using with `fork` command.
 Note that `fork` command itself is surrounded by `begin` and `end` and its 
 arguments also consist `begin` and `end`; this example works as expected.
 
-
-## Defining User Commands ##
-
+# Defining User Commands #
 You can define new commands by creating macro-commands in the default-argument 
 configuration file. The path of the configuration file is: 
 `~/.lamu/default-arguments.conf` .
@@ -208,7 +197,38 @@ default create scheme + pulsar + repl +
 For example, setting as above makes `lamu` to execute without GUI as default.
 
 
-## Available Lamu Component Reference ##
+# `echo` Command #
+Print the specified message.
+```bash
+> lamu advanced echo HELLO WORLD FOO BAR!
+```
+
+This command causes `HELLO WORLD FOO BAR!` to be printed.
+
+
+# `load` Command #
+Load the specified file and execute it as arguments.
+For example, there is a file `foo/bar/bum.lamu` as:
+
+```bash
+advanced
+begin
+    echo foo bar
+end
+begin
+    create scheme + pulsar + repl + gui $*{$}
+end
+begin
+    echo foo bar
+end
+```
+And then execute the file as:
+
+```bash
+> lamu advanced load foo/bar/bum.lamu
+```
+
+# Lamu Component Reference #
 
 The following is the list of available components in `create` command.
 
@@ -218,43 +238,100 @@ The following is the list of available components in `create` command.
 - gui
 - http
 - simple-repl
+- logger-stream
+- stdio-stream
+- forked-stream
 - reference
 - reference-list
 
-### `kawapad` ###
+## `kawapad` ##
 Instantiate Kawapad.
 - `--server-url=[url]` specifies remote-server's URL.
 - `--server-port=[port]` specifies remote-server's port. The address defaults 
   to `localhost`.
 
-### `pulsar` ###
+## `pulsar` ##
 Instantiate Pulsar. No argument is available.
 
-### `repl` ###
+## `repl` ##
 Instantiate a Scheme REPL processor. No argument is available.
 
-### `gui` ###
+## `gui` ##
 Instantiate Lamu's default GUI. No argument is available.
 
-### `http` ###
+## `http` ##
 Instantiate a Scheme remote HTTP server.
 - `--port=[port]` specifies the port to listen.
 - `--path=[path]` specifies the server path to accept.
 
-### `simple-repl` ###
+## `simple-repl` ##
 Instantiate a simple REPL processor. 
 
-### `reference` ###
+## stdio-stream ##
+Create a standard stream object and push it on the stack.
+
+## forked-stream ##
+Retrieve the last forked process and create a stream object from it and push it 
+on the stack.
+
+## logger-stream ##
+A logger-stream is a stream-wrapper which intercepts the data streams and save 
+them to the specified files. The intercepted data are transparently passed to 
+the following stream.
+
+When `logger-stream` is specified, the system retrieves  a stream object from 
+the stack and create a logger-stream, and then push it to the stack.
+
+
+## `reference` ##
 Output the specified command reference.
 - `--category=[category-name]` specifies the category to output.
 - `--output-file=[filename]` specifies the filename to output.
 
-### `reference-list` ###
+## `reference-list` ##
 Output the list of available command reference.
 - `--output-file=[filename]` specifies the filename to output. If no output 
   file was specified, it outputs to `stdout`.
 
 
+# Advanced Usage Examples #
+
+## Instantiate Two or More Scheme Engines ##
+
+```bash
+> lamu advanced \
+    begin \
+        create scheme + pulsar + gui + \
+    end \
+    begin \
+        create scheme + pulsar + gui \
+    end \
+```
+
+In editor one, execute the following code.
+
+```scheme
+(define v 'hello)
+(display v)
+(newline)
+; => hello
+```
+And then in editor two, execute the following code.
+
+```scheme
+(define v 'world)
+(display v)
+(newline)
+; => world
+```
+
+Then back to the editor one, execute the following code.
+
+```scheme
+(display v)
+(newline)
+; => hello
+```
 
 
 <!--
