@@ -55,22 +55,24 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
     public static AttributeSet createAttributeSet() {
         return styleContext.getEmptySet();
     }
-    public static AttributeSet createAttributeSet( Color foreground ) {
-        return setForeground( foreground, createAttributeSet() );
+    public static AttributeSet createAttributeSet( Color color ) {
+        return setForeground( color, createAttributeSet() );
     }
     public static AttributeSet createAttributeSet( Color foreground, Color background ) {
         AttributeSet element = styleContext.getEmptySet();
         if ( foreground != null)
             element = setForeground(foreground, element);
+        
         if ( background != null)
             element = setBackground(background, element);
+        
         return element;
     }
-    public static AttributeSet setBackground( Color background, AttributeSet element ) {
-        return styleContext.addAttribute( element , StyleConstants.Background, background );
+    public static AttributeSet setBackground( Color color, AttributeSet element ) {
+        return styleContext.addAttribute( element , StyleConstants.Background, color );
     }
-    public static AttributeSet setForeground( Color foreground, AttributeSet element ) {
-        return styleContext.addAttribute(element, StyleConstants.Foreground, foreground );
+    public static AttributeSet setForeground( Color color, AttributeSet element ) {
+        return styleContext.addAttribute( element, StyleConstants.Foreground, color );
     }
     public static Color getForegroundColor(AttributeSet attr) {
         return (Color) attr.getAttribute( StyleConstants.Foreground );
@@ -151,16 +153,13 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
                 this.updateHighlightPainter();
             }
             public void updateHighlightPainter() {
-                this.highlightPainter = 
-                    new DefaultHighlighter.DefaultHighlightPainter(
-                        SyntaxHighlighter.getBackgroundColor( this.getAttributeSet() ) );
-            }
-            public Default(Object name, HighlightPainter highlightPainter ) {
-                super();
-                this.name = name;
-                this.pattern = null;
-                this.attributeSet = null;
-                this.highlightPainter =  highlightPainter ;
+                Color color = SyntaxHighlighter.getBackgroundColor( this.getAttributeSet() );
+                if ( color != null )
+                    this.highlightPainter =  
+                        new DefaultHighlighter.DefaultHighlightPainter( color );
+                else 
+                    this.highlightPainter =  
+                        new DefaultHighlighter.DefaultHighlightPainter( Color.CYAN );
             }
             @Override
             public Object getName() {

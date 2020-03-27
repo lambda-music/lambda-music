@@ -70,6 +70,7 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.DefaultEditorKit.DefaultKeyTypedAction;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Document;
+import javax.swing.text.Highlighter.HighlightPainter;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Segment;
 import javax.swing.undo.CannotRedoException;
@@ -3419,14 +3420,16 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         if ( ENABLED_PARENTHESIS_HIGHLIGHT )
             // highlight the corresponding parentheses.
             try {
+                HighlightPainter highlightPainter = 
+                    kawapad.getSyntaxHighlighter().getSyntaxElementList().get( KawapadSyntaxElementType.PARENTHESIS_HIGHLIGHT ).getHighlightPainter();
                 Caret caret = kawapad.getCaret();
                 if ( caret.getDot() == caret.getMark() ) {
-                    KawapadTemporaryParenthesisHighlighter.highlightMatchingParenthesis( kawapad, caret.getDot() + offset );
+                    KawapadTemporaryParenthesisHighlighter.highlightMatchingParenthesis( kawapad, highlightPainter,  caret.getDot() + offset );
                 } else {
                     if ( caret.getMark() < caret.getDot() ) {
-                        KawapadTemporaryParenthesisHighlighter.highlightMatchingParenthesis( kawapad, caret.getDot() + offset -1 );
+                        KawapadTemporaryParenthesisHighlighter.highlightMatchingParenthesis( kawapad, highlightPainter, caret.getDot() + offset -1 );
                     } else {
-                        KawapadTemporaryParenthesisHighlighter.highlightMatchingParenthesis( kawapad, caret.getDot() + offset  );
+                        KawapadTemporaryParenthesisHighlighter.highlightMatchingParenthesis( kawapad, highlightPainter, caret.getDot() + offset  );
                     }
                 }
             } catch (BadLocationException e) {
@@ -3435,10 +3438,13 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
 
         // highlight the current word.
         try {
+            HighlightPainter highlightPainter = 
+                kawapad.getSyntaxHighlighter().getSyntaxElementList().get( KawapadSyntaxElementType.KEYWORD_HIGHLIGHT ).getHighlightPainter();
+
             Caret caret = kawapad.getCaret();
             String searchString = KawapadTemporarySearchHighlighter.getCurrentWord(
                 KawapadSelection.getText( kawapad.getDocument() ), caret );
-            KawapadTemporarySearchHighlighter.highlightSearchPatterns( kawapad, searchString, true );
+            KawapadTemporarySearchHighlighter.highlightSearchPatterns( kawapad, highlightPainter, searchString, true );
         } catch (BadLocationException e) {
             logError( "", e );
         }

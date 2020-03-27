@@ -1,12 +1,10 @@
 package kawapad;
 
-import java.awt.Color;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
-import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Document;
 import javax.swing.text.Highlighter.HighlightPainter;
 import javax.swing.text.JTextComponent;
@@ -15,22 +13,14 @@ import javax.swing.text.Segment;
 import kawapad.CaretTransformer.CaretPos;
 
 public class KawapadTemporarySearchHighlighter extends KawapadTemporaryHighlighter {    
-    static transient Color searchHighlightColor;
-    static transient HighlightPainter searchHighlightPainter;
-    synchronized static void setSearchHighlightColor( Color color ) {
-        searchHighlightColor = color;
-        searchHighlightPainter = new DefaultHighlighter.DefaultHighlightPainter( searchHighlightColor );
-    }
-    static {
-        setSearchHighlightColor( new Color( 0x22, 0x22, 0x44, 0xff ) );
-    }
-
-    public static void highlightSearchPatterns( JTextComponent component, CharSequence text, Pattern pattern ) throws BadLocationException {
+    public static void highlightSearchPatterns( JTextComponent component, HighlightPainter highlightPainter, 
+        CharSequence text, Pattern pattern) throws BadLocationException 
+    {
         for ( Matcher m = pattern.matcher( text ); m.find(); ) {
             addHighlight( component, 
                 m.start(GROUP_ID),
                 m.end(GROUP_ID),
-                searchHighlightPainter );
+                highlightPainter );
         }
     }
 
@@ -56,13 +46,15 @@ public class KawapadTemporarySearchHighlighter extends KawapadTemporaryHighlight
         }
     }
     
-    public static void highlightSearchPatterns( JTextComponent component, String searchString, boolean wordSearch ) throws BadLocationException {
+    public static void highlightSearchPatterns( JTextComponent component, HighlightPainter highlightPainter, 
+        String searchString, boolean wordSearch ) throws BadLocationException 
+    {
         Document document = component.getDocument();
         Segment text = new Segment();
         document.getText( 0, document.getLength(), text );
 
         if ( searchString != null ) {
-            highlightSearchPatterns( component, text, Pattern.compile( 
+            highlightSearchPatterns( component, highlightPainter, text, Pattern.compile( 
                 searchStringToPattern( searchString, wordSearch ) ) );
         }
     }

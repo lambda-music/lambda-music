@@ -1,9 +1,6 @@
 package kawapad;
 
-import java.awt.Color;
-
 import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Document;
 import javax.swing.text.Highlighter.HighlightPainter;
 import javax.swing.text.JTextComponent;
@@ -12,15 +9,6 @@ import javax.swing.text.Segment;
 import kawapad.SchemeParenthesisParser.ParserState;
 
 public class KawapadTemporaryParenthesisHighlighter extends KawapadTemporaryHighlighter {
-    static transient Color parenthesisHighlightColor;
-    static transient HighlightPainter parenthesisHighlightPainter;
-    synchronized static void setParenthesisHighlightColor( Color color ) {
-        parenthesisHighlightColor = color;
-        parenthesisHighlightPainter = new DefaultHighlighter.DefaultHighlightPainter( parenthesisHighlightColor );
-    }
-    static {
-        setParenthesisHighlightColor( new Color( 0x00, 0x88, 0x88, 0xff ) );
-    }
     public static void forceClearHighlightedParenthesis() {
         eliminateClearingHighlightQueue();
     }
@@ -28,7 +16,7 @@ public class KawapadTemporaryParenthesisHighlighter extends KawapadTemporaryHigh
         popClearingHighlightQueue();
     }
 
-    public static void highlightMatchingParenthesis( JTextComponent component, int position ) throws BadLocationException {
+    public static void highlightMatchingParenthesis( JTextComponent component, HighlightPainter highlightPainter, int position ) throws BadLocationException {
         if ( Kawapad.ENABLED_SHOW_CORRESPONDING_PARENTHESES ) {
             Document document = component.getDocument();
             Segment text = new Segment();
@@ -42,7 +30,7 @@ public class KawapadTemporaryParenthesisHighlighter extends KawapadTemporaryHigh
                 addParenthesisHighlight( component, 
                     parserState.getIterator().getInitialIndex(), 
                     parserState.getIterator().getIndex(),
-                    parenthesisHighlightPainter );
+                    highlightPainter );
         }
     }
 }

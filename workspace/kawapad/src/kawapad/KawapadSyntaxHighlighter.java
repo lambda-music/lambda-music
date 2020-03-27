@@ -36,20 +36,23 @@ class KawapadSyntaxHighlighter extends SyntaxHighlighter {
             return valueOf( str );
         }
     }
+    
     private static final String REGEX_NON_WORD_L = "(?<=[^'a-zA-Z0-9-_])";
     private static final String REGEX_NON_WORD_R = "(?=[^:'a-zA-Z0-9-_])";
-    final AttributeSet defaultShebangColor       = SyntaxHighlighter.createAttributeSet( new Color( 0x00,0x80,0x00,0xff ) );
-    final AttributeSet defaultBlockCommentColor  = SyntaxHighlighter.createAttributeSet( new Color( 0xa0,0xa0,0xa0,0xff ) );
-    final AttributeSet defaultLineCommentColor   = SyntaxHighlighter.createAttributeSet( new Color( 0xa0,0xa0,0xa0,0xff ) );
-    final AttributeSet defaultKeywordHighlightColor      = SyntaxHighlighter.createAttributeSet( new Color( 0x80,0x80,0x00,0xff ), new Color( 0x00,0xff,0xff,0xff ) );
-    final AttributeSet defaultParenthesisHighlightColor  = SyntaxHighlighter.createAttributeSet( new Color( 0x80,0x80,0x00,0xff ), new Color( 0x00,0xff,0xff,0xff ) );
-    final AttributeSet defaultStringColor        = SyntaxHighlighter.createAttributeSet( new Color( 0x80,0x80,0x00,0xff ) );
-    final AttributeSet defaultNumberColor        = SyntaxHighlighter.createAttributeSet( new Color( 0xff,0x80,0x00,0xff ) );
-    final AttributeSet defaultSymbolColor        = SyntaxHighlighter.createAttributeSet( new Color( 0x80,0x80,0x00,0xff ) );
-    final AttributeSet defaultKeywordColor       = SyntaxHighlighter.createAttributeSet( new Color( 0x00,0x80,0x40,0xff ));
-    final AttributeSet defaultHashColor          = SyntaxHighlighter.createAttributeSet( new Color( 0xff,0x40,0x40,0xff ));
-    final AttributeSet defaultPunctuationColor   = SyntaxHighlighter.createAttributeSet( new Color( 0x50,0x50,0x50,0xff ));
-    final AttributeSet defaultVariableColor      = SyntaxHighlighter.createAttributeSet( new Color( 0x00,0x00,0xff,0xff ));
+    
+    public AttributeSet defaultShebangColor       = SyntaxHighlighter.createAttributeSet( new Color( 0x00,0x80,0x00,0xff ) );
+    public AttributeSet defaultBlockCommentColor  = SyntaxHighlighter.createAttributeSet( new Color( 0xa0,0xa0,0xa0,0xff ) );
+    public AttributeSet defaultLineCommentColor   = SyntaxHighlighter.createAttributeSet( new Color( 0xa0,0xa0,0xa0,0xff ) );
+    public AttributeSet defaultKeywordHighlightColor      = SyntaxHighlighter.createAttributeSet( new Color( 0x80,0x80,0x00,0xff ), new Color( 0xc0,0xc0,0xff,0xff ) );
+    public AttributeSet defaultParenthesisHighlightColor  = SyntaxHighlighter.createAttributeSet( new Color( 0x80,0x80,0x00,0xff ), new Color( 0x00,0xc0,0xff,0xff ) );
+    public AttributeSet defaultStringColor        = SyntaxHighlighter.createAttributeSet( new Color( 0x80,0x80,0x00,0xff ) );
+    public AttributeSet defaultNumberColor        = SyntaxHighlighter.createAttributeSet( new Color( 0xff,0x80,0x00,0xff ) );
+    public AttributeSet defaultSymbolColor        = SyntaxHighlighter.createAttributeSet( new Color( 0x80,0x80,0x00,0xff ) );
+    public AttributeSet defaultKeywordColor       = SyntaxHighlighter.createAttributeSet( new Color( 0x00,0x80,0x40,0xff ));
+    public AttributeSet defaultHashColor          = SyntaxHighlighter.createAttributeSet( new Color( 0xff,0x40,0x40,0xff ));
+    public AttributeSet defaultPunctuationColor   = SyntaxHighlighter.createAttributeSet( new Color( 0x50,0x50,0x50,0xff ));
+    public AttributeSet defaultVariableColor      = SyntaxHighlighter.createAttributeSet( new Color( 0x00,0x80,0xff,0xff ));
+    
     SchemeEngine schemeEngine;
     Kawapad kawapad;
     KawapadSyntaxHighlighter(Kawapad kawapad) {
