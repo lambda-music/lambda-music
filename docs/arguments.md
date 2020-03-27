@@ -213,7 +213,7 @@ begin
 end
 ```
 
-And then execute it as
+And then execute the script as
 
 ```bash
 advanced load 'example.lamu' --hello='HELLO WORLD' 2> /dev/null
