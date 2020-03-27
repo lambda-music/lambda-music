@@ -166,7 +166,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     static final boolean DEBUG_PARENTHESIS = false;
     private static final boolean ENABLED_PARENTHESIS_HIGHLIGHT = true;
     static final boolean ENABLED_SHOW_CORRESPONDING_PARENTHESES = true;
-
+    static final boolean DEFAULT_CARET = true;
     // ADDED (Fri, 06 Sep 2019 01:05:27 +0900)
     private static final boolean ENABLED_SYNTAX_HIGHLIGHTING = true;
 
@@ -448,37 +448,39 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     
     // caret
     {
-        DefaultCaret dc = new DefaultCaret() {
-            @Override
-            public void paint(Graphics g) {
+        if ( ! DEFAULT_CARET ) {
+            DefaultCaret dc = new DefaultCaret() {
+                @Override
+                public void paint(Graphics g) {
 
-                if (isVisible()) {
+                    if (isVisible()) {
 
-                    JTextComponent comp = getComponent();
-                    if (comp == null) {
-                        return;
-                    }
-
-                    Rectangle r = null;
-                    try {
-                        r = comp.modelToView(getDot());
-                        if (r == null) {
+                        JTextComponent comp = getComponent();
+                        if (comp == null) {
                             return;
                         }
-                    } catch (BadLocationException e) {
-                        return;
-                    }
-                    if (isVisible()) {
-//                        g.setXORMode( Color.WHITE );
-                        g.setColor( Color.WHITE );
-                        g.fillRect(r.x, r.y , 1, r.height);
-//                      g.fillRect(r.x, r.y , r.width+5, r.height);
+
+                        Rectangle r = null;
+                        try {
+                            r = comp.modelToView(getDot());
+                            if (r == null) {
+                                return;
+                            }
+                        } catch (BadLocationException e) {
+                            return;
+                        }
+                        if (isVisible()) {
+                            //                        g.setXORMode( Color.WHITE );
+                            g.setColor( Color.WHITE );
+                            g.fillRect(r.x, r.y , 1, r.height);
+                            //                      g.fillRect(r.x, r.y , r.width+5, r.height);
+                        }
                     }
                 }
-            }
-        };
-        dc.setBlinkRate(400);
-        kawapad.setCaret( dc );
+            };
+            dc.setBlinkRate(400);
+            kawapad.setCaret( dc );
+        }
     }
     
     //  Action inserBreakAction = textPane.getActionMap().get( DefaultEditorKit.insertBreakAction );

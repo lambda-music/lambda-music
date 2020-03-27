@@ -43,9 +43,23 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
+
+    // =================================================================================================================
+
     private static final StyleContext styleContext = StyleContext.getDefaultStyleContext();
+    
     public static AttributeSet createAttributeSet( Color foreground ) {
         return styleContext.addAttribute( styleContext.getEmptySet(), StyleConstants.Foreground, foreground );
+    }
+    public static AttributeSet createAttributeSet( Color foreground, Color background ) {
+        return 
+                styleContext.addAttribute(
+                    styleContext.addAttribute(
+                        styleContext.getEmptySet(), 
+                        StyleConstants.Foreground, 
+                        foreground ),
+                    StyleConstants.Background, 
+                    background );
     }
     
     static class SyntaxElementConstant {
@@ -59,6 +73,7 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
             return this.name;
         }
     }
+    
     public static final Object KEY_SYNTAX_ELEMENT = new SyntaxElementConstant( "syntax-element" );
     public static AttributeSet setSyntaxElement(AttributeSet attr, SyntaxElement se) {
         return styleContext.addAttribute( attr, KEY_SYNTAX_ELEMENT, se );
@@ -70,16 +85,6 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
         return element;
     }
 
-    public static AttributeSet createAttributeSet( Color foreground, Color background) {
-        return 
-                styleContext.addAttribute(
-                    styleContext.addAttribute(
-                        styleContext.getEmptySet(), 
-                        StyleConstants.Foreground, 
-                        foreground ),
-                    StyleConstants.Background, 
-                    background );
-    }
     public static Color getColorFromAttributeSet(AttributeSet attr) {
         return (Color) attr.getAttribute( StyleConstants.Foreground );
     }
@@ -89,14 +94,6 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
     public static Color getBackgroundColor(AttributeSet attr) {
         return (Color) attr.getAttribute( StyleConstants.Background );
     }
-    public static final AttributeSet    darkGreenAttributeSet   = createAttributeSet( new Color(0x00008800 ) );
-    public static final AttributeSet    greenAttributeSet       = createAttributeSet( Color.GREEN );
-    public static final AttributeSet    blueAttributeSet        = createAttributeSet( Color.BLUE );
-    public static final AttributeSet    redAttributeSet         = createAttributeSet( Color.RED );
-    public static final AttributeSet    grayAttributeSet        = createAttributeSet( Color.GRAY );
-    public static final AttributeSet    orangeAttributeSet      = createAttributeSet( Color.ORANGE );
-    public static final AttributeSet    whiteAttributeSet       = createAttributeSet( Color.WHITE );
-
     
     public static final SyntaxElement DEFAULT_SYNTAX_ELEMENT = 
         SyntaxHighlighter.createSyntaxElement( "DEFAULT_SYNTAX", null, styleContext.getEmptySet() );

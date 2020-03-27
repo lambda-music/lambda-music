@@ -1,5 +1,6 @@
 package kawapad;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -18,9 +19,13 @@ class KawapadSyntaxHighlighter extends SyntaxHighlighter {
     private static final boolean DEBUG=false;
     public static enum KawapadSyntaxElementType {
         NONE,
-        KEYWORD,
+        VARIABLE,
         PUNCTUATION,
         STRING,
+        SYMBOL,
+        NUMBER,
+        KEYWORD,
+        HASH,
         SHEBANG,
         LINE_COMMENT,
         BLOCK_COMMENT;
@@ -29,14 +34,18 @@ class KawapadSyntaxHighlighter extends SyntaxHighlighter {
             return valueOf( str );
         }
     }
-    private static final String REGEX_NON_WORD_L = "(?<=[^a-zA-Z0-9-_])";
-    private static final String REGEX_NON_WORD_R = "(?=[^a-zA-Z0-9-_])";
-    final AttributeSet defaultShebangColor       = SyntaxHighlighter.darkGreenAttributeSet;
-    final AttributeSet defaultBlockCommentColor  = SyntaxHighlighter.grayAttributeSet;
-    final AttributeSet defaultLineCommentColor   = SyntaxHighlighter.grayAttributeSet;
-    final AttributeSet defaultStringColor        = SyntaxHighlighter.darkGreenAttributeSet;
-    final AttributeSet defaultPunctuationColor   = SyntaxHighlighter.redAttributeSet;
-    final AttributeSet defaultKeywordColor       = SyntaxHighlighter.orangeAttributeSet;
+    private static final String REGEX_NON_WORD_L = "(?<=[^'a-zA-Z0-9-_])";
+    private static final String REGEX_NON_WORD_R = "(?=[^:'a-zA-Z0-9-_])";
+    final AttributeSet defaultShebangColor       = SyntaxHighlighter.createAttributeSet( new Color( 0x00,0x80,0x00,0xff ) );
+    final AttributeSet defaultBlockCommentColor  = SyntaxHighlighter.createAttributeSet( new Color( 0xa0,0xa0,0xa0,0xff ) );
+    final AttributeSet defaultLineCommentColor   = SyntaxHighlighter.createAttributeSet( new Color( 0xa0,0xa0,0xa0,0xff ) );
+    final AttributeSet defaultStringColor        = SyntaxHighlighter.createAttributeSet( new Color( 0x80,0x80,0x00,0xff ) );
+    final AttributeSet defaultNumberColor        = SyntaxHighlighter.createAttributeSet( new Color( 0xff,0x80,0x00,0xff ) );
+    final AttributeSet defaultSymbolColor        = SyntaxHighlighter.createAttributeSet( new Color( 0x80,0x80,0x00,0xff ) );
+    final AttributeSet defaultKeywordColor       = SyntaxHighlighter.createAttributeSet( new Color( 0x00,0x80,0x40,0xff ));
+    final AttributeSet defaultHashColor          = SyntaxHighlighter.createAttributeSet( new Color( 0xff,0x40,0x40,0xff ));
+    final AttributeSet defaultPunctuationColor   = SyntaxHighlighter.createAttributeSet( new Color( 0x50,0x50,0x50,0xff ));
+    final AttributeSet defaultVariableColor      = SyntaxHighlighter.createAttributeSet( new Color( 0x00,0x00,0xff,0xff ));
     SchemeEngine schemeEngine;
     Kawapad kawapad;
     KawapadSyntaxHighlighter(Kawapad kawapad) {
@@ -112,9 +121,25 @@ class KawapadSyntaxHighlighter extends SyntaxHighlighter {
                 defaultPunctuationColor ));
         if ( enabledKeyword )
             list.add( SyntaxHighlighter.createSyntaxElement(
-                KawapadSyntaxElementType.KEYWORD,
+                KawapadSyntaxElementType.VARIABLE,
                 createKeywordPattern(), 
-                defaultKeywordColor )); 
+                defaultVariableColor )); 
+        list.add( SyntaxHighlighter.createSyntaxElement(
+            KawapadSyntaxElementType.NUMBER,
+            Pattern.compile( REGEX_NON_WORD_L + "(?<K>[0-9]+((/|\\.)[0-9]+)?)" + REGEX_NON_WORD_R ),
+            defaultNumberColor )); 
+        list.add( SyntaxHighlighter.createSyntaxElement(
+            KawapadSyntaxElementType.SYMBOL,
+            Pattern.compile( "(?<K>'[a-zA-Z-_]+)"  ),
+            defaultSymbolColor )); 
+        list.add( SyntaxHighlighter.createSyntaxElement(
+            KawapadSyntaxElementType.KEYWORD,
+            Pattern.compile( "(?<K>[a-zA-Z-_]+:)" ),
+            defaultKeywordColor )); 
+        list.add( SyntaxHighlighter.createSyntaxElement(
+            KawapadSyntaxElementType.HASH,
+            Pattern.compile( "(?<K>\\#[a-zA-Z-_]+)" ),
+            defaultHashColor )); 
         list.add( SyntaxHighlighter.createSyntaxElement(
             KawapadSyntaxElementType.SHEBANG,
             Pattern.compile( "^\\#\\!.*\\R" ),
