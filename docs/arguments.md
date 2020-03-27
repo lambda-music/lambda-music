@@ -332,11 +332,11 @@ the stack and create a logger-stream, and then push it to the stack.
 
 This accepts the following named-arguments:
 
-- --out=FILENAME
+- `--out=FILENAME`
   Specifies the filename to output the content of stdout.
-- --in=FILENAME
+- `--in=FILENAME`
   Specifies the filename to output the content of stdin.
-- --err=FILENAME
+- `--err=FILENAME`
   Specifies the filename to output the content of stderr.
 
 
