@@ -219,7 +219,7 @@ And then execute the script as
 advanced load 'example.lamu' --hello='HELLO WORLD' 2> /dev/null
 ```
 
-This causes `FOO HELLO WORLD BAR' to be printed.
+This causes `FOO HELLO WORLD BAR` to be printed.
 
 
 ## Specification ##
@@ -329,6 +329,15 @@ the following stream.
 
 When `logger-stream` is specified, the system retrieves  a stream object from 
 the stack and create a logger-stream, and then push it to the stack.
+
+This accepts the following named-arguments:
+
+- --out=FILENAME
+  Specifies the filename to output the content of stdout.
+- --in=FILENAME
+  Specifies the filename to output the content of stdin.
+- --err=FILENAME
+  Specifies the filename to output the content of stderr.
 
 
 ## `reference` ##
