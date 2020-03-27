@@ -19,14 +19,15 @@ class KawapadSyntaxHighlighter extends SyntaxHighlighter {
     private static final boolean DEBUG=false;
     public static enum KawapadSyntaxElementType {
         NONE,
-        VARIABLE,
         PUNCTUATION,
-        STRING,
-        SYMBOL,
+        VARIABLE,
+        HIGHLIGHT,
         NUMBER,
+        SYMBOL,
         KEYWORD,
         HASH,
         SHEBANG,
+        STRING,
         LINE_COMMENT,
         BLOCK_COMMENT;
         static KawapadSyntaxHighlighter.KawapadSyntaxElementType schemeValueOf( Symbol symbol ) {
@@ -39,6 +40,7 @@ class KawapadSyntaxHighlighter extends SyntaxHighlighter {
     final AttributeSet defaultShebangColor       = SyntaxHighlighter.createAttributeSet( new Color( 0x00,0x80,0x00,0xff ) );
     final AttributeSet defaultBlockCommentColor  = SyntaxHighlighter.createAttributeSet( new Color( 0xa0,0xa0,0xa0,0xff ) );
     final AttributeSet defaultLineCommentColor   = SyntaxHighlighter.createAttributeSet( new Color( 0xa0,0xa0,0xa0,0xff ) );
+    final AttributeSet defaultHighlightColor     = SyntaxHighlighter.createAttributeSet( new Color( 0x80,0x80,0x00,0xff ), new Color( 0x00,0xff,0xff,0xff ) );
     final AttributeSet defaultStringColor        = SyntaxHighlighter.createAttributeSet( new Color( 0x80,0x80,0x00,0xff ) );
     final AttributeSet defaultNumberColor        = SyntaxHighlighter.createAttributeSet( new Color( 0xff,0x80,0x00,0xff ) );
     final AttributeSet defaultSymbolColor        = SyntaxHighlighter.createAttributeSet( new Color( 0x80,0x80,0x00,0xff ) );
@@ -124,6 +126,10 @@ class KawapadSyntaxHighlighter extends SyntaxHighlighter {
                 KawapadSyntaxElementType.VARIABLE,
                 createKeywordPattern(), 
                 defaultVariableColor )); 
+        list.add( SyntaxHighlighter.createSyntaxElement(
+            KawapadSyntaxElementType.HIGHLIGHT,
+            null,
+            defaultHighlightColor )); 
         list.add( SyntaxHighlighter.createSyntaxElement(
             KawapadSyntaxElementType.NUMBER,
             Pattern.compile( REGEX_NON_WORD_L + "(?<K>[0-9]+((/|\\.)[0-9]+)?)" + REGEX_NON_WORD_R ),

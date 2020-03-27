@@ -52,14 +52,14 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
         return styleContext.addAttribute( styleContext.getEmptySet(), StyleConstants.Foreground, foreground );
     }
     public static AttributeSet createAttributeSet( Color foreground, Color background ) {
-        return 
-                styleContext.addAttribute(
-                    styleContext.addAttribute(
-                        styleContext.getEmptySet(), 
-                        StyleConstants.Foreground, 
-                        foreground ),
-                    StyleConstants.Background, 
-                    background );
+        AttributeSet element = styleContext.getEmptySet();
+        if ( foreground != null)
+            styleContext.addAttribute(element, StyleConstants.Foreground, foreground );
+        
+        if ( background != null)
+            styleContext.addAttribute( element , StyleConstants.Background, background );
+        
+        return element;
     }
     
     static class SyntaxElementConstant {
@@ -311,8 +311,16 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
     }
 
     static void updateTextStylesWithSyntaxElement( SyntaxHighlighterDocumentAttribute document, Segment text, SyntaxElement element ) {
+        
         // Look for tokens and highlight them
-        Matcher matcher = element.getPattern().matcher( text );
+        Pattern pattern = element.getPattern();
+        if ( pattern == null ) {
+            // if its pattern is null, it means that it is a pseudo element.
+            // (Fri, 27 Mar 2020 09:39:14 +0900)
+            return ;
+        }
+        
+        Matcher matcher = pattern.matcher( text );
         ElapsedTime ep = new ElapsedTime();
         @SuppressWarnings("unused")
         double t =0;
