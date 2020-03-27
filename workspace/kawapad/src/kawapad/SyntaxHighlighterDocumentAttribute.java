@@ -11,8 +11,6 @@ import javax.swing.text.AbstractDocument.LeafElement;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 
-import kawapad.SyntaxHighlighter.SyntaxElement;
-
 public interface SyntaxHighlighterDocumentAttribute {
     void setCharacterAttributes( int offset, int length, SyntaxElement element, boolean replace );
     SyntaxElement getCharacterAttributes(int offset );

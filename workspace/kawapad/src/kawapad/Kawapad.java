@@ -88,8 +88,6 @@ import kawapad.KawapadSelection.ExpandParenthesisSelector;
 import kawapad.KawapadSelection.SearchNextWordTransformer;
 import kawapad.KawapadSelection.ShrinkParenthesisSelector;
 import kawapad.KawapadSelection.SideParenthesisSelector;
-import kawapad.KawapadSyntaxHighlighter.KawapadSyntaxElementType;
-import kawapad.SyntaxHighlighter.SyntaxElement;
 import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
 import lamu.lib.CurrentObject;

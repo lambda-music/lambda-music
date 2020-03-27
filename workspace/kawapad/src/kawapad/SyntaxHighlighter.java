@@ -2,11 +2,7 @@ package kawapad;
 
 import java.awt.Color;
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -17,10 +13,8 @@ import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.DocumentFilter;
-import javax.swing.text.Highlighter.HighlightPainter;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Segment;
 import javax.swing.text.StyleConstants;
@@ -105,129 +99,13 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
 
     
     public static final SyntaxElement DEFAULT_SYNTAX_ELEMENT = 
-        SyntaxHighlighter.createSyntaxElement( "DEFAULT_SYNTAX", null, styleContext.getEmptySet() );
+        SyntaxElement.create( "DEFAULT_SYNTAX", null, styleContext.getEmptySet() );
     
     private JTextComponent textComponent;
     public SyntaxHighlighter(JTextComponent kawapad) {
         this.textComponent = kawapad;
     }
 
-    public interface SyntaxElement {
-        /*
-         * It appeared that setting AttributeSet destroy the consistency. The set
-         * AttributeSet object does not exist in Editor's AttributeSet list; it is
-         * necessary to replace all AttributeSet objects in the list. If the replacemet
-         * is not done, the color modification done to this object will not reflect to
-         * the editor.
-         */
-        Object getName();
-        void setPattern(Pattern pattern);
-        Pattern getPattern();
-        AttributeSet getAttributeSet();
-        void setAttributeSet(AttributeSet attributeSet);
-        HighlightPainter getHighlightPainter();
-        
-        default public Color getForegroundColor() {
-            return SyntaxHighlighter.getForegroundColor( getAttributeSet() );
-        }
-        default public Color getBackgroundColor() {
-            return SyntaxHighlighter.getBackgroundColor( getAttributeSet() );
-        }
-        default public void setBackgroundColor(Color color) {
-            this.setAttributeSet( setBackground( color, getAttributeSet() ));
-        }
-        default public void setForegroundColor(Color color) {
-            this.setAttributeSet( setForeground( color, getAttributeSet() ));
-        }
-        
-        public static final class Default implements SyntaxElement {
-            Object name;
-            Pattern pattern;
-            AttributeSet attributeSet;
-            HighlightPainter highlightPainter;
-            public Default( Object name, Pattern pattern, AttributeSet attributeSet ) {
-                super();
-                this.name = name;
-                this.pattern = pattern;
-                this.attributeSet = setSyntaxElement( attributeSet , this );
-                this.updateHighlightPainter();
-            }
-            public void updateHighlightPainter() {
-                Color color = SyntaxHighlighter.getBackgroundColor( this.getAttributeSet() );
-                if ( color != null )
-                    this.highlightPainter =  
-                        new DefaultHighlighter.DefaultHighlightPainter( color );
-                else 
-                    this.highlightPainter =  
-                        new DefaultHighlighter.DefaultHighlightPainter( Color.CYAN );
-            }
-            @Override
-            public Object getName() {
-                return name;
-            }
-            @Override
-            public void setPattern(Pattern pattern) {
-                this.pattern = pattern;
-            }
-            @Override
-            public Pattern getPattern() {
-                return pattern;
-            }
-            @Override
-            public void setAttributeSet(AttributeSet attributeSet) {
-                this.attributeSet = attributeSet;
-            }
-            @Override
-            public AttributeSet getAttributeSet() {
-                return attributeSet;
-            }
-            @Override
-            public HighlightPainter getHighlightPainter() {
-                return this.highlightPainter;
-            }
-            @Override
-            public void setBackgroundColor(Color color) {
-                SyntaxElement.super.setBackgroundColor(color);
-                this.updateHighlightPainter();
-            }
-            @Override
-            public void setForegroundColor(Color color) {
-                SyntaxElement.super.setForegroundColor(color);
-                this.updateHighlightPainter();
-            }
-            @Override
-            public String toString() {
-                return String.format("%s",name);
-            }
-        }
-    }
-    public static SyntaxElement createSyntaxElement( Object name, Pattern pattern, AttributeSet attributeSet ) {
-        return new SyntaxElement.Default( name, pattern, attributeSet );
-    }
-    
-    public static class SyntaxElementList implements Iterable<SyntaxElement> {
-        private final ArrayList<SyntaxElement> list;
-        private final HashMap<Object,SyntaxElement> map;
-        public SyntaxElementList( Collection<SyntaxElement> c ) {
-            this.list = new ArrayList<>( c );
-            this.map = new HashMap<>();
-            for ( SyntaxElement e : this.list ) {
-                this.map.put( e.getName(), e );
-            }
-        }
-        public SyntaxElement get( Object name ) {
-            SyntaxElement e =  this.map.get( name );
-            if ( e == null )
-                throw new IllegalArgumentException( "could not find " + name + "." );
-            else
-                return e;
-        }
-        @Override
-        public Iterator<SyntaxElement> iterator() {
-            return Collections.unmodifiableList( this.list ).iterator();
-        }
-    }
-    
     protected abstract Collection<SyntaxElement> createSyntaxElementList();
     private SyntaxElementList syntaxElementList;
     public void resetSyntaxElementList() {

@@ -10,48 +10,27 @@ import java.util.regex.Pattern;
 import javax.swing.text.AttributeSet;
 
 import gnu.lists.LList;
-import gnu.mapping.Symbol;
 import lamu.lib.scheme.SchemeEngine;
 import lamu.lib.scheme.SchemeResult;
 import lamu.lib.scheme.SchemeUtils;
 
-class KawapadSyntaxHighlighter extends SyntaxHighlighter {
+public class KawapadSyntaxHighlighter extends SyntaxHighlighter {
     private static final boolean DEBUG=false;
-    public static enum KawapadSyntaxElementType {
-        NONE,
-        PUNCTUATION,
-        VARIABLE,
-        KEYWORD_HIGHLIGHT,
-        PARENTHESIS_HIGHLIGHT,
-        NUMBER,
-        SYMBOL,
-        KEYWORD,
-        HASH,
-        SHEBANG,
-        STRING,
-        LINE_COMMENT,
-        BLOCK_COMMENT;
-        static KawapadSyntaxHighlighter.KawapadSyntaxElementType schemeValueOf( Symbol symbol ) {
-            String str = SchemeUtils.schemeSymbolToJavaString( symbol ).toUpperCase().replaceAll( "-" , "_" );
-            return valueOf( str );
-        }
-    }
-    
     private static final String REGEX_NON_WORD_L = "(?<=[^'a-zA-Z0-9-_])";
     private static final String REGEX_NON_WORD_R = "(?=[^:'a-zA-Z0-9-_])";
     
-    public AttributeSet defaultShebangColor       = SyntaxHighlighter.createAttributeSet( new Color( 0x00,0x80,0x00,0xff ) );
-    public AttributeSet defaultBlockCommentColor  = SyntaxHighlighter.createAttributeSet( new Color( 0xa0,0xa0,0xa0,0xff ) );
-    public AttributeSet defaultLineCommentColor   = SyntaxHighlighter.createAttributeSet( new Color( 0xa0,0xa0,0xa0,0xff ) );
-    public AttributeSet defaultKeywordHighlightColor      = SyntaxHighlighter.createAttributeSet( new Color( 0x80,0x80,0x00,0xff ), new Color( 0xc0,0xc0,0xff,0xff ) );
-    public AttributeSet defaultParenthesisHighlightColor  = SyntaxHighlighter.createAttributeSet( new Color( 0x80,0x80,0x00,0xff ), new Color( 0x00,0xc0,0xff,0xff ) );
-    public AttributeSet defaultStringColor        = SyntaxHighlighter.createAttributeSet( new Color( 0x80,0x80,0x00,0xff ) );
-    public AttributeSet defaultNumberColor        = SyntaxHighlighter.createAttributeSet( new Color( 0xff,0x80,0x00,0xff ) );
-    public AttributeSet defaultSymbolColor        = SyntaxHighlighter.createAttributeSet( new Color( 0x80,0x80,0x00,0xff ) );
-    public AttributeSet defaultKeywordColor       = SyntaxHighlighter.createAttributeSet( new Color( 0x00,0x80,0x40,0xff ));
-    public AttributeSet defaultHashColor          = SyntaxHighlighter.createAttributeSet( new Color( 0xff,0x40,0x40,0xff ));
-    public AttributeSet defaultPunctuationColor   = SyntaxHighlighter.createAttributeSet( new Color( 0x50,0x50,0x50,0xff ));
-    public AttributeSet defaultVariableColor      = SyntaxHighlighter.createAttributeSet( new Color( 0x00,0x80,0xff,0xff ));
+    public static AttributeSet DEFAULT_SHEBANG_COLOR        = SyntaxHighlighter.createAttributeSet( new Color( 0x00,0x80,0x00,0xff ) );
+    public static AttributeSet DEFAULT_BLOCK_COMMENT_COLOR  = SyntaxHighlighter.createAttributeSet( new Color( 0xa0,0xa0,0xa0,0xff ) );
+    public static AttributeSet DEFAULT_LINE_COMMENT_COLOR   = SyntaxHighlighter.createAttributeSet( new Color( 0xa0,0xa0,0xa0,0xff ) );
+    public static AttributeSet DEFAULT_KEYWORD_HIGHLIGHT_COLOR      = SyntaxHighlighter.createAttributeSet( new Color( 0x80,0x80,0x00,0xff ), new Color( 0xc0,0xc0,0xff,0xff ) );
+    public static AttributeSet DEFAULT_PARENTHESIS_HIGHLIGHT_COLOR  = SyntaxHighlighter.createAttributeSet( new Color( 0x80,0x80,0x00,0xff ), new Color( 0x00,0xc0,0xff,0xff ) );
+    public static AttributeSet DEFAULT_STRING_COLOR        = SyntaxHighlighter.createAttributeSet( new Color( 0x80,0x80,0x00,0xff ) );
+    public static AttributeSet DEFAULT_NUMBER_COLOR        = SyntaxHighlighter.createAttributeSet( new Color( 0xff,0x80,0x00,0xff ) );
+    public static AttributeSet DEFAULT_SYMBOL_COLOR        = SyntaxHighlighter.createAttributeSet( new Color( 0x80,0x80,0x00,0xff ) );
+    public static AttributeSet DEFAULT_KEYWORD_COLOR       = SyntaxHighlighter.createAttributeSet( new Color( 0x00,0x80,0x40,0xff ));
+    public static AttributeSet DEFAULT_HASH_COLOR          = SyntaxHighlighter.createAttributeSet( new Color( 0xff,0x40,0x40,0xff ));
+    public static AttributeSet DEFAULT_PUNCTUATION_COLOR   = SyntaxHighlighter.createAttributeSet( new Color( 0x50,0x50,0x50,0xff ));
+    public static AttributeSet DEFAULT_VARIABLE_COLOR      = SyntaxHighlighter.createAttributeSet( new Color( 0x00,0x80,0xff,0xff ));
     
     SchemeEngine schemeEngine;
     Kawapad kawapad;
@@ -119,58 +98,59 @@ class KawapadSyntaxHighlighter extends SyntaxHighlighter {
         this.enabledKeyword = enabledKeyword;
     }
 
+    @Override
     protected Collection<SyntaxElement> createSyntaxElementList() {
         ArrayList<SyntaxElement> list = new ArrayList<>(5);
         if ( enabledPunctuation )
-            list.add( SyntaxHighlighter.createSyntaxElement(
+            list.add( SyntaxElement.create(
                 KawapadSyntaxElementType.PUNCTUATION,
                 Pattern.compile( "(?<K>(?:\\(|\\)|\\:|\\'|\\#))" ),
-                defaultPunctuationColor ));
+                DEFAULT_PUNCTUATION_COLOR ));
         if ( enabledKeyword )
-            list.add( SyntaxHighlighter.createSyntaxElement(
+            list.add( SyntaxElement.create(
                 KawapadSyntaxElementType.VARIABLE,
                 createKeywordPattern(), 
-                defaultVariableColor )); 
-        list.add( SyntaxHighlighter.createSyntaxElement(
+                DEFAULT_VARIABLE_COLOR )); 
+        list.add( SyntaxElement.create(
             KawapadSyntaxElementType.PARENTHESIS_HIGHLIGHT,
             null,
-            defaultParenthesisHighlightColor )); 
-        list.add( SyntaxHighlighter.createSyntaxElement(
+            DEFAULT_PARENTHESIS_HIGHLIGHT_COLOR )); 
+        list.add( SyntaxElement.create(
             KawapadSyntaxElementType.KEYWORD_HIGHLIGHT,
             null,
-            defaultKeywordHighlightColor )); 
-        list.add( SyntaxHighlighter.createSyntaxElement(
+            DEFAULT_KEYWORD_HIGHLIGHT_COLOR )); 
+        list.add( SyntaxElement.create(
             KawapadSyntaxElementType.NUMBER,
             Pattern.compile( REGEX_NON_WORD_L + "(?<K>[0-9]+((/|\\.)[0-9]+)?)" + REGEX_NON_WORD_R ),
-            defaultNumberColor )); 
-        list.add( SyntaxHighlighter.createSyntaxElement(
+            DEFAULT_NUMBER_COLOR )); 
+        list.add( SyntaxElement.create(
             KawapadSyntaxElementType.SYMBOL,
             Pattern.compile( "(?<K>'[a-zA-Z-_]+)"  ),
-            defaultSymbolColor )); 
-        list.add( SyntaxHighlighter.createSyntaxElement(
+            DEFAULT_SYMBOL_COLOR )); 
+        list.add( SyntaxElement.create(
             KawapadSyntaxElementType.KEYWORD,
             Pattern.compile( "(?<K>[a-zA-Z-_]+:)" ),
-            defaultKeywordColor )); 
-        list.add( SyntaxHighlighter.createSyntaxElement(
+            DEFAULT_KEYWORD_COLOR )); 
+        list.add( SyntaxElement.create(
             KawapadSyntaxElementType.HASH,
             Pattern.compile( "(?<K>\\#[a-zA-Z-_]+)" ),
-            defaultHashColor )); 
-        list.add( SyntaxHighlighter.createSyntaxElement(
+            DEFAULT_HASH_COLOR )); 
+        list.add( SyntaxElement.create(
             KawapadSyntaxElementType.SHEBANG,
             Pattern.compile( "^\\#\\!.*\\R" ),
-            defaultShebangColor )); 
-        list.add( SyntaxHighlighter.createSyntaxElement(
+            DEFAULT_SHEBANG_COLOR )); 
+        list.add( SyntaxElement.create(
             KawapadSyntaxElementType.STRING,
             Pattern.compile( "\\\"[\\s\\S]*?\\\"", Pattern.MULTILINE ),
-            defaultStringColor )); 
-        list.add( SyntaxHighlighter.createSyntaxElement(
+            DEFAULT_STRING_COLOR )); 
+        list.add( SyntaxElement.create(
             KawapadSyntaxElementType.BLOCK_COMMENT,
             Pattern.compile( "\\#\\|[\\s\\S]*?\\|\\#", Pattern.MULTILINE ),
-            defaultBlockCommentColor )); 
-        list.add( SyntaxHighlighter.createSyntaxElement(
+            DEFAULT_BLOCK_COMMENT_COLOR )); 
+        list.add( SyntaxElement.create(
             KawapadSyntaxElementType.LINE_COMMENT,
             Pattern.compile( ";.*$" , Pattern.MULTILINE ),
-            defaultLineCommentColor ));
+            DEFAULT_LINE_COMMENT_COLOR ));
         return list;
     }
     
@@ -181,7 +161,7 @@ class KawapadSyntaxHighlighter extends SyntaxHighlighter {
     @Override
     public SyntaxElement getDefaultAttributeSet() {
         AttributeSet attr =  SyntaxHighlighter.createAttributeSet( kawapad.getForeground() );
-        SyntaxElement element = SyntaxHighlighter.createSyntaxElement( KawapadSyntaxElementType.NONE, null, attr );
+        SyntaxElement element = SyntaxElement.create( KawapadSyntaxElementType.NONE, null, attr );
         SyntaxHighlighter.setSyntaxElement( attr, element ); 
         return element;
     }
