@@ -18,7 +18,7 @@ These files are Scheme file and they are executed on start-up.
    configuration file is for registering event handlers of Kawapad.
 
 
-# a Typical Setting for `kawapad-initialization.scm` #
+# A Typical Setting for `kawapad-initialization.scm` #
 A typical task for `kawapad-initialization.scm` may be initializing LookAndFeel 
 for Kawapad. The following is an example of registering 
 
