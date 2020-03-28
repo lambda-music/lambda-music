@@ -1,7 +1,3 @@
-
-Lambda Programmable Music Sequencer 
-===================================
-
 # Introduction #
 Please, read [Overview of Lambda Programmable Music Sequencer][LNK_LAMBDA_MUSIC].
 
