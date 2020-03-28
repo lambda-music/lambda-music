@@ -3,6 +3,7 @@ package lamu.lib.scheme.repl;
 import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.SisoReceiverListener;
 import lamu.lib.stream.SisoReceiverServiceListener;
+import lamu.lib.stream.StdioStream;
 
 public class SimpleReplService implements SisoReceiverListener, SisoReceiverServiceListener {
     @Override
@@ -29,6 +30,6 @@ public class SimpleReplService implements SisoReceiverListener, SisoReceiverServ
     }
 
     public static void main(String[] args) {
-        new SisoReceiver( null, System.in, System.out, new SimpleReplService() ).requestInit();
+        new SisoReceiver( StdioStream.INSTANCE, new SimpleReplService() ).requestInit();
     }
 }

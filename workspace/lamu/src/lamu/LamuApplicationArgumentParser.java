@@ -43,6 +43,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
+    static final String MSG_NO_STREAM_ERROR     = "no stream is available";
     static final String MSG_NO_SCHEME_ERROR     = "no scheme engine was instanciated";
     static final String MSG_OUTPUT_HELP_ERROR   = "an error occured in output-help";
     static final String MSG_UNKNOWN_PARAM_ERROR = "unknown parameter : ";
@@ -233,7 +234,11 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 }
                 @Override
                 public void notifyEnd(ArgumentParser parser) {
-                    SisoReceiver sisoReceiver = new SisoReceiver( null, System.in, System.out, new SimpleReplService() );
+                    if ( parser.getValueStack( STREAMABLES ).isEmpty() ) {
+                        throw new RuntimeException( MSG_NO_STREAM_ERROR );
+                    }
+                    Stream stream = parser.getValueStack( STREAMABLES ).peek();
+                    SisoReceiver sisoReceiver = new SisoReceiver( stream, new SimpleReplService() );
                     parser.getValueStack( REPL ).push( sisoReceiver );
                 }
             };
@@ -432,7 +437,13 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     }
                     SchemeEngine schemeEngine = parser.getValueStack( SCHEME ).peek();
 
-                    parser.getValueStack( REPL ).push( new SisoReceiver( null, System.in, System.out, new ReplServer( schemeEngine ) ) );
+                    if ( parser.getValueStack( STREAMABLES ).isEmpty() ) {
+                        throw new RuntimeException( MSG_NO_STREAM_ERROR );
+                    }
+                    Stream stream = parser.getValueStack( STREAMABLES ).peek();
+
+                    
+                    parser.getValueStack( REPL ).push( new SisoReceiver( stream, new ReplServer( schemeEngine ) ) );
                     parser.getValueStack( RUNNABLE ).push( new Runnable() {
                         @Override
                         public void run() {
@@ -566,7 +577,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 @Override
                 public void notifyEnd( ArgumentParser parser ) {
                     if ( parser.getValueStack( STREAMABLES ).isEmpty() ) {
-                        throw new RuntimeException( MSG_NO_SCHEME_ERROR );
+                        throw new RuntimeException( MSG_NO_STREAM_ERROR );
                     }
                     Stream streamable = parser.getValueStack( STREAMABLES ).peek();
                     

@@ -14,6 +14,7 @@ import lamu.lib.log.Logger;
 import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.SisoReceiverListener;
 import lamu.lib.stream.SisoReceiverMessage;
+import lamu.lib.stream.StdioStream;
 
 public class ReplClient extends ReplClientServer {
     public static interface ReplClientResultReceiver {
@@ -115,7 +116,7 @@ public class ReplClient extends ReplClientServer {
     
     public static void main(String[] args) {
         ReplClient c = new ReplClient( ";" );
-        new SisoReceiver( null, System.in, System.out, c ).requestInit();
+        new SisoReceiver( StdioStream.INSTANCE, c ).requestInit();
         {
             JFrame frame = new JFrame();
             frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );

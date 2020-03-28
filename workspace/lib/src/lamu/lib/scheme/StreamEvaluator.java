@@ -2,8 +2,6 @@ package lamu.lib.scheme;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
@@ -27,9 +25,6 @@ public class StreamEvaluator implements ServicingEvaluator, NameCaptionHolder {
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
     private Stream stream;
-    private InputStream in;
-    private OutputStream out;
-    private InputStream err;
     private SisoReceiver sisoReceiver;
     private ReplClient replClient;
     public StreamEvaluator( Stream stream ) {
@@ -114,15 +109,12 @@ public class StreamEvaluator implements ServicingEvaluator, NameCaptionHolder {
     @Override
     public void initializeEvaluator() {
         logInfo("StdioEvaluator:initializeEvaluator");
-        this.err = stream.getDownwardErrorStream();
-        this.in = stream.getDownwardStream();
-        this.out = stream.getUpwardStream();
         
         this.replClient = new ReplClient();
-        this.sisoReceiver = new SisoReceiver( null, this.in, this.out, this.replClient );
+        this.sisoReceiver = new SisoReceiver( this.stream, this.replClient );
         this.sisoReceiver.requestInit();
 
-        this.errorPump = new StreamPump( this.err, NullOutputStream.INSTANCE );
+        this.errorPump = new StreamPump( this.stream.getDownwardErrorStream(), NullOutputStream.INSTANCE );
         this.errorPump.requestInit();
     }
     
@@ -131,17 +123,17 @@ public class StreamEvaluator implements ServicingEvaluator, NameCaptionHolder {
         this.sisoReceiver.requestQuit();
         this.errorPump.requestQuit();
         try {
-            this.in.close();
+            this.stream.getDownwardStream().close();
         } catch (IOException e) {
             logError("warning",e);
         }
         try {
-            this.out.close();
+            this.stream.getUpwardStream().close();
         } catch (IOException e) {
             logError("warning",e);
         }
         try {
-            this.err.close();
+            this.stream.getDownwardErrorStream().close();
         } catch (IOException e) {
             logError("warning",e);
         }

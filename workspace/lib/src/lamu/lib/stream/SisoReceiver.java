@@ -32,21 +32,16 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Thre
     protected static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }
     protected static void logWarn(Throwable e) { LOGGER.log(Level.WARNING, "warning", e); }
 
-    protected final Closeable resource;
+    protected final Stream stream;
     protected final Thread inThread;
     protected final Thread outThread;
-    protected final InputStream in;
-    protected final OutputStream out;
+    protected InputStream in;
+    protected OutputStream out;
     protected BufferedReader i;
     protected PrintStream o;
     protected T listener;
-    public SisoReceiver( InputStream in, OutputStream out, T listener ) {
-        this( null, in, out, listener );
-    }
-    public SisoReceiver( Closeable resource, InputStream in, OutputStream out, T listener ) {
-        this.resource = resource;
-        this.in = in;
-        this.out = out;
+    public SisoReceiver( Stream stream, T listener ) {
+        this.stream = stream;
         this.inThread = new Thread( new InputLoop() );
         this.outThread = new Thread( new OutputLoop() );
 
@@ -58,8 +53,7 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Thre
          */
         this.inThread.setDaemon(true);
 
-        this.o = out instanceof PrintStream ? (PrintStream)out : new PrintStream( out );
-        this.i = new BufferedReader( new InputStreamReader(in));
+        // 
         this.listener = listener;
         
         //
@@ -73,7 +67,6 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Thre
         } else {
             return false;
         }
-        
     }
 
     
@@ -241,6 +234,11 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Thre
 
     @Override
     public void processInit() {
+        this.in  = this.stream.getDownwardStream();
+        this.out = this.stream.getUpwardStream();
+        this.o = out instanceof PrintStream ? (PrintStream)out : new PrintStream( out );
+        this.i = new BufferedReader( new InputStreamReader(in));
+
         inThread.start();
         outThread.start();
     }
@@ -259,9 +257,9 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Thre
                 outThread.interrupt();
 
                 System.err.println("quit ... closing resource");
-                if ( resource != null ) {
+                if ( stream instanceof Closeable ) {
                     try {
-                        resource.close();
+                        ((Closeable)stream).close();
                     } catch (IOException e) {
                         logWarn(e);
                     }

@@ -1,13 +1,16 @@
 package lamu.lib.scheme.repl;
 
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 import lamu.lib.scheme.SchemeEngine;
+import lamu.lib.stream.JavaSocketStream;
 import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.SisoSocketServer;
 
+/**
+ * Note that this class is not fully implemented.
+ */
 public class ReplSisoSocketServer extends SisoSocketServer {
     SchemeEngine schemeEngine;
     public ReplSisoSocketServer( SchemeEngine schemeEngine, ServerSocket serverSocket, String threadName ) {
@@ -17,14 +20,8 @@ public class ReplSisoSocketServer extends SisoSocketServer {
 
     @Override
     protected void accept( Socket socket ) {
-        try {
-            new SisoReceiver( 
-                    socket, 
-                    socket.getInputStream(), 
-                    socket.getOutputStream(),
-                    new ReplServer( schemeEngine) );
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        new SisoReceiver( 
+            new JavaSocketStream(socket),
+            new ReplServer( schemeEngine) ).requestInit();
     }
 }

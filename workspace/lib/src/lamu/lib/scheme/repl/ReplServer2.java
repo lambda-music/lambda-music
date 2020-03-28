@@ -14,6 +14,7 @@ import lamu.lib.scheme.SchemeResult;
 import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.SisoReceiverListener;
 import lamu.lib.stream.SisoReceiverServiceListener;
+import lamu.lib.stream.StdioStream;
 
 /**
  * An older version of {@link ReplClientServer}. This version adopts the
@@ -420,6 +421,6 @@ public class ReplServer2 implements SisoReceiverListener, SisoReceiverServiceLis
     public static void main(String[] args) {
         SchemeEngine schemeEngine = new SchemeEngine();
         schemeEngine.requestInit();
-        new SisoReceiver( null, System.in, System.out, new ReplServer2( schemeEngine, ";" ) ).requestInit();
+        new SisoReceiver( StdioStream.INSTANCE, new ReplServer2( schemeEngine, ";" ) ).requestInit();
     }
 }

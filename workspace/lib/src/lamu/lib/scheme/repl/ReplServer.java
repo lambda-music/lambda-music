@@ -7,6 +7,7 @@ import lamu.lib.scheme.SchemeEngine;
 import lamu.lib.scheme.SchemeResult;
 import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.SisoReceiverListener;
+import lamu.lib.stream.StdioStream;
 
 public class ReplServer extends ReplClientServer {
     protected final SchemeEngine schemeEngine;
@@ -154,6 +155,6 @@ public class ReplServer extends ReplClientServer {
     public static void main(String[] args) {
         SchemeEngine schemeEngine = new SchemeEngine();
         schemeEngine.requestInit();
-        new SisoReceiver( null, System.in, System.out, new ReplServer( ";", schemeEngine ) ).requestInit();
+        new SisoReceiver( StdioStream.INSTANCE, new ReplServer( ";", schemeEngine ) ).requestInit();
     }
 }
