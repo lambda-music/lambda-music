@@ -1,3 +1,4 @@
+# How to Compile Lambda Music Sequencer #
 Lamu is developed by Eclipse. The `workspace` directory in the repository is an  
 workspace directory of Eclipse. In most time, opening the workspace directory 
 by Eclipse should compile the entire project automatically and can be executed 

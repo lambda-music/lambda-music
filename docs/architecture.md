@@ -1,10 +1,11 @@
-Lamu Architecture
-=================
+The Architecture of Lambda Music Sequencer
+==========================================
 
-Lamu is merely an Lisp editor built on Scheme interpreter works with JACKAudio 
-client. This can be used as a live-coding environment, or a JACK connection 
-controller which can be executed from your shell. I believe it is a very simple 
-yet effective way to implement DAW in Linux. 
+Lambda Music Sequencer(hereafter abbreviated as Lamu) is merely an Lisp editor 
+built on Scheme interpreter works with JACKAudio client. This can be used as a 
+live-coding environment, or a JACK connection controller which can be executed 
+from your shell. I believe it is a very simple yet effective way to implement 
+DAW in Linux. 
 
 I have not tried other live-coding environment such as SuperCollider, Sonic Pi 
 and others; the main difference between them and Lamu is that these 
@@ -12,7 +13,7 @@ environments have sound modules but Lamu does not. Lamu is simply a JACKAudio
 client. I believe the combination of Scheme and JACKAudio can be a very 
 effective and "Linux"-way to implement a live-coding environment.
 
-# Architecture of Pulsar Sequencer #
+# The Architecture of Pulsar Sequencer #
 Lamu consists several layers on its architecture.
 
 ![Architecture][LNK_ARCHITECTURE]
