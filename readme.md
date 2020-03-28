@@ -1,7 +1,8 @@
 Please, read [Overview of Lambda Programmable Music Sequencer][LNK_LAMBDA_MUSIC].
 # Download #
-<a href="" style="border:1px;border-radius:5px 5px;padding:0.75rem 
-1rem;">Executable Jar(Nightly Build)</a>
+<a href="https://github.com/lambda-music/lamu/raw/master/workspace/build/lamu.jar" 
+style="border:1px;border-radius:5px 5px;padding:0.75rem 1rem;">Executable 
+Jar(Nightly Build)</a>
 
 
 # User's Documentation #
