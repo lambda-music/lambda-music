@@ -9,7 +9,7 @@ import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.SisoSocketServer;
 
 /**
- * Note that this class is not fully implemented.
+ * Note that this class is not fully implemented. (Sun, 29 Mar 2020 04:13:01 +0900)
  */
 public class ReplSisoSocketServer extends SisoSocketServer {
     SchemeEngine schemeEngine;

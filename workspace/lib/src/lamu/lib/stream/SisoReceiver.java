@@ -170,7 +170,7 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Thre
                     //
                     if ( first ) {
                         first = false;
-                        if ( s.startsWith( SHEBANG )) {
+                        if ( s!= null && s.startsWith( SHEBANG )) {
                             continue;
                         }
                     }

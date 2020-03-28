@@ -605,6 +605,13 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 }
                 @Override
                 public void notifyEnd( ArgumentParser parser ) {
+                    initStream(parser);
+                }
+
+                /**
+                 * Initialize the default stream. See {@link lamu.LamuScript.State#initStream() }
+                 */
+                void initStream(ArgumentParser parser) {
                     if ( System.console() == null ) {
                         logWarn(
                             "=== WARNING ===\n" +
