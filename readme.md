@@ -3,7 +3,7 @@ Please, read [Overview of Lambda Programmable Music Sequencer][LNK_LAMBDA_MUSIC]
 <a 
 href="https://github.com/lambda-music/lamu/raw/master/workspace/build/lamu.jar" 
 style="color:darkcyan;border:1px solid darkcyan;border-radius:5px 
-5px;padding:0.75rem 1rem;">Executable Jar(Nightly Build)</a>
+5px;padding:0.75rem 1rem;">Executable Jar</a>
 <a href="https://github.com/lambda-music/lamu/" 
 style="color:darkcyan;border:1px solid darkcyan;border-radius:5px 
 5px;padding:0.75rem 1rem;">View on GitHub</a>
