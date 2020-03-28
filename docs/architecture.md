@@ -1,11 +1,11 @@
 The Architecture of Lambda Music Sequencer
 ==========================================
 
-Lambda Music Sequencer(hereafter abbreviated as Lamu) is merely an Lisp editor 
-built on Scheme interpreter works with JACKAudio client. This can be used as a 
-live-coding environment, or a JACK connection controller which can be executed 
-from your shell. I believe it is a very simple yet effective way to implement 
-DAW in Linux. 
+Lambda Music Sequencer(hereinafter abbreviated as Lamu) is merely an Lisp 
+editor built on Scheme interpreter works with JACKAudio client. This can be 
+used as a live-coding environment, or a JACK connection controller which can be 
+executed from your shell. I believe it is a very simple yet effective way to 
+implement DAW in Linux. 
 
 I have not tried other live-coding environment such as SuperCollider, Sonic Pi 
 and others; the main difference between them and Lamu is that these 
