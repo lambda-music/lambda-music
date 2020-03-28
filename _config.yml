@@ -3,3 +3,6 @@ title: Lambda Programmable Music Sequencer
 description: Write Scheme and make music on-the-fly with JACKAudio.
 show_downloads: true
 google_analytics: UA-159323195-3
+github:
+  zip_url: https://github.com/lambda-music/lamu/raw/master/workspace/build/lamu.jar
+  another_url: https://github.com/lambda-music/lamu/blob/master/workspace/build/lamu.jar
