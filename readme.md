@@ -4,11 +4,9 @@ Please, read [Overview of Lambda Programmable Music Sequencer][LNK_LAMBDA_MUSIC]
 href="https://github.com/lambda-music/lamu/raw/master/workspace/build/lamu.jar" 
 style="color:darkcyan;border:1px solid darkcyan;border-radius:5px 
 5px;padding:0.75rem 1rem;">Executable Jar(Nightly Build)</a>
-
 <a href="https://github.com/lambda-music/lamu/" 
 style="color:darkcyan;border:1px solid darkcyan;border-radius:5px 
 5px;padding:0.75rem 1rem;">View on GitHub</a>
-
 
 # User's Documentation #
 - [Getting Started Installation and Execution](./docs/getting-started.md)
