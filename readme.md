@@ -65,6 +65,11 @@ Eclipse. This builds `lamu.jar`.
 ## Main Class ##
 The main-class is `lamu.LamuApplication`.
 
+<a href="https://github.com/lambda-music/lamu"><img width="149" height="149" 
+src="https://github.blog/wp-content/uploads/2008/12/forkme_left_red_aa0000.png?resize=149%2C149" 
+class="attachment-full size-full" alt="Fork me on GitHub" 
+data-recalc-dims="1"></a>
+
 [LNK_LAMBDA_MUSIC]:https://lambda-music.github.io/
 [LNK_EDITOR_MOVIE]:./imgs/corresponding-parenthesis-movement.gif
 
