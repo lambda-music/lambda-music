@@ -30,6 +30,7 @@ import lamu.lib.scheme.socket.SchemeHttp;
 import lamu.lib.scheme.socket.SchemeHttp.UserAuthentication;
 import lamu.lib.stream.LoggerStream;
 import lamu.lib.stream.NullOutputStream;
+import lamu.lib.stream.NullStream;
 import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.StdioStream;
 import lamu.lib.stream.Stream;
@@ -593,7 +594,30 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 }
                 @Override
                 public void notifyEnd( ArgumentParser parser ) {
-                    parser.getValueStack( STREAMABLES ).push( StdioStream.INSTANCE );
+                    if ( System.console() == null ) {
+                        logWarn(
+                            "=== WARNING ===\n" +
+                            "The user requested a STDIO stream to be instantiated but it is not available;\n" +
+                            "therefore, a dummy stream is created instead of the STDIO.\n" );
+                        parser.getValueStack( STREAMABLES ).push( NullStream.INSTANCE );
+                    } else {
+                        parser.getValueStack( STREAMABLES ).push( StdioStream.INSTANCE );
+                    }
+                }
+            };
+        }
+    }
+    static final class NullStreamArgumentParserElementFactory implements ArgumentParserElementFactory {
+        @Override
+        public ArgumentParserElement create() {
+            return new ArgumentParserElement() {
+                @Override
+                public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
+                    return this;
+                }
+                @Override
+                public void notifyEnd( ArgumentParser parser ) {
+                    parser.getValueStack( STREAMABLES ).push( NullStream.INSTANCE );
                 }
             };
         }
@@ -646,6 +670,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         registerFactory( "simple-repl",      new SimpleReplArgumentParserElementFactory());
         registerFactory( "logger-stream",    new LoggerArgumentParserElementFactory());
         registerFactory( "stdio-stream",     new StdioArgumentParserElementFactory());
+        registerFactory( "null-stream",      new NullStreamArgumentParserElementFactory());
         registerFactory( "forked-stream",    new ForkedArgumentParserElementFactory());
         
         registerFactory( "reference",        new OutputReferenceArgumentParserElementFactory());
