@@ -18,37 +18,49 @@ These files are Scheme file and they are executed on start-up.
    configuration file is for registering event handlers of Kawapad.
 
 
-# a typical setting for kawapad-initialization.scm #
+# a Typical Setting for `kawapad-initialization.scm` #
 A typical task for `kawapad-initialization.scm` may be initializing LookAndFeel 
 for Kawapad. The following is an example of registering 
 
 ```scheme
-(define-simple-class DarkMetalTheme  (javax.swing.plaf.metal.DefaultMetalTheme)
-                     (color-primary1   (javax.swing.plaf.ColorUIResource 1/16 1/16 1/16 ))
-                     (color-primary2   (javax.swing.plaf.ColorUIResource 1/16 1/16 1/16 ))
-                     (color-primary3   (javax.swing.plaf.ColorUIResource 1/16 1/16 1/16 ))
-                     (color-secondary1 (javax.swing.plaf.ColorUIResource 1/16 1/16 1/16 ))
-                     (color-secondary2 (javax.swing.plaf.ColorUIResource 1/16 1/16 1/16 ))
-                     (color-secondary3 (javax.swing.plaf.ColorUIResource 1/16 1/16 1/16 ))
-                     ((getPrimary1      )::javax.swing.plaf.ColorUIResource (this):color-primary1)
-                     ((getPrimary2      )::javax.swing.plaf.ColorUIResource (this):color-primary2)
-                     ((getPrimary3      )::javax.swing.plaf.ColorUIResource (this):color-primary3)
-                     ((getSecondary1    )::javax.swing.plaf.ColorUIResource (this):color-secondary1)
-                     ((getSecondary2    )::javax.swing.plaf.ColorUIResource (this):color-secondary2)
-                     ((getSecondary3    )::javax.swing.plaf.ColorUIResource (this):color-secondary3)
-                     (color-white (javax.swing.plaf.ColorUIResource 2/16 2/16 2/16 ))
-                     (color-black (javax.swing.plaf.ColorUIResource 0.1 12/16 0.1))
-                     
-                     ((getWhite) ::javax.swing.plaf.ColorUIResource (this):color-white)
-                     ((getBlack) ::javax.swing.plaf.ColorUIResource (this):color-black)
-                     
-                     (color-window-background (javax.swing.plaf.ColorUIResource 0/16 0/16 0/16))
-                     ((getWindowBackground) ::javax.swing.plaf.ColorUIResource (this):color-window-background))
+(begin
+  (define-simple-class DarkMetalTheme  
+  (javax.swing.plaf.metal.DefaultMetalTheme)
+                           (color-primary1   (javax.swing.plaf.ColorUIResource 1/16 1/16 1/16 ))
+                           (color-primary2   (javax.swing.plaf.ColorUIResource 1/16 1/16 1/16 ))
+                           (color-primary3   (javax.swing.plaf.ColorUIResource 1/16 1/16 1/16 ))
+                           (color-secondary1 (javax.swing.plaf.ColorUIResource 1/16 1/16 1/16 ))
+                           (color-secondary2 (javax.swing.plaf.ColorUIResource 1/16 1/16 1/16 ))
+                           (color-secondary3 (javax.swing.plaf.ColorUIResource 1/16 1/16 1/16 ))
+                           ((getPrimary1      )::javax.swing.plaf.ColorUIResource (this):color-primary1)
+                           ((getPrimary2      )::javax.swing.plaf.ColorUIResource (this):color-primary2)
+                           ((getPrimary3      )::javax.swing.plaf.ColorUIResource (this):color-primary3)
+                           ((getSecondary1    )::javax.swing.plaf.ColorUIResource (this):color-secondary1)
+                           ((getSecondary2    )::javax.swing.plaf.ColorUIResource (this):color-secondary2)
+                           ((getSecondary3    )::javax.swing.plaf.ColorUIResource (this):color-secondary3)
+                           (color-white (javax.swing.plaf.ColorUIResource 2/16 2/16 2/16 ))
+                           (color-black (javax.swing.plaf.ColorUIResource 0.1 12/16 0.1))
+                           (color-red   (javax.swing.plaf.ColorUIResource 0.9  2/16 0.1))
 
-(javax.swing.plaf.metal.MetalLookAndFeel:setCurrentTheme 
-  (DarkMetalTheme))
-(javax.swing.UIManager:setLookAndFeel
-  (javax.swing.plaf.metal.MetalLookAndFeel))
+                           ((getWhite) ::javax.swing.plaf.ColorUIResource (this):color-white)
+                           ((getBlack) ::javax.swing.plaf.ColorUIResource (this):color-black)
+
+                           (color-window-background (javax.swing.plaf.ColorUIResource 0/16 0/16 0/16))
+                           ((getWindowBackground) ::javax.swing.plaf.ColorUIResource (this):color-window-background )
+                           ((getFocusColor    )::javax.swing.plaf.ColorUIResource (this):color-red)
+                           ((getWinwodTitleForeground    )::javax.swing.plaf.ColorUIResource (this):color-red)
+                           ((getWinwodTitleBackground    )::javax.swing.plaf.ColorUIResource (this):color-red))
+
+  (javax.swing.plaf.metal.MetalLookAndFeel:setCurrentTheme 
+    (DarkMetalTheme))
+  (javax.swing.UIManager:setLookAndFeel
+    (javax.swing.plaf.metal.MetalLookAndFeel))
+  
+  (kawapad.KawapadSyntaxElementType:PARENTHESIS_HIGHLIGHT:setDefaultBackgroundColor
+      (java.awt.Color 0.0 0.3 0.3 1.0))
+
+  (kawapad.KawapadSyntaxElementType:KEYWORD_HIGHLIGHT:setDefaultBackgroundColor
+      (java.awt.Color 0.0 0.1 0.5 1.0)))
 ```
 
 This defines a sub-class of `DefaultMetalTheme` class and set an instance of 
