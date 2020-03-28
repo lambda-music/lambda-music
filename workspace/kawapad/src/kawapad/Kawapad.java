@@ -62,7 +62,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.plaf.FontUIResource;
-import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
@@ -284,10 +283,6 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         // Added (Mon, 23 Dec 2019 02:11:34 +0900)      
         this.schemeEngine.getSchemeEvaluator().registerSchemeInitializer( variableInitializer01 );
         
-
-        this.setEditorKit( new KawapadStyledEditorKit() );
-
-        
         // init font
         // kawapad.setFont( new Font("monospaced", Font.PLAIN, 12));
         
@@ -311,9 +306,12 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         AcceleratorKeyList.purgeKeyFromActionMap( kawapad, DefaultEditorKit.insertTabAction );
         
         this.syntaxHighlighter = new KawapadSyntaxHighlighter( this );
-        if ( ENABLED_SYNTAX_HIGHLIGHTING ) {
-            ((AbstractDocument)getDocument()).setDocumentFilter(getSyntaxHighlighter());
-        }
+
+//        MOVED TO EDITOR KIT (Sun, 29 Mar 2020 04:07:39 +0900) >>>
+//        if ( ENABLED_SYNTAX_HIGHLIGHTING ) {
+//            ((AbstractDocument)getDocument()).setDocumentFilter(getSyntaxHighlighter());
+//        }
+//      MOVED TO EDITOR KIT (Sun, 29 Mar 2020 04:07:39 +0900) <<<
         
         // https://stackoverflow.com/questions/6189599/automatically-causing-a-subclassed-jpanels-resources-to-be-released
         this.addHierarchyListener( new HierarchyListener() {
@@ -334,6 +332,24 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         });
         
         AcceleratorKeyList.processAcceleratorKeys( this );
+
+        this.setEditorKit( new KawapadStyledEditorKit() {
+            @Override
+            public Document createDefaultDocument() {
+                SyntaxHighlighterStyledDocument document = (SyntaxHighlighterStyledDocument) super.createDefaultDocument();
+                
+                document.addDocumentListener( kawapadListener );
+                
+                if ( ENABLED_SYNTAX_HIGHLIGHTING ) {
+                    document.setDocumentFilter(getSyntaxHighlighter());
+                }
+                document.addUndoableEditListener( getUndoManager() );
+                
+                return document;
+            }
+        });
+        
+
     }
     
     public String outputKeyStrokeReference() {
@@ -825,7 +841,12 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
 //          textPane.getActionMap().put( UNDO, UNDO_ACTION );
 //          textPane.getActionMap().put(REDO, REDO_ACTION );
 //          undoManager.addEdit(anEdit)
-        kawapad.getDocument().addUndoableEditListener( getUndoManager() );
+        
+//        MOVED >>> (Sun, 29 Mar 2020 04:02:33 +0900)
+//        MOVED TO EditorKit; see the constructor.
+//        kawapad.getDocument().addUndoableEditListener( getUndoManager() );
+//        MOVED >>> (Sun, 29 Mar 2020 04:02:33 +0900)
+
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -1162,7 +1183,8 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     }
     private KawapadListener kawapadListener = new KawapadListener();
     {
-        this.getDocument().addDocumentListener( kawapadListener );
+//        MOVED TO EditorKit; see the constructor. (Sun, 29 Mar 2020 03:58:28 +0900) 
+//        this.getDocument().addDocumentListener( kawapadListener );
         this.addCaretListener( kawapadListener );
     }
     
