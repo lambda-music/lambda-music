@@ -1,4 +1,5 @@
 theme: jekyll-theme-cayman
 title: Lambda Programmable Music Sequencer
 description: Write Scheme and make music on-the-fly with JACKAudio.
+show_downloads: true
 google_analytics: UA-159323195-3
