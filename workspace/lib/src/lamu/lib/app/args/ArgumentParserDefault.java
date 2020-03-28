@@ -138,8 +138,16 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
         List<String> arguments = runtimeMxBean.getInputArguments();
         
         System.err.println( arguments );
-        System.err.println( "getBootClassPath:"+runtimeMxBean.getBootClassPath() );
-        System.err.println( "getClassPath:"+runtimeMxBean.getClassPath() );
+        try {
+            System.err.println( "getBootClassPath:"+runtimeMxBean.getBootClassPath() );
+        } catch ( Throwable e ) {
+            e.printStackTrace();
+        }
+        try {
+            System.err.println( "getClassPath:"+runtimeMxBean.getClassPath() );
+        } catch ( Throwable e ) {
+            e.printStackTrace();
+        }
     }
 
     ArgumentParserElement defaultArgumentParserElement = getFactoryMap().get( "default" ).create();
