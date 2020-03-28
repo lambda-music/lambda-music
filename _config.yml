@@ -7,3 +7,4 @@ github:
   zip_url: https://github.com/lambda-music/lamu/raw/master/workspace/build/lamu.jar
   jar_url: https://github.com/lambda-music/lamu/raw/master/workspace/build/lamu.jar
   another_url: https://github.com/lambda-music/lamu/blob/master/workspace/build/lamu.jar
+  is_project_page: false
