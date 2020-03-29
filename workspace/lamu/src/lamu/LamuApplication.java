@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 
 import kawapad.Kawapad;
@@ -25,6 +26,12 @@ import pulsar.Pulsar;
 import pulsar.PulsarDocuments;
 
 public class LamuApplication {
+    // (Sun, 29 Mar 2020 23:16:11 +0900)
+    static {
+        readEnvironmentToSystemPropertyMap();
+        initLogger();
+    }
+
     static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
@@ -136,6 +143,48 @@ public class LamuApplication {
         }
     }
 
+    static void readEnvironmentToSystemPropertyMap() {
+        System.err.println( "=== Read Environment Variable and Set to System Property Map ===" );
+        Map<String, String> getenv = System.getenv();
+        for ( Map.Entry<String,String> e : getenv.entrySet() ) {
+            String envKey = e.getKey();
+            if ( envKey.toUpperCase().startsWith( "LAMU_" ) ) {
+                String propKey = "lamu." + envKey.substring(5).toLowerCase().replaceAll( "_", "-" );
+                System.err.println( String.format("%s->%s",envKey, propKey ) );
+                System.setProperty( propKey,  e.getValue() );
+            }
+        }
+        System.err.println( "================================================================" );
+    }
+
+    static String getSystemProperty( String key ) {
+        System.err.println( "Checking SytemProperty :" + key );
+        return System.getProperty( key );
+    }
+    static String setSystemProperty( String key, String value ) {
+        System.err.println( "Setting SytemProperty :" + key + "->" + value );
+        return System.setProperty( key, value );
+    }
+    
+    /*
+     * -Djava.util.logging.config.file=${workspace_loc:lamu}/logging.properties
+     */
+    static void initLogger() {
+        {
+            String s = System.getProperty( "lamu.enable-lamu-formatter" );
+            if ( s!=null && ! "".equals(s) ) {
+                lamu.lib.log.LogFormatter.init();
+            }
+        }
+        {
+            String s = System.getProperty( "lamu.logging-properties" );
+            if ( s!=null && ! "".equals(s) ) {
+                setSystemProperty( "java.util.logging.config.file", s );
+            }
+        }
+        System.err.println( "================================================================" );
+    }
+
     public static void main(String[] args) throws IOException {
         // javax.swing.UIManager.getLookAndFeelDefaults()
         // .put("defaultFont", new java.awt.Font("Data Senenty LET", java.awt.Font.BOLD,
@@ -157,6 +206,7 @@ public class LamuApplication {
         // // TODO Auto-generated catch block
         // e1.printStackTrace();
         // }
+
 
         // Initialize Kawa import path in the first place.
         initKawaImportPath();
