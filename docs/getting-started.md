@@ -2,8 +2,8 @@ Getting Started
 ===============
 
 # System Requirements #
-Any operating systems that can run the following systems:
-- Java 8
+Lambda Music Sequencer (hereinafter abbreviated as Lamu)
+can run any operating systems that can run the following systems: - Java 8
 - JNA
 - JACK Audio Connection Kit
 
@@ -11,7 +11,7 @@ Lamu has been developed and tested in Ubuntu 16.04. It runs under Windows 10
 successfully. Running under OS X is still not tested; it should work as well 
 operation systems.
 
-Pulser uses following libraries :
+Lamu uses following libraries :
 
 - JNA-4.5.0
 - JNAJACK-1.3.0
@@ -53,6 +53,20 @@ Lamu editor to open the specified file.
 ```bash
 > java -jar lamu.jar any-scheme-program.scm
 ```
+
+Or if your distribution has a support for [binfmt\_misc kernel 
+module](https://en.wikipedia.org/wiki/Binfmt_misc), (which is most likely 
+available in modern distributions in 2020) you can simply:
+
+```bash
+> chmod 755 ./lamu.jar
+> ./lamu.jar any-scheme-program.scm
+```
+
+## Environment Variable ##
+Some setting is configured via environment variables.  For further information, 
+please read [Lamu Environment Variable Specification](./environment.md).
+
 
 ## Advanced Command-line Parameter ##
 Lamu is composed by several components. And Lamu's command-line parameter can 
