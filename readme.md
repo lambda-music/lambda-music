@@ -10,9 +10,9 @@ style="color:darkcyan;border:1px solid darkcyan;border-radius:5px
 
 # User's Documentation #
 - [Getting Started Installation and Execution](./docs/getting-started.md)
-- [Lamu Environment Variables Specification](./docs/environment.md)
 - [Lamu Command-line Parameter Specification](./docs/arguments.md)
 - [Lamu Configuration File Specification](./docs/configuration.md)
+- [Lamu Environment Variables Specification](./docs/environment.md)
 - [Lamu REPL Processor Specification](./docs/repl.md)
 - [Lamu API Reference](./workspace/build/docs/lamu-api-reference.md)
 - [Lamu GUI Extension API Reference](./workspace/build/docs/lamu-gui-extension-api-reference.md)
