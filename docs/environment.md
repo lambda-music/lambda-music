@@ -1,7 +1,7 @@
 Lamu Environment Variable Specification
 =======================================
 
-# Lamu Environmental Variable to System Property Translation #
+# Lamu Environment Variable to System Property Translation #
 Every environment variable which starts with "LAMU\_" will be translated into a 
 system property when Lamu starts. The background of this behavior is designed 
 is to be used with [binfmt\_misc kernel 

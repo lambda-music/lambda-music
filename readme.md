@@ -1,4 +1,4 @@
-Please, read [Overview of Lambda Programmable Music Sequencer][LNK_LAMBDA_MUSIC].
+Please, read [Overview of Lambda Music Sequencer][LNK_LAMBDA_MUSIC].
 # Download #
 <a 
 href="https://github.com/lambda-music/lamu/raw/master/workspace/build/lamu.jar" 
@@ -12,7 +12,7 @@ style="color:darkcyan;border:1px solid darkcyan;border-radius:5px
 - [Getting Started Installation and Execution](./docs/getting-started.md)
 - [Lamu Command-line Parameter Specification](./docs/arguments.md)
 - [Lamu Configuration File Specification](./docs/configuration.md)
-- [Lamu Environment Variables Specification](./docs/environment.md)
+- [Lamu Environment Variable Specification](./docs/environment.md)
 - [Lamu REPL Processor Specification](./docs/repl.md)
 - [Lamu API Reference](./workspace/build/docs/lamu-api-reference.md)
 - [Lamu GUI Extension API Reference](./workspace/build/docs/lamu-gui-extension-api-reference.md)
@@ -26,7 +26,7 @@ style="color:darkcyan;border:1px solid darkcyan;border-radius:5px
 # Developer's Documentation #
 - [Architecture Overview](./docs/architecture.md)
 - [Compilation](./docs/compilation.md)
-- [JavaDoc of Lambda Programmable Music Sequencer](./workspace/build/javadoc/index.html)
+- [JavaDoc of Lambda Music Sequencer](./workspace/build/javadoc/index.html)
 - [Pulsar](./workspace/pulsar/readme.md)
 - [Metro](./workspace/metro/readme.md)
 - [KawaPad](./workspace/kawapad/readme.md)
