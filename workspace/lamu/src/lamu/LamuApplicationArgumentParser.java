@@ -315,6 +315,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                         LamuNamedArgument a = new LamuNamedArgument(s);
                         switch ( a.getKey() ) {
                         case "open" : 
+                        case "load" : 
                             fileNameList.add( a.getValue() );
                             break;
                         default :
@@ -426,9 +427,22 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         @Override
         public ArgumentParserElement create() {
             return new ArgumentParserElement() {
+                private List<String> fileNameList = new ArrayList<>();
                 @Override
                 public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
-                    throw new RuntimeException( MSG_UNKNOWN_PARAM_ERROR + s);
+                    if ( s.startsWith( "--" ) ) {
+                        LamuNamedArgument a = new LamuNamedArgument(s);
+                        switch ( a.getKey() ) {
+                        case "load" : 
+                            fileNameList.add( a.getValue() );
+                            break;
+                        default :
+                            throw new RuntimeException( MSG_UNKNOWN_PARAM_ERROR + a.getKey() );
+                        }
+                    } else {
+                        throw new RuntimeException( MSG_UNKNOWN_PARAM_ERROR + s);
+                    }
+                    return this;
                 }
                 @Override
                 public void notifyEnd(ArgumentParser parser) {

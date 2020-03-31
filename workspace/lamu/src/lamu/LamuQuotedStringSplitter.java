@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 public class LamuQuotedStringSplitter {
     static final String TAG_END = "__RECALPER__";
     static final String TAG_BEGIN = "__REPLACER__";
+    static final Pattern PAT_IN0 = Pattern.compile( "^\\#.*$", Pattern.MULTILINE );
     static final Pattern PAT_IN1 = Pattern.compile( "\"([^\"]*)\"" );
     static final Pattern PAT_IN2 = Pattern.compile( "(\\{[^\\{]*?\\})" );
     static final Pattern PAT_OUT = Pattern.compile( TAG_BEGIN + "([0-9]+)" + TAG_END );
@@ -20,6 +21,8 @@ public class LamuQuotedStringSplitter {
         List<String> substitution = new ArrayList<>();
 
         String substitutedValue = value;
+        
+        substitutedValue = PAT_IN0.matcher( substitutedValue ).replaceAll( "" );
 
         // Substitute every string which is surrounded by a pair of curly brackets.
         // Note that brackets are processed at first.

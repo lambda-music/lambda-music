@@ -49,12 +49,17 @@ public class LamuApplication {
         availableCommands.add( new LamuCommandLoad() );
         availableCommands.add( new LamuCommandEcho() );
         availableCommands.addAll( LamuCommandMacro.load( getInitFile() ) );
+
         // this is a fall back.
         availableCommands.add( LamuCommandMacro.create( 
-                    LamuScript.DEFAULT_COMMAND_NAME + 
+                    LamuScript.DEFAULT_COMMAND_LOAD + 
                     " " + 
-                    LamuScript.TRIGGER_FOR_ADVANCED_COMMAND_MODE + " create scheme + pulsar + repl + gui $*{$} +"
-                    ));
+                    LamuScript.TRIGGER_FOR_ADVANCED_COMMAND_MODE + " create scheme + pulsar + repl $*{--load=$} +" ));
+
+        availableCommands.add( LamuCommandMacro.create( 
+                    LamuScript.DEFAULT_COMMAND_OPEN + 
+                    " " + 
+                    LamuScript.TRIGGER_FOR_ADVANCED_COMMAND_MODE + " create scheme + pulsar + repl + gui $*{$} +" ));
         return availableCommands;
     }
 

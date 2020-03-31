@@ -22,6 +22,10 @@ import lamu.lib.stream.Stream;
 
 public class LamuScript {
 
+    public static final String VARIABLE_MARK = "$";
+    public static final String DEFAULT_BRACE_BLOCK_SCRIPT = VARIABLE_MARK;
+    public static final String SHEBANG = "#!";
+
     /**
      * A class to store the current state of the script engine.
      */
@@ -61,6 +65,8 @@ public class LamuScript {
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     static final String TRIGGER_FOR_ADVANCED_COMMAND_MODE = "advanced";
+    static final String DEFAULT_COMMAND_OPEN = "open";
+    static final String DEFAULT_COMMAND_LOAD = "load";
     static final String DEFAULT_COMMAND_NAME = "default";
     
     static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
@@ -80,7 +86,15 @@ public class LamuScript {
         // regard it as the "default mode". Let's put the TRIGGER_FOR_ADVANCED_COMMAND_MODE and
         // the default command name. 
         if ( arguments.size() == 0 || ! TRIGGER_FOR_ADVANCED_COMMAND_MODE.equals( arguments.get( 0 ))) {
-            arguments.addAll( 0, Arrays.asList(  TRIGGER_FOR_ADVANCED_COMMAND_MODE, DEFAULT_COMMAND_NAME ) );
+            List<String> outArgs = new ArrayList<>();
+            Map<String, LamuNamedArgument> outNamedArgs = new HashMap<>();
+            parseMacro(arguments, outArgs, outNamedArgs);
+            String commandName = DEFAULT_COMMAND_NAME;
+            if ( outNamedArgs.containsKey("command") ) {
+                commandName= outNamedArgs.get("command").getValue();
+                logInfo( "--command=" + commandName );
+            }
+            arguments.addAll( 0, Arrays.asList(  TRIGGER_FOR_ADVANCED_COMMAND_MODE, commandName ) );
         } 
 
         // Remove the first element; at this point, it always equals to TRIGGER_FOR_ADVANCED_COMMAND_MODE. 
@@ -161,10 +175,19 @@ public class LamuScript {
         if ( tokenToAdd.equals( replaceFrom )) {
             result.addAll( replaceTo );
         } else {
-            result.add(
-                tokenToAdd.replaceAll( 
-                    Pattern.quote( replaceFrom ), 
-                    String.join( " ", replaceTo )));
+            String modifiedTokenToAdd = 
+                Pattern
+                    .compile( Pattern.quote( replaceFrom ) )
+                    .matcher( tokenToAdd).replaceAll(
+                        String.join( " ", replaceTo ));
+            if ( tokenToAdd.equals( modifiedTokenToAdd ) ) {
+                result.add(
+                    tokenToAdd.replaceAll( 
+                        Pattern.quote( replaceFrom ), 
+                        String.join( " ", replaceTo )));
+            } else {
+                result.add( modifiedTokenToAdd );
+            }
         }
     }
 
@@ -177,13 +200,15 @@ public class LamuScript {
         for (Iterator<String> i = macroContent.iterator(); i.hasNext();) {
             String token = i.next().trim();
 
-            if (token.startsWith("$")) {
+            if ( token.startsWith(SHEBANG)) {
+                // If the current token is SHEBANG line, ignore the line. 
+            } else if (token.startsWith(VARIABLE_MARK)) {
                 // if the current token is a variable; replace the token with the corresponding
                 // value.
                 token = token.substring(1);
 
                 // the default value as the substitutional string for the variable token.
-                String subst = "$";
+                String subst = DEFAULT_BRACE_BLOCK_SCRIPT;
 
                 // this enables negation of checking existence of the namedArgs.
                 boolean expectationForContains = true;
@@ -207,7 +232,7 @@ public class LamuScript {
                     for (Iterator<String> j = substList.iterator(); j.hasNext();) {
                         String substToken = j.next();
                         String replaceTo = namedArgs.get(token).getValue();
-                        replaceProc(result, substToken, "$", Arrays.asList( replaceTo ));
+                        replaceProc(result, substToken, VARIABLE_MARK, Arrays.asList( replaceTo ));
                     }
                 } else if (Pattern.compile("[0-9]+").matcher(token).matches()) {
                     int idx = Integer.valueOf(token);
@@ -215,7 +240,7 @@ public class LamuScript {
                         String replaceTo = args.get(idx);
                         for (Iterator<String> j = substList.iterator(); j.hasNext();) {
                             String substToken = j.next();
-                            replaceProc(result, substToken, "$", Arrays.asList( replaceTo ));
+                            replaceProc(result, substToken, VARIABLE_MARK, Arrays.asList( replaceTo ));
                         }
                     }
                 } else if (token.equals("*")) {
@@ -223,7 +248,7 @@ public class LamuScript {
                         for (Iterator<String> j = substList.iterator(); j.hasNext();) {
                             String substToken = j.next();
                             List<String> replaceTo = args;
-                            replaceProc(result, substToken, "$", replaceTo );
+                            replaceProc(result, substToken, VARIABLE_MARK, replaceTo );
                         }
                     }
                 }

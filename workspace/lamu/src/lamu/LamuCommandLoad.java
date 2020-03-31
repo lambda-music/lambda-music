@@ -6,7 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 class LamuCommandLoad extends LamuCommand {
     @Override
@@ -21,20 +23,31 @@ class LamuCommandLoad extends LamuCommand {
 
     @Override
     protected void execute( LamuScript.State state, List<String> arguments, boolean recursiveCall ) {
-        List<String> subArguments = new ArrayList<>( arguments );
-        if ( subArguments.isEmpty() ) {
-            throw new Error( "no argument was specified" );
-        } else {
-            try {
-                String uri = subArguments.remove(0);
-                String content = new String(Files.readAllBytes( Paths.get(uri)), StandardCharsets.UTF_8 );
-                List<String> scriptContent = LamuQuotedStringSplitter.splitString( content ); 
-                
-                LamuScript.executeMacro( state, uri, scriptContent, subArguments  );
+        // Parse the arguments
+        List<String> outArgs = new ArrayList<>();
+        Map<String, LamuNamedArgument> outNamedArgs = new HashMap<>();
+        LamuScript.parseMacro( arguments, outArgs, outNamedArgs);
+        
+        try {
+            // Get the first argument as a filename.
+            String uri = outArgs.get(0);
+            
+            // Read the file as a string value.
+            String content = new String( Files.readAllBytes( Paths.get(uri)), StandardCharsets.UTF_8 );
+            
+            // Parse the string value into a list of string values. 
+            List<String> scriptContent = LamuQuotedStringSplitter.splitString( content ); 
+            
+            // Execute the string list as a script program; and pass the original
+            // argument to it.
+            LamuScript.executeMacro( state, uri, scriptContent, arguments  );
 
-            } catch (IOException e) {
-                throw new Error(e);
-            }
+        } catch (IOException e) {
+            throw new Error(e);
+        }
+
+        if ( arguments.isEmpty() ) {
+            throw new Error( "no argument was specified" );
         }
     }
 }
