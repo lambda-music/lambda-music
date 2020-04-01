@@ -12,6 +12,7 @@ import java.util.logging.Level;
 
 import kawapad.Kawapad;
 import kawapad.KawapadFrame;
+import lamu.lib.ConsoleChecker;
 import lamu.lib.app.ApplicationVessel;
 import lamu.lib.app.args.ArgumentParser;
 import lamu.lib.app.args.ArgumentParserDefault;
@@ -626,14 +627,14 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                  * Initialize the default stream. See {@link lamu.LamuScript.State#initStream() }
                  */
                 void initStream(ArgumentParser parser) {
-                    if ( System.console() == null ) {
+                    if ( ConsoleChecker.consoleExists() ) {
+                        parser.getValueStack( STREAMABLES ).push( StdioStream.INSTANCE );
+                    } else {
                         logWarn(
                             "=== WARNING ===\n" +
-                            "The user requested a STDIO stream to be instantiated but it is not available;\n" +
+                                "The user requested a STDIO stream to be instantiated but it is not available;\n" +
                             "therefore, a dummy stream is created instead of the STDIO.\n" );
                         parser.getValueStack( STREAMABLES ).push( NullStream.INSTANCE );
-                    } else {
-                        parser.getValueStack( STREAMABLES ).push( StdioStream.INSTANCE );
                     }
                 }
             };

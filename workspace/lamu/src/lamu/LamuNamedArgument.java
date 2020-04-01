@@ -7,6 +7,11 @@ class LamuNamedArgument {
     static final Pattern parseArgPattern = Pattern.compile( "^--([a-zA-Z0-9\\_\\-]+)\\=(.*)$" );
     private String key;
     private String value;
+    LamuNamedArgument( String key, String value ) {
+        this.key = key;
+        this.value = value;
+    }
+
     LamuNamedArgument( String s ) {
         Matcher m = parseArgPattern.matcher( s );
         if ( m.matches() ) {

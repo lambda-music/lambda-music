@@ -24,13 +24,13 @@ class LamuCommandLoad extends LamuCommand {
     @Override
     protected void execute( LamuScript.State state, List<String> arguments, boolean recursiveCall ) {
         // Parse the arguments
-        List<String> outArgs = new ArrayList<>();
+        List<String> outSeqArgs = new ArrayList<>();
         Map<String, LamuNamedArgument> outNamedArgs = new HashMap<>();
-        LamuScript.parseMacro( arguments, outArgs, outNamedArgs);
+        LamuScript.parseMacro( arguments, outSeqArgs, outNamedArgs);
         
         try {
-            // Get the first argument as a filename.
-            String uri = outArgs.get(0);
+            // Get the first argument as a filename and remove it.
+            String uri = outSeqArgs.remove(0);
             
             // Read the file as a string value.
             String content = new String( Files.readAllBytes( Paths.get(uri)), StandardCharsets.UTF_8 );
@@ -38,9 +38,8 @@ class LamuCommandLoad extends LamuCommand {
             // Parse the string value into a list of string values. 
             List<String> scriptContent = LamuQuotedStringSplitter.splitString( content ); 
             
-            // Execute the string list as a script program; and pass the original
-            // argument to it.
-            LamuScript.executeMacro( state, uri, scriptContent, arguments  );
+            // Execute the string list as a script program.
+            LamuScript.executeMacro( state, uri, scriptContent, arguments, outSeqArgs, outNamedArgs  );
 
         } catch (IOException e) {
             throw new Error(e);

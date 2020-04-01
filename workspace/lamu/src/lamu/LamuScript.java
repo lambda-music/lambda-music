@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
+import lamu.lib.ConsoleChecker;
 import lamu.lib.app.ApplicationVessel;
 import lamu.lib.log.Logger;
 import lamu.lib.stream.NullStream;
@@ -54,10 +55,10 @@ public class LamuScript {
          * (Sun, 29 Mar 2020 03:35:24 +0900)
          */
         void initStream() {
-            if ( System.console() == null ) {
-                this.streamables.push( NullStream.INSTANCE );
-            } else {
+            if ( ConsoleChecker.consoleExists() ) {
                 this.streamables.push( StdioStream.INSTANCE );
+            } else {
+                this.streamables.push( NullStream.INSTANCE );
             }
         }
     }
@@ -86,15 +87,22 @@ public class LamuScript {
         // regard it as the "default mode". Let's put the TRIGGER_FOR_ADVANCED_COMMAND_MODE and
         // the default command name. 
         if ( arguments.size() == 0 || ! TRIGGER_FOR_ADVANCED_COMMAND_MODE.equals( arguments.get( 0 ))) {
-            List<String> outArgs = new ArrayList<>();
+            List<String> outSeqArgs = new ArrayList<>();
             Map<String, LamuNamedArgument> outNamedArgs = new HashMap<>();
-            parseMacro(arguments, outArgs, outNamedArgs);
-            String commandName = DEFAULT_COMMAND_NAME;
-            if ( outNamedArgs.containsKey("command") ) {
+            parseMacro(arguments, outSeqArgs, outNamedArgs);
+            
+            
+            if ( outNamedArgs.containsKey( "load" )) {
+                String fileName = outNamedArgs.get( "load" ).getValue();
+                logInfo( "--load=" + fileName );
+                arguments.addAll( 0, Arrays.asList(  TRIGGER_FOR_ADVANCED_COMMAND_MODE, "load", fileName ) );
+                
+            } else if ( outNamedArgs.containsKey( "command" ) ) {
+                String commandName = DEFAULT_COMMAND_NAME;
                 commandName= outNamedArgs.get("command").getValue();
                 logInfo( "--command=" + commandName );
+                arguments.addAll( 0, Arrays.asList(  TRIGGER_FOR_ADVANCED_COMMAND_MODE, commandName ) );
             }
-            arguments.addAll( 0, Arrays.asList(  TRIGGER_FOR_ADVANCED_COMMAND_MODE, commandName ) );
         } 
 
         // Remove the first element; at this point, it always equals to TRIGGER_FOR_ADVANCED_COMMAND_MODE. 
@@ -133,40 +141,40 @@ public class LamuScript {
     public static void executeMacro( 
         LamuScript.State state, 
         String scriptName, 
-        List<String> scriptContent, 
-        List<String> arguments )
+        List<String> scriptContent,
+        List<String> originalArguments,
+        List<String> seqArgs,
+        Map<String,LamuNamedArgument> namedArgs )
     {
-        ArrayList<String> outArgs = new ArrayList<>();
-        HashMap<String, LamuNamedArgument> outNamedArgs = new HashMap<>();
-
-        // parse the passed arguments
-        parseMacro( arguments, outArgs, outNamedArgs );
 
         // perform macro expansion.
-        List<String> expandedArgs = expandMacro( scriptContent, outArgs, outNamedArgs );
+        List<String> expandedArgs = expandMacro( scriptContent, seqArgs, namedArgs );
 
         LamuApplication.logInfo( String.format( 
                 "\nLamuScript[%s] expanded the specified arguments\nfrom:%s\nto  :%s\nmacro:%s\nargs:%s\nnargs:%s\n", 
                 scriptName,
-                arguments.toString(),
+                originalArguments.toString(),
                 expandedArgs.toString(),
                 scriptContent.toString(),
-                outArgs.toString(),
-                outNamedArgs.toString()
+                seqArgs.toString(),
+                namedArgs.toString()
             ) );
 
         // Be careful : this is a recursive calling. 
         executeScript( state, expandedArgs, true );
     }
     
-    public static void parseMacro(List<String> in, List<String> outArgs, Map<String, LamuNamedArgument> outNamedArgs) {
-        for (Iterator<String> i = in.iterator(); i.hasNext();) {
+    public static void parseMacro( List<String> arguments, List<String> outSeqArgs, Map<String, LamuNamedArgument> outNamedArgs) {
+        for (Iterator<String> i = arguments.iterator(); i.hasNext();) {
             String token = i.next();
             if (token.startsWith("--")) {
                 LamuNamedArgument na = new LamuNamedArgument(token);
                 outNamedArgs.put(na.getKey(), na);
+            } else if (token.startsWith("-")) {
+                LamuNamedArgument na = new LamuNamedArgument( token.substring(1,2), token.substring(2) );
+                outNamedArgs.put(na.getKey(), na);
             } else {
-                outArgs.add(token);
+                outSeqArgs.add(token);
             }
         }
     }

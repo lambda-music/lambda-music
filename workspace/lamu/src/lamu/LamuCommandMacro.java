@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 class LamuCommandMacro extends LamuCommand {
@@ -69,7 +70,14 @@ class LamuCommandMacro extends LamuCommand {
             throw new Error( "a malformed default value in the default argument configuration." );
         }
 
-        LamuScript.executeMacro( state, getMacroName(), getMacroContent(), arguments );
+        ArrayList<String> outArgs = new ArrayList<>();
+        HashMap<String, LamuNamedArgument> outNamedArgs = new HashMap<>();
+
+        // parse the passed arguments
+        LamuScript.parseMacro( arguments, outArgs, outNamedArgs );
+
+        // Execute the macro script.
+        LamuScript.executeMacro( state, getMacroName(), getMacroContent(), arguments, outArgs, outNamedArgs );
     }
 
 
