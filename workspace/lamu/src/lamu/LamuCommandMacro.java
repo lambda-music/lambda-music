@@ -74,7 +74,7 @@ class LamuCommandMacro extends LamuCommand {
         HashMap<String, LamuNamedArgument> outNamedArgs = new HashMap<>();
 
         // parse the passed arguments
-        LamuScript.parseMacro( arguments, outArgs, outNamedArgs );
+        LamuScript.parseArguments( arguments, outArgs, outNamedArgs );
 
         // Execute the macro script.
         LamuScript.executeMacro( state, getMacroName(), getMacroContent(), arguments, outArgs, outNamedArgs );

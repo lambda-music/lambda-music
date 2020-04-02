@@ -38,6 +38,9 @@ public abstract class ReplClientServer implements SisoReceiverListener, SisoRece
         super();
         this.prefix = prefix;
     }
+    public String getPrefix() {
+        return prefix;
+    }
 
     String currentSession = null;
     String fetchCurrentSession() {

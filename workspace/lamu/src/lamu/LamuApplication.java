@@ -47,6 +47,7 @@ public class LamuApplication {
         availableCommands.add( new LamuCommandCreate() );
         availableCommands.add( new LamuCommandFork() );
         availableCommands.add( new LamuCommandLoad() );
+        availableCommands.add( new LamuCommandExec() );
         availableCommands.add( new LamuCommandEcho() );
         availableCommands.addAll( LamuCommandMacro.load( getInitFile() ) );
 

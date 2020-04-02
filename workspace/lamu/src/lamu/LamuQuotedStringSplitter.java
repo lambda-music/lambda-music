@@ -1,5 +1,8 @@
 package lamu;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -155,4 +158,23 @@ public class LamuQuotedStringSplitter {
             output( splitString( "aaa $VAR{hello \" FOO BAR \" world } bbb" ) );
         }
     }
+
+    
+    public static List<String> splitLines( String string ) throws IOException {
+        // Remove the shebang line. 
+        string = PAT_IN0.matcher( string ).replaceAll( "" );
+
+        ArrayList<String> list  = new ArrayList<>();
+        try ( BufferedReader r =  new BufferedReader( new StringReader( string ) ) ) {
+            for (;;) {
+                String s = r.readLine();
+                if ( s == null )
+                    break;
+                
+                list.add(s);
+            }
+        }
+        return list;
+    }
+
 }

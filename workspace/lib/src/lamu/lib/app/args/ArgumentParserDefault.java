@@ -29,7 +29,8 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
-    public static final ArgumentParserStackKey<Runnable> RUNNABLE  = new ArgumentParserStackKey<>();
+    public static final ArgumentParserStackKey<Runnable> RUNNABLE_INIT  = new ArgumentParserStackKey<>();
+    public static final ArgumentParserStackKey<Runnable> RUNNABLE_START = new ArgumentParserStackKey<>();
     public static final ArgumentParserStackKey<ApplicationVessel> VESSELS = new ArgumentParserStackKey<>();
     public static final ArgumentParserStackKey<Stream> STREAMABLES = new ArgumentParserStackKey<>();
 
@@ -111,7 +112,7 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
     private void createDefaultValueStackMap() {
         getValueStack( VESSELS );
         getValueStack( STREAMABLES );
-        getValueStack( RUNNABLE );
+        getValueStack( RUNNABLE_INIT );
     }
     
     protected abstract void createValueStackMap();
@@ -217,9 +218,16 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
             logInfo( "deploy:======================================================" );
         }
         
-        // Executing runnable stack;
+        // Executing runnable(init) stack;
         {
-            ArrayList<Runnable> list = new ArrayList<Runnable>( this.getValueStack( RUNNABLE ) );
+            ArrayList<Runnable> list = new ArrayList<Runnable>( this.getValueStack( RUNNABLE_INIT ) );
+            Collections.reverse( list );
+            vessel.add( new RunnableInitializer( list ) );
+        }
+
+        // Executing runnable(start) stack;
+        {
+            ArrayList<Runnable> list = new ArrayList<Runnable>( this.getValueStack( RUNNABLE_START ) );
             Collections.reverse( list );
             vessel.add( new RunnableInitializer( list ) );
         }

@@ -23,6 +23,7 @@ import lamu.lib.log.Logger;
 import lamu.lib.scheme.Evaluator;
 import lamu.lib.scheme.RemoteEvaluator;
 import lamu.lib.scheme.SchemeEngine;
+import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.scheme.StreamEvaluator;
 import lamu.lib.scheme.doc.DescriptiveDocumentCategory;
 import lamu.lib.scheme.repl.ReplServer;
@@ -101,7 +102,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                         throw new RuntimeException( MSG_NO_SCHEME_ERROR );
                     }
                     LamuApplication.loadBasicClasses();
-                    parser.getValueStack( RUNNABLE ).add( new Runnable() {
+                    parser.getValueStack( RUNNABLE_INIT ).add( new Runnable() {
                         @Override
                         public void run() {
                             try {
@@ -173,7 +174,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     SchemeEngine schemeEngine = parser.getValueStack( SCHEME ).peek();
 
                     LamuApplication.loadBasicClasses();
-                    parser.getValueStack( RUNNABLE ).add( new Runnable() {
+                    parser.getValueStack( RUNNABLE_INIT ).add( new Runnable() {
                         @Override
                         public void run() {
                             Kawapad kawapad = new Kawapad(schemeEngine);
@@ -203,7 +204,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     }
                     SchemeEngine schemeEngine = parser.getValueStack( SCHEME ).peek();
                     LamuApplication.loadBasicClasses();
-                    parser.getValueStack( RUNNABLE ).add( new Runnable() {
+                    parser.getValueStack( RUNNABLE_INIT ).add( new Runnable() {
                         @Override
                         public void run() {
                             try {
@@ -343,7 +344,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     parser.getValueStack( FRAME ).push( frame );
                     parser.getValueStack( KAWAPAD ).push( frame.getKawapad() );
 
-                    parser.getValueStack( RUNNABLE ).push( new KawapadLoader( frame, fileNameList ));
+                    parser.getValueStack( RUNNABLE_INIT ).push( new KawapadLoader( frame, fileNameList ));
                 }
             };
         }
@@ -385,8 +386,8 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
 
                     parser.getValueStack( FRAME ).push( frame );
                     parser.getValueStack( KAWAPAD ).push( frame.getKawapad() );
-                    parser.getValueStack( RUNNABLE ).push( new KawapadLoader( frame, fileNameList ));
-                    parser.getValueStack( RUNNABLE ).push( new Runnable() {
+                    parser.getValueStack( RUNNABLE_INIT ).push( new KawapadLoader( frame, fileNameList ));
+                    parser.getValueStack( RUNNABLE_INIT ).push( new Runnable() {
                         @Override
                         public void run() {
                             //                                pulsar.init();
@@ -414,7 +415,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     Pulsar pulsar = LamuApplicationLibrary.createPulsar( schemeEngine );
                     parser.getValueStack( PULSAR ).push( pulsar );
 
-                    parser.getValueStack( RUNNABLE ).push( new Runnable() {
+                    parser.getValueStack( RUNNABLE_INIT ).push( new Runnable() {
                         @Override
                         public void run() {
                             //                                pulsar.init();
@@ -428,7 +429,8 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         @Override
         public ArgumentParserElement create() {
             return new ArgumentParserElement() {
-                private List<String> fileNameList = new ArrayList<>();
+                List<String> fileNameList = new ArrayList<>();
+                List<String> scriptStringList = new ArrayList<>();
                 @Override
                 public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
                     if ( s.startsWith( "--" ) ) {
@@ -441,7 +443,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                             throw new RuntimeException( MSG_UNKNOWN_PARAM_ERROR + a.getKey() );
                         }
                     } else {
-                        throw new RuntimeException( MSG_UNKNOWN_PARAM_ERROR + s);
+                        fileNameList.add(s);
                     }
                     return this;
                 }
@@ -458,11 +460,36 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     Stream stream = parser.getValueStack( STREAMABLES ).peek();
 
                     
-                    parser.getValueStack( REPL ).push( new SisoReceiver( stream, new ReplServer( schemeEngine ) ) );
-                    parser.getValueStack( RUNNABLE ).push( new Runnable() {
+                    ReplServer replServer = new ReplServer( schemeEngine );
+                    SisoReceiver<ReplServer> receiver = new SisoReceiver<>( stream, replServer );
+                    parser.getValueStack( REPL ).push( receiver );
+                    parser.getValueStack( RUNNABLE_INIT ).push( new Runnable() {
+                        boolean done = false;
                         @Override
                         public void run() {
-                            //                                pulsar.init();
+                            if ( ! done ) {
+                                done=true;
+                                for ( String fileName : fileNameList ) {
+                                    try {
+                                        scriptStringList.add( "; " );
+                                        scriptStringList.add( "; " + fileName );
+                                        scriptStringList.add( "; " );
+                                        scriptStringList.addAll( LamuQuotedStringSplitter.splitLines( SchemeUtils.readAllAsString( fileName ) ) );
+                                        scriptStringList.add( " " );
+                                    } catch (IOException e) {
+                                        throw new Error(e);
+                                    }
+                                }
+                                scriptStringList.add( replServer.getPrefix() + "exec" );
+                            } else {
+                                throw new Error( "duplicate calling" );
+                            }
+                        }
+                    });
+                    parser.getValueStack( RUNNABLE_START ).push( new Runnable() {
+                        @Override
+                        public void run() {
+                            receiver.process( scriptStringList );
                         }
                     });
                 }

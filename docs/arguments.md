@@ -2,7 +2,7 @@ Lamu Command-line Parameter Reference
 ======================================
 
 Lamu command-line parameter has two modes: `default-mode` and `advanced-
-mode`. If the first argument is 'advanced', Lamu processes the arguments
+mode`. If the first argument is `advanced`, Lamu processes the arguments
 in the `advanced-mode`; otherwise Lamu processes them as `default-mode`.
 
 In this section, it presumes that the knowledge for the architecture of Lamu.
@@ -15,7 +15,7 @@ Lamu](./architecture.md).
 lamu [filename]
 ```
 
-This demonstrates how to start the new Lamu application instance in the 
+This demonstrates how to start a new Lamu application instance in the 
 default-mode. The filename argument is optional. If the filename argument is 
 given, then the Lamu's main-editor opens the specified file.
 
@@ -81,8 +81,8 @@ The available components are explained later.
 
 # Multi-Line Arguments #
 Lamu's advanced commands sometimes become very long. It is recommended to split
-the commands when they come to certain length by using Shell's escape sequence 
-character as:
+the commands when they come to a certain length by using Shell's escape 
+sequence character as:
 
 Before:
 ```bash

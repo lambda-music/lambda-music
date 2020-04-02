@@ -24,6 +24,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -640,4 +643,7 @@ public class SchemeUtils {
     }
     // ADDED (Tue, 17 Mar 2020 23:58:15 +0900) <<<
 
+    public static String readAllAsString(String uri) throws IOException {
+        return new String( Files.readAllBytes( Paths.get(uri)), StandardCharsets.UTF_8 );
+    }
 }

@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.invoke.MethodHandles;
+import java.util.Collection;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.logging.Level;
@@ -176,12 +177,14 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Thre
                     }
                     
                     try {
-                        listener.process( SisoReceiver.this, s);
-                        if ( s == null) {
-                            break;
+                        synchronized ( listener ) {
+                            listener.process( SisoReceiver.this, s);
                         }
                     } catch ( Throwable t ) {
                         logError("",t);
+                    }
+                    if ( s == null) {
+                        break;
                     }
                 }
             } catch (IOException e) {
@@ -192,6 +195,15 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Thre
             
             logInfo( "Exited the input-loop." );
             //			requestQuit();
+        }
+    }
+
+    public void process( Collection<String> lines ) {
+        synchronized ( listener ) {
+            for ( String s : lines ) {
+                logInfo( "process-line:> " + s );
+                listener.process( SisoReceiver.this, s );
+            }
         }
     }
 
