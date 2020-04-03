@@ -665,9 +665,9 @@ SOSTENUTO-SWITCH
 )
 
 ### DESCRIPTION ###
-Sostenuto On/Off Switch On/Off switch – Like the Sustain controller \(CC 64\),
-However it only holds notes that were “On” when the pedal was pressed. People use it to
-“hold” chords” and play melodies over the held chord.0 to 63 = Off, 64 to 127 = On
+Sostenuto On/Off Switch On/Off switch - Like the Sustain controller \(CC 64\),
+However it only holds notes that were "On" when the pedal was pressed. People use it to
+"hold" chords" and play melodies over the held chord.0 to 63 = Off, 64 to 127 = On
 
 
 
@@ -711,7 +711,7 @@ HOLD-2
 )
 
 ### DESCRIPTION ###
-Hold 2 Another way to “hold notes” \(see MIDI CC 64 and MIDI CC 66\). However
+Hold 2 Another way to "hold notes" \(see MIDI CC 64 and MIDI CC 66\). However
 notes fade out according to their release parameter rather than when the pedal is released.
 
 
@@ -771,7 +771,7 @@ SOUND-CONTROLLER-4
 )
 
 ### DESCRIPTION ###
-Sound Controller 4 Controls the “Attack’ of a sound. The attack is the amount
+Sound Controller 4 Controls the "Attack" of a sound. The attack is the amount
 of time it takes forthe sound to reach maximum amplitude.
 
 
@@ -800,7 +800,7 @@ SOUND-CONTROLLER-6
 )
 
 ### DESCRIPTION ###
-Sound Controller 6 Generic – Some manufacturers may use to further shave their sounds.
+Sound Controller 6 Generic - Some manufacturers may use to further shave their sounds.
 
 
 
@@ -814,7 +814,7 @@ SOUND-CONTROLLER-7
 )
 
 ### DESCRIPTION ###
-Sound Controller 7 Generic – Some manufacturers may use to further shave their sounds.
+Sound Controller 7 Generic - Some manufacturers may use to further shave their sounds.
 
 
 
@@ -828,7 +828,7 @@ SOUND-CONTROLLER-8
 )
 
 ### DESCRIPTION ###
-Sound Controller 8 Generic – Some manufacturers may use to further shave their sounds.
+Sound Controller 8 Generic - Some manufacturers may use to further shave their sounds.
 
 
 
@@ -842,7 +842,7 @@ SOUND-CONTROLLER-9
 )
 
 ### DESCRIPTION ###
-Sound Controller 9 Generic – Some manufacturers may use to further shave their sounds.
+Sound Controller 9 Generic - Some manufacturers may use to further shave their sounds.
 
 
 
@@ -856,7 +856,7 @@ SOUND-CONTROLLER-10
 )
 
 ### DESCRIPTION ###
-Sound Controller 10 Generic – Some manufacturers may use to further shave their sounds.
+Sound Controller 10 Generic - Some manufacturers may use to further shave their sounds.
 
 
 

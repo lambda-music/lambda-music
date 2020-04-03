@@ -16,26 +16,28 @@ lamu [filename]
 ```
 
 This demonstrates how to start a new Lamu application instance in the 
-default-mode. The filename argument is optional. If the filename argument is 
+default-mode. The filename argument is optional. If any filename argument is 
 given, then the Lamu's main-editor opens the specified file.
 
-This Lamu's default behavior can be customised. The way how to customize the 
+This Lamu's default behavior can be customised. The way to customize the 
 behavior is described later. 
 
 # Command-line Parameter in Advanced-Mode #
+Lamu's command-line parameter is a simple scripting language. Let's call it
+_Lamu-Script_. The purpose of Lamu-Script is to specify how Lamu should run.
+
 Lamu consists a number of components and its command-line parameter can specify 
-which components to be instantiated at boot-time. 
+which components to be instantiated at boot-time. For example, Lamu has a HTTP 
+server component which enables remote clients to execute Scheme command on the 
+server where Lamu is running. And Lamu also has a HTTP client component which 
+enables accessing to the HTTP server. The Lamu's advanced-mode command-line 
+parameter can specify how Lamu should run.
 
-For example, Lamu has a HTTP server component which enables remote clients to 
-execute Scheme command on the server where Lamu is running. And Lamu also has a 
-HTTP client component which enables accessing to the HTTP server. The Lamu's 
-advanced-mode command-line parameter can specify how Lamu should run.
-
-In order to enable the advanced-mode of command-line parameter, add a keyword 
-`advanced` in front of other arguments. 
+In order to enable the advanced-mode of command-line parameter, put a keyword 
+`advanced` at the first argument.
 
 ```bash
-> lamu advanced ([create|fork|load|...]) ([argument]...)
+> lamu advanced [command] ([argument]...)
 ```
 
 Currently, there are three commands available:
@@ -52,7 +54,15 @@ Currently, there are three commands available:
 - `load`
   Load the arguments from the specified file.
 
+- `exec`
+  Load files which are specified as the arguments; the files are concatenated 
+  and treated as a Scheme module. And the first element in the module is 
+  treated as a string value which specifies Lamu-Script to initialize the Lamu 
+  application instance.
+
+
 # `create` Command #
+
 The `create` command specifies which component to be instantiated. For example:
 
 ```bash
@@ -173,9 +183,9 @@ This command causes `HELLO WORLD FOO BAR!` to be printed.
 
 
 # `load` Command #
-Lamu can execute external files as command-line arguments.
-This file is called Lamu External Argument Script.
-The `load` command Load the specified file and execute it as arguments.
+The `load` command load the specified file and execute it as Lamu-Script 
+program. 
+
 For example, when there is a file `foo/bar/bum.lamu` as:
 
 ```bash
@@ -190,19 +200,21 @@ begin
     echo foo bar
 end
 ```
-And then execute the file as:
+
+And execute the file as:
 
 ```bash
 > lamu advanced load foo/bar/bum.lamu
 ```
+
 This causes Lamu to run with basic components with `foo bar` printed in
 the standard stream.
 
-Note that in the Lamu external argument file, multiple-line command-line are 
-available without escape sequence characters.
+Note that in the Lamu-Script file, multiple-line command-line are available 
+without escape sequence characters.
 
-# Dynamic Parameter in Lamu External Argument File #
-Lamu External Argument File itself can accept arguments.
+# Dynamic Parameter in Lamu-Script #
+Lamu-Script itself can accept arguments.
 
 Create a file which name is `example.lamu` as:
 
@@ -213,13 +225,16 @@ begin
 end
 ```
 
-And then execute the script as
+Then, execute the script as:
 
 ```bash
 advanced load 'example.lamu' --hello='HELLO WORLD' 2> /dev/null
 ```
 
 This causes `FOO HELLO WORLD BAR` to be printed.
+
+That is, the part `echo $hello{FOO $ BAR}`  is interpolated as `echo FOO HELLO 
+WORLD BAR`.
 
 
 ## Specification ##
@@ -228,16 +243,15 @@ $VARIABLE-NAME{ ANY VALUE FORMAT SPEC $ FORMAT SPEC }
 ```
 - Any argument starts with `$` is treated as a variable.
 - The alphabet characters after the `$` are treated as a name of the variable.
-- When the command-line processor encounters a variable in Lamu external 
-  argument script, the processor replaces it to the content of the 
-  corresponding runtime-named-argument only when the corresponding 
-  runtime-named-argument exists in the runtime-arguments.
-  Otherwise the variable will be silently ignored.
-- When there are a block which is surrounded by curly-braces after a variable,
-  it is treated as a format-specification. The variable is replaced with the 
-  content of the format-specification. If there is a `$` in the 
+- When the command-line processor encounters a variable in a Lamu-Script, the 
+  processor replaces it to the content of the corresponding named-argument only 
+  when the corresponding named-argument exists in the runtime-arguments; 
+  otherwise the variable will be ignored and removed from the arguments.
+- When there is a block which is surrounded by curly-braces after a variable,
+  it is treated as format-specification value. The variable is replaced with 
+  the value in the format-specification. If there is a `$` in the 
   format-specification, the `$` will be replaced with the corresponding 
-  runtime-named-argument.
+  named-argument.
 
 
 
@@ -267,6 +281,143 @@ The above example is expanded as
 > lamu advanced create scheme + pulsar + repl + gui /foo/bar/bum.scm
 ```
 
+# Predefined Commands #
+
+In fact, the default-mode command-line simply calls advanced-mode with a 
+specific command name. The command name is `default`.
+
+```
+load advanced create scheme + pulsar + repl $*{--load=$}
+open advanced create scheme + pulsar + repl + gui $*{$}
+default open $*{$}
+```
+
+As you can see from the definition, `default` command effectively forwards its 
+arguments to the `open` command.
+
+If a user executes the following command:
+
+```bash
+> lamu path/to/file.scm
+```
+
+The expanded result should be:
+
+```bash
+advanced create scheme + pulsar + repl + gui path/to/file.scm
+```
+
+# Customization of Default-Mode of Command-line Parameter #
+
+The default-mode command-line parameter accepts some flags:
+
+- `--command`
+- `--load`
+- `--exec` / `-e`
+
+## `--command` ##
+
+The `--command`  flag can specify the command to call in the default-mode. As 
+we see above, the default-mode forwards all of the arguments into `open`.  The 
+`--command` flag can change this target command into the specified command.
+
+```bash
+> lamu --command=load path/to/file.lamu
+```
+
+The example above is identical as:
+
+```bash
+> lamu advanced load path/to/file.lamu
+```
+
+
+## `--load` ##
+
+In fact, the `--load=path/to/file.lamu` flag is identical as `--command=load 
+path/to/file.lamu`.  This command is designed due to the limitation of \*NIX's 
+shebang line which can only accept one argument.
+
+That is,
+
+```bash
+> lamu --load=path/to/file.lamu
+```
+
+The example above is identical as:
+
+```bash
+> lamu advanced load path/to/file.lamu
+```
+
+The main usage of the `--load` command is shebangs.
+
+Consider create a file which name is `test.lamu` as following:
+
+```bash
+#!/usr/bin/lamu --load=path/to/file
+advanced
+begin
+    create scheme + pulsar + repl $*{--load=$}
+end
+```
+
+Then,
+
+```bash
+> chmod 755 ./test.lamu
+> ./test.lamu
+```
+
+This executes Lamu with specified components.
+
+
+## `--exec` / `-e` ##
+
+In fact, the `--exec`/`-e` flag is identical as `--command=exec`.  See the 
+description for `exec` command above.
+
+
+# `exec` command
+
+Load files which are specified as the arguments; the files are concatenated and 
+treated as a Scheme module. And the first element in the module is treated as a 
+string value which specifies Lamu-Script to initialize the Lamu application 
+instance.
+
+For example, create a file which name is `foo/bar/file.scm` as:
+
+```scheme
+#!/usr/bin/lamu -e
+"advanced begin create scheme + pulsar + repl $*{--load=$}"
+
+(display 'hello)
+(newline)
+(quit)
+```
+
+And execute :
+
+```bash
+> chmod 755 foo/bar/file.scm
+> foo/bar/file.scm
+```
+
+The Lamu command-line parser load the `foo/bar/file.scm` then pick the
+first element. In this case it is `advanced begin create scheme + pulsar + repl 
+$*{--load=$}`. And then the command-line parser execute it as Lamu-Script.
+
+When the command-line parser executes Lamu-Script, the arguments are 
+transparently passed to the Lamu-Script. In case of the example above, the 
+arguments are passed to `repl $*{--load=$}`.
+
+That is, the files are processed in the `repl` component.
+
+
+
+
+# Overriding the Default Command #
+
 `default` macro-command can override the behavior of the default-mode 
 command-line parameter.
 
@@ -275,7 +426,6 @@ default create scheme + pulsar + repl +
 ```
 
 For example, setting as above makes `lamu` to execute without GUI as default.
-
 
 # Lamu Component Reference #
 The following is the list of available components in `create` command.
@@ -302,10 +452,16 @@ Instantiate Kawapad.
 Instantiate Pulsar. No argument is available.
 
 ## `repl` ##
-Instantiate a Scheme REPL processor. No argument is available.
+Instantiate a Scheme REPL processor. The `repl` component takes arguments as 
+filenames; it concatenates all of the files and process it as commands for the 
+REPL. For
+further information about the syntax of REPL, see [Lamu REPL 
+Specification](./repl.md).
+
 
 ## `gui` ##
-Instantiate Lamu's default GUI. No argument is available.
+Instantiate Lamu's default GUI. The `gui` component takes arguments as 
+filenames; the instantiated GUI opens all of the specified files.
 
 ## `http` ##
 Instantiate a Scheme remote HTTP server.
