@@ -21,7 +21,7 @@ class LamuCommandLoad extends LamuCommand {
     }
 
     @Override
-    protected void execute( LamuScript.State state, List<String> arguments, boolean recursiveCall ) {
+    protected void execute( LamuScript.State state, List<String> arguments, int recursiveCount ) {
         // Parse the arguments
         List<String> outSeqArgs = new ArrayList<>();
         Map<String, LamuNamedArgument> outNamedArgs = new HashMap<>();
@@ -38,7 +38,7 @@ class LamuCommandLoad extends LamuCommand {
             List<String> scriptContent = LamuQuotedStringSplitter.splitString( content ); 
             
             // Execute the string list as a script program.
-            LamuScript.executeMacro( state, uri, scriptContent, arguments, outSeqArgs, outNamedArgs  );
+            LamuScript.executeMacro( state, uri, scriptContent, arguments, outSeqArgs, outNamedArgs, recursiveCount  );
 
         } catch (IOException e) {
             throw new Error(e);

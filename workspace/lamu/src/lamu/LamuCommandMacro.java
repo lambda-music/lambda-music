@@ -65,8 +65,8 @@ class LamuCommandMacro extends LamuCommand {
         return this.getMacroName();
     }
     @Override
-    protected void execute( LamuScript.State state, List<String> arguments, boolean recursiveCall) {
-        if (recursiveCall) {
+    protected void execute( LamuScript.State state, List<String> arguments, int recursiveCount) {
+        if ( LamuScript.RECURSIVE_COUNT_MAX < recursiveCount ) {
             throw new Error( "a malformed default value in the default argument configuration." );
         }
 
@@ -77,7 +77,7 @@ class LamuCommandMacro extends LamuCommand {
         LamuScript.parseArguments( arguments, outArgs, outNamedArgs );
 
         // Execute the macro script.
-        LamuScript.executeMacro( state, getMacroName(), getMacroContent(), arguments, outArgs, outNamedArgs );
+        LamuScript.executeMacro( state, getMacroName(), getMacroContent(), arguments, outArgs, outNamedArgs, recursiveCount );
     }
 
 

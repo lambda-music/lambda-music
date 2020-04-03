@@ -69,7 +69,8 @@ public class LamuScript {
     static final String DEFAULT_COMMAND_OPEN = "open";
     static final String DEFAULT_COMMAND_EXEC = "exec";
     static final String DEFAULT_COMMAND_LOAD = "load";
-    static final String DEFAULT_COMMAND_NAME = "default";
+    static final String DEFAULT_COMMAND = "default";
+    static final int RECURSIVE_COUNT_MAX = 32;
     
     static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
@@ -77,10 +78,10 @@ public class LamuScript {
     static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }
     
     public static void parse( LamuScript.State state, String[] args ) throws IOException {
-        executeScript(state, Arrays.asList(args), false );
+        executeScript(state, Arrays.asList(args), 0 );
     }
 
-    public static void executeScript( LamuScript.State state, List<String> arguments, boolean isRecursiveCall  ) {
+    public static void executeScript( LamuScript.State state, List<String> arguments, int recursiveCount  ) {
         arguments = new ArrayList<>( arguments );
 
         // Put a proper default command.
@@ -97,7 +98,7 @@ public class LamuScript {
         for (Iterator<List<String>> i = arrayOfSubarguments.iterator(); i.hasNext();) {
             List<String> subargs = i.next();
             logInfo( subargs.toString() );
-            executeSubScript( state, subargs, isRecursiveCall );
+            executeSubScript( state, subargs, recursiveCount );
         }
     }
 
@@ -141,12 +142,12 @@ public class LamuScript {
                 
             } else {
                 // The default command.
-                arguments.addAll( 0, Arrays.asList(  TRIGGER_FOR_ADVANCED_COMMAND_MODE, DEFAULT_COMMAND_NAME ) );
+                arguments.addAll( 0, Arrays.asList(  TRIGGER_FOR_ADVANCED_COMMAND_MODE, DEFAULT_COMMAND ) );
             }
         }
     }
     
-    public static void executeSubScript( LamuScript.State state, List<String> arguments, boolean isRecursiveCall ) {
+    public static void executeSubScript( LamuScript.State state, List<String> arguments, int recursiveCount ) {
         LamuCommand command = null;
         for (LamuCommand c : state.availableCommands ) {
             if ( c.match( state, arguments ) ) {
@@ -157,7 +158,7 @@ public class LamuScript {
 
         if ( command != null ) {
             List<String> subArguments = arguments.subList(1, arguments.size());
-            command.execute( state, subArguments, isRecursiveCall );
+            command.execute( state, subArguments, recursiveCount );
         } else {
             // This should not happen because default command always matches.
             throw new Error( String.format( "unknown command (%s)" , 
@@ -172,15 +173,17 @@ public class LamuScript {
         List<String> scriptContent,
         List<String> originalArguments,
         List<String> seqArgs,
-        Map<String,LamuNamedArgument> namedArgs )
+        Map<String,LamuNamedArgument> namedArgs, 
+        int recursiveCount )
     {
 
         // perform macro expansion.
         List<String> expandedArgs = expandMacro( scriptContent, seqArgs, namedArgs );
 
         LamuApplication.logInfo( String.format( 
-                "\nLamuScript[%s] expanded the specified arguments\nfrom:%s\nto  :%s\nmacro:%s\nargs:%s\nnargs:%s\n", 
+                "\nLamuScript[%s] expanded the specified arguments\nrecursive count:%d\nfrom:%s\nto  :%s\nmacro:%s\nargs:%s\nnargs:%s\n", 
                 scriptName,
+                recursiveCount,
                 originalArguments.toString(),
                 expandedArgs.toString(),
                 scriptContent.toString(),
@@ -189,7 +192,7 @@ public class LamuScript {
             ) );
 
         // Be careful : this is a recursive calling. 
-        executeScript( state, expandedArgs, true );
+        executeScript( state, expandedArgs, recursiveCount + 1 );
     }
     
     public static void parseArguments( List<String> arguments, List<String> outSeqArgs, Map<String, LamuNamedArgument> outNamedArgs) {

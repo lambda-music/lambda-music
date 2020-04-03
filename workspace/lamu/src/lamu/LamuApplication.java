@@ -61,6 +61,14 @@ public class LamuApplication {
                     LamuScript.DEFAULT_COMMAND_OPEN + 
                     " " + 
                     LamuScript.TRIGGER_FOR_ADVANCED_COMMAND_MODE + " create scheme + pulsar + repl + gui $*{$} +" ));
+        
+        availableCommands.add( LamuCommandMacro.create( 
+            LamuScript.DEFAULT_COMMAND + 
+            " " + 
+            LamuScript.TRIGGER_FOR_ADVANCED_COMMAND_MODE +
+            " " +
+            LamuScript.DEFAULT_COMMAND_OPEN + " $*{$}" ));
+
         return availableCommands;
     }
 
