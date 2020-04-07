@@ -21,6 +21,13 @@ import gnu.mapping.Procedure0;
  *
  * ((lamu.hello):hello-world-foo-bar )
  * => available
+ * 
+ * ((lamu.hello):hello-world-error )
+ * => error
+ *
+ * ((lamu.hello):hello-world-available )
+ * => available
+ * 
  * </pre>
  * 
  */
@@ -42,4 +49,16 @@ public class hello {
     public String helloWorldFooBar() {
         return "foo";
     }
+    
+    public final Procedure0 fieldNameIsIgnored = new Procedure0("hello-world-error") {
+        @Override
+        public Object apply0() throws Throwable {
+            return "hello world foo bar";
+        }
+    };
+    
+    public Procedure0 getHelloWorldAvailable() {
+        return fieldNameIsIgnored;
+    }
+
 }
