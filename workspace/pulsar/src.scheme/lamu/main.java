@@ -1,11 +1,11 @@
 package lamu;
 
 import gnu.mapping.Environment;
-import pulsar.Pulsar;
+import pulsar.PulsarLib;
 
 public class main implements Runnable {
     @Override
     public void run() {
-        Pulsar.initScheme( Environment.getCurrent() );
+        PulsarLib.initScheme( Environment.getCurrent() );
     }
 }

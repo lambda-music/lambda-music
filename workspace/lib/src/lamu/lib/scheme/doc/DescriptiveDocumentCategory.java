@@ -48,11 +48,13 @@ import lamu.lib.scheme.SchemeUtils;
  */
 
 public class DescriptiveDocumentCategory {
+    static Environment environment = Environment.getInstance( DescriptiveDocumentCategory.class.getCanonicalName() );
+        
     public static DescriptiveDocumentCategory createCategory(Symbol symbol, Runnable documentInitializer ) {
-		return new DescriptiveDocumentCategory(symbol, documentInitializer);
+        return new DescriptiveDocumentCategory(symbol, documentInitializer);
     }
     public static DescriptiveDocumentCategory createCategory(String symbol, Runnable documentInitializer ) {
-		return new DescriptiveDocumentCategory(SchemeUtils.schemeSymbol(symbol), documentInitializer);
+        return new DescriptiveDocumentCategory(SchemeUtils.schemeSymbol(symbol), documentInitializer);
     }
     static final Map<Symbol,DescriptiveDocumentCategory> allCategories = new LinkedHashMap<>();
 
@@ -123,11 +125,36 @@ public class DescriptiveDocumentCategory {
     public synchronized static DescriptiveDocumentCategory valueOf(Symbol symbol) {
         return allCategories.get( symbol );
     }
-    public synchronized static DescriptiveDocumentCategory valueOf(String symbolString ) {
+    public synchronized static DescriptiveDocumentCategory valueOf( String symbolString ) {
         return allCategories.get( Symbol.valueOf( symbolString ) );
     }
+    
+    /**
+     * Returns the cons cell which is corresponding to the specified symbol. 
+     * <p>
+     * <b>Caution</b> (Tue, 07 Apr 2020 12:42:15 +0900)
+     * <p>
+     * This method used to be a way to retrieve the common cons cell
+     * from the passed environment object; now it ignores the passed environment
+     * and take the cons cell from the common environment object which this class
+     * independently manages.
+     * <p>
+     * Because every procedure object used to be created for each environment object;
+     * in the modification on (Tue, 07 Apr 2020 12:42:15 +0900) every procedure 
+     * should be created for each JVM instance. Now procedures are not allowed to be
+     * created twice or more at a JVM session.
+     * <p>
+     * 
+     * @param env
+     *     This argument is ignored.
+     * @param symbol
+     *     The symbol which is related to the cons cell.
+     * @return
+     *     The cons cell.
+     */
     static Pair getRootCons( Environment env, Symbol symbol) {
         synchronized ( Language.getDefaultLanguage() ) {
+            env = environment;
             if ( ! env.isBound( symbol ) ) {
                 Pair rootCons = (Pair)LList.makeList(Arrays.asList( symbol ));
                 env.define( symbol, null, rootCons );
