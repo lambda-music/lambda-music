@@ -19,22 +19,22 @@ This demonstrates how to start a new Lamu application instance in the
 default-mode. The filename argument is optional. If any filename argument is 
 given, then the Lamu's main-editor opens the specified file.
 
-This Lamu's default behavior can be customised. The way to customize the 
-behavior is described later. 
+This default behavior can be customised. The way to customize the behavior is 
+described later. 
 
 # Command-line Parameter in Advanced-Mode #
 Lamu's command-line parameter is a simple scripting language. Let's call it
 _Lamu-Script_. The purpose of Lamu-Script is to specify how Lamu should run.
 
-Lamu consists a number of components and its command-line parameter can specify 
-which components to be instantiated at boot-time. For example, Lamu has a HTTP 
-server component which enables remote clients to execute Scheme command on the 
-server where Lamu is running. And Lamu also has a HTTP client component which 
-enables accessing to the HTTP server. The Lamu's advanced-mode command-line 
-parameter can specify how Lamu should run.
+Lamu consists a number of components. And the command-line parameter can 
+specify which components to be instantiated at boot-time. For example, Lamu has 
+a HTTP server component which enables remote clients to execute Scheme command 
+on the server where Lamu is running. And Lamu also has a HTTP client component 
+which enables accessing to the HTTP server. The Lamu's advanced-mode 
+command-line parameter can specify how Lamu should run.
 
-In order to enable the advanced-mode of command-line parameter, put a keyword 
-`advanced` at the first argument.
+In order to enable the advanced-mode, put a keyword `advanced` at the first 
+argument.
 
 ```bash
 > lamu advanced [command] ([argument]...)
