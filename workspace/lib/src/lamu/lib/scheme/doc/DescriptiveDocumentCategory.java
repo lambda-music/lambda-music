@@ -243,6 +243,7 @@ public class DescriptiveDocumentCategory {
             logInfo( "setting description on '" + targetVar + "'" + " " + actualTarget.toString() );
         //          logInfo( "description" );
         //          logInfo( description );
+        
         Descriptive.setDescription( actualTarget, description );
         addDocumentList(
             env,
@@ -252,7 +253,16 @@ public class DescriptiveDocumentCategory {
         
         return actualTarget;
     }
-    
+
+    public static void initDoc( DescriptiveDocumentCategory category, Object target, DescriptiveBean bean ) {
+        Descriptive.setDescriptionBean( target, bean );
+        Descriptive.setDescription( target, bean.format() );
+        addDocumentList(
+            null,
+            category,
+            SchemeUtils.stringListToSymbolList( bean.getNames() ), 
+            target );
+    }
 
     /**
      * 

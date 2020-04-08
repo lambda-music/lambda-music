@@ -412,7 +412,16 @@ public class SchemeUtils {
     private static final boolean DEBUG_ENV = false;
 
 
+    /**
+     * This method is going to be deprecated.
+     * 
+     * @param env
+     * @param value
+     * @param names
+     */
     public static final void defineVar( Environment env, Object value, Collection<String> names ) {
+        if ( env == null )
+            return;
         // env = Environment.getCurrent();
         if ( DEBUG_ENV )
             logInfo( "defineVar:" + env.getName() + ":" + names );

@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import javax.naming.NoPermissionException;
+
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 
@@ -41,6 +43,9 @@ public class MarkdownDescriptive extends Descriptive {
 
     static Pattern p1 = Pattern.compile( "([\\(\\)\\[\\]])" );
     public static String formatForMarkdown( DescriptiveBean bean ) {
+        if ( bean == null )
+            throw new NullPointerException( "bean is null" );
+        
         StringBuilder message = new StringBuilder();
         
         String name = bean.getName().toUpperCase();

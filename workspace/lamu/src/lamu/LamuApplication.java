@@ -24,6 +24,7 @@ import lamu.lib.stream.StdioStream;
 import lamu.utils.lib.PulsarGuiUtils;
 import pulsar.Pulsar;
 import pulsar.PulsarDocuments;
+import pulsar.PulsarLib;
 
 public class LamuApplication {
     // (Sun, 29 Mar 2020 23:16:11 +0900)
@@ -90,6 +91,7 @@ public class LamuApplication {
         // See those static blocks.
         forceLoad(Kawapad.class);
         forceLoad(Pulsar.class);
+        forceLoad(PulsarLib.class);
     }
 
     static void initKawaImportPath() {
