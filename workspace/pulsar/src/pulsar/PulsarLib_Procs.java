@@ -34,7 +34,9 @@ import metro.MetroPort;
 import metro.MetroSyncType;
 import metro.MetroTrack;
 
-public class PulsarLib {
+public class PulsarLib_Procs {
+    public static final String DOCS_ID = "pulsar-procedures";
+
     private static final String THROWS_AN_ERROR_IF_NOT_OPEN = 
         "In case the current sequencer system has not established any connection to the JACK, " + 
             "it throws an exception. ";
@@ -56,7 +58,7 @@ public class PulsarLib {
     public static final PulsarBean pulsarBean = new PulsarBean();
     public static final class PulsarBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "pulsar" );
             setParameterDescription( "" );
             setReturnValueDescription( "" );
@@ -97,7 +99,7 @@ public class PulsarLib {
     public static final IsOpenBean isOpenBean = new IsOpenBean();
     public static final class IsOpenBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "open?" );
             setParameterDescription( "" );
             setReturnValueDescription( "::boolean" );
@@ -124,7 +126,7 @@ public class PulsarLib {
     public static final OpenBean openBean = new OpenBean();
     public static final class OpenBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "open" );
             setParameterDescription( "[string]" );
             addParameter( 0, "client-name", "string", null , false, "The client name in the current Jack session. " );
@@ -156,7 +158,7 @@ public class PulsarLib {
     public static final CloseBean closeBean = new CloseBean();
     public static final class CloseBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "close" );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -185,7 +187,7 @@ public class PulsarLib {
 
     public static final PulsarProceduralDescriptiveBean openPortTemplateBean = new OpenPortTemplateBean(); 
     public static final class OpenPortTemplateBean extends PulsarProceduralDescriptiveBean {{
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setParameterDescription( "[ANY|(list ANY...)  ]..." );
             addParameter( 0, "port-name", "any|(list any ...)", null , true, "The port name in the current JACK session. " );
             setReturnValueDescription( "::MetroPort" );
@@ -248,7 +250,7 @@ public class PulsarLib {
 
     public static final ClosePortTemplateBean closePortTemplateBean =  new ClosePortTemplateBean();
     public static final class ClosePortTemplateBean extends PulsarProceduralDescriptiveBean {{
-        setCategory( "pulsar-procedures" );
+        setCategory( DOCS_ID );
         setParameterDescription( "[MetroPort|symbol|string|(list MetroPort|symbol|string ...) ]..." );
         addParameter( 0, "port", "MetroPort|symbol|string|(list MetroPort|symbol|string ...)", null , true, "The port object to close. " );
         setReturnValueDescription( "::void" );
@@ -308,7 +310,7 @@ public class PulsarLib {
 
     public static final ListPortsTemplateBean listPortsTemplateBean =  new ListPortsTemplateBean();
     public static final class ListPortsTemplateBean extends PulsarProceduralDescriptiveBean {{
-        setCategory( "pulsar-procedures" );
+        setCategory( DOCS_ID );
         setParameterDescription( "" );
         setReturnValueDescription( "::(list MetroPort ...)" );
         setShortDescription( "returns a list which contains all %s ports on the current JACK connection. " );
@@ -355,7 +357,7 @@ public class PulsarLib {
 
     public static final ConnectionTemplateBean connectTemplateBean =  new ConnectionTemplateBean();
     public static final class ConnectionTemplateBean extends PulsarProceduralDescriptiveBean {{
-        setCategory( "pulsar-procedures" );
+        setCategory( DOCS_ID );
         setParameterDescription( "[string] ..." );
         addParameter( 0, "from", "string", null , true, "a canonical port name in the current JACK session. " );
         addParameter( 0, "to", "string", null , true, "a canonical port name in the current JACK session. " );
@@ -410,7 +412,7 @@ public class PulsarLib {
 
     public static final InitDocAllConnectionBean allConnectionTemplateBean =  new InitDocAllConnectionBean(); 
     public static class InitDocAllConnectionBean extends PulsarProceduralDescriptiveBean {{
-        setCategory( "pulsar-procedures" );
+        setCategory( DOCS_ID );
         setParameterDescription( "" );
         setReturnValueDescription( "::list<string>" );
         setShortDescription( "retrieves IDs of all %s connections in the current session of JACK Audio Connection Kit. " );
@@ -476,7 +478,7 @@ public class PulsarLib {
     public static final SetMainBean setMainBean =  new SetMainBean();
     public static final class SetMainBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "set-main" );
             setParameterDescription( "[procedure]" );
             addParameter( 0, "main-procedure", "procedure", null , false, "a procedure to set as the main procedure. " );
@@ -508,7 +510,7 @@ public class PulsarLib {
     public static final GetMainBean getMainBean =  new GetMainBean();
     public static final class GetMainBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "get-main" );
             setParameterDescription( "" );
             setReturnValueDescription( "::procedure" );
@@ -542,7 +544,7 @@ public class PulsarLib {
     public static final SetPlayingBean setPlayingBean =  new SetPlayingBean();
     public static final class SetPlayingBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames("set-playing" );
             setParameterDescription( "[boolean]" );
             addParameter( 0, "playing","boolean",  null, false, "the status to set. " );
@@ -573,7 +575,7 @@ public class PulsarLib {
     public static final IsPlayingBean isPlayingBean =  new IsPlayingBean();
     public static final class IsPlayingBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "playing?" );
             setParameterDescription( "" );
             setReturnValueDescription( "::boolean" );
@@ -603,7 +605,7 @@ public class PulsarLib {
     public static final PlayBean playBean =  new PlayBean();
     public static final class PlayBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "play" );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -631,7 +633,7 @@ public class PulsarLib {
     public static final StopBean stopBean =  new StopBean();
     public static final class StopBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "stop"  );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -679,7 +681,7 @@ public class PulsarLib {
     public static final QuitBean quitBean =  new QuitBean();
     public static final class QuitBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "quit"  );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -711,7 +713,7 @@ public class PulsarLib {
     public static final TapTempoBean tapTempoBean =  new TapTempoBean();
     public static final class TapTempoBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "tap-tempo", "tapt" );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -750,7 +752,7 @@ public class PulsarLib {
     public static final SetTempoBean setTempoBean =  new SetTempoBean();
     public static final class SetTempoBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "set-tempo" );
             setParameterDescription( "number" );
             addParameter( 0, "tempo", "number", null, false, "the tempo to set." ); 
@@ -784,7 +786,7 @@ public class PulsarLib {
     public static final ResetBean resetBean =  new ResetBean();
     public static final class ResetBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames("reset" );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -817,7 +819,7 @@ public class PulsarLib {
     public static final RewindBean rewindBean =  new RewindBean();
     public static final class RewindBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "rewind" );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -862,7 +864,7 @@ public class PulsarLib {
     public static final SimultaneousBean simultaneousBean = new SimultaneousBean();
     public static final class SimultaneousBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "simultaneous", "simul" );
             setParameterDescription( "[procedure]..." );
             addParameter( 0, "subproc", "procedure", null, true, "a subprocedure to execute by this procedure. " ); 
@@ -900,7 +902,7 @@ public class PulsarLib {
     public static final GetTrackBean getTrackBean = new GetTrackBean();
     public static final class GetTrackBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "get-track", "gett" );
             setParameterDescription( "[track-spec]..." );
             addParameter( 0, "track-spec", "any", null, true, "a subprocedure to execute by this procedure. See (help about-track-spec). " ); 
@@ -919,7 +921,7 @@ public class PulsarLib {
     public static final AboutTrackSpecBean aboutTrackSpecBean = new AboutTrackSpecBean();
     public static final class AboutTrackSpecBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "about-track-spec" );
             setParameterDescription( "" );
             setReturnValueDescription( "" );
@@ -975,7 +977,7 @@ public class PulsarLib {
     public static final NewTrackBean newTrackBean = new NewTrackBean();
     public static final class NewTrackBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "new-track" , "newt" );
             setParameterDescription( "[procedure/(list notation)]..." );
             addParameter( 0, "notations", "procedure/(list notation)", null, true, "The contents of the track. " );
@@ -1062,7 +1064,7 @@ public class PulsarLib {
     public static final NewRecordingTrackBean newRecordingTrackBean = new NewRecordingTrackBean();
     public static final class NewRecordingTrackBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "new-recording-track" , "rect" );
             setParameterDescription( "[procedure/(list notation)]..." );
             addParameter( 0, "notations", "procedure/(list notation)", null, true, "The contents of the track. " );
@@ -1078,7 +1080,7 @@ public class PulsarLib {
     public static final AboutNotationBean aboutNotationBean = new AboutNotationBean();
     public static final class AboutNotationBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "about-notation" );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -1097,7 +1099,7 @@ public class PulsarLib {
     public static final AboutIntroBean aboutIntroBean = new AboutIntroBean();
     public static final class AboutIntroBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "about-intro"  );
             setParameterDescription( "" );
             setReturnValueDescription( "" );
@@ -1119,7 +1121,7 @@ public class PulsarLib {
     public static final PulsarProceduralDescriptiveBean trackManagementTemplateBean = /*init*/( new TrackManagementTemplateBean() );
     public static final class TrackManagementTemplateBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setParameterDescription( "track [sync-type] [sync-track] [sync-offset]" );
             addParameter( 0, "sync-type",   "symbol",     "", false, "one of ||immediate||, ||parallel|| and ||serial||. " );
             addParameter( 0, "sync-track",  "MetroTrack|track-spec", "", false, "a reference to MetroTrack object to synchronize with. " ); // XXX
@@ -1275,7 +1277,7 @@ public class PulsarLib {
     public static final NotifyTrackChangeBean notifyTrackChangeBean = new NotifyTrackChangeBean();
     public static final class NotifyTrackChangeBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "notify-track-change", "nott" );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -1316,7 +1318,7 @@ public class PulsarLib {
     public static final ListTracksBean listTracksBean = new ListTracksBean();
     public static final class ListTracksBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "list-tracks", "lstt" );
             setParameterDescription( "" );
             setReturnValueDescription( "::(list track ...)" );
@@ -1346,7 +1348,7 @@ public class PulsarLib {
     public static final ClearTracksBean clearTracksBean = new ClearTracksBean();
     public static final class ClearTracksBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "clear-tracks", "clet" );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -1373,7 +1375,7 @@ public class PulsarLib {
     public static final GetMainTrackBean getMainTrackBean = new GetMainTrackBean();
     public static final class GetMainTrackBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "get-main-track", "getmt" );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -1410,7 +1412,7 @@ public class PulsarLib {
     public static final GetTrackPositionBean getTrackPositionBean = new GetTrackPositionBean();
     public static final class GetTrackPositionBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "get-track-position", "gettp" );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -1452,7 +1454,7 @@ public class PulsarLib {
     public static final PrintStackTraceBean printStackTraceBean = new PrintStackTraceBean();
     public static final class PrintStackTraceBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "print-stack-trace" );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -1480,7 +1482,7 @@ public class PulsarLib {
     public static final DisplayWarnBean displayWarnBean = new DisplayWarnBean();
     public static final class DisplayWarnBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "display-warn" );
             setParameterDescription( "any" );
             addParameter( 0, "value", "any", null, false , "" );
@@ -1509,7 +1511,7 @@ public class PulsarLib {
     public static final NewlineWarnBean newlineWarnBean = new NewlineWarnBean();
     public static final class NewlineWarnBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "newline-warn" );
             setParameterDescription( "" );
             setReturnValueDescription( "::void" );
@@ -1542,7 +1544,7 @@ public class PulsarLib {
     public static final TypeofBean typeofBean = new TypeofBean();
     public static final class TypeofBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "typeof" );
             setParameterDescription( "any" );
             addParameter( 0, "value", "any", null, false , "" );
@@ -1606,7 +1608,7 @@ public class PulsarLib {
     public static final MakeTimerBean makeTimerBean = new MakeTimerBean();
     public static final class MakeTimerBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames("make-timer" );
             setParameterDescription( "delay interval proc" );
             addParameter( 0, "delay",     "number",    null, false , "" );
@@ -1650,7 +1652,7 @@ public class PulsarLib {
     public static final AddEventListenerBean addEventListenerBean = new AddEventListenerBean();
     public static final class AddEventListenerBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "add-event-listener" );
             addParameter( 0, "target",     "object",    null, false , "" );
             addParameter( 0, "event-type", "symbol",    null, false , "" );
@@ -1695,7 +1697,7 @@ public class PulsarLib {
     public static final RemoveEventListenerBean removeEventListenerBean = new RemoveEventListenerBean();
     public static final class RemoveEventListenerBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "remove-event-listener" );
             addParameter( 0, "target",     "object",    null, false , "" );
             addParameter( 0, "callback",   "procedure", null, false , "" );
@@ -1887,7 +1889,7 @@ public class PulsarLib {
     public static final RandomBean randomBean = new RandomBean();
     public static final class RandomBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "random", "rnd" );
             setParameterDescription( "[range::number]" );
             addParameter( 0, "range",     "number",  "1",  false , "" );
@@ -1933,7 +1935,7 @@ public class PulsarLib {
     public static final LuckBean luckBean = new LuckBean();
     public static final class LuckBean extends PulsarProceduralDescriptiveBean {
         {
-            setCategory( "pulsar-procedures" );
+            setCategory( DOCS_ID );
             setNames( "luck" );
             setParameterDescription( "[numeric]" );
             addParameter( 0, "probability",   "number",  "0.5",  false, "the probability to return #t." );
@@ -2186,7 +2188,7 @@ public class PulsarLib {
 
 
         // PulsarDocuments.DOCS.defineDoc( env, luckBean );
-        PulsarDocuments.defineDoc( env, PulsarNoteListParser.getInstance() );
+        PulsarLib_Notes.defineDoc( env, PulsarNoteListParser.getInstance() );
 
 //        try {
 //            SchemeEvaluator evaluator = new SchemeEvaluator( scheme );

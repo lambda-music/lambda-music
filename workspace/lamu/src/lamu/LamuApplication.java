@@ -22,8 +22,8 @@ import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.StdioStream;
 import lamu.utils.lib.PulsarGuiUtils;
 import pulsar.Pulsar;
-import pulsar.PulsarDocuments;
-import pulsar.PulsarLib;
+import pulsar.PulsarLib_Notes;
+import pulsar.PulsarLib_Procs;
 
 public class LamuApplication {
     // (Sun, 29 Mar 2020 23:16:11 +0900)
@@ -82,14 +82,14 @@ public class LamuApplication {
 
     static void loadBasicClasses() {
         // For documentation.
-        forceLoad(PulsarDocuments.class);
+        forceLoad(PulsarLib_Notes.class);
         forceLoad(PulsarGuiUtils.class);
         forceLoad(DescriptiveHelp.class);
 
         // See those static blocks.
         forceLoad(Kawapad.class);
         forceLoad(Pulsar.class);
-        forceLoad(PulsarLib.class);
+        forceLoad(PulsarLib_Procs.class);
     }
 
     static void initKawaImportPath() {

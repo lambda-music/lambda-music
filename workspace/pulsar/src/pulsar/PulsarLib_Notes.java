@@ -7,37 +7,11 @@ import gnu.mapping.Environment;
 import lamu.lib.doc.LamuDocument;
 import lamu.lib.doc.NoteListSynopsisFormatter;
 import lamu.lib.scheme.SchemeUtils;
-import lamu.lib.scheme.doc.DescriptiveDocumentCategory;
 
-public class PulsarDocuments {
-    public static final DescriptiveDocumentCategory DOCS = 
-    		DescriptiveDocumentCategory.createCategory( 
-    				"pulsar-procedures",
-    				new Runnable() {
-		    			@Override
-		    			public void run() {
-		    				// Note : (Sat, 07 Mar 2020 23:38:27 +0900)
-		    				// 
-		    				// For now, this should be done by Scheme initializer; therefore, this
-		    				// is not necessary to initializer here. In near future, Pulsar.initScheme()
-		    				// method is possiblly called by Kawa's 'require'; in such case, the following
-		    				// initialization must be done.
-		    				// 
-		    				// Pulsar.initScheme( SchemeEvaluator.getCurrent().getScheme() );
-		    				// 
-		    			}
-		    		});
+public class PulsarLib_Notes {
+    public static final String NOTES_ID = "pulsar-notations";
 
-    public static final DescriptiveDocumentCategory NOTES = 
-            DescriptiveDocumentCategory.createCategory( "pulsar-notations", new Runnable() {
-            	@Override
-            	public void run() {
-    				// Note : (Sat, 07 Mar 2020 23:38:27 +0900)
-            		// The situation is same as the statement above.  
-            	}
-            });
-
-    private PulsarDocuments() {}
+    private PulsarLib_Notes() {}
     public static void defineDoc( Environment env, NoteListParser parser ) {
         List<NoteListParserElement> allElements = parser.getAllElements();
 //      Collections.reverse( allElements );
@@ -55,7 +29,7 @@ public class PulsarDocuments {
     public static final String PREFIX = "note-event-"; 
     public static void defineDoc( Environment env, NoteListParserElement element ) {
         LamuDocument bean = new LamuDocument();
-        bean.setCategory( "pulsar-notations" );
+        bean.setCategory( NOTES_ID );
         bean.setSynopsisFormatter( NoteListSynopsisFormatter.getInstance() );
       
         /*
