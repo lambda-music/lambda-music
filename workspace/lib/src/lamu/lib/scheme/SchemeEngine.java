@@ -46,13 +46,8 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     
-    private final SchemeEvaluator schemeEvaluator = new SchemeEvaluator();
-    public SchemeEvaluator getSchemeEvaluator() {
-        return schemeEvaluator;
-    }
-    
-    private final EvaluatorManager evaluatorManager = new EvaluatorManager( this.schemeEvaluator );
-    public EvaluatorManager getEvaluatorManager() {
+    private final EvaluatorManager<SchemeEvaluator> evaluatorManager = new EvaluatorManager<>( new SchemeEvaluator() );
+    public EvaluatorManager<SchemeEvaluator> getEvaluatorManager() {
         return evaluatorManager;
     }
     
@@ -77,7 +72,7 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
     private final ThreadInitializer<SchemeEngine> threadInitializer =
             ThreadInitializer.createMultipleThreadInitializer( "scheme-engine", this,
                 ThreadInitializer.createThreadInitializer( "current-scheme-engine", currentObject, this ),
-                this.getSchemeEvaluator().getThreadInitializer()
+                this.getEvaluatorManager().getPrimaryEvaluator().getThreadInitializer()
                 );
     
     @Override
@@ -107,12 +102,12 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
     }
     @Override
     public void processInit() {
-        this.getSchemeEvaluator().processInit();
+        this.getEvaluatorManager().getPrimaryEvaluator().processInit();
         this.getEvaluatorManager().initialize();
     }
     @Override
     public void processQuit() {
-        this.getSchemeEvaluator().processQuit();
+        this.getEvaluatorManager().getPrimaryEvaluator().processQuit();
         this.getEvaluatorManager().finalize();
     }
     
@@ -136,7 +131,7 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
     }
     
     public static void registerSchemeInitializer( SchemeEngine engine ) {
-        engine.getSchemeEvaluator().registerSchemeInitializer( initSchemeListener );
+        engine.getEvaluatorManager().getPrimaryEvaluator().registerSchemeInitializer( initSchemeListener );
     }
     private static SchemeEngineListener initSchemeListener = new SchemeEngineListener() {
         @Override

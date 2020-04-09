@@ -145,7 +145,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     static final int PB_POSITION_MAX = 1024;
     
     public static void registerGlobalSchemeInitializers( SchemeEngine schemeEngine ) {
-        schemeEngine.getSchemeEvaluator().registerSchemeInitializer( new SchemeEngineListener() {
+        schemeEngine.getEvaluatorManager().getPrimaryEvaluator().registerSchemeInitializer( new SchemeEngineListener() {
             @Override
             public void execute( Scheme scheme ) {
                 initScheme( scheme );

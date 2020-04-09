@@ -127,7 +127,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
     }
 
     public static void registerSchemeInitializers( SchemeEngine schemeEngine ) {
-        schemeEngine.getSchemeEvaluator().registerSchemeInitializer( new SchemeEngineListener() {
+        schemeEngine.getEvaluatorManager().getPrimaryEvaluator().registerSchemeInitializer( new SchemeEngineListener() {
             @Override
             public void execute( Scheme scheme ) {
 //                removed (Thu, 09 Apr 2020 13:24:16 +0900) 
@@ -247,7 +247,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
     
     private void newScheme() {
         logInfo("Pulsar#newScheme() "); 
-        this.getSchemeEngine().getSchemeEvaluator().reset();
+        this.getSchemeEngine().getEvaluatorManager().getPrimaryEvaluator().reset();
     }
 
     MersenneTwisterFast random = new MersenneTwisterFast( new int[] { 

@@ -130,7 +130,7 @@ public class KawapadContentAssist {
         }
     }
     public synchronized void updatePopup(Caret caret) {
-        SchemeEvaluator evaluator = kawapad.getSchemeEngine().getSchemeEvaluator();
+        SchemeEvaluator evaluator = kawapad.getSchemeEngine().getEvaluatorManager().getPrimaryEvaluator();
         
         try {
             Document document = kawapad.getDocument();

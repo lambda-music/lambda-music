@@ -53,7 +53,7 @@ public class KawapadSyntaxHighlighter extends SyntaxHighlighter {
 //            List<String> keywordList = new ArrayList<>();
 //          keywordList.addAll( SchemeUtils.getAllKey( kawapad.getSchemeSecretary() ) );
 
-            SchemeResult result = kawapad.getSchemeEngine().getSchemeEvaluator().evaluate( 
+            SchemeResult result = kawapad.getSchemeEngine().getEvaluatorManager().getPrimaryEvaluator().evaluate( 
                 "(environment-fold (interaction-environment) cons '())", "get-all" );
             
             result.throwIfError();

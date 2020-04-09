@@ -31,26 +31,17 @@ import gnu.mapping.Symbol;
 import lamu.lib.doc.LamuDocument;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.SchemeUtils;
-import lamu.lib.scheme.doc.DescriptiveDocumentCategory;
 import lamu.lib.scheme.proc.MultipleNamedProcedureN;
 import lamu.lib.secretary.InvokablyRunnable;
 
 public class PulsarGuiUtils {
-    public static final DescriptiveDocumentCategory DOCS = 
-        DescriptiveDocumentCategory.createCategory( "pulsar-gui-procedures", new Runnable() {
-            @Override
-            public void run() {
-                PulsarGuiUtils.initScheme( Environment.getCurrent() );            
-            }
-        });
-
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
     static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }
     static final int BORDER_SIZE = 10;
 
-    public PulsarGuiUtils() {
+    private PulsarGuiUtils() {
     }
 
     public static void guiPack() {

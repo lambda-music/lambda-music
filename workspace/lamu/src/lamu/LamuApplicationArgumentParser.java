@@ -209,7 +209,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                         public void run() {
                             try {
                                 DescriptiveDocumentCategory.outputReference( 
-                                        schemeEngine.getSchemeEvaluator().getScheme().getEnvironment(), 
+                                        schemeEngine.getEvaluatorManager().getPrimaryEvaluator().getScheme().getEnvironment(), 
                                         category, outputFile );
                             } catch (IOException e) {
                                 logError( MSG_OUTPUT_HELP_ERROR, e ); 

@@ -15,17 +15,17 @@ import javax.swing.JRadioButtonMenuItem;
 import lamu.lib.log.Logger;
 
 
-public class EvaluatorManager {
+public class EvaluatorManager<PrimaryEvaluator extends Evaluator> {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
-    Evaluator primaryEvaluator;
-    public Evaluator getPrimaryEvaluator() {
+    PrimaryEvaluator primaryEvaluator;
+    public PrimaryEvaluator getPrimaryEvaluator() {
         return primaryEvaluator;
     }
-    public void setPrimaryEvaluator(Evaluator primaryEvaluator) {
+    public void setPrimaryEvaluator(PrimaryEvaluator primaryEvaluator) {
         this.primaryEvaluator = primaryEvaluator;
     }
     Evaluator currentEvaluator;
@@ -81,7 +81,7 @@ public class EvaluatorManager {
         return menuItem;
     }
     
-    public EvaluatorManager( Evaluator primaryEvaluator ) {
+    public EvaluatorManager( PrimaryEvaluator primaryEvaluator ) {
         this.primaryEvaluator = primaryEvaluator;
         this.currentEvaluator = primaryEvaluator;
         this.evaluatorList.add( primaryEvaluator );

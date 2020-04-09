@@ -40,7 +40,7 @@ public class DescriptiveHelp {
      * frames are disposed.
      */
     public static void registerGlobalSchemeInitializer( SchemeEngine schemeEngine ) {
-        schemeEngine.getSchemeEvaluator().registerSchemeInitializer( initSchemeListener );
+        schemeEngine.getEvaluatorManager().getPrimaryEvaluator().registerSchemeInitializer( initSchemeListener );
     }
 
     static SchemeEngineListener initSchemeListener = new SchemeEngineListener() {

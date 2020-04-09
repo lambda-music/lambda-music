@@ -357,7 +357,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
         SchemeEngine schemeEngine = new SchemeEngine();
         DescriptiveHelp.registerGlobalSchemeInitializer( schemeEngine );
         Kawapad.registerSchemeInitializer( schemeEngine );
-        schemeEngine.getSchemeEvaluator().newScheme();
+        schemeEngine.getEvaluatorManager().getPrimaryEvaluator().newScheme();
         KawapadFrame kawapadFrame = new KawapadFrame( schemeEngine, true, "Scheme Scratch Pad" );
         ApplicationVessel v = new ApplicationVessel("KawapadVessel");
         v.add( kawapadFrame );
@@ -403,7 +403,7 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
         } catch ( InterruptedException e ) {
         }
         DescriptiveDocumentCategory.outputReference( 
-            kawapadFrame.kawapad.getSchemeEngine().getSchemeEvaluator().getScheme().getEnvironment(),
+            kawapadFrame.kawapad.getSchemeEngine().getEvaluatorManager().getPrimaryEvaluator().getScheme().getEnvironment(),
             "kawapad-procedures", null );
         
         kawapadFrame.requestClose();

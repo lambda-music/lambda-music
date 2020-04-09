@@ -97,7 +97,6 @@ import lamu.lib.log.Logger;
 import lamu.lib.log.SimpleConsole;
 import lamu.lib.scheme.EvaluatorReceiver;
 import lamu.lib.scheme.SchemeEngine;
-import lamu.lib.scheme.SchemeEvaluator;
 import lamu.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import lamu.lib.scheme.SchemeEvaluatorUtils;
 import lamu.lib.scheme.SchemePrinter;
@@ -281,7 +280,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         super();
         this.schemeEngine = schemeEngine;
         // Added (Mon, 23 Dec 2019 02:11:34 +0900)      
-        this.schemeEngine.getSchemeEvaluator().registerSchemeInitializer( variableInitializer01 );
+        this.schemeEngine.getEvaluatorManager().getPrimaryEvaluator().registerSchemeInitializer( variableInitializer01 );
         
         // init font
         // kawapad.setFont( new Font("monospaced", Font.PLAIN, 12));
@@ -387,7 +386,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
      * frames are disposed.
      */
     public static void registerSchemeInitializer( SchemeEngine schemeEngine ) {
-        schemeEngine.getSchemeEvaluator().registerSchemeInitializer( initSchemeListener );
+        schemeEngine.getEvaluatorManager().getPrimaryEvaluator().registerSchemeInitializer( initSchemeListener );
     }
     static SchemeEngineListener initSchemeListener = new SchemeEngineListener() {
         @Override
@@ -2823,7 +2822,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
 
     ////////////////////////////////////////////////////////////////////////////
     
-    public static Scheme initScheme( Scheme scheme ) {
+    public static void initScheme( Scheme scheme ) {
         logInfo( "Kawapad#staticInitScheme" );
         Environment env = scheme.getEnvironment();
         
@@ -3054,21 +3053,8 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
                 }
             } );
 
-            
-            // Abolished. (Tue, 17 Sep 2019 10:34:07 +0900)
-            if ( false ) {
-                try {
-                    logInfo( "Loading [Kawapad internal]/kawapad-extension.scm" );
-                    SchemeEvaluator evaluator = new SchemeEvaluator( scheme );
-                    evaluator.evaluate( Kawapad.class, "kawapad-extension.scm" ).warnIfError();
-                } catch (Throwable e) {
-                    logError( "Ignored an error : ", e);
-                }
-            }
-
             SchemeEvaluatorUtils.executeExternalFile( scheme, null, "kawapad user extension", getExtFile() );
         }
-        return scheme;
     }
     
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
