@@ -1,4 +1,4 @@
-package lamu.lib.scheme.doc;
+package lamu.lib.doc;
 
 import java.util.Arrays;
 import java.util.List;
@@ -10,7 +10,7 @@ import lamu.lib.swing.AcceleratorKeyList;
 import lamu.lib.swing.Action2;
 import lamu.lib.swing.AutomatedActions;
 
-public class DescriptiveActions {
+public class ActionDocumentFormatter {
     public static final String formatActions( Object o ) {
         StringBuilder sb = new StringBuilder();
         sb.append( "|" );

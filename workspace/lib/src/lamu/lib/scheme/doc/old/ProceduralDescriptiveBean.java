@@ -1,10 +1,13 @@
-package lamu.lib.scheme.doc;
+package lamu.lib.scheme.doc.old;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProceduralDescriptiveBean extends DescriptiveBean {
-    public ProceduralDescriptiveBean() {
+    public static ProceduralDescriptiveBean create() {
+        return new ProceduralDescriptiveBean();
+    }
+    protected ProceduralDescriptiveBean() {
         super();
     }
     public ProceduralDescriptiveBean(

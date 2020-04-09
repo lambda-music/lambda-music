@@ -2,6 +2,19 @@ Lamu API Reference
 ======================
 
 
+PULSAR
+====================
+
+#### SYNOPSIS ####
+    (pulsar)
+
+### DESCRIPTION ###
+ 
+
+
+
+--------------------------------------------------------
+
 OPEN?
 ====================
 
@@ -458,31 +471,6 @@ throws an exception.
 
 --------------------------------------------------------
 
-ABOUT-TRACK-SPEC
-====================
-
-#### SYNOPSIS ####
-    (about-track-spec)
-
-### DESCRIPTION ###
-The track-spec denotes a specification of a track to retrieve. Only symbol,
-string and procedure are valid as a track-spec.
-
- When track-spec is a symbol/a string, the value is compared with the name value of each track, and the track is added to the result when it equals to the value. It uses the equals() method of java.lang.Object class to check the equality of the two values. 
-
-When track-spec is a procedure: The system enumerates all tracks in the current
-sequencer, and call the specified procedure for each track. The procedure should have two
-parameters : \(lambda \( name tags \) ... \). If a track identified by the name and the
-tags is not to retrieve, the procedure should return \#f; otherwise the track is
-selected to the result.
-
-In case the current sequencer system has not established any connection to the
-JACK, it throws an exception.
-
-
-
---------------------------------------------------------
-
 NEW-TRACK
 ====================
 
@@ -519,54 +507,16 @@ has not established any connection to the JACK, it throws an exception.
 
 --------------------------------------------------------
 
-ABOUT-NOTATION
+REMOVE-TRACK
 ====================
 
 #### SYNOPSIS ####
-    (about-notation)::void
+    (remove-track|remt [sync-type::symbol=] [sync-track::MetroTrack|track-spec=] [sync-offset::number=])
 
 ### DESCRIPTION ###
-A notation is a MIDI data which Pulsar music sequencer can play. In Pulsar, a
-notation is made of a Scheme association list. There are several types of a notation
-such as notes, rests, MIDI control changes and others. The contents of a notation
-depend on its type; for example, if a notation is a note data, the notation object
-have four properties : velocity, length, position and pitch. In case the current
-sequencer system has not established any connection to the JACK, it throws an exception.
-
-
-
---------------------------------------------------------
-
-ABOUT-INTRO
-====================
-
-#### SYNOPSIS ####
-    (about-intro)
-
-### DESCRIPTION ###
-Welcome to Pulsar music sequencer! Pulsar music sequencer is a music sequencer
-which collaboratively works with a powerful computer language Lisp Scheme. And this
-frame itself is a powerful Lisp Scheme editor which is called Kawapad. In Lisp, all
-commands are surrounded with a pair of parentheses. You can easily execute one of those
-command by moving your cursor within the pair of parentheses and pressing CTRL+ENTER.
-
-To show this help, execute \(help about-intro\). To show all available
-procedures, execute \(help\) . To show help of a procedure, execute \(help
-\[procedure-name\] \) .
-
-
-
---------------------------------------------------------
-
-PUT-TRACK
-====================
-
-#### SYNOPSIS ####
-    (put-track|putt [sync-type::symbol=] [sync-track::MetroTrack|track-spec=] [sync-offset::number=])
-
-### DESCRIPTION ###
-put the passed track on the sequencer. The sequencer starts to play the added
-track and it gives the user some controls on how it starts playing the track.
+removes the passed track on the sequencer. The sequencer remove the specified
+track. Eventually the track stops playing. And it gives the user some controls on how
+it stops playing the track.
 
 The ||track|| parameter is the reference to the track which is to play.
 
@@ -592,16 +542,15 @@ length which unit is a measure-length.
 
 --------------------------------------------------------
 
-REMOVE-TRACK
+PUT-TRACK
 ====================
 
 #### SYNOPSIS ####
-    (remove-track|remt [sync-type::symbol=] [sync-track::MetroTrack|track-spec=] [sync-offset::number=])
+    (put-track|putt [sync-type::symbol=] [sync-track::MetroTrack|track-spec=] [sync-offset::number=])
 
 ### DESCRIPTION ###
-removes the passed track on the sequencer. The sequencer remove the specified
-track. Eventually the track stops playing. And it gives the user some controls on how
-it stops playing the track.
+put the passed track on the sequencer. The sequencer starts to play the added
+track and it gives the user some controls on how it starts playing the track.
 
 The ||track|| parameter is the reference to the track which is to play.
 

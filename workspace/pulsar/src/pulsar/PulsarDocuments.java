@@ -4,7 +4,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import gnu.mapping.Environment;
-import lamu.lib.scheme.doc.DescriptiveBean;
+import lamu.lib.doc.LamuDocument;
+import lamu.lib.doc.NoteListSynopsisFormatter;
+import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.scheme.doc.DescriptiveDocumentCategory;
 
 public class PulsarDocuments {
@@ -52,7 +54,14 @@ public class PulsarDocuments {
     }
     public static final String PREFIX = "note-event-"; 
     public static void defineDoc( Environment env, NoteListParserElement element ) {
-        DescriptiveBean bean = new PulsarNoteListDescriptiveBean(); 
+        LamuDocument bean = new LamuDocument();
+        bean.setCategory( "pulsar-notations" );
+        bean.setSynopsisFormatter( NoteListSynopsisFormatter.getInstance() );
+      
+        /*
+         * Generate a unique identifier from the name.
+         * Prioritize its short name than its long name.    
+         */
         if ( element.getLongName() == null ) {
             if ( element.getShortName() ==null ) {
                 bean.setNames( "no-name" );
@@ -66,6 +75,7 @@ public class PulsarDocuments {
                 bean.setNames(  element.getLongName(), element.getShortName() );
             }
         }
+        
         bean.setParameterDescription( "" );
         for ( NoteListParserElementParameter p : element.getParameters() ) {
             List<String> nameList;
@@ -89,10 +99,11 @@ public class PulsarDocuments {
                 false, 
                 nullCheck( p.getDescription() ) );
         }
+        
         bean.setReturnValueDescription( "" );
         bean.setShortDescription( nullCheck( element.getShortDescription() ) );
         bean.setLongDescription( nullCheck( element.getLongDescription() ) );
         
-        NOTES.defineDoc( env, "note-" + bean.getName(),  bean );
+        SchemeUtils.defineVar(env, bean, "note-" + bean.getName() );
     }
 }

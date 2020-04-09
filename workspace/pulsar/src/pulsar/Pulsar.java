@@ -130,7 +130,8 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         schemeEngine.getSchemeEvaluator().registerSchemeInitializer( new SchemeEngineListener() {
             @Override
             public void execute( Scheme scheme ) {
-                PulsarLib.initScheme( scheme.getEnvironment() );
+//                removed (Thu, 09 Apr 2020 13:24:16 +0900) 
+//                PulsarLib.initScheme( scheme.getEnvironment() );
             }
         });
     }

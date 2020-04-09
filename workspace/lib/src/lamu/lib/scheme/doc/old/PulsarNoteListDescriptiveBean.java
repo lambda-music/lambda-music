@@ -1,9 +1,7 @@
-package pulsar;
+package lamu.lib.scheme.doc.old;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import lamu.lib.scheme.doc.DescriptiveBean;
 
 public class PulsarNoteListDescriptiveBean extends DescriptiveBean {
     public PulsarNoteListDescriptiveBean() {

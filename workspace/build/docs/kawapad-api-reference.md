@@ -9,15 +9,10 @@ ABOUT-INTRO
     (about-intro)
 
 ### DESCRIPTION ###
-Welcome to Pulsar music sequencer! Pulsar music sequencer is a music sequencer
-which collaboratively works with a powerful computer language Lisp Scheme. And this
-frame itself is a powerful Lisp Scheme editor which is called Kawapad. In Lisp, all
-commands are surrounded with a pair of parentheses. You can easily execute one of those
-command by moving your cursor within the pair of parentheses and pressing CTRL+ENTER.
-
-To show this help, execute \(help about-intro\). To show all available
-procedures, execute \(help\) . To show help of a procedure, execute \(help
-\[procedure-name\] \) .
+Welcome to Kawapad! Kawapad is a simple Lisp Scheme editor which can edit and
+execute Scheme code on the fly. Kawapad includes Java implementation of a powerful
+computer language Lisp Scheme. To show all available procedures, execute \(help\). To
+show help of a procedure, execute \(help \[procedure-name\] \) .
 
 
 

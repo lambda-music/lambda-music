@@ -21,6 +21,8 @@ import gnu.mapping.Environment;
 import gnu.mapping.Symbol;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.SchemeUtils;
+import lamu.lib.scheme.doc.old.DescriptiveBean;
+import lamu.lib.scheme.doc.old.DescriptiveProcedure;
 
 /**
  * 
@@ -48,7 +50,7 @@ import lamu.lib.scheme.SchemeUtils;
  */
 
 public class DescriptiveDocumentCategory {
-    static Environment environment = Environment.getInstance( DescriptiveDocumentCategory.class.getCanonicalName() );
+    private static final Environment environment = Environment.getInstance( DescriptiveDocumentCategory.class.getCanonicalName() );
         
     public static DescriptiveDocumentCategory createCategory(Symbol symbol, Runnable documentInitializer ) {
         return new DescriptiveDocumentCategory(symbol, documentInitializer);
@@ -63,7 +65,7 @@ public class DescriptiveDocumentCategory {
      * @param category
      * the category object to be added.
      */
-    public static synchronized void addCategory(DescriptiveDocumentCategory category) {
+    public static synchronized void addCategory( DescriptiveDocumentCategory category ) {
         allCategories.put( category.symbol, category );
     }
     
@@ -72,7 +74,7 @@ public class DescriptiveDocumentCategory {
      * @param category
      * the category object to be removed.
      */
-    public static synchronized void removeCategory(DescriptiveDocumentCategory category) {
+    public static synchronized void removeCategory( DescriptiveDocumentCategory category ) {
         allCategories.remove( category.symbol );
     }
     
@@ -91,44 +93,18 @@ public class DescriptiveDocumentCategory {
         return new ArrayList<>( allCategories.values() );
     }
 
-    private static final boolean DEBUG = false; 
-    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
-    static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }
-    static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }
-    static void logWarn (String msg             ) { LOGGER.log(Level.WARNING,  msg      ); }
-
-//  public static void defineDocument( Environment e, String[] stringSymbols, DescriptiveProcedure proc ) {
-//      Symbol[] symbols = new Symbol[ stringSymbols.length ];
-//      for ( int i=0; i<stringSymbols.length; i++ ) {
-//          symbols[i] = toSchemeSymbol( stringSymbols[i] );
-//      }
-//      defineDocument( e, symbols, proc );
-//  }
-//  
-//  public static DescriptiveProcedure getDocument( Environment e, Symbol name )  {
-//      synchronized ( e ) {
-//          Pair root = getRootOfAllProcedure(e);
-//          for ( Object o : root ) {
-//              if (((Pair)
-//                      ((Pair)o).getCdr()).contains( name )) {
-//                  return (DescriptiveProcedure)((Pair)o).getCar();
-//              }
-//          }
-//          return null;
-//      }
-//  }
-//  public static void setDocumentInitializer( Scheme scheme, DescriptiveInitializerBean bean, DescriptiveInitializerBeanParam beanParam, String ... names ) {
-//      if ( names.length < 1 )
-//          throw new IllegalArgumentException( "the 'names' parameter must be longer than 1." );
-//      setDocument( scheme, names[0], bean.process( beanParam ).format() );
-//  }
-    public synchronized static DescriptiveDocumentCategory valueOf(Symbol symbol) {
+    public synchronized static DescriptiveDocumentCategory valueOf( Symbol symbol ) {
         return allCategories.get( symbol );
     }
     public synchronized static DescriptiveDocumentCategory valueOf( String symbolString ) {
         return allCategories.get( Symbol.valueOf( symbolString ) );
     }
-    
+
+    static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
+    static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }
+    static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }
+    static void logWarn (String msg             ) { LOGGER.log(Level.WARNING,  msg      ); }
+
     /**
      * Returns the cons cell which is corresponding to the specified symbol. 
      * <p>
@@ -144,17 +120,16 @@ public class DescriptiveDocumentCategory {
      * should be created for each JVM instance. Now procedures are not allowed to be
      * created twice or more at a JVM session.
      * <p>
-     * 
-     * @param env
-     *     This argument is ignored.
      * @param symbol
      *     The symbol which is related to the cons cell.
+     * 
      * @return
      *     The cons cell.
      */
-    static Pair getRootCons( Environment env, Symbol symbol) {
+    private static Pair getRootConsCell( Symbol symbol ) {
+        Environment env = environment;
+
         synchronized ( Language.getDefaultLanguage() ) {
-            env = environment;
             if ( ! env.isBound( symbol ) ) {
                 Pair rootCons = (Pair)LList.makeList(Arrays.asList( symbol ));
                 env.define( symbol, null, rootCons );
@@ -177,91 +152,49 @@ public class DescriptiveDocumentCategory {
     public void executeDocumentInitializer() {
     	this.documentInitializer.run();
     }
-    public LList getDocumentList( Environment env ) {
-        return getDocumentList( env, this );
+    public LList getDocumentList() {
+        return getDocumentList( this );
     }
-    private static LList getDocumentList( Environment env, DescriptiveDocumentCategory type ) {
+    private static LList getDocumentList( DescriptiveDocumentCategory type ) {
         synchronized ( Language.getDefaultLanguage() ) {
-            Pair rootCons = getRootCons( env, type.getSymbol() );
+            Pair rootCons = getRootConsCell( type.getSymbol() );
             return (LList) rootCons.getCdr();
         }
     }
 
-    public void addDocumentList( Environment env, Symbol[] symbols, Object descriptive ) {
-        addDocumentList( env, this, symbols, descriptive );
-    }
-    private static void addDocumentList( Environment env, DescriptiveDocumentCategory type, Symbol[] symbols, Object descriptive ) {
+    private static void addDocumentList( DescriptiveDocumentCategory type, DescriptiveBean bean ) {
         synchronized ( Language.getDefaultLanguage() ) {
-            Pair rootCons = getRootCons( env, type.getSymbol() );
+            Pair rootCons = getRootConsCell( type.getSymbol() );
             rootCons.setCdr( 
                 Pair.make(
-                    Pair.make( descriptive, LList.makeList( symbols, 0 ) ),  
+                    Pair.make( bean, 
+                        LList.makeList(
+                            SchemeUtils.stringListToSymbolList( bean.getNames() ), 0 ) ),  
                     rootCons.getCdr()));
-            
-            //          proc.setNameList( Arrays.asList(symbols) );
         }
     }
 
-    public Object defineDoc( Environment env, DescriptiveBean bean ) {
-        return defineDoc0( env, this, bean.getName(), null,   bean );
-    }
-    public Object defineDoc( Environment env, String targetVar, DescriptiveBean bean ) {
-        return defineDoc0( env, this, targetVar,      null,   bean );
-    }
-    public Object defineDoc( Environment env, Object target, DescriptiveBean bean ) {
-        return defineDoc0( env, this, null,           target, bean );
-    }
-    public static Object defineDoc0(Environment env, DescriptiveDocumentCategory type, String targetVar, Object target, DescriptiveBean bean ) {
+    public void defineDoc( DescriptiveBean bean ) {
         synchronized ( Language.getDefaultLanguage() ) {
-            Object actualTarget = defineDoc0( env, type, targetVar, target, bean.format(), bean.getNames() );
-            Descriptive.setDescriptionBean( actualTarget, bean );
-            return actualTarget;
+            addDocumentList( this, bean );
         }
     }
-
-    //      static Procedure proc_defineDocument = eval( lis( "lambda", lis("rt"),   ) );   
-    public static Object defineDoc0( Environment env, DescriptiveDocumentCategory type, final String targetVar, final Object target, String description, List<String> names )  {
-        if ( DEBUG )
-            logInfo( "DescriptiveDocumentType.defineDoc0()" + targetVar );
-        Object actualTarget;
-        if ( target != null ) {
-            actualTarget = target;
-        } else {
-            if ( targetVar == null ) {
-                throw new IllegalArgumentException( "targetVar cannot be null when target is null." );
-            }
-            actualTarget = SchemeUtils.getVar( targetVar, null );
-            if ( actualTarget == null ) {
-                if ( DEBUG )
-                    Descriptive.logWarn( "setDocumentInitializer: " + targetVar + " was not found." );
-                actualTarget = new DescriptiveHelpProcedure( targetVar );
-                SchemeUtils.defineVar( env, actualTarget, targetVar );
-            }
+    public void defineDoc( Environment env, String targetVar, DescriptiveBean bean ) {
+        synchronized ( Language.getDefaultLanguage() ) {
+            addDocumentList( this, bean );
         }
-            
-        if ( DEBUG )
-            logInfo( "setting description on '" + targetVar + "'" + " " + actualTarget.toString() );
-        //          logInfo( "description" );
-        //          logInfo( description );
-        
-        Descriptive.setDescription( actualTarget, description );
-        addDocumentList(
-            env,
-            type,
-            SchemeUtils.stringListToSymbolList( names ), 
-            actualTarget );
-        
-        return actualTarget;
     }
-
+    public void defineDoc( Environment env, Object target, DescriptiveBean bean ) {
+        synchronized ( Language.getDefaultLanguage() ) {
+            addDocumentList( this, bean );
+        }
+    }
     public static void initDoc( DescriptiveDocumentCategory category, Object target, DescriptiveBean bean ) {
-        Descriptive.setDescriptionBean( target, bean );
-        Descriptive.setDescription( target, bean.format() );
-        addDocumentList(
-            null,
-            category,
-            SchemeUtils.stringListToSymbolList( bean.getNames() ), 
-            target );
+        DescriptiveProcedure.setDescriptionBean( target, bean );
+        DescriptiveProcedure.setDescription( target, bean.format() );
+        synchronized ( Language.getDefaultLanguage() ) {
+            addDocumentList( category, bean );
+        }
     }
 
     /**
@@ -272,7 +205,7 @@ public class DescriptiveDocumentCategory {
      *     
      * @throws IOException
      */
-    public static void outputAvailableReferences(String outputFile) throws IOException {
+    public static void outputAvailableReferences( String outputFile ) throws IOException {
         List<String> stringList = new ArrayList<>();
         for ( DescriptiveDocumentCategory c : getAllCategories() ) {
             stringList.add( SchemeUtils.schemeStringToJavaString( c.getSymbol() ) );

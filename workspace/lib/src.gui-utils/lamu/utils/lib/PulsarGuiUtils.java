@@ -28,10 +28,10 @@ import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
+import lamu.lib.doc.LamuDocument;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.scheme.doc.DescriptiveDocumentCategory;
-import lamu.lib.scheme.doc.ProceduralDescriptiveBean;
 import lamu.lib.scheme.proc.MultipleNamedProcedureN;
 import lamu.lib.secretary.InvokablyRunnable;
 
@@ -723,7 +723,8 @@ public class PulsarGuiUtils {
             }
         });
 
-        PulsarGuiUtils.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
+        new LamuDocument(){{
+            setCategory( "pulsar-gui-procedures" );
             setNames( "gui-build" );
             setParameterDescription( "" );
             setReturnValueDescription( "::Object" );
@@ -731,8 +732,7 @@ public class PulsarGuiUtils {
             setLongDescription( ""
                 + "This procedure utilizes process to build Swing components. "
                 + "More description is comming now." );
-        }} );
-
+        }};
 
         SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-newline" ) {
             @Override

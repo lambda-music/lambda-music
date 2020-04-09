@@ -1,15 +1,14 @@
-package lamu.lib.scheme.doc;
+package lamu.lib.scheme.doc.old;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import javax.naming.NoPermissionException;
-
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
+import lamu.lib.doc.LamuDocumentFormatterUtil;
 
-public class MarkdownDescriptive extends Descriptive {
+public class MarkdownDescriptive {
     MarkdownDescriptive() {
     }
     public static String createMarkdownHelp( List<Object> list ) {
@@ -83,7 +82,7 @@ public class MarkdownDescriptive extends Descriptive {
         }
         
         message.append( "### DESCRIPTION ###\n" );
-        message.append( wrapMultiLine( msg1 + " " + msg2 , 80 ) );
+        message.append( LamuDocumentFormatterUtil.wrapMultiLine( msg1 + " " + msg2 , 80 ) );
         message.append( "\n\n" );
         message.append( "--------------------------------------------------------" );
         message.append( "" );
@@ -91,6 +90,6 @@ public class MarkdownDescriptive extends Descriptive {
         return message.toString();  
     }
     public static String formatForMarkdown( Procedure p ) {
-        return formatForMarkdown( getDescriptionBean( p ) );
+        return formatForMarkdown( DescriptiveProcedure.getDescriptionBean( p ) );
     }
 }

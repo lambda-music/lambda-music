@@ -15,8 +15,13 @@ import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import gnu.mapping.WrongArguments;
 import kawa.standard.Scheme;
+import lamu.lib.doc.LamuDocumentFormatterUtil;
+import lamu.lib.doc.LamuDocument;
+import lamu.lib.scheme.SchemeDocument;
 import lamu.lib.scheme.SchemeEngine;
 import lamu.lib.scheme.SchemeEvaluator.SchemeEngineListener;
+import lamu.lib.scheme.doc.old.DescriptiveProcedure;
+import lamu.lib.scheme.doc.old.MarkdownDescriptive;
 import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.scheme.proc.MultipleNamedProcedure2;
 import lamu.lib.scheme.proc.MultipleNamedProcedureN;
@@ -48,10 +53,9 @@ public class DescriptiveHelp {
     /**
      * 
      */
-
     static String outputMarkdownReference0(DescriptiveDocumentCategory type, Environment env ) {
         List list = new ArrayList();
-        list.addAll( type.getDocumentList( env ));
+        list.addAll( type.getDocumentList( ));
         return MarkdownDescriptive.createMarkdownHelp( list );
     }
     public static String outputMarkdownReference( DescriptiveDocumentCategory type, Environment environment ) {
@@ -69,13 +73,14 @@ public class DescriptiveHelp {
         SchemeUtils.defineLambda( env, new Procedure1("make-page") {
             @Override
             public Object apply1(Object arg1) throws Throwable {
-                return Descriptive.makeSchemeDocument( 
+                return SchemeDocument.makeSchemeDocument( 
                             SchemeUtils.toSchemeString( 
-                                Descriptive.formatKawapad( SchemeUtils.anyToString(arg1), helpTextWidth ) )); 
+                                LamuDocumentFormatterUtil.formatKawapad( SchemeUtils.anyToString(arg1), helpTextWidth ) )); 
             }
         });
         
-        DescriptiveHelp.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
+        LamuDocument makePage = new LamuDocument(){{
+            setCategory("help-procedures");
             setNames( "make-page" );
             setParameterDescription( "[string]" );
             addParameter( 0, "content",   "string",  null,  false, "the content to convert to a ||kawapad-page||. " );
@@ -91,7 +96,7 @@ public class DescriptiveHelp {
                                 + "activate the special display function of Kawapad. "
                                 + "" 
                                 );
-        }} );
+        }};
         
         SchemeUtils.defineLambda( env, new MultipleNamedProcedureN("help!") {
             @Override
@@ -99,8 +104,9 @@ public class DescriptiveHelp {
                 return "Calm down!";
             }
         });
-        
-        DescriptiveHelp.DOCS.defineDoc( env, new ProceduralDescriptiveBean() {{
+
+        new LamuDocument() {{
+            setCategory( "help-procedures" );
             setNames( "help!" );
             setParameterDescription( "" );
             setReturnValueDescription( "::string" );
@@ -114,7 +120,7 @@ public class DescriptiveHelp {
                 + "in spite of the fact the name of this method is with an exclamation mark. "
                 + " "
                 + "See (help about-main)." );
-        }} );
+        }};
         
         final class ProcedureHelp extends MultipleNamedProcedureN {
             final Environment environment;
@@ -149,7 +155,7 @@ public class DescriptiveHelp {
                 };
                 return (LList)map.apply2( proc1, 
                                 reverse.apply1( 
-                                    category.getDocumentList( this.environment )));
+                                    category.getDocumentList( )));
             }
             ArrayList getAllAvailableProcedures() throws Throwable {
                 ArrayList list = new ArrayList();
@@ -180,7 +186,7 @@ public class DescriptiveHelp {
             }; 
 
             public Object apply0() throws Throwable {
-                return Descriptive.makeSchemeDocument( helpList( getAllAvailableProcedureLList() ) );
+                return SchemeDocument.makeSchemeDocument( helpList( getAllAvailableProcedureLList() ) );
             }
 
 
@@ -193,17 +199,17 @@ public class DescriptiveHelp {
                     if ( arg1 instanceof Symbol ) {
                         DescriptiveDocumentCategory t = 
                                 DescriptiveDocumentCategory.valueOf( (Symbol)arg1 );
-                        return Descriptive.makeSchemeDocument( 
+                        return SchemeDocument.makeSchemeDocument( 
                             helpList( getAvailableProcedures( t ) ) );
                     } else {
-                        String message = Descriptive.getDescription( arg1 );
+                        String message = DescriptiveProcedure.getDescription( arg1 );
                         if ( message == null ) {
                             message = MSG_NO_DOCUMENTATION;
                         }
                         System.err.println( message );
-                        return Descriptive.makeSchemeDocument( 
+                        return SchemeDocument.makeSchemeDocument( 
                                     SchemeUtils.toSchemeString( 
-                                        Descriptive.formatKawapad( message, helpTextWidth )));
+                                        LamuDocumentFormatterUtil.formatKawapad( message, helpTextWidth )));
                                 
                     }
                 }
@@ -223,7 +229,9 @@ public class DescriptiveHelp {
         }
         
         SchemeUtils.defineLambda( env, new ProcedureHelp( env, 1,  "help", "he" ) );
-        DescriptiveHelp.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
+        
+        new LamuDocument(){{
+            setCategory( "help-procedures" );
             setNames( "help", "he" );
             setParameterDescription( "[symbol|procedure]" );
             addParameter( 0, 
@@ -241,8 +249,7 @@ public class DescriptiveHelp {
                     + "Pass 'procs to get all available procedures. "
                     + "Pass 'notes to get all available notation types. " 
                     );
-        }} );
-
+        }};
         
         SchemeUtils.defineLambda( env, new MultipleNamedProcedure2("make-help") {
             Symbol names = Symbol.valueOf( "names" );
@@ -253,7 +260,7 @@ public class DescriptiveHelp {
             @Override
             public Object apply2(Object arg1,Object arg2) throws Throwable {
                 LList list = (LList) arg2;
-                ProceduralDescriptiveBean bean = new ProceduralDescriptiveBean();
+                LamuDocument bean = new LamuDocument();
                 for ( Object e : list ) {
                     Pair ep = (Pair) e;
                     Object car = ep.getCar();
@@ -328,12 +335,12 @@ public class DescriptiveHelp {
                         throw new IllegalArgumentException( "unknown field name " + car );
                     }
                 }
-                DescriptiveHelp.DOCS.defineDoc( env, arg1, bean );
                 return Values.empty;
             }
         } );
         
-        DescriptiveHelp.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
+        new LamuDocument(){{
+            setCategory( "help-procedures" );
             setNames( "make-help" );
             setParameterDescription( "" );
             addParameter( 0, "target", "procedure" , null, false, "The reference to the target procedure. See the description. " );
@@ -365,8 +372,7 @@ public class DescriptiveHelp {
                 + "The ||short-description|| field contains a string value of its short description. "
                 + "The ||long-description|| field contains a string value of its long description. "
                 + "" );
-        }} );
-
+        }};
         
         SchemeUtils.defineLambda( env, new Procedure1("help-markdown") {
             @Override
@@ -383,8 +389,9 @@ public class DescriptiveHelp {
             }
 
         } );
-        
-        DescriptiveHelp.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
+
+        new LamuDocument(){{
+            setCategory( "help-procedures" );
             setNames("help-markdown");
             setParameterDescription( "" );
             addParameter( 0, "type", "string", "'procs", false,  "either 'procs or 'notes " );
@@ -395,6 +402,6 @@ public class DescriptiveHelp {
                 + "tries to calm the user down. Any argument specified to this procedure will be silently ignored."
                 + "This procedure is deliberately defined as a joke and has by no means effect to the current system state "
                 + "nor any other related elements. See (help about-main)." );
-        }} );        
+        }};
     }
 }

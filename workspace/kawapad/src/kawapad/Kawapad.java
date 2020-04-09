@@ -91,6 +91,8 @@ import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
 import lamu.lib.CurrentObject;
 import lamu.lib.app.ApplicationComponent;
+import lamu.lib.doc.ActionDocumentFormatter;
+import lamu.lib.doc.LamuDocument;
 import lamu.lib.log.Logger;
 import lamu.lib.log.SimpleConsole;
 import lamu.lib.scheme.EvaluatorReceiver;
@@ -100,8 +102,6 @@ import lamu.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import lamu.lib.scheme.SchemeEvaluatorUtils;
 import lamu.lib.scheme.SchemePrinter;
 import lamu.lib.scheme.SchemeUtils;
-import lamu.lib.scheme.doc.DescriptiveActions;
-import lamu.lib.scheme.doc.ProceduralDescriptiveBean;
 import lamu.lib.scheme.proc.MultipleNamedProcedure0;
 import lamu.lib.scheme.proc.MultipleNamedProcedure1;
 import lamu.lib.scheme.proc.MultipleNamedProcedure2;
@@ -353,7 +353,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     }
     
     public String outputKeyStrokeReference() {
-        return DescriptiveActions.formatActions( this );
+        return ActionDocumentFormatter.formatActions( this );
     }
 
 //    //////////////////////////////////////////////////////////////////////////////////////////
@@ -2831,7 +2831,8 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
             SchemeUtils.defineVar(env, true, FLAG_DONE_INIT_PULSAR_SCRATCHPAD );  
 
             // ( canonical )
-            KawapadDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
+            new LamuDocument(){{
+                setCategory( "kawapad-procedures" );
                 setNames( "about-intro"  );
                 setParameterDescription( "" );
                 setReturnValueDescription( "" );
@@ -2844,7 +2845,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
                                     + "To show help of a procedure, execute (help [procedure-name] ) . \n"
                                     + "" 
                                  );
-            }} );
+            }};
             
             SchemeUtils.defineVar(env, new ConsoleObject(), "console" );
 
@@ -2938,7 +2939,8 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
                 }
             } );
 
-            KawapadDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
+            new LamuDocument(){{
+                setCategory( "kawapad-procedures" );
                 setNames( "load-font"  );
                 setParameterDescription( "" );
                 addParameter( 0, "file-size", "string", null , false, "Specifies the path to the font file. " );
@@ -2950,7 +2952,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
                         + "set it to the font-face of Kawapad. "
                                     + "" 
                                  );
-            }});
+            }};
 
             SchemeUtils.defineLambda( env, new MultipleNamedProcedure2("load-font-ui") {
                 @Override
@@ -2963,7 +2965,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
                 }
             });
 
-            KawapadDocuments.DOCS.defineDoc( env, new ProceduralDescriptiveBean(){{
+            new LamuDocument(){{
                 setNames( "load-font-ui" );
                 setParameterDescription( "" );
                 addParameter( 0, "file-size", "string", null , false, "Specifies the path to the font file. " );
@@ -2974,7 +2976,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
                         + "_<name/>_ loads a file from the specified file and "
                         + "set it as the default font of the current ui. "
                         + "" );
-            }});
+            }};
             
             SchemeUtils.defineLambda(env, new MultipleNamedProcedureN("add-lisp-keyword") {
                 @Override

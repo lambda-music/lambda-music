@@ -1,4 +1,4 @@
-package lamu.lib.scheme.doc;
+package lamu.lib.scheme.doc.old;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 
 import gnu.mapping.Values;
 import lamu.lib.log.Logger;
-import lamu.lib.scheme.doc.Descriptive;
 
 public final class SchemeResult {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -40,8 +39,8 @@ public final class SchemeResult {
     public static SchemeResult createSucceededByObject(Object resultValue) {
         if ( resultValue == null ) {
             return createSucceededByNull();
-        } else if ( Descriptive.isSchemeDocument( resultValue ) ) {
-            Object doc = Descriptive.getSchemeDocument(resultValue);
+        } else if ( SchemeDocument.isSchemeDocument( resultValue ) ) {
+            Object doc = SchemeDocument.getSchemeDocument(resultValue);
             return createSucceeded( true, doc, SchemePrinter.printDocument(doc) );
         } else {
             return createSucceeded( false, resultValue, SchemePrinter.printSchemeValue(resultValue)  );

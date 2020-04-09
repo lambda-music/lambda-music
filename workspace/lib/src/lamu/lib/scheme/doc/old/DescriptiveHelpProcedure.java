@@ -1,5 +1,6 @@
-package lamu.lib.scheme.doc;
+package lamu.lib.scheme.doc.old;
 
+import lamu.lib.scheme.SchemeDocument;
 import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.scheme.proc.MultipleNamedProcedure0;
 
@@ -14,7 +15,7 @@ public class DescriptiveHelpProcedure extends MultipleNamedProcedure0 {
                    "#| (%1$s) is a documentation procedure.\n "
                  + " | Execute (help %1$s) for further information. \n"
                  + "  |# help %1$s \n",  name );
-        return Descriptive.makeSchemeDocument( SchemeUtils.toSchemeString( s ));
+        return SchemeDocument.makeSchemeDocument( SchemeUtils.toSchemeString( s ));
     }
 }
 

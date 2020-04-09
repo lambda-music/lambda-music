@@ -1,4 +1,4 @@
-package lamu.lib.scheme.doc;
+package lamu.lib.scheme.doc.old;
 
 public interface KawapadDescriptive {
     public static String formatForKawapad( DescriptiveBean bean ) {
