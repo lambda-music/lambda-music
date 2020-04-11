@@ -38,7 +38,7 @@ public class KawapadTextualIncrement implements MenuInitializer {
         SchemeUtils.defineLambda( env, new MultipleNamedProcedure2("add-incremental-keyword") {
             @Override
             public Object apply2(Object arg1, Object arg2) throws Throwable {
-                Kawapad.getCurrent().textualIncrement.addIncrementalSymbol( 
+                Kawapad.getCurrent().getTextualIncrement().addIncrementalSymbol( 
                     SchemeUtils.anyToString( arg1 ),
                     SchemeUtils.anyToString( arg2 ));
                 return Values.empty;
@@ -47,7 +47,7 @@ public class KawapadTextualIncrement implements MenuInitializer {
         SchemeUtils.defineLambda( env, new MultipleNamedProcedure1("delete-incremental-keyword") {
             @Override
             public Object apply1(Object arg1) throws Throwable {
-                Kawapad.getCurrent().textualIncrement.deleteIncrementalSymbol( 
+                Kawapad.getCurrent().getTextualIncrement().deleteIncrementalSymbol( 
                     SchemeUtils.anyToString( arg1 ));
                 return Values.empty;
             }
@@ -55,7 +55,7 @@ public class KawapadTextualIncrement implements MenuInitializer {
         SchemeUtils.defineLambda( env, new MultipleNamedProcedure0("clear-incremental-keyword") {
             @Override
             public Object apply0() throws Throwable {
-                Kawapad.getCurrent().textualIncrement.clearIncrementalSymbol();
+                Kawapad.getCurrent().getTextualIncrement().clearIncrementalSymbol();
                 return Values.empty;
             }
         });
@@ -130,15 +130,28 @@ public class KawapadTextualIncrement implements MenuInitializer {
         incrementalSymbols.clear();
     }
 
+    /**
+     * TODO
+     * @param from
+     * @param to
+     */
     public void addIncrementalSymbol( String from, String to ) {
         addIncrementalSymbol0( from, to );
     }
+    /**
+     * 
+     * @param from
+     */
     public void deleteIncrementalSymbol( String from ) {
         deleteIncrementalSymbol0( from );
     }
+    /**
+     * 
+     */
     public void clearIncrementalSymbol( ) {
         clearIncrementalSymbol0();
     }
+    
     static Pattern NUMBER_PATTERN = Pattern.compile( "[0-9\\/\\.\\-\\+]+" );
 
     String zeroPad( String s, int len ) {

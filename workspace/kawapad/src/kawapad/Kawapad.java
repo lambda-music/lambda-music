@@ -61,6 +61,7 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.plaf.FontUIResource;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
@@ -74,6 +75,9 @@ import javax.swing.text.Segment;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
+import gnu.mapping.Symbol;
+import gnu.mapping.Values;
+import gnu.mapping.WrongArguments;
 import kawa.standard.Scheme;
 import kawapad.KawapadSelection.ExpandParenthesisSelector;
 import kawapad.KawapadSelection.SearchNextWordTransformer;
@@ -84,13 +88,19 @@ import kawapad.lib.undomanagers.UndoManagers;
 import lamu.lib.CurrentObject;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.doc.ActionDocumentFormatter;
+import lamu.lib.doc.LamuDocument;
 import lamu.lib.log.Logger;
 import lamu.lib.log.SimpleConsole;
 import lamu.lib.scheme.EvaluatorReceiver;
 import lamu.lib.scheme.SchemeEngine;
 import lamu.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import lamu.lib.scheme.SchemeEvaluatorUtils;
+import lamu.lib.scheme.SchemePrinter;
+import lamu.lib.scheme.SchemeResult;
 import lamu.lib.scheme.SchemeUtils;
+import lamu.lib.scheme.proc.MultipleNamedProcedure1;
+import lamu.lib.scheme.proc.MultipleNamedProcedure2;
+import lamu.lib.scheme.proc.MultipleNamedProcedureN;
 import lamu.lib.swing.AcceleratorKeyList;
 import lamu.lib.swing.Action2;
 import lamu.lib.swing.AutomatedActionField;
@@ -129,6 +139,10 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
+    
+    public static interface KawapadListener {
+        public abstract void process( Kawapad kawadapd );
+    }
     
     /**
      * This is a map for debugging or something. This map is intended to be used for
@@ -179,8 +193,6 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         if ( initProcessed )
             return;
         initProcessed = true;
-        
-        Kawapad.eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.CREATE, kawapad );
     }
     
     @Override
@@ -332,7 +344,22 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
             }
         });
         
-
+        //////////////////////////////////////////////////
+        
+        {
+            File f = Kawapad.getExtFile();
+            if ( f.isFile() && f.exists() ) {
+                SchemeResult result = schemeEngine.getEvaluatorManager().getPrimaryEvaluator().evaluate( null, f );
+                if ( result.isSucceeded() ) {
+                    Object value = result.getValue();
+                    if ( value instanceof Kawapad.KawapadListener ) {
+                        ((Kawapad.KawapadListener)value).process(Kawapad.this);
+                    } else {
+                        logWarn( "a value of an unsupported type; ignored." );
+                    }
+                }
+            }
+        }
     }
     
     public String outputKeyStrokeReference() {
@@ -352,14 +379,6 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     
     //////////////////////////////////////////////////////////////////////////////////////////
     //
-    // Event Manager
-    //
-    //////////////////////////////////////////////////////////////////////////////////////////
-    
-    public static final KawapadEventHandlers eventHandlers = new KawapadEventHandlers();
-    
-    //////////////////////////////////////////////////////////////////////////////////////////
-    //
     // Initializing Scheme Environment objects
     //
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -372,10 +391,11 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     public static void registerSchemeInitializer( SchemeEngine schemeEngine ) {
         schemeEngine.getEvaluatorManager().getPrimaryEvaluator().registerSchemeInitializer( initSchemeListener );
     }
+    @Deprecated
     static SchemeEngineListener initSchemeListener = new SchemeEngineListener() {
         @Override
         public void execute( Scheme scheme ) {
-            lamu.kawapad.initScheme( scheme );             
+//            lamu.kawapad.initScheme( scheme );             
         }
     };
 
@@ -682,8 +702,6 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
                     default :
                         break;
                 }
-                
-                Kawapad.eventHandlers.invokeEventHandler( target, KawapadEventHandlers.TYPED, target, SchemeUtils.toSchemeString( content ) );
             }
         }
     };
@@ -1082,8 +1100,8 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     
     
     
-    private class KawapadListener implements CaretListener, DocumentListener  {
-        KawapadListener() {
+    private class KawapadListenerProcessor implements CaretListener, DocumentListener  {
+        KawapadListenerProcessor() {
             super();
         }
         int offsetTTL = 0;
@@ -1108,11 +1126,6 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
             getParenthesisStack().checkSelectionStack();
             updateMatchingParentheses2();
             
-            if ( ! kawapad.getUndoManager().isSuspended() ) {
-                eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.CARET,   kawapad);
-                eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.CHANGE,  kawapad);
-            }
-
             if ( contentAssistEnabled ) {
                 SwingUtilities.invokeLater( new Runnable() {
                     @Override
@@ -1139,32 +1152,20 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
 //            updateMatchingParentheses2(2);
             kawapad.fileModified = true;
 //              System.err.println("PulsarScratchPadTextPaneController.insertUpdate()");
-            if ( ! kawapad.getUndoManager().isSuspended() ) {
-                eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.INSERT,  kawapad);
-                eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.CHANGE,  kawapad);
-            }
 //            kp.updatePopup( Kawapad.this.getCaret() );
         }
         public void removeUpdate(DocumentEvent e) {
             kawapad.fileModified = true;
 //              System.err.println("PulsarScratchPadTextPaneController.removeUpdate()");
-            if ( ! kawapad.getUndoManager().isSuspended() ) {
-                eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.REMOVE,  kawapad);
-                eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.CHANGE,  kawapad);
-            }
 //            kp.updatePopup( Kawapad.this.getCaret() );
         }
         public void changedUpdate(DocumentEvent e) {
 //              fileModified = true;
 //              System.err.println("PulsarScratchPadTextPaneController.changedUpdate() : ignored");
-            if ( ! kawapad.getUndoManager().isSuspended() ) {
-                eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.ATTRIBUTE,  kawapad);
-                eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.CHANGE,  kawapad);
-            }
 //            updatePopup( Kawapad.this.getCaret() );
         }
     }
-    private KawapadListener kawapadListener = new KawapadListener();
+    private KawapadListenerProcessor kawapadListener = new KawapadListenerProcessor();
     {
 //        MOVED TO EditorKit; see the constructor. (Sun, 29 Mar 2020 03:58:28 +0900) 
 //        this.getDocument().addDocumentListener( kawapadListener );
@@ -2781,6 +2782,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
             SimpleConsole.getConsole().setText( formatLogger( args ) );
         }
     }
+    public final ConsoleObject console = new ConsoleObject(); 
 
     ////////////////////////////////////////////////////////////////////////////
     public static Font loadFont(String filePath, float fontSize) throws FontFormatException, IOException {
@@ -2789,6 +2791,24 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         ge.registerFont(font);
         return font;
     }
+    
+    /**
+     * <h3>Example1</h3>
+     * <pre>
+     *  (kawapad.Kawapad:setUIFont 
+     *     (java.awt.Font "monospaced" java.awt.Font:PLAIN 12 )))
+     * </pre>
+     * <h3>Example2</h3>
+     * <pre>
+     *   (if #f
+     *     (kawapad.Kawapad:setUIFont 
+     *       (kawapad.Kawapad:loadFont 
+     *         "~/Documents/fonts/Datalook Regular.ttf" 20 )))
+     * </pre>
+     * 
+     * @param f
+     *    A Font object to set.
+     */
     public static void setUIFont( Font f ){
         setUIFont( new javax.swing.plaf.FontUIResource( f ) );
     }
@@ -2814,10 +2834,26 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    KawapadTextualIncrement textualIncrement = new KawapadTextualIncrement(); 
-    
-    //////////////////////////////////////////////////////////////////////////////////////////
-
+    private final KawapadTextualIncrement textualIncrement = new KawapadTextualIncrement();
+    /**
+     * Returns the current TextualIncrement manager.
+     * <pre> 
+     *    (kawapad:textual-increment:add-incremental-symbol "" "" )
+     * </pre> 
+     * 
+     * See
+     * <ul>
+     * <li>{@link KawapadTextualIncrement#addIncrementalSymbol(String, String) }</li>
+     * <li>{@link KawapadTextualIncrement#deleteIncrementalSymbol(String)}</li>
+     * <li> {@link KawapadTextualIncrement#clearIncrementalSymbol</li>
+     * </ul>
+     * 
+     * @return
+     *   returns the current TextualIncrement manager.
+     */
+    public KawapadTextualIncrement getTextualIncrement() {
+        return textualIncrement;
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 
@@ -2827,9 +2863,22 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
 
     boolean fileModified = false;
     File currentFile = null;
+
+    /**
+     * Returns the path to the currently editting file  
+     * @return
+     *    the File object which contains the path to the currently editting file.
+     */
     public File getCurrentFile() {
         return currentFile;
     }
+    
+    /**
+     * Returns the path to the working directory for the current project.
+     * The working directory is always located to the same directory with the current editting file.
+     * @return
+     *    the path to the current working directory for the current project. 
+     */
     public File getCurrentDirectory() {
         if ( currentFile == null ) {
             try {
@@ -3244,6 +3293,12 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         }
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 
+    //  Keyword Management
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	private static final List<String> DEFAULT_LISP_WORDS = Arrays.asList( "let", "lambda", "define" );
     ArrayList<String> lispKeywordList = new ArrayList<>( DEFAULT_LISP_WORDS );
     public List<String> getLispKeywordList() {
@@ -3384,5 +3439,169 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         kawapad.initMenu( map );
 
         lamu.lib.swing.Action2.processMenuBar( menuBar );
+    }
+    
+    
+    
+    
+    
+    
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 
+    //  Scheme API
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    // ( canonical )
+    public static final LamuDocument aboutIntroDoc = new LamuDocument(){{
+        setCategory( "kawapad-procedures" );
+        setNames( "about-intro"  );
+        setParameterDescription( "" );
+        setReturnValueDescription( "" );
+        setShortDescription( "Welcome to Kawapad!" );
+        setLongDescription( ""
+            + "Kawapad is a simple Lisp Scheme editor which can edit and execute Scheme code "
+            + "on the fly. Kawapad includes Java implementation of a powerful computer language Lisp Scheme. "
+            + " "
+            + "To show all available procedures, execute (help). \n"
+            + "To show help of a procedure, execute (help [procedure-name] ) . \n"
+            + "" 
+            );
+    }};
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    public final MultipleNamedProcedure1 prettifyProc = new PrettifyProc(new String[] { "prettify", "pre" });
+    public final class PrettifyProc extends MultipleNamedProcedure1 {
+        public PrettifyProc(String[] names) {
+            super(names);
+        }
+
+        @Override
+        public Object apply1(Object arg1 ) throws Throwable {
+            return SchemeUtils.toSchemeString(   
+                Kawapad.correctIndentation( Kawapad.getCurrent(), 
+                    SchemePrinter.printSchemeValue( arg1 )));
+        }
+    }
+    public MultipleNamedProcedure1 getPrettify() {
+        return prettifyProc;
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public static final LamuDocument loadFontDoc = new LamuDocument(){{
+        setCategory( "kawapad-procedures" );
+        setNames( "load-font"  );
+        setParameterDescription( "" );
+        addParameter( 0, "file-size", "string", null , false, "Specifies the path to the font file. " );
+        addParameter( 0, "font-size", "number", null , false, "Specifies its font size. " );
+        setReturnValueDescription( "::void" );
+        setShortDescription( "Set the main font of the editor." );
+        setLongDescription( ""
+            + "Kawapad can change its font-face. ||<name/>|| loads a file from the filesystem and "
+            + "set it to the font-face of Kawapad. "
+            + "" 
+            );
+    }};
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public final MultipleNamedProcedure2 loadFontProc = new LoadFontProc(new String[] { "load-font" });
+    public final class LoadFontProc extends MultipleNamedProcedure2 {
+        public LoadFontProc(String[] names) {
+            super(names);
+        }
+
+        @Override
+        public Object apply2(Object arg1,Object arg2) throws Throwable {
+            String filePath = SchemeUtils.anyToString( arg1 );
+            float  fontSize = SchemeUtils.toFloat( arg2 );
+            Font font = Kawapad.loadFont( filePath, fontSize );
+            Kawapad kawapad = Kawapad.getCurrent();
+            kawapad.setFont( font );
+            return Values.empty;
+        }
+    }
+    public MultipleNamedProcedure2 getLoadFont() {
+        return loadFontProc;
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public static final LamuDocument loadFontUIDoc = new LamuDocument(){{
+        setNames( "load-font-ui" );
+        setParameterDescription( "" );
+        addParameter( 0, "file-size", "string", null , false, "Specifies the path to the font file. " );
+        addParameter( 0, "font-size", "number", null , false, "Specifies its font size. " );
+        setReturnValueDescription( "::void" );
+        setShortDescription( "Set the main font of the ui." );
+        setLongDescription( ""
+            + "_<name/>_ loads a file from the specified file and "
+            + "set it as the default font of the current ui. "
+            + "" );
+    }};
+
+    public final MultipleNamedProcedure2 loadFontUIProc = new LoadFontUIProc(new String[] { "load-font-ui" });
+    public final class LoadFontUIProc extends MultipleNamedProcedure2 {
+        public LoadFontUIProc(String[] names) {
+            super(names);
+        }
+
+        @Override
+        public Object apply2(Object arg1,Object arg2) throws Throwable {
+            String filePath = SchemeUtils.anyToString( arg1 );
+            float  fontSize = SchemeUtils.toFloat( arg2 );
+            Font font = Kawapad.loadFont( filePath, fontSize );
+            Kawapad.setUIFont( new FontUIResource(font));
+            return Values.empty;
+        }
+    }
+    public MultipleNamedProcedure2 getLoadFontUI() {
+        return loadFontUIProc;
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 
+    // Note : the `set-syntax-color` procedure may be useless now since now we are using LAF objects to customise UI.
+    // We have to investigate it.
+    // (Sat, 11 Apr 2020 14:47:27 +0900)
+    // 
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public static final MultipleNamedProcedureN setSyntaxColorProc = new SetSyntaxColorProc(new String[] { "set-syntax-color" });
+    public static final class SetSyntaxColorProc extends MultipleNamedProcedureN {
+        public SetSyntaxColorProc(String[] names) {
+            super(names);
+        }
+
+        @Override
+        public Object apply2(Object arg1, Object arg2) throws Throwable {
+            SyntaxElement syntaxElement = Kawapad.getCurrent().getSyntaxHighlighter().getSyntaxElementList().get(
+                KawapadSyntaxElementType.schemeValueOf((Symbol)arg1));
+            syntaxElement.setForegroundColor((Color)arg2);
+            return Values.empty; 
+        }
+
+        @Override
+        public Object apply3(Object arg1, Object arg2, Object arg3) throws Throwable {
+            SyntaxElement syntaxElement = Kawapad.getCurrent().getSyntaxHighlighter().getSyntaxElementList().get(
+                KawapadSyntaxElementType.schemeValueOf((Symbol)arg1));
+            syntaxElement.setForegroundColor((Color)arg2);
+            syntaxElement.setBackgroundColor((Color)arg3);
+            return Values.empty; 
+        }
+
+        @Override
+        public Object applyN(Object[] args) throws Throwable {
+            WrongArguments.checkArgCount( this.getName() , 2, 3, args.length );
+            if ( args.length == 2 )
+                return apply2( args[0], args[1] );
+            else if ( args.length == 3 )
+                return apply3( args[0], args[1], args[2] );
+
+            throw new InternalError();
+        }
     }
 }
