@@ -21,7 +21,7 @@ public enum KawapadSyntaxElementType {
     STRING,
     LINE_COMMENT,
     BLOCK_COMMENT;
-    static KawapadSyntaxElementType schemeValueOf( Symbol symbol ) {
+    public static KawapadSyntaxElementType schemeValueOf( Symbol symbol ) {
         String str = SchemeUtils.schemeSymbolToJavaString( symbol ).toUpperCase().replaceAll( "-" , "_" );
         return valueOf( str );
     }

@@ -61,7 +61,6 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.plaf.FontUIResource;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
@@ -75,13 +74,6 @@ import javax.swing.text.Segment;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
-import gnu.lists.EmptyList;
-import gnu.lists.LList;
-import gnu.mapping.Environment;
-import gnu.mapping.Procedure;
-import gnu.mapping.Symbol;
-import gnu.mapping.Values;
-import gnu.mapping.WrongArguments;
 import kawa.standard.Scheme;
 import kawapad.KawapadSelection.ExpandParenthesisSelector;
 import kawapad.KawapadSelection.SearchNextWordTransformer;
@@ -92,20 +84,13 @@ import kawapad.lib.undomanagers.UndoManagers;
 import lamu.lib.CurrentObject;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.doc.ActionDocumentFormatter;
-import lamu.lib.doc.LamuDocument;
 import lamu.lib.log.Logger;
 import lamu.lib.log.SimpleConsole;
 import lamu.lib.scheme.EvaluatorReceiver;
 import lamu.lib.scheme.SchemeEngine;
 import lamu.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import lamu.lib.scheme.SchemeEvaluatorUtils;
-import lamu.lib.scheme.SchemePrinter;
 import lamu.lib.scheme.SchemeUtils;
-import lamu.lib.scheme.proc.MultipleNamedProcedure0;
-import lamu.lib.scheme.proc.MultipleNamedProcedure1;
-import lamu.lib.scheme.proc.MultipleNamedProcedure2;
-import lamu.lib.scheme.proc.MultipleNamedProcedure3;
-import lamu.lib.scheme.proc.MultipleNamedProcedureN;
 import lamu.lib.swing.AcceleratorKeyList;
 import lamu.lib.swing.Action2;
 import lamu.lib.swing.AutomatedActionField;
@@ -158,7 +143,6 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     
     ////////////////////////////////////////////////////////////////////////////
 
-    private static final String FLAG_DONE_INIT_PULSAR_SCRATCHPAD = "flag-done-init-pulsar-scratchpad";
     private static final boolean DEBUG_UNDO_BUFFER = true;
     static final boolean DEBUG = false;
     static final boolean DEBUG_PARENTHESIS = false;
@@ -391,7 +375,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     static SchemeEngineListener initSchemeListener = new SchemeEngineListener() {
         @Override
         public void execute( Scheme scheme ) {
-            Kawapad.initScheme( scheme );             
+            lamu.kawapad.initScheme( scheme );             
         }
     };
 
@@ -2822,240 +2806,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
 
     ////////////////////////////////////////////////////////////////////////////
     
-    public static void initScheme( Scheme scheme ) {
-        logInfo( "Kawapad#staticInitScheme" );
-        Environment env = scheme.getEnvironment();
-        
-        if ( ! SchemeUtils.isDefined(env, FLAG_DONE_INIT_PULSAR_SCRATCHPAD ) ) {
-            SchemeUtils.defineVar(env, true, FLAG_DONE_INIT_PULSAR_SCRATCHPAD );  
-
-            // ( canonical )
-            new LamuDocument(){{
-                setCategory( "kawapad-procedures" );
-                setNames( "about-intro"  );
-                setParameterDescription( "" );
-                setReturnValueDescription( "" );
-                setShortDescription( "Welcome to Kawapad!" );
-                setLongDescription( ""
-                                    + "Kawapad is a simple Lisp Scheme editor which can edit and execute Scheme code "
-                                    + "on the fly. Kawapad includes Java implementation of a powerful computer language Lisp Scheme. "
-                                    + " "
-                                    + "To show all available procedures, execute (help). \n"
-                                    + "To show help of a procedure, execute (help [procedure-name] ) . \n"
-                                    + "" 
-                                 );
-            }};
-            
-            SchemeUtils.defineVar(env, new ConsoleObject(), "console" );
-
-
-            SchemeUtils.defineLambda(env, new MultipleNamedProcedure0( "kawapad" ) {
-                @Override
-                public Object apply0() throws Throwable {
-                    return Kawapad.getCurrent();
-                }
-            });
-            
-            SchemeUtils.defineLambda(env, new MultipleNamedProcedure0( "kawapad-present?" ) {
-                @Override
-                public Object apply0() throws Throwable {
-                    return Kawapad.isPresent();
-                }
-            });
-
-            SchemeUtils.defineLambda(env, new MultipleNamedProcedure0("kawapad-frame" ) {
-                @Override
-                public Object apply0() throws Throwable {
-                    return KawapadFrame.getCurrent();
-                }
-            });
-
-            SchemeUtils.defineLambda(env, new MultipleNamedProcedure0("kawapad-frame-present?") {
-                @Override
-                public Object apply0() throws Throwable {
-                    return KawapadFrame.isPresent();
-                }
-            });
-
-            SchemeUtils.defineLambda(env, new MultipleNamedProcedure0("frame") {
-                @Override
-                public Object apply0() throws Throwable {
-                    return KawapadFrame.getCurrent();
-                }
-            });
-
-            SchemeUtils.defineLambda(env, new MultipleNamedProcedure0("frame-present?") {
-                @Override
-                public Object apply0() throws Throwable {
-                    return KawapadFrame.isPresent();
-                }
-            });
-            
-            SchemeUtils.defineLambda(env, new MultipleNamedProcedure3("register-event-handler") {
-                @Override
-                public Object apply3(Object arg1, Object arg2, Object arg3) throws Throwable {
-                    Kawapad.eventHandlers.register( (Symbol)arg1, (Symbol)arg2, (Procedure) arg3 );
-                    return EmptyList.emptyList;
-                }
-            });
-
-            SchemeUtils.defineLambda(env, new MultipleNamedProcedure2("unregister-event-handler") {
-                @Override
-                public Object apply2(Object arg1, Object arg2 ) throws Throwable {
-                    Kawapad.eventHandlers.unregister((Symbol)arg1,(Symbol)arg2 );
-                    return EmptyList.emptyList;
-                }
-            });
-
-            SchemeUtils.defineLambda(env, new MultipleNamedProcedure1( "prettify", "pre" ) {
-                @Override
-                public Object apply1(Object arg1 ) throws Throwable {
-                    return SchemeUtils.toSchemeString(   
-                            Kawapad.correctIndentation( getCurrent(), 
-                                SchemePrinter.printSchemeValue( arg1 )));
-                }
-            });
-            
-//            // deprecated?
-//            SchemeUtils.defineVar(env, new PulsarProcedure1() {
-//                @Override
-//                public Object apply1(Object arg1 ) throws Throwable {
-//                    return Kawapad.correctIndentation( getCurrent(), SchemeUtils.anyToString(arg1));
-//                }
-//            }, "prettify" );
-
-            KawapadTextualIncrement.initScheme( env );
-            
-            SchemeUtils.defineLambda( env, new MultipleNamedProcedure2("load-font") {
-                @Override
-                public Object apply2(Object arg1,Object arg2) throws Throwable {
-                    String filePath = SchemeUtils.anyToString( arg1 );
-                    float  fontSize = SchemeUtils.toFloat( arg2 );
-                    Font font = loadFont( filePath, fontSize );
-                    Kawapad kawapad = getCurrent();
-                    kawapad.setFont( font );
-                    return Values.empty;
-                }
-            } );
-
-            new LamuDocument(){{
-                setCategory( "kawapad-procedures" );
-                setNames( "load-font"  );
-                setParameterDescription( "" );
-                addParameter( 0, "file-size", "string", null , false, "Specifies the path to the font file. " );
-                addParameter( 0, "font-size", "number", null , false, "Specifies its font size. " );
-                setReturnValueDescription( "::void" );
-                setShortDescription( "Set the main font of the editor." );
-                setLongDescription( ""
-                        + "Kawapad can change its font-face. ||<name/>|| loads a file from the filesystem and "
-                        + "set it to the font-face of Kawapad. "
-                                    + "" 
-                                 );
-            }};
-
-            SchemeUtils.defineLambda( env, new MultipleNamedProcedure2("load-font-ui") {
-                @Override
-                public Object apply2(Object arg1,Object arg2) throws Throwable {
-                    String filePath = SchemeUtils.anyToString( arg1 );
-                    float  fontSize = SchemeUtils.toFloat( arg2 );
-                    Font font = loadFont( filePath, fontSize );
-                    setUIFont( new FontUIResource(font));
-                    return Values.empty;
-                }
-            });
-
-            new LamuDocument(){{
-                setNames( "load-font-ui" );
-                setParameterDescription( "" );
-                addParameter( 0, "file-size", "string", null , false, "Specifies the path to the font file. " );
-                addParameter( 0, "font-size", "number", null , false, "Specifies its font size. " );
-                setReturnValueDescription( "::void" );
-                setShortDescription( "Set the main font of the ui." );
-                setLongDescription( ""
-                        + "_<name/>_ loads a file from the specified file and "
-                        + "set it as the default font of the current ui. "
-                        + "" );
-            }};
-            
-            SchemeUtils.defineLambda(env, new MultipleNamedProcedureN("add-lisp-keyword") {
-                @Override
-                public Object applyN(Object[] args) throws Throwable {
-                    getCurrent().addAllLispKeywords( SchemeUtils.schemeStringListToJavaStringList( Arrays.asList( args )));
-                    return Values.empty;
-                }
-            } );
-            SchemeUtils.defineLambda(env, new MultipleNamedProcedureN( "delete-lisp-keyword" ) {
-                @Override
-                public Object applyN(Object[] args) throws Throwable {
-                    getCurrent().deleteAllLispKeywords( SchemeUtils.schemeStringListToJavaStringList( Arrays.asList( args )));
-                    return Values.empty;
-                }
-            } );
-            SchemeUtils.defineLambda(env, new MultipleNamedProcedureN("add-syntax-keyword") {
-                @Override
-                public Object applyN(Object[] args) throws Throwable {
-                    getCurrent().addAllLispKeywords( SchemeUtils.schemeStringListToJavaStringList( Arrays.asList( args )));
-                    return Values.empty;
-                }
-            } );
-            SchemeUtils.defineLambda(env, new MultipleNamedProcedureN( "delete-syntax-keyword" ) {
-                @Override
-                public Object applyN(Object[] args) throws Throwable {
-                    getCurrent().deleteAllLispKeywords( SchemeUtils.schemeStringListToJavaStringList( Arrays.asList( args )));
-                    return Values.empty;
-                }
-            } );
-            
-            SchemeUtils.defineLambda(env, new MultipleNamedProcedure1("get-syntax-keywords") {
-                @Override
-                public Object apply1(Object arg1) throws Throwable {
-                    return LList.makeList( SchemeUtils.javaStringListToSchemeSymbolList( getCurrent().lispKeywordList ) );
-                }
-            } );
-
-            SchemeUtils.defineLambda(env, new MultipleNamedProcedureN( "set-syntax-color" ) {
-                @Override
-                public Object apply2(Object arg1, Object arg2) throws Throwable {
-                    SyntaxElement syntaxElement = getCurrent().getSyntaxHighlighter().getSyntaxElementList().get(
-                        KawapadSyntaxElementType.schemeValueOf((Symbol)arg1));
-                    syntaxElement.setForegroundColor((Color)arg2);
-                    return Values.empty; 
-                }
-                @Override
-                public Object apply3(Object arg1, Object arg2, Object arg3) throws Throwable {
-                    SyntaxElement syntaxElement = getCurrent().getSyntaxHighlighter().getSyntaxElementList().get(
-                        KawapadSyntaxElementType.schemeValueOf((Symbol)arg1));
-                    syntaxElement.setForegroundColor((Color)arg2);
-                    syntaxElement.setBackgroundColor((Color)arg3);
-                    return Values.empty; 
-                }
-                @Override
-                public Object applyN(Object[] args) throws Throwable {
-                    WrongArguments.checkArgCount( this.getName() , 2, 3, args.length );
-                    if ( args.length == 2 )
-                        return apply2( args[0], args[1] );
-                    else if ( args.length == 3 )
-                        return apply3( args[0], args[1], args[2] );
-                    
-                    throw new InternalError();
-                }
-            });
-            SchemeUtils.defineLambda(env, new MultipleNamedProcedure0("pwd") {
-                @Override
-                public Object apply0() throws Throwable {
-                    return SchemeUtils.toSchemeString( getCurrent().getCurrentDirectory().toString() );
-                }
-            } );
-            SchemeUtils.defineLambda(env, new MultipleNamedProcedure0("current-file") {
-                @Override
-                public Object apply0() throws Throwable {
-                    return SchemeUtils.toSchemeString( getCurrent().getCurrentFile().toString() );
-                }
-            } );
-
-            SchemeEvaluatorUtils.executeExternalFile( scheme, null, "kawapad user extension", getExtFile() );
-        }
-    }
+    
     
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 

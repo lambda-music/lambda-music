@@ -26,14 +26,13 @@ import lamu.lib.swing.AcceleratorKeyList;
 import lamu.lib.swing.Action2;
 import lamu.lib.swing.MenuInitializer;
 
-class KawapadTextualIncrement implements MenuInitializer {
+public class KawapadTextualIncrement implements MenuInitializer {
     @Override
     public void initMenu( Map<String,JMenu> menuMap ) {
         JMenu edit = menuMap.get( "edit" );
         edit.add( TEXTUAL_INCREMENT_ACTION );
         edit.add( TEXTUAL_DECREMENT_ACTION );
     }
-
     
     public static void initScheme(Environment env) {
         SchemeUtils.defineLambda( env, new MultipleNamedProcedure2("add-incremental-keyword") {
@@ -61,6 +60,7 @@ class KawapadTextualIncrement implements MenuInitializer {
             }
         });
     }
+    
     public static final String TEXTUAL_INCREMENT = "textual-increment-action";
     public static final String TEXTUAL_DECREMENT = "textual-decrement-action";
     static class IncrementalSymbol {

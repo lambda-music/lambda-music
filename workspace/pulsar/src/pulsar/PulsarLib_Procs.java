@@ -1966,7 +1966,6 @@ public class PulsarLib_Procs {
     static{ init( luckProc , luckBean ); } 
 
 
-
     /**
      * Initializes an environment of scheme engine and defines API for the scripts.
      * 
