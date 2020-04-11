@@ -46,7 +46,6 @@ import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
-import lamu.lib.CurrentObject;
 import lamu.lib.Version;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.app.ApplicationVessel;
@@ -57,7 +56,6 @@ import lamu.lib.scheme.doc.old.DescriptiveDocumentCategory;
 import lamu.lib.scheme.doc.old.DescriptiveHelp;
 import lamu.lib.swing.AcceleratorKeyList;
 import lamu.lib.swing.Action2;
-import lamu.lib.thread.ThreadInitializer;
 import lamu.lib.thread.ThreadInitializerContainer;
 
 public class KawapadFrame extends JFrame implements ThreadInitializerContainer<KawapadFrame>, ApplicationComponent {
@@ -105,24 +103,6 @@ public class KawapadFrame extends JFrame implements ThreadInitializerContainer<K
         });
     }
 
-    //////////////////////////////////////////////////////////////////////////////////
-    //
-    //////////////////////////////////////////////////////////////////////////////////
-
-    private static final CurrentObject<KawapadFrame> currentObject = new CurrentObject<>( KawapadFrame.class );
-    private final ThreadInitializer<KawapadFrame> threadInitializer = 
-            ThreadInitializer.createMultipleThreadInitializer( "kawapad-frame", this, 
-                ThreadInitializer.createThreadInitializer( "current-kawapad-frame", currentObject, this ) );
-    @Override
-    public ThreadInitializer<KawapadFrame> getThreadInitializer() {
-        return threadInitializer;
-    }
-    public static KawapadFrame getCurrent() {
-        return currentObject.get();
-    }
-    public static boolean isPresent() {
-        return currentObject.isPresent();
-    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //

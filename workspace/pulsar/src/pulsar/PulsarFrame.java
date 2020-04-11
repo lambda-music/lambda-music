@@ -25,7 +25,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Insets;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -34,7 +33,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.logging.Level;
@@ -56,7 +54,6 @@ import javax.swing.JProgressBar;
 import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
-import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -74,9 +71,6 @@ import lamu.lib.scheme.SchemeEngine;
 import lamu.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import lamu.lib.scheme.SchemeResult;
 import lamu.lib.scheme.SchemeUtils;
-import lamu.lib.scheme.proc.MultipleNamedProcedure0;
-import lamu.lib.scheme.proc.MultipleNamedProcedure1;
-import lamu.lib.scheme.proc.MultipleNamedProcedureN;
 import lamu.lib.secretary.Invokable;
 import lamu.lib.swing.AcceleratorKeyList;
 import lamu.lib.swing.Action2;
@@ -92,15 +86,9 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     private static final boolean ENABLED_TEMPO_TITLE = false; // (Fri, 27 Sep 2019 12:18:01 +0900)
     
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
-    static void logError(String msg, Throwable e) {
-        LOGGER.log(Level.SEVERE, msg, e);
-    }
-    static void logInfo(String msg) {
-        LOGGER.log(Level.INFO, msg);
-    }
-    static void logWarn(String msg) {
-        LOGGER.log(Level.WARNING, msg);
-    }
+    static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+    static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
+    static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }
 
     /////////////////////////////////////////////////////
 
@@ -169,10 +157,6 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         }
     }
     
-    public static PulsarFrame getCurrent() {
-        return (PulsarFrame)KawapadFrame.getCurrent();
-    }
-
     //////////////////////////////////////////////////////////////////////////////////
     //
     //////////////////////////////////////////////////////////////////////////////////
@@ -203,6 +187,14 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         AcceleratorKeyList.processAcceleratorKeys( this.getRootPane() );
     }
 
+    /* 
+     * This may be deprecated in a near future date.
+     * (Sun, 12 Apr 2020 06:50:00 +0900)  
+     */
+    private final PulsarGui gui = new PulsarGui(this);
+    public PulsarGui getGui() {
+        return gui;
+    }
 
     Runnable timerHandle=null;
     private void initPulsarGui() {
@@ -308,19 +300,19 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     protected synchronized void setTempoDisplay( double bpm ) {
         if ( updatingTempoDisplay )
             return;
-        
+
         try {
             updatingTempoDisplay = true;
-            
+
             if ( ! updatingTempoDisplay_button && this.tapTempoButton != null ) {
-                
+
                 try {
                     this.tapTempoButton.setText( String.format( "Tempo=%.2f", bpm ) );
                 } catch ( Throwable t ) {
                     logError( "ignored", t );
                 }
             }
-            
+
             if ( ! updatingTempoDisplay_slider && this.sl_tempoSlider != null ) {
                 try {
                     this.sl_tempoSlider.setValue( (int)bpm );
@@ -333,203 +325,16 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         }
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    //
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     static void initScheme(Scheme scheme) {
         logInfo("PulsarGui#initScheme=======================================");
         //////////////////////////////////////////////////////
         Environment env = scheme.getEnvironment();
-        
-        SchemeUtils.defineLambda(env, new MultipleNamedProcedure0( "frame" ) {
-            @Override
-            public Object apply0() throws Throwable {
-                return PulsarFrame.getCurrent();
-            }
-        });
-
-        SchemeUtils.defineLambda(env, new MultipleNamedProcedure0( "pulsar-frame" ) {
-            @Override
-            public Object apply0() throws Throwable {
-                return PulsarFrame.getCurrent();
-            }
-        });
-
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN("gui-get-pane") {
-            // TODO ???
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                logInfo("gui-get-pane");
-                return getCurrent().userPane;
-            }
-        });
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN("gui-get-frame") {
-            // TODO ???
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                logInfo("gui-get-frame");
-                return getCurrent().frame;
-            }
-        });
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-set-progress-pos" ) {
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                if ( 0 < args.length ) {
-                    double value = SchemeUtils.toDouble(args[0]);
-                    getCurrent().pb_position.setValue((int) (value * PB_POSITION_MAX) );
-                }
-                return SchemeUtils.NO_RESULT;
-            }
-        });
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-clear" ) {
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                getCurrent().guiClear();
-                return SchemeUtils.NO_RESULT;
-            }
-        });
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-divider-location" ) {
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                ArrayList<Object> argList = new ArrayList<Object>( Arrays.asList( args ) );
-                if ( 1 == argList.size() ) {
-                    Object object = argList.get(0);
-                    if ( object instanceof JSplitPane ) {
-                        JSplitPane pane = (JSplitPane) object;
-                        return SchemeUtils.toSchemeNumber( pane.getDividerLocation() );
-                    } else {
-                        return SchemeUtils.toSchemeNumber( -1 );
-                    }
-                } else if ( 2 == argList.size() ) {
-                    Object object = argList.get(0);
-                    if ( object instanceof JSplitPane ) {
-                        JSplitPane pane = (JSplitPane) object;
-                        int location = SchemeUtils.toInteger( argList.get(1) );
-                        pane.setDividerLocation( location );
-                        pane.revalidate();
-                        return SchemeUtils.toSchemeNumber( pane.getDividerLocation() );
-                    } else {
-                        return SchemeUtils.toSchemeNumber( -1 );
-                    }
-
-                } else {
-                    throw new RuntimeException( 
-                            "Invalid argument error\n"+
-                            "usage : (gui-divider-location! [pane])" );
-                }
-            }
-        });
-
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-frame-height" ) {
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                PulsarFrame pulsarGui = getCurrent();
-                Dimension size = pulsarGui.frame.getSize();
-                if ( 0 == args.length ) {
-                    
-                } else {
-                    size.height = SchemeUtils.toInteger(args[0]);
-                    pulsarGui.frame.setSize(size);
-                    pulsarGui.frame.revalidate();
-                }
-                return SchemeUtils.toSchemeNumber( size.height );
-            }
-            
-        });
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-frame-width" ) {
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                PulsarFrame pulsarGui = getCurrent();
-                Dimension size = pulsarGui.frame.getSize();
-                if ( 0 == args.length ) {
-                    
-                } else {
-                    size.width = SchemeUtils.toInteger(args[0]);
-                    pulsarGui.frame.setSize(size);
-                    pulsarGui.frame.revalidate();
-                }
-                return SchemeUtils.toSchemeNumber( size.width );
-            }
-            
-        });
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-frame-left" ) {
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                PulsarFrame pulsarGui = getCurrent();
-                Point pos = pulsarGui.frame.getLocation();
-                if ( 0 == args.length ) {
-                } else {
-                    pos.x = SchemeUtils.toInteger(args[0]);
-                    pulsarGui.frame.setLocation( pos);
-                    pulsarGui.frame.revalidate();
-                }
-                return SchemeUtils.toSchemeNumber( pos.x );
-            }
-            
-        });
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-frame-top" ) {
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                PulsarFrame pulsarGui = getCurrent();
-                Point pos = pulsarGui.frame.getLocation();
-                if ( 0 == args.length ) {
-                } else {
-                    pos.y = SchemeUtils.toInteger(args[0]);
-                    pulsarGui.frame.setLocation( pos);
-                    pulsarGui.frame.revalidate();
-                }
-                return SchemeUtils.toSchemeNumber( pos.y );
-            }
-            
-        });
-
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-frame-divider-position" ) {
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                PulsarFrame pulsarGui = getCurrent();
-                ArrayList<Object> argList = new ArrayList<Object>( Arrays.asList( args ) );
-                if ( 0 == argList.size() ) {
-                    if ( pulsarGui.rootPane instanceof JSplitPane ) {
-                        JSplitPane pane = (JSplitPane) pulsarGui.rootPane;
-                        return SchemeUtils.toSchemeNumber( pane.getDividerLocation() );
-                    } else {
-                        return SchemeUtils.toSchemeNumber( -1 );
-                    }
-                } else if ( 1 == argList.size() ) {
-                    if ( pulsarGui.rootPane instanceof JSplitPane ) {
-                        JSplitPane pane = (JSplitPane) pulsarGui.rootPane;
-                        int location = SchemeUtils.toInteger( argList.get(0) );
-                        pane.setDividerLocation( location );
-                        pulsarGui.frame.revalidate();
-                        return SchemeUtils.toSchemeNumber( pane.getDividerLocation() );
-                    } else {
-                        return SchemeUtils.toSchemeNumber( -1 );
-                    }
-                } else {
-                    throw new RuntimeException( 
-                            "Invalid argument error\n"+
-                            "usage : (gui-panel-divider-position! [pane])" );
-                }
-            }
-        });
-
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-insert-text" ) {
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                StringBuilder sb = new StringBuilder();
-                for ( Object o : args ) {
-                    sb.append( o.toString() ).append( " " );
-                }
-                getCurrent().frame.getKawapad().insertText( sb.toString().trim() );
-                return SchemeUtils.NO_RESULT;
-            }
-        });
-
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedure1( "gui-set-tempo"  ) {
-            @Override
-            public Object apply1(Object arg1) throws Throwable {
-                getCurrent().setTempoDisplay( SchemeUtils.toDouble( arg1 ) );
-                return SchemeUtils.NO_RESULT;
-            }
-        });
     }
     
    
