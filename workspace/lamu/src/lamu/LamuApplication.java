@@ -16,7 +16,7 @@ import lamu.lib.Version;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.app.ApplicationVessel;
 import lamu.lib.log.Logger;
-import lamu.lib.scheme.doc.DescriptiveHelp;
+import lamu.lib.scheme.doc.old.DescriptiveHelp;
 import lamu.lib.scheme.repl.SimpleReplService;
 import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.StdioStream;

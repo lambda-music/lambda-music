@@ -25,7 +25,7 @@ import lamu.lib.scheme.RemoteEvaluator;
 import lamu.lib.scheme.SchemeEngine;
 import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.scheme.StreamEvaluator;
-import lamu.lib.scheme.doc.DescriptiveDocumentCategory;
+import lamu.lib.scheme.doc.old.DescriptiveDocumentCategory;
 import lamu.lib.scheme.repl.ReplServer;
 import lamu.lib.scheme.repl.SimpleReplService;
 import lamu.lib.scheme.socket.SchemeHttp;

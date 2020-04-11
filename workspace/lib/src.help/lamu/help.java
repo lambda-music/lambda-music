@@ -16,13 +16,27 @@ import lamu.lib.doc.LamuDocument;
 import lamu.lib.doc.LamuDocumentFormatterUtil;
 import lamu.lib.scheme.SchemeDocument;
 import lamu.lib.scheme.SchemeUtils;
-import lamu.lib.scheme.doc.DescriptiveHelp;
 import lamu.lib.scheme.proc.MultipleNamedProcedure1;
 import lamu.lib.scheme.proc.MultipleNamedProcedure2;
 import lamu.lib.scheme.proc.MultipleNamedProcedureN;
 
 public class help {
     private static final String NO_DOCUMENT_IS_AVAILABLE = "no-document-is-available";
+    
+    @SourceName( name = "print-value")
+    public static Procedure printValueProc = new PrintValueProc( "print-value" );
+    public static final class PrintValueProc extends Procedure1 {
+        public PrintValueProc(String name) {
+            super(name);
+        }
+        @Override
+        public Object apply1(Object arg1) throws Throwable {
+            return SchemeDocument.makeSchemeDocument( arg1 ); 
+        }
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////////////////
+    
     private static int helpTextWidth = 60;
     public static int getHelpTextWidth() {
         return helpTextWidth;
@@ -41,7 +55,9 @@ public class help {
         public Object apply1(Object arg1) throws Throwable {
             return SchemeDocument.makeSchemeDocument( 
                         SchemeUtils.toSchemeString( 
-                            LamuDocumentFormatterUtil.formatKawapad( SchemeUtils.anyToString(arg1), helpTextWidth ) )); 
+                            LamuDocumentFormatterUtil.formatKawapad( 
+                                SchemeUtils.anyToString(arg1), 
+                                helpTextWidth ) )); 
         }
     }
 
@@ -73,11 +89,12 @@ public class help {
                             + "" 
                             );
     }};
-    
-    @SourceName( name = "help")
-    public static final HelpProc helpProc = new HelpProc( "help" );
-    public static final class HelpProc extends MultipleNamedProcedure1 {
-        public HelpProc( String ... names ) {
+
+
+    @SourceName( name = "get-help")
+    public static final GetHelpProc getHelpProc = new GetHelpProc( "get-help" );
+    public static final class GetHelpProc extends MultipleNamedProcedure1 {
+        public GetHelpProc( String ... names ) {
             super( names );
         }
         @Override
@@ -91,7 +108,7 @@ public class help {
                     doc = LamuDocument.get( LamuDocument.createConditionByName( NO_DOCUMENT_IS_AVAILABLE )).get(0);
                 } else if ( 1 < documentList.size() ) {
                     doc = documentList.get(0);
-//                    throw new InternalError( "found duplicated documents" + documentList );
+                    // throw new InternalError( "found duplicated documents" + documentList );
                 } else {
                     doc = documentList.get(0);
                 }
@@ -99,11 +116,47 @@ public class help {
                 throw new IllegalArgumentException( "invalid argument error (" + arg1 + ")"  );
             }
 
-            return SchemeDocument.makeSchemeDocument(
-                SchemeUtils.toSchemeString(
-                    KawapadDocumentFormatter.getInstance().format( doc )));
+            return SchemeUtils.toSchemeString(
+                KawapadDocumentFormatter.getInstance().format( doc ));
         }
     }
+    @SourceName( name = "list-help")
+    public static final ListHelpProc listHelpProc = new ListHelpProc( "list-help" );
+    public static final class ListHelpProc extends MultipleNamedProcedure1 {
+        public ListHelpProc( String ... names ) {
+            super( names );
+        }
+        @Override
+        public Object apply1(Object arg1) throws Throwable {
+            List<LamuDocument> documentList = 
+                LamuDocument.get(
+                    LamuDocument.createConditionByCategory(
+                        SchemeUtils.anyToString(arg1)));
+            
+            List<String> list = new ArrayList<>();
+            for ( LamuDocument d : documentList ) {
+                list.add( d.getName() );
+            }
+            return LList.makeList( list );
+        }
+    }
+
+    
+    
+    @SourceName( name = "help")
+    public static final HelpProc helpProc = new HelpProc( "help" );
+    public static final class HelpProc extends MultipleNamedProcedureN {
+        public HelpProc( String ... names ) {
+            super( names );
+        }
+
+        @Override
+        public Object applyN(Object[] args) throws Throwable {
+            // TODO Auto-generated method stub
+            return null;
+        }
+    }
+    
     
     static final LamuDocument helpDoc =  new LamuDocument(){{
         setCategory( "help-procedures" );
@@ -296,7 +349,9 @@ public class help {
         }
         @Override
         public Object apply0() throws Throwable {
-            return this.apply1( DescriptiveHelp.DOCS.getSymbol() );
+            // TODO (Fri, 10 Apr 2020 06:20:17 +0900)
+            return Values.empty;
+//            return this.apply1( DescriptiveHelp.DOCS.getSymbol() );
         }
         @Override
         public Object apply1(Object arg1) throws Throwable {

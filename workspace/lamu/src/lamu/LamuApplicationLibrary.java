@@ -5,7 +5,7 @@ import java.io.IOException;
 import kawapad.Kawapad;
 import kawapad.KawapadFrame;
 import lamu.lib.scheme.SchemeEngine;
-import lamu.lib.scheme.doc.DescriptiveHelp;
+import lamu.lib.scheme.doc.old.DescriptiveHelp;
 import lamu.lib.scheme.socket.SchemeHttp;
 import lamu.lib.scheme.socket.SchemeHttp.UserAuthentication;
 import pulsar.Pulsar;

@@ -1,4 +1,4 @@
-package lamu.lib.scheme.doc;	
+package lamu.lib.scheme.doc.old;	
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -21,8 +21,6 @@ import gnu.mapping.Environment;
 import gnu.mapping.Symbol;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.SchemeUtils;
-import lamu.lib.scheme.doc.old.DescriptiveBean;
-import lamu.lib.scheme.doc.old.DescriptiveProcedure;
 
 /**
  * 
