@@ -56,9 +56,8 @@ import lamu.lib.scheme.doc.old.DescriptiveDocumentCategory;
 import lamu.lib.scheme.doc.old.DescriptiveHelp;
 import lamu.lib.swing.AcceleratorKeyList;
 import lamu.lib.swing.Action2;
-import lamu.lib.thread.ThreadInitializerContainer;
 
-public class KawapadFrame extends JFrame implements ThreadInitializerContainer<KawapadFrame>, ApplicationComponent {
+public class KawapadFrame extends JFrame implements ApplicationComponent {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 

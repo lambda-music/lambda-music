@@ -87,6 +87,7 @@ import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
 import lamu.lib.CurrentObject;
 import lamu.lib.app.ApplicationComponent;
+import lamu.lib.app.args.ArgumentParserDefault;
 import lamu.lib.doc.ActionDocumentFormatter;
 import lamu.lib.doc.LamuDocument;
 import lamu.lib.log.Logger;
@@ -248,9 +249,20 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     public ThreadInitializerCollection getThreadInitializerCollection() {
         return threadInitializerCollection;
     }
-    {
+
+    /**
+     * Don't let the automatic collector collect this initializer and add the primary initializer manually.
+     * For further information, see {@link ArgumentParserDefault#deploy }. 
+     */
+    void initializeTheThreadInitializer() {
+        // (Sun, 12 Apr 2020 13:54:16 +0900)
+        this.threadInitializer.setPublished(false);
+
         // See createIndependentThreadInitializer();
         this.getThreadInitializerCollection().addThreadInitializer( getThreadInitializer() );
+    }
+    {
+        initializeTheThreadInitializer();
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -3472,6 +3484,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
+    
     public final MultipleNamedProcedure1 prettifyProc = new PrettifyProc(new String[] { "prettify", "pre" });
     public final class PrettifyProc extends MultipleNamedProcedure1 {
         public PrettifyProc(String[] names) {
@@ -3481,7 +3494,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         @Override
         public Object apply1(Object arg1 ) throws Throwable {
             return SchemeUtils.toSchemeString(   
-                Kawapad.correctIndentation( Kawapad.getCurrent(), 
+                Kawapad.correctIndentation( Kawapad.this, 
                     SchemePrinter.printSchemeValue( arg1 )));
         }
     }
@@ -3519,7 +3532,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
             String filePath = SchemeUtils.anyToString( arg1 );
             float  fontSize = SchemeUtils.toFloat( arg2 );
             Font font = Kawapad.loadFont( filePath, fontSize );
-            Kawapad kawapad = Kawapad.getCurrent();
+            Kawapad kawapad = Kawapad.this;
             kawapad.setFont( font );
             return Values.empty;
         }
@@ -3570,15 +3583,15 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     // 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static final MultipleNamedProcedureN setSyntaxColorProc = new SetSyntaxColorProc(new String[] { "set-syntax-color" });
-    public static final class SetSyntaxColorProc extends MultipleNamedProcedureN {
+    public final MultipleNamedProcedureN setSyntaxColorProc = new SetSyntaxColorProc(new String[] { "set-syntax-color" });
+    public final class SetSyntaxColorProc extends MultipleNamedProcedureN {
         public SetSyntaxColorProc(String[] names) {
             super(names);
         }
 
         @Override
         public Object apply2(Object arg1, Object arg2) throws Throwable {
-            SyntaxElement syntaxElement = Kawapad.getCurrent().getSyntaxHighlighter().getSyntaxElementList().get(
+            SyntaxElement syntaxElement = Kawapad.this.getSyntaxHighlighter().getSyntaxElementList().get(
                 KawapadSyntaxElementType.schemeValueOf((Symbol)arg1));
             syntaxElement.setForegroundColor((Color)arg2);
             return Values.empty; 
@@ -3586,7 +3599,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
 
         @Override
         public Object apply3(Object arg1, Object arg2, Object arg3) throws Throwable {
-            SyntaxElement syntaxElement = Kawapad.getCurrent().getSyntaxHighlighter().getSyntaxElementList().get(
+            SyntaxElement syntaxElement = Kawapad.this.getSyntaxHighlighter().getSyntaxElementList().get(
                 KawapadSyntaxElementType.schemeValueOf((Symbol)arg1));
             syntaxElement.setForegroundColor((Color)arg2);
             syntaxElement.setBackgroundColor((Color)arg3);

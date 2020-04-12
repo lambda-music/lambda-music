@@ -17,6 +17,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 
 import gnu.mapping.Environment;
+import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.scheme.proc.MultipleNamedProcedure0;
@@ -34,31 +35,42 @@ public class KawapadTextualIncrement implements MenuInitializer {
         edit.add( TEXTUAL_DECREMENT_ACTION );
     }
     
-    public static void initScheme(Environment env) {
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedure2("add-incremental-keyword") {
+    KawapadTextualIncrement getCurrent() {
+        return KawapadTextualIncrement.this;
+    }
+    
+    /*
+     * This may be deprecated in a near future day.
+     * (Sun, 12 Apr 2020 09:42:41 +0900)
+     */
+    public void initScheme(Environment env) {
+        MultipleNamedProcedure2 addIncrementalKeyword = new MultipleNamedProcedure2("add-incremental-keyword") {
             @Override
             public Object apply2(Object arg1, Object arg2) throws Throwable {
-                Kawapad.getCurrent().getTextualIncrement().addIncrementalSymbol( 
+                getCurrent().addIncrementalSymbol( 
                     SchemeUtils.anyToString( arg1 ),
                     SchemeUtils.anyToString( arg2 ));
                 return Values.empty;
             }
-        });
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedure1("delete-incremental-keyword") {
+        };
+        SchemeUtils.defineLambda( env, addIncrementalKeyword);
+        MultipleNamedProcedure1 deleteIncrementalKeyword = new MultipleNamedProcedure1("delete-incremental-keyword") {
             @Override
             public Object apply1(Object arg1) throws Throwable {
-                Kawapad.getCurrent().getTextualIncrement().deleteIncrementalSymbol( 
+                getCurrent().deleteIncrementalSymbol( 
                     SchemeUtils.anyToString( arg1 ));
                 return Values.empty;
             }
-        });
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedure0("clear-incremental-keyword") {
+        };
+        SchemeUtils.defineLambda( env, deleteIncrementalKeyword);
+        MultipleNamedProcedure0 clearIncrementalKeyword = new MultipleNamedProcedure0("clear-incremental-keyword") {
             @Override
             public Object apply0() throws Throwable {
-                Kawapad.getCurrent().getTextualIncrement().clearIncrementalSymbol();
+                getCurrent().clearIncrementalSymbol();
                 return Values.empty;
             }
-        });
+        };
+        SchemeUtils.defineLambda( env, clearIncrementalKeyword);
     }
     
     public static final String TEXTUAL_INCREMENT = "textual-increment-action";
@@ -138,6 +150,9 @@ public class KawapadTextualIncrement implements MenuInitializer {
     public void addIncrementalSymbol( String from, String to ) {
         addIncrementalSymbol0( from, to );
     }
+    public void addIncrementalSymbol( Symbol from, Symbol to ) {
+        addIncrementalSymbol0( SchemeUtils.anyToString(from) , SchemeUtils.anyToString(to) );
+    }
     /**
      * 
      * @param from
@@ -145,12 +160,17 @@ public class KawapadTextualIncrement implements MenuInitializer {
     public void deleteIncrementalSymbol( String from ) {
         deleteIncrementalSymbol0( from );
     }
+    public void deleteIncrementalSymbol( Symbol from ) {
+        deleteIncrementalSymbol0( SchemeUtils.anyToString(from) );
+    }
     /**
      * 
      */
-    public void clearIncrementalSymbol( ) {
+    public void clearIncrementalSymbol() {
         clearIncrementalSymbol0();
     }
+    
+    
     
     static Pattern NUMBER_PATTERN = Pattern.compile( "[0-9\\/\\.\\-\\+]+" );
 

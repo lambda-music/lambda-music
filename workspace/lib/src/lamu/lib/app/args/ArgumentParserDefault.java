@@ -155,16 +155,19 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
     ArgumentParserElement currentArgumentParserElement = defaultArgumentParserElement;
     
 
-    private static void addInitializerContainer( Collection<ThreadInitializer> destination, Collection source ) {
+    private static void addInitializerContainer( Collection<ThreadInitializer> destination, Collection<Object> source ) {
         for ( Object o : source ) {
             if ( o instanceof ThreadInitializerContainer ) {
-                destination.add(((ThreadInitializerContainer)o).getThreadInitializer());
-                // Add the only first one.  (Fri, 20 Dec 2019 05:01:24 +0900)
-                break;
+                ThreadInitializer threadInitializer = ((ThreadInitializerContainer)o).getThreadInitializer();
+                if ( threadInitializer.isPublished() ) {
+                    destination.add(threadInitializer);
+                    // Add the only first one.  (Fri, 20 Dec 2019 05:01:24 +0900)
+                    break;
+                }
             }
         }
     }
-    private static void addInitializerCollectionContainer( Collection<ThreadInitializerCollection> destination, Collection source ) {
+    private static void addInitializerCollectionContainer( Collection<ThreadInitializerCollection> destination, Collection<Object> source ) {
         for ( Object o : source ) {
             if ( o instanceof ThreadInitializerCollectionContainer ) {
                 destination.add(((ThreadInitializerCollectionContainer)o).getThreadInitializerCollection());

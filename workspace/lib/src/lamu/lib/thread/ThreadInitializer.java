@@ -30,6 +30,9 @@ public interface ThreadInitializer<T> extends Runnable, ThreadInitializerOwner {
         if ( id.equals( "" ) ) throw new Error( "id should be specified." );
         return new MultipleThreadInitializer( id ,owner, Arrays.asList( initializers ) );
     }
+    
+    boolean isPublished();
+    void setPublished( boolean b );
 
 //    /**
 //     * If the thread initializer of an object should not be added automatically 
@@ -63,6 +66,15 @@ public interface ThreadInitializer<T> extends Runnable, ThreadInitializerOwner {
         @Override
         public String toString() {
             return "[Single:" + id + "]";
+        }
+        boolean published=true;
+        @Override
+        public boolean isPublished() {
+            return this.published;
+        }
+        @Override
+        public void setPublished(boolean b) {
+            this.published =b;
         }
     }
     final class MultipleThreadInitializer implements ThreadInitializer {
@@ -100,6 +112,15 @@ public interface ThreadInitializer<T> extends Runnable, ThreadInitializerOwner {
             if ( 0 < sb.length() )
                 sb.setLength( sb.length() -1 );
             return "[Multi:" + id + ":" + sb.toString() + "]";
+        }
+        boolean published=true;
+        @Override
+        public boolean isPublished() {
+            return this.published;
+        }
+        @Override
+        public void setPublished(boolean b) {
+            this.published =b;
         }
     }
 }

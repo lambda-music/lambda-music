@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.logging.Level;
 
 import kawapad.Kawapad;
+import kawapad.KawapadTextualIncrement;
 import lamu.lib.InstanceManager;
 import lamu.lib.Version;
 import lamu.lib.app.ApplicationComponent;
@@ -88,6 +89,7 @@ public class LamuApplication {
 
         // See those static blocks.
         forceLoad(Kawapad.class);
+        forceLoad(KawapadTextualIncrement.class);
         forceLoad(Pulsar.class);
         forceLoad(PulsarLib_Procs.class);
     }
