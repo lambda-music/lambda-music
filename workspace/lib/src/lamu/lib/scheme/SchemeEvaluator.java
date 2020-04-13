@@ -3,18 +3,14 @@ package lamu.lib.scheme;
 import java.io.File;
 import java.io.Reader;
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 
 import gnu.expr.Language;
 import gnu.mapping.Environment;
 import kawa.standard.Scheme;
-import kawa.standard.load;
 import lamu.lib.CurrentObject;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.log.Logger;
-import lamu.lib.scheme.proc.MultipleNamedProcedure0;
 import lamu.lib.thread.ThreadInitializer;
 import lamu.lib.thread.ThreadInitializerCollection;
 import lamu.lib.thread.ThreadInitializerContainer;
@@ -29,19 +25,16 @@ public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluat
         public abstract void execute( Scheme scheme );
     }
     
-    Scheme scheme=null;
-    String name=null;
+    final Scheme scheme;
+    final String name;
     public SchemeEvaluator() {
-        this.scheme = null;
+        this.scheme = new Scheme();
         this.name = "local";
     }
+    @Deprecated
     public SchemeEvaluator( Scheme scheme ) {
         this.scheme = scheme;
         this.name = "local";
-    }
-    public SchemeEvaluator( Scheme scheme, String name ) {
-        this.scheme = scheme;
-        this.name = name;
     }
     
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -98,7 +91,6 @@ public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluat
 
     @Override
     public void processInit() {
-        this.newScheme();
     }
     @Override
     public void processQuit() {
@@ -114,92 +106,6 @@ public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluat
     public static final void initializeCurrentThread( Scheme scheme ) {
         Language.setCurrentLanguage( scheme );
         Environment.setCurrent( scheme.getEnvironment() );
-    }
-
-    //////////////////////////////////////////////////////////////////////////////////////////
-    // Scheme Initializer 
-    //////////////////////////////////////////////////////////////////////////////////////////
-    
-    private List<SchemeEngineListener> schemeInitializerList = new ArrayList<>();
-    public List<SchemeEngineListener> getSchemeInitializerList() {
-        return schemeInitializerList;
-    }
-
-    /**
-     * This method registers a specified initializer.
-     * @see #invokeSchemeInitializers()
-     */
-    public void registerSchemeInitializer( SchemeEngineListener schemeEngineListener ) {
-        this.getSchemeInitializerList().add( schemeEngineListener  );
-    }
-
-    {
-        registerSchemeInitializer( new SchemeEngineListener() {
-            @Override
-            public void execute(Scheme scheme) {
-                // 3. This initializes Secretary Message Queue's thread.
-                // // 4. (in most case ) this initializes main-thread
-                SchemeEvaluator.initializeCurrentThread( scheme );
-            }
-        });
-        registerSchemeInitializer( new SchemeEngineListener() {
-            @Override
-            public void execute(Scheme scheme) {
-                SchemeEvaluator.initScheme( scheme );
-            }
-        });
-    }
-    
-    private void invokeSchemeInitializers() {
-        for ( SchemeEngineListener e : getSchemeInitializerList() ) {
-            e.execute( this.scheme );
-        }
-    }
-
-    private void newSchemeProc() {
-        logInfo( "SchemeSecretary#newScheme()" );
-        this.scheme = new Scheme();
-    }
-
-    public void newScheme() {
-        try {
-            // 1. Create a new scheme object.
-            newSchemeProc();
-            
-            // 2. Execute all the initializers.
-            invokeSchemeInitializers();
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }
-    
-    /**
-     * "loadRelative" was moved from 
-     * {@link SchemeEvaluatorImplementation#evaluateScheme(Scheme, Runnable, Reader, File, File, String)}  
-     */
-    public static void initScheme( Scheme scheme ) {
-        Environment env = scheme.getEnvironment();
-        SchemeUtils.defineVar(env, load.loadRelative , "source" );
-        SchemeUtils.defineLambda(env, new MultipleNamedProcedure0( "current-scheme" ) {
-            @Override
-            public Object apply0() throws Throwable {
-                return Language.getDefaultLanguage();
-            }
-        });
-        SchemeUtils.defineLambda(env, new MultipleNamedProcedure0( "current-environment" ) {
-            @Override
-            public Object apply0() throws Throwable {
-                return Language.getDefaultLanguage();
-            }
-        });
-
-//        SchemeUtils.defineVar(env, new Procedure0() {
-//            @Override
-//            public Object apply0() throws Throwable {
-//                SchemeUtils.getAllKey( (Scheme)Language.getDefaultLanguage() );
-//                return 
-//            }
-//        }, "get-all-identifiers" );
     }
 
     @Override
@@ -219,10 +125,6 @@ public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluat
             currentURI );
     }
     
-    @Override
-    public void reset() {
-        this.newScheme();
-    }
     @Override
     public String toString() {
         return this.name;

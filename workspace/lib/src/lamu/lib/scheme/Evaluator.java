@@ -40,9 +40,6 @@ public interface Evaluator {
             File currentFile,
             String currentURI );
 
-    abstract void reset();
-
-    
     default SchemeResult evaluate( 
             Runnable threadInitializer, 
             String schemeScriptString, 

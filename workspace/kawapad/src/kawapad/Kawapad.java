@@ -94,7 +94,6 @@ import lamu.lib.log.Logger;
 import lamu.lib.log.SimpleConsole;
 import lamu.lib.scheme.EvaluatorReceiver;
 import lamu.lib.scheme.SchemeEngine;
-import lamu.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import lamu.lib.scheme.SchemeEvaluatorUtils;
 import lamu.lib.scheme.SchemePrinter;
 import lamu.lib.scheme.SchemeResult;
@@ -207,7 +206,9 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     ////////////////////////////////////////////////////////////////////////////
 
     Kawapad kawapad=this;
+    @Deprecated
     String instanceID = newUniqueID();
+    @Deprecated
     public String getInstanceID() {
         return instanceID;
     }
@@ -274,21 +275,10 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         return schemeEngine;
     }
 
-    final SchemeEngineListener variableInitializer01 = new SchemeEngineListener() {
-        @Override
-        public void execute( Scheme scheme ) {
-            SchemeUtils.putVar( scheme.getEnvironment(), instanceID, Kawapad.this );
-        }
-    };
-
-    ////////////////////////////////////////////////////////////////////////////
-    
     static ArrayList<Kawapad> kawapadList = new ArrayList<>();
     public Kawapad( SchemeEngine schemeEngine ) {
         super();
         this.schemeEngine = schemeEngine;
-        // Added (Mon, 23 Dec 2019 02:11:34 +0900)      
-        this.schemeEngine.getEvaluatorManager().getPrimaryEvaluator().registerSchemeInitializer( variableInitializer01 );
         
         // init font
         // kawapad.setFont( new Font("monospaced", Font.PLAIN, 12));
@@ -1165,30 +1155,6 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    private static final String KAWAPAD_RESET = "kawapad-reset";
-
-    // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
-    @AutomatedActionField
-    public final Action RESET_ACTION = new ResetAction( KAWAPAD_RESET );
-    private final class ResetAction extends TextAction2 {
-        public ResetAction(String name) {
-            super( name );
-        }
-        @Override
-        public void actionPerformed(ActionEvent e) {
-//            kawapad. getSchemeEngine().getSchemeEvaluator().reset();
-            kawapad.getSchemeEngine().getEvaluatorManager().getCurrentEvaluator().reset();
-        }
-        {
-            putValue( Action2.CAPTION, "Reset the Environment" );
-            putValue( Action.MNEMONIC_KEY, (int)'s' );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl alt shift BACK_QUOTE" );
-//              putValue( Action.ACCELERATOR_KEY , AcceleratorKeyList.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK) );
-        }
-    }
-    
-    
-    //////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * getSelectedText()
@@ -3351,8 +3317,6 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         scheme.add( new JMenuItem( kawapad.EVALUATE_ACTION ) );
         scheme.add( new JMenuItem( kawapad.RUN_ACTION ) );
         scheme.add( new JMenuItem( kawapad.INTERRUPT_ACTION ) );
-        scheme.addSeparator();
-        scheme.add( new JMenuItem( kawapad.RESET_ACTION ) );
         
 //        editMenuItem.add( new JMenuItem( kawapad.UNDO_ACTION ) );
         edit.add( new JMenuItem( kawapad.REDO_ACTION ) );

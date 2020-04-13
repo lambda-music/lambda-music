@@ -37,12 +37,9 @@ import org.jaudiolibs.jnajack.JackException;
 
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
-import kawa.standard.Scheme;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.InvokableSchemeProcedure;
-import lamu.lib.scheme.SchemeEngine;
-import lamu.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.secretary.Invokable;
 import metro.EventListenable;
@@ -116,16 +113,6 @@ public class Pulsar extends Metro implements PulsarLib, PulsarLibDelegator, Appl
         return "could not find a track which name was " + arg + " ... ignored.";
     }
 
-    public static void registerSchemeInitializers( SchemeEngine schemeEngine ) {
-        schemeEngine.getEvaluatorManager().getPrimaryEvaluator().registerSchemeInitializer( new SchemeEngineListener() {
-            @Override
-            public void execute( Scheme scheme ) {
-//                removed (Thu, 09 Apr 2020 13:24:16 +0900) 
-//                PulsarLib.initScheme( scheme.getEnvironment() );
-            }
-        });
-    }
-    
     public static final String DOCS_ID = "pulsar-procedures";
 
     static {

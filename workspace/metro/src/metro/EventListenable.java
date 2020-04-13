@@ -1,6 +1,8 @@
 package metro;
 
 
+import static metro.EventListenable.logError;
+
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Iterator;

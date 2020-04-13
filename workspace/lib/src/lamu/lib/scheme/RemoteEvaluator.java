@@ -39,10 +39,8 @@ public class RemoteEvaluator implements Evaluator, NameCaptionHolder {
         }
     }
     private String urlEval;
-    private String urlReset;
     public RemoteEvaluator( String url ) {
         this.urlEval  = url + SchemeHttp.PATH_EVAL;
-        this.urlReset = url + SchemeHttp.PATH_RESET;
     }
     
 
@@ -66,16 +64,6 @@ public class RemoteEvaluator implements Evaluator, NameCaptionHolder {
             return SchemeResult.createSucceededByString( result );
         } catch (IOException e) {
             return SchemeResult.createError( e );
-        }
-    }
-    
-    @Override
-    public void reset() {
-        try {
-            String result = httpRequest( urlReset, "reset\n" );
-            Evaluator.logInfo( "RemoteEvaluator.reset() :" +  result );
-        } catch (IOException e) {
-            Evaluator.logError( "RemoteEvaluator.reset() error :" , e  );
         }
     }
     

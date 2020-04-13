@@ -4,22 +4,14 @@ import java.io.IOException;
 
 import kawapad.KawapadFrame;
 import lamu.lib.scheme.SchemeEngine;
-import lamu.lib.scheme.doc.old.DescriptiveHelp;
 import lamu.lib.scheme.socket.SchemeHttp;
 import lamu.lib.scheme.socket.SchemeHttp.UserAuthentication;
 import pulsar.Pulsar;
 import pulsar.PulsarFrame;
 
 public class LamuApplicationLibrary {
-    public static void initializeSchemeEngine( SchemeEngine schemeEngine ) {
-        // pulsar
-        DescriptiveHelp.registerGlobalSchemeInitializer( schemeEngine );
-        Pulsar.registerSchemeInitializers( schemeEngine );
-    }
-
     public static SchemeEngine createSchemeEngine() {
         SchemeEngine schemeEngine = new SchemeEngine();
-        initializeSchemeEngine( schemeEngine );
         return schemeEngine;
     }
 

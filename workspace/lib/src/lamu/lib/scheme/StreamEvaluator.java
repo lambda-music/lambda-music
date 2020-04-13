@@ -83,11 +83,6 @@ public class StreamEvaluator implements ServicingEvaluator, NameCaptionHolder {
             throw new RuntimeException( "" );
         }
     }
-
-    @Override
-    public void reset() {
-        replClient.reset();
-    }
     
     private static String readAllSchemeScript( Reader schemeScript ) throws IOException {
         try ( StringWriter w = new StringWriter();    

@@ -495,10 +495,8 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         @Override
         public ArgumentParserElement create() {
             return new ArgumentParserElement() {
-                SchemeEngine schemeEngine = new SchemeEngine();
-                {
-                    LamuApplicationLibrary.initializeSchemeEngine( schemeEngine );
-                }
+                // TODO This is highly questionable. (Mon, 13 Apr 2020 10:44:59 +0900)
+                SchemeEngine schemeEngine = LamuApplicationLibrary.createSchemeEngine();
                 
                 Evaluator createRemoteHttp( String url ) {
                     return new RemoteEvaluator( url );

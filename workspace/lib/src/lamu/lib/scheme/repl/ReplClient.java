@@ -68,10 +68,6 @@ public class ReplClient extends ReplClientServer {
         
         receiver.postMessage( message );
     }
-    public void reset() {
-        // TODO
-    }
-    
     public String createSession() {
         return String.format( "session-%08x", random.nextInt() );
     }

@@ -53,7 +53,6 @@ import lamu.lib.log.LogFormatter;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.SchemeEngine;
 import lamu.lib.scheme.doc.old.DescriptiveDocumentCategory;
-import lamu.lib.scheme.doc.old.DescriptiveHelp;
 import lamu.lib.swing.AcceleratorKeyList;
 import lamu.lib.swing.Action2;
 
@@ -63,10 +62,6 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
     
-    public String getFrameName() {
-        return this.kawapad.getInstanceID();
-    }
-
     //////////////////////////////////////////////////////////////////////////////////
     //
     //////////////////////////////////////////////////////////////////////////////////
@@ -334,8 +329,6 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
     
     public static KawapadFrame createStaticInstance( ) {
         SchemeEngine schemeEngine = new SchemeEngine();
-        DescriptiveHelp.registerGlobalSchemeInitializer( schemeEngine );
-        schemeEngine.getEvaluatorManager().getPrimaryEvaluator().newScheme();
         KawapadFrame kawapadFrame = new KawapadFrame( schemeEngine, true, "Scheme Scratch Pad" );
         ApplicationVessel v = new ApplicationVessel("KawapadVessel");
         v.add( kawapadFrame );

@@ -5,14 +5,10 @@ import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.logging.Level;
 
-import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
-import kawa.standard.Scheme;
 import lamu.lib.CurrentObject;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.log.Logger;
-import lamu.lib.scheme.SchemeEvaluator.SchemeEngineListener;
-import lamu.lib.scheme.proc.MultipleNamedProcedure0;
 import lamu.lib.scheme.proc.MultipleNamedProcedure1;
 import lamu.lib.scheme.proc.MultipleNamedProcedure2;
 import lamu.lib.thread.ThreadInitializer;
@@ -61,12 +57,7 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
     //////////////////////////////////////////////////////////////////////////////////////////
 
     public SchemeEngine() {
-        SchemeEngine.registerSchemeInitializer( this );
     }
-    
-    //////////////////////////////////////////////////////////////////////////////////////////
-    //
-    //////////////////////////////////////////////////////////////////////////////////////////
     
     private static final CurrentObject<SchemeEngine> currentObject = new CurrentObject<>( SchemeEngine.class );
     private final ThreadInitializer<SchemeEngine> threadInitializer =
@@ -128,39 +119,5 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
             currentDirectory,
             currentFile, 
             currentURI );
-    }
-    
-    public static void registerSchemeInitializer( SchemeEngine engine ) {
-        engine.getEvaluatorManager().getPrimaryEvaluator().registerSchemeInitializer( initSchemeListener );
-    }
-    private static SchemeEngineListener initSchemeListener = new SchemeEngineListener() {
-        @Override
-        public void execute(Scheme scheme) {
-            initScheme( scheme );
-        }
-    };
-    static void initScheme( Scheme scheme ) {
-        Environment env = scheme.getEnvironment();
-        SchemeUtils.defineLambda(env, new MultipleNamedProcedure0( "scheme-engine" ) {
-            @Override
-            public Object apply0() throws Throwable {
-                return SchemeEngine.getCurrent();
-            }
-        }  );
-        SchemeUtils.defineLambda(env, new MultipleNamedProcedure0( "scheme-engine-present?" ) {
-            @Override
-            public Object apply0() throws Throwable {
-                return SchemeEngine.isPresent();
-            }
-        } );
-
-//        Environment env = scheme.getEnvironment();
-//        SchemeUtils.defineVar(env, new Procedure0() {
-//            @Override
-//            public Object apply0() throws Throwable {
-//                getCurrent().getSchemeEvaluator().newScheme();
-//                return true;
-//            }
-//        }, "reset-scheme" );
     }
 }

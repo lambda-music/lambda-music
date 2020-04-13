@@ -14,12 +14,9 @@ import gnu.mapping.SimpleSymbol;
 import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import gnu.mapping.WrongArguments;
-import kawa.standard.Scheme;
 import lamu.lib.doc.LamuDocument;
 import lamu.lib.doc.LamuDocumentFormatterUtil;
 import lamu.lib.scheme.SchemeDocument;
-import lamu.lib.scheme.SchemeEngine;
-import lamu.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.scheme.proc.MultipleNamedProcedure2;
 import lamu.lib.scheme.proc.MultipleNamedProcedureN;
@@ -32,21 +29,6 @@ public class DescriptiveHelp {
 		            DescriptiveHelp.initScheme( Environment.getCurrent() );            
 				}
 			});
-    /**
-     * This initializes variables which do not need to refer the reference to the
-     * current frame. This initializer does not have to be removed even if  
-     * frames are disposed.
-     */
-    public static void registerGlobalSchemeInitializer( SchemeEngine schemeEngine ) {
-        schemeEngine.getEvaluatorManager().getPrimaryEvaluator().registerSchemeInitializer( initSchemeListener );
-    }
-
-    static SchemeEngineListener initSchemeListener = new SchemeEngineListener() {
-        @Override
-        public void execute( Scheme scheme ) {
-            DescriptiveHelp.initScheme( scheme.getEnvironment() );            
-        }
-    };
 
     /**
      * 
