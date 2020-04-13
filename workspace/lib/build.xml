@@ -18,25 +18,36 @@
         <pathelement location="lib/jna-platform-4.5.0.jar"/>
         <pathelement location="lib/jnajack-1.3.0.jar"/>
         <pathelement location="lib/kawa.jar"/>
-        <pathelement location="lib/JTattoo-1.6.11.jar"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src">
-                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src.scheme-evaluators">
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src.scheme">
-                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src.help">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src.action-help">
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src.gui-utils">
-                <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
@@ -51,9 +62,42 @@
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
             <src path="src"/>
+            <src path="src.scheme-evaluators"/>
             <src path="src.scheme"/>
+            <src path="src.help"/>
+            <src path="src.action-help"/>
             <src path="src.gui-utils"/>
             <classpath refid="lib.classpath"/>
         </javac>
+    </target>
+    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects">
+        <ant antfile="build.xml" dir="${kawapad.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${kawapad.location}" inheritAll="false" target="build"/>
+        <ant antfile="build.xml" dir="${lamu.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${lamu.location}" inheritAll="false" target="build"/>
+        <ant antfile="build.xml" dir="${metro.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${metro.location}" inheritAll="false" target="build"/>
+        <ant antfile="build.xml" dir="${pulsar.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${pulsar.location}" inheritAll="false" target="build"/>
+    </target>
+    <target name="ReplClient">
+        <java classname="lamu.lib.scheme.repl.ReplClient" failonerror="true" fork="yes">
+            <classpath refid="lib.classpath"/>
+        </java>
+    </target>
+    <target name="SchemeUtils">
+        <java classname="lamu.lib.scheme.SchemeUtils" failonerror="true" fork="yes">
+            <classpath refid="lib.classpath"/>
+        </java>
+    </target>
+    <target name="ForkedProcess">
+        <java classname="lamu.lib.app.process.ForkedProcess" failonerror="true" fork="yes">
+            <classpath refid="lib.classpath"/>
+        </java>
+    </target>
+    <target name="ReplServer">
+        <java classname="lamu.lib.scheme.repl.ReplServer" failonerror="true" fork="yes">
+            <classpath refid="lib.classpath"/>
+        </java>
     </target>
 </project>

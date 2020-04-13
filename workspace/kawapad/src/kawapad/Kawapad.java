@@ -2716,7 +2716,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
      * classes. 
      */
     static {
-        SchemeEvaluatorUtils.executeExternalFile( new Scheme(), null,  "kawapad initialization", getInitFile() );
+        SchemeEvaluatorUtils.executeExternalFile( null, "kawapad initialization",  getInitFile() );
     }
 
     public static class ConsoleObject {
@@ -3487,6 +3487,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public static final LamuDocument loadFontUIDoc = new LamuDocument(){{
+        setCategory( "kawapad-procedures" );
         setNames( "load-font-ui" );
         setParameterDescription( "" );
         addParameter( 0, "file-size", "string", null , false, "Specifies the path to the font file. " );

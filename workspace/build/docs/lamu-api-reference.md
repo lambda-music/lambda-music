@@ -15,6 +15,123 @@ PULSAR
 
 --------------------------------------------------------
 
+GET-TRACK-POSITION
+====================
+
+#### SYNOPSIS ####
+    (get-track-position|gettp)::void
+
+### DESCRIPTION ###
+||get-track-position|| gets the current position of the given track.
+
+
+
+--------------------------------------------------------
+
+PRINT-STACK-TRACE
+====================
+
+#### SYNOPSIS ####
+    (print-stack-trace)::void
+
+### DESCRIPTION ###
+||print-stack-trace|| returns the current stack trace as a string.
+
+
+
+--------------------------------------------------------
+
+DISPLAY-WARN
+====================
+
+#### SYNOPSIS ####
+    (display-warn value::any)::void
+
+### DESCRIPTION ###
+||display-warn|| output the specified value to the standard error stream.
+
+
+
+--------------------------------------------------------
+
+NEWLINE-WARN
+====================
+
+#### SYNOPSIS ####
+    (newline-warn)::void
+
+### DESCRIPTION ###
+||newline-warn|| output a line terminator to the standard error stream.
+
+
+
+--------------------------------------------------------
+
+TYPEOF
+====================
+
+#### SYNOPSIS ####
+    (typeof value::any)::string
+
+### DESCRIPTION ###
+||typeof|| returns a Java class name of the specified value. In case the
+specified value is a ||null|| of Java, this procedure returns "null" as a string value.
+
+
+
+--------------------------------------------------------
+
+MAKE-TIMER
+====================
+
+#### SYNOPSIS ####
+    (make-timer delay::number interval::number callback::procedure)::procedure
+
+### DESCRIPTION ###
+||make-timer|| creates a new timer object. This procedure registers the
+specified procedure as a callback procedure of the timer; the procedure will be called
+with the specified period and with the specified delay. The return value is a cancel
+procedure. When the cancel procedure is called, the timer stops calling the callback
+procedure.
+
+
+
+--------------------------------------------------------
+
+RANDOM
+====================
+
+#### SYNOPSIS ####
+    (random|rnd [range::number=1])::number
+
+### DESCRIPTION ###
+||random|| generates a random number. This procedure adopts Mersenne Twister a
+random number generating algorithm. If an argument \[range\] is specified, the return
+value will be within 0<= x <\[range\]. If the argument is omitted, the range value
+defaults to 1.
+
+
+
+--------------------------------------------------------
+
+LUCK
+====================
+
+#### SYNOPSIS ####
+    (luck [probability::number=0.5])::boolean
+
+### DESCRIPTION ###
+||luck|| is a procedure that returns a random boolean value. The first
+argument is the value of probability where the larger value causes the more probability
+of returning \#t. When the specified value is equals or less than zero, the
+returning value is always \#f. When the specified value is equals or larger than one the
+returning value is always \#t. The only parameter can be omitted and in that case the
+default value one is applied.
+
+
+
+--------------------------------------------------------
+
 OPEN?
 ====================
 
@@ -62,36 +179,17 @@ procedure alters the current sequencer system's state.
 
 --------------------------------------------------------
 
-OPEN-OUTPUT
+NO-NAME([]
 ====================
 
 #### SYNOPSIS ####
-    (open-output|openo [port-name::any|(list any ...)]...)::MetroPort
+    ( [port-name::any|(list any ...)]...)::MetroPort
 
 ### DESCRIPTION ###
-opens output ports on the current JACK connection. Each argument is the name
-of a port to create. The value can be a value of any type; thought, it is usually
-a value which is easy to be distinguished such as a symbol value or a string
-value. The value is applied as the identifier of the created port. A duplicated port
-name on the current JACK connection causes an exception to be thrown. In case the
-current sequencer system has not established any connection to the JACK, it throws an
-exception. This procedure alters the current sequencer system's state.
-
-
-
---------------------------------------------------------
-
-OPEN-INPUT
-====================
-
-#### SYNOPSIS ####
-    (open-input|openi [port-name::any|(list any ...)]...)::MetroPort
-
-### DESCRIPTION ###
-opens input ports on the current JACK connection. Each argument is the name of
-a port to create. The value can be a value of any type; thought, it is usually a
-value which is easy to be distinguished such as a symbol value or a string value. The
-value is applied as the identifier of the created port. A duplicated port name on the
+opens %s ports on the current JACK connection. Each argument is the name of a
+port to create. The value can be a value of any type; thought, it is usually a value
+which is easy to be distinguished such as a symbol value or a string value. The value
+is applied as the identifier of the created port. A duplicated port name on the
 current JACK connection causes an exception to be thrown. In case the current sequencer
 system has not established any connection to the JACK, it throws an exception. This
 procedure alters the current sequencer system's state.
@@ -100,15 +198,15 @@ procedure alters the current sequencer system's state.
 
 --------------------------------------------------------
 
-CLOSE-OUTPUT
+NO-NAME([]
 ====================
 
 #### SYNOPSIS ####
-    (close-output|closeo [port::MetroPort|symbol|string|(list MetroPort|symbol|string ...)]...)::void
+    ( [port::MetroPort|symbol|string|(list MetroPort|symbol|string ...)]...)::void
 
 ### DESCRIPTION ###
-closes the specified output ports on the current JACK connection. Each
-argument is a reference to a MetroPort object to close. A value which is other than a
+closes the specified %s ports on the current JACK connection. Each argument is
+a reference to a MetroPort object to close. A value which is other than a
 reference to a MetroPort object is treated as an identifier of a MetroPort object and
 automatically replaced with a reference value to the corresponding MetroPort object. The
 value is applied as the identifier of the created port. A duplicated port name on the
@@ -120,34 +218,14 @@ procedure alters the current sequencer system's state.
 
 --------------------------------------------------------
 
-CLOSE-INPUT
+NO-NAME([]
 ====================
 
 #### SYNOPSIS ####
-    (close-input|closei [port::MetroPort|symbol|string|(list MetroPort|symbol|string ...)]...)::void
+    ()::(list MetroPort ...)
 
 ### DESCRIPTION ###
-closes the specified input ports on the current JACK connection. Each argument
-is a reference to a MetroPort object to close. A value which is other than a
-reference to a MetroPort object is treated as an identifier of a MetroPort object and
-automatically replaced with a reference value to the corresponding MetroPort object. The
-value is applied as the identifier of the created port. A duplicated port name on the
-current JACK connection causes an exception to be thrown. In case the current sequencer
-system has not established any connection to the JACK, it throws an exception. This
-procedure alters the current sequencer system's state.
-
-
-
---------------------------------------------------------
-
-LIST-OUTPUT
-====================
-
-#### SYNOPSIS ####
-    (list-output|lso)::(list MetroPort ...)
-
-### DESCRIPTION ###
-returns a list which contains all output ports on the current JACK connection.
+returns a list which contains all %s ports on the current JACK connection.
 Each element on the list is a reference to a MetroPort object. The values in the
 list are sorted from newest to oldest. In case the current sequencer system has not
 established any connection to the JACK, it throws an exception.
@@ -156,35 +234,18 @@ established any connection to the JACK, it throws an exception.
 
 --------------------------------------------------------
 
-LIST-INPUT
+NO-NAME([]
 ====================
 
 #### SYNOPSIS ####
-    (list-input|lsi)::(list MetroPort ...)
+    ( [from::string]... [to::string]...)::void
 
 ### DESCRIPTION ###
-returns a list which contains all input ports on the current JACK connection.
-Each element on the list is a reference to a MetroPort object. The values in the
-list are sorted from newest to oldest. In case the current sequencer system has not
-established any connection to the JACK, it throws an exception.
-
-
-
---------------------------------------------------------
-
-CONNECT
-====================
-
-#### SYNOPSIS ####
-    (connect [from::string]... [to::string]...)::void
-
-### DESCRIPTION ###
-connects specified two ports on the current JACK connection. This procedure
-connects the port which is specified in the first argument to the port which is
-specified in the second argument. The rest arguments are also processed in the same
-manner; that is this procedure connects each port in the argument which position is in
-odd ordinal number, to the port in the argument which position is in even ordinal
-number.
+%s specified two ports on the current JACK connection. This procedure %1$s the
+port which is specified in the first argument to the port which is specified in the
+second argument. The rest arguments are also processed in the same manner; that is
+this procedure %1$s each port in the argument which position is in odd ordinal
+number, to the port in the argument which position is in even ordinal number.
 
 A canonical port name consists two parts; these are separated by a semicolon
 and the former part is the name of a client and the latter is the name of a port as
@@ -198,57 +259,14 @@ JACK, it throws an exception.
 
 --------------------------------------------------------
 
-DISCONNECT
+NO-NAME([]
 ====================
 
 #### SYNOPSIS ####
-    (disconnect [from::string]... [to::string]...)::void
+    ()::list<string>
 
 ### DESCRIPTION ###
-disconnects specified two ports on the current JACK connection. This procedure
-disconnects the port which is specified in the first argument to the port which is
-specified in the second argument. The rest arguments are also processed in the same
-manner; that is this procedure disconnects each port in the argument which position is
-in odd ordinal number, to the port in the argument which position is in even
-ordinal number.
-
-A canonical port name consists two parts; these are separated by a semicolon
-and the former part is the name of a client and the latter is the name of a port as
-"a-nice-client:the-port".
-
-It is able to enumerate all ports by ||list-all-output|| and ||list-all-input||
-procedure. In case the current sequencer system has not established any connection to the
-JACK, it throws an exception.
-
-
-
---------------------------------------------------------
-
-LIST-ALL-OUTPUT
-====================
-
-#### SYNOPSIS ####
-    (list-all-output|lao)::list<string>
-
-### DESCRIPTION ###
-retrieves IDs of all output connections in the current session of JACK Audio
-Connection Kit. Each ID contains two parts which are separated by a separator character
-":"; the former part is the server name part and the latter part is the port name
-part.The passed arguments are silently discarded. In case the current sequencer system
-has not established any connection to the JACK, it throws an exception.
-
-
-
---------------------------------------------------------
-
-LIST-ALL-INPUT
-====================
-
-#### SYNOPSIS ####
-    (list-all-input|lai)::list<string>
-
-### DESCRIPTION ###
-retrieves IDs of all input connections in the current session of JACK Audio
+retrieves IDs of all %s connections in the current session of JACK Audio
 Connection Kit. Each ID contains two parts which are separated by a separator character
 ":"; the former part is the server name part and the latter part is the port name
 part.The passed arguments are silently discarded. In case the current sequencer system
@@ -402,24 +420,6 @@ system has not established any connection to the JACK, it throws an exception.
 
 --------------------------------------------------------
 
-RESET
-====================
-
-#### SYNOPSIS ####
-    (reset)::void
-
-### DESCRIPTION ###
-resets the environment object of Scheme interpreter, and close the current JACK
-connection. This procedure is supposed to be called interactively and is not supposed to be
-called from other procedures; a procedure which called the \(reset\) procedure will be
-deleted from the current environment object as well as other procedures and as a
-result, the procedure cannot call other procedures which are necessary to continue the
-process.
-
-
-
---------------------------------------------------------
-
 REWIND
 ====================
 
@@ -471,6 +471,31 @@ throws an exception.
 
 --------------------------------------------------------
 
+ABOUT-TRACK-SPEC
+====================
+
+#### SYNOPSIS ####
+    (about-track-spec)
+
+### DESCRIPTION ###
+The track-spec denotes a specification of a track to retrieve. Only symbol,
+string and procedure are valid as a track-spec.
+
+ When track-spec is a symbol/a string, the value is compared with the name value of each track, and the track is added to the result when it equals to the value. It uses the equals() method of java.lang.Object class to check the equality of the two values. 
+
+When track-spec is a procedure: The system enumerates all tracks in the current
+sequencer, and call the specified procedure for each track. The procedure should have two
+parameters : \(lambda \( name tags \) ... \). If a track identified by the name and the
+tags is not to retrieve, the procedure should return \#f; otherwise the track is
+selected to the result.
+
+In case the current sequencer system has not established any connection to the
+JACK, it throws an exception.
+
+
+
+--------------------------------------------------------
+
 NEW-TRACK
 ====================
 
@@ -507,50 +532,53 @@ has not established any connection to the JACK, it throws an exception.
 
 --------------------------------------------------------
 
-REMOVE-TRACK
+ABOUT-NOTATION
 ====================
 
 #### SYNOPSIS ####
-    (remove-track|remt [sync-type::symbol=] [sync-track::MetroTrack|track-spec=] [sync-offset::number=])
+    (about-notation)::void
 
 ### DESCRIPTION ###
-removes the passed track on the sequencer. The sequencer remove the specified
-track. Eventually the track stops playing. And it gives the user some controls on how
-it stops playing the track.
-
-The ||track|| parameter is the reference to the track which is to play.
-
-The sync-type parameter can be one of ||immediate||, ||parallel|| and
-||serial||.
-
-When sync-type is ||immediate||, the sequencer starts to play the track as soon
-as possible after returning from the procedure call. When sync-type is
-||parallel||, the sequencer starts to play the track at the same position with the track
-which is specified as ||sync-track|| parameter.
-
-When sync-type is ||serial||, the sequencer starts to play the track right
-after the track which is specified in the ||sync-track|| finished to play.
-
-The sync-track parameter is the reference to the track which is to synchronize
-with.
-
-The sync-offset parameter is the time offset from the time that track is
-supposed to start playing. The number must be a real number. It denotes the offset
-length which unit is a measure-length.
+A notation is a MIDI data which Pulsar music sequencer can play. In Pulsar, a
+notation is made of a Scheme association list. There are several types of a notation
+such as notes, rests, MIDI control changes and others. The contents of a notation
+depend on its type; for example, if a notation is a note data, the notation object
+have four properties : velocity, length, position and pitch. In case the current
+sequencer system has not established any connection to the JACK, it throws an exception.
 
 
 
 --------------------------------------------------------
 
-PUT-TRACK
+ABOUT-INTRO
 ====================
 
 #### SYNOPSIS ####
-    (put-track|putt [sync-type::symbol=] [sync-track::MetroTrack|track-spec=] [sync-offset::number=])
+    (about-intro)
 
 ### DESCRIPTION ###
-put the passed track on the sequencer. The sequencer starts to play the added
-track and it gives the user some controls on how it starts playing the track.
+Welcome to Pulsar music sequencer! Pulsar music sequencer is a music sequencer
+which collaboratively works with a powerful computer language Lisp Scheme. And this
+frame itself is a powerful Lisp Scheme editor which is called Kawapad. In Lisp, all
+commands are surrounded with a pair of parentheses. You can easily execute one of those
+command by moving your cursor within the pair of parentheses and pressing CTRL+ENTER.
+
+To show this help, execute \(help about-intro\). To show all available
+procedures, execute \(help\) . To show help of a procedure, execute \(help
+\[procedure-name\] \) .
+
+
+
+--------------------------------------------------------
+
+NO-NAME([]
+====================
+
+#### SYNOPSIS ####
+    ( [sync-type::symbol=] [sync-track::MetroTrack|track-spec=] [sync-offset::number=])
+
+### DESCRIPTION ###
+%1$s the passed track on the sequencer. %2$s
 
 The ||track|| parameter is the reference to the track which is to play.
 
@@ -630,150 +658,6 @@ GET-MAIN-TRACK
 
 ### DESCRIPTION ###
 ||get-main-track|| retrieves the reference to the current main track.
-
-
-
---------------------------------------------------------
-
-GET-TRACK-POSITION
-====================
-
-#### SYNOPSIS ####
-    (get-track-position|gettp)::void
-
-### DESCRIPTION ###
-||get-track-position|| gets the current position of the given track.
-
-
-
---------------------------------------------------------
-
-PRINT-STACK-TRACE
-====================
-
-#### SYNOPSIS ####
-    (print-stack-trace)::void
-
-### DESCRIPTION ###
-||print-stack-trace|| returns the current stack trace as a string.
-
-
-
---------------------------------------------------------
-
-DISPLAY-WARN
-====================
-
-#### SYNOPSIS ####
-    (display-warn value::any)::void
-
-### DESCRIPTION ###
-||display-warn|| output the specified value to the standard error stream.
-
-
-
---------------------------------------------------------
-
-NEWLINE-WARN
-====================
-
-#### SYNOPSIS ####
-    (newline-warn)::void
-
-### DESCRIPTION ###
-||newline-warn|| output a line terminator to the standard error stream.
-
-
-
---------------------------------------------------------
-
-TYPEOF
-====================
-
-#### SYNOPSIS ####
-    (typeof value::any)::string
-
-### DESCRIPTION ###
-||typeof|| returns a Java class name of the specified value. In case the
-specified value is a ||null|| of Java, this procedure returns "null" as a string value.
-
-
-
---------------------------------------------------------
-
-MAKE-TIMER
-====================
-
-#### SYNOPSIS ####
-    (make-timer delay::number interval::number callback::procedure)::procedure
-
-### DESCRIPTION ###
-||make-timer|| creates a new timer object. This procedure registers the
-specified procedure as a callback procedure of the timer; the procedure will be called
-with the specified period and with the specified delay. The return value is a cancel
-procedure. When the cancel procedure is called, the timer stops calling the callback
-procedure.
-
-
-
---------------------------------------------------------
-
-ADD-EVENT-LISTENER
-====================
-
-#### SYNOPSIS ####
-    (add-event-listener target::object event-type::symbol callback::procedure)::void
-
-### DESCRIPTION ###
-||add-event-listener|| registers the specified procedure as an event handler.
-
-
-
---------------------------------------------------------
-
-REMOVE-EVENT-LISTENER
-====================
-
-#### SYNOPSIS ####
-    (remove-event-listener target::object callback::procedure)::void
-
-### DESCRIPTION ###
-||remove-event-listener|| unregisters the specified procedure as an event
-handler.
-
-
-
---------------------------------------------------------
-
-RANDOM
-====================
-
-#### SYNOPSIS ####
-    (random|rnd [range::number=1])::number
-
-### DESCRIPTION ###
-||random|| generates a random number. This procedure adopts Mersenne Twister a
-random number generating algorithm. If an argument \[range\] is specified, the return
-value will be within 0<= x <\[range\]. If the argument is omitted, the range value
-defaults to 1.
-
-
-
---------------------------------------------------------
-
-LUCK
-====================
-
-#### SYNOPSIS ####
-    (luck [probability::number=0.5])::boolean
-
-### DESCRIPTION ###
-||luck|| is a procedure that returns a random boolean value. The first
-argument is the value of probability where the larger value causes the more probability
-of returning \#t. When the specified value is equals or less than zero, the
-returning value is always \#f. When the specified value is equals or larger than one the
-returning value is always \#t. The only parameter can be omitted and in that case the
-default value one is applied.
 
 
 

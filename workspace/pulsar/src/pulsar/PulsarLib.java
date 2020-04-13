@@ -537,6 +537,7 @@ public interface PulsarLib {
 
         public static final PulsarProceduralDescriptiveDoc openPortTemplateDoc = new OpenPortTemplateDoc(); 
         public static final class OpenPortTemplateDoc extends PulsarProceduralDescriptiveDoc {{
+                setVisible(false);
                 setCategory( Pulsar.DOCS_ID );
                 setParameterDescription( "[ANY|(list ANY...)  ]..." );
                 addParameter( 0, "port-name", "any|(list any ...)", null , true, "The port name in the current JACK session. " );
@@ -553,6 +554,10 @@ public interface PulsarLib {
         }}
 
         public static final LamuDocument openOutputDoc = ( openPortTemplateDoc.processArguments( "output" ).setNames( "open-output", "openo" ) );
+
+        public static void main(String[] args) {
+            System.out.println(openOutputDoc );
+        }
 
         public final Procedure openOutputProc = new OpenOutputProc(new String[] { "open-output", "openo" });
         @Override
@@ -602,6 +607,7 @@ public interface PulsarLib {
 
         public static final ClosePortTemplateDoc closePortTemplateDoc =  new ClosePortTemplateDoc();
         public static final class ClosePortTemplateDoc extends PulsarProceduralDescriptiveDoc {{
+            setVisible(false);
             setCategory( Pulsar.DOCS_ID );
             setParameterDescription( "[MetroPort|symbol|string|(list MetroPort|symbol|string ...) ]..." );
             addParameter( 0, "port", "MetroPort|symbol|string|(list MetroPort|symbol|string ...)", null , true, "The port object to close. " );
@@ -664,6 +670,7 @@ public interface PulsarLib {
 
         public static final ListPortsTemplateDoc listPortsTemplateDoc =  new ListPortsTemplateDoc();
         public static final class ListPortsTemplateDoc extends PulsarProceduralDescriptiveDoc {{
+            setVisible(false);
             setCategory( Pulsar.DOCS_ID );
             setParameterDescription( "" );
             setReturnValueDescription( "::(list MetroPort ...)" );
@@ -713,6 +720,7 @@ public interface PulsarLib {
 
         public static final ConnectionTemplateDoc connectTemplateDoc =  new ConnectionTemplateDoc();
         public static final class ConnectionTemplateDoc extends PulsarProceduralDescriptiveDoc {{
+            setVisible(false);
             setCategory( Pulsar.DOCS_ID );
             setParameterDescription( "[string] ..." );
             addParameter( 0, "from", "string", null , true, "a canonical port name in the current JACK session. " );
@@ -770,6 +778,7 @@ public interface PulsarLib {
 
         public static final InitDocAllConnectionDoc allConnectionTemplateDoc =  new InitDocAllConnectionDoc(); 
         public static class InitDocAllConnectionDoc extends PulsarProceduralDescriptiveDoc {{
+            setVisible(false);
             setCategory( Pulsar.DOCS_ID );
             setParameterDescription( "" );
             setReturnValueDescription( "::list<string>" );
@@ -783,7 +792,6 @@ public interface PulsarLib {
         }}
 
         public static final LamuDocument listAllOutputDoc =  allConnectionTemplateDoc.processArguments( "output" ).setNames("list-all-output", "lao");
-
         public final ListAllOutputProc listAllOutputProc = new ListAllOutputProc(new String[] { "list-all-output", "lao" });
         @Override
         public Procedure getListAllOutput() { return listAllOutputProc; }
@@ -1461,6 +1469,7 @@ public interface PulsarLib {
         public static final PulsarProceduralDescriptiveDoc trackManagementTemplateDoc = /*init*/( new TrackManagementTemplateDoc() );
         public static final class TrackManagementTemplateDoc extends PulsarProceduralDescriptiveDoc {
             {
+                setVisible(false);
                 setCategory( Pulsar.DOCS_ID );
                 setParameterDescription( "track [sync-type] [sync-track] [sync-offset]" );
                 addParameter( 0, "sync-type",   "symbol",     "", false, "one of ||immediate||, ||parallel|| and ||serial||. " );

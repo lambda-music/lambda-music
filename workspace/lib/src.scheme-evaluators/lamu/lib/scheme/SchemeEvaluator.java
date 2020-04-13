@@ -31,12 +31,13 @@ public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluat
         this.scheme = new Scheme();
         this.name = "local";
     }
-    @Deprecated
-    public SchemeEvaluator( Scheme scheme ) {
+    public SchemeEvaluator(Scheme scheme, String name) {
+        super();
         this.scheme = scheme;
-        this.name = "local";
+        this.name = name;
     }
-    
+
+
     //////////////////////////////////////////////////////////////////////////////////////////
     //
     //////////////////////////////////////////////////////////////////////////////////////////

@@ -19,13 +19,13 @@ import lamu.lib.app.args.ArgumentParserDefault;
 import lamu.lib.app.args.ArgumentParserElement;
 import lamu.lib.app.args.ArgumentParserElementFactory;
 import lamu.lib.app.args.ArgumentParserStackKey;
+import lamu.lib.doc.LamuAbstractDocument;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.Evaluator;
 import lamu.lib.scheme.RemoteEvaluator;
 import lamu.lib.scheme.SchemeEngine;
 import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.scheme.StreamEvaluator;
-import lamu.lib.scheme.doc.old.DescriptiveDocumentCategory;
 import lamu.lib.scheme.repl.ReplServer;
 import lamu.lib.scheme.repl.SimpleReplService;
 import lamu.lib.scheme.socket.SchemeHttp;
@@ -106,7 +106,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                         @Override
                         public void run() {
                             try {
-                                DescriptiveDocumentCategory.outputAvailableReferences( outputFile );
+                                LamuAbstractDocument.outputAvailableReferences( outputFile );
                             } catch (IOException e) {
                                 logError( MSG_OUTPUT_HELP_ERROR, e ); 
                             }
@@ -202,15 +202,12 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     if ( parser.getValueStack( SCHEME ).isEmpty() ) {
                         throw new RuntimeException( MSG_NO_SCHEME_ERROR );
                     }
-                    SchemeEngine schemeEngine = parser.getValueStack( SCHEME ).peek();
                     LamuApplication.loadBasicClasses();
                     parser.getValueStack( RUNNABLE_INIT ).add( new Runnable() {
                         @Override
                         public void run() {
                             try {
-                                DescriptiveDocumentCategory.outputReference( 
-                                        schemeEngine.getEvaluatorManager().getPrimaryEvaluator().getScheme().getEnvironment(), 
-                                        category, outputFile );
+                                LamuAbstractDocument.outputReference( category, outputFile ); 
                             } catch (IOException e) {
                                 logError( MSG_OUTPUT_HELP_ERROR, e ); 
                             }

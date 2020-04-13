@@ -24,7 +24,6 @@
 |kawapad-scroll-down|kawapad-scroll-down|    |
 |kawapad-disable-content-assist|Disable Content Assist|    |
 |kawapad-enable-content-assist|Enable Content Assist|  CTRL-SPACE  |
-|kawapad-reset|Reset the Environment|  SHIFT-CTRL-ALT-BACK_QUOTE  |
 |kawapad-select-evaluate|Select and Evaluate|  CTRL-ENTER  |
 |kawapad-evaluate|Select, Evaluate and Replace|  SHIFT-CTRL-ENTER  |
 |kawapad-evaluate|Evaluate|  CTRL-E  |

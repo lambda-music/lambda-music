@@ -46,13 +46,14 @@ import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
+import lamu.lib.ForceLoadingClass;
 import lamu.lib.Version;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.app.ApplicationVessel;
+import lamu.lib.doc.LamuAbstractDocument;
 import lamu.lib.log.LogFormatter;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.SchemeEngine;
-import lamu.lib.scheme.doc.old.DescriptiveDocumentCategory;
 import lamu.lib.swing.AcceleratorKeyList;
 import lamu.lib.swing.Action2;
 
@@ -368,14 +369,16 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
     }
 
     public static void outputDocument() throws IOException {
+        ForceLoadingClass.force( Kawapad.class );
+        ForceLoadingClass.force( lamu.kawapad.class );
+        
+        
         KawapadFrame kawapadFrame = createStaticInstance();
         try {
             Thread.sleep( 2048 );
         } catch ( InterruptedException e ) {
         }
-        DescriptiveDocumentCategory.outputReference( 
-            kawapadFrame.kawapad.getSchemeEngine().getEvaluatorManager().getPrimaryEvaluator().getScheme().getEnvironment(),
-            "kawapad-procedures", null );
+        LamuAbstractDocument.outputReference( "kawapad-procedures", null ); 
         
         kawapadFrame.requestClose();
     }

@@ -121,6 +121,8 @@ class SchemeEvaluatorImplementation {
                 //
                 // Note : Now the application should use source
                 //
+                // Note : (Mon, 13 Apr 2020 11:58:27 +0900)
+                //        See lamu.lib.scheme.SchemeEvaluatorLib.initScheme(Environment)
                 
     
                 CallContext ctx = CallContext.getInstance();

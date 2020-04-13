@@ -41,6 +41,7 @@ public class SchemeEvaluatorLib {
      * {@link SchemeEvaluatorImplementation#evaluateScheme(Scheme, Runnable, Reader, File, File, String)}  
      */
     public static void initScheme( Environment env ) {
+        SchemeUtils.defineVar(env, kawa.standard.load.loadRelative , "source" );
         SchemeUtils.defineLambda( env, currentScheme );
         SchemeUtils.defineLambda( env, currentEnvironment );
     }

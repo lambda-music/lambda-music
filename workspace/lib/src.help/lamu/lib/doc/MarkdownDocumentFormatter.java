@@ -120,11 +120,11 @@ public class MarkdownDocumentFormatter implements LamuDocumentFormatter {
     //
     //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    
-    public static String createMarkdownHelp( List<LamuDocument> list ) {
+
+    public static String createMarkdownHelp( List<LamuDocument> documentList ) {
         StringBuilder sb = new StringBuilder();
-        Collections.reverse( list );
-        for ( LamuDocument document : list ) {
+        Collections.reverse( documentList );
+        for ( LamuDocument document : documentList ) {
 //          System.out.println( o );
             sb.append( MarkdownDocumentFormatter.formatForMarkdown( document ) );
             sb.append( "\n\n" );

@@ -13,6 +13,7 @@ import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import lamu.lib.doc.KawapadDocumentFormatter;
 import lamu.lib.doc.LamuDocument;
+import lamu.lib.doc.LamuDocumentCondition;
 import lamu.lib.doc.LamuDocumentFormatterUtil;
 import lamu.lib.scheme.SchemeDocument;
 import lamu.lib.scheme.SchemeUtils;
@@ -103,9 +104,9 @@ public class help {
             if ( arg1 instanceof LamuDocument ) {
                 doc= (LamuDocument)arg1;
             } else if ( arg1 instanceof Procedure ) {
-                List<LamuDocument> documentList = LamuDocument.get( LamuDocument.createConditionByProcedure( (Procedure) arg1 ) );
+                List<LamuDocument> documentList = LamuDocument.get( LamuDocumentCondition.createConditionByProcedure( (Procedure) arg1 ) );
                 if ( documentList.isEmpty() ) {
-                    doc = LamuDocument.get( LamuDocument.createConditionByName( NO_DOCUMENT_IS_AVAILABLE )).get(0);
+                    doc = LamuDocument.get( LamuDocumentCondition.createConditionByName( NO_DOCUMENT_IS_AVAILABLE )).get(0);
                 } else if ( 1 < documentList.size() ) {
                     doc = documentList.get(0);
                     // throw new InternalError( "found duplicated documents" + documentList );
@@ -130,7 +131,7 @@ public class help {
         public Object apply1(Object arg1) throws Throwable {
             List<LamuDocument> documentList = 
                 LamuDocument.get(
-                    LamuDocument.createConditionByCategory(
+                    LamuDocumentCondition.createConditionByCategory(
                         SchemeUtils.anyToString(arg1)));
             
             List<String> list = new ArrayList<>();

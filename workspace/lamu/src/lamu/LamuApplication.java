@@ -12,17 +12,21 @@ import java.util.logging.Level;
 
 import kawapad.Kawapad;
 import kawapad.KawapadTextualIncrement;
+import lamu.lib.ForceLoadingClass;
 import lamu.lib.InstanceManager;
 import lamu.lib.Version;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.app.ApplicationVessel;
+import lamu.lib.doc.LamuDocument;
 import lamu.lib.log.Logger;
-import lamu.lib.scheme.doc.old.DescriptiveHelp;
+import lamu.lib.scheme.SchemeEngineLib;
+import lamu.lib.scheme.SchemeEvaluatorLib;
 import lamu.lib.scheme.repl.SimpleReplService;
 import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.StdioStream;
 import lamu.utils.lib.PulsarGuiUtils;
 import pulsar.Pulsar;
+import pulsar.PulsarLib;
 import pulsar.PulsarLib_Notes;
 import pulsar.PulsarLib_Procs;
 
@@ -73,25 +77,28 @@ public class LamuApplication {
         return availableCommands;
     }
 
-    private static void forceLoad(Class c) {
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
 
     static void loadBasicClasses() {
         // For documentation.
-        forceLoad(PulsarLib_Notes.class);
-        forceLoad(PulsarGuiUtils.class);
-        forceLoad(DescriptiveHelp.class);
+        ForceLoadingClass.force(PulsarLib_Notes.class);
+        ForceLoadingClass.force(PulsarGuiUtils.class);
+        ForceLoadingClass.force(PulsarLib_Procs.class);
+        ForceLoadingClass.force(PulsarLib_Notes.class);
+        ForceLoadingClass.force(PulsarLib.PulsarLibImplementation.class);
+        ForceLoadingClass.force(PulsarLib.class);
+        ForceLoadingClass.force(lamu.help.class );
+        ForceLoadingClass.force(lamu.scheme.class );
+        
+        ForceLoadingClass.force(SchemeEngineLib.class);
+        ForceLoadingClass.force(SchemeEvaluatorLib.class);
 
         // See those static blocks.
-        forceLoad(Kawapad.class);
-        forceLoad(KawapadTextualIncrement.class);
-        forceLoad(Pulsar.class);
-        forceLoad(PulsarLib_Procs.class);
+        ForceLoadingClass.force(Kawapad.class);
+        ForceLoadingClass.force(KawapadTextualIncrement.class);
+        ForceLoadingClass.force(Pulsar.class);
+        ForceLoadingClass.force(PulsarLib_Procs.class);
+        
+        LamuDocument.debugOut();
     }
 
     static void initKawaImportPath() {

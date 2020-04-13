@@ -22,6 +22,7 @@
 
 (import (srfi 1))
 (import (kawa pprint))
+(import (lamu help))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; tracing

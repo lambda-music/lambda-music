@@ -1,63 +1,26 @@
 package lamu.lib.doc;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.logging.Level;
 
-import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
+import lamu.lib.log.Logger;
 import lamu.lib.scheme.SchemeDocument;
 import lamu.lib.scheme.SchemeUtils;
-import lamu.lib.scheme.proc.MultipleNamed;
 
 public class LamuDocument implements Cloneable  {
+    static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
+    static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+    static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
+    static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }
+
     private static final ArrayList<LamuDocument> all =new ArrayList<>();
-    public static interface Condition {
-        boolean check( LamuDocument bean );
-    }
-    private static final class CateogoryCondition implements Condition {
-        private final String category;
-        public CateogoryCondition(String category) {
-            if ( category == null )
-                throw new NullPointerException();
-            this.category = category;
-        }
-        @Override
-        public boolean check(LamuDocument d) {
-            return category.equals(d.getCategory()); 
-        }
-    }
-    private static final class NameCondition implements Condition {
-        private final String name;
-        public NameCondition(String name) {
-            if ( name == null )
-                throw new NullPointerException();
-            this.name = name;
-        }
-        @Override
-        public boolean check(LamuDocument d) {
-            return d.getNames().contains( name );
-        }
-    }
-    private static final class NameListCondition implements Condition {
-        private final List<String> nameList;
-        public NameListCondition(List<String> nameList) {
-            if ( nameList == null )
-                throw new NullPointerException();
-            this.nameList = nameList;
-        }
-        @Override
-        public boolean check(LamuDocument d) {
-            for ( String s : nameList ) {
-                if ( d.getNames().contains( s ) )
-                    return true;
-            }
-            return false;
-        }
-    }
     public static void add( LamuDocument d ) {
         synchronized( all ) {
             all.add( 0, d );
@@ -69,7 +32,7 @@ public class LamuDocument implements Cloneable  {
             return new ArrayList<LamuDocument>( all );
         }
     }
-    public static List<LamuDocument> get( Condition condition ) {
+    public static List<LamuDocument> get( LamuDocumentCondition condition ) {
         synchronized( all ) {
             ArrayList<LamuDocument> result =  new ArrayList<LamuDocument>();
             for ( LamuDocument d : all ) {
@@ -80,7 +43,7 @@ public class LamuDocument implements Cloneable  {
             return result;
         }
     }
-    static void remove( Condition condition ) {
+    static void remove( LamuDocumentCondition condition ) {
         synchronized( all ) {
             for( Iterator<LamuDocument> i = all.iterator(); i.hasNext(); ) {
                 LamuDocument d = i.next();
@@ -90,25 +53,6 @@ public class LamuDocument implements Cloneable  {
             }
         }
     }
-    public static Condition createConditionByCategory( String category ) {
-        return new CateogoryCondition(category);
-    }
-    public static Condition createConditionByName( String name ) {
-        return new NameCondition(name);
-    }
-    public static Condition createConditionByNameList( List<String> nameList ) {
-        return new NameListCondition( nameList );
-    }
-    public static Condition createConditionByProcedure( Procedure proc ) {
-        if ( proc instanceof MultipleNamed )  {
-            return new NameListCondition( ((MultipleNamed)proc).getNames() );
-        } else {
-            // TODO !!!!!!!!!
-            throw new RuntimeException( "TEST : should not come here exception" );
-//            return new NameCondition( proc.getName() );
-        } 
-    }
-    
     public static List<String> getAllAvailableCategory(){
         synchronized( all ) {
             ArrayList<String> result = new ArrayList<>();
@@ -118,6 +62,12 @@ public class LamuDocument implements Cloneable  {
                 }
             }
             return result;
+        }
+    }
+    
+    public static void debugOut() {
+        for ( LamuDocument doc : all ) {
+            logInfo( doc.toString() );
         }
     }
     
@@ -286,7 +236,8 @@ public class LamuDocument implements Cloneable  {
 
     public String getName() {
         if ( getNames() == null || getNames().isEmpty() )
-            throw new IllegalArgumentException();
+            return "no-name(" + getNames();
+//            throw new IllegalArgumentException();
         return getNames().get( 0 );
     }
 
@@ -294,13 +245,13 @@ public class LamuDocument implements Cloneable  {
         return names;
     }
     public LamuDocument setNames(String ... names) {
-        this.setNames( Arrays.asList( names ) );
+        this.setNames( new ArrayList<>( Arrays.asList( names )));
         return this;
     }
     public LamuDocument setNames(List<String> names) {
         if ( names.isEmpty() )
             throw new IllegalArgumentException();
-        this.names = names;
+        this.names = new ArrayList<>(names);
         return this;
     }
 
@@ -411,5 +362,8 @@ public class LamuDocument implements Cloneable  {
                  + "  |# help %1$s \n",  name );
         return SchemeDocument.makeSchemeDocument( SchemeUtils.toSchemeString( s ));
     }
-
+    @Override
+    public String toString() {
+        return getName();
+    }
 }
