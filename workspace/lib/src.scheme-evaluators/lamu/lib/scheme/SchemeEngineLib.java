@@ -1,7 +1,6 @@
 package lamu.lib.scheme;
 
 import gnu.mapping.Environment;
-import kawa.standard.Scheme;
 import lamu.lib.scheme.proc.MultipleNamedProcedure0;
 
 public class SchemeEngineLib {
@@ -28,8 +27,7 @@ public class SchemeEngineLib {
             return SchemeEngine.isPresent();
         }
     }
-    public static void initScheme( Scheme scheme ) {
-        Environment env = scheme.getEnvironment();
+    public static void initScheme( Environment env ) {
         SchemeUtils.defineLambda(env, currentSchemeEngine  );
         SchemeUtils.defineLambda(env, isCurrentSchemeEnginePresent );
     }

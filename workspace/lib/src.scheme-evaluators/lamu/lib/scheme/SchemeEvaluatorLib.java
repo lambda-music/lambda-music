@@ -40,18 +40,8 @@ public class SchemeEvaluatorLib {
      * "loadRelative" was moved from 
      * {@link SchemeEvaluatorImplementation#evaluateScheme(Scheme, Runnable, Reader, File, File, String)}  
      */
-    public static void initScheme( Scheme scheme ) {
-        Environment env = scheme.getEnvironment();
-        SchemeUtils.defineLambda(env, currentScheme);
-        SchemeUtils.defineLambda(env, currentEnvironment);
-
-        //        SchemeUtils.defineVar(env, new Procedure0() {
-        //            @Override
-        //            public Object apply0() throws Throwable {
-        //                SchemeUtils.getAllKey( (Scheme)Language.getDefaultLanguage() );
-        //                return 
-        //            }
-        //        }, "get-all-identifiers" );
+    public static void initScheme( Environment env ) {
+        SchemeUtils.defineLambda( env, currentScheme );
+        SchemeUtils.defineLambda( env, currentEnvironment );
     }
-
 }

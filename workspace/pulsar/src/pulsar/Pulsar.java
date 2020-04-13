@@ -42,7 +42,6 @@ import lamu.lib.log.Logger;
 import lamu.lib.scheme.InvokableSchemeProcedure;
 import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.secretary.Invokable;
-import metro.EventListenable;
 import metro.Metro;
 import metro.MetroPort;
 import metro.MetroSequence;
@@ -378,42 +377,6 @@ public class Pulsar extends Metro implements PulsarLib, PulsarLibDelegator, Appl
             double recordLength, boolean looper ) 
     {
         return this.createTrack( name, tags, SchemeSequenceRecorder.createSchemeSequenceRecorder( inputPorts, outputPorts, recordLength, looper ) );
-    }
-
-    static final class PulsarEventListener implements EventListenable.Listener {
-        private final Pulsar pulsar;
-        private final Procedure procedure;
-        PulsarEventListener( Pulsar pulsar, Procedure procedure) {
-            this.pulsar = pulsar;
-            this.procedure = procedure;
-        }
-        
-        @Override
-        public void occured(Object parent, Object type) {
-            this.pulsar.getThreadInitializerCollection().initialize();
-            try {
-                procedure.apply2( parent, type );
-            } catch (Throwable e) {
-                logError( "ignored", e );
-            }
-        }
-        
-        @Override
-        public boolean equals(Object obj) {
-            if ( obj instanceof PulsarEventListener ) {
-                return this.procedure == ((PulsarEventListener)obj).procedure;
-            } else {
-                return false;
-            }
-        }
-        @Override
-        public int hashCode() {
-            return procedure.hashCode();
-        }
-        @Override
-        public String toString() {
-            return String.format( "#PulsarEventListener-%x#" , this.hashCode() );
-        }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////

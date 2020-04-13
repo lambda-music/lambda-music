@@ -45,7 +45,7 @@ import lamu.lib.log.Logger;
  * @author Ats Oka
  *
  */
-public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, MetroNamedTrack {
+public class MetroTrack implements MetroLock, MetroSyncTrack, MetroNamedTrack {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -151,33 +151,6 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
 //        eventListenerable.clearEventListeners();
     }
     
-    public static final Object EVENT_PREPARED = "prepared"; 
-    
-    protected final EventListenable eventListenerable = new EventListenable.Default( this );
-    @Override
-    public void clearEventListeners() {
-        synchronized ( this.getMetroLock() ) {
-            eventListenerable.clearEventListeners();
-        }
-    }
-    @Override
-    public void addEventListener(Object type, Listener listener) {
-        synchronized ( this.getMetroLock() ) {
-            eventListenerable.addEventListener( type, listener );
-        }
-    }
-    @Override
-    public void removeEventListener(Listener listener) {
-        synchronized ( this.getMetroLock() ) {
-            eventListenerable.removeEventListener( listener );
-        }
-    }
-    @Override
-    public void invokeEventListener(Object type) {
-        synchronized ( this.getMetroLock() ) {
-            eventListenerable.invokeEventListener( type );
-        }
-    }
     /**
      * Create a MetroTrack object with default synchronizing status.
      *
@@ -509,8 +482,6 @@ public class MetroTrack implements MetroLock, EventListenable, MetroSyncTrack, M
         this.prepared = true;
 
         MetroSyncTrack.setSyncStatus( this, barLengthInFrames );
-        
-        eventListenerable.invokeEventListener( EVENT_PREPARED );
     }
 
     void reprepare( int barLengthInFrames, double prevBeatsPerMinute, double beatsPerMinute ) throws JackException 

@@ -17,7 +17,6 @@ import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
-import gnu.mapping.Values;
 import gnu.math.IntNum;
 import lamu.lib.doc.LamuDocument;
 import lamu.lib.log.Logger;
@@ -26,10 +25,8 @@ import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.scheme.proc.MultipleNamedProcedure0;
 import lamu.lib.scheme.proc.MultipleNamedProcedure1;
 import lamu.lib.scheme.proc.MultipleNamedProcedure2;
-import lamu.lib.scheme.proc.MultipleNamedProcedure3;
 import lamu.lib.scheme.proc.MultipleNamedProcedureN;
 import lamu.lib.secretary.Invokable;
-import metro.EventListenable;
 import metro.MetroPort;
 import metro.MetroSyncType;
 import metro.MetroTrack;
@@ -68,18 +65,8 @@ public interface PulsarLib {
     Procedure getListTracks();
     Procedure getClearTracks();
     Procedure getGetMainTrack();
-    Procedure getAddEventListener();
-    Procedure getRemoveEventListener();
     public static abstract interface PulsarLibDelegator extends PulsarLib {
         abstract PulsarLib getPulsarLibImplementation();
-        public default Procedure getRemoveEventListener() {
-            return getPulsarLibImplementation().getRemoveEventListener();
-        }
-
-        public default Procedure getAddEventListener() {
-            return getPulsarLibImplementation().getAddEventListener();
-        }
-
         public default Procedure getGetMainTrack() {
             return getPulsarLibImplementation().getGetMainTrack();
         }
@@ -1744,90 +1731,6 @@ public interface PulsarLib {
                                  );
             }
         }
-        public final AddEventListenerProc addEventListenerProc = new AddEventListenerProc(new String[] { "add-event-listener" });
-        @Override
-        public Procedure getAddEventListener() { return addEventListenerProc; }
-        public final class AddEventListenerProc extends MultipleNamedProcedure3 {
-            public AddEventListenerProc(String[] names) {
-                super(names);
-            }
-
-            @Override
-            public Object apply3(Object arg0, Object arg1, Object arg2 ) throws Throwable {
-                if ( arg0 instanceof EventListenable ) {
-                    EventListenable listenable = (EventListenable) arg0;
-                    Object type = SchemeUtils.schemeStringToJavaString( arg1 );
-                    Procedure procedure = (Procedure) arg2;
-                    Pulsar.PulsarEventListener listener = new Pulsar.PulsarEventListener( getPulsar(), procedure );
-                    listenable.addEventListener( type, listener);
-                    return listener;
-                } else {
-                    throw new IllegalArgumentException( "the target is not event-listenable " );
-                }
-            }
-        }
-
-        public static final AddEventListenerDoc addEventListenerDoc = new AddEventListenerDoc();
-        public static final class AddEventListenerDoc extends PulsarProceduralDescriptiveDoc {
-            {
-                setCategory( Pulsar.DOCS_ID );
-                setNames( "add-event-listener" );
-                addParameter( 0, "target",     "object",    null, false , "" );
-                addParameter( 0, "event-type", "symbol",    null, false , "" );
-                addParameter( 0, "callback",   "procedure", null, false , "" );
-            
-                setReturnValueDescription( "::void" );
-                setShortDescription( "||<name/>|| registers the specified procedure as an event handler. " );
-                setLongDescription( ""
-                        + "" 
-                );
-            }
-        }
-
-        public final RemoveEventListenerProc removeEventListenerProc = new RemoveEventListenerProc(new String[] { "remove-event-listener" });
-        @Override
-        public Procedure getRemoveEventListener() { return removeEventListenerProc; }
-        public final class RemoveEventListenerProc extends MultipleNamedProcedure2 {
-            public RemoveEventListenerProc(String[] names) {
-                super(names);
-            }
-
-            @Override
-            public Object apply2(Object arg0, Object arg1 ) throws Throwable {
-                if ( arg0 instanceof EventListenable ) {
-                    EventListenable listenable = (EventListenable) arg0;
-                    EventListenable.Listener listener;
-                    
-                    if (arg1 instanceof EventListenable.Listener) {
-                        listener = (EventListenable.Listener)arg1;
-                    } else if (arg1 instanceof Procedure ) {
-                        listener = new Pulsar.PulsarEventListener( getPulsar(), (Procedure) arg1 );
-                    } else {
-                        throw new IllegalArgumentException( "the argument is not a listener object." );
-                    }
-                    listenable.removeEventListener( listener );
-                    return Values.empty;
-                } else {
-                    throw new IllegalArgumentException( "the target is not event-listenable " );
-                }
-            }
-        }
-
-        public static final RemoveEventListenerDoc removeEventListenerDoc = new RemoveEventListenerDoc();
-        public static final class RemoveEventListenerDoc extends PulsarProceduralDescriptiveDoc {
-            {
-                setCategory( Pulsar.DOCS_ID );
-                setNames( "remove-event-listener" );
-                addParameter( 0, "target",     "object",    null, false , "" );
-                addParameter( 0, "callback",   "procedure", null, false , "" );
-            
-                setReturnValueDescription( "::void" );
-                setShortDescription( "||<name/>|| unregisters the specified procedure as an event handler. " );
-                setLongDescription( ""
-                        + "" 
-                );
-            }
-        }
         
         public void initScheme( Environment env ) {
             SchemeUtils.defineLambda( env, isOpenProc );
@@ -1863,8 +1766,6 @@ public interface PulsarLib {
             SchemeUtils.defineLambda( env, listTracksProc );
             SchemeUtils.defineLambda( env, clearTracksProc );
             SchemeUtils.defineLambda( env, getMainTrackProc );
-            SchemeUtils.defineLambda( env, addEventListenerProc );
-            SchemeUtils.defineLambda( env, removeEventListenerProc );
         }
         
         public static class PulsarLibCurrentValueImplementation extends PulsarLibImplementation {
