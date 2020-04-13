@@ -24,10 +24,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,13 +35,8 @@ import javax.swing.JComboBox;
 
 import org.jaudiolibs.jnajack.JackException;
 
-import gnu.lists.EmptyList;
-import gnu.lists.IString;
-import gnu.lists.LList;
-import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
-import gnu.math.IntNum;
 import kawa.standard.Scheme;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.log.Logger;
@@ -51,16 +44,13 @@ import lamu.lib.scheme.InvokableSchemeProcedure;
 import lamu.lib.scheme.SchemeEngine;
 import lamu.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import lamu.lib.scheme.SchemeUtils;
-import lamu.lib.scheme.proc.MultipleNamedProcedure0;
-import lamu.lib.scheme.proc.MultipleNamedProcedure2;
 import lamu.lib.secretary.Invokable;
-import lamu.utils.lib.MersenneTwisterFast;
 import metro.EventListenable;
 import metro.Metro;
 import metro.MetroPort;
 import metro.MetroSequence;
-import metro.MetroSyncType;
 import metro.MetroTrack;
+import pulsar.PulsarLib.PulsarLibDelegator;
 
 /**
  * Pulsar is a MIDI sequencer program which is controlled by a powerful computer
@@ -116,7 +106,7 @@ import metro.MetroTrack;
  * 
  * @author Atsushi Oka
  */
-public final class Pulsar extends Metro implements ApplicationComponent {
+public class Pulsar extends Metro implements PulsarLib, PulsarLibDelegator, ApplicationComponent {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }
     static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }
@@ -136,6 +126,8 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         });
     }
     
+    public static final String DOCS_ID = "pulsar-procedures";
+
     static {
         /*
          *  Replace the main track id when Pulsar class is loaded to VM.
@@ -249,11 +241,6 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         logInfo("Pulsar#newScheme() "); 
         this.getSchemeEngine().getEvaluatorManager().getPrimaryEvaluator().reset();
     }
-
-    MersenneTwisterFast random = new MersenneTwisterFast( new int[] { 
-            (int) System.currentTimeMillis(),
-            0x123, 0x234, 0x345, 0x456,
-    });
     
     
     /**
@@ -372,28 +359,6 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         return historyFile;
     }
 
-    private static final class TagSearchIsProcedure extends MultipleNamedProcedure2 {
-        private final Object value;
-        TagSearchIsProcedure(Object value) {
-            this.value = value;
-        }
-        @Override
-        public Object apply2( Object arg1, Object arg2 ) throws Throwable {
-            return value.equals( arg1 );
-        }
-    }
-
-    final static class TrackProcedure extends MultipleNamedProcedure0 {
-        final LList pair;
-        TrackProcedure( LList pair ) {
-            this.pair = pair;
-        }
-
-        @Override
-        public Object apply0() throws Throwable {
-            return pair;
-        }
-    }
     interface TempoTapperTempoNotifier {
         void notifyTempo( double beatPerMinute );
     }
@@ -407,15 +372,15 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         super.setBeatsPerMinute( beatsPerMinute );
     }
     
-    interface ConnectProc {
+    interface ConnectProcedure {
         void apply( Pulsar pulsar, String from, String to ) throws JackException;
-        ConnectProc CONNECT = new ConnectProc() {
+        ConnectProcedure CONNECT = new ConnectProcedure() {
             @Override
             public void apply(Pulsar pulsar, String from, String to) throws JackException {
                 pulsar.connectPort(from, to);
             }
         };
-        ConnectProc DISCONNECT = new ConnectProc() {
+        ConnectProcedure DISCONNECT = new ConnectProcedure() {
             @Override
             public void apply(Pulsar pulsar, String from, String to) throws JackException {
                 pulsar.disconnectPort(from, to);
@@ -423,7 +388,7 @@ public final class Pulsar extends Metro implements ApplicationComponent {
         };
     }
     
-    static void connectProc(Pulsar pulsar, Object[] args, ConnectProc proc ) throws JackException {
+    static void connectProc(Pulsar pulsar, Object[] args, ConnectProcedure proc ) throws JackException {
         ArrayDeque<Object> deque = new ArrayDeque<>( Arrays.asList( args ) );
         while ( 0 < deque.size() ) {
             Object fromObj = deque.pop();
@@ -487,197 +452,22 @@ public final class Pulsar extends Metro implements ApplicationComponent {
             return String.format( "#PulsarEventListener-%x#" , this.hashCode() );
         }
     }
-    /**
-     *  
-     * @param object
-     * @return
-     *    a newly created list which can safely be modified.
-     */
-    static List<Object> readParamTrackName( Object object ) { 
-        object = SchemeUtils.schemeNullCheck( object );
-        
-        if ( object instanceof Pair ) {
-            return new ArrayList<>( (Pair)object );
-        } else {
-            return new ArrayList<>( Arrays.asList( SchemeUtils.schemeNullCheck( object ) ) );
-        }
-    }
-    
-    /**
-     * Wrap another invokable object in order to filter the undesirable arguments for
-     * readParamTrackSearcher().
-     * 
-     * The tags property of MetroTrack accepts descendants of Collection class. In
-     * the general use case of MetroTrack in Pulsar, it presumes that tags are LList
-     * objects. The list object in ||tags|| property is passed to clients directly.
-     * But since the MetroTrack accepts all types of Collection class descendants,
-     * MetroTrack forces Pulsar to support tags objects which is other than LList.
-     * 
-     * Avoid unnecessary duplication of passed lists, we check the type of each list.
-     * And let is pass through when it is an LList list, and convert it to LList when
-     * it is a general Collection list. (Thu, 22 Aug 2019 12:18:27 +0900) 
-     * 
-     * @param i
-     *     
-     * @return
-     */
-    static Invokable readParamSearchTrackFilter( Invokable i ) {
-        return new Invokable() {
-            @Override
-            public Object invoke(Object... args) {
-                if ( 0 < args.length ) {
-                    args[1] = filterArg( args[1] );
-                }
-                return i.invoke( args );
-            }
-            Object filterArg(Object arg1) {
-                if ( arg1 == null ) {
-                    return EmptyList.emptyList;
-                } else if ( arg1 instanceof LList ) {
-                    return arg1;
-                } else if ( arg1 instanceof Collection ) {
-                    if (((Collection)arg1).isEmpty()) {
-                        return EmptyList.emptyList;
-                    } else {
-                        return Pair.makeList( Arrays.asList(((Collection)arg1).toArray()));
-                    }
-                } else {
-                    return arg1;
-                }
-            }
-        };
-    }
-    
-    /**
-     * XXX 
-     * 
-     * @param object
-     * @return
-     */
-    static Procedure readParamTrackSearcher( Object object ) { 
-        object = SchemeUtils.schemeNullCheck( object );
-        // TAG SEARCH
-        if ( object instanceof Procedure ) {
-            return (Procedure) object;
-        } else if ( object instanceof Symbol || object instanceof IString ) {
-            return new TagSearchIsProcedure(object);
-        } else {
-            throw new IllegalArgumentException( "unsupported type of the argument (" + object + ")" );
-        }
-    }
-    
-    
-    /**
-     * This method used be `searchTrackCombo()`.
-     * This was renamed at (Wed, 06 Nov 2019 07:38:28 +0900). 
-     * @param arg
-     * @return
-     */
-    List<MetroTrack> readParamSearchTrack(Object arg) {
-        return 
-                searchTrack(
-                    readParamSearchTrackFilter(
-                        InvokableSchemeProcedure.createSecretarillyInvokable( readParamTrackSearcher( arg ) )));
-    }
 
-    // TODO
-    List<MetroTrack> readParamCreateTrack( Object object ) {
-        if ( object instanceof MetroTrack ) {
-            return Arrays.<MetroTrack>asList((MetroTrack)object);
-        } else if ( object instanceof Procedure ) {
-            return Arrays.asList( createTrack( null, null, (Procedure)object ));
-        } else if ( object instanceof LList ) {
-            if ( ((LList)object).isEmpty() ) {
-                return Collections.emptyList();
-            } else {
-                if ( object instanceof Pair ) {
-                    if (((Pair)object).getCar() instanceof MetroTrack) {
-                        return (List<MetroTrack>) object;
-                    } else if ( NoteListParser.isNotationList(object) ) {
-                        return Arrays.asList( createTrack( null, null, new TrackProcedure( (Pair) object ) ) );
-                    } else {
-                        return readParamSearchTrack( object );
-                    }
-                } else {
-                    throw new IllegalArgumentException("unknown type of argument (" + object + ")" ) ;
-                }
-            } 
-        } else {
-            return readParamSearchTrack( object );
-        }
-    }
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    //
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
-    static double readParamSyncOffset(Object object) {
-        return SchemeUtils.toDouble( object );
-    }
-    static MetroSyncType readParamSyncType(Object object) {
-        object = SchemeUtils.schemeNullCheck(object);
-        if ( object == null ) {
-            return MetroSyncType.IMMEDIATE;
-        } else {
-            return MetroSyncType.toSyncType( SchemeUtils.toString( object ) );
+    final PulsarLibImplementation pulsarLibImplementation = new PulsarLibImplementation() {
+        @Override
+        protected Pulsar getPulsar() {
+            return Pulsar.this;
         }
-    }
-    static Procedure readParamProcedure(Object arg) {
-        if ( arg  == null ) {
-            return null;
-        } else if ( arg instanceof Procedure ) {
-            return (Procedure) arg;
-        } else if ( arg  instanceof Pair ) {
-            return new TrackProcedure((Pair)arg);
-        } else if ( arg  instanceof Number ) {
-            return new TrackProcedure( createRestBar(((Number)arg).intValue() ) );
-        } else {
-            throw new IllegalArgumentException( "unsupported type of the argument (" + arg + ")" );
-        }
-    }
-
-    private static LList createRestBar(int intValue) {
-        return 
-                LList.makeList( Arrays.asList( 
-                    LList.makeList( Arrays.asList(
-                        Pair.make( Symbol.valueOf( "type" ),  Symbol.valueOf( "len" ) ),
-                        Pair.make( Symbol.valueOf( "val" ),   IntNum.valueOf( intValue ))))));
-    }
-    protected static List<Object> readParamPortName( Object arg ) {
-        if ( arg instanceof Pair ) {
-            return ((Pair)arg);
-        } else {
-            return Arrays.asList( arg );
-        }
-    }
-    protected List<MetroPort> readParamPort( Object arg, List<MetroPort> portList ) {
-        if ( arg instanceof Pair ) {
-            List<MetroPort> list = new ArrayList<>();
-            for ( Object o : ((Pair)arg) ) {
-                list.addAll( readParamPort( o, portList ) );
-            }
-            return list;
-        } else if ( arg instanceof MetroPort ) {
-            return Arrays.asList( (MetroPort)arg );
-        } else if ( arg instanceof IString || arg instanceof Symbol ) {
-            MetroPort port = readParamNameToPort( portList, arg );
-            if ( port == null ) {
-                logWarn( "unsupported type of a value (" + arg + ")" );
-                return Collections.EMPTY_LIST;
-            } else {
-                return Arrays.asList( port );
-            }
-        } else {
-            logWarn( "unsupported type of a value (" + arg + ")" );
-            return Collections.EMPTY_LIST;
-        }
-    }
-    
-    private static MetroPort readParamNameToPort( List<MetroPort> portList, Object arg ) {
-        if ( arg instanceof MetroPort ) 
-            return (MetroPort)arg;
-        
-        for ( MetroPort p : portList ) {
-            if ( p.getName().equals( arg ) ) 
-                return p;
-        }
-        return null;
+    };
+    @Override
+    public PulsarLib getPulsarLibImplementation() {
+        return pulsarLibImplementation;
     }
     
 }

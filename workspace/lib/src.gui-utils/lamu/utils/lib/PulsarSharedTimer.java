@@ -13,37 +13,43 @@ public class PulsarSharedTimer {
 //        });
     }
     public static Runnable createTimer( Runnable threadInitializer, long delay, long interval, Invokable invokable ) {
-        if ( 0 < interval  ){
-            timer.scheduleAtFixedRate( new java.util.TimerTask() {
+        synchronized ( timer ) {
+            if ( 0 < interval  ){
+                timer.scheduleAtFixedRate( new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        if ( threadInitializer != null ) 
+                            threadInitializer.run();
+                        
+                        // Execute the specified process.
+                        Object result = invokable.invoke();
+                        
+                        if ( Boolean.FALSE.equals( result ) ) {
+                            timer.cancel();
+                        }
+                    }
+                }, delay, interval );
+            } else {
+                timer.schedule( new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        if ( threadInitializer != null ) 
+                            threadInitializer.run();
+                        
+                        // Execute the specified process.
+                        invokable.invoke();
+                    }
+                }, delay );
+            }
+            
+            return new Runnable() {
                 @Override
                 public void run() {
-                    threadInitializer.run();
-                    
-                    // Execute the specified process.
-                    Object result = invokable.invoke();
-    
-                    if ( Boolean.FALSE.equals( result ) ) {
+                    synchronized ( timer ) {
                         timer.cancel();
                     }
                 }
-            }, delay, interval );
-        } else {
-            timer.schedule( new java.util.TimerTask() {
-                @Override
-                public void run() {
-                    threadInitializer.run();
-    
-                    // Execute the specified process.
-                    invokable.invoke();
-                }
-            }, delay );
+            };
         }
-        
-        return new Runnable() {
-            @Override
-            public void run() {
-                timer.cancel();
-            }
-        };
     }
 }

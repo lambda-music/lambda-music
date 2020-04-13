@@ -12,7 +12,7 @@ public class PulsarLib_Notes {
     public static final String NOTES_ID = "pulsar-notations";
 
     private PulsarLib_Notes() {}
-    public static void defineDoc( Environment env, NoteListParser parser ) {
+    public static void initScheme( Environment env, NoteListParser parser ) {
         List<NoteListParserElement> allElements = parser.getAllElements();
 //      Collections.reverse( allElements );
         
