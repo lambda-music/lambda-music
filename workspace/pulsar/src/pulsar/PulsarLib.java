@@ -57,7 +57,6 @@ public interface PulsarLib {
     Procedure getQuit();
     Procedure getTapTempo();
     Procedure getSetTempo();
-    Procedure getReset();
     Procedure getRewind();
     Procedure getSimultaneous();
     Procedure getGetTrack();
@@ -123,10 +122,6 @@ public interface PulsarLib {
 
         public default Procedure getRewind() {
             return getPulsarLibImplementation().getRewind();
-        }
-
-        public default Procedure getReset() {
-            return getPulsarLibImplementation().getReset();
         }
 
         public default Procedure getSetTempo() {
@@ -1157,40 +1152,6 @@ public interface PulsarLib {
             }
         }
 
-        public final Procedure resetProc = new ResetProc(new String[] { "reset" });
-        @Override
-        public Procedure getReset() { return resetProc; }
-        public final class ResetProc extends MultipleNamedProcedure0 {
-            public ResetProc(String[] names) {
-                super(names);
-            }
-
-            @Override
-            public Object apply0() throws Throwable {
-                getPulsar().reset();
-                return SchemeUtils.NO_RESULT;
-            }
-        }
-
-        public static final ResetDoc resetDoc =  new ResetDoc();
-        public static final class ResetDoc extends PulsarProceduralDescriptiveDoc {
-            {
-                setCategory( Pulsar.DOCS_ID );
-                setNames("reset" );
-                setParameterDescription( "" );
-                setReturnValueDescription( "::void" );
-                setShortDescription( "resets the environment object of Scheme interpreter, and close the current JACK connection. " );
-                setLongDescription( ""
-                                    + "This procedure is supposed to be called interactively and "
-                                    + "is not supposed to be called from other procedures; a procedure which "
-                                    + "called the (reset) procedure will be deleted from the current environment object as well "
-                                    + "as other procedures and as a result, "
-                                    + "the procedure cannot call other procedures which are necessary to continue "
-                                    + "the process. "
-                                    + "" );
-            }
-        }
-
         public final RewindProc rewindProc = new RewindProc(new String[] { "rewind" });
         @Override
         public Procedure getRewind() { return rewindProc; }
@@ -1891,7 +1852,6 @@ public interface PulsarLib {
             SchemeUtils.defineLambda( env, quitProc );
             SchemeUtils.defineLambda( env, tapTempoProc );
             SchemeUtils.defineLambda( env, setTempoProc );
-            SchemeUtils.defineLambda( env, resetProc );
             SchemeUtils.defineLambda( env, rewindProc );
             SchemeUtils.defineLambda( env, simultaneousProc );
             SchemeUtils.defineLambda( env, getTrackProc );

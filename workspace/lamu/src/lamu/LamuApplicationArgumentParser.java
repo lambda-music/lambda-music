@@ -377,7 +377,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                         throw new RuntimeException( MSG_NO_SCHEME_ERROR );
                     }
                     SchemeEngine schemeEngine = parser.getValueStack( SCHEME ).peek();
-                    KawapadFrame frame = LamuApplicationLibrary.createKawapad( schemeEngine );
+                    KawapadFrame frame = LamuApplicationLibrary.createKawapadGui( schemeEngine );
 
                     if (parser.getValueStack( FRAME ).size() == 0 )
                         frame.setShutdownWhenClose( true );
@@ -408,17 +408,11 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 }
                 @Override
                 public void notifyEnd(ArgumentParser parser) {
-                    if ( parser.getValueStack( SCHEME ).isEmpty() ) {
-                        throw new RuntimeException( MSG_NO_SCHEME_ERROR );
-                    }
-                    SchemeEngine schemeEngine = parser.getValueStack( SCHEME ).peek();
-                    Pulsar pulsar = LamuApplicationLibrary.createPulsar( schemeEngine );
+                    Pulsar pulsar = LamuApplicationLibrary.createPulsar();
                     parser.getValueStack( PULSAR ).push( pulsar );
-
                     parser.getValueStack( RUNNABLE_INIT ).push( new Runnable() {
                         @Override
                         public void run() {
-                            //                                pulsar.init();
                         }
                     });
                 }

@@ -59,16 +59,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import gnu.mapping.Environment;
 import gnu.mapping.Values;
-import kawa.standard.Scheme;
 import kawapad.KawapadFrame;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.log.Logger;
 import lamu.lib.log.SimpleConsole;
 import lamu.lib.scheme.EvaluatorReceiver;
 import lamu.lib.scheme.SchemeEngine;
-import lamu.lib.scheme.SchemeEvaluator.SchemeEngineListener;
 import lamu.lib.scheme.SchemeResult;
 import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.secretary.Invokable;
@@ -131,15 +128,6 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     PulsarFrame frame = this;
     
     static final int PB_POSITION_MAX = 1024;
-    
-    public static void registerGlobalSchemeInitializers( SchemeEngine schemeEngine ) {
-        schemeEngine.getEvaluatorManager().getPrimaryEvaluator().registerSchemeInitializer( new SchemeEngineListener() {
-            @Override
-            public void execute( Scheme scheme ) {
-                initScheme( scheme );
-            }
-        });
-    }
     
     public void openIntro2() {
         InputStream in = null;
@@ -330,14 +318,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     //
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    static void initScheme(Scheme scheme) {
-        logInfo("PulsarGui#initScheme=======================================");
-        //////////////////////////////////////////////////////
-        Environment env = scheme.getEnvironment();
-    }
-    
-   
+       
     //Create the "cards".
     JComponent rootPane; 
     JPanel staticPaneOuter;

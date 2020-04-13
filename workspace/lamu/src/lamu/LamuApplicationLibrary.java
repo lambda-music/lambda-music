@@ -2,7 +2,6 @@ package lamu;
 
 import java.io.IOException;
 
-import kawapad.Kawapad;
 import kawapad.KawapadFrame;
 import lamu.lib.scheme.SchemeEngine;
 import lamu.lib.scheme.doc.old.DescriptiveHelp;
@@ -13,10 +12,6 @@ import pulsar.PulsarFrame;
 
 public class LamuApplicationLibrary {
     public static void initializeSchemeEngine( SchemeEngine schemeEngine ) {
-        // pulsar gui
-        PulsarFrame.registerGlobalSchemeInitializers( schemeEngine );
-        Kawapad.registerSchemeInitializer( schemeEngine );
-        
         // pulsar
         DescriptiveHelp.registerGlobalSchemeInitializer( schemeEngine );
         Pulsar.registerSchemeInitializers( schemeEngine );
@@ -40,15 +35,15 @@ public class LamuApplicationLibrary {
             userAuthentication, 
             schemeEngine );
     }
-    public static Pulsar createPulsar( SchemeEngine schemeEngine ) {
-        return new Pulsar( schemeEngine );
+    public static Pulsar createPulsar() {
+        return new Pulsar();
     }
 
     public static PulsarFrame createPulsarGui( SchemeEngine schemeEngine  ) {
         return PulsarFrame.create( schemeEngine, true , null );
     }
 
-    public static KawapadFrame createKawapad( SchemeEngine schemeEngine ) {
+    public static KawapadFrame createKawapadGui( SchemeEngine schemeEngine ) {
         return new KawapadFrame( schemeEngine, true, "Scheme Scratch Pad" );
     }
 

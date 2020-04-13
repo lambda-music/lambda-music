@@ -389,27 +389,6 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
 //        return threadManager;
 //    }
     
-    //////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Initializing Scheme Environment objects
-    //
-    //////////////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * This initializes variables which do not need to refer the reference to the
-     * current frame. This initializer does not have to be removed even if  
-     * frames are disposed.
-     */
-    public static void registerSchemeInitializer( SchemeEngine schemeEngine ) {
-        schemeEngine.getEvaluatorManager().getPrimaryEvaluator().registerSchemeInitializer( initSchemeListener );
-    }
-    @Deprecated
-    static SchemeEngineListener initSchemeListener = new SchemeEngineListener() {
-        @Override
-        public void execute( Scheme scheme ) {
-//            lamu.kawapad.initScheme( scheme );             
-        }
-    };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Initialization

@@ -184,9 +184,8 @@ public class Pulsar extends Metro implements PulsarLib, PulsarLibDelegator, Appl
      * (Sun, 24 Nov 2019 12:45:26 +0900) This comment is extremely outdated.
      * 
      */
-    public Pulsar( SchemeEngine schemeEngine ) {
+    public Pulsar() {
         super();
-        this.schemeEngine = schemeEngine;
     }
     
     public void init() {
@@ -223,27 +222,6 @@ public class Pulsar extends Metro implements PulsarLib, PulsarLibDelegator, Appl
     }
 
     /**
-     * reset() method resets the scheme environment.
-     */
-    public void reset() {
-        logInfo("===Pulsar.reset()");
-        newScheme();
-        execCleanupHook();
-        close();
-    }
-    
-    private final SchemeEngine schemeEngine;
-    public SchemeEngine getSchemeEngine() {
-        return schemeEngine;
-    }
-    
-    private void newScheme() {
-        logInfo("Pulsar#newScheme() "); 
-        this.getSchemeEngine().getEvaluatorManager().getPrimaryEvaluator().reset();
-    }
-    
-    
-    /**
      * This field specifies the invokable to reset all of the states inside the
      * sequencer and effectively this method starts a song. Whenever a user call
      * {@link Pulsar#rewind()}, this invokable will be invoked.
@@ -267,8 +245,6 @@ public class Pulsar extends Metro implements PulsarLib, PulsarLibDelegator, Appl
     public Invokable getMainProcedure() {
         return mainProcedure;
     }
-    
-
     
     
     /**
