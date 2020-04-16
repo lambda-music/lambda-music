@@ -1,5 +1,7 @@
 package metro;
 
+import metro.MetroMidiReceiver.FormatString;
+
 public class DefaultMetroMidiEvent implements MetroMidiEvent {
     public static DefaultMetroMidiEvent duplicate( MetroMidiEvent e ) {
         return new DefaultMetroMidiEvent(e);
@@ -8,13 +10,19 @@ public class DefaultMetroMidiEvent implements MetroMidiEvent {
         super();
         this.midiOffset = midiOffset;
         this.outputPort = outputPort;
-        this.midiData = midiData;
+        this.midiData = copyArray( midiData );
     }
     public DefaultMetroMidiEvent( MetroMidiEvent event) {
         this( event.getMidiOffset(), event.getPort(), event.getMidiData() );
     }
     
-    private int midiOffset;
+    private static byte[] copyArray(byte[] arr) {
+        byte[] newArr= new byte[ arr.length];
+        System.arraycopy( arr ,0,  newArr,0, arr.length );
+        return newArr;
+    }
+
+    private volatile int midiOffset;
     @Override
     public final int getMidiOffset() {
         return midiOffset;
@@ -28,7 +36,7 @@ public class DefaultMetroMidiEvent implements MetroMidiEvent {
         this.midiOffset += offset;
     }
 
-    MetroPort outputPort;
+    private volatile MetroPort outputPort;
     @Override
     public final MetroPort getPort() {
         return outputPort;
@@ -38,7 +46,7 @@ public class DefaultMetroMidiEvent implements MetroMidiEvent {
         this.outputPort = port;
     }
 
-    byte[] midiData;
+    private volatile byte[] midiData;
     @Override
     public byte[] getMidiData() {
         return midiData;
@@ -49,11 +57,11 @@ public class DefaultMetroMidiEvent implements MetroMidiEvent {
     }
     @Override
     public String toString() {
+        MetroMidi midi = MetroMidi.getMidi( MetroMidi.getMidiCommand( getMidiData()));
         return String.format( 
-            "(MidiEvent offset:%d port:%s ch:%d data:%s)",
-                    getMidiOffset(),
-                    getPort(),
-                    MetroMidi.getMidiChannel( getMidiData()),
-                    MetroMidi.getMidi( MetroMidi.getMidiCommand( getMidiData())));
+            "(MidiEvent offset:%3d port:%s data:%s)",
+            getMidiOffset(),
+            getPort(),
+            midi.receiveMidi( FormatString.getInstance(), this.getMidiData() ));
     }
 }

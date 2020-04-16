@@ -37,7 +37,7 @@ public class SimpleMetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiv
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
-    int cursorOffset=0;
+    private volatile int cursorOffset=0;
     public int getCursorOffset() {
         return cursorOffset;
     }
@@ -45,7 +45,7 @@ public class SimpleMetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiv
     public void setCursorOffset(int cursorOffset) {
         this.cursorOffset = cursorOffset;
     }
-    int oneBarLengthInFrames=1;
+    private volatile int oneBarLengthInFrames=1;
     public int getOneBarLengthInFrames() {
         return oneBarLengthInFrames;
     }
@@ -62,7 +62,7 @@ public class SimpleMetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiv
         super( MetroMidiMessage.getInstance() );
     }
     
-    Collection resultList;
+    private volatile Collection resultList;
     public <T> Collection<T> getResultList() {
         return resultList;
     }

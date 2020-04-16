@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -45,8 +44,8 @@ public class MetroSequenceDirectFilter implements MetroSequence, MetroLock {
         this.delay = delay;
     }
 
-    private LinkedList<MetroMidiEvent> buffer = new LinkedList<>();
-    private LinkedList<MetroMidiEvent> workBuffer = new LinkedList<>();
+    private List<MetroMidiEvent> buffer = new ArrayList<>();
+    private List<MetroMidiEvent> workBuffer = new ArrayList<>();
     static void bufferDuplicate(List<MetroMidiEvent> buffer, List<MetroMidiEvent> obj) {
         for ( Iterator<MetroMidiEvent> i=obj.iterator(); i.hasNext(); ) {
             buffer.add( DefaultMetroMidiEvent.duplicate( i.next() ) );
@@ -84,11 +83,17 @@ public class MetroSequenceDirectFilter implements MetroSequence, MetroLock {
         boolean o=false;
         for ( Iterator<MetroMidiEvent> i=buffer.iterator(); i.hasNext(); ) {
             MetroMidiEvent e = i.next();
+//            obj.add( e );
+//            System.out.println(e);
+
             int offset = e.getMidiOffset();
-            if ( rangeFrom <= offset  && offset < rangeTo ) {
-                logInfo("output:" + e );
+            if ( rangeFrom <= offset  && offset <= rangeTo ) {
+//                logInfo("output:" + e );
                 o = true;
                 obj.add( DefaultMetroMidiEvent.duplicate(e) );
+//                obj.add( e );
+            } else {
+//                logInfo("error:" + e );
             }
         }
         if ( o)
@@ -154,17 +159,26 @@ public class MetroSequenceDirectFilter implements MetroSequence, MetroLock {
 //            return;
 //        }
 //        logInfo( "filter:" + nframes);
-        synchronized ( this.buffer ) {
+
+
+        synchronized ( this ) {
             workBuffer.clear();
             bufferDuplicate(   workBuffer, in );
             bufferReplacePort( workBuffer, inputPort , outputPort );
             bufferMove(   workBuffer, delay );
             bufferInput ( buffer, workBuffer );
-            bufferSort  ( buffer );
+//            bufferSort  ( buffer );
             bufferOutput( buffer, out, 0, nframes );
             bufferMove  ( buffer, nframes * -1 );
         }
-        
+
+//        synchronized ( this ) {
+//            workBuffer.clear();
+//            bufferDuplicate(   workBuffer, in );
+//            bufferOutput( workBuffer, out, 0, nframes );
+//            bufferReplacePort( out, inputPort , outputPort );
+//        }
+
 //        switch ( this.mode ) {
 //            case PLAY:
 //                if ( player == null ) {

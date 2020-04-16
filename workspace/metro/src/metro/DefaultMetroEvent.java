@@ -27,7 +27,7 @@ package metro;
  * @author Ats Oka
  */
 public abstract class DefaultMetroEvent implements MetroEvent {
-    private String typeName;
+    private volatile String typeName;
     @Override
     public String getTypeName() {
         return typeName;
@@ -43,7 +43,7 @@ public abstract class DefaultMetroEvent implements MetroEvent {
         this.barOffsetInFrames = barOffsetInFrames;
     }
 
-    private double barOffset;
+    private volatile double barOffset;
     @Override
     public final double getBarOffset() {
         return barOffset;
@@ -61,7 +61,7 @@ public abstract class DefaultMetroEvent implements MetroEvent {
         return from <= this.barOffset && this.barOffset < to;
     }
     
-    private int barOffsetInFrames;
+    private volatile int barOffsetInFrames;
     @Override
     public final int getBarOffsetInFrames() {
         return barOffsetInFrames;

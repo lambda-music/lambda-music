@@ -388,7 +388,7 @@ public abstract class MetroMidi {
         }
         @Override
         public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver, MASK_4BIT & message[0] >> 4, MASK_7BIT & message[1], MASK_7BIT & message[2] );
+            return callMidi( receiver, MASK_4BIT & message[0], MASK_7BIT & message[1], MASK_7BIT & message[2] );
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -427,7 +427,7 @@ public abstract class MetroMidi {
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
             byte[] message = event.getMidiData();
             callBufferedMidi( receiver, event.getMidiOffset() , event.getPort(), 
-                MASK_4BIT & message[0] >> 4, MASK_7BIT & message[1], MASK_7BIT & message[2] );
+                MASK_4BIT & message[0], MASK_7BIT & message[1], MASK_7BIT & message[2] );
         }
     }
     

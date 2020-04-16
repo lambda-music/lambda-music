@@ -733,16 +733,16 @@ public interface MetroMidiReceiver<T> {
             return format( "cc_rpnMsb", " int channel, int value ", channel, value  );
         }
     }
-    public static class LoggingToError extends Formatter<String> {
-        private static final LoggingToError INSTANCE = new LoggingToError();
-        public static LoggingToError getInstance() {
+    public static class FormatString extends Formatter<String> {
+        private static final FormatString INSTANCE = new FormatString();
+        public static FormatString getInstance() {
             return INSTANCE;
         }
         @Override
         protected String format(String method, String params, Object... args) {
             StringBuilder sb = new StringBuilder();
             for ( int i=0; i<args.length; i++ ) {
-                sb.append( "%s , " );
+                sb.append( "%3s , " );
             }
             if ( sb.length() != 0 ) 
                 sb.setLength( sb.length() - 3 );

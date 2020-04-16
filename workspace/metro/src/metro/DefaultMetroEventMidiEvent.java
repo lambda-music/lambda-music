@@ -34,7 +34,7 @@ public class DefaultMetroEventMidiEvent extends DefaultMetroEvent implements Met
         this.midiData = data;
     }
     
-    private int midiOffset;
+    private volatile int midiOffset;
     @Override
     public final int getMidiOffset() {
         return midiOffset;
@@ -51,7 +51,7 @@ public class DefaultMetroEventMidiEvent extends DefaultMetroEvent implements Met
         this.setMidiOffset( this.getBarOffsetInFrames() - cursor );
     }
 
-    MetroPort outputPort;
+    private volatile MetroPort outputPort;
     @Override
     public final MetroPort getPort() {
         return outputPort;
@@ -61,7 +61,7 @@ public class DefaultMetroEventMidiEvent extends DefaultMetroEvent implements Met
         this.outputPort = port;
     }
 
-    byte[] midiData;
+    private volatile byte[] midiData;
     @Override
     public byte[] getMidiData() {
         return midiData;
