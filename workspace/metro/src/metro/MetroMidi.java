@@ -368,7 +368,7 @@ public abstract class MetroMidi {
         {
             this.shortName        = "non";
             this.longName         = "note on";
-            this.statusHigher4bit = 0b01000;
+            this.statusHigher4bit = 0b01001;
             registerCommon4bit( this );
         }
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int ch, int note, double velocity ) {
@@ -401,7 +401,7 @@ public abstract class MetroMidi {
         {
             this.shortName = "noff";
             this.longName = "note off";
-            this.statusHigher4bit = 0b01001;
+            this.statusHigher4bit = 0b01000;
             registerCommon4bit( this );
         }
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver,  double offset, MetroPort port, int ch, int note, double velocity ) {
