@@ -210,6 +210,10 @@ public abstract class MetroMidi {
             throw new IllegalStateException( "control number is not set." );
         return controlChange8bit;
     }
+    @Override
+    public String toString() {
+        return getLongName();
+    }
     
     public abstract <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message );
     public abstract void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event );
@@ -247,7 +251,27 @@ public abstract class MetroMidi {
     static void registerControlChange8bit( MetroMidi midi ) {
         midiControlChange8bitMap[ midi.getControlChange8bit() ] = midi;
     }
-    
+
+    // Added (Thu, 16 Apr 2020 15:51:59 +0900)
+    /**
+     * @param message
+     * @return
+     */
+    public static final int getMidiCommand( byte[] message ) { 
+        return ( (0b011110000 & message[0] ) >> 4 );
+    }
+    // Added (Thu, 16 Apr 2020 15:51:59 +0900)
+    public static final int getMidiChannel( byte[] message ) { 
+        return ( (0b000001111 & message[0] )      );
+    }
+    // Added (Thu, 16 Apr 2020 15:51:59 +0900)
+    public static final MetroMidi getMidi( int command ) {
+        if ( 0<= command && command < midiCommon4bitMap.length ) {
+            return midiCommon4bitMap[ command ];
+        } else {
+            return null;
+        }
+    }
     private static MetroMidi lookupMidi( MetroMidiEvent event ) {
         byte[] message = event.getMidiData();
         int command  = ( (0b011110000 & message[0] ) >> 4 );

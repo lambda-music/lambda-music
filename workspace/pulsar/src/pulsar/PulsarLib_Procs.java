@@ -573,6 +573,8 @@ public class PulsarLib_Procs {
      */
     
     public static void initScheme( Environment env ) {
+        SchemeUtils.defineLambda( env, currentPulsarProc );
+        SchemeUtils.defineLambda( env, isCurrentPulsarPresentProc );
         SchemeUtils.defineLambda( env, getTrackPositionProc );
         SchemeUtils.defineLambda( env, printStackTraceProc);
         SchemeUtils.defineLambda( env, displayWarnProc);

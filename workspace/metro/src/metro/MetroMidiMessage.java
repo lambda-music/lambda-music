@@ -74,20 +74,20 @@ import lamu.lib.log.Logger;
  *  <tr><td>13</td>                                             <td>"Effect Controller 2"</td>                              <td>"Usually used to control a parameter of an effect within the synth/workstation."</td></tr>
  *  <tr><td>64</td>                                             <td>"Damper Pedal /Sustain Pedal"</td>                      <td>"On/Off switch that controls sustain. (See also Sostenuto CC 66)0 to 63 = Off, 64 to 127 = On"</td></tr>
  *  <tr><td>65</td>                                             <td>"Portamento On/Off Switch"</td>                         <td>"On/Off switch0 to 63 = Off, 64 to 127 = On"</td></tr>
- *  <tr><td>66</td>                                             <td>"Sostenuto On/Off Switch"</td>                          <td>"On/Off switch – Like the Sustain controller (CC 64), However it only holds notes that were “On” when the pedal was pressed. People use it to “hold” chords” and play melodies over the held chord.0 to 63 = Off, 64 to 127 = On"</td></tr>
+ *  <tr><td>66</td>                                             <td>"Sostenuto On/Off Switch"</td>                          <td>"On/Off switch - Like the Sustain controller (CC 64), However it only holds notes that were "On" when the pedal was pressed. People use it to "hold" chords" and play melodies over the held chord.0 to 63 = Off, 64 to 127 = On"</td></tr>
  *  <tr><td>67</td>                                             <td>"Soft Pedal On/Off Switch"</td>                         <td>"On/Off switch- Lowers the volume of notes played.0 to 63 = Off, 64 to 127 = On"</td></tr>
  *  <tr><td>68</td>                                             <td>"Legato FootSwitch"</td>                                <td>"On/Off switch- Turns Legato effect between 2 subsequent notes On or Off.0 to 63 = Off, 64 to 127 = On"</td></tr>
- *  <tr><td>69</td>                                             <td>"Hold 2"</td>                                           <td>"Another way to “hold notes” (see MIDI CC 64 and MIDI CC 66). However notes fade out according to their release parameter rather than when the pedal is released."</td></tr>
+ *  <tr><td>69</td>                                             <td>"Hold 2"</td>                                           <td>"Another way to "hold notes" (see MIDI CC 64 and MIDI CC 66). However notes fade out according to their release parameter rather than when the pedal is released."</td></tr>
  *  <tr><td>70</td>                                             <td>"Sound Controller 1"</td>                               <td>"Usually controls the way a sound is produced. Default = Sound Variation."</td></tr>
  *  <tr><td>71</td>                                             <td>"Sound Controller 2"</td>                               <td>"Allows shaping the Voltage Controlled Filter (VCF). Default = Resonance -also(Timbre or Harmonics)"</td></tr>
  *  <tr><td>72</td>                                             <td>"Sound Controller 3"</td>                               <td>"Controls release time of the Voltage controlled Amplifier (VCA). Default = Release Time."</td></tr>
- *  <tr><td>73</td>                                             <td>"Sound Controller 4"</td>                               <td>"Controls the “Attack’ of a sound. The attack is the amount of time it takes forthe sound to reach maximum amplitude."</td></tr>
+ *  <tr><td>73</td>                                             <td>"Sound Controller 4"</td>                               <td>"Controls the "Attack" of a sound. The attack is the amount of time it takes forthe sound to reach maximum amplitude."</td></tr>
  *  <tr><td>74</td>                                             <td>"Sound Controller 5"</td>                               <td>"Controls VCFs cutoff frequency of the filter."</td></tr>
- *  <tr><td>75</td>                                             <td>"Sound Controller 6"</td>                               <td>"Generic – Some manufacturers may use to further shave their sounds."</td></tr>
- *  <tr><td>76</td>                                             <td>"Sound Controller 7"</td>                               <td>"Generic – Some manufacturers may use to further shave their sounds."</td></tr>
- *  <tr><td>77</td>                                             <td>"Sound Controller 8"</td>                               <td>"Generic – Some manufacturers may use to further shave their sounds."</td></tr>
- *  <tr><td>78</td>                                             <td>"Sound Controller 9"</td>                               <td>"Generic – Some manufacturers may use to further shave their sounds."</td></tr>
- *  <tr><td>79</td>                                             <td>"Sound Controller 10"</td>                              <td>"Generic – Some manufacturers may use to further shave their sounds."</td></tr>
+ *  <tr><td>75</td>                                             <td>"Sound Controller 6"</td>                               <td>"Generic - Some manufacturers may use to further shave their sounds."</td></tr>
+ *  <tr><td>76</td>                                             <td>"Sound Controller 7"</td>                               <td>"Generic - Some manufacturers may use to further shave their sounds."</td></tr>
+ *  <tr><td>77</td>                                             <td>"Sound Controller 8"</td>                               <td>"Generic - Some manufacturers may use to further shave their sounds."</td></tr>
+ *  <tr><td>78</td>                                             <td>"Sound Controller 9"</td>                               <td>"Generic - Some manufacturers may use to further shave their sounds."</td></tr>
+ *  <tr><td>79</td>                                             <td>"Sound Controller 10"</td>                              <td>"Generic - Some manufacturers may use to further shave their sounds."</td></tr>
  *  <tr><td>80</td>                                             <td>"General PurposeMIDI CC Controller"</td>                <td>"GenericOn/Off switch0 to 63 = Off, 64 to 127 = On"</td></tr>
  *  <tr><td>81</td>                                             <td>"General Purpose MIDI CC Controller"</td>               <td>"GenericOn/Off switch0 to 63 = Off, 64 to 127 = On"</td></tr>
  *  <tr><td>82</td>                                             <td>"General PurposeMIDI CC Controller"</td>                <td>"GenericOn/Off switch0 to 63 = Off, 64 to 127 = On"</td></tr>
@@ -108,18 +108,18 @@ import lamu.lib.log.Logger;
  *  <tr><td>9</td>                                              <td>Undefined</td>                                          <td> </td></tr>
  *  <tr><td>14</td>                                             <td>Undefined</td>                                          <td> </td></tr>
  *  <tr><td>15</td>                                             <td>Undefined</td>                                          <td> </td></tr>
- *  <tr><td>16 – 19</td>                                        <td>General Purpose</td>                                    <td> </td></tr>
- *  <tr><td>20 – 31</td>                                        <td>Undefined</td>                                          <td> </td></tr>
- *  <tr><td>32 – 63</td>                                        <td>Controller 0-31 Least Significant Bit (LSB)</td>        <td> </td></tr>
- *  <tr><td>85 – 90</td>                                        <td>Undefined</td>                                          <td> </td></tr>
- *  <tr><td>102 – 119</td>                                      <td>Undefined</td>                                          <td> </td></tr>
- *  <tr><td colspan="3">120 to 127 are “Channel Mode Messages.”</td></tr>
+ *  <tr><td>16 - 19</td>                                        <td>General Purpose</td>                                    <td> </td></tr>
+ *  <tr><td>20 - 31</td>                                        <td>Undefined</td>                                          <td> </td></tr>
+ *  <tr><td>32 - 63</td>                                        <td>Controller 0-31 Least Significant Bit (LSB)</td>        <td> </td></tr>
+ *  <tr><td>85 - 90</td>                                        <td>Undefined</td>                                          <td> </td></tr>
+ *  <tr><td>102 - 119</td>                                      <td>Undefined</td>                                          <td> </td></tr>
+ *  <tr><td colspan="3">120 to 127 are "Channel Mode Messages."</td></tr>
  *  <tr><td>120</td>                                            <td>All Sound Off</td>                                      <td>Mutes all sounding notes. It does so regardless of release time or sustain. (See MIDI CC 123)</td></tr>
  *  <tr><td>121</td>                                            <td>Reset All Controllers</td>                              <td>It will reset all controllers to their default.</td></tr>
  *  <tr><td>122</td>                                            <td>Local On/Off Switch</td>                                <td>Turns internal connection of a MIDI keyboard/workstation, etc. On or Off. If you use a computer, you will most likely want local control off to avoid notes being played twice. Once locally and twice whent the note is sent back from the computer to your keyboard.</td></tr>
  *  <tr><td>123</td>                                            <td>All Notes Off</td>                                      <td>Mutes all sounding notes. Release time will still be maintained, and notes held by sustain will not turn off until sustain pedal is depressed.</td></tr>
- *  <tr><td>124</td>                                            <td>Omni Mode Off</td>                                      <td>Sets to “Omni Off” mode.</td></tr>
- *  <tr><td>125</td>                                            <td>Omni Mode On</td>                                       <td>Sets to “Omni On” mode.</td></tr>
+ *  <tr><td>124</td>                                            <td>Omni Mode Off</td>                                      <td>Sets to "Omni Off" mode.</td></tr>
+ *  <tr><td>125</td>                                            <td>Omni Mode On</td>                                       <td>Sets to "Omni On" mode.</td></tr>
  *  <tr><td>126</td>                                            <td>Mono Mode</td>                                          <td>Sets device mode to Monophonic.</td></tr>
  *  <tr><td>127</td>                                            <td>Poly Mode</td>                                          <td>Sets device mode to Polyphonic.</td></tr>
  *  </table>

@@ -923,7 +923,8 @@ public class Metro
             }
 
             synchronized ( this.getMetroLock() ) {
-                if ( 0 < this.inputMidiEventList.size() )
+//                ************* REMOVED ************ (Thu, 16 Apr 2020 12:05:26 +0900) IMPORTANT!
+//                if ( 0 < this.inputMidiEventList.size() )
                     for ( MetroTrack track : this.tracks ) {
                         track.sequence.processDirect( this, nframes, track.totalCursor, this.inputMidiEventList, this.outputMidiEventList );
                     }
