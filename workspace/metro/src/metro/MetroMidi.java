@@ -393,7 +393,7 @@ public abstract class MetroMidi {
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
             byte[] message = event.getMidiData();
-            callBufferedMidi( receiver, event.getMidiOffset() , event.getPort(), MASK_4BIT & message[0] >> 4, MASK_7BIT & message[1], MASK_7BIT & message[2] );
+            callBufferedMidi( receiver, event.getMidiOffset() , event.getPort(), MASK_4BIT & message[0] , MASK_7BIT & message[1], MASK_7BIT & message[2] );
         }
     }
     public static final MetroMidiNoteOff MIDI_NOTE_OFF = new MetroMidiNoteOff();
@@ -426,8 +426,7 @@ public abstract class MetroMidi {
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
             byte[] message = event.getMidiData();
-            callBufferedMidi( receiver, event.getMidiOffset() , event.getPort(), 
-                MASK_4BIT & message[0], MASK_7BIT & message[1], MASK_7BIT & message[2] );
+            callBufferedMidi( receiver, event.getMidiOffset() , event.getPort(), MASK_4BIT & message[0], MASK_7BIT & message[1], MASK_7BIT & message[2] );
         }
     }
     
