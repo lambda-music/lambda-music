@@ -85,9 +85,7 @@ import kawapad.KawapadSelection.ShrinkParenthesisSelector;
 import kawapad.KawapadSelection.SideParenthesisSelector;
 import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
-import lamu.lib.CurrentObject;
 import lamu.lib.app.ApplicationComponent;
-import lamu.lib.app.args.ArgumentParserDefault;
 import lamu.lib.doc.ActionDocumentFormatter;
 import lamu.lib.doc.LamuDocument;
 import lamu.lib.log.Logger;
@@ -106,10 +104,6 @@ import lamu.lib.swing.Action2;
 import lamu.lib.swing.AutomatedActionField;
 import lamu.lib.swing.MenuInitializer;
 import lamu.lib.swing.TextAction2;
-import lamu.lib.thread.ThreadInitializer;
-import lamu.lib.thread.ThreadInitializerCollection;
-import lamu.lib.thread.ThreadInitializerCollectionContainer;
-import lamu.lib.thread.ThreadInitializerContainer;
 
 /**
  * 
@@ -134,7 +128,7 @@ import lamu.lib.thread.ThreadInitializerContainer;
  *  
  * @author Ats Oka
  */
-public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kawapad>, ThreadInitializerCollectionContainer, MenuInitializer, ApplicationComponent {
+public class Kawapad extends JTextPane implements MenuInitializer, ApplicationComponent {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -223,49 +217,6 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     //  }
     //    
     
-    ////////////////////////////////////////////////////////////////////////////
-
-    private static final CurrentObject<Kawapad> currentObject = new CurrentObject<>( Kawapad.class );
-    private final ThreadInitializer<Kawapad> threadInitializer = 
-            ThreadInitializer.createMultipleThreadInitializer( "kawapad", this,
-                ThreadInitializer.createThreadInitializer( "kawapad-current", currentObject, Kawapad.this ));
-    
-    @Override
-    public ThreadInitializer<Kawapad> getThreadInitializer() {
-        return threadInitializer;
-    }    
-    public static Kawapad getCurrent() {
-        return currentObject.get();
-    }
-    public static boolean isPresent() {
-        return currentObject.isPresent();
-    }
-
-    
-    ////////////////////////////////////////////////////////////////////////////
-    // The Thread Initializer Facility
-    ////////////////////////////////////////////////////////////////////////////
-
-    private ThreadInitializerCollection threadInitializerCollection = new ThreadInitializerCollection("kawapad", this );
-    public ThreadInitializerCollection getThreadInitializerCollection() {
-        return threadInitializerCollection;
-    }
-
-    /**
-     * Don't let the automatic collector collect this initializer and add the primary initializer manually.
-     * For further information, see {@link ArgumentParserDefault#deploy }. 
-     */
-    void initializeTheThreadInitializer() {
-        // (Sun, 12 Apr 2020 13:54:16 +0900)
-        this.threadInitializer.setPublished(false);
-
-        // See createIndependentThreadInitializer();
-        this.getThreadInitializerCollection().addThreadInitializer( getThreadInitializer() );
-    }
-    {
-        initializeTheThreadInitializer();
-    }
-
     ////////////////////////////////////////////////////////////////////////////
     // 
     ////////////////////////////////////////////////////////////////////////////
@@ -422,7 +373,7 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
         if ( schemeScript != null ) {
             this.kawapad.getSchemeEngine().getThreadManager().startThread( 
                 SchemeEngine.createEvaluationRunner( 
-                    kawapad.getThreadInitializerCollection(), 
+                    null, 
                     schemeScript, 
                     this.getSchemeEngine().getEvaluatorManager().getCurrentEvaluator(), 
                     receiver, 
@@ -3153,14 +3104,6 @@ public class Kawapad extends JTextPane implements ThreadInitializerContainer<Kaw
     public KawapadFrame createKawapadFrame( File f ) throws IOException {
         KawapadFrame kawapadFrame = new KawapadFrame( this.kawapad.getSchemeEngine(), false, "Kawapad" );
         Kawapad newKawapad = kawapadFrame.getKawapad();
-        Kawapad thisKawapad = this;
-        
-        newKawapad.getThreadInitializerCollection().addAllThreadInitializer( 
-            thisKawapad.getThreadInitializerCollection().getThreadInitializerList() );
-        
-        newKawapad.getThreadInitializerCollection().deleteThreadInitializer( 
-            thisKawapad.getThreadInitializer() );
-        
         kawapadFrame.processInit();
         if ( f != null )
             newKawapad.openFile( f );

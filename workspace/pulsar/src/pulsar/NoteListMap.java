@@ -8,16 +8,17 @@ import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
+import metro.Metro;
 
 public abstract class NoteListMap {
     public abstract <T> T get( Symbol key, NoteListValueConverter<T> converter, NoteListValueGenerator<T> defaultValue );
     
-    public static final NoteListMap createAlist( LList notation ) {
+    public static final NoteListMap createAlist( Metro metro, LList notation ) {
         return new NoteListSchemeAlistMap( notation );
     }
     private static class NoteListSchemeAlistMap extends NoteListMap {
         private static final Procedure assq = (Procedure) srfi1.assq.get();
-        private static final <T> T alistGet( Object key, LList alist, NoteListValueConverter<T> converter, NoteListValueGenerator<T> defaultValue ) {
+        private final <T> T alistGet( Object key, LList alist, NoteListValueConverter<T> converter, NoteListValueGenerator<T> defaultValue ) {
             try {
                 Object value = assq.apply2( key, alist );
                 if ( Boolean.FALSE == value ) {
@@ -29,7 +30,7 @@ public abstract class NoteListMap {
                 throw new RuntimeException(e);
             }
         }
-        private LList alist;
+        private final LList alist;
         public NoteListSchemeAlistMap(LList alist) {
             this.alist = alist;
         }
@@ -65,7 +66,7 @@ public abstract class NoteListMap {
         
         HashMap<Symbol,Object> map;
         @Override
-        public <T> T get(Symbol key, NoteListValueConverter<T> converter, NoteListValueGenerator<T> defaultValue ) {
+        public <T> T get( Symbol key, NoteListValueConverter<T> converter, NoteListValueGenerator<T> defaultValue ) {
             return map.containsKey( key ) ? converter.convert( map.get( key ) ) : defaultValue.generate();
         }
         

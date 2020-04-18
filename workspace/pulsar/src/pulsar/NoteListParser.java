@@ -165,13 +165,22 @@ public class NoteListParser {
     /**
      * This method parses the specified note list. 
      * 
-     * Refer
+     * <p>
+     * See
      * {@linkplain pulsar.SchemeSequence#processBuffered(Metro, MetroTrack, MetroEventBuffer<T>) processBuffered}
      * to see how this method is called.
-     * 
-     * (Fri, 01 Nov 2019 11:24:28 +0900)
+     * <p>
+     * <p>
+     * (Fri, 01 Nov 2019 11:24:28 +0900) 
      * Note that {@link Pulsar#currentObject} sets the default Pulsar 
      * object as a current object. See {@link NoteListCommon#S2J_PORT}.
+     * </p>
+     * 
+     * <p>
+     * (Sat, 18 Apr 2020 16:24:52 +0900)
+     * Now Metro is the only class that uses ThreadInitializerCollection class.
+     * {@link metro.Metro#getThreadInitializerCollection() }
+     * </p>
      * 
      * @param metro
      *            The instance of the current {@link Metro}.
@@ -234,7 +243,7 @@ public class NoteListParser {
     }
 
     private <T> void parseProc( Metro metro, MetroTrack track, LList notation, MetroBufferedMidiReceiver<T> buffer, MetroCollector<T> result ) {
-        NoteListMap           map    = NoteListMap.createAlist( notation );
+        NoteListMap           map    = NoteListMap.createAlist( metro, notation );
         Symbol                type   = map.get( ID_TYPE, SYMBOL_THRU, SYMBOL_NULL );
         if ( type == null ) {
             logError( "Error : notation type was not specified.", new Exception() );

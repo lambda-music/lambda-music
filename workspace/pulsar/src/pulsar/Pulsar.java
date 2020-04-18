@@ -103,6 +103,7 @@ import pulsar.PulsarLib.PulsarLibDelegator;
  * @author Atsushi Oka
  */
 public class Pulsar extends Metro implements PulsarLib, PulsarLibDelegator, ApplicationComponent {
+    
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }
     static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }
@@ -144,17 +145,6 @@ public class Pulsar extends Metro implements PulsarLib, PulsarLibDelegator, Appl
 
     static long shutdownWait = 1024;
     
-    //////////////////////////////////////////////////////////////////////////////////////////
-    
-    public static Pulsar getCurrent() {
-        return (Pulsar)Metro.getCurrent();
-    }
-    public static boolean isPresent() {
-        return Metro.isPresent();
-    }
-
-    //////////////////////////////////////////////////////////////////////////////////////////
-
     @Override
     protected void onCreateThread() {
         super.onCreateThread();
@@ -396,5 +386,12 @@ public class Pulsar extends Metro implements PulsarLib, PulsarLibDelegator, Appl
         return pulsarLibImplementation;
     }
     
+    private static final ThreadLocal<Metro> currentMetroLocal = new ThreadLocal<>();
+    public static final Metro getCurrentMetro() {
+        return currentMetroLocal.get();
+    }
+    public static final void setCurrentMetro( Metro metro ) {
+        currentMetroLocal.set(metro);
+    }
 }
     

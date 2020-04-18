@@ -22,7 +22,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Segment;
 
 import lamu.lib.log.Logger;
-import lamu.lib.scheme.SchemeEvaluator;
+import lamu.lib.scheme.Evaluator;
 import lamu.lib.scheme.SchemeUtils;
 
 public class KawapadContentAssist {
@@ -130,7 +130,7 @@ public class KawapadContentAssist {
         }
     }
     public synchronized void updatePopup(Caret caret) {
-        SchemeEvaluator evaluator = kawapad.getSchemeEngine().getEvaluatorManager().getPrimaryEvaluator();
+        Evaluator evaluator = kawapad.getSchemeEngine().getEvaluatorManager().getPrimaryEvaluator();
         
         try {
             Document document = kawapad.getDocument();

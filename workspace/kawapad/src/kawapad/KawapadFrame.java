@@ -370,7 +370,6 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
 
     public static void outputDocument() throws IOException {
         ForceLoadingClass.force( Kawapad.class );
-        ForceLoadingClass.force( lamu.kawapad.class );
         
         
         KawapadFrame kawapadFrame = createStaticInstance();

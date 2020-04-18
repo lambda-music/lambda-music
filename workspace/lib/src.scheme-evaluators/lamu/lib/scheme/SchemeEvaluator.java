@@ -108,6 +108,12 @@ public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluat
         Language.setCurrentLanguage( scheme );
         Environment.setCurrent( scheme.getEnvironment() );
     }
+    private final Runnable privateThreadInitializer = new Runnable() {
+        @Override
+        public void run() {
+            initializeCurrentThread( SchemeEvaluator.this.getScheme() );
+        }
+    };
 
     @Override
     public SchemeResult evaluate( 
@@ -119,7 +125,7 @@ public class SchemeEvaluator implements ThreadInitializerContainer<SchemeEvaluat
     {
         return SchemeEvaluatorImplementation.evaluateSchemeProc( 
             scheme,
-            threadInitializer, 
+            privateThreadInitializer, 
             schemeScript, 
             currentDirectory, 
             currentFile, 

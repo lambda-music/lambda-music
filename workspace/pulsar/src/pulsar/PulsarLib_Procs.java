@@ -29,47 +29,6 @@ import pulsar.PulsarLib.PulsarLibImplementation.PulsarProceduralDescriptiveDoc;
 
 public class PulsarLib_Procs {
 
-    public static final PulsarDoc pulsarDoc = new PulsarDoc();
-    public static final class PulsarDoc extends PulsarProceduralDescriptiveDoc {
-        {
-            setCategory( Pulsar.DOCS_ID );
-            setNames( "pulsar" );
-            setParameterDescription( "" );
-            setReturnValueDescription( "" );
-            setShortDescription(       "" );
-            setLongDescription(        ""
-                                     + "" );
-        }
-    }
-    
-    public static final PulsarProc currentPulsarProc = new PulsarProc(new String[] { "current-pulsar" });
-    public static final Procedure getCurrentPulsar() { return  currentPulsarProc; }
-    public static final class PulsarProc extends MultipleNamedProcedure0 {
-        public PulsarProc(String[] names) {
-            super(names);
-        }
-
-        @Override
-        public Object apply0() throws Throwable {
-            return Pulsar.getCurrent();
-        }
-    }
-
-    public static LamuDocument isPulsarPresentDoc;
-
-    public static final IsPulsarPresentProc isCurrentPulsarPresentProc = new IsPulsarPresentProc(new String[] { "current-pulsar-present?" });
-    public Procedure isCurrentPulsarPresent() { return isCurrentPulsarPresentProc ; }
-    public static final class IsPulsarPresentProc extends MultipleNamedProcedure0 {
-        public IsPulsarPresentProc(String[] names) {
-            super(names);
-        }
-
-        @Override
-        public Object apply0() throws Throwable {
-            return Pulsar.isPresent();
-        }
-    }
-
     public static final Procedure getTrackPositionProc = new GetTrackPositionProc(new String[] { "get-track-position", "gettp" });
     public static final class GetTrackPositionProc extends MultipleNamedProcedure1 {
         public GetTrackPositionProc(String[] names) {
@@ -573,8 +532,6 @@ public class PulsarLib_Procs {
      */
     
     public static void initScheme( Environment env ) {
-        SchemeUtils.defineLambda( env, currentPulsarProc );
-        SchemeUtils.defineLambda( env, isCurrentPulsarPresentProc );
         SchemeUtils.defineLambda( env, getTrackPositionProc );
         SchemeUtils.defineLambda( env, printStackTraceProc);
         SchemeUtils.defineLambda( env, displayWarnProc);

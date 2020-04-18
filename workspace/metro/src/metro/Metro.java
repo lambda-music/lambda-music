@@ -49,23 +49,16 @@ import org.jaudiolibs.jnajack.JackStatus;
 import org.jaudiolibs.jnajack.JackTimebaseCallback;
 import org.jaudiolibs.jnajack.JackTransportState;
 
-import lamu.lib.CurrentObject;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.secretary.Invokable;
-import lamu.lib.thread.ThreadInitializer;
 import lamu.lib.thread.ThreadInitializerCollection;
-import lamu.lib.thread.ThreadInitializerCollectionContainer;
-import lamu.lib.thread.ThreadInitializerContainer;
 
 /**
  * 
  * @author Ats Oka
  */
-public class Metro 
-    implements  MetroLock, JackProcessCallback, JackShutdownCallback, JackTimebaseCallback, 
-                Runnable, ThreadInitializerContainer<Metro>, ThreadInitializerCollectionContainer 
-{
+public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallback, JackTimebaseCallback, Runnable {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -88,29 +81,15 @@ public class Metro
         return Metro.this.lock;
     }
  
-    
-    private static final CurrentObject<Metro> currentObject = new CurrentObject<>( Metro.class );
-    private final ThreadInitializer<Metro> threadInitializer =
-            ThreadInitializer.createMultipleThreadInitializer( "metro", this, 
-                ThreadInitializer.createThreadInitializer( "metro-current", currentObject, this ) );
-            
-    @Override
-    public ThreadInitializer<Metro> getThreadInitializer() {
-        return threadInitializer;
-    }
-    public static Metro getCurrent() {
-        return currentObject.get();
-    }
-    public static boolean isPresent() {
-        return currentObject.isPresent();
-    }
-
     private final ThreadInitializerCollection threadInitializerCollection = new ThreadInitializerCollection( "metro", this );
-    {
-        // It is obligated
-        threadInitializerCollection.addThreadInitializer( this.getThreadInitializer() );
-    }
-    @Override
+    /**
+     * Metro class has several own threads; therefore, Metro class offers
+     * hooks to initialize the threads. This is necessary to cooperate with classes such as
+     * ThreadLocal etc.<p/>
+     * 
+     * In order to register an initializer to Metro, add a Runnable object to the ThreadInitializerCollection object
+     * which can be retrieved from this method.
+     */
     public ThreadInitializerCollection getThreadInitializerCollection() {
         return this.threadInitializerCollection;
     }

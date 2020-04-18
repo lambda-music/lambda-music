@@ -32,6 +32,8 @@ import metro.MetroSyncType;
 import metro.MetroTrack;
 
 public interface PulsarLib {
+    Procedure getGetCurrentPulsar();
+    Procedure getIsCurrentPulsarPresent();
     Procedure getIsOpen();
     Procedure getOpen();
     Procedure getClose();
@@ -67,8 +69,17 @@ public interface PulsarLib {
     Procedure getGetMainTrack();
     public static abstract interface PulsarLibDelegator extends PulsarLib {
         abstract PulsarLib getPulsarLibImplementation();
-        public default Procedure getGetMainTrack() {
+        @Override
+        default Procedure getGetMainTrack() {
             return getPulsarLibImplementation().getGetMainTrack();
+        }
+        @Override
+        public default Procedure getGetCurrentPulsar() {
+            return getPulsarLibImplementation().getGetCurrentPulsar();
+        }
+        @Override
+        public default Procedure getIsCurrentPulsarPresent() {
+            return getPulsarLibImplementation().getIsCurrentPulsarPresent();
         }
 
         public default Procedure getClearTracks() {
@@ -442,6 +453,62 @@ public interface PulsarLib {
             public PulsarProceduralDescriptiveDoc() {
             }
         }
+
+        public static final CurrentPulsarDoc currentPulsarDoc = new CurrentPulsarDoc();
+        public static final class CurrentPulsarDoc extends PulsarProceduralDescriptiveDoc {
+            {
+                setCategory( Pulsar.DOCS_ID );
+                setNames( "current-pulsar" );
+                setParameterDescription( "" );
+                setReturnValueDescription( "" );
+                setShortDescription(       "" );
+                setLongDescription(        ""
+                                         + "" );
+            }
+        }
+
+        public final PulsarProc currentPulsarProc = new PulsarProc(new String[] { "current-pulsar" });
+        @Override
+        public final Procedure getGetCurrentPulsar() { return  currentPulsarProc; }
+        public final class PulsarProc extends MultipleNamedProcedure0 {
+            public PulsarProc(String[] names) {
+                super(names);
+            }
+
+            @Override
+            public Object apply0() throws Throwable {
+                return getPulsar();
+            }
+        }
+        
+
+        public static final CurrentPulsarPresentDoc isCurrentPulsarPresentDoc = new CurrentPulsarPresentDoc();
+        public static final class CurrentPulsarPresentDoc extends PulsarProceduralDescriptiveDoc {
+            {
+                setCategory( Pulsar.DOCS_ID );
+                setNames( "current-pulsar-present?" );
+                setParameterDescription( "" );
+                setReturnValueDescription( "" );
+                setShortDescription(       "" );
+                setLongDescription(        ""
+                                         + "" );
+            }
+        }
+
+        public final IsPulsarPresentProc isCurrentPulsarPresentProc = new IsPulsarPresentProc(new String[] { "current-pulsar-present?" });
+        @Override
+        public Procedure getIsCurrentPulsarPresent() { return isCurrentPulsarPresentProc ; }
+        public final class IsPulsarPresentProc extends MultipleNamedProcedure0 {
+            public IsPulsarPresentProc(String[] names) {
+                super(names);
+            }
+
+            @Override
+            public Object apply0() throws Throwable {
+                return getPulsar() !=null;
+            }
+        }
+
 
         public static final IsOpenDoc isOpenDoc = new IsOpenDoc();
         public static final class IsOpenDoc extends PulsarProceduralDescriptiveDoc {
@@ -1742,6 +1809,8 @@ public interface PulsarLib {
         }
         
         public void initScheme( Environment env ) {
+            SchemeUtils.defineLambda( env, currentPulsarProc );
+            SchemeUtils.defineLambda( env, isCurrentPulsarPresentProc );
             SchemeUtils.defineLambda( env, isOpenProc );
             SchemeUtils.defineLambda( env, openProc );
             SchemeUtils.defineLambda( env, closeProc );
@@ -1777,10 +1846,11 @@ public interface PulsarLib {
             SchemeUtils.defineLambda( env, getMainTrackProc );
         }
         
-        public static class PulsarLibCurrentValueImplementation extends PulsarLibImplementation {
+        public static class PulsarLibStaticValueImplementation extends PulsarLibImplementation {
+            private final Pulsar pulsar = new Pulsar();
             @Override
             protected Pulsar getPulsar() {
-                return Pulsar.getCurrent();
+                return pulsar;
             } 
         }
     }

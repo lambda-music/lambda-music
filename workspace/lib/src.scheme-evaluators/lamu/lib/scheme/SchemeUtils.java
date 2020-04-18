@@ -549,7 +549,7 @@ public class SchemeUtils {
     }
     
     
-    public static List<String> getAllKey( SchemeEvaluator evaluator ) {
+    public static List<String> getAllKey( Evaluator evaluator ) {
         SchemeResult result = evaluator.evaluate( 
             "(environment-fold (interaction-environment) cons '())", "get-all" );
         result.throwIfError();

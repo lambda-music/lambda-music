@@ -15,6 +15,7 @@ import gnu.mapping.Symbol;
 import gnu.math.IntNum;
 import gnu.math.RealNum;
 import lamu.lib.scheme.SchemeUtils;
+import metro.Metro;
 import metro.MetroPort;
 import metro.MetroSyncType;
 
@@ -210,21 +211,33 @@ public class NoteListCommon {
     ///////////////////////////////////////////////////////////////////////////
     // ** SPECIAL** the converter and the default generator for MetroPort
     ///////////////////////////////////////////////////////////////////////////
+//    static final NoteListValueConverter<MetroPort> S2J_PORT = createS2JPort();
+    private static final NoteListValueConverter<Object> J2S_PORT = new NoteListValueConverter<Object>() {
+        @Override
+        public Object convert( Object o ) {
+            return ((MetroPort)o).getName();
+        }
+    };
+    static NoteListValueConverter<Object> createJ2SPort() {
+        return J2S_PORT;
+    }
+
+    // Modified createS2JPort() (Sat, 18 Apr 2020 18:04:36 +0900)
     static final NoteListValueConverter<MetroPort> S2J_PORT = new NoteListValueConverter<MetroPort>() {
         @Override
         public MetroPort convert(Object o) {
-            // See Notel
-            Pulsar pulsar = Pulsar.getCurrent();
             if ( o instanceof MetroPort ) {
                 return (MetroPort)o;
             } else if ( o instanceof Number ) {
                 int i = ((Number)o).intValue();
-                List<MetroPort> list = pulsar.getOutputPorts();
+                Metro metro = Pulsar.getCurrentMetro();
+                List<MetroPort> list = metro.getOutputPorts();
                 if ( i<0  ||  list.size() <= i )
                     throw new IllegalStateException( i + " is not proper. list size=" + list.size() );
                 return list.get(i);
             } else {
-                List<MetroPort> portList = pulsar.searchOutputPort( o );
+                Metro metro = Pulsar.getCurrentMetro();
+                List<MetroPort> portList = metro.searchOutputPort( o );
                 if ( portList.isEmpty() ) {
                     throw new IllegalArgumentException( "'" + o + "' does not exists" );
                 }
@@ -232,24 +245,18 @@ public class NoteListCommon {
             }
         }
     };
-    static final NoteListValueConverter<Object> J2S_PORT = new NoteListValueConverter<Object>() {
-        @Override
-        public Object convert( Object o ) {
-            return ((MetroPort)o).getName();
-        }
-    };
-    
-    static final NoteListValueGenerator DEFAULT_VALUE_PORT = new NoteListValueGenerator<MetroPort>() {
+
+    // Modified createDefaultValuePort() (Sat, 18 Apr 2020 18:04:36 +0900)
+    static final NoteListValueGenerator<MetroPort> DEFAULT_VALUE_PORT = new NoteListValueGenerator<MetroPort>() {
         @Override
         public MetroPort generate() {
-            Pulsar pulsar = Pulsar.getCurrent();
-            List<MetroPort> list = pulsar.getOutputPorts();
+            Metro metro = Pulsar.getCurrentMetro();
+            List<MetroPort> list = metro.getOutputPorts();
             if ( list.isEmpty() )
                 throw new IllegalStateException();
             return list.get(0);
         }
     };
-    
 
     static final LList list( Pair ... pairs ) {
         return LList.makeList( Arrays.asList( pairs ) );
@@ -333,7 +340,7 @@ public class NoteListCommon {
         return map.get( ID_PORT, S2J_PORT, DEFAULT_VALUE_PORT );
     }
     static Pair writeMapPort( MetroPort value ) {
-        return Pair.make( ID_PORT, J2S_PORT.convert( value ) );
+        return Pair.make( ID_PORT, createJ2SPort().convert( value ) );
     }
     static double readMapNoteLength( NoteListMap map ) {
         return map.get( ID_LENGTH, S2J_DOUBLE, DEFAULT_VALUE_DOUBLE_NOTE_LENGTH );
@@ -420,4 +427,5 @@ public class NoteListCommon {
     static List readMapCollection( Symbol id, NoteListMap map ) {
         return map.get( id, S2J_LIST, DEFAULT_VALUE_EMPTY_LIST );
     }
+
 }

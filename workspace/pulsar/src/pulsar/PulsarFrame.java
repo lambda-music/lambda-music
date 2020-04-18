@@ -241,7 +241,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
 
                     Runnable runnable = Logger.temporaryDisable(
                             SchemeEngine.createEvaluationRunner( 
-                                    kawapad.getThreadInitializerCollection(), 
+                                    null, 
                                     schemeScript, 
                                     getKawapad().getSchemeEngine().getEvaluatorManager().getCurrentEvaluator(), 
                                     receiver, 
@@ -257,7 +257,9 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                 return Values.empty;
             }
         };
-        this.timerHandle = PulsarSharedTimer.createTimer( getKawapad().getThreadInitializerCollection(), 5000, 20, invokable2 );
+        // THIS CANNOT USE SINCE NO THREAD INITIALIZER IS AVAILABLE
+        // (Sat, 18 Apr 2020 15:39:27 +0900)
+        this.timerHandle = PulsarSharedTimer.createTimer( null, 5000, 20, invokable2 );
     }
 
     enum TempoRange {
