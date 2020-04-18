@@ -272,6 +272,16 @@ public abstract class MetroMidi {
             return null;
         }
     }
+    public static final int getMidiNoteChannel( byte[] message ) {
+        return MASK_4BIT & message[0];
+    }
+    public static final int getMidiNoteNumber( byte[] message ) {
+        return MASK_7BIT & message[1];
+    }
+    public static final int getMidiNoteVelocity( byte[] message ) {
+        return MASK_7BIT & message[2];
+    }
+    
     private static MetroMidi lookupMidi( MetroMidiEvent event ) {
         byte[] message = event.getMidiData();
         int command  = ( (0b011110000 & message[0] ) >> 4 );

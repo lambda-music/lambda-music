@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.logging.Level;
 
 import lamu.lib.log.Logger;
@@ -37,13 +38,21 @@ public class MetroSequenceDirectFilter implements MetroSequence, MetroLock {
     }
     
     int delay = -1;
-    public int getRecordLength() {
+    public int getDelay() {
         return delay;
     }
-    public void setRecordLength(int delay) {
+    public void setDelay(int delay) {
         this.delay = delay;
     }
-
+    
+    int threshold = 100;
+    public int getThreshold() {
+        return threshold;
+    }
+    public void setThreshold(int threshold) {
+        this.threshold = threshold;
+    }
+    
     private List<MetroMidiEvent> buffer = new ArrayList<>();
     private List<MetroMidiEvent> workBuffer = new ArrayList<>();
     static void bufferDuplicate(List<MetroMidiEvent> buffer, List<MetroMidiEvent> obj) {
@@ -70,34 +79,19 @@ public class MetroSequenceDirectFilter implements MetroSequence, MetroLock {
         for ( Iterator<MetroMidiEvent> i=buffer.iterator(); i.hasNext(); ) {
             MetroMidiEvent e = i.next();
             e.moveMidiOffset( width );
-            
             if ( e.getMidiOffset() < 0 ) {
-//                logInfo("remove:" + e.getMidiOffset() );
                 i.remove();
-            } else {
-//                logInfo("move:" + e.getMidiOffset() );
             }
         }
     }
     static void bufferOutput( Collection<MetroMidiEvent> buffer, Collection<MetroMidiEvent> obj, int rangeFrom, int rangeTo ) {
-        boolean o=false;
         for ( Iterator<MetroMidiEvent> i=buffer.iterator(); i.hasNext(); ) {
             MetroMidiEvent e = i.next();
-//            obj.add( e );
-//            System.out.println(e);
-
             int offset = e.getMidiOffset();
             if ( rangeFrom <= offset  && offset <= rangeTo ) {
-//                logInfo("output:" + e );
-                o = true;
                 obj.add( DefaultMetroMidiEvent.duplicate(e) );
-//                obj.add( e );
-            } else {
-//                logInfo("error:" + e );
             }
         }
-        if ( o)
-            logInfo("===");
     }
     static Comparator<MetroMidiEvent> COMPARATOR = new Comparator<MetroMidiEvent>() {
         int noteon = MetroMidi.MIDI_NOTE_ON.getStatusHigher4bit();
@@ -149,6 +143,37 @@ public class MetroSequenceDirectFilter implements MetroSequence, MetroLock {
             System.out.println( e );
         }
     }
+    
+    public void bufferPreProcess( List<MetroMidiEvent> in  ) {
+        bufferMove( workBuffer, delay );
+    }
+    public void bufferPostProcess(List<MetroMidiEvent> out) {
+    }
+    private static int noteOn = MetroMidi.MIDI_NOTE_ON.statusHigher4bit;
+    private static int noteOff = MetroMidi.MIDI_NOTE_OFF.statusHigher4bit;
+    private volatile MetroMidiEvent[] noteArray = new MetroMidiEvent[128];
+    private volatile ArrayList<MetroMidiEvent> removingNoteList = new ArrayList<>(1024);
+    public synchronized void bufferProcess( List<MetroMidiEvent> buffer ) {
+        java.util.Arrays.fill(noteArray, null);
+        removingNoteList.clear();
+        for (ListIterator<MetroMidiEvent> i = buffer.listIterator(buffer.size()); i.hasPrevious(); ) {
+            MetroMidiEvent curr = i.previous();
+            if ( curr.getMidiCommand() == noteOff ) {
+                noteArray[ MetroMidi.getMidiNoteNumber(curr.getMidiData()) ] = curr;
+            } else if ( curr.getMidiCommand() == noteOn ) {
+                int noteOffIdx = MetroMidi.getMidiNoteNumber(curr.getMidiData());
+                MetroMidiEvent noteOff = noteArray[ noteOffIdx ];
+                if ( noteOff != null ) {
+                    if ((noteOff.getMidiOffset() - curr.getMidiOffset()) < threshold ) {
+                        removingNoteList.add( noteOff );
+                        removingNoteList.add( curr );
+                        noteArray[noteOffIdx] = null;
+                    }
+                }
+            }
+        }
+        buffer.removeAll( removingNoteList );
+    }
 
     @Override
     public void processDirect(Metro metro, int nframes, int totalCursor, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
@@ -165,54 +190,32 @@ public class MetroSequenceDirectFilter implements MetroSequence, MetroLock {
             workBuffer.clear();
             bufferDuplicate(   workBuffer, in );
             bufferReplacePort( workBuffer, inputPort , outputPort );
-            bufferMove(   workBuffer, delay );
+            bufferPreProcess( workBuffer );
             bufferInput ( buffer, workBuffer );
-//            bufferSort  ( buffer );
+            bufferProcess( buffer );
             bufferOutput( buffer, out, 0, nframes );
+            bufferPostProcess( out );
             bufferMove  ( buffer, nframes * -1 );
         }
-
-//        synchronized ( this ) {
-//            workBuffer.clear();
-//            bufferDuplicate(   workBuffer, in );
-//            bufferOutput( workBuffer, out, 0, nframes );
-//            bufferReplacePort( out, inputPort , outputPort );
-//        }
-
-//        switch ( this.mode ) {
-//            case PLAY:
-//                if ( player == null ) {
-//                    player = frames.iterator();
-//                }
-//                
-//                if ( ! player.hasNext() ) {
-//                    if ( isLooper() ) {
-//                        player = frames.iterator();
-//                    }
-//                }
-//                
-//                if ( ! player.hasNext() ) {
-//                    out.addAll( player.next().getMidiEventList() );
-//                }
-//
-//                break;
-//            case RECORD:
-//                if ( 0< this.recordLength && this.recordLength < totalCursor ) {
-//                    this.setMode( Mode.PLAY );
-//                } else {
-//                    ArrayList<MetroMidiEvent> list = new ArrayList<>();
-//                    for ( MetroMidiEvent e : in ) {
-//                        if ( e.getPort().equals( this.inputPort ) ) {
-//                            e.setPort( this.outputPort );
-//                            list.add(e);
-//                        }
-//                    }
-//                    synchronized ( getMetroLock() ) {
-//                        frames.add( new MetroMidiFrame( totalCursor, list ) );
-//                    }
-//                }
-//                break;
-//        }
+        
+        /* 
+         * NOTE : (Fri, 17 Apr 2020 01:32:44 +0900) 
+         * Actually sorting is very harmful by a reason; it is commented out.
+         * The reason is that it is not suffice to let note-on come before note-off.
+         * Consider the following situation:
+         * ----
+         * 0:00 C4 NOTE ON
+         * -----
+         * 0:01 C4 NOTE OFF
+         * 0:02 C4 NOTE ON
+         * ----
+         * 
+         * in the above example, placing the note on before note off causes a problem that
+         * some notes which are not stopping at the note-off event in the client synth.
+         * It's the best not to sort them. 
+         * 
+         * bufferSort  ( buffer );
+         */
     }
 
     @Override

@@ -86,6 +86,13 @@ public interface MetroMidiEvent extends Comparable<MetroMidiEvent> {
     byte[]    getMidiData();
     void      setMidiData( byte[] midiData );
     
+    default MetroMidi getMidi() {
+        return MetroMidi.getMidi( getMidiCommand());
+    }
+    default int getMidiCommand() {
+        return MetroMidi.getMidiCommand( getMidiData());
+    }
+    
     public default int compareTo( MetroMidiEvent o ) {
         return this.getMidiOffset() - o.getMidiOffset();
     }

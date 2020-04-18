@@ -1,7 +1,5 @@
 package metro;
 
-import metro.MetroMidiReceiver.FormatString;
-
 public class DefaultMetroMidiEvent implements MetroMidiEvent {
     public static DefaultMetroMidiEvent duplicate( MetroMidiEvent e ) {
         return new DefaultMetroMidiEvent(e);
@@ -10,13 +8,21 @@ public class DefaultMetroMidiEvent implements MetroMidiEvent {
         super();
         this.midiOffset = midiOffset;
         this.outputPort = outputPort;
-        this.midiData = copyArray( midiData );
+        
+        this.midiData = midiData;
+        /* (Fri, 17 Apr 2020 01:35:29 +0900)
+         * 
+         * I think copying array is not necessary to prevend the weired midi data behavior problem.
+         * But it is still necessary to be careful that.
+         * this.midiData = copyArray( midiData );
+         */
+
     }
     public DefaultMetroMidiEvent( MetroMidiEvent event) {
         this( event.getMidiOffset(), event.getPort(), event.getMidiData() );
     }
     
-    private static byte[] copyArray(byte[] arr) {
+    static byte[] copyArray(byte[] arr) {
         byte[] newArr= new byte[ arr.length];
         System.arraycopy( arr ,0,  newArr,0, arr.length );
         return newArr;
@@ -57,11 +63,13 @@ public class DefaultMetroMidiEvent implements MetroMidiEvent {
     }
     @Override
     public String toString() {
-        MetroMidi midi = MetroMidi.getMidi( MetroMidi.getMidiCommand( getMidiData()));
+        MetroMidi midi = getMidi();
         return String.format( 
             "(MidiEvent offset:%3d port:%s data:%s)",
             getMidiOffset(),
             getPort(),
-            midi.receiveMidi( FormatString.getInstance(), this.getMidiData() ));
+            midi.receiveMidi( 
+                MetroMidiReceiver.FormatString.getInstance(), 
+                this.getMidiData()));
     }
 }
