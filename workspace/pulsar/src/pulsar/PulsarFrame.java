@@ -87,6 +87,8 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
     static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }
 
+    private static final boolean DO_UPDATE_TRACK_POSION = false;
+    
     /////////////////////////////////////////////////////
 
     private ApplicationComponent parentApplicationComponent;
@@ -184,8 +186,13 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         return gui;
     }
 
-    Runnable timerHandle=null;
     private void initPulsarGui() {
+        if ( DO_UPDATE_TRACK_POSION )
+            initTrackPositionUpdater();
+    }
+
+    Runnable timerHandle = null;
+    public void initTrackPositionUpdater() {
         Invokable invokable2 = new Invokable() {
             transient int counter = 0;
             transient double lastPosition = 0.0d;
