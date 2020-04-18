@@ -254,8 +254,8 @@ public class LamuApplication {
 
         
         ApplicationVessel lamu = new ApplicationVessel("lamu-main");
-        lamu.add( new InstanceManagerComponent());
         lamu.addAll( vesselList );
+        lamu.add( new InstanceManagerComponent());
         lamu.requestInit();
 
 //        logInfo( "initialize:======= Application:requestInit ==============================" );

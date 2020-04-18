@@ -27,6 +27,11 @@
             </fileset>
         </copy>
         <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src.app">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
             <fileset dir="src.scheme-evaluators">
                 <exclude name="**/*.java"/>
             </fileset>
@@ -62,6 +67,7 @@
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
             <src path="src"/>
+            <src path="src.app"/>
             <src path="src.scheme-evaluators"/>
             <src path="src.scheme"/>
             <src path="src.help"/>
