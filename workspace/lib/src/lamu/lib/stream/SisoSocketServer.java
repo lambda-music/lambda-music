@@ -5,10 +5,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import lamu.lib.app.ApplicationComponent;
-import lamu.lib.thread.ThreadInitializerCollection;
-import lamu.lib.thread.ThreadInitializerCollectionContainer;
 
-public abstract class SisoSocketServer implements ThreadInitializerCollectionContainer, ApplicationComponent , Runnable {
+public abstract class SisoSocketServer implements ApplicationComponent , Runnable {
     ServerSocket serverSocket;
     Thread thread;
     public SisoSocketServer(ServerSocket serverSocket, String threadName ) {
@@ -44,10 +42,6 @@ public abstract class SisoSocketServer implements ThreadInitializerCollectionCon
         }
     }
 
-    private ThreadInitializerCollection threadInitializerCollection = new ThreadInitializerCollection( "siso-server", this );
-    public ThreadInitializerCollection getThreadInitializerCollection() {
-        return threadInitializerCollection;
-    }
     private ApplicationComponent parentApplicationComponent;
     @Override
     public ApplicationComponent getParentApplicationComponent() {

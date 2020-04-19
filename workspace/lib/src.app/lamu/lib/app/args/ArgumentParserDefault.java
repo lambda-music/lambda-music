@@ -5,7 +5,6 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
@@ -18,10 +17,6 @@ import lamu.lib.app.ApplicationComponent;
 import lamu.lib.app.ApplicationVessel;
 import lamu.lib.log.Logger;
 import lamu.lib.stream.Stream;
-import lamu.lib.thread.ThreadInitializer;
-import lamu.lib.thread.ThreadInitializerCollection;
-import lamu.lib.thread.ThreadInitializerCollectionContainer;
-import lamu.lib.thread.ThreadInitializerContainer;
 
 public abstract class ArgumentParserDefault implements ArgumentParser {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -154,72 +149,40 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
     ArgumentParserElement defaultArgumentParserElement = getFactoryMap().get( "default" ).create();
     ArgumentParserElement currentArgumentParserElement = defaultArgumentParserElement;
     
-
-    private static void addInitializerContainer( Collection<ThreadInitializer> destination, Collection<Object> source ) {
-        for ( Object o : source ) {
-            if ( o instanceof ThreadInitializerContainer ) {
-                ThreadInitializer threadInitializer = ((ThreadInitializerContainer)o).getThreadInitializer();
-                if ( threadInitializer.isPublished() ) {
-                    destination.add(threadInitializer);
-                    // Add the only first one.  (Fri, 20 Dec 2019 05:01:24 +0900)
-                    break;
-                }
-            }
-        }
-    }
-    private static void addInitializerCollectionContainer( Collection<ThreadInitializerCollection> destination, Collection<Object> source ) {
-        for ( Object o : source ) {
-            if ( o instanceof ThreadInitializerCollectionContainer ) {
-                destination.add(((ThreadInitializerCollectionContainer)o).getThreadInitializerCollection());
-            }
-        }
-    }
-
     void deploy() {
-        ArrayList<Deque> stackList2 = new ArrayList<>( this.stackList );
-        
-        // The vessels are not necessary here; therefore exclude it from the list.
-        stackList2.remove( this.getValueStack( VESSELS ) );
-        stackList2.remove( this.getValueStack( STREAMABLES ) );
-        
-        
-        // Collect thread initializers and set to collections.
-        ArrayList<ThreadInitializer> threadInitializerList = new ArrayList<>(); 
-        ArrayList<ThreadInitializerCollection> threadInitializerCollectionList = new ArrayList<>(); 
+        // Collect all components
+        ArrayList<Object> allObjects = new ArrayList<>();
+        ArrayList<ApplicationComponent> allComponents = new ArrayList<>();
+
         {
-            // Collect all thread initializers.
-            for ( Deque stack : stackList2 ) {
-                addInitializerContainer( threadInitializerList, stack );
-            }
-            // Collect all thread initializer collections.
-            for ( Deque stack : stackList2 ) {
-                addInitializerCollectionContainer( threadInitializerCollectionList, stack );
-            }
-            // then, add the initializers to the collections.
-            for ( ThreadInitializerCollection c : threadInitializerCollectionList ) {
-                c.addAllThreadInitializer( threadInitializerList );
-            }
-        }
-        
-        ApplicationVessel vessel = new ApplicationVessel( "ExecVessel" );
-        vessel.getThreadInitializerCollection().addAllThreadInitializer( threadInitializerList );
-        
-        
-        // Collect all application compnents.
-        {
-            logInfo( "deploy:==== COLLECT COMPONENTS ==============================" );
+            ArrayList<Deque> stackList2 = new ArrayList<>( this.stackList );
             
-            // All components go to the vessels.
+            // The vessels are not necessary here; therefore exclude it from the list.
+            stackList2.remove( this.getValueStack( VESSELS ) );
+            stackList2.remove( this.getValueStack( STREAMABLES ) );
+            
+            logInfo( "deploy:==== COLLECT COMPONENTS ==============================" );
             for ( Deque stack : stackList2 ) {
                 for ( Object o : stack ) {
                     logInfo( "deploy:"  + o.toString() );
+                    
+                    // 1.
+                    allObjects.add(o);
+                    
+                    // 2.
                     if ( o instanceof ApplicationComponent ) {
-                        vessel.add((ApplicationComponent) o );
+                        allComponents.add((ApplicationComponent) o );
                     }
                 }
             }
             logInfo( "deploy:======================================================" );
         }
+
+        // Initialize ThreadInitializer
+        ApplicationVessel vessel = new ApplicationVessel( "ExecVessel" );
+
+        // Collect all application compnents.
+        vessel.addAll( allComponents );
         
         // Executing runnable(init) stack;
         {
@@ -237,7 +200,6 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
  
         this.getValueStack( VESSELS ).push( vessel );
     }
-    
     private void notifyArg(String s) {
         ArgumentParserElement nextArgumentParserElement;
         if ( "+".equals( s ) ) {

@@ -22,15 +22,10 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
-import lamu.lib.CurrentObject;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.MultiplexEvaluator;
 import lamu.lib.scheme.SchemeResult;
-import lamu.lib.thread.ThreadInitializer;
-import lamu.lib.thread.ThreadInitializerCollection;
-import lamu.lib.thread.ThreadInitializerCollectionContainer;
-import lamu.lib.thread.ThreadInitializerContainer;
 
 
 /**
@@ -43,7 +38,7 @@ import lamu.lib.thread.ThreadInitializerContainer;
  * 
  */
 
-public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, ThreadInitializerCollectionContainer, ApplicationComponent {
+public class SchemeHttp implements ApplicationComponent {
     public static final String PATH_VIM = "/vim";
     public static final String PATH_EVAL  = "/eval";
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -78,35 +73,6 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
     @Override
     public void processQuit() {
         stop();
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // The Thread Initializer Facility
-    ////////////////////////////////////////////////////////////////////////////
-
-    private static final CurrentObject<SchemeHttp> currentObject = new CurrentObject<>( SchemeHttp.class );
-    private final ThreadInitializer<SchemeHttp> threadInitializer = 
-            ThreadInitializer.createMultipleThreadInitializer( "scheme-http", this, 
-                ThreadInitializer.createThreadInitializer( "scheme-http-current", currentObject, this ) );
-    @Override
-    public ThreadInitializer<SchemeHttp> getThreadInitializer() {
-        return threadInitializer;
-    }    
-    public static SchemeHttp getCurrent() {
-        return currentObject.get();
-    }
-    public static boolean isPresent() {
-        return currentObject.isPresent();
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-
-    private ThreadInitializerCollection threadInitializerCollection = new ThreadInitializerCollection( "scheme", this );
-    {
-        threadInitializerCollection.addThreadInitializer( this.getThreadInitializer() );
-    }
-    public ThreadInitializerCollection getThreadInitializerCollection() {
-        return threadInitializerCollection;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -162,12 +128,29 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
         boolean check( HttpExchange httpExchange );
     }
 
+    public static final ThreadLocal<SchemeHttp> threadLocal = new ThreadLocal<>();
+    public static SchemeHttp getCurrent(){
+        return threadLocal.get();
+    }
+    public static void setCurrent( SchemeHttp threadManager ){
+        threadLocal.set( threadManager );
+    }
+    public static boolean isPresent() {
+        return threadLocal.get()!=null;
+    }
+
 
     int port;
     MultiplexEvaluator multiplexEvaluator;
     HttpServer httpServer;
     Charset charset = Charset.forName( "UTF-8" );
     UserAuthentication authentication;
+    Runnable threadInitializer = new Runnable() {
+        @Override
+        public void run() {
+            setCurrent( SchemeHttp.this );
+        }
+    };
     public SchemeHttp( int port, String path, UserAuthentication authentication, MultiplexEvaluator multiplexEvaluator ) throws IOException {
         super();
         this.port = port;
@@ -261,7 +244,7 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
             logInfo( requestString );
             SchemeResult schemeResult = 
                     multiplexEvaluator.evaluate( 
-                        SchemeHttp.this.getThreadInitializerCollection(),    
+                        threadInitializer,    
                         requestString, 
                         null, 
                         null, 
@@ -296,7 +279,7 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
             logInfo( requestString );
             SchemeResult schemeResult = 
                 multiplexEvaluator.evaluate( 
-                    SchemeHttp.this.getThreadInitializerCollection() ,    
+                    threadInitializer,    
                     requestString, 
                     null, 
                     null, 

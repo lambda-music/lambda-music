@@ -5,10 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import lamu.lib.thread.ThreadInitializerCollection;
-import lamu.lib.thread.ThreadInitializerCollectionContainer;
-
-public class ApplicationVessel implements ApplicationComponent, ThreadInitializerCollectionContainer {
+public class ApplicationVessel implements ApplicationComponent {
     final String name;
     public ApplicationVessel(String name) {
         super();
@@ -30,11 +27,6 @@ public class ApplicationVessel implements ApplicationComponent, ThreadInitialize
         this.parent = parentApplicationComponent;
     }
     
-    ThreadInitializerCollection threadInitializerCollection = new ThreadInitializerCollection( "application", null );
-    @Override
-    public ThreadInitializerCollection getThreadInitializerCollection() {
-        return threadInitializerCollection;
-    }
     public void addAll( Collection<? extends ApplicationComponent> cs ) {
         for ( ApplicationComponent c : cs ) {
             this.add( c );

@@ -651,9 +651,9 @@ public class MetroTrack implements MetroLock, MetroSyncTrack, MetroNamedTrack {
                 
             } else {
                 // ??? is this really necessary? (Sun, 19 Apr 2020 09:48:14 +0900)
-                
+                // REMOVED (Sun, 19 Apr 2020 16:05:49 +0900) 
                 // initialize the current thread
-                this.metro.getThreadInitializerCollection().initialize();
+                // this.metro.getThreadInitializerCollection().initialize();
 
 //              logInfo( "offerNewBuffer:normal (" + this.name  + ")");
                 MetroEventBuffer buf = MetroEventBuffer.create();

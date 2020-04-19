@@ -24,6 +24,9 @@ public interface Evaluator {
     public static void setCurrent( Evaluator threadManager ){
         threadLocal.set( threadManager );
     }
+    public static boolean isPresent() {
+        return threadLocal.get()!=null;
+    }
 
     /**
      * This method defines how to valuate the given script. This implemantation may evaluate the given script in

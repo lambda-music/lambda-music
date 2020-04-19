@@ -23,9 +23,6 @@ public interface ApplicationComponent {
                 logError( "", t );
             }
         } else {
-            if ( this instanceof ApplicationVessel ) {
-                ((ApplicationVessel)this).getThreadInitializerCollection().initialize();
-            }
             this.processInit();
         }
     }

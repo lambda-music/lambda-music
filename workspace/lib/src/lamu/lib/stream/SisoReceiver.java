@@ -13,19 +13,14 @@ import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.logging.Level;
 
-import lamu.lib.CurrentObject;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.log.Logger;
-import lamu.lib.thread.ThreadInitializer;
-import lamu.lib.thread.ThreadInitializerCollection;
-import lamu.lib.thread.ThreadInitializerCollectionContainer;
-import lamu.lib.thread.ThreadInitializerContainer;
 
 /**
  * SisoServer stands for SImple SOcket Server.
  * 
  */
-public class SisoReceiver<T extends SisoReceiverServiceListener> implements ThreadInitializerContainer<SisoReceiver>, ThreadInitializerCollectionContainer, ApplicationComponent {
+public class SisoReceiver<T extends SisoReceiverServiceListener> implements ApplicationComponent {
     private static final String SHEBANG = "#!";
     protected static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
     protected static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
@@ -33,6 +28,15 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Thre
     protected static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }
     protected static void logWarn(Throwable e) { LOGGER.log(Level.WARNING, "warning", e); }
 
+    // ADDED (Sun, 19 Apr 2020 16:05:02 +0900) This is empty for now.
+    protected final Runnable threadInitializer = new Runnable() {
+        @Override
+        public void run() {
+        }
+    };
+    public Runnable getThreadInitializer() {
+        return threadInitializer;
+    }
     protected final Stream stream;
     protected final Thread inThread;
     protected final Thread outThread;
@@ -303,35 +307,6 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Thre
         Thread t = new Thread( r , "clean-up" );
         t.setDaemon(true);
         t.start();
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // The Thread Initializer Facility
-    ////////////////////////////////////////////////////////////////////////////
-
-    private static final CurrentObject<SisoReceiver> currentObject = new CurrentObject<>( SisoReceiver.class );
-    private final ThreadInitializer<SisoReceiver> threadInitializer = 
-            ThreadInitializer.createMultipleThreadInitializer( "siso", this, 
-                    ThreadInitializer.createThreadInitializer( "siso-current", currentObject, this ) );
-    @Override
-    public ThreadInitializer<SisoReceiver> getThreadInitializer() {
-        return threadInitializer;
-    }    
-    public static SisoReceiver getCurrent() {
-        return currentObject.get();
-    }
-    public static boolean isPresent() {
-        return currentObject.isPresent();
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-
-    private ThreadInitializerCollection threadInitializerCollection = new ThreadInitializerCollection( "siso-receiver", this );
-    {
-        threadInitializerCollection.addThreadInitializer( this.getThreadInitializer() );
-    }
-    public ThreadInitializerCollection getThreadInitializerCollection() {
-        return threadInitializerCollection;
     }
 }
 

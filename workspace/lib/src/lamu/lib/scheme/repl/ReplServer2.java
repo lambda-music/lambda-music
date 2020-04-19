@@ -329,7 +329,7 @@ public class ReplServer2 implements SisoReceiverListener, SisoReceiverServiceLis
 
                 AsyncEvaluator.executeAsync(
                     threadManager, 
-                    receiver.getThreadInitializerCollection(), 
+                    receiver.getThreadInitializer(), 
                     script, 
                     multiplexEvaluator, 
                     resultReceiver, 

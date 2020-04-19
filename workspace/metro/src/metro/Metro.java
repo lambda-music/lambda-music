@@ -52,7 +52,6 @@ import org.jaudiolibs.jnajack.JackTransportState;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.secretary.Invokable;
-import lamu.lib.thread.ThreadInitializerCollection;
 
 /**
  * 
@@ -81,19 +80,6 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         return Metro.this.lock;
     }
  
-    private final ThreadInitializerCollection threadInitializerCollection = new ThreadInitializerCollection( "metro", this );
-    /**
-     * Metro class has several own threads; therefore, Metro class offers
-     * hooks to initialize the threads. This is necessary to cooperate with classes such as
-     * ThreadLocal etc.<p/>
-     * 
-     * In order to register an initializer to Metro, add a Runnable object to the ThreadInitializerCollection object
-     * which can be retrieved from this method.
-     */
-    public ThreadInitializerCollection getThreadInitializerCollection() {
-        return this.threadInitializerCollection;
-    }
-    
     public Metro() {
     }
     

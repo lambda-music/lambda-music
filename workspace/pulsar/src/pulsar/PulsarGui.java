@@ -32,7 +32,6 @@ public class PulsarGui {
     }
 
     void init() {
-        
     }
 
     public final Procedure setProgressPos = new SetProgressPos(new String[] { "gui-set-progress-pos" });

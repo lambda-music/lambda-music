@@ -87,9 +87,11 @@ public abstract class SchemeNewFactory {
     }
     
     static abstract class SchemeThreadInitializingListener {
-        private final ThreadInitializerCollection collection = ThreadInitializerCollection.getCurrent();
+        // REMOVED  XXX (Sun, 19 Apr 2020 15:58:19 +0900)
+        //        private final ThreadInitializerCollection collection = ThreadInitializerCollection.getCurrent();
         protected void initializeThread() {
-            collection.initialize();
+            // REMOVED  XXX (Sun, 19 Apr 2020 15:58:19 +0900)
+            // collection.initialize(); 
         }
     }
     static abstract class SchemeActionListener extends SchemeThreadInitializingListener implements ActionListener {
@@ -521,7 +523,7 @@ public abstract class SchemeNewFactory {
                     Procedure procedure = (Procedure)args.get(1);
                     return wrapRunnable(
                         PulsarSharedTimer.createTimer(
-                            ThreadInitializerCollection.getCurrent(),
+                            ThreadInitializerCollection.getCurrent(), // XXX (Sun, 19 Apr 2020 15:58:19 +0900) 
                             interval, interval, InvokableSchemeProcedure.createSecretarillyInvokable( procedure ) ) );
                 } else if ( 3 <= args.size() ) {
                     long delay = SchemeUtils.toLong(args.get(0));
@@ -530,7 +532,7 @@ public abstract class SchemeNewFactory {
 
                     return wrapRunnable(
                         PulsarSharedTimer.createTimer(
-                            ThreadInitializerCollection.getCurrent(), 
+                            ThreadInitializerCollection.getCurrent(),  // XXX (Sun, 19 Apr 2020 15:58:19 +0900)
                             delay, interval, InvokableSchemeProcedure.createSecretarillyInvokable( procedure ) ) );
 
                 } else {

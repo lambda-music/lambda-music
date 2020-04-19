@@ -131,7 +131,7 @@ public class ReplServer extends ReplClientServer {
 
                 AsyncEvaluator.executeAsync(
                     threadManager, 
-                    receiver.getThreadInitializerCollection(), 
+                    receiver.getThreadInitializer(), 
                     script, 
                     multiplexEvaluator, 
                     resultReceiver, 
