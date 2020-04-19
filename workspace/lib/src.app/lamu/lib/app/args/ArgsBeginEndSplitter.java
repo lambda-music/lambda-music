@@ -1,4 +1,4 @@
-package lamu;
+package lamu.lib.app.args;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,9 +35,9 @@ import java.util.List;
  *        => an exception to be thrown
  * </pre>
  * 
- *  See {@link lamu.LamuBeginEndSplitter#splitBeginEnd }.
+ *  See {@link lamu.lib.app.args.ArgsBeginEndSplitter#splitBeginEnd }.
  */
-public class LamuBeginEndSplitter<T> {
+public class ArgsBeginEndSplitter<T> {
     /**
      * Executes the process.
      * 
@@ -50,7 +50,7 @@ public class LamuBeginEndSplitter<T> {
      * @return Returns a list of lists that contains blocks.
      */
     public static <T> List<List<T>> splitBeginEnd(List<T> list, T begin, T end ) {
-        return new LamuBeginEndSplitter<T>( list, begin, end ).execute();
+        return new ArgsBeginEndSplitter<T>( list, begin, end ).execute();
     }
 
     boolean executed = false;
@@ -58,7 +58,7 @@ public class LamuBeginEndSplitter<T> {
     List<List<T>> output = new ArrayList<>();
     T tokenBegin;
     T tokenEnd;
-    public LamuBeginEndSplitter( List<T> input, T tokenBegin, T tokenEnd ) {
+    public ArgsBeginEndSplitter( List<T> input, T tokenBegin, T tokenEnd ) {
         this.input      = input;
         this.tokenBegin = tokenBegin;
         this.tokenEnd   = tokenEnd;
@@ -114,7 +114,7 @@ public class LamuBeginEndSplitter<T> {
     }
 
     /**
-     * This class performs the simple test for {@link LamuBeginEndSplitter}.
+     * This class performs the simple test for {@link ArgsBeginEndSplitter}.
      */
     static class Test {
         static int counter = 0; 

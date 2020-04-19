@@ -70,7 +70,7 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
         public void processInit() {
             for ( Runnable r : runnableStack ) {
                 try {
-                    System.err.println( "invoke:"+ r  );
+                    logInfo( "invoke:"+ r  );
                     r.run();
                 } catch (Exception e) {
                     logError( "", e );

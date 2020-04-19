@@ -1,4 +1,4 @@
-package lamu;
+package lamu.lib.app.args;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class LamuQuotedStringSplitter {
+public class ArgsQuotedStringSplitter {
     static final String TAG_END = "__RECALPER__";
     static final String TAG_BEGIN = "__REPLACER__";
     static final Pattern PAT_IN0 = Pattern.compile( "^\\#.*$", Pattern.MULTILINE );
@@ -20,7 +20,7 @@ public class LamuQuotedStringSplitter {
         return TAG_BEGIN + String.format( "%05x", number  ) + TAG_END;
     }
 
-    static List<String> splitString(String value) {
+    public static List<String> splitString(String value) {
         List<String> substitution = new ArrayList<>();
 
         String substitutedValue = value;

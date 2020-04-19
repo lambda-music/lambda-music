@@ -1,4 +1,4 @@
-package lamu;
+package lamu.lib.app.args;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -13,7 +13,7 @@ import java.util.Map;
 import gnu.lists.IString;
 import lamu.lib.scheme.SchemeUtils;
 
-class LamuCommandExec extends LamuCommand {
+public class ArgsCommandExec extends ArgsCommand {
     @Override
     protected String commandName() {
         return "exec";
@@ -25,11 +25,11 @@ class LamuCommandExec extends LamuCommand {
     }
 
     @Override
-    protected void execute( LamuScript.State state, List<String> arguments, int recursiveCount ) {
+    protected void execute( ArgsState argsState, List<String> arguments, int recursiveCount ) {
         // Parse the arguments
         List<String> outSeqArgs = new ArrayList<>();
-        Map<String, LamuNamedArgument> outNamedArgs = new HashMap<>();
-        LamuScript.parseArguments( arguments, outSeqArgs, outNamedArgs);
+        Map<String, ArgsNamedArgument> outNamedArgs = new HashMap<>();
+        Args.parseArguments( arguments, outSeqArgs, outNamedArgs);
         
         try {
             // Get the first argument as a filename and remove it.
@@ -50,10 +50,10 @@ class LamuCommandExec extends LamuCommand {
             }
 
             // Parse the string value into a list of string values. 
-            List<String> scriptContent = LamuQuotedStringSplitter.splitString( contentLisp ); 
+            List<String> scriptContent = ArgsQuotedStringSplitter.splitString( contentLisp ); 
             
             // Execute the string list as a script program.
-            LamuScript.executeMacro( state, uri, scriptContent, arguments, outSeqArgs, outNamedArgs, recursiveCount  );
+            Args.executeMacro( argsState, uri, scriptContent, arguments, outSeqArgs, outNamedArgs, recursiveCount  );
             
 
         } catch (IOException e) {

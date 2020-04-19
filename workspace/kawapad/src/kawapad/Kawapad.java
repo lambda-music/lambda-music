@@ -241,6 +241,8 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     
     public Kawapad( MultiplexEvaluator multiplexEvaluator ) {
         super();
+        if ( multiplexEvaluator == null )
+            throw new NullPointerException();
         this.multiplexEvaluator = multiplexEvaluator;
         this.multiplexEvaluator.addListener( multipleEvaluatorMenuListener );
         
@@ -312,7 +314,9 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         
         //////////////////////////////////////////////////
         
-        {
+        // this causes NPE and this is not used anymore; removed 
+        // (Sun, 19 Apr 2020 18:02:45 +0900)
+        if ( false ) {
             File f = Kawapad.getExtFile();
             if ( f.isFile() && f.exists() ) {
                 SchemeResult result = multiplexEvaluator.evaluate( null, f );

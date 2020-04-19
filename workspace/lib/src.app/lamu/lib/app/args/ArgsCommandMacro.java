@@ -1,4 +1,4 @@
-package lamu;
+package lamu.lib.app.args;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -10,20 +10,20 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-class LamuCommandMacro extends LamuCommand {
-    static LamuCommandMacro create(String value) {
-        ArrayList<String> list = new ArrayList<>( LamuQuotedStringSplitter.splitString(value) );
+public class ArgsCommandMacro extends ArgsCommand {
+    public static ArgsCommandMacro create(String value) {
+        ArrayList<String> list = new ArrayList<>( ArgsQuotedStringSplitter.splitString(value) );
         if (list.size() == 1 && list.get(0).trim().equals("")) {
             return null;
         }
         String macroName = list.remove(0);
         List<String> macroContent = list;
-        LamuApplication.logInfo( String.format( "macro-from-config [%s]=>%s" , macroName, macroContent.toString() ) );
-        return new LamuCommandMacro(macroName, macroContent);
+        Args.logInfo( String.format( "macro-from-config [%s]=>%s" , macroName, macroContent.toString() ) );
+        return new ArgsCommandMacro(macroName, macroContent);
     }
 
-    static List<LamuCommandMacro> load(Reader in) throws IOException {
-        List<LamuCommandMacro> result = new ArrayList<>();
+    public static List<ArgsCommandMacro> load( Reader in ) throws IOException {
+        List<ArgsCommandMacro> result = new ArrayList<>();
         try (BufferedReader r = new BufferedReader(in)) {
             for (;;) {
                 String s = r.readLine();
@@ -36,7 +36,7 @@ class LamuCommandMacro extends LamuCommand {
         return result;
     }
 
-    static List<LamuCommandMacro> load( File file ) throws IOException {
+    public static List<ArgsCommandMacro> load( File file ) throws IOException {
         if ( file.exists() && file.isFile() ) {
             try (FileReader f = new FileReader( file )) {
                 return load(f);
@@ -49,7 +49,7 @@ class LamuCommandMacro extends LamuCommand {
     String macroName;
     List<String> macroContent;
 
-    public LamuCommandMacro(String macroName, List<String> macroContent) {
+    public ArgsCommandMacro(String macroName, List<String> macroContent) {
         super();
         this.macroName = macroName;
         this.macroContent = macroContent;
@@ -65,19 +65,19 @@ class LamuCommandMacro extends LamuCommand {
         return this.getMacroName();
     }
     @Override
-    protected void execute( LamuScript.State state, List<String> arguments, int recursiveCount) {
-        if ( LamuScript.RECURSIVE_COUNT_MAX < recursiveCount ) {
+    protected void execute( ArgsState argsState, List<String> arguments, int recursiveCount) {
+        if ( Args.RECURSIVE_COUNT_MAX < recursiveCount ) {
             throw new Error( "a malformed default value in the default argument configuration." );
         }
 
         ArrayList<String> outArgs = new ArrayList<>();
-        HashMap<String, LamuNamedArgument> outNamedArgs = new HashMap<>();
+        HashMap<String, ArgsNamedArgument> outNamedArgs = new HashMap<>();
 
         // parse the passed arguments
-        LamuScript.parseArguments( arguments, outArgs, outNamedArgs );
+        Args.parseArguments( arguments, outArgs, outNamedArgs );
 
         // Execute the macro script.
-        LamuScript.executeMacro( state, getMacroName(), getMacroContent(), arguments, outArgs, outNamedArgs, recursiveCount );
+        Args.executeMacro( argsState, getMacroName(), getMacroContent(), arguments, outArgs, outNamedArgs, recursiveCount );
     }
 
 

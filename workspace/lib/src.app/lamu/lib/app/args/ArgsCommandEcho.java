@@ -1,15 +1,15 @@
-package lamu;
+package lamu.lib.app.args;
 
 import java.util.List;
 
-class LamuCommandEcho extends LamuCommand {
+public class ArgsCommandEcho extends ArgsCommand {
     @Override
     protected String commandName() {
         return "echo";
     }
 
     @Override
-    protected void execute( LamuScript.State state, List<String> arguments, int recursiveCount) {
+    protected void execute( ArgsState argsState, List<String> arguments, int recursiveCount) {
 //        LamuScript.logInfo( String.format( "echo:%s", arguments.toString() ));
         System.out.println( String.join( " " , arguments ) );
     }

@@ -1,4 +1,4 @@
-package lamu;
+package lamu.lib.app.args;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -8,19 +8,27 @@ import lamu.lib.app.ApplicationVessel;
 import lamu.lib.app.process.ForkedProcess;
 import lamu.lib.app.process.ForkedProcessUtil;
 
-class LamuCommandFork extends LamuCommand {
+public class ArgsCommandFork extends ArgsCommand {
+    private final String name;
+    private final Class<?> mainClass;
+    public ArgsCommandFork(String name, Class<?> mainClass) {
+        super();
+        this.name = name;
+        this.mainClass = mainClass;
+    }
+
     @Override
     protected String commandName() {
         return "fork";
     }
 
     @Override
-    protected void execute( LamuScript.State state, List<String> arguments, int recursiveCount) {
+    protected void execute( ArgsState argsState, List<String> arguments, int recursiveCount) {
         List<String> fullArguments = new ArrayList<>();
         for ( Iterator<String> i = arguments.iterator();i.hasNext(); ) {
             String arg = i.next();
-            if ( arg.equals( "lamu" ) ) {
-                fullArguments.addAll( ForkedProcessUtil.getJavaArguments( LamuApplication.class.getCanonicalName() ) );
+            if ( arg.equals( name ) ) {
+                fullArguments.addAll( ForkedProcessUtil.getJavaArguments( mainClass.getCanonicalName() ) );
             } else {
                 fullArguments.add( arg );
             }
@@ -38,6 +46,6 @@ class LamuCommandFork extends LamuCommand {
         vessel.add( javaProcess );
         
         // Push it to the stack for vessels.
-        state.vessels.push( vessel );
+        argsState.vessels.push( vessel );
     }
 }

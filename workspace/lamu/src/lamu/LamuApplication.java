@@ -17,6 +17,13 @@ import lamu.lib.InstanceManager;
 import lamu.lib.Version;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.app.ApplicationVessel;
+import lamu.lib.app.args.ArgsCommand;
+import lamu.lib.app.args.ArgsCommandEcho;
+import lamu.lib.app.args.ArgsCommandExec;
+import lamu.lib.app.args.ArgsCommandFork;
+import lamu.lib.app.args.ArgsCommandLoad;
+import lamu.lib.app.args.ArgsCommandMacro;
+import lamu.lib.app.args.ArgsState;
 import lamu.lib.doc.LamuDocument;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.SchemeEngineLib;
@@ -47,31 +54,27 @@ public class LamuApplication {
     static File getInitFile() {
         return new File( System.getProperty("user.home"), ".lamu/default-arguments.conf");
     }
-    static List<LamuCommand> createAvailableCommandList() throws IOException {
-        List<LamuCommand> availableCommands = new ArrayList<>();
-        availableCommands.add( new LamuCommandCreate() );
-        availableCommands.add( new LamuCommandFork() );
-        availableCommands.add( new LamuCommandLoad() );
-        availableCommands.add( new LamuCommandExec() );
-        availableCommands.add( new LamuCommandEcho() );
-        availableCommands.addAll( LamuCommandMacro.load( getInitFile() ) );
+    
+    static List<ArgsCommand> createAvailableCommandList() throws IOException {
+        List<ArgsCommand> availableCommands = new ArrayList<>();
+        availableCommands.add( new LamuCommandBuilder() );
+        availableCommands.add( new ArgsCommandFork( "lamu", LamuApplication.class ) );
+        availableCommands.add( new ArgsCommandLoad() );
+        availableCommands.add( new ArgsCommandExec() );
+        availableCommands.add( new ArgsCommandEcho() );
+        availableCommands.addAll( ArgsCommandMacro.load( getInitFile() ) );
 
         // this is a fall back.
-        availableCommands.add( LamuCommandMacro.create( 
-                    LamuScript.DEFAULT_COMMAND_LOAD + 
-                    " " + 
-                    LamuScript.TRIGGER_FOR_ADVANCED_COMMAND_MODE + " create scheme + pulsar + repl $*{--load=$} +" ));
+        availableCommands.add( ArgsCommandMacro.create( 
+                    LamuScript.DEFAULT_COMMAND_LOAD + " " + 
+                    " create scheme + pulsar + repl $*{--load=$} +" ));
 
-        availableCommands.add( LamuCommandMacro.create( 
-                    LamuScript.DEFAULT_COMMAND_OPEN + 
-                    " " + 
-                    LamuScript.TRIGGER_FOR_ADVANCED_COMMAND_MODE + " create scheme + pulsar + repl + gui $*{$} +" ));
+        availableCommands.add( ArgsCommandMacro.create( 
+                    LamuScript.DEFAULT_COMMAND_OPEN + " " + 
+                    " create scheme + pulsar + repl + gui $*{$} +" ));
         
-        availableCommands.add( LamuCommandMacro.create( 
-            LamuScript.DEFAULT_COMMAND + 
-            " " + 
-            LamuScript.TRIGGER_FOR_ADVANCED_COMMAND_MODE +
-            " " +
+        availableCommands.add( ArgsCommandMacro.create( 
+            LamuScript.DEFAULT_COMMAND + " " + 
             LamuScript.DEFAULT_COMMAND_OPEN + " $*{$}" ));
 
         return availableCommands;
@@ -244,12 +247,12 @@ public class LamuApplication {
 
         //		Logger.getGlobal().setLevel( Level.ALL );
 
-        List<LamuCommand> availableCommands = createAvailableCommandList();
-        LamuScript.State state = new LamuScript.State( availableCommands );
-        LamuScript.parse( state, args );
+        List<ArgsCommand> availableCommands = createAvailableCommandList();
+        ArgsState argsState = new ArgsState( availableCommands );
+        LamuScript.parse( argsState, args );
         
 
-        List<ApplicationVessel> vesselList = new ArrayList<>( state.vessels );
+        List<ApplicationVessel> vesselList = new ArrayList<>( argsState.vessels );
         Collections.reverse( vesselList );
 
         

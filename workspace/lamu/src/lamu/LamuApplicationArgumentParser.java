@@ -12,8 +12,9 @@ import java.util.logging.Level;
 
 import kawapad.Kawapad;
 import kawapad.KawapadFrame;
-import lamu.lib.ConsoleChecker;
 import lamu.lib.app.ApplicationVessel;
+import lamu.lib.app.args.ArgsNamedArgument;
+import lamu.lib.app.args.ArgsQuotedStringSplitter;
 import lamu.lib.app.args.ArgumentParser;
 import lamu.lib.app.args.ArgumentParserDefault;
 import lamu.lib.app.args.ArgumentParserElement;
@@ -85,7 +86,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 @Override
                 public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
                     if ( s.startsWith( "--" ) ) {
-                        LamuNamedArgument narg = new LamuNamedArgument( s );
+                        ArgsNamedArgument narg = new ArgsNamedArgument( s );
                         switch ( narg.getKey() ) {
                         case "output-file" :
                             outputFile = narg.getValue();
@@ -128,7 +129,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 @Override
                 public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
                     if ( s.startsWith( "--" ) ) {
-                        LamuNamedArgument narg = new LamuNamedArgument( s );
+                        ArgsNamedArgument narg = new ArgsNamedArgument( s );
                         switch ( narg.getKey() ) {
                         case "category" :
                             category = narg.getValue();
@@ -257,7 +258,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 @Override
                 public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
                     if (s.startsWith( "--" ) ) {
-                        LamuNamedArgument a = new LamuNamedArgument(s);
+                        ArgsNamedArgument a = new ArgsNamedArgument(s);
                         switch ( a.getKey() ) {
                         case "port" : 
                             this.serverPort = Integer.parseInt( a.getValue() );
@@ -313,7 +314,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 @Override
                 public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
                     if ( s.startsWith( "--" ) ) {
-                        LamuNamedArgument a = new LamuNamedArgument(s);
+                        ArgsNamedArgument a = new ArgsNamedArgument(s);
                         switch ( a.getKey() ) {
                         case "open" : 
                         case "load" : 
@@ -357,7 +358,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 @Override
                 public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
                     if ( s.startsWith( "--" ) ) {
-                        LamuNamedArgument a = new LamuNamedArgument(s);
+                        ArgsNamedArgument a = new ArgsNamedArgument(s);
                         switch ( a.getKey() ) {
                         //                                case "port" : 
                         //                                    portNumberList.add(  Integer.parseInt( a.value ) );
@@ -427,7 +428,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 @Override
                 public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
                     if ( s.startsWith( "--" ) ) {
-                        LamuNamedArgument a = new LamuNamedArgument(s);
+                        ArgsNamedArgument a = new ArgsNamedArgument(s);
                         switch ( a.getKey() ) {
                         case "load" : 
                             fileNameList.add( a.getValue() );
@@ -467,7 +468,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                                         scriptStringList.add( "; " );
                                         scriptStringList.add( "; " + fileName );
                                         scriptStringList.add( "; " );
-                                        scriptStringList.addAll( LamuQuotedStringSplitter.splitLines( SchemeUtils.readAllAsString( fileName ) ) );
+                                        scriptStringList.addAll( ArgsQuotedStringSplitter.splitLines( SchemeUtils.readAllAsString( fileName ) ) );
                                         scriptStringList.add( " " );
                                     } catch (IOException e) {
                                         throw new Error(e);
@@ -507,7 +508,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 @Override
                 public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
                     if ( s.startsWith( "--"  ) ) {
-                        LamuNamedArgument a = new LamuNamedArgument( s );
+                        ArgsNamedArgument a = new ArgsNamedArgument( s );
                         if ( false ) {
                             //
                         } else if ( "local".equals( a.getKey() ) ) {
@@ -589,7 +590,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 @Override
                 public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
                     if ( s.startsWith( "--" ) ) {
-                        LamuNamedArgument narg = new LamuNamedArgument( s );
+                        ArgsNamedArgument narg = new ArgsNamedArgument( s );
                         switch ( narg.getKey() ) {
                         case "out" :
                             outFile = narg.getValue();
@@ -642,20 +643,24 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     initStream(parser);
                 }
 
-                /**
-                 * Initialize the default stream. See {@link lamu.LamuScript.State#initStream() }
-                 */
                 void initStream(ArgumentParser parser) {
-                    if ( ConsoleChecker.consoleExists() ) {
-                        parser.getValueStack( STREAMABLES ).push( StdioStream.INSTANCE );
-                    } else {
-                        logWarn(
-                            "=== WARNING ===\n" +
-                                "The user requested a STDIO stream to be instantiated but it is not available;\n" +
-                            "therefore, a dummy stream is created instead of the STDIO.\n" );
-                        parser.getValueStack( STREAMABLES ).push( NullStream.INSTANCE );
-                    }
+                    parser.getValueStack( STREAMABLES ).push( StdioStream.INSTANCE );
                 }
+
+//                /**
+//                 * Initialize the default stream. See {@link lamu.lib.app.args.ArgsState#initStream() }
+//                 */
+//                void initStream(ArgumentParser parser) {
+//                    if ( ConsoleChecker.consoleExists() ) {
+//                        parser.getValueStack( STREAMABLES ).push( StdioStream.INSTANCE );
+//                    } else {
+//                        logWarn(
+//                            "=== WARNING ===\n" +
+//                                "The user requested a STDIO stream to be instantiated but it is not available;\n" +
+//                            "therefore, a dummy stream is created instead of the STDIO.\n" );
+//                        parser.getValueStack( STREAMABLES ).push( NullStream.INSTANCE );
+//                    }
+//                }
             };
         }
     }
