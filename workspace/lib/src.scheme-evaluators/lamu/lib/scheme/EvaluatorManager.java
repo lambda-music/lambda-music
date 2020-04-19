@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -15,19 +16,12 @@ import javax.swing.JRadioButtonMenuItem;
 import lamu.lib.log.Logger;
 
 
-public class EvaluatorManager<PrimaryEvaluator extends Evaluator> {
+public class EvaluatorManager {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
-    PrimaryEvaluator primaryEvaluator;
-    public PrimaryEvaluator getPrimaryEvaluator() {
-        return primaryEvaluator;
-    }
-    public void setPrimaryEvaluator(PrimaryEvaluator primaryEvaluator) {
-        this.primaryEvaluator = primaryEvaluator;
-    }
     Evaluator currentEvaluator;
     public Evaluator getCurrentEvaluator() {
         return currentEvaluator;
@@ -81,10 +75,15 @@ public class EvaluatorManager<PrimaryEvaluator extends Evaluator> {
         return menuItem;
     }
     
-    public EvaluatorManager( PrimaryEvaluator primaryEvaluator ) {
-        this.primaryEvaluator = primaryEvaluator;
-        this.currentEvaluator = primaryEvaluator;
-        this.evaluatorList.add( primaryEvaluator );
+    public void addEvaluatorList( Collection<Evaluator> evaluatorList ) {
+        if ( ! evaluatorList.isEmpty() ) {
+            this.getEvaluatorList().addAll( evaluatorList );
+            if ( this.getCurrentEvaluator() == null )
+                this.setCurrentEvaluator( evaluatorList.iterator().next() );
+        }
+    }
+    
+    public EvaluatorManager() {
     }
 
     
@@ -99,16 +98,12 @@ public class EvaluatorManager<PrimaryEvaluator extends Evaluator> {
     public void initialize() {
         logInfo( "EvaluatorManager.initialize()" );
         for ( Evaluator e :  this.evaluatorList ) {
-            if ( e instanceof ServicingEvaluator ) {
-                ((ServicingEvaluator)e).initializeEvaluator();
-            }
+            e.initializeEvaluator();
         }
     }
     public void finalize() {
         for ( Evaluator e :  this.evaluatorList ) {
-            if ( e instanceof ServicingEvaluator ) {
-                ((ServicingEvaluator)e).finalizeEvaluator();
-            }
+            e.finalizeEvaluator();
         }
     }
 }

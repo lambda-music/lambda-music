@@ -10,11 +10,6 @@ import pulsar.Pulsar;
 import pulsar.PulsarFrame;
 
 public class LamuApplicationLibrary {
-    public static SchemeEngine createSchemeEngine() {
-        SchemeEngine schemeEngine = new SchemeEngine();
-        return schemeEngine;
-    }
-
     public static SchemeHttp createPulsarHttpServer(
             SchemeEngine schemeEngine, 
             int httpPort, 

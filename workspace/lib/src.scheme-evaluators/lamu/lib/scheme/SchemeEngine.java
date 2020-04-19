@@ -1,20 +1,30 @@
 package lamu.lib.scheme;
 
 import java.io.File;
+import java.io.Reader;
 import java.lang.invoke.MethodHandles;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.logging.Level;
 
 import gnu.mapping.Procedure;
-import lamu.lib.CurrentObject;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.proc.MultipleNamedProcedure1;
 import lamu.lib.scheme.proc.MultipleNamedProcedure2;
-import lamu.lib.thread.ThreadInitializer;
-import lamu.lib.thread.ThreadInitializerContainer;
 
-public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, ApplicationComponent {
+public class SchemeEngine implements Evaluator, ApplicationComponent {
+    public static SchemeEngine createLocalEngine() {
+        SchemeEngine engine = new SchemeEngine();
+        engine.getEvaluatorManager().addEvaluatorList( Arrays.asList( new SchemeEvaluator() ));
+        return engine;
+    }
+    public static SchemeEngine createEmpty() {
+        return new SchemeEngine();
+    }
+    private SchemeEngine() {
+    }
+
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -42,8 +52,8 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     
-    private final EvaluatorManager<SchemeEvaluator> evaluatorManager = new EvaluatorManager<>( new SchemeEvaluator() );
-    public EvaluatorManager<SchemeEvaluator> getEvaluatorManager() {
+    private final EvaluatorManager evaluatorManager = new EvaluatorManager();
+    public EvaluatorManager getEvaluatorManager() {
         return evaluatorManager;
     }
     
@@ -56,25 +66,16 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
     //
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    public SchemeEngine() {
-    }
-    
-    private static final CurrentObject<SchemeEngine> currentObject = new CurrentObject<>( SchemeEngine.class );
-    private final ThreadInitializer<SchemeEngine> threadInitializer =
-            ThreadInitializer.createMultipleThreadInitializer( "scheme-engine", this,
-                ThreadInitializer.createThreadInitializer( "current-scheme-engine", currentObject, this ),
-                this.getEvaluatorManager().getPrimaryEvaluator().getThreadInitializer()
-                );
-    
-    @Override
-    public ThreadInitializer<SchemeEngine> getThreadInitializer() {
-        return threadInitializer;
-    }
+
+    private static final ThreadLocal<SchemeEngine> threadLocal = new ThreadLocal<>();
     public static SchemeEngine getCurrent() {
-        return currentObject.get();
+        return threadLocal.get();
+    }
+    public static void setCurrent( SchemeEngine engine ) {
+        threadLocal.set( engine );
     }
     public static boolean isPresent() {
-        return currentObject.isPresent();
+        return threadLocal.get() != null;
     }
 
 
@@ -93,31 +94,56 @@ public class SchemeEngine implements ThreadInitializerContainer<SchemeEngine>, A
     }
     @Override
     public void processInit() {
-        this.getEvaluatorManager().getPrimaryEvaluator().processInit();
-        this.getEvaluatorManager().initialize();
+        initializeEvaluator();
     }
     @Override
     public void processQuit() {
-        this.getEvaluatorManager().getPrimaryEvaluator().processQuit();
+        finalizeEvaluator();
+    }
+    @Override
+    public void initializeEvaluator() {
+        this.getEvaluatorManager().initialize();
+    }
+    @Override
+    public void finalizeEvaluator() {
         this.getEvaluatorManager().finalize();
     }
-    
-    public static Runnable createEvaluationRunner(
-            Runnable threadInitializer, 
-            String schemeScript,
-            Evaluator evaluator,
-            EvaluatorReceiver receiver, 
-            File currentDirectory, 
-            File currentFile, 
-            String currentURI )
+
+    @Override
+    public SchemeResult evaluate(
+        Runnable threadInitializer, 
+        Reader schemeScript, 
+        File currentDirectory,
+        File currentFile, 
+        String currentURI) 
     {
-        return new EvaluatorRunnable( 
+        return this.getEvaluatorManager().getCurrentEvaluator().evaluate(
             threadInitializer, 
             schemeScript, 
-            evaluator, 
-            receiver, 
-            currentDirectory,
+            currentDirectory, 
             currentFile, 
             currentURI );
+    }
+
+    @Override
+    public void evaluate(
+        Runnable threadInitializer, 
+        String schemeScript,
+        EvaluatorReceiver receiver,
+        File currentDirectory, 
+        File currentFile, 
+        String currentURI )
+    {
+        Evaluator evaluator = this.getEvaluatorManager().getCurrentEvaluator();
+        
+        this.getThreadManager().startThread(
+            Evaluator.createEvaluationRunner(
+                threadInitializer, 
+                schemeScript, 
+                evaluator, 
+                receiver, 
+                currentDirectory, 
+                currentFile, 
+                currentURI ));
     }
 }

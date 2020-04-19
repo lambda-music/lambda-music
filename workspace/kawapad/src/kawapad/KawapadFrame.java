@@ -329,7 +329,7 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     public static KawapadFrame createStaticInstance( ) {
-        SchemeEngine schemeEngine = new SchemeEngine();
+        SchemeEngine schemeEngine = SchemeEngine.createLocalEngine();
         KawapadFrame kawapadFrame = new KawapadFrame( schemeEngine, true, "Scheme Scratch Pad" );
         ApplicationVessel v = new ApplicationVessel("KawapadVessel");
         v.add( kawapadFrame );

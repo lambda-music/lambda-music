@@ -91,4 +91,11 @@ public class RemoteEvaluator implements Evaluator, NameCaptionHolder {
     public String getNameCaption() {
         return "http " +  this.urlEval + "";
     }
+    @Override
+    public void initializeEvaluator() {
+    }
+    @Override
+    public void finalizeEvaluator() {
+    }
+    
 }

@@ -119,7 +119,10 @@ public class SchemeSequence implements MetroSequence, SchemeSequenceReadable, In
 //            SchemeEvaluator.initializeCurrentThread( ((Pulsar)metro).getSchemeEngine().getSchemeEvaluator().getScheme() );
 //            ((Pulsar)metro).getThreadInitializer().run();
             
-            metro.getThreadInitializerCollection().run();
+            // MODIFIED (Sun, 19 Apr 2020 09:48:14 +0900) TODO UPDATE THE DOCUMENTATION
+            // metro.getThreadInitializerCollection().run();
+            Pulsar.setCurrentMetro(metro);
+
             
             // Call the invokable to get a note list of the next measure.
             Collection<Object> notations = (Collection<Object>)invokable.invoke();

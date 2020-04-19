@@ -103,7 +103,6 @@ import pulsar.PulsarLib.PulsarLibDelegator;
  * @author Atsushi Oka
  */
 public class Pulsar extends Metro implements PulsarLib, PulsarLibDelegator, ApplicationComponent {
-    
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }
     static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }

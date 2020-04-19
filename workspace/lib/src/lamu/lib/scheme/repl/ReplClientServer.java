@@ -2,10 +2,8 @@ package lamu.lib.scheme.repl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import lamu.lib.stream.SisoReceiver;
@@ -57,7 +55,6 @@ public abstract class ReplClientServer implements SisoReceiverListener, SisoRece
 
     final HashMap<String,String> bufferMap = new HashMap<>();
     final StringBuffer buffer = new StringBuffer();
-    final List<Thread> threadList = Collections.synchronizedList( new ArrayList<>() );
 
     private String filterKey(String key) {
         if ( "".equals( key ) ) {

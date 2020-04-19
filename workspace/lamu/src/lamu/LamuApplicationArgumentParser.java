@@ -24,6 +24,7 @@ import lamu.lib.log.Logger;
 import lamu.lib.scheme.Evaluator;
 import lamu.lib.scheme.RemoteEvaluator;
 import lamu.lib.scheme.SchemeEngine;
+import lamu.lib.scheme.SchemeEvaluator;
 import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.scheme.StreamEvaluator;
 import lamu.lib.scheme.repl.ReplServer;
@@ -492,8 +493,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         @Override
         public ArgumentParserElement create() {
             return new ArgumentParserElement() {
-                // TODO This is highly questionable. (Mon, 13 Apr 2020 10:44:59 +0900)
-                SchemeEngine schemeEngine = LamuApplicationLibrary.createSchemeEngine();
+                SchemeEngine schemeEngine = SchemeEngine.createEmpty();
                 
                 Evaluator createRemoteHttp( String url ) {
                     return new RemoteEvaluator( url );
@@ -509,6 +509,8 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                         LamuNamedArgument a = new LamuNamedArgument( s );
                         if ( false ) {
                             //
+                        } else if ( "local".equals( a.getKey() ) ) {
+                            evaluatorList.add( new SchemeEvaluator() );
                         } else if ( "server-url".equals( a.getKey() ) ) {
                             // deprecated
                             evaluatorList.add( createRemoteHttp( a.getValue() ) );
@@ -529,10 +531,10 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 }
                 @Override
                 public void notifyEnd(ArgumentParser parser) {
-                     //  lamu.lib.scheme.EvaluatorManager.initEvaluatorManager()
-                    this.schemeEngine.getEvaluatorManager().getEvaluatorList().addAll( this.evaluatorList );
-
-                    //                        schemeSecretary.setDirectMeeting( directMeeting );
+                    if (this.evaluatorList.isEmpty() ) {
+                        this.evaluatorList.add( new SchemeEvaluator() );
+                    }
+                    this.schemeEngine.getEvaluatorManager().addEvaluatorList( this.evaluatorList );
                     parser.getValueStack( SCHEME ).push( this.schemeEngine );
 
                     //                        runnableStack.push( new Runnable() {

@@ -2,10 +2,8 @@ package lamu.lib.scheme.repl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import lamu.lib.scheme.EvaluatorReceiver;
@@ -49,7 +47,6 @@ public class ReplServer2 implements SisoReceiverListener, SisoReceiverServiceLis
 
     final HashMap<String,StringBuffer> bufferMap = new HashMap<>();
     String currentBufferKey;
-    List<Thread> threadList = Collections.synchronizedList( new ArrayList<>() );
 
     void initBufferMap() {
         // Reset the null buffer to empty.
@@ -323,23 +320,13 @@ public class ReplServer2 implements SisoReceiverListener, SisoReceiverServiceLis
                     }
                 };
 
-                Runnable evaluationRunner = SchemeEngine.createEvaluationRunner(
-                    receiver.getThreadInitializerCollection(), script,
-                    schemeEngine.getEvaluatorManager().getCurrentEvaluator(),
-                    resultReceiver, null , null, "console(repl)" );
-
-                Thread t = new Thread( new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            evaluationRunner.run();
-                        } finally {
-                            threadList.remove( Thread.currentThread() );
-                        }
-                    }
-                });
-                threadList.add( t );
-                t.start();
+                schemeEngine.evaluate(
+                        receiver.getThreadInitializerCollection(),
+                        script,
+                        resultReceiver,
+                        null, 
+                        null , 
+                        "console(repl)" );
             }
         });
 
@@ -419,7 +406,7 @@ public class ReplServer2 implements SisoReceiverListener, SisoReceiverServiceLis
     }
 
     public static void main(String[] args) {
-        SchemeEngine schemeEngine = new SchemeEngine();
+        SchemeEngine schemeEngine = SchemeEngine.createLocalEngine();
         schemeEngine.requestInit();
         new SisoReceiver( StdioStream.INSTANCE, new ReplServer2( schemeEngine, ";" ) ).requestInit();
     }

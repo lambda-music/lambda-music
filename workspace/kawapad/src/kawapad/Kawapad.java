@@ -302,7 +302,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         {
             File f = Kawapad.getExtFile();
             if ( f.isFile() && f.exists() ) {
-                SchemeResult result = schemeEngine.getEvaluatorManager().getPrimaryEvaluator().evaluate( null, f );
+                SchemeResult result = schemeEngine.evaluate( null, f );
                 if ( result.isSucceeded() ) {
                     Object value = result.getValue();
                     if ( value instanceof Kawapad.KawapadListener ) {
@@ -371,16 +371,13 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
 
     public void evaluate( String schemeScript, EvaluatorReceiver receiver ) {
         if ( schemeScript != null ) {
-            this.kawapad.getSchemeEngine().getThreadManager().startThread( 
-                SchemeEngine.createEvaluationRunner( 
-                    null, 
-                    schemeScript, 
-                    this.getSchemeEngine().getEvaluatorManager().getCurrentEvaluator(), 
-                    receiver, 
-                    kawapad.getCurrentDirectory(), 
-                    kawapad.getCurrentFile(), 
-                    "scratchpad"
-                ));
+            this.kawapad.getSchemeEngine().evaluate( 
+                null, 
+                schemeScript, 
+                receiver, 
+                kawapad.getCurrentDirectory(), 
+                kawapad.getCurrentFile(), 
+                "scratchpad" );
         } else {
             Kawapad.logWarn( "Ignored because currently no text is selected. " );
         }

@@ -18,7 +18,7 @@ import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.Stream;
 import lamu.lib.stream.StreamPump;
 
-public class StreamEvaluator implements ServicingEvaluator, NameCaptionHolder {
+public class StreamEvaluator implements Evaluator, NameCaptionHolder {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -112,7 +112,6 @@ public class StreamEvaluator implements ServicingEvaluator, NameCaptionHolder {
         this.errorPump = new StreamPump( this.stream.getDownwardErrorStream(), NullOutputStream.INSTANCE );
         this.errorPump.requestInit();
     }
-    
     @Override
     public void finalizeEvaluator() {
         this.sisoReceiver.requestQuit();
@@ -133,7 +132,7 @@ public class StreamEvaluator implements ServicingEvaluator, NameCaptionHolder {
             logError("warning",e);
         }
     }
-    
+
     @Override
     public String toString() {
         return "[" + stream.toString() + "]";

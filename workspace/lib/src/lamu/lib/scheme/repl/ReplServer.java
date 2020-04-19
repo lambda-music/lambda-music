@@ -123,23 +123,13 @@ public class ReplServer extends ReplClientServer {
                     }
                 };
 
-                Runnable evaluationRunner = SchemeEngine.createEvaluationRunner(
-                    receiver.getThreadInitializerCollection(), script,
-                    schemeEngine.getEvaluatorManager().getCurrentEvaluator(),
-                    resultReceiver, null , null, "console(repl)" );
-
-                Thread t = new Thread( new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            evaluationRunner.run();
-                        } finally {
-                            threadList.remove( Thread.currentThread() );
-                        }
-                    }
-                });
-                threadList.add( t );
-                t.start();
+                schemeEngine.evaluate(
+                    receiver.getThreadInitializerCollection(), 
+                    script,
+                    resultReceiver,
+                    null, 
+                    null, 
+                    "console(repl)" );
             }
         });
     }
@@ -153,7 +143,7 @@ public class ReplServer extends ReplClientServer {
 
 
     public static void main(String[] args) {
-        SchemeEngine schemeEngine = new SchemeEngine();
+        SchemeEngine schemeEngine = SchemeEngine.createLocalEngine();
         schemeEngine.requestInit();
         new SisoReceiver( StdioStream.INSTANCE, new ReplServer( ";", schemeEngine ) ).requestInit();
     }
