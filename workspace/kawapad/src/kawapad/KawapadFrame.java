@@ -259,8 +259,8 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
             Action2.processMenuBar( menuBar );
             setJMenuBar( menuBar );
             
-            kawapad.getSchemeEngine().getEvaluatorManager().getServerMenuList().add( serverMenu );
-            kawapad.getSchemeEngine().getEvaluatorManager().notifyUpdate();
+            kawapad.getMultipleEvaluatorMenuListener().getServerMenuList().add( serverMenu );
+            kawapad.getMultipleEvaluatorMenuListener().notifyUpdate( kawapad.getSchemeEngine() );
         }
 
         {

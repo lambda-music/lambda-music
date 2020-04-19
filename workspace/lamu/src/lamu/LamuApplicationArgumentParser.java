@@ -534,7 +534,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     if (this.evaluatorList.isEmpty() ) {
                         this.evaluatorList.add( new SchemeEvaluator() );
                     }
-                    this.schemeEngine.getEvaluatorManager().addEvaluatorList( this.evaluatorList );
+                    this.schemeEngine.addAllEvaluators( this.evaluatorList );
                     parser.getValueStack( SCHEME ).push( this.schemeEngine );
 
                     //                        runnableStack.push( new Runnable() {

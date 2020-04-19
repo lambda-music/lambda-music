@@ -91,6 +91,7 @@ import lamu.lib.doc.LamuDocument;
 import lamu.lib.log.Logger;
 import lamu.lib.log.SimpleConsole;
 import lamu.lib.scheme.EvaluatorReceiver;
+import lamu.lib.scheme.MultipleEvaluatorMenuListener;
 import lamu.lib.scheme.SchemeEngine;
 import lamu.lib.scheme.SchemeEvaluatorUtils;
 import lamu.lib.scheme.SchemePrinter;
@@ -220,16 +221,20 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     ////////////////////////////////////////////////////////////////////////////
     // 
     ////////////////////////////////////////////////////////////////////////////
+    static ArrayList<Kawapad> kawapadList = new ArrayList<>();
 
     protected SchemeEngine schemeEngine;
     public SchemeEngine getSchemeEngine() {
         return schemeEngine;
     }
-
-    static ArrayList<Kawapad> kawapadList = new ArrayList<>();
+    private final MultipleEvaluatorMenuListener multipleEvaluatorMenuListener = new MultipleEvaluatorMenuListener();
+    public MultipleEvaluatorMenuListener getMultipleEvaluatorMenuListener() {
+        return multipleEvaluatorMenuListener;
+    }
     public Kawapad( SchemeEngine schemeEngine ) {
         super();
         this.schemeEngine = schemeEngine;
+        this.schemeEngine.addListener( multipleEvaluatorMenuListener );
         
         // init font
         // kawapad.setFont( new Font("monospaced", Font.PLAIN, 12));
@@ -371,7 +376,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
 
     public void evaluate( String schemeScript, EvaluatorReceiver receiver ) {
         if ( schemeScript != null ) {
-            this.kawapad.getSchemeEngine().evaluate( 
+            this.kawapad.getSchemeEngine().evaluateAsync( 
                 null, 
                 schemeScript, 
                 receiver, 

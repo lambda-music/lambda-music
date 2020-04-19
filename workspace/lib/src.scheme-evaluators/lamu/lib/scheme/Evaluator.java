@@ -40,26 +40,6 @@ public interface Evaluator {
             File currentFile,
             String currentURI );
 
-    default void evaluate(
-        Runnable threadInitializer, 
-        String schemeScript,
-        EvaluatorReceiver evaluatorReceiver,
-        File currentDirectory, 
-        File currentFile, 
-        String currentURI )
-    {
-        Evaluator evaluator = this;
-        Evaluator.createEvaluationRunner(
-            threadInitializer, 
-            schemeScript, 
-            evaluator, 
-            evaluatorReceiver, 
-            currentDirectory, 
-            currentFile, 
-            currentURI ).run();
-    }
-
-    
     default SchemeResult evaluate( 
             Runnable threadInitializer, 
             String schemeScriptString, 
@@ -148,11 +128,26 @@ public interface Evaluator {
 //            null,
 //            "reset" );
 //    }
+    default void evaluateAsync(
+        Runnable threadInitializer, 
+        String schemeScript,
+        EvaluatorReceiver evaluatorReceiver,
+        File currentDirectory, 
+        File currentFile, 
+        String currentURI )
+    {
+        Evaluator evaluator = this;
+        Evaluator.createEvaluationRunner(
+            threadInitializer, 
+            schemeScript, 
+            evaluator, 
+            evaluatorReceiver, 
+            currentDirectory, 
+            currentFile, 
+            currentURI ).run();
+    }
 
-    void initializeEvaluator();
-    void finalizeEvaluator();
-    
-    static Runnable createEvaluationRunner(
+    public static Runnable createEvaluationRunner(
             Runnable threadInitializer, 
             String schemeScript,
             Evaluator evaluator,
@@ -170,4 +165,15 @@ public interface Evaluator {
             currentFile, 
             currentURI );
     }
+    
+
+    /**
+     * Initialize the current evaluator.
+     */
+    void initializeEvaluator();
+
+    /**
+     * Finalize the current evaluator.
+     */
+    void finalizeEvaluator();
 }

@@ -123,7 +123,7 @@ public class ReplServer extends ReplClientServer {
                     }
                 };
 
-                schemeEngine.evaluate(
+                schemeEngine.evaluateAsync(
                     receiver.getThreadInitializerCollection(), 
                     script,
                     resultReceiver,

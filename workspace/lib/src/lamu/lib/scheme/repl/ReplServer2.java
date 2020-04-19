@@ -320,7 +320,7 @@ public class ReplServer2 implements SisoReceiverListener, SisoReceiverServiceLis
                     }
                 };
 
-                schemeEngine.evaluate(
+                schemeEngine.evaluateAsync(
                         receiver.getThreadInitializerCollection(),
                         script,
                         resultReceiver,
