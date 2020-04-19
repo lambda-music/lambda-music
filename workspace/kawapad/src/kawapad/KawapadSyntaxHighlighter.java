@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 import javax.swing.text.AttributeSet;
 
 import gnu.lists.LList;
-import lamu.lib.scheme.SchemeEngine;
+import lamu.lib.scheme.MultiplexEvaluator;
 import lamu.lib.scheme.SchemeResult;
 import lamu.lib.scheme.SchemeUtils;
 
@@ -32,7 +32,6 @@ public class KawapadSyntaxHighlighter extends SyntaxHighlighter {
     public static AttributeSet DEFAULT_PUNCTUATION_COLOR   = SyntaxHighlighter.createAttributeSet( new Color( 0x50,0x50,0x50,0xff ));
     public static AttributeSet DEFAULT_VARIABLE_COLOR      = SyntaxHighlighter.createAttributeSet( new Color( 0x00,0x80,0xff,0xff ));
     
-    SchemeEngine schemeEngine;
     Kawapad kawapad;
     KawapadSyntaxHighlighter(Kawapad kawapad) {
         super( kawapad );
@@ -53,7 +52,7 @@ public class KawapadSyntaxHighlighter extends SyntaxHighlighter {
 //            List<String> keywordList = new ArrayList<>();
 //          keywordList.addAll( SchemeUtils.getAllKey( kawapad.getSchemeSecretary() ) );
 
-            SchemeResult result = kawapad.getSchemeEngine().evaluate( 
+            SchemeResult result = kawapad.getEvaluator().evaluate( 
                 "(environment-fold (interaction-environment) cons '())", "get-all" );
             
             result.throwIfError();

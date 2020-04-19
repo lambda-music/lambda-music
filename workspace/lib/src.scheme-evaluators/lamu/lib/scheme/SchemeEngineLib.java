@@ -12,7 +12,7 @@ public class SchemeEngineLib {
 
         @Override
         public Object apply0() throws Throwable {
-            return SchemeEngine.getCurrent();
+            return MultiplexEvaluator.getCurrent();
         }
     }
 
@@ -24,7 +24,7 @@ public class SchemeEngineLib {
 
         @Override
         public Object apply0() throws Throwable {
-            return SchemeEngine.isPresent();
+            return MultiplexEvaluator.isPresent();
         }
     }
     public static void initScheme( Environment env ) {

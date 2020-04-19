@@ -20,9 +20,9 @@ import lamu.lib.log.Logger;
 import lamu.lib.scheme.proc.MultipleNamedProcedure1;
 import lamu.lib.scheme.proc.MultipleNamedProcedure2;
 
-public class SchemeEngine implements Evaluator, ApplicationComponent {
+public class MultiplexEvaluator implements Evaluator, ApplicationComponent {
     public static interface MultipleEvaluatorListener {
-        void notifyUpdate( SchemeEngine engine );
+        void notifyUpdate( MultiplexEvaluator multiplexEvaluator );
     }
     
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -30,15 +30,15 @@ public class SchemeEngine implements Evaluator, ApplicationComponent {
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
-    public static SchemeEngine createLocalEngine() {
-        SchemeEngine engine = new SchemeEngine();
+    public static MultiplexEvaluator createLocal() {
+        MultiplexEvaluator engine = new MultiplexEvaluator();
         engine.addAllEvaluators( Arrays.asList( new SchemeEvaluator() ));
         return engine;
     }
-    public static SchemeEngine createEmpty() {
-        return new SchemeEngine();
+    public static MultiplexEvaluator createEmpty() {
+        return new MultiplexEvaluator();
     }
-    private SchemeEngine() {
+    private MultiplexEvaluator() {
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -78,11 +78,11 @@ public class SchemeEngine implements Evaluator, ApplicationComponent {
     //
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    private static final ThreadLocal<SchemeEngine> threadLocal = new ThreadLocal<>();
-    public static SchemeEngine getCurrent() {
+    private static final ThreadLocal<MultiplexEvaluator> threadLocal = new ThreadLocal<>();
+    public static MultiplexEvaluator getCurrent() {
         return threadLocal.get();
     }
-    public static void setCurrent( SchemeEngine engine ) {
+    public static void setCurrent( MultiplexEvaluator engine ) {
         threadLocal.set( engine );
     }
     public static boolean isPresent() {
@@ -135,7 +135,7 @@ public class SchemeEngine implements Evaluator, ApplicationComponent {
     }
     public void addAllEvaluators( Collection<Evaluator> evaluatorList ) {
         if ( ! evaluatorList.isEmpty() ) {
-            this.getEvaluatorList().addAll( evaluatorList );
+            this.evaluatorList.addAll( evaluatorList );
             if ( this.currentEvaluator == null )
                 this.currentEvaluator = evaluatorList.iterator().next();
             this.notifyUpdate();

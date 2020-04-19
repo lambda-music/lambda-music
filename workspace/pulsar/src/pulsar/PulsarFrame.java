@@ -66,7 +66,7 @@ import lamu.lib.log.Logger;
 import lamu.lib.log.SimpleConsole;
 import lamu.lib.scheme.Evaluator;
 import lamu.lib.scheme.EvaluatorReceiver;
-import lamu.lib.scheme.SchemeEngine;
+import lamu.lib.scheme.MultiplexEvaluator;
 import lamu.lib.scheme.SchemeResult;
 import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.secretary.Invokable;
@@ -153,15 +153,15 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     //////////////////////////////////////////////////////////////////////////////////
     
     public static PulsarFrame create(
-            SchemeEngine schemeEngine,
+            MultiplexEvaluator multiplexEvaluator,
             boolean shutdownWhenClose,
             String caption ) {
-        return new PulsarFrame( schemeEngine, shutdownWhenClose, caption );
+        return new PulsarFrame( multiplexEvaluator, shutdownWhenClose, caption );
     }
 
 
-    PulsarFrame( SchemeEngine schemeEngine, boolean shutdownWhenClose, String caption ) {
-        super( schemeEngine, shutdownWhenClose, caption == null ? PULSAR_DEFAULT_CAPTION : caption );
+    PulsarFrame( MultiplexEvaluator multiplexEvaluator, boolean shutdownWhenClose, String caption ) {
+        super( multiplexEvaluator, shutdownWhenClose, caption == null ? PULSAR_DEFAULT_CAPTION : caption );
         
         //          DELETED >>> INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
         //          PulsarGui.invokeLocalSchemeInitializers( schemeSecretary, PulsarGui.this );
@@ -244,7 +244,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                             Evaluator.createEvaluationRunner( 
                                     null, 
                                     schemeScript, 
-                                    getKawapad().getSchemeEngine(), 
+                                    getKawapad().getEvaluator(), 
                                     receiver, 
                                     kawapad.getCurrentDirectory(), 
                                     kawapad.getCurrentFile(), 

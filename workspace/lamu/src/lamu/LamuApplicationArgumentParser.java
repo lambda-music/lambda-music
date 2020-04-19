@@ -23,7 +23,7 @@ import lamu.lib.doc.LamuAbstractDocument;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.Evaluator;
 import lamu.lib.scheme.RemoteEvaluator;
-import lamu.lib.scheme.SchemeEngine;
+import lamu.lib.scheme.MultiplexEvaluator;
 import lamu.lib.scheme.SchemeEvaluator;
 import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.scheme.StreamEvaluator;
@@ -61,7 +61,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         getValueStack( HTTP );
     }
 
-    static final ArgumentParserStackKey<SchemeEngine> SCHEME = new ArgumentParserStackKey<>();
+    static final ArgumentParserStackKey<MultiplexEvaluator> SCHEME = new ArgumentParserStackKey<>();
     static final ArgumentParserStackKey<Pulsar> PULSAR = new ArgumentParserStackKey<>();
     static final ArgumentParserStackKey<Kawapad> KAWAPAD = new ArgumentParserStackKey<>();
     static final ArgumentParserStackKey<SisoReceiver> REPL = new ArgumentParserStackKey<>();
@@ -172,13 +172,13 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     if ( parser.getValueStack( SCHEME ).isEmpty() ) {
                         throw new RuntimeException( MSG_NO_SCHEME_ERROR );
                     }
-                    SchemeEngine schemeEngine = parser.getValueStack( SCHEME ).peek();
+                    MultiplexEvaluator multiplexEvaluator = parser.getValueStack( SCHEME ).peek();
 
                     LamuApplication.loadBasicClasses();
                     parser.getValueStack( RUNNABLE_INIT ).add( new Runnable() {
                         @Override
                         public void run() {
-                            Kawapad kawapad = new Kawapad(schemeEngine);
+                            Kawapad kawapad = new Kawapad(multiplexEvaluator);
                             String s = kawapad.outputKeyStrokeReference();
                             FileOutputStream o=null;
                             try {
@@ -286,7 +286,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     if ( parser.getValueStack( SCHEME ).isEmpty() ) {
                         throw new RuntimeException( MSG_NO_SCHEME_ERROR );
                     }
-                    SchemeEngine schemeEngine = parser.getValueStack( SCHEME ).peek();
+                    MultiplexEvaluator multiplexEvaluator = parser.getValueStack( SCHEME ).peek();
                     //                        if ( pulsarStack.isEmpty() ) {
                     //                            throw new RuntimeException( "no pulsar is defined." );
                     //                        }
@@ -294,7 +294,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
 
                     try {
                         SchemeHttp schemeHttp = LamuApplicationLibrary.createPulsarHttpServer( 
-                                schemeEngine, serverPort, serverPath, userAuthentication );
+                                multiplexEvaluator, serverPort, serverPath, userAuthentication );
                         parser.getValueStack( HTTP ).push( schemeHttp );
                     } catch (IOException e) {
                         throw new RuntimeException( e );
@@ -331,9 +331,9 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     if ( parser.getValueStack( SCHEME ).isEmpty() ) {
                         throw new RuntimeException( MSG_NO_SCHEME_ERROR );
                     }
-                    SchemeEngine schemeEngine = parser.getValueStack( SCHEME ).peek();
+                    MultiplexEvaluator multiplexEvaluator = parser.getValueStack( SCHEME ).peek();
 
-                    PulsarFrame frame = LamuApplicationLibrary.createPulsarGui( schemeEngine );
+                    PulsarFrame frame = LamuApplicationLibrary.createPulsarGui( multiplexEvaluator );
                     if (parser.getValueStack( FRAME ).size() == 0 )
                         frame.setShutdownWhenClose( true );
                     else
@@ -374,8 +374,8 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     if ( parser.getValueStack( SCHEME ).isEmpty() ) {
                         throw new RuntimeException( MSG_NO_SCHEME_ERROR );
                     }
-                    SchemeEngine schemeEngine = parser.getValueStack( SCHEME ).peek();
-                    KawapadFrame frame = LamuApplicationLibrary.createKawapadGui( schemeEngine );
+                    MultiplexEvaluator multiplexEvaluator = parser.getValueStack( SCHEME ).peek();
+                    KawapadFrame frame = LamuApplicationLibrary.createKawapadGui( multiplexEvaluator );
 
                     if (parser.getValueStack( FRAME ).size() == 0 )
                         frame.setShutdownWhenClose( true );
@@ -444,7 +444,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     if ( parser.getValueStack( SCHEME ).isEmpty() ) {
                         throw new RuntimeException( MSG_NO_SCHEME_ERROR );
                     }
-                    SchemeEngine schemeEngine = parser.getValueStack( SCHEME ).peek();
+                    MultiplexEvaluator multiplexEvaluator = parser.getValueStack( SCHEME ).peek();
 
                     if ( parser.getValueStack( STREAMABLES ).isEmpty() ) {
                         throw new RuntimeException( MSG_NO_STREAM_ERROR );
@@ -452,7 +452,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     Stream stream = parser.getValueStack( STREAMABLES ).peek();
 
                     
-                    ReplServer replServer = new ReplServer( schemeEngine );
+                    ReplServer replServer = new ReplServer( multiplexEvaluator );
                     SisoReceiver<ReplServer> receiver = new SisoReceiver<>( stream, replServer );
                     parser.getValueStack( REPL ).push( receiver );
                     parser.getValueStack( RUNNABLE_INIT ).push( new Runnable() {
@@ -493,7 +493,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         @Override
         public ArgumentParserElement create() {
             return new ArgumentParserElement() {
-                SchemeEngine schemeEngine = SchemeEngine.createEmpty();
+                MultiplexEvaluator multiplexEvaluator = MultiplexEvaluator.createEmpty();
                 
                 Evaluator createRemoteHttp( String url ) {
                     return new RemoteEvaluator( url );
@@ -534,8 +534,8 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     if (this.evaluatorList.isEmpty() ) {
                         this.evaluatorList.add( new SchemeEvaluator() );
                     }
-                    this.schemeEngine.addAllEvaluators( this.evaluatorList );
-                    parser.getValueStack( SCHEME ).push( this.schemeEngine );
+                    this.multiplexEvaluator.addAllEvaluators( this.evaluatorList );
+                    parser.getValueStack( SCHEME ).push( this.multiplexEvaluator );
 
                     //                        runnableStack.push( new Runnable() {
                     //                            @Override

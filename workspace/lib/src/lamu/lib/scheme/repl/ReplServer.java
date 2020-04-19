@@ -3,21 +3,21 @@ package lamu.lib.scheme.repl;
 import java.util.regex.Pattern;
 
 import lamu.lib.scheme.EvaluatorReceiver;
-import lamu.lib.scheme.SchemeEngine;
+import lamu.lib.scheme.MultiplexEvaluator;
 import lamu.lib.scheme.SchemeResult;
 import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.SisoReceiverListener;
 import lamu.lib.stream.StdioStream;
 
 public class ReplServer extends ReplClientServer {
-    protected final SchemeEngine schemeEngine;
-    public ReplServer( String prefix, SchemeEngine schemeEngine ) {
+    protected final MultiplexEvaluator multiplexEvaluator;
+    public ReplServer( String prefix, MultiplexEvaluator multiplexEvaluator ) {
         super( prefix );
-        this.schemeEngine = schemeEngine;
+        this.multiplexEvaluator = multiplexEvaluator;
     }
-    public ReplServer( SchemeEngine schemeEngine ) {
+    public ReplServer( MultiplexEvaluator multiplexEvaluator ) {
         super();
-        this.schemeEngine = schemeEngine;
+        this.multiplexEvaluator = multiplexEvaluator;
     }
 
     public void hello( SisoReceiver receiver ) {
@@ -123,7 +123,7 @@ public class ReplServer extends ReplClientServer {
                     }
                 };
 
-                schemeEngine.evaluateAsync(
+                multiplexEvaluator.evaluateAsync(
                     receiver.getThreadInitializerCollection(), 
                     script,
                     resultReceiver,
@@ -143,8 +143,8 @@ public class ReplServer extends ReplClientServer {
 
 
     public static void main(String[] args) {
-        SchemeEngine schemeEngine = SchemeEngine.createLocalEngine();
-        schemeEngine.requestInit();
-        new SisoReceiver( StdioStream.INSTANCE, new ReplServer( ";", schemeEngine ) ).requestInit();
+        MultiplexEvaluator multiplexEvaluator = MultiplexEvaluator.createLocal();
+        multiplexEvaluator.requestInit();
+        new SisoReceiver( StdioStream.INSTANCE, new ReplServer( ";", multiplexEvaluator ) ).requestInit();
     }
 }

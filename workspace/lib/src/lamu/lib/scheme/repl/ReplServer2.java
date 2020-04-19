@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.regex.Pattern;
 
 import lamu.lib.scheme.EvaluatorReceiver;
-import lamu.lib.scheme.SchemeEngine;
+import lamu.lib.scheme.MultiplexEvaluator;
 import lamu.lib.scheme.SchemeResult;
 import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.SisoReceiverListener;
@@ -33,15 +33,15 @@ public class ReplServer2 implements SisoReceiverListener, SisoReceiverServiceLis
     public static final String NULL_BUFFER_KEY = "null";
     public static final String DEFAULT_COMMAND_STRING = "show";
 
-    protected final SchemeEngine schemeEngine;
+    protected final MultiplexEvaluator multiplexEvaluator;
     protected String prefix = ";lamu:";
-    public ReplServer2( SchemeEngine schemeEngine ) {
+    public ReplServer2( MultiplexEvaluator multiplexEvaluator ) {
         super();
-        this.schemeEngine = schemeEngine;
+        this.multiplexEvaluator = multiplexEvaluator;
     }
-    public ReplServer2( SchemeEngine schemeEngine, String prefix ) {
+    public ReplServer2( MultiplexEvaluator multiplexEvaluator, String prefix ) {
         super();
-        this.schemeEngine = schemeEngine;
+        this.multiplexEvaluator = multiplexEvaluator;
         this.prefix = prefix;
     }
 
@@ -320,7 +320,7 @@ public class ReplServer2 implements SisoReceiverListener, SisoReceiverServiceLis
                     }
                 };
 
-                schemeEngine.evaluateAsync(
+                multiplexEvaluator.evaluateAsync(
                         receiver.getThreadInitializerCollection(),
                         script,
                         resultReceiver,
@@ -406,8 +406,8 @@ public class ReplServer2 implements SisoReceiverListener, SisoReceiverServiceLis
     }
 
     public static void main(String[] args) {
-        SchemeEngine schemeEngine = SchemeEngine.createLocalEngine();
-        schemeEngine.requestInit();
-        new SisoReceiver( StdioStream.INSTANCE, new ReplServer2( schemeEngine, ";" ) ).requestInit();
+        MultiplexEvaluator multiplexEvaluator = MultiplexEvaluator.createLocal();
+        multiplexEvaluator.requestInit();
+        new SisoReceiver( StdioStream.INSTANCE, new ReplServer2( multiplexEvaluator, ";" ) ).requestInit();
     }
 }

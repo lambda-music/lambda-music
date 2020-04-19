@@ -25,7 +25,7 @@ import com.sun.net.httpserver.HttpServer;
 import lamu.lib.CurrentObject;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.log.Logger;
-import lamu.lib.scheme.SchemeEngine;
+import lamu.lib.scheme.MultiplexEvaluator;
 import lamu.lib.scheme.SchemeResult;
 import lamu.lib.thread.ThreadInitializer;
 import lamu.lib.thread.ThreadInitializerCollection;
@@ -164,15 +164,15 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
 
 
     int port;
-    SchemeEngine schemeEngine;
+    MultiplexEvaluator multiplexEvaluator;
     HttpServer httpServer;
     Charset charset = Charset.forName( "UTF-8" );
     UserAuthentication authentication;
-    public SchemeHttp( int port, String path, UserAuthentication authentication, SchemeEngine schemeEngine ) throws IOException {
+    public SchemeHttp( int port, String path, UserAuthentication authentication, MultiplexEvaluator multiplexEvaluator ) throws IOException {
         super();
         this.port = port;
         this.authentication = authentication;
-        this.schemeEngine = schemeEngine;
+        this.multiplexEvaluator = multiplexEvaluator;
         this.initialize( path );
     }
     private void initialize( String path ) throws IOException {
@@ -260,7 +260,7 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
             String requestString = readInputStream( t.getRequestBody() ); 
             logInfo( requestString );
             SchemeResult schemeResult = 
-                    schemeEngine.evaluate( 
+                    multiplexEvaluator.evaluate( 
                         SchemeHttp.this.getThreadInitializerCollection(),    
                         requestString, 
                         null, 
@@ -295,7 +295,7 @@ public class SchemeHttp implements ThreadInitializerContainer<SchemeHttp>, Threa
             String requestString = readInputStream( t.getRequestBody() ); 
             logInfo( requestString );
             SchemeResult schemeResult = 
-                schemeEngine.evaluate( 
+                multiplexEvaluator.evaluate( 
                     SchemeHttp.this.getThreadInitializerCollection() ,    
                     requestString, 
                     null, 

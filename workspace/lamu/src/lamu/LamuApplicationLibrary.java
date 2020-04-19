@@ -3,7 +3,7 @@ package lamu;
 import java.io.IOException;
 
 import kawapad.KawapadFrame;
-import lamu.lib.scheme.SchemeEngine;
+import lamu.lib.scheme.MultiplexEvaluator;
 import lamu.lib.scheme.socket.SchemeHttp;
 import lamu.lib.scheme.socket.SchemeHttp.UserAuthentication;
 import pulsar.Pulsar;
@@ -11,7 +11,7 @@ import pulsar.PulsarFrame;
 
 public class LamuApplicationLibrary {
     public static SchemeHttp createPulsarHttpServer(
-            SchemeEngine schemeEngine, 
+            MultiplexEvaluator multiplexEvaluator, 
             int httpPort, 
             String path, 
             UserAuthentication userAuthentication ) throws IOException 
@@ -20,18 +20,18 @@ public class LamuApplicationLibrary {
             httpPort,
             path,
             userAuthentication, 
-            schemeEngine );
+            multiplexEvaluator );
     }
     public static Pulsar createPulsar() {
         return new Pulsar();
     }
 
-    public static PulsarFrame createPulsarGui( SchemeEngine schemeEngine  ) {
-        return PulsarFrame.create( schemeEngine, true , null );
+    public static PulsarFrame createPulsarGui( MultiplexEvaluator multiplexEvaluator  ) {
+        return PulsarFrame.create( multiplexEvaluator, true , null );
     }
 
-    public static KawapadFrame createKawapadGui( SchemeEngine schemeEngine ) {
-        return new KawapadFrame( schemeEngine, true, "Scheme Scratch Pad" );
+    public static KawapadFrame createKawapadGui( MultiplexEvaluator multiplexEvaluator ) {
+        return new KawapadFrame( multiplexEvaluator, true, "Scheme Scratch Pad" );
     }
 
 

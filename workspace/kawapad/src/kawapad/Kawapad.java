@@ -92,7 +92,7 @@ import lamu.lib.log.Logger;
 import lamu.lib.log.SimpleConsole;
 import lamu.lib.scheme.EvaluatorReceiver;
 import lamu.lib.scheme.MultipleEvaluatorMenuListener;
-import lamu.lib.scheme.SchemeEngine;
+import lamu.lib.scheme.MultiplexEvaluator;
 import lamu.lib.scheme.SchemeEvaluatorUtils;
 import lamu.lib.scheme.SchemePrinter;
 import lamu.lib.scheme.SchemeResult;
@@ -223,18 +223,18 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     ////////////////////////////////////////////////////////////////////////////
     static ArrayList<Kawapad> kawapadList = new ArrayList<>();
 
-    protected SchemeEngine schemeEngine;
-    public SchemeEngine getSchemeEngine() {
-        return schemeEngine;
+    protected MultiplexEvaluator multiplexEvaluator;
+    public MultiplexEvaluator getEvaluator() {
+        return multiplexEvaluator;
     }
     private final MultipleEvaluatorMenuListener multipleEvaluatorMenuListener = new MultipleEvaluatorMenuListener();
     public MultipleEvaluatorMenuListener getMultipleEvaluatorMenuListener() {
         return multipleEvaluatorMenuListener;
     }
-    public Kawapad( SchemeEngine schemeEngine ) {
+    public Kawapad( MultiplexEvaluator multiplexEvaluator ) {
         super();
-        this.schemeEngine = schemeEngine;
-        this.schemeEngine.addListener( multipleEvaluatorMenuListener );
+        this.multiplexEvaluator = multiplexEvaluator;
+        this.multiplexEvaluator.addListener( multipleEvaluatorMenuListener );
         
         // init font
         // kawapad.setFont( new Font("monospaced", Font.PLAIN, 12));
@@ -307,7 +307,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         {
             File f = Kawapad.getExtFile();
             if ( f.isFile() && f.exists() ) {
-                SchemeResult result = schemeEngine.evaluate( null, f );
+                SchemeResult result = multiplexEvaluator.evaluate( null, f );
                 if ( result.isSucceeded() ) {
                     Object value = result.getValue();
                     if ( value instanceof Kawapad.KawapadListener ) {
@@ -376,7 +376,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
 
     public void evaluate( String schemeScript, EvaluatorReceiver receiver ) {
         if ( schemeScript != null ) {
-            this.kawapad.getSchemeEngine().evaluateAsync( 
+            this.kawapad.getEvaluator().evaluateAsync( 
                 null, 
                 schemeScript, 
                 receiver, 
@@ -1371,7 +1371,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         }
         @Override
         public void actionPerformed(ActionEvent e) {
-            kawapad.getSchemeEngine().getThreadManager().interruptAllThreads();
+            kawapad.getEvaluator().getThreadManager().interruptAllThreads();
         }
         {
             putValue( Action2.CAPTION, "Interrupt" );
@@ -3104,7 +3104,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     }
     
     public KawapadFrame createKawapadFrame( File f ) throws IOException {
-        KawapadFrame kawapadFrame = new KawapadFrame( this.kawapad.getSchemeEngine(), false, "Kawapad" );
+        KawapadFrame kawapadFrame = new KawapadFrame( this.kawapad.getEvaluator(), false, "Kawapad" );
         Kawapad newKawapad = kawapadFrame.getKawapad();
         kawapadFrame.processInit();
         if ( f != null )

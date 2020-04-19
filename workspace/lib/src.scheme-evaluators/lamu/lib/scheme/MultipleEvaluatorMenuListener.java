@@ -10,7 +10,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 
-import lamu.lib.scheme.SchemeEngine.MultipleEvaluatorListener;
+import lamu.lib.scheme.MultiplexEvaluator.MultipleEvaluatorListener;
 
 public class MultipleEvaluatorMenuListener implements MultipleEvaluatorListener {
     private List<JMenu> serverMenuList = new ArrayList<>();
@@ -19,7 +19,7 @@ public class MultipleEvaluatorMenuListener implements MultipleEvaluatorListener 
     }
     
     @Override
-    public void notifyUpdate( SchemeEngine multipleEvaluator ) {
+    public void notifyUpdate( MultiplexEvaluator multipleEvaluator ) {
         for ( Iterator<JMenu> it=serverMenuList.iterator(); it.hasNext(); ) {
             JMenu serverMenu = it.next();
             if ( serverMenu != null ) {
@@ -43,7 +43,7 @@ public class MultipleEvaluatorMenuListener implements MultipleEvaluatorListener 
         }
     }
 
-    private JMenuItem createServerMenuItem( SchemeEngine multipleEvaluator, Evaluator evaluator ) {
+    private JMenuItem createServerMenuItem( MultiplexEvaluator multipleEvaluator, Evaluator evaluator ) {
         JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem( NameCaptionHolder.getCaption( evaluator ) );
         menuItem.addActionListener( new ActionListener() {
             @Override

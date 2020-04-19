@@ -53,7 +53,7 @@ import lamu.lib.app.ApplicationVessel;
 import lamu.lib.doc.LamuAbstractDocument;
 import lamu.lib.log.LogFormatter;
 import lamu.lib.log.Logger;
-import lamu.lib.scheme.SchemeEngine;
+import lamu.lib.scheme.MultiplexEvaluator;
 import lamu.lib.swing.AcceleratorKeyList;
 import lamu.lib.swing.Action2;
 
@@ -150,7 +150,7 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
     }
 
     public KawapadFrame( 
-            SchemeEngine schemeEngine, 
+            MultiplexEvaluator multiplexEvaluator, 
             boolean shutdownWhenClose,
             String title 
             ) throws HeadlessException 
@@ -164,7 +164,7 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
 //      invokeLocalSchemeInitializers( schemeSecretary, this);
 //      DELETED <<< INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
         
-        this.kawapad = new Kawapad( schemeEngine ) {
+        this.kawapad = new Kawapad( multiplexEvaluator ) {
             // Special thanks go to tips4java
             // https://tips4java.wordpress.com/2009/01/25/no-wrap-text-pane/
             public boolean getScrollableTracksViewportWidth() {
@@ -260,7 +260,7 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
             setJMenuBar( menuBar );
             
             kawapad.getMultipleEvaluatorMenuListener().getServerMenuList().add( serverMenu );
-            kawapad.getMultipleEvaluatorMenuListener().notifyUpdate( kawapad.getSchemeEngine() );
+            kawapad.getMultipleEvaluatorMenuListener().notifyUpdate( kawapad.getEvaluator() );
         }
 
         {
@@ -329,8 +329,8 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     public static KawapadFrame createStaticInstance( ) {
-        SchemeEngine schemeEngine = SchemeEngine.createLocalEngine();
-        KawapadFrame kawapadFrame = new KawapadFrame( schemeEngine, true, "Scheme Scratch Pad" );
+        MultiplexEvaluator multiplexEvaluator = MultiplexEvaluator.createLocal();
+        KawapadFrame kawapadFrame = new KawapadFrame( multiplexEvaluator, true, "Scheme Scratch Pad" );
         ApplicationVessel v = new ApplicationVessel("KawapadVessel");
         v.add( kawapadFrame );
         kawapadFrame.setParentApplicationComponent( kawapadFrame );
