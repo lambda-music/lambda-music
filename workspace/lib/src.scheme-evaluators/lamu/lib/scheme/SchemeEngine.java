@@ -113,15 +113,6 @@ public class SchemeEngine implements Evaluator, ApplicationComponent {
     //////////////////////////////////////////////////////////////////////////////////////////
     //
     //////////////////////////////////////////////////////////////////////////////////////////
-
-    public static void initEvaluatorManager( EvaluatorManager manager, List<String> urls ) {
-        ArrayList<Evaluator> list = new ArrayList<>();
-        for ( String url : urls ) {
-            list.add( new RemoteEvaluator( url ) );
-        }
-        manager.getEvaluatorList().addAll( list );
-    }
-
     private Evaluator currentEvaluator;
     public Evaluator getCurrentEvaluator() {
         return currentEvaluator;
