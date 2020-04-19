@@ -6,9 +6,12 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
+import lamu.lib.scheme.AsyncEvaluator;
+import lamu.lib.scheme.AsyncThreadManager;
 import lamu.lib.scheme.EvaluatorReceiver;
 import lamu.lib.scheme.MultiplexEvaluator;
 import lamu.lib.scheme.SchemeResult;
+import lamu.lib.scheme.ThreadManager;
 import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.SisoReceiverListener;
 import lamu.lib.stream.SisoReceiverServiceListener;
@@ -34,13 +37,17 @@ public class ReplServer2 implements SisoReceiverListener, SisoReceiverServiceLis
     public static final String DEFAULT_COMMAND_STRING = "show";
 
     protected final MultiplexEvaluator multiplexEvaluator;
+    protected final ThreadManager threadManager;
+
     protected String prefix = ";lamu:";
-    public ReplServer2( MultiplexEvaluator multiplexEvaluator ) {
+    public ReplServer2( ThreadManager threadManager, MultiplexEvaluator multiplexEvaluator ) {
         super();
+        this.threadManager = threadManager;
         this.multiplexEvaluator = multiplexEvaluator;
     }
-    public ReplServer2( MultiplexEvaluator multiplexEvaluator, String prefix ) {
+    public ReplServer2( ThreadManager threadManager, MultiplexEvaluator multiplexEvaluator, String prefix ) {
         super();
+        this.threadManager = threadManager;
         this.multiplexEvaluator = multiplexEvaluator;
         this.prefix = prefix;
     }
@@ -320,13 +327,15 @@ public class ReplServer2 implements SisoReceiverListener, SisoReceiverServiceLis
                     }
                 };
 
-                multiplexEvaluator.evaluateAsync(
-                        receiver.getThreadInitializerCollection(),
-                        script,
-                        resultReceiver,
-                        null, 
-                        null , 
-                        "console(repl)" );
+                AsyncEvaluator.executeAsync(
+                    threadManager, 
+                    receiver.getThreadInitializerCollection(), 
+                    script, 
+                    multiplexEvaluator, 
+                    resultReceiver, 
+                    null, 
+                    null, 
+                    "console(repl)" );
             }
         });
 
@@ -407,7 +416,8 @@ public class ReplServer2 implements SisoReceiverListener, SisoReceiverServiceLis
 
     public static void main(String[] args) {
         MultiplexEvaluator multiplexEvaluator = MultiplexEvaluator.createLocal();
+        ThreadManager threadManager = new AsyncThreadManager();
         multiplexEvaluator.requestInit();
-        new SisoReceiver( StdioStream.INSTANCE, new ReplServer2( multiplexEvaluator, ";" ) ).requestInit();
+        new SisoReceiver( StdioStream.INSTANCE, new ReplServer2( threadManager, multiplexEvaluator, ";" ) ).requestInit();
     }
 }

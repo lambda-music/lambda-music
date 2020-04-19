@@ -64,16 +64,7 @@ public class MultiplexEvaluator implements Evaluator, ApplicationComponent {
             }
         }
     };
-
-    //////////////////////////////////////////////////////////////////////////////////////////
-    //
-    //////////////////////////////////////////////////////////////////////////////////////////
     
-    private final ThreadManager threadManager = new ThreadManager();
-    public ThreadManager getThreadManager() {
-        return threadManager;
-    }
-
     //////////////////////////////////////////////////////////////////////////////////////////
     //
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -87,6 +78,12 @@ public class MultiplexEvaluator implements Evaluator, ApplicationComponent {
     }
     public static boolean isPresent() {
         return threadLocal.get() != null;
+    }
+    @Override
+    public void setCurrentEvaluator() {
+        // Suppress the default behavior. (Sun, 19 Apr 2020 13:50:21 +0900)
+        // Evaluator.super.setCurrentEvaluator(); 
+        MultiplexEvaluator.setCurrent(this);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -113,12 +110,12 @@ public class MultiplexEvaluator implements Evaluator, ApplicationComponent {
     //////////////////////////////////////////////////////////////////////////////////////////
     //
     //////////////////////////////////////////////////////////////////////////////////////////
-    private Evaluator currentEvaluator;
-    public Evaluator getCurrentEvaluator() {
-        return currentEvaluator;
+    private Evaluator primaryEvaluator;
+    public Evaluator getPrimaryEvaluator() {
+        return primaryEvaluator;
     }
-    public void setCurrentEvaluator( Evaluator currentEvaluator ) {
-        this.currentEvaluator = currentEvaluator;
+    public void setPrimaryEvaluator( Evaluator primaryEvaluator ) {
+        this.primaryEvaluator = primaryEvaluator;
         notifyUpdate();
     }
     private List<Evaluator> evaluatorList = new ArrayList<>();
@@ -129,15 +126,15 @@ public class MultiplexEvaluator implements Evaluator, ApplicationComponent {
         if ( evaluator == null )
             throw new NullPointerException();
         this.evaluatorList.add( evaluator );
-        if ( this.currentEvaluator == null )
-            this.currentEvaluator = evaluator;
+        if ( this.primaryEvaluator == null )
+            this.primaryEvaluator = evaluator;
         this.notifyUpdate();
     }
     public void addAllEvaluators( Collection<Evaluator> evaluatorList ) {
         if ( ! evaluatorList.isEmpty() ) {
             this.evaluatorList.addAll( evaluatorList );
-            if ( this.currentEvaluator == null )
-                this.currentEvaluator = evaluatorList.iterator().next();
+            if ( this.primaryEvaluator == null )
+                this.primaryEvaluator = evaluatorList.iterator().next();
             this.notifyUpdate();
         }
     }
@@ -191,33 +188,12 @@ public class MultiplexEvaluator implements Evaluator, ApplicationComponent {
         File currentFile, 
         String currentURI) 
     {
-        return this.getCurrentEvaluator().evaluate(
+        this.setCurrentEvaluator();
+        return this.getPrimaryEvaluator().evaluate(
             threadInitializer, 
             schemeScript, 
             currentDirectory, 
             currentFile, 
             currentURI );
-    }
-
-    @Override
-    public void evaluateAsync(
-        Runnable threadInitializer, 
-        String schemeScript,
-        EvaluatorReceiver receiver,
-        File currentDirectory, 
-        File currentFile, 
-        String currentURI )
-    {
-        Evaluator evaluator = this.getCurrentEvaluator();
-        
-        this.getThreadManager().startThread(
-            Evaluator.createEvaluationRunner(
-                threadInitializer, 
-                schemeScript, 
-                evaluator, 
-                receiver, 
-                currentDirectory, 
-                currentFile, 
-                currentURI ));
     }
 }

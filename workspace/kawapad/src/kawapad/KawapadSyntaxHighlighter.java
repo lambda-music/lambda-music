@@ -10,7 +10,6 @@ import java.util.regex.Pattern;
 import javax.swing.text.AttributeSet;
 
 import gnu.lists.LList;
-import lamu.lib.scheme.MultiplexEvaluator;
 import lamu.lib.scheme.SchemeResult;
 import lamu.lib.scheme.SchemeUtils;
 

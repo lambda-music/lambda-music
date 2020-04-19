@@ -64,7 +64,7 @@ import kawapad.KawapadFrame;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.log.Logger;
 import lamu.lib.log.SimpleConsole;
-import lamu.lib.scheme.Evaluator;
+import lamu.lib.scheme.AsyncEvaluator;
 import lamu.lib.scheme.EvaluatorReceiver;
 import lamu.lib.scheme.MultiplexEvaluator;
 import lamu.lib.scheme.SchemeResult;
@@ -241,7 +241,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                     };
 
                     Runnable runnable = Logger.temporaryDisable(
-                            Evaluator.createEvaluationRunner( 
+                            AsyncEvaluator.createEvaluationRunner( 
                                     null, 
                                     schemeScript, 
                                     getKawapad().getEvaluator(), 

@@ -2,21 +2,27 @@ package lamu.lib.scheme.repl;
 
 import java.util.regex.Pattern;
 
+import lamu.lib.scheme.AsyncEvaluator;
+import lamu.lib.scheme.AsyncThreadManager;
 import lamu.lib.scheme.EvaluatorReceiver;
 import lamu.lib.scheme.MultiplexEvaluator;
 import lamu.lib.scheme.SchemeResult;
+import lamu.lib.scheme.ThreadManager;
 import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.SisoReceiverListener;
 import lamu.lib.stream.StdioStream;
 
 public class ReplServer extends ReplClientServer {
+    protected final ThreadManager threadManager;
     protected final MultiplexEvaluator multiplexEvaluator;
-    public ReplServer( String prefix, MultiplexEvaluator multiplexEvaluator ) {
+    public ReplServer( ThreadManager threadManager, String prefix, MultiplexEvaluator multiplexEvaluator ) {
         super( prefix );
+        this.threadManager = threadManager;
         this.multiplexEvaluator = multiplexEvaluator;
     }
-    public ReplServer( MultiplexEvaluator multiplexEvaluator ) {
+    public ReplServer( ThreadManager threadManager, MultiplexEvaluator multiplexEvaluator ) {
         super();
+        this.threadManager = threadManager;
         this.multiplexEvaluator = multiplexEvaluator;
     }
 
@@ -123,10 +129,12 @@ public class ReplServer extends ReplClientServer {
                     }
                 };
 
-                multiplexEvaluator.evaluateAsync(
+                AsyncEvaluator.executeAsync(
+                    threadManager, 
                     receiver.getThreadInitializerCollection(), 
-                    script,
-                    resultReceiver,
+                    script, 
+                    multiplexEvaluator, 
+                    resultReceiver, 
                     null, 
                     null, 
                     "console(repl)" );
@@ -143,8 +151,9 @@ public class ReplServer extends ReplClientServer {
 
 
     public static void main(String[] args) {
+        ThreadManager threadManager = new AsyncThreadManager();
         MultiplexEvaluator multiplexEvaluator = MultiplexEvaluator.createLocal();
         multiplexEvaluator.requestInit();
-        new SisoReceiver( StdioStream.INSTANCE, new ReplServer( ";", multiplexEvaluator ) ).requestInit();
+        new SisoReceiver( StdioStream.INSTANCE, new ReplServer( threadManager, ";", multiplexEvaluator ) ).requestInit();
     }
 }

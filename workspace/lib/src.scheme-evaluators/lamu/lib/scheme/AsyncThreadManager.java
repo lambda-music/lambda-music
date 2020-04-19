@@ -1,4 +1,4 @@
-package kawapad;
+package lamu.lib.scheme;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayDeque;
@@ -6,7 +6,7 @@ import java.util.logging.Level;
 
 import lamu.lib.log.Logger;
 
-public final class KawapadThreadManager implements ThreadManager {
+public final class AsyncThreadManager implements ThreadManager {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -21,6 +21,7 @@ public final class KawapadThreadManager implements ThreadManager {
 
         @Override
         public void run() {
+            AsyncThreadManager.this.setCurrentThreadManager();
             try {
                 if ( DEBUG )
                     logInfo( "ScratchPadThreadManager:run" );
@@ -53,19 +54,12 @@ public final class KawapadThreadManager implements ThreadManager {
             threadList.remove( t );
         }
     }
-    /* (non-Javadoc)
-     * @see kawapad.ThreadManager#startThread(java.lang.Runnable)
-     */
-    @Override
     public void startThread( Runnable r ) {
+
         Thread t = new ScratchPadThread(r);
         addThread(t);
         t.start();
     }
-    /* (non-Javadoc)
-     * @see kawapad.ThreadManager#interruptAllThreads()
-     */
-    @Override
     public void interruptAllThreads() {
         logInfo("interruptScratchPadThreads");
         synchronized ( threadList ) {

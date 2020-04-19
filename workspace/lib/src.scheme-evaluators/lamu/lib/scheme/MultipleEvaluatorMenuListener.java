@@ -27,7 +27,7 @@ public class MultipleEvaluatorMenuListener implements MultipleEvaluatorListener 
                 int i=0;
                 boolean found = false;
                 for ( Evaluator evaluator : multipleEvaluator.getEvaluatorList() ) {
-                    if ( evaluator == multipleEvaluator.getCurrentEvaluator() ) {
+                    if ( evaluator == multipleEvaluator.getPrimaryEvaluator() ) {
                         found = true;
                     }
                     JMenuItem menuItem = createServerMenuItem( multipleEvaluator, evaluator );
@@ -35,8 +35,8 @@ public class MultipleEvaluatorMenuListener implements MultipleEvaluatorListener 
                     serverMenu.add( menuItem );
                     i++;
                 }
-                if ( ! found && multipleEvaluator.getCurrentEvaluator() != null ) {
-                    JMenuItem menuItem = createServerMenuItem( multipleEvaluator, multipleEvaluator.getCurrentEvaluator() );
+                if ( ! found && multipleEvaluator.getPrimaryEvaluator() != null ) {
+                    JMenuItem menuItem = createServerMenuItem( multipleEvaluator, multipleEvaluator.getPrimaryEvaluator() );
                     serverMenu.add( menuItem );
                 }
             }
@@ -48,10 +48,10 @@ public class MultipleEvaluatorMenuListener implements MultipleEvaluatorListener 
         menuItem.addActionListener( new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
-                multipleEvaluator.setCurrentEvaluator( evaluator );
+                multipleEvaluator.setPrimaryEvaluator( evaluator );
             }
         });
-        menuItem.setSelected( evaluator == multipleEvaluator.getCurrentEvaluator() );
+        menuItem.setSelected( evaluator == multipleEvaluator.getPrimaryEvaluator() );
         return menuItem;
     }
 }

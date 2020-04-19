@@ -51,6 +51,8 @@ public class StreamEvaluator implements Evaluator, NameCaptionHolder {
     public SchemeResult evaluate( 
         Runnable threadInitializer, Reader schemeScript, File currentDirectory, File currentFile, String currentURI ) 
     {
+        this.setCurrentEvaluator();
+
         String scriptString;
         try {
              scriptString = readAllSchemeScript( schemeScript );

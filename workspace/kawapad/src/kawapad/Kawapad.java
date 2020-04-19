@@ -90,6 +90,8 @@ import lamu.lib.doc.ActionDocumentFormatter;
 import lamu.lib.doc.LamuDocument;
 import lamu.lib.log.Logger;
 import lamu.lib.log.SimpleConsole;
+import lamu.lib.scheme.AsyncEvaluator;
+import lamu.lib.scheme.AsyncThreadManager;
 import lamu.lib.scheme.EvaluatorReceiver;
 import lamu.lib.scheme.MultipleEvaluatorMenuListener;
 import lamu.lib.scheme.MultiplexEvaluator;
@@ -97,6 +99,7 @@ import lamu.lib.scheme.SchemeEvaluatorUtils;
 import lamu.lib.scheme.SchemePrinter;
 import lamu.lib.scheme.SchemeResult;
 import lamu.lib.scheme.SchemeUtils;
+import lamu.lib.scheme.ThreadManager;
 import lamu.lib.scheme.proc.MultipleNamedProcedure1;
 import lamu.lib.scheme.proc.MultipleNamedProcedure2;
 import lamu.lib.scheme.proc.MultipleNamedProcedureN;
@@ -222,6 +225,10 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     // 
     ////////////////////////////////////////////////////////////////////////////
     static ArrayList<Kawapad> kawapadList = new ArrayList<>();
+    private final ThreadManager threadManager = new AsyncThreadManager();
+    public ThreadManager getThreadManager() {
+        return threadManager;
+    }
 
     protected MultiplexEvaluator multiplexEvaluator;
     public MultiplexEvaluator getEvaluator() {
@@ -231,6 +238,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     public MultipleEvaluatorMenuListener getMultipleEvaluatorMenuListener() {
         return multipleEvaluatorMenuListener;
     }
+    
     public Kawapad( MultiplexEvaluator multiplexEvaluator ) {
         super();
         this.multiplexEvaluator = multiplexEvaluator;
@@ -376,9 +384,13 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
 
     public void evaluate( String schemeScript, EvaluatorReceiver receiver ) {
         if ( schemeScript != null ) {
-            this.kawapad.getEvaluator().evaluateAsync( 
+            MultiplexEvaluator evaluator = this.kawapad.getEvaluator();
+            ThreadManager threadManager  = this.kawapad.getThreadManager();
+            AsyncEvaluator.executeAsync(
+                threadManager, 
                 null, 
                 schemeScript, 
+                evaluator, 
                 receiver, 
                 kawapad.getCurrentDirectory(), 
                 kawapad.getCurrentFile(), 
@@ -1371,7 +1383,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         }
         @Override
         public void actionPerformed(ActionEvent e) {
-            kawapad.getEvaluator().getThreadManager().interruptAllThreads();
+            kawapad.getThreadManager().interruptAllThreads();
         }
         {
             putValue( Action2.CAPTION, "Interrupt" );

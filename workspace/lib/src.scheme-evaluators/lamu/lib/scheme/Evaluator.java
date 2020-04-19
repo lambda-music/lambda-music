@@ -17,7 +17,22 @@ public interface Evaluator {
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
+    public static final ThreadLocal<Evaluator> threadLocal = new ThreadLocal<>();
+    public static Evaluator getCurrent(){
+        return threadLocal.get();
+    }
+    public static void setCurrent( Evaluator threadManager ){
+        threadLocal.set( threadManager );
+    }
+
     /**
+     * This method defines how to valuate the given script. This implemantation may evaluate the given script in
+     * the local environment, a remote server which can communicate by sockets, or other situation.
+     *  
+     * <i>
+     * Note that the implementor of this method is oblidged to call the {@link Evaluator#setCurrentEvaluator()} method.
+     * </i>
+     * 
      * @param threadInitializer
      *    Specifies the thread initializers  
      * @param schemeScript
@@ -40,6 +55,10 @@ public interface Evaluator {
             File currentFile,
             String currentURI );
 
+    default void setCurrentEvaluator() {
+        threadLocal.set(this);
+    }
+    
     default SchemeResult evaluate( 
             Runnable threadInitializer, 
             String schemeScriptString, 
@@ -118,54 +137,6 @@ public interface Evaluator {
             return SchemeResult.createError( e );
         }
     }
-    
-//    default SchemeResult reset( Runnable threadInitializer ) {
-//        String schemeScript = "(reset-scheme)";
-//        return this.evaluate( 
-//            threadInitializer,
-//            new StringReader( schemeScript ),
-//            null,
-//            null,
-//            "reset" );
-//    }
-    default void evaluateAsync(
-        Runnable threadInitializer, 
-        String schemeScript,
-        EvaluatorReceiver evaluatorReceiver,
-        File currentDirectory, 
-        File currentFile, 
-        String currentURI )
-    {
-        Evaluator evaluator = this;
-        Evaluator.createEvaluationRunner(
-            threadInitializer, 
-            schemeScript, 
-            evaluator, 
-            evaluatorReceiver, 
-            currentDirectory, 
-            currentFile, 
-            currentURI ).run();
-    }
-
-    public static Runnable createEvaluationRunner(
-            Runnable threadInitializer, 
-            String schemeScript,
-            Evaluator evaluator,
-            EvaluatorReceiver receiver, 
-            File currentDirectory, 
-            File currentFile, 
-            String currentURI )
-    {
-        return new EvaluatorRunnable( 
-            threadInitializer, 
-            schemeScript, 
-            evaluator, 
-            receiver, 
-            currentDirectory,
-            currentFile, 
-            currentURI );
-    }
-    
 
     /**
      * Initialize the current evaluator.

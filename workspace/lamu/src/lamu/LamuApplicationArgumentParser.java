@@ -21,6 +21,7 @@ import lamu.lib.app.args.ArgumentParserElementFactory;
 import lamu.lib.app.args.ArgumentParserStackKey;
 import lamu.lib.doc.LamuAbstractDocument;
 import lamu.lib.log.Logger;
+import lamu.lib.scheme.AsyncThreadManager;
 import lamu.lib.scheme.Evaluator;
 import lamu.lib.scheme.MultiplexEvaluator;
 import lamu.lib.scheme.RemoteEvaluator;
@@ -452,7 +453,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     Stream stream = parser.getValueStack( STREAMABLES ).peek();
 
                     
-                    ReplServer replServer = new ReplServer( multiplexEvaluator );
+                    ReplServer replServer = new ReplServer( new AsyncThreadManager(), multiplexEvaluator );
                     SisoReceiver<ReplServer> receiver = new SisoReceiver<>( stream, replServer );
                     parser.getValueStack( REPL ).push( receiver );
                     parser.getValueStack( RUNNABLE_INIT ).push( new Runnable() {

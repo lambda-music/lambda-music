@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="src.app"/>
 	<classpathentry kind="src" path="src.scheme-evaluators"/>
+	<classpathentry kind="src" path="src.app"/>
 	<classpathentry kind="src" path="src.scheme"/>
 	<classpathentry kind="src" path="src.help"/>
 	<classpathentry kind="src" path="src.action-help"/>

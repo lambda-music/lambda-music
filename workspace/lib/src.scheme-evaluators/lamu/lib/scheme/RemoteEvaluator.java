@@ -52,6 +52,8 @@ public class RemoteEvaluator implements Evaluator, NameCaptionHolder {
             File currentFile, 
             String currentURI) 
     {
+        this.setCurrentEvaluator();
+
         String schemeScriptString;
         try {
             schemeScriptString = readAllSchemeScript( schemeScript );
