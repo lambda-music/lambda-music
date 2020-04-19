@@ -22,8 +22,8 @@ import lamu.lib.app.args.ArgumentParserStackKey;
 import lamu.lib.doc.LamuAbstractDocument;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.Evaluator;
-import lamu.lib.scheme.RemoteEvaluator;
 import lamu.lib.scheme.MultiplexEvaluator;
+import lamu.lib.scheme.RemoteEvaluator;
 import lamu.lib.scheme.SchemeEvaluator;
 import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.scheme.StreamEvaluator;
@@ -47,21 +47,21 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
     static final String MSG_NO_STREAM_ERROR     = "no stream is available";
-    static final String MSG_NO_SCHEME_ERROR     = "no scheme engine was instanciated";
+    static final String MSG_NO_LANG_ERROR  = "no evaluator was specified";
     static final String MSG_OUTPUT_HELP_ERROR   = "an error occured in output-help";
     static final String MSG_UNKNOWN_PARAM_ERROR = "unknown parameter : ";
 
     @Override
     protected void createValueStackMap() {
-        getValueStack( SCHEME );
+        getValueStack( EVALUATOR );
         getValueStack( PULSAR );
         getValueStack( KAWAPAD );
         getValueStack( REPL );
-        getValueStack( FRAME );
         getValueStack( HTTP );
+        getValueStack( FRAME );
     }
 
-    static final ArgumentParserStackKey<MultiplexEvaluator> SCHEME = new ArgumentParserStackKey<>();
+    static final ArgumentParserStackKey<MultiplexEvaluator> EVALUATOR = new ArgumentParserStackKey<>();
     static final ArgumentParserStackKey<Pulsar> PULSAR = new ArgumentParserStackKey<>();
     static final ArgumentParserStackKey<Kawapad> KAWAPAD = new ArgumentParserStackKey<>();
     static final ArgumentParserStackKey<SisoReceiver> REPL = new ArgumentParserStackKey<>();
@@ -99,8 +99,8 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 }
                 @Override
                 public void notifyEnd( ArgumentParser parser ) {
-                    if ( parser.getValueStack( SCHEME ).isEmpty() ) {
-                        throw new RuntimeException( MSG_NO_SCHEME_ERROR );
+                    if ( parser.getValueStack( EVALUATOR ).isEmpty() ) {
+                        throw new RuntimeException( MSG_NO_LANG_ERROR );
                     }
                     LamuApplication.loadBasicClasses();
                     parser.getValueStack( RUNNABLE_INIT ).add( new Runnable() {
@@ -169,10 +169,10 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     }
                 }
                 void procKeyStroke(ArgumentParser parser) {
-                    if ( parser.getValueStack( SCHEME ).isEmpty() ) {
-                        throw new RuntimeException( MSG_NO_SCHEME_ERROR );
+                    if ( parser.getValueStack( EVALUATOR ).isEmpty() ) {
+                        throw new RuntimeException( MSG_NO_LANG_ERROR );
                     }
-                    MultiplexEvaluator multiplexEvaluator = parser.getValueStack( SCHEME ).peek();
+                    MultiplexEvaluator multiplexEvaluator = parser.getValueStack( EVALUATOR ).peek();
 
                     LamuApplication.loadBasicClasses();
                     parser.getValueStack( RUNNABLE_INIT ).add( new Runnable() {
@@ -200,8 +200,8 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
 
                 }
                 void procDocument(ArgumentParser parser) {
-                    if ( parser.getValueStack( SCHEME ).isEmpty() ) {
-                        throw new RuntimeException( MSG_NO_SCHEME_ERROR );
+                    if ( parser.getValueStack( EVALUATOR ).isEmpty() ) {
+                        throw new RuntimeException( MSG_NO_LANG_ERROR );
                     }
                     LamuApplication.loadBasicClasses();
                     parser.getValueStack( RUNNABLE_INIT ).add( new Runnable() {
@@ -283,10 +283,10 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 }
                 @Override
                 public void notifyEnd(ArgumentParser parser) {
-                    if ( parser.getValueStack( SCHEME ).isEmpty() ) {
-                        throw new RuntimeException( MSG_NO_SCHEME_ERROR );
+                    if ( parser.getValueStack( EVALUATOR ).isEmpty() ) {
+                        throw new RuntimeException( MSG_NO_LANG_ERROR );
                     }
-                    MultiplexEvaluator multiplexEvaluator = parser.getValueStack( SCHEME ).peek();
+                    MultiplexEvaluator multiplexEvaluator = parser.getValueStack( EVALUATOR ).peek();
                     //                        if ( pulsarStack.isEmpty() ) {
                     //                            throw new RuntimeException( "no pulsar is defined." );
                     //                        }
@@ -328,10 +328,10 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 }
                 @Override
                 public void notifyEnd(ArgumentParser parser) {
-                    if ( parser.getValueStack( SCHEME ).isEmpty() ) {
-                        throw new RuntimeException( MSG_NO_SCHEME_ERROR );
+                    if ( parser.getValueStack( EVALUATOR ).isEmpty() ) {
+                        throw new RuntimeException( MSG_NO_LANG_ERROR );
                     }
-                    MultiplexEvaluator multiplexEvaluator = parser.getValueStack( SCHEME ).peek();
+                    MultiplexEvaluator multiplexEvaluator = parser.getValueStack( EVALUATOR ).peek();
 
                     PulsarFrame frame = LamuApplicationLibrary.createPulsarGui( multiplexEvaluator );
                     if (parser.getValueStack( FRAME ).size() == 0 )
@@ -371,10 +371,10 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 }
                 @Override
                 public void notifyEnd(ArgumentParser parser) {
-                    if ( parser.getValueStack( SCHEME ).isEmpty() ) {
-                        throw new RuntimeException( MSG_NO_SCHEME_ERROR );
+                    if ( parser.getValueStack( EVALUATOR ).isEmpty() ) {
+                        throw new RuntimeException( MSG_NO_LANG_ERROR );
                     }
-                    MultiplexEvaluator multiplexEvaluator = parser.getValueStack( SCHEME ).peek();
+                    MultiplexEvaluator multiplexEvaluator = parser.getValueStack( EVALUATOR ).peek();
                     KawapadFrame frame = LamuApplicationLibrary.createKawapadGui( multiplexEvaluator );
 
                     if (parser.getValueStack( FRAME ).size() == 0 )
@@ -441,10 +441,10 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 }
                 @Override
                 public void notifyEnd(ArgumentParser parser) {
-                    if ( parser.getValueStack( SCHEME ).isEmpty() ) {
-                        throw new RuntimeException( MSG_NO_SCHEME_ERROR );
+                    if ( parser.getValueStack( EVALUATOR ).isEmpty() ) {
+                        throw new RuntimeException( MSG_NO_LANG_ERROR );
                     }
-                    MultiplexEvaluator multiplexEvaluator = parser.getValueStack( SCHEME ).peek();
+                    MultiplexEvaluator multiplexEvaluator = parser.getValueStack( EVALUATOR ).peek();
 
                     if ( parser.getValueStack( STREAMABLES ).isEmpty() ) {
                         throw new RuntimeException( MSG_NO_STREAM_ERROR );
@@ -535,7 +535,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                         this.evaluatorList.add( new SchemeEvaluator() );
                     }
                     this.multiplexEvaluator.addAllEvaluators( this.evaluatorList );
-                    parser.getValueStack( SCHEME ).push( this.multiplexEvaluator );
+                    parser.getValueStack( EVALUATOR ).push( this.multiplexEvaluator );
 
                     //                        runnableStack.push( new Runnable() {
                     //                            @Override
