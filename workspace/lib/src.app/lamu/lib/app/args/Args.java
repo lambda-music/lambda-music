@@ -22,11 +22,11 @@ public class Args {
     public static final String DEFAULT_BRACE_BLOCK_SCRIPT = VARIABLE_MARK;
     public static final String SHEBANG = "#!";
 
-    public static void executeScript( ArgsBuilderState state, List<String> arguments ) {
+    public static void executeScript( ArgsCommandState state, List<String> arguments ) {
         executeScript( state, arguments, 0 );
     }
     
-    public static void executeScript( ArgsBuilderState state, List<String> arguments, int recursiveCount ) {
+    public static void executeScript( ArgsCommandState state, List<String> arguments, int recursiveCount ) {
         List<List<String>> arrayOfSubarguments = 
                 ArgsBeginEndSplitter.splitBeginEnd( arguments, "begin",  "end" );
 
@@ -37,7 +37,7 @@ public class Args {
         }
     }
     
-    public static void executeSubScript( ArgsBuilderState state, List<String> arguments, int recursiveCount ) {
+    public static void executeSubScript( ArgsCommandState state, List<String> arguments, int recursiveCount ) {
         ArgsCommand command = null;
         for (ArgsCommand c : state.availableCommands ) {
             if ( c.match( state, arguments ) ) {
@@ -58,7 +58,7 @@ public class Args {
     
 
     public static void executeMacro( 
-        ArgsBuilderState state, 
+        ArgsCommandState state, 
         String scriptName, 
         List<String> scriptContent,
         List<String> originalArguments,

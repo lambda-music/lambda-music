@@ -1,32 +1,29 @@
 package lamu;
 
-import java.util.Collection;
-import java.util.List;
+import static lamu.LamuApplicationBuilder.STREAMABLES;
+import static lamu.LamuApplicationBuilder.VESSELS;
 
-import lamu.lib.app.args.ArgsCommandBuild;
-import lamu.lib.app.args.ArgsBuilderState;
+import java.util.Collection;
+
 import lamu.lib.app.args.ArgsBuilder;
+import lamu.lib.app.args.ArgsCommandBuild;
+import lamu.lib.app.args.ArgsCommandState;
 
 public class LamuCommandBuilder extends ArgsCommandBuild {
-    @Override
-    protected ArgsBuilder create() {
-        return new LamuApplicationArgumentParser();
-    }
-    
     static <T> void setCollection( Collection<T> from, Collection<T> to ) {
         to.clear();
         to.addAll(from);
     }
-    
     @Override
-    protected void execute( ArgsBuilderState state, List<String> arguments, int recursiveCount ) {
-        // exec
-        ArgsBuilder argumentParser = create();
-        setCollection( state.vessels,     argumentParser.getValueStack( LamuApplicationArgumentParser.VESSELS ) );
-        setCollection( state.streamables, argumentParser.getValueStack( LamuApplicationArgumentParser.STREAMABLES ) );
-        argumentParser.parse( arguments );
-        setCollection( argumentParser.getValueStack( LamuApplicationArgumentParser.VESSELS ),     state.vessels  );
-        setCollection( argumentParser.getValueStack( LamuApplicationArgumentParser.STREAMABLES ), state.streamables );
+    protected void initializeBuilder(ArgsCommandState state, ArgsBuilder builder) {
+        LamuApplicationBuilder.initializeBuilder( builder );
+        setCollection( state.vessels,     builder.getValueStack( VESSELS ) );
+        setCollection( state.streamables, builder.getValueStack( STREAMABLES ) );
     }
-
+    @Override
+    protected void finalizeBuilder(ArgsCommandState state, ArgsBuilder builder) {
+        LamuApplicationBuilder.finalizeBuilder( state, builder);
+        setCollection( builder.getValueStack( VESSELS ),     state.vessels  );
+        setCollection( builder.getValueStack( STREAMABLES ), state.streamables );
+    }
 }

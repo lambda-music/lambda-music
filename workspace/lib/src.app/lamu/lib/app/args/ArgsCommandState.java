@@ -13,11 +13,11 @@ import lamu.lib.stream.Stream;
 /**
  * A class to store the current state of the script engine.
  */
-public final class ArgsBuilderState {
+public final class ArgsCommandState {
     public Collection<ArgsCommand> availableCommands; 
     public Deque<ApplicationVessel> vessels;
     public Deque<Stream> streamables;
-    public ArgsBuilderState( Collection<ArgsCommand> availableCommands ) {
+    public ArgsCommandState( Collection<ArgsCommand> availableCommands ) {
         super();
         this.availableCommands = availableCommands;
         this.vessels = new ArrayDeque<>();

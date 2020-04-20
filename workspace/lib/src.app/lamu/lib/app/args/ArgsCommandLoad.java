@@ -21,7 +21,7 @@ public class ArgsCommandLoad extends ArgsCommand {
     }
 
     @Override
-    protected void execute( ArgsBuilderState state, List<String> arguments, int recursiveCount ) {
+    protected void execute( ArgsCommandState state, List<String> arguments, int recursiveCount ) {
         // Parse the arguments
         List<String> outSeqArgs = new ArrayList<>();
         Map<String, ArgsNamedArgument> outNamedArgs = new HashMap<>();

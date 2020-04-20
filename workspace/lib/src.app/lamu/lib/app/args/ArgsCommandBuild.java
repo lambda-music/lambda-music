@@ -7,11 +7,17 @@ public abstract class ArgsCommandBuild extends ArgsCommand {
     protected String commandName() {
         return "create";
     }
-    protected abstract ArgsBuilder create();
-
+    protected ArgsBuilder create() {
+        return new ArgsBuilder();
+    }
+    protected abstract void initializeBuilder( ArgsCommandState state, ArgsBuilder builder );
+    protected abstract void finalizeBuilder(   ArgsCommandState state, ArgsBuilder builder );
     @Override
-    protected void execute( ArgsBuilderState state, List<String> arguments, int recursiveCount ) {
-        ArgsBuilder argumentParser = create();
-        argumentParser.parse( arguments );
+    protected void execute( ArgsCommandState state, List<String> arguments, int recursiveCount ) {
+        ArgsBuilder builder = create();
+        initializeBuilder( state, builder );
+        builder.parse( arguments );
+        finalizeBuilder( state, builder );
+        
     }
 }

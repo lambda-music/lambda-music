@@ -11,7 +11,7 @@ import java.util.logging.Level;
 
 import lamu.lib.app.args.Args;
 import lamu.lib.app.args.ArgsNamedArgument;
-import lamu.lib.app.args.ArgsBuilderState;
+import lamu.lib.app.args.ArgsCommandState;
 import lamu.lib.log.Logger;
 
 public class LamuScript {
@@ -26,10 +26,10 @@ public class LamuScript {
     static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
     static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }
     
-    public static void parse( ArgsBuilderState state, String[] args ) throws IOException {
+    public static void parse( ArgsCommandState state, String[] args ) throws IOException {
         executeScript0( state, new ArrayList<>( Arrays.asList(args)) );
     }
-    public static void executeScript0(ArgsBuilderState state, List<String> arguments) {
+    public static void executeScript0(ArgsCommandState state, List<String> arguments) {
         // Put a proper default command.
         defaultCommandInterpolation( arguments ); 
 

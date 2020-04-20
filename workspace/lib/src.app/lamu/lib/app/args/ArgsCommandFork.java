@@ -23,7 +23,7 @@ public class ArgsCommandFork extends ArgsCommand {
     }
 
     @Override
-    protected void execute( ArgsBuilderState state, List<String> arguments, int recursiveCount) {
+    protected void execute( ArgsCommandState state, List<String> arguments, int recursiveCount) {
         List<String> fullArguments = new ArrayList<>();
         for ( Iterator<String> i = arguments.iterator();i.hasNext(); ) {
             String arg = i.next();

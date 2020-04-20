@@ -7,19 +7,22 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
 import java.util.logging.Level;
 
 import kawapad.Kawapad;
 import kawapad.KawapadFrame;
+import lamu.lib.app.ApplicationComponent;
 import lamu.lib.app.ApplicationVessel;
 import lamu.lib.app.args.ArgsBuilder;
 import lamu.lib.app.args.ArgsBuilderElement;
-import lamu.lib.app.args.ArgsNamedArgument;
-import lamu.lib.app.args.ArgsQuotedStringSplitter;
 import lamu.lib.app.args.ArgsBuilderElementFactory;
 import lamu.lib.app.args.ArgsBuilderStackKey;
-import lamu.lib.app.args.DefaultArgsBuilder;
+import lamu.lib.app.args.ArgsCommandState;
+import lamu.lib.app.args.ArgsNamedArgument;
+import lamu.lib.app.args.ArgsQuotedStringSplitter;
 import lamu.lib.doc.LamuAbstractDocument;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.AsyncThreadManager;
@@ -42,7 +45,8 @@ import lamu.lib.stream.Stream;
 import pulsar.Pulsar;
 import pulsar.PulsarFrame;
 
-class LamuApplicationArgumentParser extends DefaultArgsBuilder {
+class LamuApplicationBuilder  {
+    private LamuApplicationBuilder() { }
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -52,16 +56,13 @@ class LamuApplicationArgumentParser extends DefaultArgsBuilder {
     static final String MSG_NO_LANG_ERROR  = "no evaluator was specified";
     static final String MSG_OUTPUT_HELP_ERROR   = "an error occured in output-help";
     static final String MSG_UNKNOWN_PARAM_ERROR = "unknown parameter : ";
+    
+    static final ArgsBuilderStackKey<Runnable> RUNNABLE_INIT  = new ArgsBuilderStackKey<>();
+    static final ArgsBuilderStackKey<Runnable> RUNNABLE_START = new ArgsBuilderStackKey<>();
+    static final ArgsBuilderStackKey<ApplicationVessel> VESSELS = new ArgsBuilderStackKey<>();
+    static final ArgsBuilderStackKey<Stream>   STREAMABLES = new ArgsBuilderStackKey<>();
 
-    @Override
-    protected void createValueStackMap() {
-        getValueStack( EVALUATOR );
-        getValueStack( PULSAR );
-        getValueStack( KAWAPAD );
-        getValueStack( REPL );
-        getValueStack( HTTP );
-        getValueStack( FRAME );
-    }
+
 
     static final ArgsBuilderStackKey<MultiplexEvaluator> EVALUATOR = new ArgsBuilderStackKey<>();
     static final ArgsBuilderStackKey<Pulsar> PULSAR = new ArgsBuilderStackKey<>();
@@ -706,7 +707,7 @@ class LamuApplicationArgumentParser extends DefaultArgsBuilder {
 
     /**
      * Sets up the commands for the command-line parser. Please read the code of the 
-     * {@link LamuApplicationArgumentParser#initializeParser()} 
+     * {@link LamuApplicationBuilder#initializeParser()} 
      * <pre>{@code
      * registerFactory("scheme",           new SchemeArgumentParserElementFactory());
      * registerFactory("kawapad",          new KawapadGuiArgumentParserElementFactory());
@@ -716,24 +717,75 @@ class LamuApplicationArgumentParser extends DefaultArgsBuilder {
      * registerFactory("output-help",      new OutputReferenceArgumentParserElementFactory());
      * registerFactory("output-help-list", new AllAvailableReferenceArgumentParserElementFactory());
      * }</pre>
+     * @return 
      */
-    protected void initializeParser() {
-        registerFactory( "scheme",           new SchemeArgumentParserElementFactory());
-        registerFactory( "kawapad",          new KawapadGuiArgumentParserElementFactory());
-        registerFactory( "pulsar",           new PulsarArgumentParserElementFactory());
-        registerFactory( "repl",             new ReplArgumentParserElementFactory());
-        registerFactory( "gui",              new PulsarGuiArgumentParserElementFactory());
-        registerFactory( "http",             new SchemeHttpServerArgumentParserElementFactory());
-        registerFactory( "simple-repl",      new SimpleReplArgumentParserElementFactory());
-        registerFactory( "logger-stream",    new LoggerArgumentParserElementFactory());
-        registerFactory( "stdio-stream",     new StdioArgumentParserElementFactory());
-        registerFactory( "null-stream",      new NullStreamArgumentParserElementFactory());
-        registerFactory( "forked-stream",    new ForkedArgumentParserElementFactory());
+    static void initializeBuilder( ArgsBuilder builder ) {
+        builder.registerFactory( "scheme",           new SchemeArgumentParserElementFactory());
+        builder.registerFactory( "kawapad",          new KawapadGuiArgumentParserElementFactory());
+        builder.registerFactory( "pulsar",           new PulsarArgumentParserElementFactory());
+        builder.registerFactory( "repl",             new ReplArgumentParserElementFactory());
+        builder.registerFactory( "gui",              new PulsarGuiArgumentParserElementFactory());
+        builder.registerFactory( "http",             new SchemeHttpServerArgumentParserElementFactory());
+        builder.registerFactory( "simple-repl",      new SimpleReplArgumentParserElementFactory());
+        builder.registerFactory( "logger-stream",    new LoggerArgumentParserElementFactory());
+        builder.registerFactory( "stdio-stream",     new StdioArgumentParserElementFactory());
+        builder.registerFactory( "null-stream",      new NullStreamArgumentParserElementFactory());
+        builder.registerFactory( "forked-stream",    new ForkedArgumentParserElementFactory());
         
-        registerFactory( "reference",        new OutputReferenceArgumentParserElementFactory());
-        registerFactory( "reference-list",   new AllAvailableReferenceArgumentParserElementFactory());
+        builder.registerFactory( "reference",        new OutputReferenceArgumentParserElementFactory());
+        builder.registerFactory( "reference-list",   new AllAvailableReferenceArgumentParserElementFactory());
     }
-    {
-        initializeParser();
+    
+    static void finalizeBuilder( ArgsCommandState state, ArgsBuilder builder) {
+        // Collect all components
+        ArrayList<Object> allObjects = new ArrayList<>();
+        ArrayList<ApplicationComponent> allComponents = new ArrayList<>();
+
+        {
+            ArrayList<Deque> stackList2 = new ArrayList<>( builder.getValueStackList() );
+            
+            // The vessels are not necessary here; therefore exclude it from the list.
+            stackList2.remove( builder.getValueStack( VESSELS ) );
+            stackList2.remove( builder.getValueStack( STREAMABLES ) );
+            
+            logInfo( "deploy:==== COLLECT COMPONENTS ==============================" );
+            for ( Deque stack : stackList2 ) {
+                for ( Object o : stack ) {
+                    logInfo( "deploy:"  + o.toString() );
+                    
+                    // 1.
+                    allObjects.add(o);
+                    
+                    // 2.
+                    if ( o instanceof ApplicationComponent ) {
+                        allComponents.add((ApplicationComponent) o );
+                    }
+                }
+            }
+            logInfo( "deploy:======================================================" );
+        }
+
+        // Initialize ThreadInitializer
+        ApplicationVessel vessel = new ApplicationVessel( "ExecVessel" );
+
+        // Collect all application compnents.
+        vessel.addAll( allComponents );
+        
+        // Executing runnable(init) stack;
+        {
+            ArrayList<Runnable> list = new ArrayList<Runnable>( builder.getValueStack( RUNNABLE_INIT ) );
+            Collections.reverse( list );
+            vessel.add( new ArgsBuilder.Initializer( list ) );
+        }
+
+        // Executing runnable(start) stack;
+        {
+            ArrayList<Runnable> list = new ArrayList<Runnable>( builder.getValueStack( RUNNABLE_START ) );
+            Collections.reverse( list );
+            vessel.add( new ArgsBuilder.Initializer( list ) );
+        }
+ 
+        builder.getValueStack( VESSELS ).push( vessel );
     }
+
 }
