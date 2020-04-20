@@ -10,8 +10,8 @@ import java.util.Map;
 import java.util.logging.Level;
 
 import lamu.lib.app.args.Args;
-import lamu.lib.app.args.ArgsNamedArgument;
 import lamu.lib.app.args.ArgsCommandState;
+import lamu.lib.app.args.ArgsNamedArgument;
 import lamu.lib.log.Logger;
 
 public class LamuScript {

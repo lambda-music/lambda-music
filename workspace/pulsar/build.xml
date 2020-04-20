@@ -18,7 +18,6 @@
         <pathelement location="${lib.location}/lib/jna-platform-4.5.0.jar"/>
         <pathelement location="${lib.location}/lib/jnajack-1.3.0.jar"/>
         <pathelement location="${lib.location}/lib/kawa.jar"/>
-        <pathelement location="${lib.location}/lib/JTattoo-1.6.11.jar"/>
     </path>
     <path id="metro.classpath">
         <pathelement location="${metro.location}/bin"/>
@@ -34,6 +33,14 @@
         <path refid="metro.classpath"/>
         <path refid="kawapad.classpath"/>
     </path>
+    <path id="run.PulsarLib.PulsarLibImplementation.PulsarLibCurrentValueImplementation.classpath">
+        <path refid="pulsar.classpath"/>
+    </path>
+    <path id="run.PulsarLib.PulsarLibImplementation.PulsarLibCurrentValueImplementation.bootclasspath"/>
+    <path id="run.PulsarMidiNoteListParsers.classpath">
+        <path refid="pulsar.classpath"/>
+    </path>
+    <path id="run.PulsarMidiNoteListParsers.bootclasspath"/>
     <target name="init">
         <mkdir dir="bin"/>
         <copy includeemptydirs="false" todir="bin">
@@ -74,5 +81,21 @@
     <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects">
         <ant antfile="build.xml" dir="${lamu.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${lamu.location}" inheritAll="false" target="build"/>
+    </target>
+    <target name="PulsarLib.PulsarLibImplementation.PulsarLibCurrentValueImplementation">
+        <java classname="pulsar.PulsarLib$PulsarLibImplementation$PulsarLibCurrentValueImplementation" failonerror="true" fork="yes">
+            <classpath refid="run.PulsarLib.PulsarLibImplementation.PulsarLibCurrentValueImplementation.classpath"/>
+            <bootclasspath>
+                <path refid="run.PulsarLib.PulsarLibImplementation.PulsarLibCurrentValueImplementation.bootclasspath"/>
+            </bootclasspath>
+        </java>
+    </target>
+    <target name="PulsarMidiNoteListParsers">
+        <java classname="pulsar.PulsarMidiNoteListParsers" failonerror="true" fork="yes">
+            <classpath refid="run.PulsarMidiNoteListParsers.classpath"/>
+            <bootclasspath>
+                <path refid="run.PulsarMidiNoteListParsers.bootclasspath"/>
+            </bootclasspath>
+        </java>
     </target>
 </project>

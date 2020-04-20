@@ -3,12 +3,11 @@
               Any modifications will be overwritten.
               To include a user specific buildfile here, simply create one in the same
               directory with the processing instruction <?eclipse.ant.import?>
-              as the first entry and export the buildfile again. --><project basedir="." default="build" name="kawapad">
+              as the first entry and export the buildfile again. --><project basedir="." default="build" name="pulsar-gui">
     <property environment="env"/>
     <property name="lamu.location" value="../lamu"/>
-    <property name="pulsar.location" value="../pulsar"/>
-    <property name="pulsar-gui.location" value="../pulsar-gui"/>
     <property name="lib.location" value="../lib"/>
+    <property name="kawapad.location" value="../kawapad"/>
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.8"/>
     <property name="source" value="1.8"/>
@@ -20,17 +19,24 @@
         <pathelement location="${lib.location}/lib/kawa.jar"/>
     </path>
     <path id="kawapad.classpath">
-        <pathelement location="bin"/>
+        <pathelement location="${kawapad.location}/bin"/>
         <path refid="lib.classpath"/>
     </path>
-    <path id="run.KawapadFrame.classpath">
+    <path id="pulsar-gui.classpath">
+        <pathelement location="bin"/>
+        <path refid="lib.classpath"/>
         <path refid="kawapad.classpath"/>
     </path>
-    <path id="run.KawapadFrame.bootclasspath"/>
     <target name="init">
         <mkdir dir="bin"/>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src.gui">
                 <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
@@ -41,32 +47,23 @@
     </target>
     <target depends="clean" name="cleanall">
         <ant antfile="build.xml" dir="${lib.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${kawapad.location}" inheritAll="false" target="clean"/>
     </target>
     <target depends="build-subprojects,build-project" name="build"/>
     <target name="build-subprojects">
         <ant antfile="build.xml" dir="${lib.location}" inheritAll="false" target="build-project"/>
+        <ant antfile="build.xml" dir="${kawapad.location}" inheritAll="false" target="build-project"/>
     </target>
     <target depends="init" name="build-project">
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
             <src path="src"/>
-            <classpath refid="kawapad.classpath"/>
+            <src path="src.gui"/>
+            <classpath refid="pulsar-gui.classpath"/>
         </javac>
     </target>
     <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects">
         <ant antfile="build.xml" dir="${lamu.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${lamu.location}" inheritAll="false" target="build"/>
-        <ant antfile="build.xml" dir="${pulsar.location}" inheritAll="false" target="clean"/>
-        <ant antfile="build.xml" dir="${pulsar.location}" inheritAll="false" target="build"/>
-        <ant antfile="build.xml" dir="${pulsar-gui.location}" inheritAll="false" target="clean"/>
-        <ant antfile="build.xml" dir="${pulsar-gui.location}" inheritAll="false" target="build"/>
-    </target>
-    <target name="KawapadFrame">
-        <java classname="kawapad.KawapadFrame" failonerror="true" fork="yes">
-            <classpath refid="run.KawapadFrame.classpath"/>
-            <bootclasspath>
-                <path refid="run.KawapadFrame.bootclasspath"/>
-            </bootclasspath>
-        </java>
     </target>
 </project>

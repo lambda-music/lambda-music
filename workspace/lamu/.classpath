@@ -6,5 +6,6 @@
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/metro"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/pulsar"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/pulsar-gui"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

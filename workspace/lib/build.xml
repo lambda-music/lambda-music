@@ -9,6 +9,7 @@
     <property name="lamu.location" value="../lamu"/>
     <property name="metro.location" value="../metro"/>
     <property name="pulsar.location" value="../pulsar"/>
+    <property name="pulsar-gui.location" value="../pulsar-gui"/>
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.8"/>
     <property name="source" value="1.8"/>
@@ -23,36 +24,55 @@
         <mkdir dir="bin"/>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src">
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-        <copy includeemptydirs="false" todir="bin">
-            <fileset dir="src.app">
+                <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src.scheme-evaluators">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src.app">
+                <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src.scheme">
+                <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src.help">
+                <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src.action-help">
+                <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src.gui-utils">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src.thread-initializers">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src.thread-current">
+                <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
@@ -67,12 +87,14 @@
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
             <src path="src"/>
-            <src path="src.app"/>
             <src path="src.scheme-evaluators"/>
+            <src path="src.app"/>
             <src path="src.scheme"/>
             <src path="src.help"/>
             <src path="src.action-help"/>
             <src path="src.gui-utils"/>
+            <src path="src.thread-initializers"/>
+            <src path="src.thread-current"/>
             <classpath refid="lib.classpath"/>
         </javac>
     </target>
@@ -85,6 +107,8 @@
         <ant antfile="build.xml" dir="${metro.location}" inheritAll="false" target="build"/>
         <ant antfile="build.xml" dir="${pulsar.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${pulsar.location}" inheritAll="false" target="build"/>
+        <ant antfile="build.xml" dir="${pulsar-gui.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${pulsar-gui.location}" inheritAll="false" target="build"/>
     </target>
     <target name="ReplClient">
         <java classname="lamu.lib.scheme.repl.ReplClient" failonerror="true" fork="yes">
