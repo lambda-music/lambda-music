@@ -23,7 +23,7 @@ import lamu.lib.app.args.ArgsCommandExec;
 import lamu.lib.app.args.ArgsCommandFork;
 import lamu.lib.app.args.ArgsCommandLoad;
 import lamu.lib.app.args.ArgsCommandMacro;
-import lamu.lib.app.args.ArgsState;
+import lamu.lib.app.args.ArgsBuilderState;
 import lamu.lib.doc.LamuDocument;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.SchemeEngineLib;
@@ -248,11 +248,11 @@ public class LamuApplication {
         //		Logger.getGlobal().setLevel( Level.ALL );
 
         List<ArgsCommand> availableCommands = createAvailableCommandList();
-        ArgsState argsState = new ArgsState( availableCommands );
-        LamuScript.parse( argsState, args );
+        ArgsBuilderState state = new ArgsBuilderState( availableCommands );
+        LamuScript.parse( state, args );
         
 
-        List<ApplicationVessel> vesselList = new ArrayList<>( argsState.vessels );
+        List<ApplicationVessel> vesselList = new ArrayList<>( state.vessels );
         Collections.reverse( vesselList );
 
         

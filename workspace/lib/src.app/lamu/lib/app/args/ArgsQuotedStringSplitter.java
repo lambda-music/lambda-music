@@ -116,22 +116,22 @@ public class ArgsQuotedStringSplitter {
         }
         public static void main(String[] args) {
 
-            output( splitString( "hello foo \"bar bum\" world" ) );
-            output( splitString( "hello foo \"bar bum\" \"\" world" ) );
-            output( splitString( "hello foo \"bar bum\" \"FOO BAR BUM\" world" ) );
-            output( splitString( "\"FOO BAR BUM\"" ) );
-            output( splitString( "\"FOO BAR BUM\" \"" ) );
+            output( splitString("hello foo \"bar bum\" world") );
+            output( splitString("hello foo \"bar bum\" \"\" world") );
+            output( splitString("hello foo \"bar bum\" \"FOO BAR BUM\" world") );
+            output( splitString("\"FOO BAR BUM\"") );
+            output( splitString("\"FOO BAR BUM\" \"") );
 
             /*
              *  This method does not throw an error when it encounters to an unterminated quotation.
              *  This lacks perfection, but it works enough to do the job. Leave it untouched. 
              *  (Mon, 09 Mar 2020 16:09:06 +0900)  
              */
-            output( splitString( "\"FOO BAR BUM\" \" sss" ) );
+            output( splitString("\"FOO BAR BUM\" \" sss") );
 
 
-            output( splitString( "aaa {hello world} bbb" ) );
-            output( splitString( "aaa $VAR{hello world} bbb" ) );
+            output( splitString("aaa {hello world} bbb") );
+            output( splitString("aaa $VAR{hello world} bbb") );
 
             /*
              * This function supports nested curly brackets.
@@ -142,8 +142,8 @@ public class ArgsQuotedStringSplitter {
              * [1] "$VAR{hello { ss} world}"
              * [2] "bbb"
              */
-            output( splitString( "aaa $VAR{hello { ss} world} bbb" ) );
-            output( splitString( "aaa $VAR{hello { FOO BAR } world } bbb" ) );
+            output( splitString("aaa $VAR{hello { ss} world} bbb") );
+            output( splitString("aaa $VAR{hello { FOO BAR } world } bbb") );
 
 
             /*
@@ -155,7 +155,7 @@ public class ArgsQuotedStringSplitter {
              * [1] "$VAR{hello " FOO BAR " world }"
              * [2] "bbb"
              */
-            output( splitString( "aaa $VAR{hello \" FOO BAR \" world } bbb" ) );
+            output( splitString("aaa $VAR{hello \" FOO BAR \" world } bbb") );
         }
     }
 

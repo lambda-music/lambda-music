@@ -3,13 +3,13 @@ package lamu;
 import java.util.Collection;
 import java.util.List;
 
-import lamu.lib.app.args.ArgsCommandCreate;
-import lamu.lib.app.args.ArgsState;
-import lamu.lib.app.args.ArgumentParser;
+import lamu.lib.app.args.ArgsCommandBuild;
+import lamu.lib.app.args.ArgsBuilderState;
+import lamu.lib.app.args.ArgsBuilder;
 
-public class LamuCommandBuilder extends ArgsCommandCreate {
+public class LamuCommandBuilder extends ArgsCommandBuild {
     @Override
-    protected ArgumentParser create() {
+    protected ArgsBuilder create() {
         return new LamuApplicationArgumentParser();
     }
     
@@ -19,14 +19,14 @@ public class LamuCommandBuilder extends ArgsCommandCreate {
     }
     
     @Override
-    protected void execute( ArgsState argsState, List<String> arguments, int recursiveCount ) {
+    protected void execute( ArgsBuilderState state, List<String> arguments, int recursiveCount ) {
         // exec
-        ArgumentParser argumentParser = create();
-        setCollection( argsState.vessels,     argumentParser.getValueStack( LamuApplicationArgumentParser.VESSELS ) );
-        setCollection( argsState.streamables, argumentParser.getValueStack( LamuApplicationArgumentParser.STREAMABLES ) );
+        ArgsBuilder argumentParser = create();
+        setCollection( state.vessels,     argumentParser.getValueStack( LamuApplicationArgumentParser.VESSELS ) );
+        setCollection( state.streamables, argumentParser.getValueStack( LamuApplicationArgumentParser.STREAMABLES ) );
         argumentParser.parse( arguments );
-        setCollection( argumentParser.getValueStack( LamuApplicationArgumentParser.VESSELS ),     argsState.vessels  );
-        setCollection( argumentParser.getValueStack( LamuApplicationArgumentParser.STREAMABLES ), argsState.streamables );
+        setCollection( argumentParser.getValueStack( LamuApplicationArgumentParser.VESSELS ),     state.vessels  );
+        setCollection( argumentParser.getValueStack( LamuApplicationArgumentParser.STREAMABLES ), state.streamables );
     }
 
 }

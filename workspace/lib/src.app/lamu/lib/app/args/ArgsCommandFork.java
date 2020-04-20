@@ -23,7 +23,7 @@ public class ArgsCommandFork extends ArgsCommand {
     }
 
     @Override
-    protected void execute( ArgsState argsState, List<String> arguments, int recursiveCount) {
+    protected void execute( ArgsBuilderState state, List<String> arguments, int recursiveCount) {
         List<String> fullArguments = new ArrayList<>();
         for ( Iterator<String> i = arguments.iterator();i.hasNext(); ) {
             String arg = i.next();
@@ -46,6 +46,6 @@ public class ArgsCommandFork extends ArgsCommand {
         vessel.add( javaProcess );
         
         // Push it to the stack for vessels.
-        argsState.vessels.push( vessel );
+        state.vessels.push( vessel );
     }
 }

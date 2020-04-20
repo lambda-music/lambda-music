@@ -25,7 +25,7 @@ public class ArgsCommandExec extends ArgsCommand {
     }
 
     @Override
-    protected void execute( ArgsState argsState, List<String> arguments, int recursiveCount ) {
+    protected void execute( ArgsBuilderState state, List<String> arguments, int recursiveCount ) {
         // Parse the arguments
         List<String> outSeqArgs = new ArrayList<>();
         Map<String, ArgsNamedArgument> outNamedArgs = new HashMap<>();
@@ -50,10 +50,10 @@ public class ArgsCommandExec extends ArgsCommand {
             }
 
             // Parse the string value into a list of string values. 
-            List<String> scriptContent = ArgsQuotedStringSplitter.splitString( contentLisp ); 
+            List<String> scriptContent = ArgsQuotedStringSplitter.splitString(contentLisp); 
             
             // Execute the string list as a script program.
-            Args.executeMacro( argsState, uri, scriptContent, arguments, outSeqArgs, outNamedArgs, recursiveCount  );
+            Args.executeMacro( state, uri, scriptContent, arguments, outSeqArgs, outNamedArgs, recursiveCount  );
             
 
         } catch (IOException e) {

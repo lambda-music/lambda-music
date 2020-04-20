@@ -37,7 +37,7 @@ import java.util.List;
  * 
  *  See {@link lamu.lib.app.args.ArgsBeginEndSplitter#splitBeginEnd }.
  */
-public class ArgsBeginEndSplitter<T> {
+class ArgsBeginEndSplitter<T> {
     /**
      * Executes the process.
      * 

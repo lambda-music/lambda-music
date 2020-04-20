@@ -9,7 +9,7 @@ public class ArgsCommandEcho extends ArgsCommand {
     }
 
     @Override
-    protected void execute( ArgsState argsState, List<String> arguments, int recursiveCount) {
+    protected void execute( ArgsBuilderState state, List<String> arguments, int recursiveCount) {
 //        LamuScript.logInfo( String.format( "echo:%s", arguments.toString() ));
         System.out.println( String.join( " " , arguments ) );
     }

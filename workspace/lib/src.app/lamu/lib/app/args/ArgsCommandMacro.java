@@ -65,7 +65,7 @@ public class ArgsCommandMacro extends ArgsCommand {
         return this.getMacroName();
     }
     @Override
-    protected void execute( ArgsState argsState, List<String> arguments, int recursiveCount) {
+    protected void execute( ArgsBuilderState state, List<String> arguments, int recursiveCount) {
         if ( Args.RECURSIVE_COUNT_MAX < recursiveCount ) {
             throw new Error( "a malformed default value in the default argument configuration." );
         }
@@ -77,7 +77,7 @@ public class ArgsCommandMacro extends ArgsCommand {
         Args.parseArguments( arguments, outArgs, outNamedArgs );
 
         // Execute the macro script.
-        Args.executeMacro( argsState, getMacroName(), getMacroContent(), arguments, outArgs, outNamedArgs, recursiveCount );
+        Args.executeMacro( state, getMacroName(), getMacroContent(), arguments, outArgs, outNamedArgs, recursiveCount );
     }
 
 

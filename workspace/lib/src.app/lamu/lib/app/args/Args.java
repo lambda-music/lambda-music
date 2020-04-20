@@ -22,21 +22,25 @@ public class Args {
     public static final String DEFAULT_BRACE_BLOCK_SCRIPT = VARIABLE_MARK;
     public static final String SHEBANG = "#!";
 
-    public static void executeScript( ArgsState argsState, List<String> arguments, int recursiveCount ) {
+    public static void executeScript( ArgsBuilderState state, List<String> arguments ) {
+        executeScript( state, arguments, 0 );
+    }
+    
+    public static void executeScript( ArgsBuilderState state, List<String> arguments, int recursiveCount ) {
         List<List<String>> arrayOfSubarguments = 
                 ArgsBeginEndSplitter.splitBeginEnd( arguments, "begin",  "end" );
 
         for (Iterator<List<String>> i = arrayOfSubarguments.iterator(); i.hasNext();) {
             List<String> subargs = i.next();
             logInfo( subargs.toString() );
-            executeSubScript( argsState, subargs, recursiveCount );
+            executeSubScript( state, subargs, recursiveCount );
         }
     }
     
-    public static void executeSubScript( ArgsState argsState, List<String> arguments, int recursiveCount ) {
+    public static void executeSubScript( ArgsBuilderState state, List<String> arguments, int recursiveCount ) {
         ArgsCommand command = null;
-        for (ArgsCommand c : argsState.availableCommands ) {
-            if ( c.match( argsState, arguments ) ) {
+        for (ArgsCommand c : state.availableCommands ) {
+            if ( c.match( state, arguments ) ) {
                 command = c;
                 break;
             }
@@ -44,7 +48,7 @@ public class Args {
 
         if ( command != null ) {
             List<String> subArguments = arguments.subList(1, arguments.size());
-            command.execute( argsState, subArguments, recursiveCount );
+            command.execute( state, subArguments, recursiveCount );
         } else {
             // This should not happen because default command always matches.
             throw new Error( String.format( "unknown command (%s)" , 
@@ -54,7 +58,7 @@ public class Args {
     
 
     public static void executeMacro( 
-        ArgsState argsState, 
+        ArgsBuilderState state, 
         String scriptName, 
         List<String> scriptContent,
         List<String> originalArguments,
@@ -78,7 +82,7 @@ public class Args {
             ) );
 
         // Be careful : this is a recursive calling. 
-        executeScript( argsState, expandedArgs, recursiveCount + 1 );
+        executeScript( state, expandedArgs, recursiveCount + 1 );
     }
     
     public static void parseArguments( List<String> arguments, List<String> outSeqArgs, Map<String, ArgsNamedArgument> outNamedArgs) {

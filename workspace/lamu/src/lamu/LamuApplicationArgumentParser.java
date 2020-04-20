@@ -13,13 +13,13 @@ import java.util.logging.Level;
 import kawapad.Kawapad;
 import kawapad.KawapadFrame;
 import lamu.lib.app.ApplicationVessel;
+import lamu.lib.app.args.ArgsBuilder;
+import lamu.lib.app.args.ArgsBuilderElement;
 import lamu.lib.app.args.ArgsNamedArgument;
 import lamu.lib.app.args.ArgsQuotedStringSplitter;
-import lamu.lib.app.args.ArgumentParser;
-import lamu.lib.app.args.ArgumentParserDefault;
-import lamu.lib.app.args.ArgumentParserElement;
-import lamu.lib.app.args.ArgumentParserElementFactory;
-import lamu.lib.app.args.ArgumentParserStackKey;
+import lamu.lib.app.args.ArgsBuilderElementFactory;
+import lamu.lib.app.args.ArgsBuilderStackKey;
+import lamu.lib.app.args.DefaultArgsBuilder;
 import lamu.lib.doc.LamuAbstractDocument;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.AsyncThreadManager;
@@ -42,7 +42,7 @@ import lamu.lib.stream.Stream;
 import pulsar.Pulsar;
 import pulsar.PulsarFrame;
 
-class LamuApplicationArgumentParser extends ArgumentParserDefault {
+class LamuApplicationArgumentParser extends DefaultArgsBuilder {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -63,12 +63,12 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         getValueStack( FRAME );
     }
 
-    static final ArgumentParserStackKey<MultiplexEvaluator> EVALUATOR = new ArgumentParserStackKey<>();
-    static final ArgumentParserStackKey<Pulsar> PULSAR = new ArgumentParserStackKey<>();
-    static final ArgumentParserStackKey<Kawapad> KAWAPAD = new ArgumentParserStackKey<>();
-    static final ArgumentParserStackKey<SisoReceiver> REPL = new ArgumentParserStackKey<>();
-    static final ArgumentParserStackKey<KawapadFrame> FRAME = new ArgumentParserStackKey<>();
-    static final ArgumentParserStackKey<SchemeHttp> HTTP = new ArgumentParserStackKey<>();
+    static final ArgsBuilderStackKey<MultiplexEvaluator> EVALUATOR = new ArgsBuilderStackKey<>();
+    static final ArgsBuilderStackKey<Pulsar> PULSAR = new ArgsBuilderStackKey<>();
+    static final ArgsBuilderStackKey<Kawapad> KAWAPAD = new ArgsBuilderStackKey<>();
+    static final ArgsBuilderStackKey<SisoReceiver> REPL = new ArgsBuilderStackKey<>();
+    static final ArgsBuilderStackKey<KawapadFrame> FRAME = new ArgsBuilderStackKey<>();
+    static final ArgsBuilderStackKey<SchemeHttp> HTTP = new ArgsBuilderStackKey<>();
 
     static Stream vessel2stream( ApplicationVessel vessel ) {
         return (Stream)vessel.getComponents()
@@ -78,13 +78,13 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
             .orElse(null);
     }
 
-    static final class AllAvailableReferenceArgumentParserElementFactory implements ArgumentParserElementFactory {
+    static final class AllAvailableReferenceArgumentParserElementFactory implements ArgsBuilderElementFactory {
         @Override
-        public ArgumentParserElement create() {
-            return new ArgumentParserElement() {
+        public ArgsBuilderElement create() {
+            return new ArgsBuilderElement() {
                 String outputFile = null;
                 @Override
-                public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
+                public ArgsBuilderElement notifyArg(ArgsBuilder parser, String s) {
                     if ( s.startsWith( "--" ) ) {
                         ArgsNamedArgument narg = new ArgsNamedArgument( s );
                         switch ( narg.getKey() ) {
@@ -100,7 +100,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     return this;
                 }
                 @Override
-                public void notifyEnd( ArgumentParser parser ) {
+                public void notifyEnd( ArgsBuilder parser ) {
                     if ( parser.getValueStack( EVALUATOR ).isEmpty() ) {
                         throw new RuntimeException( MSG_NO_LANG_ERROR );
                     }
@@ -120,14 +120,14 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         }
     }
 
-    static final class OutputReferenceArgumentParserElementFactory implements ArgumentParserElementFactory {
+    static final class OutputReferenceArgumentParserElementFactory implements ArgsBuilderElementFactory {
         @Override
-        public ArgumentParserElement create() {
-            return new ArgumentParserElement() {
+        public ArgsBuilderElement create() {
+            return new ArgsBuilderElement() {
                 String outputFile = null;
                 String category   = null;
                 @Override
-                public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
+                public ArgsBuilderElement notifyArg(ArgsBuilder parser, String s) {
                     if ( s.startsWith( "--" ) ) {
                         ArgsNamedArgument narg = new ArgsNamedArgument( s );
                         switch ( narg.getKey() ) {
@@ -146,7 +146,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     return this;
                 }
                 @Override
-                public void notifyEnd(ArgumentParser parser) {
+                public void notifyEnd(ArgsBuilder parser) {
                     /*
                      * (Sat, 07 Mar 2020 20:23:21 +0900)
                      * ### SPECIAL ###  
@@ -170,7 +170,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                         break;
                     }
                 }
-                void procKeyStroke(ArgumentParser parser) {
+                void procKeyStroke(ArgsBuilder parser) {
                     if ( parser.getValueStack( EVALUATOR ).isEmpty() ) {
                         throw new RuntimeException( MSG_NO_LANG_ERROR );
                     }
@@ -201,7 +201,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
 
 
                 }
-                void procDocument(ArgumentParser parser) {
+                void procDocument(ArgsBuilder parser) {
                     if ( parser.getValueStack( EVALUATOR ).isEmpty() ) {
                         throw new RuntimeException( MSG_NO_LANG_ERROR );
                     }
@@ -221,13 +221,13 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         }
     }
 
-    static final class SimpleReplArgumentParserElementFactory implements ArgumentParserElementFactory {
+    static final class SimpleReplArgumentParserElementFactory implements ArgsBuilderElementFactory {
         @Override
-        public ArgumentParserElement create() {
-            return new ArgumentParserElement() {
+        public ArgsBuilderElement create() {
+            return new ArgsBuilderElement() {
                 //                int port = 0;
                 @Override
-                public ArgumentParserElement notifyArg( ArgumentParser parser, String s ) {
+                public ArgsBuilderElement notifyArg( ArgsBuilder parser, String s ) {
                     if ( false ) {
                     } else {
                         throw new RuntimeException( MSG_UNKNOWN_PARAM_ERROR + s );
@@ -235,7 +235,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     return this;
                 }
                 @Override
-                public void notifyEnd(ArgumentParser parser) {
+                public void notifyEnd(ArgsBuilder parser) {
                     if ( parser.getValueStack( STREAMABLES ).isEmpty() ) {
                         throw new RuntimeException( MSG_NO_STREAM_ERROR );
                     }
@@ -247,16 +247,16 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         }
     }
 
-    static final class SchemeHttpServerArgumentParserElementFactory implements ArgumentParserElementFactory {
+    static final class SchemeHttpServerArgumentParserElementFactory implements ArgsBuilderElementFactory {
         @Override
-        public ArgumentParserElement create() {
-            return new ArgumentParserElement() {
+        public ArgsBuilderElement create() {
+            return new ArgsBuilderElement() {
                 private int serverPort = 8192;
                 // TODO 0 variable accept path for HTTP 
                 private String serverPath = "";
                 UserAuthentication userAuthentication = UserAuthentication.ONLY_LOOPBACK;
                 @Override
-                public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
+                public ArgsBuilderElement notifyArg(ArgsBuilder parser, String s) {
                     if (s.startsWith( "--" ) ) {
                         ArgsNamedArgument a = new ArgsNamedArgument(s);
                         switch ( a.getKey() ) {
@@ -284,7 +284,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     return this;
                 }
                 @Override
-                public void notifyEnd(ArgumentParser parser) {
+                public void notifyEnd(ArgsBuilder parser) {
                     if ( parser.getValueStack( EVALUATOR ).isEmpty() ) {
                         throw new RuntimeException( MSG_NO_LANG_ERROR );
                     }
@@ -306,13 +306,13 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         }
     }
 
-    static final class PulsarGuiArgumentParserElementFactory implements ArgumentParserElementFactory {
+    static final class PulsarGuiArgumentParserElementFactory implements ArgsBuilderElementFactory {
         @Override
-        public ArgumentParserElement create() {
-            return new ArgumentParserElement() {
+        public ArgsBuilderElement create() {
+            return new ArgsBuilderElement() {
                 List<String> fileNameList = new ArrayList<>();
                 @Override
-                public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
+                public ArgsBuilderElement notifyArg(ArgsBuilder parser, String s) {
                     if ( s.startsWith( "--" ) ) {
                         ArgsNamedArgument a = new ArgsNamedArgument(s);
                         switch ( a.getKey() ) {
@@ -329,7 +329,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     return this;
                 }
                 @Override
-                public void notifyEnd(ArgumentParser parser) {
+                public void notifyEnd(ArgsBuilder parser) {
                     if ( parser.getValueStack( EVALUATOR ).isEmpty() ) {
                         throw new RuntimeException( MSG_NO_LANG_ERROR );
                     }
@@ -350,13 +350,13 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         }
     }
 
-    static final class KawapadGuiArgumentParserElementFactory implements ArgumentParserElementFactory {
+    static final class KawapadGuiArgumentParserElementFactory implements ArgsBuilderElementFactory {
         @Override
-        public ArgumentParserElement create() {
+        public ArgsBuilderElement create() {
             List<String> fileNameList = new ArrayList<>();
-            return new ArgumentParserElement() {
+            return new ArgsBuilderElement() {
                 @Override
-                public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
+                public ArgsBuilderElement notifyArg(ArgsBuilder parser, String s) {
                     if ( s.startsWith( "--" ) ) {
                         ArgsNamedArgument a = new ArgsNamedArgument(s);
                         switch ( a.getKey() ) {
@@ -372,7 +372,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     return this;
                 }
                 @Override
-                public void notifyEnd(ArgumentParser parser) {
+                public void notifyEnd(ArgsBuilder parser) {
                     if ( parser.getValueStack( EVALUATOR ).isEmpty() ) {
                         throw new RuntimeException( MSG_NO_LANG_ERROR );
                     }
@@ -398,16 +398,16 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         }
     }
 
-    static final class PulsarArgumentParserElementFactory implements ArgumentParserElementFactory {
+    static final class PulsarArgumentParserElementFactory implements ArgsBuilderElementFactory {
         @Override
-        public ArgumentParserElement create() {
-            return new ArgumentParserElement() {
+        public ArgsBuilderElement create() {
+            return new ArgsBuilderElement() {
                 @Override
-                public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
+                public ArgsBuilderElement notifyArg(ArgsBuilder parser, String s) {
                     throw new RuntimeException( MSG_UNKNOWN_PARAM_ERROR + s);
                 }
                 @Override
-                public void notifyEnd(ArgumentParser parser) {
+                public void notifyEnd(ArgsBuilder parser) {
                     Pulsar pulsar = LamuApplicationLibrary.createPulsar();
                     parser.getValueStack( PULSAR ).push( pulsar );
                     parser.getValueStack( RUNNABLE_INIT ).push( new Runnable() {
@@ -419,14 +419,14 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
             };
         }
     }
-    static final class ReplArgumentParserElementFactory implements ArgumentParserElementFactory {
+    static final class ReplArgumentParserElementFactory implements ArgsBuilderElementFactory {
         @Override
-        public ArgumentParserElement create() {
-            return new ArgumentParserElement() {
+        public ArgsBuilderElement create() {
+            return new ArgsBuilderElement() {
                 List<String> fileNameList = new ArrayList<>();
                 List<String> scriptStringList = new ArrayList<>();
                 @Override
-                public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
+                public ArgsBuilderElement notifyArg(ArgsBuilder parser, String s) {
                     if ( s.startsWith( "--" ) ) {
                         ArgsNamedArgument a = new ArgsNamedArgument(s);
                         switch ( a.getKey() ) {
@@ -442,7 +442,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     return this;
                 }
                 @Override
-                public void notifyEnd(ArgumentParser parser) {
+                public void notifyEnd(ArgsBuilder parser) {
                     if ( parser.getValueStack( EVALUATOR ).isEmpty() ) {
                         throw new RuntimeException( MSG_NO_LANG_ERROR );
                     }
@@ -468,7 +468,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                                         scriptStringList.add( "; " );
                                         scriptStringList.add( "; " + fileName );
                                         scriptStringList.add( "; " );
-                                        scriptStringList.addAll( ArgsQuotedStringSplitter.splitLines( SchemeUtils.readAllAsString( fileName ) ) );
+                                        scriptStringList.addAll( ArgsQuotedStringSplitter.splitLines(SchemeUtils.readAllAsString( fileName )) );
                                         scriptStringList.add( " " );
                                     } catch (IOException e) {
                                         throw new Error(e);
@@ -490,11 +490,11 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
             };
         }
     }
-    static final class SchemeArgumentParserElementFactory implements ArgumentParserElementFactory {
+    static final class SchemeArgumentParserElementFactory implements ArgsBuilderElementFactory {
         static final String DEFAULT_REMOTE_URL = "http://localhost:";
         @Override
-        public ArgumentParserElement create() {
-            return new ArgumentParserElement() {
+        public ArgsBuilderElement create() {
+            return new ArgsBuilderElement() {
                 MultiplexEvaluator multiplexEvaluator = MultiplexEvaluator.createEmpty();
                 
                 Evaluator createRemoteHttp( String url ) {
@@ -506,7 +506,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                 
                 List<Evaluator> evaluatorList = new ArrayList<>();
                 @Override
-                public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
+                public ArgsBuilderElement notifyArg(ArgsBuilder parser, String s) {
                     if ( s.startsWith( "--"  ) ) {
                         ArgsNamedArgument a = new ArgsNamedArgument( s );
                         if ( false ) {
@@ -532,7 +532,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     return this;
                 }
                 @Override
-                public void notifyEnd(ArgumentParser parser) {
+                public void notifyEnd(ArgsBuilder parser) {
                     if (this.evaluatorList.isEmpty() ) {
                         this.evaluatorList.add( new SchemeEvaluator() );
                     }
@@ -580,15 +580,15 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         }
     }
     
-    static final class LoggerArgumentParserElementFactory implements ArgumentParserElementFactory {
+    static final class LoggerArgumentParserElementFactory implements ArgsBuilderElementFactory {
         @Override
-        public ArgumentParserElement create() {
-            return new ArgumentParserElement() {
+        public ArgsBuilderElement create() {
+            return new ArgsBuilderElement() {
                 private String outFile;
                 private String errFile;
                 private String inFile;
                 @Override
-                public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
+                public ArgsBuilderElement notifyArg(ArgsBuilder parser, String s) {
                     if ( s.startsWith( "--" ) ) {
                         ArgsNamedArgument narg = new ArgsNamedArgument( s );
                         switch ( narg.getKey() ) {
@@ -610,7 +610,7 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
                     return this;
                 }
                 @Override
-                public void notifyEnd( ArgumentParser parser ) {
+                public void notifyEnd( ArgsBuilder parser ) {
                     if ( parser.getValueStack( STREAMABLES ).isEmpty() ) {
                         throw new RuntimeException( MSG_NO_STREAM_ERROR );
                     }
@@ -630,20 +630,20 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
         }
 
     }
-    static final class StdioArgumentParserElementFactory implements ArgumentParserElementFactory {
+    static final class StdioArgumentParserElementFactory implements ArgsBuilderElementFactory {
         @Override
-        public ArgumentParserElement create() {
-            return new ArgumentParserElement() {
+        public ArgsBuilderElement create() {
+            return new ArgsBuilderElement() {
                 @Override
-                public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
+                public ArgsBuilderElement notifyArg(ArgsBuilder parser, String s) {
                     return this;
                 }
                 @Override
-                public void notifyEnd( ArgumentParser parser ) {
+                public void notifyEnd( ArgsBuilder parser ) {
                     initStream(parser);
                 }
 
-                void initStream(ArgumentParser parser) {
+                void initStream(ArgsBuilder parser) {
                     parser.getValueStack( STREAMABLES ).push( StdioStream.INSTANCE );
                 }
 
@@ -664,31 +664,31 @@ class LamuApplicationArgumentParser extends ArgumentParserDefault {
             };
         }
     }
-    static final class NullStreamArgumentParserElementFactory implements ArgumentParserElementFactory {
+    static final class NullStreamArgumentParserElementFactory implements ArgsBuilderElementFactory {
         @Override
-        public ArgumentParserElement create() {
-            return new ArgumentParserElement() {
+        public ArgsBuilderElement create() {
+            return new ArgsBuilderElement() {
                 @Override
-                public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
+                public ArgsBuilderElement notifyArg(ArgsBuilder parser, String s) {
                     return this;
                 }
                 @Override
-                public void notifyEnd( ArgumentParser parser ) {
+                public void notifyEnd( ArgsBuilder parser ) {
                     parser.getValueStack( STREAMABLES ).push( NullStream.INSTANCE );
                 }
             };
         }
     }
-    static final class ForkedArgumentParserElementFactory implements ArgumentParserElementFactory {
+    static final class ForkedArgumentParserElementFactory implements ArgsBuilderElementFactory {
         @Override
-        public ArgumentParserElement create() {
-            return new ArgumentParserElement() {
+        public ArgsBuilderElement create() {
+            return new ArgsBuilderElement() {
                 @Override
-                public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
+                public ArgsBuilderElement notifyArg(ArgsBuilder parser, String s) {
                     return this;
                 }
                 @Override
-                public void notifyEnd( ArgumentParser parser ) {
+                public void notifyEnd( ArgsBuilder parser ) {
                     ApplicationVessel vessel = parser.getValueStack( VESSELS ).peek();
                     if ( vessel == null ) {
                         throw new Error( "no vessel was found" );

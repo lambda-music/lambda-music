@@ -18,25 +18,25 @@ import lamu.lib.app.ApplicationVessel;
 import lamu.lib.log.Logger;
 import lamu.lib.stream.Stream;
 
-public abstract class ArgumentParserDefault implements ArgumentParser {
+public abstract class DefaultArgsBuilder implements ArgsBuilder {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
-    public static final ArgumentParserStackKey<Runnable> RUNNABLE_INIT  = new ArgumentParserStackKey<>();
-    public static final ArgumentParserStackKey<Runnable> RUNNABLE_START = new ArgumentParserStackKey<>();
-    public static final ArgumentParserStackKey<ApplicationVessel> VESSELS = new ArgumentParserStackKey<>();
-    public static final ArgumentParserStackKey<Stream> STREAMABLES = new ArgumentParserStackKey<>();
+    public static final ArgsBuilderStackKey<Runnable> RUNNABLE_INIT  = new ArgsBuilderStackKey<>();
+    public static final ArgsBuilderStackKey<Runnable> RUNNABLE_START = new ArgsBuilderStackKey<>();
+    public static final ArgsBuilderStackKey<ApplicationVessel> VESSELS = new ArgsBuilderStackKey<>();
+    public static final ArgsBuilderStackKey<Stream> STREAMABLES = new ArgsBuilderStackKey<>();
 
-    static final class DefaultArgumentParserElementFactory implements ArgumentParserElementFactory {
+    static final class DefaultArgumentParserElementFactory implements ArgsBuilderElementFactory {
         @Override
         public
-        ArgumentParserElement create() {
-            return new ArgumentParserElement() {
+        ArgsBuilderElement create() {
+            return new ArgsBuilderElement() {
                 @Override
-                public ArgumentParserElement notifyArg(ArgumentParser parser, String s) {
-                    ArgumentParserElementFactory f = parser.getFactory( s );
+                public ArgsBuilderElement notifyArg(ArgsBuilder parser, String s) {
+                    ArgsBuilderElementFactory f = parser.getFactory( s );
                     if ( f == null ) {
                         throw new RuntimeException( "unknown command \"" + s + "\"" );
                     } else {
@@ -44,7 +44,7 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
                     }
                 }
                 @Override
-                public void notifyEnd(ArgumentParser parser) {
+                public void notifyEnd(ArgsBuilder parser) {
                 }
             };
         }
@@ -84,9 +84,9 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
     
 
     private ArrayList<Deque> stackList = new ArrayList<>();
-    private Map<ArgumentParserStackKey,ArrayDeque> stackMap = new LinkedHashMap<>();
+    private Map<ArgsBuilderStackKey,ArrayDeque> stackMap = new LinkedHashMap<>();
     @Override
-    public <T> Deque<T> getValueStack( ArgumentParserStackKey<T> key ) {
+    public <T> Deque<T> getValueStack( ArgsBuilderStackKey<T> key ) {
         if ( ! stackMap.containsKey( key ) ) {
             ArrayDeque<Object> d = new ArrayDeque<>();
             stackMap.put( key, d );
@@ -112,15 +112,15 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
     
     protected abstract void createValueStackMap();
 
-    private HashMap<String,ArgumentParserElementFactory> factoryMap = new HashMap<>();
-    public Map<String,ArgumentParserElementFactory> getFactoryMap() {
+    private HashMap<String,ArgsBuilderElementFactory> factoryMap = new HashMap<>();
+    public Map<String,ArgsBuilderElementFactory> getFactoryMap() {
         return factoryMap;
     }
     
-    public void registerFactory( String key,  ArgumentParserElementFactory value ) {
+    public void registerFactory( String key,  ArgsBuilderElementFactory value ) {
         factoryMap.put( key, value );
     }
-    public ArgumentParserElementFactory getFactory( String key ) {
+    public ArgsBuilderElementFactory getFactory( String key ) {
         return factoryMap.get( key );
     }
 
@@ -146,8 +146,8 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
         }
     }
 
-    ArgumentParserElement defaultArgumentParserElement = getFactoryMap().get( "default" ).create();
-    ArgumentParserElement currentArgumentParserElement = defaultArgumentParserElement;
+    ArgsBuilderElement defaultArgumentParserElement = getFactoryMap().get( "default" ).create();
+    ArgsBuilderElement currentArgumentParserElement = defaultArgumentParserElement;
     
     void deploy() {
         // Collect all components
@@ -201,7 +201,7 @@ public abstract class ArgumentParserDefault implements ArgumentParser {
         this.getValueStack( VESSELS ).push( vessel );
     }
     private void notifyArg(String s) {
-        ArgumentParserElement nextArgumentParserElement;
+        ArgsBuilderElement nextArgumentParserElement;
         if ( "+".equals( s ) ) {
             nextArgumentParserElement = defaultArgumentParserElement;
         } else {
