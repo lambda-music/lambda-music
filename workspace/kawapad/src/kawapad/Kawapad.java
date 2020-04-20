@@ -2898,7 +2898,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         // >>> (Wed, 13 Nov 2019 17:08:52 +0900) 
         // kawapad.getThreadManager().startScratchPadThread( KawapadEvaluator.create( kawapad, "(help about-intro)", 
         // getCurrentDirectory(), getCurrentFile(), true, true, true ));
-        evaluate( "(help about-intro)", true, true, true );
+        evaluate( "(import (lamu help))(help \"about-intro\")", true, true, true );
         // <<< (Wed, 13 Nov 2019 17:08:52 +0900) 
         
     }

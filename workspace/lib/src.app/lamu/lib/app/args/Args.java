@@ -51,8 +51,8 @@ public class Args {
             command.execute( state, subArguments, recursiveCount );
         } else {
             // This should not happen because default command always matches.
-            throw new Error( String.format( "unknown command (%s)" , 
-                arguments.isEmpty() ? "~empty~" : arguments.get(0) ));
+            throw new Error( String.format( "unknown command (%s) %s" , 
+                arguments.isEmpty() ? "~empty~" : arguments.get(0) , arguments.toString() ));
         }
     }
     

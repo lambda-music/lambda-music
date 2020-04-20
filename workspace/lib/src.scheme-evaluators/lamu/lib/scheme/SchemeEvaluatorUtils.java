@@ -51,4 +51,14 @@ public class SchemeEvaluatorUtils {
             logError( "" , e );
         }
     }
+
+    public static void executeInTheCurrentContext( String script ) {
+        Scheme scheme = (Scheme) Language.getDefaultLanguage();
+        try {
+            scheme.eval(script);
+        } catch (Throwable e) {
+            logError( "" , e );
+        }
+    }
+
 }

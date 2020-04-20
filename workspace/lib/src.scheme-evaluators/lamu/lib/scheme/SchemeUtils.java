@@ -271,12 +271,6 @@ public class SchemeUtils {
             return null;
         } else if ( schemeVal instanceof Symbol ) {
             return fromSymbol(schemeVal);
-        } else if ( schemeVal instanceof IString ) {
-            return ((IString)schemeVal).toString();
-        } else if ( schemeVal instanceof String ) {
-            return (String) schemeVal;
-        } else if ( schemeVal instanceof Boolean ) {
-            return ((Boolean) schemeVal ).toString();
         } else {
             return toString( schemeVal );
         }

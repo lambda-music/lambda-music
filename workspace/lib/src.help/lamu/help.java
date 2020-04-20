@@ -16,12 +16,13 @@ import lamu.lib.doc.LamuDocument;
 import lamu.lib.doc.LamuDocumentCondition;
 import lamu.lib.doc.LamuDocumentFormatterUtil;
 import lamu.lib.scheme.SchemeDocument;
+import lamu.lib.scheme.SchemeEvaluatorUtils;
 import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.scheme.proc.MultipleNamedProcedure1;
 import lamu.lib.scheme.proc.MultipleNamedProcedure2;
 import lamu.lib.scheme.proc.MultipleNamedProcedureN;
 
-public class help {
+public class help implements Runnable {
     private static final String NO_DOCUMENT_IS_AVAILABLE = "no-document-is-available";
     
     @SourceName( name = "print-value")
@@ -47,7 +48,7 @@ public class help {
     }
     
     @SourceName( name = "make-page")
-    public static Procedure makePageProc = new MakePageProc( "make-page" );
+    public static final Procedure makePageProc = new MakePageProc( "make-page" );
     public static final class MakePageProc extends Procedure1 {
         public MakePageProc(String name) {
             super(name);
@@ -98,21 +99,29 @@ public class help {
         public GetHelpProc( String ... names ) {
             super( names );
         }
+        LamuDocument checkDocumentList(List<LamuDocument> documentList) {
+            LamuDocument doc;
+            if ( documentList.isEmpty() ) {
+                doc = LamuDocument.get( LamuDocumentCondition.createConditionByName( NO_DOCUMENT_IS_AVAILABLE )).get(0);
+            } else if ( 1 < documentList.size() ) {
+                doc = documentList.get(0);
+                // throw new InternalError( "found duplicated documents" + documentList );
+            } else {
+                doc = documentList.get(0);
+            }
+            return doc;
+        }
         @Override
         public Object apply1(Object arg1) throws Throwable {
             LamuDocument doc;
             if ( arg1 instanceof LamuDocument ) {
                 doc= (LamuDocument)arg1;
             } else if ( arg1 instanceof Procedure ) {
-                List<LamuDocument> documentList = LamuDocument.get( LamuDocumentCondition.createConditionByProcedure( (Procedure) arg1 ) );
-                if ( documentList.isEmpty() ) {
-                    doc = LamuDocument.get( LamuDocumentCondition.createConditionByName( NO_DOCUMENT_IS_AVAILABLE )).get(0);
-                } else if ( 1 < documentList.size() ) {
-                    doc = documentList.get(0);
-                    // throw new InternalError( "found duplicated documents" + documentList );
-                } else {
-                    doc = documentList.get(0);
-                }
+                doc = checkDocumentList(
+                    LamuDocument.get( LamuDocumentCondition.createConditionByProcedure( (Procedure) arg1 ) ));
+            } else if ( arg1 instanceof CharSequence ) {
+                doc = checkDocumentList(
+                    LamuDocument.get( LamuDocumentCondition.createConditionByName( SchemeUtils.anyToString(arg1) ) ));
             } else { 
                 throw new IllegalArgumentException( "invalid argument error (" + arg1 + ")"  );
             }
@@ -144,20 +153,31 @@ public class help {
 
     
     
-    @SourceName( name = "help")
-    public static final HelpProc helpProc = new HelpProc( "help" );
-    public static final class HelpProc extends MultipleNamedProcedureN {
+    @SourceName( name = "show-help")
+    public static final HelpProc helpProc = new HelpProc( "show-help" );
+    public static final class HelpProc extends MultipleNamedProcedure1 {
         public HelpProc( String ... names ) {
             super( names );
         }
 
         @Override
-        public Object applyN(Object[] args) throws Throwable {
-            // TODO Auto-generated method stub
-            return null;
+        public Object apply1(Object arg1) throws Throwable {
+            return 
+                makePageProc.apply1( 
+                    getHelpProc.apply1(arg1) );
         }
     }
-    
+
+    public static void defineHelp() {
+        SchemeEvaluatorUtils.executeInTheCurrentContext(
+            "(define-syntax help\n" + 
+            "   (syntax-rules ()\n" + 
+            "     ((help help-target)\n" + 
+            "       (show-help (symbol->string 'help-target)))))\n" + 
+            ""
+            );
+    }
+
     
     static final LamuDocument helpDoc =  new LamuDocument(){{
         setCategory( "help-procedures" );
@@ -379,4 +399,10 @@ public class help {
             + "This procedure is deliberately defined as a joke and has by no means effect to the current system state "
             + "nor any other related elements. See (help about-main)." );
     }};
+    
+    
+    @Override
+    public void run() {
+        defineHelp();
+    }
 }

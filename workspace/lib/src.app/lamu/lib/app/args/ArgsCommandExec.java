@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import gnu.lists.IString;
 import lamu.lib.scheme.SchemeUtils;
 
 public class ArgsCommandExec extends ArgsCommand {
@@ -40,13 +39,11 @@ public class ArgsCommandExec extends ArgsCommand {
             String content = new String( Files.readAllBytes( Paths.get(uri)), StandardCharsets.UTF_8 );
             Object object = SchemeUtils.string2scheme(content);
             String contentLisp;
-            if ( object instanceof String ) {
-                contentLisp = (String) object;
-            } else if ( object instanceof IString ) {
-                    contentLisp = SchemeUtils.schemeStringToJavaString(object);
+            if ( object instanceof CharSequence ) {
+                contentLisp = SchemeUtils.anyToString( object );
             } else {
                 // Currently support only string values.
-                throw new Error( "the first element of the file as a Lisp list must be a string value" );
+                throw new Error( "the first element of the file as a Lisp list must be a string value " + object );
             }
 
             // Parse the string value into a list of string values. 
