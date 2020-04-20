@@ -2,19 +2,6 @@ Lamu API Reference
 ======================
 
 
-PULSAR
-====================
-
-#### SYNOPSIS ####
-    (pulsar)
-
-### DESCRIPTION ###
- 
-
-
-
---------------------------------------------------------
-
 GET-TRACK-POSITION
 ====================
 
@@ -127,6 +114,32 @@ of returning \#t. When the specified value is equals or less than zero, the
 returning value is always \#f. When the specified value is equals or larger than one the
 returning value is always \#t. The only parameter can be omitted and in that case the
 default value one is applied.
+
+
+
+--------------------------------------------------------
+
+CURRENT-PULSAR
+====================
+
+#### SYNOPSIS ####
+    (current-pulsar)
+
+### DESCRIPTION ###
+ 
+
+
+
+--------------------------------------------------------
+
+CURRENT-PULSAR-PRESENT?
+====================
+
+#### SYNOPSIS ####
+    (current-pulsar-present?)
+
+### DESCRIPTION ###
+ 
 
 
 

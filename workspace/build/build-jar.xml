@@ -21,6 +21,7 @@
             <fileset dir="${dir.workspace}/kawapad/bin"/>
             <fileset dir="${dir.workspace}/metro/bin"/>
             <fileset dir="${dir.workspace}/pulsar/bin"/>
+            <fileset dir="${dir.workspace}/pulsar-gui/bin"/>
             <fileset dir="${dir.workspace}/lamu/bin"/>
         </jar>
     </target>
