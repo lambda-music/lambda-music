@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
@@ -20,6 +21,7 @@ import lamu.lib.app.args.ArgsBuilder;
 import lamu.lib.app.args.ArgsBuilderElement;
 import lamu.lib.app.args.ArgsBuilderElementFactory;
 import lamu.lib.app.args.ArgsBuilderStackKey;
+import lamu.lib.app.args.ArgsCommandBuild;
 import lamu.lib.app.args.ArgsCommandState;
 import lamu.lib.app.args.ArgsNamedArgument;
 import lamu.lib.app.args.ArgsQuotedStringSplitter;
@@ -45,8 +47,7 @@ import lamu.lib.stream.Stream;
 import pulsar.Pulsar;
 import pulsar.PulsarFrame;
 
-class LamuApplicationBuilder  {
-    private LamuApplicationBuilder() { }
+public class LamuApplicationBuilder extends ArgsCommandBuild {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -57,13 +58,13 @@ class LamuApplicationBuilder  {
     static final String MSG_OUTPUT_HELP_ERROR   = "an error occured in output-help";
     static final String MSG_UNKNOWN_PARAM_ERROR = "unknown parameter : ";
     
+    // basic
     static final ArgsBuilderStackKey<Runnable> RUNNABLE_INIT  = new ArgsBuilderStackKey<>();
     static final ArgsBuilderStackKey<Runnable> RUNNABLE_START = new ArgsBuilderStackKey<>();
     static final ArgsBuilderStackKey<ApplicationVessel> VESSELS = new ArgsBuilderStackKey<>();
     static final ArgsBuilderStackKey<Stream>   STREAMABLES = new ArgsBuilderStackKey<>();
 
-
-
+    // application
     static final ArgsBuilderStackKey<MultiplexEvaluator> EVALUATOR = new ArgsBuilderStackKey<>();
     static final ArgsBuilderStackKey<Pulsar> PULSAR = new ArgsBuilderStackKey<>();
     static final ArgsBuilderStackKey<Kawapad> KAWAPAD = new ArgsBuilderStackKey<>();
@@ -719,7 +720,7 @@ class LamuApplicationBuilder  {
      * }</pre>
      * @return 
      */
-    static void initializeBuilder( ArgsBuilder builder ) {
+    static void initializeBuilder0( ArgsBuilder builder ) {
         builder.registerFactory( "scheme",           new SchemeArgumentParserElementFactory());
         builder.registerFactory( "kawapad",          new KawapadGuiArgumentParserElementFactory());
         builder.registerFactory( "pulsar",           new PulsarArgumentParserElementFactory());
@@ -736,7 +737,7 @@ class LamuApplicationBuilder  {
         builder.registerFactory( "reference-list",   new AllAvailableReferenceArgumentParserElementFactory());
     }
     
-    static void finalizeBuilder( ArgsCommandState state, ArgsBuilder builder) {
+    static void finalizeBuilder0( ArgsCommandState state, ArgsBuilder builder) {
         // Collect all components
         ArrayList<Object> allObjects = new ArrayList<>();
         ArrayList<ApplicationComponent> allComponents = new ArrayList<>();
@@ -788,4 +789,24 @@ class LamuApplicationBuilder  {
         builder.getValueStack( VESSELS ).push( vessel );
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    static <T> void setCollection( Collection<T> from, Collection<T> to ) {
+        to.clear();
+        to.addAll(from);
+    }
+    @Override
+    protected void initializeBuilder(ArgsCommandState state, ArgsBuilder builder) {
+        initializeBuilder0( builder );
+        setCollection( state.vessels,     builder.getValueStack( VESSELS ) );
+        setCollection( state.streamables, builder.getValueStack( STREAMABLES ) );
+    }
+    @Override
+    protected void finalizeBuilder(ArgsCommandState state, ArgsBuilder builder) {
+        finalizeBuilder0( state, builder);
+        setCollection( builder.getValueStack( VESSELS ),     state.vessels  );
+        setCollection( builder.getValueStack( STREAMABLES ), state.streamables );
+    }
 }
