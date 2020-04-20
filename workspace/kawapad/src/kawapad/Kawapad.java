@@ -2898,8 +2898,17 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         // >>> (Wed, 13 Nov 2019 17:08:52 +0900) 
         // kawapad.getThreadManager().startScratchPadThread( KawapadEvaluator.create( kawapad, "(help about-intro)", 
         // getCurrentDirectory(), getCurrentFile(), true, true, true ));
-        evaluate( "(import (lamu help))(help \"about-intro\")", true, true, true );
+        // evaluate( "(import (lamu help))(help about-intro)", true, true, true );
         // <<< (Wed, 13 Nov 2019 17:08:52 +0900) 
+        
+        /*
+         *  These have to be separatedly executed. 
+         * The reason why it fails if executed together.
+         *  (Tue, 21 Apr 2020 00:33:08 +0900)
+         */
+        evaluate( "(import (lamu help))", true, true, true );
+        evaluate( "(help about-intro)", true, true, true );
+
         
     }
 
@@ -3372,7 +3381,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     // ( canonical )
     public static final LamuDocument aboutIntroDoc = new LamuDocument(){{
         setCategory( "kawapad-procedures" );
-        setNames( "about-intro"  );
+        setNames( "about-intro" );
         setParameterDescription( "" );
         setReturnValueDescription( "" );
         setShortDescription( "Welcome to Kawapad!" );
