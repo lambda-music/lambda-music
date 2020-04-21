@@ -58,12 +58,10 @@ import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import gnu.math.IntNum;
+import lamu.lib.evaluators.Invokable;
 import lamu.lib.evaluators.InvokableSchemeProcedure;
 import lamu.lib.evaluators.SchemeUtils;
 import lamu.lib.log.Logger;
-import lamu.lib.scheme.proc.MultipleNamedProcedureN;
-import lamu.lib.secretary.Invokable;
-import lamu.lib.thread.ThreadInitializerCollection;
 
 public abstract class SchemeNewFactory {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -506,41 +504,43 @@ public abstract class SchemeNewFactory {
         });
 
 
-
-        register( "timer", new SchemeNewFactory() {
-            private Procedure wrapRunnable( Runnable runnable ) {
-                return new MultipleNamedProcedureN() {
-                    public Object applyN(Object[] args) throws Throwable {
-                        runnable.run();
-                        return EmptyList.emptyList;
-                    };
-                };
-            }
-            @Override
-            Object create( List<Object> args ) {
-                if ( 2 == args.size() ) {
-                    long interval = SchemeUtils.toLong(args.get(0));
-                    Procedure procedure = (Procedure)args.get(1);
-                    return wrapRunnable(
-                        PulsarSharedTimer.createTimer(
-                            ThreadInitializerCollection.getCurrent(), // XXX (Sun, 19 Apr 2020 15:58:19 +0900) 
-                            interval, interval, InvokableSchemeProcedure.createSecretarillyInvokable( procedure ) ) );
-                } else if ( 3 <= args.size() ) {
-                    long delay = SchemeUtils.toLong(args.get(0));
-                    long interval = SchemeUtils.toLong(args.get(1));
-                    Procedure procedure = (Procedure)args.get(2);
-
-                    return wrapRunnable(
-                        PulsarSharedTimer.createTimer(
-                            ThreadInitializerCollection.getCurrent(),  // XXX (Sun, 19 Apr 2020 15:58:19 +0900)
-                            delay, interval, InvokableSchemeProcedure.createSecretarillyInvokable( procedure ) ) );
-
-                } else {
-                    logInfo("WARNING : new 'timer was called but no argument was passed.");
-                    return EmptyList.emptyList;
-                }
-            }
-        });
+// (Tue, 21 Apr 2020 12:20:17 +0900) REMOVED >>>
+//        
+//        register( "timer", new SchemeNewFactory() {
+//            private Procedure wrapRunnable( Runnable runnable ) {
+//                return new MultipleNamedProcedureN() {
+//                    public Object applyN(Object[] args) throws Throwable {
+//                        runnable.run();
+//                        return EmptyList.emptyList;
+//                    };
+//                };
+//            }
+//            @Override
+//            Object create( List<Object> args ) {
+//                if ( 2 == args.size() ) {
+//                    long interval = SchemeUtils.toLong(args.get(0));
+//                    Procedure procedure = (Procedure)args.get(1);
+//                    return wrapRunnable(
+//                        PulsarSharedTimer.createTimer(
+//                            ThreadInitializerCollection.getCurrent(), // XXX (Sun, 19 Apr 2020 15:58:19 +0900) 
+//                            interval, interval, InvokableSchemeProcedure.createSecretarillyInvokable( procedure ) ) );
+//                } else if ( 3 <= args.size() ) {
+//                    long delay = SchemeUtils.toLong(args.get(0));
+//                    long interval = SchemeUtils.toLong(args.get(1));
+//                    Procedure procedure = (Procedure)args.get(2);
+//
+//                    return wrapRunnable(
+//                        PulsarSharedTimer.createTimer(
+//                            ThreadInitializerCollection.getCurrent(),  // XXX (Sun, 19 Apr 2020 15:58:19 +0900)
+//                            delay, interval, InvokableSchemeProcedure.createSecretarillyInvokable( procedure ) ) );
+//
+//                } else {
+//                    logInfo("WARNING : new 'timer was called but no argument was passed.");
+//                    return EmptyList.emptyList;
+//                }
+//            }
+//        });
+// (Tue, 21 Apr 2020 12:20:17 +0900) REMOVED <<<
 
         register( "newline", new SchemeNewFactory() {
             @Override

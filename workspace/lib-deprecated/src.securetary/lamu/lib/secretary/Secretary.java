@@ -3,6 +3,7 @@ package lamu.lib.secretary;
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
 
+import lamu.lib.evaluators.Invokable;
 import lamu.lib.log.Logger;
 
 public class Secretary<R> extends SecretaryMessageQueue<R> {

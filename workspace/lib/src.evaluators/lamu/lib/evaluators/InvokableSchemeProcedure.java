@@ -18,23 +18,24 @@
  * along with Pulsar-Sequencer.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package lamu.lib.secretary;
+package lamu.lib.evaluators;
 
 import gnu.mapping.Procedure;
-import lamu.lib.evaluators.InvokableSchemeProcedure;
 
-public final class InvokablyRunnable implements Runnable {
-    private final Invokable invokable;
-    private final Object[] args;
-    public InvokablyRunnable( Invokable invokable , Object ... args ) {
-        this.invokable = invokable;
-        this.args = args;
+public class InvokableSchemeProcedure implements Invokable {
+    private final Procedure procedure;
+    public InvokableSchemeProcedure( Procedure procedure ) {
+        this.procedure = procedure;
     }
     @Override
-    public void run() {
-        invokable.invoke( args );
+    public Object invoke( Object... args ) {
+        try {
+            return procedure.applyN( args );
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
-    public static Runnable createRunnableAndInvocable( Procedure procedure, Object... args) {
-        return new InvokablyRunnable( InvokableSchemeProcedure.createSecretarillyInvokable( procedure ), args );
+    public static Invokable createSecretarillyInvokable( Procedure procedure ) {
+        return new InvokableSchemeProcedure( procedure );  
     }
 }

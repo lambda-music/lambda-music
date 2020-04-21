@@ -1,4 +1,4 @@
-package lamu.lib.doc;
+package lamu.lib.swing.doc;
 
 import java.util.Arrays;
 import java.util.List;

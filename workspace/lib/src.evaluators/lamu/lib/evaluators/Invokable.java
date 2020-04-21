@@ -20,23 +20,23 @@
 
 package lamu.lib.evaluators;
 
-import gnu.mapping.Procedure;
-import lamu.lib.secretary.Invokable;
-
-public class InvokableSchemeProcedure implements Invokable {
-    private final Procedure procedure;
-    public InvokableSchemeProcedure( Procedure procedure ) {
-        this.procedure = procedure;
-    }
-    @Override
-    public Object invoke( Object... args ) {
-        try {
-            return procedure.applyN( args );
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        }
-    }
-    public static Invokable createSecretarillyInvokable( Procedure procedure ) {
-        return new InvokableSchemeProcedure( procedure );  
-    }
+/**
+ * This class defines an interface that executes an arbitrary invokable.
+ * Currently there is only one class which implements this interface. See
+ * {@link InvokableSchemeProcedure}
+ * 
+ * @author ats
+ */
+public abstract interface Invokable {
+    Object NOARG = new Object[0];
+    // not used
+    Object NO_RESULT = new Object();
+    /**
+     * This method invokes the invokable which is denoted by the subclasses
+     * implement this interface.
+     * 
+     * @param args
+     * @return
+     */
+    abstract Object invoke( Object... args );
 }

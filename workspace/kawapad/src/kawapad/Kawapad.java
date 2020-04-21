@@ -85,7 +85,6 @@ import kawapad.KawapadSelection.SideParenthesisSelector;
 import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
 import lamu.lib.app.ApplicationComponent;
-import lamu.lib.doc.ActionDocumentFormatter;
 import lamu.lib.doc.LamuDocument;
 import lamu.lib.evaluators.AsyncEvaluator;
 import lamu.lib.evaluators.AsyncThreadManager;
@@ -107,6 +106,7 @@ import lamu.lib.swing.Action2;
 import lamu.lib.swing.AutomatedActionField;
 import lamu.lib.swing.MenuInitializer;
 import lamu.lib.swing.TextAction2;
+import lamu.lib.swing.doc.ActionDocumentFormatter;
 
 /**
  */

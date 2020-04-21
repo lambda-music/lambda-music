@@ -29,10 +29,10 @@ import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import lamu.lib.doc.LamuDocument;
+import lamu.lib.evaluators.InvokablyRunnable;
 import lamu.lib.evaluators.SchemeUtils;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.proc.MultipleNamedProcedureN;
-import lamu.lib.secretary.InvokablyRunnable;
 
 public class PulsarGuiUtils {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

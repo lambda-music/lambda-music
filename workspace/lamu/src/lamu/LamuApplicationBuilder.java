@@ -798,13 +798,15 @@ public class LamuApplicationBuilder extends ArgsCommandBuild {
         to.addAll(from);
     }
     @Override
-    protected void initializeBuilder(ArgsCommandState state, ArgsBuilder builder) {
+    protected void initializeBuilder(ArgsCommandState state0, ArgsBuilder builder) {
+        LamuCommandState state = (LamuCommandState) state0;
         initializeBuilder0( builder );
         setCollection( state.vessels,     builder.getValueStack( VESSELS ) );
         setCollection( state.streamables, builder.getValueStack( STREAMABLES ) );
     }
     @Override
-    protected void finalizeBuilder(ArgsCommandState state, ArgsBuilder builder) {
+    protected void finalizeBuilder(ArgsCommandState state0, ArgsBuilder builder) {
+        LamuCommandState state = (LamuCommandState) state0;
         finalizeBuilder0( state, builder);
         setCollection( builder.getValueStack( VESSELS ),     state.vessels  );
         setCollection( builder.getValueStack( STREAMABLES ), state.streamables );

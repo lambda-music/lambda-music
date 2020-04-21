@@ -22,11 +22,11 @@ public class Args {
     public static final String DEFAULT_BRACE_BLOCK_SCRIPT = VARIABLE_MARK;
     public static final String SHEBANG = "#!";
 
-    public static void executeScript( ArgsCommandState state, List<String> arguments ) {
+    public static <State extends ArgsCommandState> void executeScript( State state, List<String> arguments ) {
         executeScript( state, arguments, 0 );
     }
     
-    public static void executeScript( ArgsCommandState state, List<String> arguments, int recursiveCount ) {
+    public static <State extends ArgsCommandState> void executeScript( State state, List<String> arguments, int recursiveCount ) {
         List<List<String>> arrayOfSubarguments = 
                 ArgsBeginEndSplitter.splitBeginEnd( arguments, "begin",  "end" );
 

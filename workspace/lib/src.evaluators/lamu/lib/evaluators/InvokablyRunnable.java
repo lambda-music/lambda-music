@@ -18,27 +18,22 @@
  * along with Pulsar-Sequencer.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package lamu.lib.secretary;
+package lamu.lib.evaluators;
 
-import lamu.lib.evaluators.InvokableSchemeProcedure;
+import gnu.mapping.Procedure;
 
-/**
- * This class defines an interface that executes an arbitrary invokable.
- * Currently there is only one class which implements this interface. See
- * {@link InvokableSchemeProcedure}
- * 
- * @author ats
- */
-public abstract interface Invokable {
-    Object NOARG = new Object[0];
-    // not used
-    Object NO_RESULT = new Object();
-    /**
-     * This method invokes the invokable which is denoted by the subclasses
-     * implement this interface.
-     * 
-     * @param args
-     * @return
-     */
-    abstract Object invoke( Object... args );
+public final class InvokablyRunnable implements Runnable {
+    private final Invokable invokable;
+    private final Object[] args;
+    public InvokablyRunnable( Invokable invokable , Object ... args ) {
+        this.invokable = invokable;
+        this.args = args;
+    }
+    @Override
+    public void run() {
+        invokable.invoke( args );
+    }
+    public static Runnable createRunnableAndInvocable( Procedure procedure, Object... args) {
+        return new InvokablyRunnable( InvokableSchemeProcedure.createSecretarillyInvokable( procedure ), args );
+    }
 }

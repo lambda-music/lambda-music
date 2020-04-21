@@ -12,6 +12,7 @@ import java.util.logging.Level;
 
 import kawapad.Kawapad;
 import kawapad.KawapadTextualIncrement;
+import lamu.lib.ConsoleChecker;
 import lamu.lib.ForceLoadingClass;
 import lamu.lib.InstanceManager;
 import lamu.lib.Version;
@@ -24,11 +25,13 @@ import lamu.lib.app.args.ArgsCommandFork;
 import lamu.lib.app.args.ArgsCommandLoad;
 import lamu.lib.app.args.ArgsCommandMacro;
 import lamu.lib.app.args.ArgsCommandState;
+import lamu.lib.app.process.ForkedProcess;
 import lamu.lib.doc.LamuDocument;
 import lamu.lib.evaluators.SchemeEngineLib;
 import lamu.lib.evaluators.SchemeEvaluatorLib;
 import lamu.lib.evaluators.repl.SimpleReplService;
 import lamu.lib.log.Logger;
+import lamu.lib.stream.NullStream;
 import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.StdioStream;
 import lamu.utils.lib.PulsarGuiUtils;
@@ -58,7 +61,22 @@ public class LamuApplication {
     static List<ArgsCommand> createAvailableCommandList() throws IOException {
         List<ArgsCommand> availableCommands = new ArrayList<>();
         availableCommands.add( new LamuApplicationBuilder() );
-        availableCommands.add( new ArgsCommandFork( "lamu", LamuApplication.class ) );
+        
+        ArgsCommandFork.ForkListener forkListener = new ArgsCommandFork.ForkListener() {
+            @Override
+            public void notifyForkedProcess( ArgsCommandState state0, ForkedProcess process ) {
+                LamuCommandState state = (LamuCommandState) state0;
+                
+                // Create a vessel and put it to the vessel list.
+                ApplicationVessel vessel = new ApplicationVessel( "ForkedVessel" );
+                vessel.add( process );
+                
+                // Push it to the stack for vessels.
+                state.vessels.push( vessel );
+            }
+        };
+        
+        availableCommands.add( new ArgsCommandFork( "lamu", LamuApplication.class, forkListener ));
         availableCommands.add( new ArgsCommandLoad() );
         availableCommands.add( new ArgsCommandExec() );
         availableCommands.add( new ArgsCommandEcho() );
@@ -210,6 +228,30 @@ public class LamuApplication {
         }
         System.err.println( "================================================================" );
     }
+    
+
+    /**
+     * Set the default stream. In case it is executed by javaw (windows) STDIO is
+     * not available and writing/reading from it causes a runtime exception to be
+     * thrown which is not preferable. In order to avoid the exception, check
+     * System.console(). When it returns null, it is likely that the current jvm is
+     * executed from javaw.
+     * 
+     * See {@link lamu.LamuApplicationArgumentParser.StdioArgumentParserElementFactory}.
+     * 
+     * (Sun, 29 Mar 2020 03:35:24 +0900)
+     * 
+     * (Tue, 21 Apr 2020 12:27:44 +0900)
+     * Moved from {@link lamu.lib.app.args.ArgsCommandState}
+     */
+    static void initState( LamuCommandState state ) {
+        if ( ConsoleChecker.consoleExists() ) {
+            state.streamables.push( StdioStream.INSTANCE );
+        } else {
+            state.streamables.push( NullStream.INSTANCE );
+        }
+    }
+
 
     public static void main(String[] args) throws IOException {
         // javax.swing.UIManager.getLookAndFeelDefaults()
@@ -248,7 +290,8 @@ public class LamuApplication {
         //		Logger.getGlobal().setLevel( Level.ALL );
 
         List<ArgsCommand> availableCommands = createAvailableCommandList();
-        ArgsCommandState state = new ArgsCommandState( availableCommands );
+        LamuCommandState state = new LamuCommandState( availableCommands );
+        initState( state );
         LamuScript.parse( state, args );
         
 

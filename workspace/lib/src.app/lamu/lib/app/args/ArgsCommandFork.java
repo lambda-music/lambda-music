@@ -4,17 +4,21 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import lamu.lib.app.ApplicationVessel;
 import lamu.lib.app.process.ForkedProcess;
 import lamu.lib.app.process.ForkedProcessUtil;
 
 public class ArgsCommandFork extends ArgsCommand {
+    public interface ForkListener {
+        void notifyForkedProcess( ArgsCommandState state, ForkedProcess process );
+    }
     private final String name;
     private final Class<?> mainClass;
-    public ArgsCommandFork(String name, Class<?> mainClass) {
+    private final ForkListener listener;
+    public ArgsCommandFork(String name, Class<?> mainClass, ForkListener listener ) {
         super();
         this.name = name;
         this.mainClass = mainClass;
+        this.listener = listener;
     }
 
     @Override
@@ -41,11 +45,9 @@ public class ArgsCommandFork extends ArgsCommand {
 //        // Add the forked process to the streamables.
 //        state.streamables.push( javaProcess );
 
-        // Create a vessel and put it to the vessel list.
-        ApplicationVessel vessel = new ApplicationVessel( "ForkedVessel" );
-        vessel.add( javaProcess );
         
-        // Push it to the stack for vessels.
-        state.vessels.push( vessel );
+        if ( listener != null ) {
+            listener.notifyForkedProcess( state, javaProcess );
+        }
     }
 }
