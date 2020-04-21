@@ -1,4 +1,4 @@
-package lamu.lib;
+package lamu.lib.procs;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;

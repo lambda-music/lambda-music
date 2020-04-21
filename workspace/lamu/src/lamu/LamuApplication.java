@@ -14,7 +14,6 @@ import kawapad.Kawapad;
 import kawapad.KawapadTextualIncrement;
 import lamu.lib.ConsoleChecker;
 import lamu.lib.ForceLoadingClass;
-import lamu.lib.InstanceManager;
 import lamu.lib.Version;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.app.ApplicationVessel;
@@ -31,6 +30,7 @@ import lamu.lib.evaluators.SchemeEngineLib;
 import lamu.lib.evaluators.SchemeEvaluatorLib;
 import lamu.lib.evaluators.repl.SimpleReplService;
 import lamu.lib.log.Logger;
+import lamu.lib.procs.InstanceManagerComponent;
 import lamu.lib.stream.NullStream;
 import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.StdioStream;
@@ -137,28 +137,6 @@ public class LamuApplication {
             // do nothing
         }
     }
-
-    private static final class InstanceManagerComponent implements ApplicationComponent {
-        @Override
-        public void processInit() {
-        }
-
-        @Override
-        public void processQuit() {
-            InstanceManager.shutdown();
-        }
-
-        ApplicationComponent parent= null;
-        @Override
-        public void setParentApplicationComponent(ApplicationComponent parent) {
-            this.parent = parent;
-        }
-        @Override
-        public ApplicationComponent getParentApplicationComponent() {
-            return parent;
-        }
-    }
-
 
     /**
      * If no reception object exists in the component list, create a default

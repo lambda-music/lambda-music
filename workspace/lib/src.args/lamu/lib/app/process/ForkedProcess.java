@@ -11,9 +11,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
-import lamu.lib.InstanceManager;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.log.Logger;
+import lamu.lib.procs.InstanceManager;
 import lamu.lib.stream.Stream;
 
 public class ForkedProcess implements ApplicationComponent, Stream {

@@ -1,4 +1,4 @@
-package pulsar;
+package lamu.lib.procs;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
-import lamu.lib.InstanceManager;
 import lamu.lib.log.Logger;
 
 /**
