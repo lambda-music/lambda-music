@@ -49,8 +49,8 @@ import org.jaudiolibs.jnajack.JackStatus;
 import org.jaudiolibs.jnajack.JackTimebaseCallback;
 import org.jaudiolibs.jnajack.JackTransportState;
 
+import lamu.lib.evaluators.SchemeUtils;
 import lamu.lib.log.Logger;
-import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.secretary.Invokable;
 
 /**

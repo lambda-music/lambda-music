@@ -1,6 +1,6 @@
 package lamu;
 
-import lamu.lib.scheme.SchemeEvaluatorUtils;
+import lamu.lib.evaluators.SchemeEvaluatorUtils;
 
 public class music implements Runnable {
     @Override

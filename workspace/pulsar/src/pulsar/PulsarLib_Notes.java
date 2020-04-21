@@ -6,7 +6,7 @@ import java.util.List;
 import gnu.mapping.Environment;
 import lamu.lib.doc.LamuDocument;
 import lamu.lib.doc.NoteListSynopsisFormatter;
-import lamu.lib.scheme.SchemeUtils;
+import lamu.lib.evaluators.SchemeUtils;
 
 public class PulsarLib_Notes {
     public static final String NOTES_ID = "pulsar-notations";

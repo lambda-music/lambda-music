@@ -1,8 +1,8 @@
 package lamu;
 
 import gnu.mapping.Environment;
-import lamu.lib.scheme.SchemeEngineLib;
-import lamu.lib.scheme.SchemeEvaluatorLib;
+import lamu.lib.evaluators.SchemeEngineLib;
+import lamu.lib.evaluators.SchemeEvaluatorLib;
 
 public class scheme implements Runnable {
     @Override

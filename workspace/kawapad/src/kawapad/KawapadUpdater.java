@@ -2,9 +2,9 @@ package kawapad;
 
 import javax.swing.SwingUtilities;
 
+import lamu.lib.evaluators.EvaluatorReceiver;
+import lamu.lib.evaluators.SchemeResult;
 import lamu.lib.log.SimpleConsole;
-import lamu.lib.scheme.EvaluatorReceiver;
-import lamu.lib.scheme.SchemeResult;
 
 public class KawapadUpdater {
     public static EvaluatorReceiver create(

@@ -51,9 +51,9 @@ import lamu.lib.Version;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.app.ApplicationVessel;
 import lamu.lib.doc.LamuAbstractDocument;
+import lamu.lib.evaluators.MultiplexEvaluator;
 import lamu.lib.log.LogFormatter;
 import lamu.lib.log.Logger;
-import lamu.lib.scheme.MultiplexEvaluator;
 import lamu.lib.swing.AcceleratorKeyList;
 import lamu.lib.swing.Action2;
 

@@ -21,9 +21,9 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.Segment;
 
+import lamu.lib.evaluators.Evaluator;
+import lamu.lib.evaluators.SchemeUtils;
 import lamu.lib.log.Logger;
-import lamu.lib.scheme.Evaluator;
-import lamu.lib.scheme.SchemeUtils;
 
 public class KawapadContentAssist {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

@@ -10,9 +10,9 @@ import java.util.ListIterator;
 import java.util.logging.Level;
 
 import gnu.mapping.Symbol;
+import lamu.lib.evaluators.SchemeDocument;
+import lamu.lib.evaluators.SchemeUtils;
 import lamu.lib.log.Logger;
-import lamu.lib.scheme.SchemeDocument;
-import lamu.lib.scheme.SchemeUtils;
 
 public class LamuDocument implements Cloneable  {
     static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());

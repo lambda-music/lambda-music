@@ -3,7 +3,7 @@ package lamu;
 import java.util.Collection;
 import java.util.regex.Pattern;
 
-import lamu.lib.scheme.SchemePrinter;
+import lamu.lib.evaluators.SchemePrinter;
 import pulsar.NoteListParser;
 
 public class LamuPrinter {

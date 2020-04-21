@@ -5,7 +5,7 @@ import java.awt.Color;
 import javax.swing.text.AttributeSet;
 
 import gnu.mapping.Symbol;
-import lamu.lib.scheme.SchemeUtils;
+import lamu.lib.evaluators.SchemeUtils;
 
 public enum KawapadSyntaxElementType {
     NONE,

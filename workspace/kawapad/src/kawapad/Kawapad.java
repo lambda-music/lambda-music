@@ -78,7 +78,6 @@ import javax.swing.undo.CannotUndoException;
 import gnu.mapping.Symbol;
 import gnu.mapping.Values;
 import gnu.mapping.WrongArguments;
-import kawa.standard.Scheme;
 import kawapad.KawapadSelection.ExpandParenthesisSelector;
 import kawapad.KawapadSelection.SearchNextWordTransformer;
 import kawapad.KawapadSelection.ShrinkParenthesisSelector;
@@ -88,18 +87,18 @@ import kawapad.lib.undomanagers.UndoManagers;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.doc.ActionDocumentFormatter;
 import lamu.lib.doc.LamuDocument;
+import lamu.lib.evaluators.AsyncEvaluator;
+import lamu.lib.evaluators.AsyncThreadManager;
+import lamu.lib.evaluators.EvaluatorReceiver;
+import lamu.lib.evaluators.MultipleEvaluatorMenuListener;
+import lamu.lib.evaluators.MultiplexEvaluator;
+import lamu.lib.evaluators.SchemeEvaluatorUtils;
+import lamu.lib.evaluators.SchemePrinter;
+import lamu.lib.evaluators.SchemeResult;
+import lamu.lib.evaluators.SchemeUtils;
+import lamu.lib.evaluators.ThreadManager;
 import lamu.lib.log.Logger;
 import lamu.lib.log.SimpleConsole;
-import lamu.lib.scheme.AsyncEvaluator;
-import lamu.lib.scheme.AsyncThreadManager;
-import lamu.lib.scheme.EvaluatorReceiver;
-import lamu.lib.scheme.MultipleEvaluatorMenuListener;
-import lamu.lib.scheme.MultiplexEvaluator;
-import lamu.lib.scheme.SchemeEvaluatorUtils;
-import lamu.lib.scheme.SchemePrinter;
-import lamu.lib.scheme.SchemeResult;
-import lamu.lib.scheme.SchemeUtils;
-import lamu.lib.scheme.ThreadManager;
 import lamu.lib.scheme.proc.MultipleNamedProcedure1;
 import lamu.lib.scheme.proc.MultipleNamedProcedure2;
 import lamu.lib.scheme.proc.MultipleNamedProcedureN;
@@ -110,27 +109,6 @@ import lamu.lib.swing.MenuInitializer;
 import lamu.lib.swing.TextAction2;
 
 /**
- * 
- * (Tue, 09 Jul 2019 10:28:51 +0900)
- * <ol>
- * <li>Every scheme object must be initialized by {@link KawapadFrame#initScheme(Scheme)}</li>
- * <li>{@link KawapadFrame#initialize() } must be called before use the object.</li>
- * </ol>
- * <pre> 
- * new Kawapad( initSchemeForScratchPad( new Scheme() ) ).initialize();
- * </pre>
- * 
- * There are several global variables which are fundamental to this tool.
- * 
- * - scheme
- *     A reference to the current instance of {@link Scheme} class.
- *   
- * - frame
- *     A reference to the current frame where the script was invoked.
- *     Note that kawa is not multithread safe. In kawa only once thread 
- *     can be executed at once.
- *  
- * @author Ats Oka
  */
 public class Kawapad extends JTextPane implements MenuInitializer, ApplicationComponent {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

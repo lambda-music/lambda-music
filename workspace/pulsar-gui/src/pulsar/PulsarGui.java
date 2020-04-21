@@ -10,8 +10,8 @@ import java.util.logging.Level;
 import javax.swing.JSplitPane;
 
 import gnu.mapping.Procedure;
+import lamu.lib.evaluators.SchemeUtils;
 import lamu.lib.log.Logger;
-import lamu.lib.scheme.SchemeUtils;
 import lamu.lib.scheme.proc.MultipleNamedProcedure1;
 import lamu.lib.scheme.proc.MultipleNamedProcedureN;
 import lamu.utils.lib.JNamedPanel;

@@ -1,7 +1,7 @@
 package pulsar;
 
 import gnu.mapping.Symbol;
-import lamu.lib.scheme.SchemeUtils;
+import lamu.lib.evaluators.SchemeUtils;
 
 public abstract class NoteListParserElementParameter {
     public abstract String getShortName();

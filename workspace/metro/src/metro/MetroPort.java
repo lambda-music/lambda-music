@@ -3,7 +3,7 @@ package metro;
 import org.jaudiolibs.jnajack.JackPort;
 import org.jaudiolibs.jnajack.JackPortFlags;
 
-import lamu.lib.scheme.SchemeUtils;
+import lamu.lib.evaluators.SchemeUtils;
 
 public class MetroPort {
     boolean valid = true;

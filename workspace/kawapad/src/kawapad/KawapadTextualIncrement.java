@@ -19,7 +19,7 @@ import javax.swing.text.TextAction;
 import gnu.mapping.Environment;
 import gnu.mapping.Symbol;
 import gnu.mapping.Values;
-import lamu.lib.scheme.SchemeUtils;
+import lamu.lib.evaluators.SchemeUtils;
 import lamu.lib.scheme.proc.MultipleNamedProcedure0;
 import lamu.lib.scheme.proc.MultipleNamedProcedure1;
 import lamu.lib.scheme.proc.MultipleNamedProcedure2;

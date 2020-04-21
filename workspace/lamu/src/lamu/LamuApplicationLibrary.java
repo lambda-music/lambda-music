@@ -3,9 +3,9 @@ package lamu;
 import java.io.IOException;
 
 import kawapad.KawapadFrame;
-import lamu.lib.scheme.MultiplexEvaluator;
-import lamu.lib.scheme.socket.SchemeHttp;
-import lamu.lib.scheme.socket.SchemeHttp.UserAuthentication;
+import lamu.lib.evaluators.MultiplexEvaluator;
+import lamu.lib.evaluators.http.SchemeHttp;
+import lamu.lib.evaluators.http.SchemeHttp.UserAuthentication;
 import pulsar.Pulsar;
 import pulsar.PulsarFrame;
 
