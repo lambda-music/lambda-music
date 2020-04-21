@@ -4,7 +4,7 @@ import gnu.mapping.Environment;
 import lamu.lib.scheme.proc.MultipleNamedProcedure0;
 
 public class SchemeEngineLib {
-    public static final MultipleNamedProcedure0 currentSchemeEngine = new CurrentSchemeEngine(new String[] { "current-scheme-engine" });
+    public static final MultipleNamedProcedure0 currentSchemeEngine = new CurrentSchemeEngine(new String[] { "current-evaluator" });
     public static final class CurrentSchemeEngine extends MultipleNamedProcedure0 {
         public CurrentSchemeEngine(String[] names) {
             super(names);
@@ -16,7 +16,7 @@ public class SchemeEngineLib {
         }
     }
 
-    public static final MultipleNamedProcedure0 isCurrentSchemeEnginePresent = new IsCurrentSchemeEnginePresent(new String[] { "current-scheme-engine-present?" });
+    public static final MultipleNamedProcedure0 isCurrentSchemeEnginePresent = new IsCurrentSchemeEnginePresent(new String[] { "current-evaluator-present?" });
     public static final class IsCurrentSchemeEnginePresent extends MultipleNamedProcedure0 {
         public IsCurrentSchemeEnginePresent(String[] names) {
             super(names);

@@ -109,7 +109,8 @@ public class LamuApplication {
         ForceLoadingClass.force(PulsarLib.class);
         ForceLoadingClass.force(lamu.help.class );
         ForceLoadingClass.force(lamu.scheme.class );
-        
+        ForceLoadingClass.force(lamu.procs.class );
+
         ForceLoadingClass.force(SchemeEngineLib.class);
         ForceLoadingClass.force(SchemeEvaluatorLib.class);
 
