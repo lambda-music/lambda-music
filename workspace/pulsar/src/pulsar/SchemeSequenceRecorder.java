@@ -4,8 +4,6 @@ import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.logging.Level;
 
-import org.jaudiolibs.jnajack.JackException;
-
 import gnu.lists.EmptyList;
 import gnu.lists.LList;
 import gnu.lists.Pair;
@@ -17,6 +15,7 @@ import lamu.lib.log.Logger;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroCollector;
+import metro.MetroException;
 import metro.MetroMidiEvent;
 import metro.MetroPort;
 import metro.MetroSequence;
@@ -133,7 +132,7 @@ public class SchemeSequenceRecorder implements MetroSequence, SchemeSequenceRead
                     }
                 }
             }
-        } catch (JackException e) {
+        } catch (MetroException e) {
             logError( "could not get bar length : failed to send midi messages.", e );
         }
     }

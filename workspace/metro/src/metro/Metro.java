@@ -120,7 +120,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     public double getBeatsPerMinute() {
         return beatsPerMinute;
     }
-    public void setBeatsPerMinute(double beatsPerMinute) throws JackException {
+    public void setBeatsPerMinute(double beatsPerMinute) throws MetroException {
         beatsPerMinute = beatsPerMinute < 1 ? 1 : beatsPerMinute;
         this.beatsPerMinute = beatsPerMinute;
         reprepareTrack( beatsPerMinute, this.beatsPerMinute );
@@ -130,7 +130,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     public long getBeatsPerBar() {
         return beatsPerBar;
     }
-    public void setBeatsPerBar(long beatsPerBar) throws JackException {
+    public void setBeatsPerBar(long beatsPerBar) throws MetroException {
         this.beatsPerBar = beatsPerBar;
         // reprepareTrack();
     }
@@ -176,9 +176,9 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
      * @param clientName
      * @param sequence
      * @return
-     * @throws JackException
+     * @throws MetroException
      */
-    public static Metro startClient( String clientName, MetroSequence sequence ) throws JackException {
+    public static Metro startClient( String clientName, MetroSequence sequence ) throws MetroException {
         try {
             Metro metro = new Metro();
             metro.open( clientName );
@@ -190,23 +190,23 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                 }
             }
             return metro;
-        } catch (JackException ex) {
+        } catch (MetroException ex) {
             logError( null, ex);
             throw ex;
         }
     }
     
     
-    public MetroPort createInputPort(Object portName) throws JackException {
+    public MetroPort createInputPort(Object portName) throws MetroException {
         return createPort(portName, this.inputPortList, JackPortFlags.JackPortIsInput);
     }
-    public MetroPort createOutputPort(Object portName) throws JackException {
+    public MetroPort createOutputPort(Object portName) throws MetroException {
         return createPort(portName, this.outputPortList, JackPortFlags.JackPortIsOutput);
     }
-    public boolean destroyOutputPort(MetroPort port) throws JackException {
+    public boolean destroyOutputPort(MetroPort port) throws MetroException {
         return destroyPort(port, JackPortFlags.JackPortIsOutput, this.outputPortList);
     }
-    public boolean destroyInputPort(MetroPort port) throws JackException {
+    public boolean destroyInputPort(MetroPort port) throws MetroException {
         return destroyPort(port, JackPortFlags.JackPortIsInput, this.inputPortList);
     }
 
@@ -219,35 +219,43 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         return new ArrayList<MetroPort>( this.outputPortList );
     }
     
-    private MetroPort createPort(Object portName, List<MetroPort> list, JackPortFlags flag) throws JackException {
+    private MetroPort createPort(Object portName, List<MetroPort> list, JackPortFlags flag) throws MetroException {
         if ( portName == null )
             throw new NullPointerException();
         checkState();
-        MetroPort port = new MetroPort( 
-            portName,
-            flag,
-            this.client.registerPort( 
-                SchemeUtils.anyToString(portName), 
-                JackPortType.MIDI, 
-                flag
-            )
-        );
-        list.add( port );
-        return port;
+        try {
+            MetroPort port = new MetroPort( 
+                portName,
+                flag,
+                this.client.registerPort( 
+                    SchemeUtils.anyToString(portName), 
+                    JackPortType.MIDI, 
+                    flag
+                    )
+                );
+            list.add( port );
+            return port;
+        } catch ( JackException e ) {
+            throw new MetroException(e);
+        }
     }
-    private boolean destroyPort(MetroPort targetPort, JackPortFlags portFlag, ArrayList<MetroPort> list) throws JackException {
+    private boolean destroyPort(MetroPort targetPort, JackPortFlags portFlag, ArrayList<MetroPort> list) throws MetroException {
         if ( targetPort == null )
             throw new NullPointerException();
         checkState();
         if ( ! targetPort.jackPortFlag.equals( portFlag ) ) {
             throw new IllegalArgumentException();
         }
-        boolean result = this.client.unregisterPort( targetPort.jackPort ) == 0;
-        if (result){
-            list.remove( targetPort );
-            return true;
-        } else {
-            return false;
+        try {
+            boolean result = this.client.unregisterPort( targetPort.jackPort ) == 0;
+            if (result){
+                list.remove( targetPort );
+                return true;
+            } else {
+                return false;
+            }
+        } catch ( JackException e ) {
+            throw new MetroException(e);
         }
     }
     
@@ -515,7 +523,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
      */
 
     private volatile boolean isOpened = false;
-    public void open( String clientName ) throws JackException {
+    public void open( String clientName ) throws MetroException {
         logInfo( isOpened + "===open()");
         if ( isOpened )
             throw new RuntimeException( "Already Started" );
@@ -532,20 +540,21 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
             if (!status.isEmpty()) {
                 logInfo("JACK client status : " + status);
             }
+
+            // Create a thread.
+//          this.sequence.setParent( this );
+            this.activate();
+
+//            // this thread should not be controlled by the open/close commands.
+//            // (Sat, 03 Aug 2019 16:45:11 +0900)  
+            initThread();
+            
         } catch (JackException ex) {
             if (!status.isEmpty()) {
                 logInfo("JACK exception client status : " + status);
             }
-            throw ex;
+            throw new MetroException(ex);
         }
-
-        // Create a thread.
-//      this.sequence.setParent( this );
-        this.activate();
-
-//        // this thread should not be controlled by the open/close commands.
-//        // (Sat, 03 Aug 2019 16:45:11 +0900)  
-        initThread();
     }
     public boolean isOpened() {
         return isOpened;
@@ -736,7 +745,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         }
     }
     
-    void reprepareTrack(double prevBeatsPerMinute, double beatsPerMinute) throws JackException {
+    void reprepareTrack(double prevBeatsPerMinute, double beatsPerMinute) throws MetroException {
         // Note (Wed, 06 Nov 2019 05:47:26 +0900)
         // This method could be called by setting tempo procedures and 
         // that time could be at the time when it is not opened.
@@ -762,15 +771,23 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         return this.jack.getPorts( this.client, "", JackPortType.MIDI, EnumSet.of( JackPortFlags.JackPortIsInput ) );
     }
 
-    public List<String> getAvailableOutputPorts() throws JackException {
-        checkState();
-        String[] ports = getAvailableOutputPorts_impl();
-        return new ArrayList<String>( Arrays.asList( ports ) );
+    public List<String> getAvailableOutputPorts() throws MetroException {
+        try {
+            checkState();
+            String[] ports = getAvailableOutputPorts_impl();
+            return new ArrayList<String>( Arrays.asList( ports ) );
+        } catch (JackException e) {
+            throw new MetroException(e);
+        }
     }
-    public List<String> getAvailableInputPorts() throws JackException {
-        checkState();
-        String[] ports = getAvailableInputPorts_impl();
-        return new ArrayList<String>( Arrays.asList( ports ) );
+    public List<String> getAvailableInputPorts() throws MetroException {
+        try {
+            checkState();
+            String[] ports = getAvailableInputPorts_impl();
+            return new ArrayList<String>( Arrays.asList( ports ) );
+        } catch (JackException e) {
+            throw new MetroException(e);
+        }
     }
 
     private void activate() throws JackException {
@@ -799,7 +816,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         logInfo( "" );
     }
     
-    public void connectPort( Map<String, String> map ) {
+    public void connectPort( Map<String, String> map ) throws MetroException {
         checkState();
 
         for ( Entry<String, String> portName : map.entrySet() ) {
@@ -808,34 +825,33 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
             if ( key != null && value != null ) {
                 try {
                     connectPort(key, value);
-                } catch (JackException e ) {
-                    e.printStackTrace();
+                } catch ( MetroException e ) {
+                    logError("",e);
                 }
             }
         }
     }
-    public void connectPort(String from, String to) throws JackException {
+    public void connectPort(String from, String to) throws MetroException {
         checkState();
 
         try {
             this.jack.connect( this.client, from, to);
         } catch ( JackException e ) {
-            throw new JackException( "Error occured while connecting from " + from + " to " + to, e );
+            throw new MetroException( "Error occured while connecting from " + from + " to " + to, e );
         }
     }
-    public void disconnectPort(String from, String to) throws JackException {
+    public void disconnectPort(String from, String to) throws MetroException {
         checkState();
 
         try {
             this.jack.disconnect( this.client, from, to);
         } catch ( JackException e ) {
-            throw new JackException( "Error occured while connecting from " + from + " to " + to, e );
+            throw new MetroException( "Error occured while connecting from " + from + " to " + to, e );
         }
     }
     
-    public void clearAllPorts() throws JackException {
+    void clearAllPorts() throws JackException {
         checkState();
-
         Metro metro = this;
         for ( MetroPort p : metro.outputPortList ) {
             JackMidi.clearBuffer( p.jackPort );
@@ -1173,13 +1189,13 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     }
 
     private final JackPosition jackPosition = new JackPosition();
-    public int getOneBarLengthInFrames() throws JackException {
+    public int getOneBarLengthInFrames() throws MetroException {
         synchronized ( this.getMetroLock() ) {
             return calcOneBarLengthInFrames( this, this.client, this.jackPosition );
         }
     }
 
-    public static int calcOneBarLengthInFrames( Metro metro, JackClient client, JackPosition position) throws JackException {
+    public static int calcOneBarLengthInFrames( Metro metro, JackClient client, JackPosition position) throws MetroException {
         // logInfo("Metro.offerNewBuffer()" + this.buffers.size() );
         // beat per minute
         double bpm;
@@ -1194,7 +1210,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
             
             // logInfo( "framerate" + frameRate + " bpb="+ bpb );
         } catch (JackException e) {
-            throw e;
+            throw new MetroException(e);
         }
         
         double ownBeatPerMinute = metro.getBeatsPerMinute();

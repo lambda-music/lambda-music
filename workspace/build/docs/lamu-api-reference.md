@@ -68,23 +68,6 @@ specified value is a ||null|| of Java, this procedure returns "null" as a string
 
 --------------------------------------------------------
 
-MAKE-TIMER
-====================
-
-#### SYNOPSIS ####
-    (make-timer delay::number interval::number callback::procedure)::procedure
-
-### DESCRIPTION ###
-||make-timer|| creates a new timer object. This procedure registers the
-specified procedure as a callback procedure of the timer; the procedure will be called
-with the specified period and with the specified delay. The return value is a cancel
-procedure. When the cancel procedure is called, the timer stops calling the callback
-procedure.
-
-
-
---------------------------------------------------------
-
 RANDOM
 ====================
 

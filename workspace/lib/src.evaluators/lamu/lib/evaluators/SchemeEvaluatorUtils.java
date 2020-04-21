@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import gnu.expr.Language;
 import gnu.kawa.io.InPort;
 import gnu.kawa.io.Path;
+import gnu.mapping.Environment;
 import kawa.standard.Scheme;
 import lamu.lib.log.Logger;
 import lamu.lib.log.SimpleConsole;
@@ -54,6 +55,7 @@ public class SchemeEvaluatorUtils {
 
     public static void executeInTheCurrentContext( String script ) {
         Scheme scheme = (Scheme) Language.getDefaultLanguage();
+        Environment.setCurrent( scheme.getEnvironment() );
         try {
             scheme.eval(script);
         } catch (Throwable e) {

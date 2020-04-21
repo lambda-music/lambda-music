@@ -176,6 +176,9 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
 //        initPulsarGui();
         
         AcceleratorKeyList.processAcceleratorKeys( this.getRootPane() );
+        
+        this.kawapad.evaluate( "(import (lamu pulsar))", true, true, true );
+
     }
 
     /* 
@@ -378,7 +381,10 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         @Override
         public void actionPerformed(ActionEvent e) {
             // (Sun, 15 Dec 2019 19:26:48 +0900) INDIRECT_PULSAR_ACCESS
-            getKawapad().evaluate( "(close)", false, false, false );
+//            getKawapad().evaluate( "(close)", false, false, false );
+            // MODIFIED ON (Tue, 21 Apr 2020 19:44:11 +0900) >>> 
+            getKawapad().CLOSE_ACTION.actionPerformed(null);
+            // MODIFIED ON (Tue, 21 Apr 2020 19:44:11 +0900) <<<
             // pulsar.close();
         }
         {

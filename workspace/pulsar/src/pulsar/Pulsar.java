@@ -33,8 +33,6 @@ import java.util.logging.Level;
 
 import javax.swing.JComboBox;
 
-import org.jaudiolibs.jnajack.JackException;
-
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import lamu.lib.app.ApplicationComponent;
@@ -43,6 +41,7 @@ import lamu.lib.evaluators.InvokableSchemeProcedure;
 import lamu.lib.evaluators.SchemeUtils;
 import lamu.lib.log.Logger;
 import metro.Metro;
+import metro.MetroException;
 import metro.MetroPort;
 import metro.MetroSequence;
 import metro.MetroTrack;
@@ -168,7 +167,7 @@ public class Pulsar extends Metro implements PulsarLib, PulsarLibDelegator, Appl
 
     
 //  @Override
-//  public void open(String clientName) throws JackException {
+//  public void open(String clientName) throws MetroException {
 //      super.open(clientName);
 //      newScheme();
 //  }
@@ -319,27 +318,27 @@ public class Pulsar extends Metro implements PulsarLib, PulsarLibDelegator, Appl
     }
     
     @Override
-    public void setBeatsPerMinute(double beatsPerMinute) throws JackException {
+    public void setBeatsPerMinute(double beatsPerMinute) throws MetroException {
         super.setBeatsPerMinute( beatsPerMinute );
     }
     
     interface ConnectProcedure {
-        void apply( Pulsar pulsar, String from, String to ) throws JackException;
+        void apply( Pulsar pulsar, String from, String to ) throws MetroException;
         ConnectProcedure CONNECT = new ConnectProcedure() {
             @Override
-            public void apply(Pulsar pulsar, String from, String to) throws JackException {
+            public void apply(Pulsar pulsar, String from, String to) throws MetroException {
                 pulsar.connectPort(from, to);
             }
         };
         ConnectProcedure DISCONNECT = new ConnectProcedure() {
             @Override
-            public void apply(Pulsar pulsar, String from, String to) throws JackException {
+            public void apply(Pulsar pulsar, String from, String to) throws MetroException {
                 pulsar.disconnectPort(from, to);
             }
         };
     }
     
-    static void connectProc(Pulsar pulsar, Object[] args, ConnectProcedure proc ) throws JackException {
+    static void connectProc(Pulsar pulsar, Object[] args, ConnectProcedure proc ) throws MetroException {
         ArrayDeque<Object> deque = new ArrayDeque<>( Arrays.asList( args ) );
         while ( 0 < deque.size() ) {
             Object fromObj = deque.pop();

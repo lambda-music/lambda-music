@@ -6,10 +6,10 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
+import lamu.lib.MersenneTwisterFast;
 import lamu.lib.stream.SisoReceiver;
 import lamu.lib.stream.SisoReceiverListener;
 import lamu.lib.stream.SisoReceiverServiceListener;
-import lamu.utils.lib.MersenneTwisterFast;
 
 public abstract class ReplClientServer implements SisoReceiverListener, SisoReceiverServiceListener {
     public static final String ERROR_COMMAND = "error";

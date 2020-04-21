@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import lamu.utils.lib.MersenneTwisterFast;
-
 public class MeetingPoint {
     private static final MeetingPoint INSTANCE = new MeetingPoint();
     public static MeetingPoint getInstance() {

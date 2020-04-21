@@ -2884,10 +2884,18 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
          * The reason why it fails if executed together.
          *  (Tue, 21 Apr 2020 00:33:08 +0900)
          */
-        evaluate( "(import (lamu help))", true, true, true );
-        evaluate( "(help about-intro)", true, true, true );
+//        evaluate( "(import (lamu help))", true, true, true );
+//        evaluate( "(help about-intro)", true, true, true );
 
-        
+        /*
+         * Defining syntax affects to compilation process and `help` is a syntax.
+         * At the time of compilation, `help` is not defined so `about-intro` is
+         * interpolated as a variable; therefore, it is an undefined variable which
+         * causes a compilation error. In order to avoid this problem, `eval` it.
+         * (Tue, 21 Apr 2020 21:50:10 +0900)
+         */
+        evaluate( "(require lamu.help)(eval '(help about-intro))", true, true, true );
+
     }
 
     static class ConfirmType { 

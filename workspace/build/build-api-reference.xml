@@ -30,6 +30,11 @@
             <arg value="reference" />
             <arg value="--category=pulsar-gui-procedures" />
             <arg value="--output-file=${dir.apiref.output}/generated-pulsar-gui-procedures.md" />
+        	<!-- TODO -->
+            <arg value="+" />
+            <arg value="reference" />
+            <arg value="--category=kawapad-gui-procedures" />
+            <arg value="--output-file=${dir.apiref.output}/generated-kawapad-gui-procedures.md" />
             <arg value="+" />
             <arg value="reference" />
             <arg value="--category=kawapad-procedures" />

@@ -484,48 +484,55 @@ public class MetroTrack implements MetroLock, MetroSyncTrack, MetroNamedTrack {
         MetroSyncTrack.setSyncStatus( this, barLengthInFrames );
     }
 
-    void reprepare( int barLengthInFrames, double prevBeatsPerMinute, double beatsPerMinute ) throws JackException 
+    void reprepare( int barLengthInFrames, double prevBeatsPerMinute, double beatsPerMinute ) throws MetroException 
     {
-        synchronized ( this.getMetroTrackLock() ) {
-            int prevLengthInFrame = -1;
-            int lengthInFrame = -1;
-            {
-                MetroEventBuffer headBuffer = this.buffers.peek();
-                if ( headBuffer != null )
-                    prevLengthInFrame = headBuffer.getLengthInFrames();
+        try {
+            synchronized ( this.getMetroTrackLock() ) {
+                int prevLengthInFrame = -1;
+                int lengthInFrame = -1;
+                {
+                    MetroEventBuffer headBuffer = this.buffers.peek();
+                    if ( headBuffer != null )
+                        prevLengthInFrame = headBuffer.getLengthInFrames();
+                }
+                
+                // double ratio = magnifyCursorPosition( prevBeatsPerMinute, beatsPerMinute );
+                for ( MetroEventBuffer buffer : this.buffers ) {
+                    buffer.prepare(barLengthInFrames, false);
+                }
+                
+                {
+                    MetroEventBuffer headBuffer = this.buffers.peek();
+                    if ( headBuffer != null )
+                        lengthInFrame = headBuffer.getLengthInFrames();
+                }
+                
+                double ratio = (double)lengthInFrame / (double)prevLengthInFrame;
+                
+                if ( 0< ratio && 1.0d!= ratio ) {
+                    // System.out.println( "ratio: " + ratio );
+                    // System.out.println( "prev cursor: " + cursor );
+                    
+                    this.cursor      = (int) Math.round( ((double)this.cursor)            * ratio );
+                    
+                    // NOTE : (Wed, 30 Oct 2019 05:35:28 +0900)
+                    // multiplying by ratio on `this.totalCursor` may not work as expected 
+                    // but since changing tempo while recording is an improper action so
+                    // we ignore the risk for now.
+                    this.totalCursor = (int) Math.round( ((double)this.totalCursor)       * ratio );
+                    
+                    
+                    // System.out.println( "after cursor: " + cursor );
+                    // System.out.println( "lengthInFrame    : " + lengthInFrame );
+                    // System.out.println( "prevLengthInFrame: " + prevLengthInFrame );
+                    // this.lastLengthInFrame = (int) Math.round( ((double)this.lastLengthInFrame) * ratio );
+                }
             }
-                
-            // double ratio = magnifyCursorPosition( prevBeatsPerMinute, beatsPerMinute );
-            for ( MetroEventBuffer buffer : this.buffers ) {
-                buffer.prepare(barLengthInFrames, false);
-            }
-            
-            {
-                MetroEventBuffer headBuffer = this.buffers.peek();
-                if ( headBuffer != null )
-                    lengthInFrame = headBuffer.getLengthInFrames();
-            }
-            
-            double ratio = (double)lengthInFrame / (double)prevLengthInFrame;
-            
-            if ( 0< ratio && 1.0d!= ratio ) {
-                // System.out.println( "ratio: " + ratio );
-                // System.out.println( "prev cursor: " + cursor );
-                
-                this.cursor      = (int) Math.round( ((double)this.cursor)            * ratio );
-                
-                // NOTE : (Wed, 30 Oct 2019 05:35:28 +0900)
-                // multiplying by ratio on `this.totalCursor` may not work as expected 
-                // but since changing tempo while recording is an improper action so
-                // we ignore the risk for now.
-                this.totalCursor = (int) Math.round( ((double)this.totalCursor)       * ratio );
-                
-                
-                // System.out.println( "after cursor: " + cursor );
-                // System.out.println( "lengthInFrame    : " + lengthInFrame );
-                // System.out.println( "prevLengthInFrame: " + prevLengthInFrame );
-                // this.lastLengthInFrame = (int) Math.round( ((double)this.lastLengthInFrame) * ratio );
-            }
+        } catch ( JackException e ) {
+            // Changed JackException to MetroExceptions (Tue, 21 Apr 2020 19:11:54 +0900) 
+            // FIXME : the Exceptions in `buffer.prepare()` should not propagated outside of this method.
+            // The modification requires more examination; todo.
+            throw new MetroException(e);
         }
 
     }

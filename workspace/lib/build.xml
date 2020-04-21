@@ -7,6 +7,7 @@
     <property environment="env"/>
     <property name="kawapad.location" value="../kawapad"/>
     <property name="lamu.location" value="../lamu"/>
+    <property name="lib-deprecated.location" value="../lib-deprecated"/>
     <property name="metro.location" value="../metro"/>
     <property name="pulsar.location" value="../pulsar"/>
     <property name="pulsar-gui.location" value="../pulsar-gui"/>
@@ -15,9 +16,6 @@
     <property name="source" value="1.8"/>
     <path id="lib.classpath">
         <pathelement location="bin"/>
-        <pathelement location="lib/jna-4.5.0.jar"/>
-        <pathelement location="lib/jna-platform-4.5.0.jar"/>
-        <pathelement location="lib/jnajack-1.3.0.jar"/>
         <pathelement location="lib/kawa.jar"/>
     </path>
     <target name="init">
@@ -29,49 +27,19 @@
             </fileset>
         </copy>
         <copy includeemptydirs="false" todir="bin">
-            <fileset dir="src.scheme-evaluators">
+            <fileset dir="src.evaluators">
                 <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
         <copy includeemptydirs="false" todir="bin">
-            <fileset dir="src.app">
-                <exclude name="**/*.launch"/>
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-        <copy includeemptydirs="false" todir="bin">
-            <fileset dir="src.scheme">
+            <fileset dir="src.args">
                 <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src.help">
-                <exclude name="**/*.launch"/>
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-        <copy includeemptydirs="false" todir="bin">
-            <fileset dir="src.action-help">
-                <exclude name="**/*.launch"/>
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-        <copy includeemptydirs="false" todir="bin">
-            <fileset dir="src.gui-utils">
-                <exclude name="**/*.launch"/>
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-        <copy includeemptydirs="false" todir="bin">
-            <fileset dir="src.thread-initializers">
-                <exclude name="**/*.launch"/>
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-        <copy includeemptydirs="false" todir="bin">
-            <fileset dir="src.thread-current">
                 <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
@@ -87,14 +55,9 @@
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
             <src path="src"/>
-            <src path="src.scheme-evaluators"/>
-            <src path="src.app"/>
-            <src path="src.scheme"/>
+            <src path="src.evaluators"/>
+            <src path="src.args"/>
             <src path="src.help"/>
-            <src path="src.action-help"/>
-            <src path="src.gui-utils"/>
-            <src path="src.thread-initializers"/>
-            <src path="src.thread-current"/>
             <classpath refid="lib.classpath"/>
         </javac>
     </target>
@@ -103,6 +66,8 @@
         <ant antfile="build.xml" dir="${kawapad.location}" inheritAll="false" target="build"/>
         <ant antfile="build.xml" dir="${lamu.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${lamu.location}" inheritAll="false" target="build"/>
+        <ant antfile="build.xml" dir="${lib-deprecated.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${lib-deprecated.location}" inheritAll="false" target="build"/>
         <ant antfile="build.xml" dir="${metro.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${metro.location}" inheritAll="false" target="build"/>
         <ant antfile="build.xml" dir="${pulsar.location}" inheritAll="false" target="clean"/>
@@ -111,12 +76,12 @@
         <ant antfile="build.xml" dir="${pulsar-gui.location}" inheritAll="false" target="build"/>
     </target>
     <target name="ReplClient">
-        <java classname="lamu.lib.scheme.repl.ReplClient" failonerror="true" fork="yes">
+        <java classname="lamu.lib.evaluators.repl.ReplClient" failonerror="true" fork="yes">
             <classpath refid="lib.classpath"/>
         </java>
     </target>
     <target name="SchemeUtils">
-        <java classname="lamu.lib.scheme.SchemeUtils" failonerror="true" fork="yes">
+        <java classname="lamu.lib.evaluators.SchemeUtils" failonerror="true" fork="yes">
             <classpath refid="lib.classpath"/>
         </java>
     </target>
@@ -126,7 +91,7 @@
         </java>
     </target>
     <target name="ReplServer">
-        <java classname="lamu.lib.scheme.repl.ReplServer" failonerror="true" fork="yes">
+        <java classname="lamu.lib.evaluators.repl.ReplServer" failonerror="true" fork="yes">
             <classpath refid="lib.classpath"/>
         </java>
     </target>

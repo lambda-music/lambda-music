@@ -2,5 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/lib"/>
+	<classpathentry kind="src" path="src.action"/>
+	<classpathentry kind="src" path="src.gui-utils"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
