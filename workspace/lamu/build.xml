@@ -6,6 +6,9 @@
               as the first entry and export the buildfile again. --><project basedir="." default="build" name="lamu">
     <property environment="env"/>
     <property name="workspace_loc:lamu" value="."/>
+    <property name="lib-lamu.location" value="../lib-lamu"/>
+    <property name="lib-loggerutils.location" value="../lib-loggerutils"/>
+    <property name="lib-kawautils.location" value="../lib-kawautils"/>
     <property name="lib.location" value="../lib"/>
     <property name="kawapad.location" value="../kawapad"/>
     <property name="metro.location" value="../metro"/>
@@ -14,35 +17,63 @@
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.8"/>
     <property name="source" value="1.8"/>
+    <path id="lib-lamu.classpath">
+        <pathelement location="${lib-lamu.location}/bin"/>
+    </path>
+    <path id="lib-loggerutils.classpath">
+        <pathelement location="${lib-loggerutils.location}/bin"/>
+    </path>
+    <path id="lib-kawautils.classpath">
+        <pathelement location="${lib-kawautils.location}/bin"/>
+        <pathelement location="${lib-kawautils.location}/lib/kawa.jar"/>
+        <path refid="lib-lamu.classpath"/>
+        <path refid="lib-loggerutils.classpath"/>
+    </path>
     <path id="lib.classpath">
         <pathelement location="${lib.location}/bin"/>
-        <pathelement location="${lib.location}/lib/kawa.jar"/>
+        <path refid="lib-kawautils.classpath"/>
+        <path refid="lib-lamu.classpath"/>
+        <path refid="lib-loggerutils.classpath"/>
     </path>
     <path id="kawapad.classpath">
         <pathelement location="${kawapad.location}/bin"/>
+        <pathelement location="${kawapad.location}/kawapad.jar"/>
         <path refid="lib.classpath"/>
+        <path refid="lib-kawautils.classpath"/>
+        <path refid="lib-lamu.classpath"/>
+        <path refid="lib-loggerutils.classpath"/>
     </path>
     <path id="metro.classpath">
         <pathelement location="${metro.location}/bin"/>
-        <path refid="lib.classpath"/>
         <pathelement location="${metro.location}/lib/jna-4.5.0.jar"/>
         <pathelement location="${metro.location}/lib/jna-platform-4.5.0.jar"/>
         <pathelement location="${metro.location}/lib/jnajack-1.3.0.jar"/>
+        <path refid="lib-loggerutils.classpath"/>
+        <path refid="lib-lamu.classpath"/>
     </path>
     <path id="pulsar.classpath">
         <pathelement location="${pulsar.location}/bin"/>
         <path refid="metro.classpath"/>
+        <path refid="lib-loggerutils.classpath"/>
+        <path refid="lib-lamu.classpath"/>
+        <path refid="lib-kawautils.classpath"/>
         <path refid="lib.classpath"/>
     </path>
     <path id="pulsar-gui.classpath">
         <pathelement location="${pulsar-gui.location}/bin"/>
-        <path refid="lib.classpath"/>
         <path refid="kawapad.classpath"/>
+        <path refid="lib-lamu.classpath"/>
+        <path refid="lib-loggerutils.classpath"/>
+        <path refid="lib.classpath"/>
+        <path refid="lib-kawautils.classpath"/>
     </path>
     <path id="lamu.classpath">
         <pathelement location="bin"/>
-        <path refid="lib.classpath"/>
         <path refid="kawapad.classpath"/>
+        <path refid="lib.classpath"/>
+        <path refid="lib-kawautils.classpath"/>
+        <path refid="lib-lamu.classpath"/>
+        <path refid="lib-loggerutils.classpath"/>
         <path refid="metro.classpath"/>
         <path refid="pulsar.classpath"/>
         <path refid="pulsar-gui.classpath"/>
@@ -59,6 +90,9 @@
         <delete dir="bin"/>
     </target>
     <target depends="clean" name="cleanall">
+        <ant antfile="build.xml" dir="${lib-lamu.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${lib-loggerutils.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${lib-kawautils.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${lib.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${kawapad.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${metro.location}" inheritAll="false" target="clean"/>
@@ -67,6 +101,9 @@
     </target>
     <target depends="build-subprojects,build-project" name="build"/>
     <target name="build-subprojects">
+        <ant antfile="build.xml" dir="${lib-lamu.location}" inheritAll="false" target="build-project"/>
+        <ant antfile="build.xml" dir="${lib-loggerutils.location}" inheritAll="false" target="build-project"/>
+        <ant antfile="build.xml" dir="${lib-kawautils.location}" inheritAll="false" target="build-project"/>
         <ant antfile="build.xml" dir="${lib.location}" inheritAll="false" target="build-project"/>
         <ant antfile="build.xml" dir="${kawapad.location}" inheritAll="false" target="build-project"/>
         <ant antfile="build.xml" dir="${metro.location}" inheritAll="false" target="build-project"/>
@@ -81,84 +118,4 @@
         </javac>
     </target>
     <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
-    <target name="LamuApplication (2-4)">
-        <java classname="lamu.LamuApplication" dir="../../../../../../../../../../../../home/ats/repo/works/revising/lambda-music/quasijazzer/" failonerror="true" fork="yes">
-            <jvmarg line="-Djava.util.logging.config.file=${workspace_loc:lamu}/logging.properties"/>
-            <arg line="-e /home/ats/repo/works/revising/lambda-music/quasijazzer/song.lamu"/>
-            <classpath refid="lamu.classpath"/>
-        </java>
-    </target>
-    <target name="LamuApplication (6)">
-        <java classname="lamu.LamuApplication" dir="../../../../../../../../../../../../home/ats/repo/works/revising/lambda-music/quasijazzer/" failonerror="true" fork="yes">
-            <jvmarg line="-Djava.util.logging.config.file=${workspace_loc:lamu}/logging.properties"/>
-            <arg line="advanced create scheme + pulsar + kawapad /home/ats/repo/works/revising/lambda-music/quasijazzer/song.scm +"/>
-            <classpath refid="lamu.classpath"/>
-        </java>
-    </target>
-    <target name="LamuApplication (1)">
-        <java classname="lamu.LamuApplication" dir="../../../../../../../../../../../../home/ats/repo/works/revising/lambda-music/quasijazzer/" failonerror="true" fork="yes">
-            <arg line="advanced begin exec scheme + kawapad + end begin fork exec  scheme + pulsar + httpd + end"/>
-            <classpath refid="lamu.classpath"/>
-        </java>
-    </target>
-    <target name="LamuApplication (4)">
-        <java classname="lamu.LamuApplication" dir="../../../../../../../../../../../../home/ats/repo/works/revising/lambda-music/quasijazzer/" failonerror="true" fork="yes">
-            <jvmarg line="-Djava.util.logging.config.file=${workspace_loc:lamu}/logging.properties"/>
-            <arg line="advanced&#10;begin&#10;&#9;fork  lamu advanced create  scheme + pulsar + stdio-stream + repl&#10;end&#10;begin &#10;&#9;create forked-stream + logger-stream --in=stdin.log --out=stdout.log --err=stderr.log&#10;end&#10;begin&#10;&#9;create  scheme --stream + kawapad + stdio-stream + repl&#10;end"/>
-            <classpath refid="lamu.classpath"/>
-        </java>
-    </target>
-    <target name="LamuApplication">
-        <java classname="lamu.LamuApplication" dir="../../../../../../../../../../../../home/ats/repo/works/revising/lambda-music/quasijazzer/" failonerror="true" fork="yes">
-            <jvmarg line="-Djava.util.logging.config.file=${workspace_loc:lamu}/logging.properties"/>
-            <classpath refid="lamu.classpath"/>
-        </java>
-    </target>
-    <target name="LamuApplication (2)">
-        <java classname="lamu.LamuApplication" dir="../../../../../../../../../../../../home/ats/repo/works/revising/lambda-music/quasijazzer/" failonerror="true" fork="yes">
-            <jvmarg line="-Djava.util.logging.config.file=${workspace_loc:lamu}/logging.properties"/>
-            <arg line="/home/ats/repo/works/revising/lambda-music/quasijazzer/song.scm"/>
-            <classpath refid="lamu.classpath"/>
-        </java>
-    </target>
-    <target name="LamuApplication (7)">
-        <java classname="lamu.LamuApplication" dir="../../../../../../../../../../../../home/ats/repo/works/revising/lambda-music/quasijazzer/" failonerror="true" fork="yes">
-            <jvmarg line="-Djava.util.logging.config.file=${workspace_loc:lamu}/logging.properties"/>
-            <arg line="advanced create scheme + repl"/>
-            <classpath refid="lamu.classpath"/>
-        </java>
-    </target>
-    <target name="LamuApplication (5)">
-        <java classname="lamu.LamuApplication" dir="../../../../../../../../../../../../home/ats/repo/works/revising/lambda-music/quasijazzer" failonerror="true" fork="yes">
-            <env key="LAMU_LOGGING_PROPERTIES" value="${workspace_loc:lamu}/logging.properties"/>
-            <jvmarg line="-Djava.util.logging.config.file=${workspace_loc:lamu}/logging.properties"/>
-            <arg line="advanced load /home/ats/repo/works/revising/lambda-music/quasijazzer/song.lamu  /home/ats/repo/works/revising/lambda-music/quasijazzer/song.scm  --foo=aaa --bar=asasa"/>
-            <classpath refid="lamu.classpath"/>
-        </java>
-    </target>
-    <target name="LamuApplication (2-2)">
-        <java classname="lamu.LamuApplication" dir="../../../../../../../../../../../../home/ats/repo/works/revising/lambda-music/quasijazzer/" failonerror="true" fork="yes">
-            <arg line="--command=load /home/ats/repo/works/revising/lambda-music/quasijazzer/song.lamu"/>
-            <classpath refid="lamu.classpath"/>
-        </java>
-    </target>
-    <target name="LamuApplication (2-1)">
-        <java classname="lamu.LamuApplication" dir="../../../../../../../../../../../../home/ats/repo/works/revising/lambda-music/quasijazzer/" failonerror="true" fork="yes">
-            <arg line="--command=open /home/ats/repo/works/revising/lambda-music/quasijazzer/song.scm"/>
-            <classpath refid="lamu.classpath"/>
-        </java>
-    </target>
-    <target name="LamuApplication (2-3)">
-        <java classname="lamu.LamuApplication" dir="../../../../../../../../../../../../home/ats/repo/works/revising/lambda-music/quasijazzer/" failonerror="true" fork="yes">
-            <arg line="--load=/home/ats/repo/works/revising/lambda-music/quasijazzer/song.lamu  /home/ats/repo/works/revising/lambda-music/quasijazzer/song.scm /home/ats/repo/works/revising/lambda-music/quasijazzer/song.scm"/>
-            <classpath refid="lamu.classpath"/>
-        </java>
-    </target>
-    <target name="LamuApplication (3)">
-        <java classname="lamu.LamuApplication" dir="../../../../../../../../../../../../home/ats/repo/works/revising/lambda-music/quasijazzer/" failonerror="true" fork="yes">
-            <jvmarg line="-Djava.util.logging.config.file=${workspace_loc:lamu}/logging.properties"/>
-            <arg line="advanced create scheme + pulsar + stdio-stream + repl + gui /home/ats/repo/works/revising/lambda-music/quasijazzer/song.scm +"/>
-            <classpath refid="lamu.classpath"/>
-        </java>
-    </target>
 </project>

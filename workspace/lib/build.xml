@@ -8,15 +8,31 @@
     <property name="kawapad.location" value="../kawapad"/>
     <property name="lamu.location" value="../lamu"/>
     <property name="lib-deprecated.location" value="../lib-deprecated"/>
-    <property name="metro.location" value="../metro"/>
     <property name="pulsar.location" value="../pulsar"/>
     <property name="pulsar-gui.location" value="../pulsar-gui"/>
+    <property name="lib-lamu.location" value="../lib-lamu"/>
+    <property name="lib-loggerutils.location" value="../lib-loggerutils"/>
+    <property name="lib-kawautils.location" value="../lib-kawautils"/>
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.8"/>
     <property name="source" value="1.8"/>
+    <path id="lib-lamu.classpath">
+        <pathelement location="${lib-lamu.location}/bin"/>
+    </path>
+    <path id="lib-loggerutils.classpath">
+        <pathelement location="${lib-loggerutils.location}/bin"/>
+    </path>
+    <path id="lib-kawautils.classpath">
+        <pathelement location="${lib-kawautils.location}/bin"/>
+        <pathelement location="${lib-kawautils.location}/lib/kawa.jar"/>
+        <path refid="lib-lamu.classpath"/>
+        <path refid="lib-loggerutils.classpath"/>
+    </path>
     <path id="lib.classpath">
         <pathelement location="bin"/>
-        <pathelement location="lib/kawa.jar"/>
+        <path refid="lib-kawautils.classpath"/>
+        <path refid="lib-lamu.classpath"/>
+        <path refid="lib-loggerutils.classpath"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
@@ -26,12 +42,12 @@
             </fileset>
         </copy>
         <copy includeemptydirs="false" todir="bin">
-            <fileset dir="src.evaluators">
+            <fileset dir="src.args">
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
         <copy includeemptydirs="false" todir="bin">
-            <fileset dir="src.args">
+            <fileset dir="src.evaluators">
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
@@ -49,15 +65,23 @@
     <target name="clean">
         <delete dir="bin"/>
     </target>
-    <target depends="clean" name="cleanall"/>
+    <target depends="clean" name="cleanall">
+        <ant antfile="build.xml" dir="${lib-lamu.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${lib-loggerutils.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${lib-kawautils.location}" inheritAll="false" target="clean"/>
+    </target>
     <target depends="build-subprojects,build-project" name="build"/>
-    <target name="build-subprojects"/>
+    <target name="build-subprojects">
+        <ant antfile="build.xml" dir="${lib-lamu.location}" inheritAll="false" target="build-project"/>
+        <ant antfile="build.xml" dir="${lib-loggerutils.location}" inheritAll="false" target="build-project"/>
+        <ant antfile="build.xml" dir="${lib-kawautils.location}" inheritAll="false" target="build-project"/>
+    </target>
     <target depends="init" name="build-project">
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
             <src path="src"/>
-            <src path="src.evaluators"/>
             <src path="src.args"/>
+            <src path="src.evaluators"/>
             <src path="src.help"/>
             <src path="src.procs"/>
             <classpath refid="lib.classpath"/>
@@ -70,8 +94,6 @@
         <ant antfile="build.xml" dir="${lamu.location}" inheritAll="false" target="build"/>
         <ant antfile="build.xml" dir="${lib-deprecated.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${lib-deprecated.location}" inheritAll="false" target="build"/>
-        <ant antfile="build.xml" dir="${metro.location}" inheritAll="false" target="clean"/>
-        <ant antfile="build.xml" dir="${metro.location}" inheritAll="false" target="build"/>
         <ant antfile="build.xml" dir="${pulsar.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${pulsar.location}" inheritAll="false" target="build"/>
         <ant antfile="build.xml" dir="${pulsar-gui.location}" inheritAll="false" target="clean"/>

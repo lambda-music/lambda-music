@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/metro"/>
 	<classpathentry kind="src" path="src.scheme"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/metro"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/lib-loggerutils"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/lib-lamu"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/lib-kawautils"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/lib"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

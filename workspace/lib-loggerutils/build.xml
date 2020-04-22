@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- WARNING: Eclipse auto-generated file.
+              Any modifications will be overwritten.
+              To include a user specific buildfile here, simply create one in the same
+              directory with the processing instruction <?eclipse.ant.import?>
+              as the first entry and export the buildfile again. --><project basedir="." default="build" name="lib-loggerutils">
+    <property environment="env"/>
+    <property name="kawapad.location" value="../kawapad"/>
+    <property name="lamu.location" value="../lamu"/>
+    <property name="lib.location" value="../lib"/>
+    <property name="lib-deprecated.location" value="../lib-deprecated"/>
+    <property name="lib-kawautils.location" value="../lib-kawautils"/>
+    <property name="metro.location" value="../metro"/>
+    <property name="pulsar.location" value="../pulsar"/>
+    <property name="pulsar-gui.location" value="../pulsar-gui"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.8"/>
+    <property name="source" value="1.8"/>
+    <path id="lib-loggerutils.classpath">
+        <pathelement location="bin"/>
+    </path>
+    <target name="init">
+        <mkdir dir="bin"/>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src.lamu-logger">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete dir="bin"/>
+    </target>
+    <target depends="clean" name="cleanall"/>
+    <target depends="build-subprojects,build-project" name="build"/>
+    <target name="build-subprojects"/>
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
+            <src path="src.lamu-logger"/>
+            <classpath refid="lib-loggerutils.classpath"/>
+        </javac>
+    </target>
+    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects">
+        <ant antfile="build.xml" dir="${kawapad.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${kawapad.location}" inheritAll="false" target="build"/>
+        <ant antfile="build.xml" dir="${lamu.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${lamu.location}" inheritAll="false" target="build"/>
+        <ant antfile="build.xml" dir="${lib.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${lib.location}" inheritAll="false" target="build"/>
+        <ant antfile="build.xml" dir="${lib-deprecated.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${lib-deprecated.location}" inheritAll="false" target="build"/>
+        <ant antfile="build.xml" dir="${lib-kawautils.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${lib-kawautils.location}" inheritAll="false" target="build"/>
+        <ant antfile="build.xml" dir="${metro.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${metro.location}" inheritAll="false" target="build"/>
+        <ant antfile="build.xml" dir="${pulsar.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${pulsar.location}" inheritAll="false" target="build"/>
+        <ant antfile="build.xml" dir="${pulsar-gui.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${pulsar-gui.location}" inheritAll="false" target="build"/>
+    </target>
+</project>

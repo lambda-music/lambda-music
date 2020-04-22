@@ -22,7 +22,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Segment;
 
 import lamu.lib.evaluators.Evaluator;
-import lamu.lib.evaluators.SchemeValues;
+import lamu.lib.evaluators.EvaluatorUtils;
 import lamu.lib.log.Logger;
 
 public class KawapadContentAssist {
@@ -153,7 +153,7 @@ public class KawapadContentAssist {
                 System.err.println( "currentWord:" + currentWord );
             
             ArrayList<String> allKeys = 
-                    new ArrayList<>( SchemeValues.getAllKey( evaluator ) );
+                    new ArrayList<>( EvaluatorUtils.getAllKey( evaluator ) );
 
             ArrayList<String> keys = new ArrayList<>();
             for ( String key : allKeys ) {

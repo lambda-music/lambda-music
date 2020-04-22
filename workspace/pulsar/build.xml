@@ -6,35 +6,48 @@
               as the first entry and export the buildfile again. --><project basedir="." default="build" name="pulsar">
     <property environment="env"/>
     <property name="lamu.location" value="../lamu"/>
+    <property name="lib-lamu.location" value="../lib-lamu"/>
+    <property name="lib-loggerutils.location" value="../lib-loggerutils"/>
+    <property name="lib-kawautils.location" value="../lib-kawautils"/>
     <property name="lib.location" value="../lib"/>
     <property name="metro.location" value="../metro"/>
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.8"/>
     <property name="source" value="1.8"/>
-    <path id="lib.classpath">
-        <pathelement location="${lib.location}/bin"/>
-        <pathelement location="${lib.location}/lib/kawa.jar"/>
+    <path id="lib-loggerutils.classpath">
+        <pathelement location="${lib-loggerutils.location}/bin"/>
+    </path>
+    <path id="lib-lamu.classpath">
+        <pathelement location="${lib-lamu.location}/bin"/>
     </path>
     <path id="metro.classpath">
         <pathelement location="${metro.location}/bin"/>
-        <path refid="lib.classpath"/>
         <pathelement location="${metro.location}/lib/jna-4.5.0.jar"/>
         <pathelement location="${metro.location}/lib/jna-platform-4.5.0.jar"/>
         <pathelement location="${metro.location}/lib/jnajack-1.3.0.jar"/>
+        <path refid="lib-loggerutils.classpath"/>
+        <path refid="lib-lamu.classpath"/>
+    </path>
+    <path id="lib-kawautils.classpath">
+        <pathelement location="${lib-kawautils.location}/bin"/>
+        <pathelement location="${lib-kawautils.location}/lib/kawa.jar"/>
+        <path refid="lib-lamu.classpath"/>
+        <path refid="lib-loggerutils.classpath"/>
+    </path>
+    <path id="lib.classpath">
+        <pathelement location="${lib.location}/bin"/>
+        <path refid="lib-kawautils.classpath"/>
+        <path refid="lib-lamu.classpath"/>
+        <path refid="lib-loggerutils.classpath"/>
     </path>
     <path id="pulsar.classpath">
         <pathelement location="bin"/>
         <path refid="metro.classpath"/>
+        <path refid="lib-loggerutils.classpath"/>
+        <path refid="lib-lamu.classpath"/>
+        <path refid="lib-kawautils.classpath"/>
         <path refid="lib.classpath"/>
     </path>
-    <path id="run.PulsarLib.PulsarLibImplementation.PulsarLibCurrentValueImplementation.classpath">
-        <path refid="pulsar.classpath"/>
-    </path>
-    <path id="run.PulsarLib.PulsarLibImplementation.PulsarLibCurrentValueImplementation.bootclasspath"/>
-    <path id="run.PulsarMidiNoteListParsers.classpath">
-        <path refid="pulsar.classpath"/>
-    </path>
-    <path id="run.PulsarMidiNoteListParsers.bootclasspath"/>
     <target name="init">
         <mkdir dir="bin"/>
         <copy includeemptydirs="false" todir="bin">
@@ -52,11 +65,17 @@
         <delete dir="bin"/>
     </target>
     <target depends="clean" name="cleanall">
+        <ant antfile="build.xml" dir="${lib-lamu.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${lib-loggerutils.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${lib-kawautils.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${lib.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${metro.location}" inheritAll="false" target="clean"/>
     </target>
     <target depends="build-subprojects,build-project" name="build"/>
     <target name="build-subprojects">
+        <ant antfile="build.xml" dir="${lib-lamu.location}" inheritAll="false" target="build-project"/>
+        <ant antfile="build.xml" dir="${lib-loggerutils.location}" inheritAll="false" target="build-project"/>
+        <ant antfile="build.xml" dir="${lib-kawautils.location}" inheritAll="false" target="build-project"/>
         <ant antfile="build.xml" dir="${lib.location}" inheritAll="false" target="build-project"/>
         <ant antfile="build.xml" dir="${metro.location}" inheritAll="false" target="build-project"/>
     </target>
@@ -74,18 +93,12 @@
     </target>
     <target name="PulsarLib.PulsarLibImplementation.PulsarLibCurrentValueImplementation">
         <java classname="pulsar.PulsarLib$PulsarLibImplementation$PulsarLibCurrentValueImplementation" failonerror="true" fork="yes">
-            <classpath refid="run.PulsarLib.PulsarLibImplementation.PulsarLibCurrentValueImplementation.classpath"/>
-            <bootclasspath>
-                <path refid="run.PulsarLib.PulsarLibImplementation.PulsarLibCurrentValueImplementation.bootclasspath"/>
-            </bootclasspath>
+            <classpath refid="pulsar.classpath"/>
         </java>
     </target>
     <target name="PulsarMidiNoteListParsers">
         <java classname="pulsar.PulsarMidiNoteListParsers" failonerror="true" fork="yes">
-            <classpath refid="run.PulsarMidiNoteListParsers.classpath"/>
-            <bootclasspath>
-                <path refid="run.PulsarMidiNoteListParsers.bootclasspath"/>
-            </bootclasspath>
+            <classpath refid="pulsar.classpath"/>
         </java>
     </target>
 </project>

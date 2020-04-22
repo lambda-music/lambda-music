@@ -31,7 +31,7 @@ import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import lamu.lib.doc.LamuDocument;
-import lamu.lib.evaluators.InvokablyRunnable;
+import lamu.lib.evaluators.EvaluatorUtils;
 import lamu.lib.evaluators.SchemeValues;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.proc.MultipleNamedProcedureN;
@@ -150,7 +150,7 @@ public class PulsarGuiUtils {
         parent.add( c  );
     }
     public static void guiInvokeLater( Procedure procedure, Object ... args  ) {
-        SwingUtilities.invokeLater( InvokablyRunnable.createRunnableAndInvocable( procedure, args ) );
+        SwingUtilities.invokeLater( EvaluatorUtils.createRunnableAndInvocable( procedure, args ) );
     }
 
 

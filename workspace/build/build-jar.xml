@@ -15,8 +15,11 @@
             <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/metro/lib/jna-4.5.0.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/metro/lib/jna-platform-4.5.0.jar"/>
             <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/metro/lib/jnajack-1.3.0.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/lib/lib/kawa.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/lib-kawautils/lib/kawa.jar"/>
             <fileset dir="${dir.workspace}/lib/bin"/>
+            <fileset dir="${dir.workspace}/lib-lamu/bin"/>
+            <fileset dir="${dir.workspace}/lib-kawautils/bin"/>
+            <fileset dir="${dir.workspace}/lib-loggerutils/bin"/>
             <fileset dir="${dir.workspace}/kawapad/bin"/>
             <fileset dir="${dir.workspace}/metro/bin"/>
             <fileset dir="${dir.workspace}/pulsar/bin"/>

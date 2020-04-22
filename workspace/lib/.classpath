@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="src.evaluators"/>
 	<classpathentry kind="src" path="src.args"/>
+	<classpathentry kind="src" path="src.evaluators"/>
 	<classpathentry kind="src" path="src.help"/>
 	<classpathentry kind="src" path="src.procs"/>
-	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry exported="true" kind="lib" path="lib/kawa.jar" sourcepath="lib/kawa-3.0-src.zip"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/lib-kawautil"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/lib-kawautils"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/lib-lamu"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/lib-loggerutils"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
