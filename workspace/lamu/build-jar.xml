@@ -19,7 +19,7 @@
             <fileset dir="${dir.workspace}/lib-args/bin"/>
             <fileset dir="${dir.workspace}/lib-evaluators/bin"/>
             <fileset dir="${dir.workspace}/lib-kawautils/bin"/>
-            <fileset dir="${dir.workspace}/lib-lamu/bin"/>
+            <fileset dir="${dir.workspace}/lib-lamucommons/bin"/>
             <fileset dir="${dir.workspace}/lib-loggerutils/bin"/>
             <fileset dir="${dir.workspace}/kawapad/bin"/>
             <fileset dir="${dir.workspace}/lamu/bin"/>

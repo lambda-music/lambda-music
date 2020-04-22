@@ -6,7 +6,7 @@
               as the first entry and export the buildfile again. --><project basedir="." default="build" name="lib-deprecated">
     <property environment="env"/>
     <property name="lib-loggerutils.location" value="../lib-loggerutils"/>
-    <property name="lib-lamu.location" value="../lib-lamu"/>
+    <property name="lib-lamucommons.location" value="../lib-lamucommons"/>
     <property name="lib-kawautils.location" value="../lib-kawautils"/>
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.8"/>
@@ -14,20 +14,20 @@
     <path id="lib-loggerutils.classpath">
         <pathelement location="${lib-loggerutils.location}/bin"/>
     </path>
-    <path id="lib-lamu.classpath">
-        <pathelement location="${lib-lamu.location}/bin"/>
+    <path id="lib-lamucommons.classpath">
+        <pathelement location="${lib-lamucommons.location}/bin"/>
         <path refid="lib-loggerutils.classpath"/>
     </path>
     <path id="lib-kawautils.classpath">
         <pathelement location="${lib-kawautils.location}/lib/kawa.jar"/>
         <pathelement location="${lib-kawautils.location}/bin"/>
-        <path refid="lib-lamu.classpath"/>
+        <path refid="lib-lamucommons.classpath"/>
         <path refid="lib-loggerutils.classpath"/>
     </path>
     <path id="lib-deprecated.classpath">
         <pathelement location="bin"/>
         <path refid="lib-kawautils.classpath"/>
-        <path refid="lib-lamu.classpath"/>
+        <path refid="lib-lamucommons.classpath"/>
         <path refid="lib-loggerutils.classpath"/>
     </path>
     <target name="init">
@@ -56,13 +56,13 @@
     </target>
     <target depends="clean" name="cleanall">
         <ant antfile="build.xml" dir="${lib-loggerutils.location}" inheritAll="false" target="clean"/>
-        <ant antfile="build.xml" dir="${lib-lamu.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${lib-lamucommons.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${lib-kawautils.location}" inheritAll="false" target="clean"/>
     </target>
     <target depends="build-subprojects,build-project" name="build"/>
     <target name="build-subprojects">
         <ant antfile="build.xml" dir="${lib-loggerutils.location}" inheritAll="false" target="build-project"/>
-        <ant antfile="build.xml" dir="${lib-lamu.location}" inheritAll="false" target="build-project"/>
+        <ant antfile="build.xml" dir="${lib-lamucommons.location}" inheritAll="false" target="build-project"/>
         <ant antfile="build.xml" dir="${lib-kawautils.location}" inheritAll="false" target="build-project"/>
     </target>
     <target depends="init" name="build-project">

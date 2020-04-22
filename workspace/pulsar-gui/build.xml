@@ -7,7 +7,7 @@
     <property environment="env"/>
     <property name="lamu.location" value="../lamu"/>
     <property name="lib-loggerutils.location" value="../lib-loggerutils"/>
-    <property name="lib-lamu.location" value="../lib-lamu"/>
+    <property name="lib-lamucommons.location" value="../lib-lamucommons"/>
     <property name="lib-kawautils.location" value="../lib-kawautils"/>
     <property name="lib-evaluators.location" value="../lib-evaluators"/>
     <property name="kawapad.location" value="../kawapad"/>
@@ -17,33 +17,33 @@
     <path id="lib-loggerutils.classpath">
         <pathelement location="${lib-loggerutils.location}/bin"/>
     </path>
-    <path id="lib-lamu.classpath">
-        <pathelement location="${lib-lamu.location}/bin"/>
+    <path id="lib-lamucommons.classpath">
+        <pathelement location="${lib-lamucommons.location}/bin"/>
         <path refid="lib-loggerutils.classpath"/>
     </path>
     <path id="lib-kawautils.classpath">
         <pathelement location="${lib-kawautils.location}/lib/kawa.jar"/>
         <pathelement location="${lib-kawautils.location}/bin"/>
-        <path refid="lib-lamu.classpath"/>
+        <path refid="lib-lamucommons.classpath"/>
         <path refid="lib-loggerutils.classpath"/>
     </path>
     <path id="lib-evaluators.classpath">
         <pathelement location="${lib-evaluators.location}/bin"/>
         <path refid="lib-kawautils.classpath"/>
-        <path refid="lib-lamu.classpath"/>
+        <path refid="lib-lamucommons.classpath"/>
         <path refid="lib-loggerutils.classpath"/>
     </path>
     <path id="kawapad.classpath">
         <pathelement location="${kawapad.location}/bin"/>
         <path refid="lib-kawautils.classpath"/>
-        <path refid="lib-lamu.classpath"/>
         <path refid="lib-loggerutils.classpath"/>
         <path refid="lib-evaluators.classpath"/>
+        <path refid="lib-lamucommons.classpath"/>
     </path>
     <path id="pulsar-gui.classpath">
         <pathelement location="bin"/>
         <path refid="kawapad.classpath"/>
-        <path refid="lib-lamu.classpath"/>
+        <path refid="lib-lamucommons.classpath"/>
         <path refid="lib-loggerutils.classpath"/>
         <path refid="lib-kawautils.classpath"/>
         <path refid="lib-evaluators.classpath"/>
@@ -62,7 +62,7 @@
     </target>
     <target depends="clean" name="cleanall">
         <ant antfile="build.xml" dir="${lib-loggerutils.location}" inheritAll="false" target="clean"/>
-        <ant antfile="build.xml" dir="${lib-lamu.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${lib-lamucommons.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${lib-kawautils.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${lib-evaluators.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${kawapad.location}" inheritAll="false" target="clean"/>
@@ -70,7 +70,7 @@
     <target depends="build-subprojects,build-project" name="build"/>
     <target name="build-subprojects">
         <ant antfile="build.xml" dir="${lib-loggerutils.location}" inheritAll="false" target="build-project"/>
-        <ant antfile="build.xml" dir="${lib-lamu.location}" inheritAll="false" target="build-project"/>
+        <ant antfile="build.xml" dir="${lib-lamucommons.location}" inheritAll="false" target="build-project"/>
         <ant antfile="build.xml" dir="${lib-kawautils.location}" inheritAll="false" target="build-project"/>
         <ant antfile="build.xml" dir="${lib-evaluators.location}" inheritAll="false" target="build-project"/>
         <ant antfile="build.xml" dir="${kawapad.location}" inheritAll="false" target="build-project"/>

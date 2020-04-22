@@ -5,7 +5,7 @@
 	<classpathentry kind="src" path="src.kawautils"/>
 	<classpathentry kind="src" path="src.helps"/>
 	<classpathentry kind="src" path="src.helps-kawa"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/lib-lamu"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/lib-lamucommons"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/lib-loggerutils"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

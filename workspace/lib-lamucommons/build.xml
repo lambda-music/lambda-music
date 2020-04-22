@@ -3,7 +3,7 @@
               Any modifications will be overwritten.
               To include a user specific buildfile here, simply create one in the same
               directory with the processing instruction <?eclipse.ant.import?>
-              as the first entry and export the buildfile again. --><project basedir="." default="build" name="lib-lamu">
+              as the first entry and export the buildfile again. --><project basedir="." default="build" name="lib-lamucommons">
     <property environment="env"/>
     <property name="kawapad.location" value="../kawapad"/>
     <property name="lamu.location" value="../lamu"/>
@@ -21,7 +21,7 @@
     <path id="lib-loggerutils.classpath">
         <pathelement location="${lib-loggerutils.location}/bin"/>
     </path>
-    <path id="lib-lamu.classpath">
+    <path id="lib-lamucommons.classpath">
         <pathelement location="bin"/>
         <path refid="lib-loggerutils.classpath"/>
     </path>
@@ -62,7 +62,7 @@
             <src path="src.commons"/>
             <src path="src.apps"/>
             <src path="src.streams"/>
-            <classpath refid="lib-lamu.classpath"/>
+            <classpath refid="lib-lamucommons.classpath"/>
         </javac>
     </target>
     <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects">
@@ -87,7 +87,7 @@
     </target>
     <target name="ForkedProcess">
         <java classname="lamu.lib.app.process.ForkedProcess" failonerror="true" fork="yes">
-            <classpath refid="lib-lamu.classpath"/>
+            <classpath refid="lib-lamucommons.classpath"/>
         </java>
     </target>
 </project>
