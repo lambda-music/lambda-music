@@ -11,7 +11,7 @@ import javax.swing.text.AttributeSet;
 
 import gnu.lists.LList;
 import lamu.lib.evaluators.SchemeResult;
-import lamu.lib.evaluators.SchemeUtils;
+import lamu.lib.evaluators.SchemeValues;
 
 public class KawapadSyntaxHighlighter extends SyntaxHighlighter {
     private static final boolean DEBUG=false;
@@ -36,7 +36,7 @@ public class KawapadSyntaxHighlighter extends SyntaxHighlighter {
         super( kawapad );
         this.kawapad = kawapad;
     }
-    
+
     /**
      * CAUTION : THIS METHOD IS NOT TESTED SINCE THIS METHOD WAS MODIFED TO USE evaluate() METHOD. 
      * @return
@@ -56,11 +56,14 @@ public class KawapadSyntaxHighlighter extends SyntaxHighlighter {
             
             result.throwIfError();
             
-            List<String> keywordList =
-                    new ArrayList<> (
-                            SchemeUtils.convertList( 
-                                new ArrayList<>( (LList)result.getValue() ),
-                                (v)->SchemeUtils.anyToString( v ) ) );
+//            List<String> keywordList =
+//                    new ArrayList<> (
+//                            SchemeUtils.convertList( 
+//                                new ArrayList<>( (LList)result.getValue() ),
+//                                (v)->SchemeUtils.anyToString( v ) ) );
+            List<String> keywordList = 
+                new ArrayList<>(
+                    SchemeValues.toStringList((LList)result.getValue()));
             
             // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
             keywordList.addAll( kawapad.lispKeywordList );

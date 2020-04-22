@@ -70,7 +70,7 @@ import gnu.lists.LList;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import lamu.lib.evaluators.InvokablyRunnable;
-import lamu.lib.evaluators.SchemeUtils;
+import lamu.lib.evaluators.SchemeValues;
 import lamu.lib.log.Logger;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
@@ -206,7 +206,7 @@ public class PulsarSpecialNoteListParsers {
         return "`" + s + "`";
     }
     static String code( Symbol s ) {
-        return "`" + SchemeUtils.schemeSymbolToJavaString( s ) + "`";
+        return "`" + SchemeValues.toString(s) + "`";
     }
     
     static final String ABOUT_MEASURE_LENGTH = "The number should be a real number which unit is a measure length. ";
@@ -576,7 +576,7 @@ public class PulsarSpecialNoteListParsers {
                         synchronized ( metro.getMetroLock() ) {
                             try {
                                 for ( Object v : argTrackList ) {
-                                    v = SchemeUtils.schemeNullCheck(v);
+                                    v = SchemeValues.schemeNullCheck(v);
                                     
                                     List<MetroTrack> trackList=null;
                                     // I think this is not correct anymore. 

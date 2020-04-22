@@ -13,7 +13,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.function.Function;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
@@ -30,7 +32,7 @@ import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import lamu.lib.doc.LamuDocument;
 import lamu.lib.evaluators.InvokablyRunnable;
-import lamu.lib.evaluators.SchemeUtils;
+import lamu.lib.evaluators.SchemeValues;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.proc.MultipleNamedProcedureN;
 
@@ -179,7 +181,7 @@ public class PulsarGuiUtils {
     //
     public static void guiLayout_auto( Container container, Object[] args ) {
         ArrayList<Object> argList = new ArrayList<>( Arrays.asList(args) );
-        String    type = 0 < argList.size() ? SchemeUtils.schemeSymbolToJavaString( argList.remove(0) ) : "default";
+        String    type = 0 < argList.size() ? SchemeValues.toString( argList.remove(0) ) : "default";
         guiLayout( container, type, argList.toArray() );
     }
     public static void guiLayout( Container container, String type, Object ... args  ) {
@@ -247,7 +249,7 @@ public class PulsarGuiUtils {
         for ( int i=1; i<args.length; i++ ) {
             Object curr = args[i];
             if ( curr instanceof Symbol ) {
-                String symbolName = SchemeUtils.schemeSymbolToJavaString( curr );
+                String symbolName = SchemeValues.toString( curr );
 
                 if ( "name".equals( mode ) ) {
                     guiName( parent, symbolName );
@@ -281,11 +283,11 @@ public class PulsarGuiUtils {
                     guiAdd( parent,(Component)
                         SchemeNewFactory.process(
                             Symbol.makeUninterned("label"), 
-                            SchemeUtils.anyToString( curr ) ) );
+                            SchemeValues.anyToString( curr ) ) );
 
                     mode = null;
                 } else if ( "name".equals( mode ) ) {
-                    guiName( parent, SchemeUtils.toString( curr ) ); 
+                    guiName( parent, SchemeValues.toString( curr ) ); 
                     mode = null;
                 } else if ( "constraint".equals( mode ) ) {
                     guiConstraint( parent,  curr ); 
@@ -307,7 +309,7 @@ public class PulsarGuiUtils {
                         if ( cdr instanceof Pair ) {
                             guiAdd( parent, (Component)car, LayoutUtils.map2constraint( cdr ) );
                         } else {
-                            guiAdd( parent, (Component)car, SchemeUtils.toString( cdr ) );
+                            guiAdd( parent, (Component)car, SchemeValues.toString( cdr ) );
                         }
                     }
                 } else {
@@ -341,10 +343,10 @@ public class PulsarGuiUtils {
                 if ( "label".equals( mode ) ) {
                     guiAdd( parent, (Component)SchemeNewFactory.process(
                         Symbol.makeUninterned("label"), 
-                        SchemeUtils.anyToString( curr )));
+                        SchemeValues.anyToString( curr )));
                     mode = null;
                 } else if ( "name".equals( mode ) ) {
-                    guiName( parent, SchemeUtils.toString( curr ) ); 
+                    guiName( parent, SchemeValues.toString( curr ) ); 
                     mode = null;
                 } else if ( "constraint".equals( mode ) ) {
                     guiConstraint( parent,  curr ); 
@@ -356,17 +358,17 @@ public class PulsarGuiUtils {
                     guiNextProcedure( parent, (Procedure) curr );
                     mode = null;
                 } else if ( "index".equals( mode ) ) {
-                    guiNextIndex( parent, SchemeUtils.toInteger( curr ) );
+                    guiNextIndex( parent, SchemeValues.toInteger( curr ) );
                     mode = null;
                 } else if ( "index-from-last".equals( mode ) ) {
-                    guiNextIndex( parent, parent.getComponentCount() - SchemeUtils.toInteger( curr )  );
+                    guiNextIndex( parent, parent.getComponentCount() - SchemeValues.toInteger( curr )  );
                     mode = null;
                 } else if ( "remove".equals( mode ) ) {
                     guiRemoveByRef( parent, (Component)curr);
                     mode = null;
                 } else {
                     if ( curr instanceof Symbol ) {
-                        String symbolName = SchemeUtils.schemeSymbolToJavaString( curr );
+                        String symbolName = SchemeValues.toString( curr );
                         switch ( symbolName ) {
                         case "newline" : 
                             guiNewline( parent );
@@ -515,18 +517,22 @@ public class PulsarGuiUtils {
         parent.repaint();;
     }
 
+    public static <P,T> List<T> convertList(List<P> list, Function<P,T> f) {
+        return list.stream().map(f).collect(Collectors.toList());
+    }
+
     public static void initScheme( Environment env ) {
         logInfo("PulsarGui#initStaticScheme=======================================");
 
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-pack" ) {
+        SchemeValues.defineLambda( env, new MultipleNamedProcedureN( "gui-pack" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 guiPack();
-                return SchemeUtils.NO_RESULT;
+                return SchemeValues.NO_RESULT;
             }
         });
 
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-new" ) {
+        SchemeValues.defineLambda( env, new MultipleNamedProcedureN( "gui-new" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 //              try {
@@ -539,14 +545,14 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-parent" ) {
+        SchemeValues.defineLambda( env, new MultipleNamedProcedureN( "gui-parent" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 if ( 1 <= args.length ) {
                     ArrayDeque<Object> argList = new ArrayDeque<>( Arrays.asList(args) );
-                    Component component = (Component) SchemeUtils.schemeNullCheck(argList.pop());
+                    Component component = (Component) SchemeValues.schemeNullCheck(argList.pop());
                     Container parent = component.getParent();
-                    return SchemeUtils.javaNullCheck( parent );
+                    return SchemeValues.javaNullCheck( parent );
                 } else {
                     throw new RuntimeException( 
                         "Invalid argument error\n"+
@@ -555,14 +561,14 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-remove-all" ) {
+        SchemeValues.defineLambda( env, new MultipleNamedProcedureN( "gui-remove-all" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 if ( 1 <= args.length ) {
                     ArrayDeque<Object> argList = new ArrayDeque<>( Arrays.asList(args) );
-                    Container parent = (Container) SchemeUtils.schemeNullCheck(argList.pop());
+                    Container parent = (Container) SchemeValues.schemeNullCheck(argList.pop());
                     guiRemoveAll(parent);
-                    return SchemeUtils.NO_RESULT;
+                    return SchemeValues.NO_RESULT;
                 } else {
                     throw new RuntimeException( 
                         "Invalid argument error\n"+
@@ -571,14 +577,14 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-remove-by-ref" ) {
+        SchemeValues.defineLambda( env, new MultipleNamedProcedureN( "gui-remove-by-ref" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 if ( 1 < args.length ) {
                     ArrayDeque<Object> argList = new ArrayDeque<>( Arrays.asList(args) );
-                    Container parent = (Container) SchemeUtils.schemeNullCheck(argList.pop());
+                    Container parent = (Container) SchemeValues.schemeNullCheck(argList.pop());
                     guiRemoveByRef( parent, argList );
-                    return SchemeUtils.NO_RESULT;
+                    return SchemeValues.NO_RESULT;
                 } else {
                     throw new RuntimeException( 
                         "Invalid argument error\n"+
@@ -587,17 +593,15 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-remove-by-name" ) {
+        SchemeValues.defineLambda( env, new MultipleNamedProcedureN( "gui-remove-by-name" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 if ( 1 < args.length ) {
                     ArrayList<Object> argList = new ArrayList<>( Arrays.asList(args) );
-                    Container parent = (Container) SchemeUtils.schemeNullCheck(argList.remove(0) );
-                    List<String> path = SchemeUtils.convertList(argList, (o)->{
-                        return SchemeUtils.toString(o);
-                    });
+                    Container parent = (Container) SchemeValues.schemeNullCheck(argList.remove(0) );
+                    List<String> path = SchemeValues.toStringList(argList);
                     Component c  = guiRemoveByPath( parent, path );
-                    return SchemeUtils.javaNullCheck(c);
+                    return SchemeValues.javaNullCheck(c);
                 } else {
                     throw new RuntimeException( 
                         "Invalid argument error\n"+
@@ -605,7 +609,7 @@ public class PulsarGuiUtils {
                 }
             }
         });
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-invoke-later" ) {
+        SchemeValues.defineLambda( env, new MultipleNamedProcedureN( "gui-invoke-later" ) {
             @Override
             public Object applyN( Object[] args ) throws Throwable {
                 guiInvokeLater( (Procedure) args[0], Arrays.copyOfRange(args, 1, args.length ) );
@@ -613,27 +617,28 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-get" ) {
+        
+        SchemeValues.defineLambda( env, new MultipleNamedProcedureN( "gui-get" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 if ( 1 == args.length ) {
                     Container parent = (Container) args[0];
                     List<Entry<String, Component>> list =  guiListAll(parent);
-                    SchemeUtils.<Entry<String, Component>, Pair>convertList(list, (e)->{
+                    convertList(list, (e)->{
                         String key = e.getKey();
                         return Pair.make(
-                            ( key == null ? false : SchemeUtils.toSchemeSymbol( key ) ) , e.getValue() );
+                            ( key == null ? false : SchemeValues.toSchemeSymbol( key ) ) , e.getValue() );
                     });
                     return Pair.makeList( (List)list );
                 } else if ( 1 < args.length ) {
                     ArrayList<Object> argList = new ArrayList<>( Arrays.asList(args) );
-                    Container parent = (Container) SchemeUtils.schemeNullCheck(argList.remove(0));
-                    List<String> path = SchemeUtils.convertList(argList, (o)->{
-                        return SchemeUtils.toString(o);
+                    Container parent = (Container) SchemeValues.schemeNullCheck(argList.remove(0));
+                    List<String> path = convertList(argList, (o)->{
+                        return SchemeValues.toString(o);
                     });
 
                     Component c  = guiGet( parent, path );
-                    return SchemeUtils.javaNullCheck(c);
+                    return SchemeValues.javaNullCheck(c);
                 } else {
                     throw new RuntimeException( 
                         "Invalid argument error\n"+
@@ -643,7 +648,7 @@ public class PulsarGuiUtils {
         });
 
 
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-set-selected" ) {
+        SchemeValues.defineLambda( env, new MultipleNamedProcedureN( "gui-set-selected" ) {
             public Object applyN(Object[] args) throws Throwable {
                 if ( 3 == args.length ) {
                     JSelectableUserObject parent = (JSelectableUserObject) args[0];
@@ -651,7 +656,7 @@ public class PulsarGuiUtils {
                     boolean selected  = (Boolean)args[2];
 
                     int count = parent.setSelectedByUserObject(userObject, selected);
-                    return SchemeUtils.toSchemeNumber( count ); 
+                    return SchemeValues.toSchemeNumber( count ); 
                 } else {
                     throw new RuntimeException( 
                         "Invalid argument error\n"+
@@ -661,11 +666,11 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-set-text" ) {
+        SchemeValues.defineLambda( env, new MultipleNamedProcedureN( "gui-set-text" ) {
             public Object applyN(Object[] args) throws Throwable {
                 if ( 2 == args.length ) {
                     JTextComponent parent = (JTextComponent) args[0];
-                    String userText = SchemeUtils.anyToString( args[1] );
+                    String userText = SchemeValues.anyToString( args[1] );
                     parent.setText( userText );
                     return parent; 
                 } else {
@@ -679,7 +684,7 @@ public class PulsarGuiUtils {
         /**
          * (gui-get-user-object (gui-get (part1 'gui) 'self) )
          */
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-set-user-object" ) {
+        SchemeValues.defineLambda( env, new MultipleNamedProcedureN( "gui-set-user-object" ) {
             public Object applyN(Object[] args) throws Throwable {
                 if ( 2 == args.length ) {
                     JPulsarUserObject parent = (JPulsarUserObject) args[0];
@@ -694,7 +699,7 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-get-user-object" ) {
+        SchemeValues.defineLambda( env, new MultipleNamedProcedureN( "gui-get-user-object" ) {
             public Object applyN(Object[] args) throws Throwable {
                 if ( 1 == args.length ) {
                     JPulsarUserObject parent = (JPulsarUserObject) args[0];
@@ -707,7 +712,7 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-build" ) {
+        SchemeValues.defineLambda( env, new MultipleNamedProcedureN( "gui-build" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 return guiBuild( args );
@@ -725,7 +730,7 @@ public class PulsarGuiUtils {
                 + "More description is comming now." );
         }};
 
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-newline" ) {
+        SchemeValues.defineLambda( env, new MultipleNamedProcedureN( "gui-newline" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo("newline-gui");
@@ -734,7 +739,7 @@ public class PulsarGuiUtils {
                 else
                     guiNewline( (JComponent) args[0]);
 
-                return SchemeUtils.NO_RESULT;
+                return SchemeValues.NO_RESULT;
             }
         });
 
@@ -747,7 +752,7 @@ public class PulsarGuiUtils {
         //          }
         //      });
 
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-layout" ) {
+        SchemeValues.defineLambda( env, new MultipleNamedProcedureN( "gui-layout" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo( "gui-layout" );
@@ -757,7 +762,7 @@ public class PulsarGuiUtils {
                 } else {
                     ArrayList<Object> argList = new ArrayList<>( Arrays.asList(args) );
                     Container container = 0 < argList.size() ? (Container) argList.remove(0) : null;
-                    String    type      = 0 < argList.size() ? SchemeUtils.schemeSymbolToJavaString( argList.remove(0) ) : "default";
+                    String    type      = 0 < argList.size() ? SchemeValues.toString(argList.remove(0)) : "default";
                     if ( container instanceof JFrame ){
                         container = ((JFrame)container).getContentPane();
                     }
@@ -768,7 +773,7 @@ public class PulsarGuiUtils {
             }
         });
 
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-gridbag-layout" ) {
+        SchemeValues.defineLambda( env, new MultipleNamedProcedureN( "gui-gridbag-layout" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo( "gui-gridbag-layout" );
@@ -776,12 +781,12 @@ public class PulsarGuiUtils {
                     throw new IllegalArgumentException( "an insufficient number of arguments" );
                 } else {
                     guiGridBagLayout((Container)args[0]);
-                    return SchemeUtils.NO_RESULT;
+                    return SchemeValues.NO_RESULT;
                 }
             }
         });
 
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-spring-layout" ) {
+        SchemeValues.defineLambda( env, new MultipleNamedProcedureN( "gui-spring-layout" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo( "gui-spring-layout" );
@@ -789,22 +794,22 @@ public class PulsarGuiUtils {
                     throw new IllegalArgumentException( "an insufficient number of arguments" );
 
                 guiSpringLayout((Container)args[0]);
-                return SchemeUtils.NO_RESULT;
+                return SchemeValues.NO_RESULT;
             }
         });
 
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-flow-layout" ) {
+        SchemeValues.defineLambda( env, new MultipleNamedProcedureN( "gui-flow-layout" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo( "gui-flow-layout" );
                 if ( args.length < 1 )
                     throw new IllegalArgumentException( "an insufficient number of arguments" );
                 guiFlowLayout((Container)args[0]);
-                return SchemeUtils.NO_RESULT;
+                return SchemeValues.NO_RESULT;
             }
         });
 
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-put-constraint" ) {
+        SchemeValues.defineLambda( env, new MultipleNamedProcedureN( "gui-put-constraint" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 logInfo("refresh-gui");
@@ -818,39 +823,39 @@ public class PulsarGuiUtils {
                     throw new RuntimeException( "put-constraint has five parameters( constraint1 component1 pad constraint2 component2  )." );
                 }
                 guiRepaint(userPane);
-                return SchemeUtils.NO_RESULT;
+                return SchemeValues.NO_RESULT;
             }
         });
 
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-invalidate" ) {
+        SchemeValues.defineLambda( env, new MultipleNamedProcedureN( "gui-invalidate" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 guiInvalidate((Container) args[0] );
-                return SchemeUtils.NO_RESULT;
+                return SchemeValues.NO_RESULT;
             }
         });
 
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-validate" ) {
+        SchemeValues.defineLambda( env, new MultipleNamedProcedureN( "gui-validate" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 guiValidate((Container) args[0] );
-                return SchemeUtils.NO_RESULT;
+                return SchemeValues.NO_RESULT;
             }
         });
 
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-revalidate" ) {
+        SchemeValues.defineLambda( env, new MultipleNamedProcedureN( "gui-revalidate" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 guiRevalidate((Container) args[0] );
-                return SchemeUtils.NO_RESULT;
+                return SchemeValues.NO_RESULT;
             }
         });
 
-        SchemeUtils.defineLambda( env, new MultipleNamedProcedureN( "gui-repaint" ) {
+        SchemeValues.defineLambda( env, new MultipleNamedProcedureN( "gui-repaint" ) {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 guiRepaint((Container) args[0] );
-                return SchemeUtils.NO_RESULT;
+                return SchemeValues.NO_RESULT;
             }
         });
 

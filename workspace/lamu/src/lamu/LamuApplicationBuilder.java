@@ -31,7 +31,6 @@ import lamu.lib.evaluators.Evaluator;
 import lamu.lib.evaluators.MultiplexEvaluator;
 import lamu.lib.evaluators.RemoteEvaluator;
 import lamu.lib.evaluators.SchemeEvaluator;
-import lamu.lib.evaluators.SchemeUtils;
 import lamu.lib.evaluators.StreamEvaluator;
 import lamu.lib.evaluators.http.SchemeHttp;
 import lamu.lib.evaluators.http.SchemeHttp.UserAuthentication;
@@ -470,7 +469,7 @@ public class LamuApplicationBuilder extends ArgsCommandBuild {
                                         scriptStringList.add( "; " );
                                         scriptStringList.add( "; " + fileName );
                                         scriptStringList.add( "; " );
-                                        scriptStringList.addAll( ArgsQuotedStringSplitter.splitLines(SchemeUtils.readAllAsString( fileName )) );
+                                        scriptStringList.addAll( ArgsQuotedStringSplitter.splitLines( Utils.readAllAsString( fileName )));
                                         scriptStringList.add( " " );
                                     } catch (IOException e) {
                                         throw new Error(e);

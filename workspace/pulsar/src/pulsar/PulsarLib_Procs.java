@@ -13,7 +13,7 @@ import gnu.math.DFloNum;
 import lamu.lib.MersenneTwisterFast;
 import lamu.lib.doc.LamuDocument;
 import lamu.lib.evaluators.Invokable;
-import lamu.lib.evaluators.SchemeUtils;
+import lamu.lib.evaluators.SchemeValues;
 import lamu.lib.scheme.proc.MultipleNamedProcedure0;
 import lamu.lib.scheme.proc.MultipleNamedProcedure1;
 import lamu.lib.scheme.proc.MultipleNamedProcedureN;
@@ -39,7 +39,7 @@ public class PulsarLib_Procs {
                     position = track.getTrackPosition();
                 }
                 
-                return SchemeUtils.toSchemeNumber( position );
+                return SchemeValues.toSchemeNumber( position );
             }
         }
     }
@@ -75,7 +75,7 @@ public class PulsarLib_Procs {
                 out.flush();
                 String value = new String( bout.toByteArray(), Charset.defaultCharset() );
                 value = Pattern.compile( "^\\s+", Pattern.MULTILINE ).matcher( value ).replaceAll( "" );
-                return SchemeUtils.toSchemeString( value ) ;
+                return SchemeValues.toSchemeString( value ) ;
             } finally {
                 if ( bout != null )
                     bout.close();
@@ -163,11 +163,11 @@ public class PulsarLib_Procs {
         public Object applyN(Object[] args) throws Throwable {
             if ( 0 < args.length  ) {
                 if ( args[0] == null ) 
-                    return SchemeUtils.toSchemeString( "null" );
+                    return SchemeValues.toSchemeString( "null" );
                 else
-                    return SchemeUtils.toSchemeString( args[0].getClass().getName() );
+                    return SchemeValues.toSchemeString( args[0].getClass().getName() );
             } else {
-                return SchemeUtils.NO_RESULT;
+                return SchemeValues.NO_RESULT;
             }
         }
     }
@@ -302,13 +302,13 @@ public class PulsarLib_Procs {
                 case 0 :
                     return DFloNum.valueOf( random.nextDouble() );
                 case 1 : {
-                    double range = SchemeUtils.toDouble( args[0] );
+                    double range = SchemeValues.toDouble( args[0] );
                     return DFloNum.valueOf( random.nextDouble() * range );
                 }
                 default :
                 {
-                    double rangeMin = SchemeUtils.toDouble( args[0] );
-                    double rangeMax = SchemeUtils.toDouble( args[1] );
+                    double rangeMin = SchemeValues.toDouble( args[0] );
+                    double rangeMax = SchemeValues.toDouble( args[1] );
                     double range    = rangeMax - rangeMin;
 
                     return DFloNum.valueOf( random.nextDouble() * range + rangeMin );
@@ -349,7 +349,7 @@ public class PulsarLib_Procs {
         @Override
         public Object applyN(Object[] args) throws Throwable {
             synchronized ( random ) {
-                double probability = args.length == 0 ? 0.5 : SchemeUtils.toDouble( args[0] );
+                double probability = args.length == 0 ? 0.5 : SchemeValues.toDouble( args[0] );
                 if ( probability < 0 ) return false;
                 if ( 1.0<=probability  ) return true;
                 return random.nextBoolean( probability );
@@ -367,17 +367,17 @@ public class PulsarLib_Procs {
      */
     
     public static void initScheme( Environment env ) {
-        SchemeUtils.defineLambda( env, getTrackPositionProc );
-        SchemeUtils.defineLambda( env, printStackTraceProc);
-        SchemeUtils.defineLambda( env, displayWarnProc);
-        SchemeUtils.defineLambda( env, newlineWarnProc);
-        SchemeUtils.defineLambda( env, typeofProc);
-        SchemeUtils.defineLambda( env, isTrackProc);
-        SchemeUtils.defineLambda( env, trackToProcedureProc);
-        SchemeUtils.defineLambda( env, applyTrackProc);
-        SchemeUtils.defineLambda( env, readTrackProc);
-        SchemeUtils.defineLambda( env, randomProc);
-        SchemeUtils.defineLambda( env, luckProc);
+        SchemeValues.defineLambda( env, getTrackPositionProc );
+        SchemeValues.defineLambda( env, printStackTraceProc);
+        SchemeValues.defineLambda( env, displayWarnProc);
+        SchemeValues.defineLambda( env, newlineWarnProc);
+        SchemeValues.defineLambda( env, typeofProc);
+        SchemeValues.defineLambda( env, isTrackProc);
+        SchemeValues.defineLambda( env, trackToProcedureProc);
+        SchemeValues.defineLambda( env, applyTrackProc);
+        SchemeValues.defineLambda( env, readTrackProc);
+        SchemeValues.defineLambda( env, randomProc);
+        SchemeValues.defineLambda( env, luckProc);
         PulsarLib_Notes.initScheme( env, PulsarNoteListParser.getInstance() );
     }
 }

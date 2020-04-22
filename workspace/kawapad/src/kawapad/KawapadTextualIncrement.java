@@ -19,7 +19,7 @@ import javax.swing.text.TextAction;
 import gnu.mapping.Environment;
 import gnu.mapping.Symbol;
 import gnu.mapping.Values;
-import lamu.lib.evaluators.SchemeUtils;
+import lamu.lib.evaluators.SchemeValues;
 import lamu.lib.scheme.proc.MultipleNamedProcedure0;
 import lamu.lib.scheme.proc.MultipleNamedProcedure1;
 import lamu.lib.scheme.proc.MultipleNamedProcedure2;
@@ -48,21 +48,21 @@ public class KawapadTextualIncrement implements MenuInitializer {
             @Override
             public Object apply2(Object arg1, Object arg2) throws Throwable {
                 getCurrent().addIncrementalSymbol( 
-                    SchemeUtils.anyToString( arg1 ),
-                    SchemeUtils.anyToString( arg2 ));
+                    SchemeValues.anyToString( arg1 ),
+                    SchemeValues.anyToString( arg2 ));
                 return Values.empty;
             }
         };
-        SchemeUtils.defineLambda( env, addIncrementalKeyword);
+        SchemeValues.defineLambda( env, addIncrementalKeyword);
         MultipleNamedProcedure1 deleteIncrementalKeyword = new MultipleNamedProcedure1("delete-incremental-keyword") {
             @Override
             public Object apply1(Object arg1) throws Throwable {
                 getCurrent().deleteIncrementalSymbol( 
-                    SchemeUtils.anyToString( arg1 ));
+                    SchemeValues.anyToString( arg1 ));
                 return Values.empty;
             }
         };
-        SchemeUtils.defineLambda( env, deleteIncrementalKeyword);
+        SchemeValues.defineLambda( env, deleteIncrementalKeyword);
         MultipleNamedProcedure0 clearIncrementalKeyword = new MultipleNamedProcedure0("clear-incremental-keyword") {
             @Override
             public Object apply0() throws Throwable {
@@ -70,7 +70,7 @@ public class KawapadTextualIncrement implements MenuInitializer {
                 return Values.empty;
             }
         };
-        SchemeUtils.defineLambda( env, clearIncrementalKeyword);
+        SchemeValues.defineLambda( env, clearIncrementalKeyword);
     }
     
     public static final String TEXTUAL_INCREMENT = "textual-increment-action";
@@ -151,7 +151,7 @@ public class KawapadTextualIncrement implements MenuInitializer {
         addIncrementalSymbol0( from, to );
     }
     public void addIncrementalSymbol( Symbol from, Symbol to ) {
-        addIncrementalSymbol0( SchemeUtils.anyToString(from) , SchemeUtils.anyToString(to) );
+        addIncrementalSymbol0( SchemeValues.anyToString(from) , SchemeValues.anyToString(to) );
     }
     /**
      * 
@@ -161,7 +161,7 @@ public class KawapadTextualIncrement implements MenuInitializer {
         deleteIncrementalSymbol0( from );
     }
     public void deleteIncrementalSymbol( Symbol from ) {
-        deleteIncrementalSymbol0( SchemeUtils.anyToString(from) );
+        deleteIncrementalSymbol0( SchemeValues.anyToString(from) );
     }
     /**
      * 

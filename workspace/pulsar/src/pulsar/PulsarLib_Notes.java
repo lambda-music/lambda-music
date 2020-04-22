@@ -6,7 +6,7 @@ import java.util.List;
 import gnu.mapping.Environment;
 import lamu.lib.doc.LamuDocument;
 import lamu.lib.doc.NoteListSynopsisFormatter;
-import lamu.lib.evaluators.SchemeUtils;
+import lamu.lib.evaluators.SchemeValues;
 
 public class PulsarLib_Notes {
     public static final String NOTES_ID = "pulsar-notations";
@@ -78,6 +78,6 @@ public class PulsarLib_Notes {
         bean.setShortDescription( nullCheck( element.getShortDescription() ) );
         bean.setLongDescription( nullCheck( element.getLongDescription() ) );
         
-        SchemeUtils.defineVar(env, bean, "note-" + bean.getName() );
+        SchemeValues.defineVar(env, bean, Arrays.asList( "note-" + bean.getName() ) );
     }
 }

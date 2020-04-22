@@ -67,7 +67,7 @@ import lamu.lib.evaluators.EvaluatorReceiver;
 import lamu.lib.evaluators.Invokable;
 import lamu.lib.evaluators.MultiplexEvaluator;
 import lamu.lib.evaluators.SchemeResult;
-import lamu.lib.evaluators.SchemeUtils;
+import lamu.lib.evaluators.SchemeValues;
 import lamu.lib.log.Logger;
 import lamu.lib.log.SimpleConsole;
 import lamu.lib.swing.AcceleratorKeyList;
@@ -137,7 +137,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         try {
             try {
                 in = PulsarFrame.class.getResourceAsStream( "lib/intro.scm" );
-                String s = new String( SchemeUtils.readAll( in ), "UTF-8" );
+                String s = new String( SchemeValues.readAll( in ), "UTF-8" );
                 frame.getKawapad().setNewText( s );
             } finally {
                 if ( in != null )

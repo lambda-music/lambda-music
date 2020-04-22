@@ -38,7 +38,7 @@ import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Symbol;
 import lamu.lib.evaluators.SchemePrinter;
-import lamu.lib.evaluators.SchemeUtils;
+import lamu.lib.evaluators.SchemeValues;
 import lamu.lib.log.Logger;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
@@ -80,7 +80,7 @@ public class NoteListParser {
                 Object o2 = p1.getCar();
                 if ( o2 instanceof Symbol ) {
                     Symbol s2 = (Symbol)o2;
-                    if ( "type".equals( SchemeUtils.schemeSymbolToJavaString(s2))) { 
+                    if ( "type".equals( SchemeValues.toString(s2))) { 
                         return true;
                     }
                 }

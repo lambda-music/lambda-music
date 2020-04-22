@@ -5,7 +5,7 @@ import java.awt.Color;
 import javax.swing.text.AttributeSet;
 
 import gnu.mapping.Symbol;
-import lamu.lib.evaluators.SchemeUtils;
+import lamu.lib.evaluators.SchemeValues;
 
 public enum KawapadSyntaxElementType {
     NONE,
@@ -22,7 +22,7 @@ public enum KawapadSyntaxElementType {
     LINE_COMMENT,
     BLOCK_COMMENT;
     public static KawapadSyntaxElementType schemeValueOf( Symbol symbol ) {
-        String str = SchemeUtils.schemeSymbolToJavaString( symbol ).toUpperCase().replaceAll( "-" , "_" );
+        String str = SchemeValues.toString( symbol ).toUpperCase().replaceAll( "-" , "_" );
         return valueOf( str );
     }
     public static void setDefaultForegroundColor( Symbol symbol, Color color ) {

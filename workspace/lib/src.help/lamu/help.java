@@ -2,7 +2,6 @@ package lamu;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import gnu.expr.SourceName;
 import gnu.lists.LList;
@@ -17,7 +16,7 @@ import lamu.lib.doc.LamuDocumentCondition;
 import lamu.lib.doc.LamuDocumentFormatterUtil;
 import lamu.lib.evaluators.SchemeDocument;
 import lamu.lib.evaluators.SchemeEvaluatorUtils;
-import lamu.lib.evaluators.SchemeUtils;
+import lamu.lib.evaluators.SchemeValues;
 import lamu.lib.scheme.proc.MultipleNamedProcedure1;
 import lamu.lib.scheme.proc.MultipleNamedProcedure2;
 import lamu.lib.scheme.proc.MultipleNamedProcedureN;
@@ -56,9 +55,9 @@ public class help implements Runnable {
         @Override
         public Object apply1(Object arg1) throws Throwable {
             return SchemeDocument.makeSchemeDocument( 
-                        SchemeUtils.toSchemeString( 
+                        SchemeValues.toSchemeString( 
                             LamuDocumentFormatterUtil.formatKawapad( 
-                                SchemeUtils.anyToString(arg1), 
+                                SchemeValues.anyToString(arg1), 
                                 helpTextWidth ) )); 
         }
     }
@@ -121,12 +120,12 @@ public class help implements Runnable {
                     LamuDocument.get( LamuDocumentCondition.createConditionByProcedure( (Procedure) arg1 ) ));
             } else if ( arg1 instanceof CharSequence ) {
                 doc = checkDocumentList(
-                    LamuDocument.get( LamuDocumentCondition.createConditionByName( SchemeUtils.anyToString(arg1) ) ));
+                    LamuDocument.get( LamuDocumentCondition.createConditionByName( SchemeValues.anyToString(arg1) ) ));
             } else { 
                 throw new IllegalArgumentException( "invalid argument error (" + arg1 + ")"  );
             }
 
-            return SchemeUtils.toSchemeString(
+            return SchemeValues.toSchemeString(
                 KawapadDocumentFormatter.getInstance().format( doc ));
         }
     }
@@ -141,7 +140,7 @@ public class help implements Runnable {
             List<LamuDocument> documentList = 
                 LamuDocument.get(
                     LamuDocumentCondition.createConditionByCategory(
-                        SchemeUtils.anyToString(arg1)));
+                        SchemeValues.anyToString(arg1)));
             
             List<String> list = new ArrayList<>();
             for ( LamuDocument d : documentList ) {
@@ -256,12 +255,7 @@ public class help implements Runnable {
                 Object cdr = ep.getCdr();
                 if ( names.equals( car ) ) {
                     
-                    bean.setNames((List<String>)
-                        new ArrayList((LList)cdr)
-                            .stream()
-                            .map((e2)->SchemeUtils.toString(e2))
-                            .collect(Collectors.toList())
-                            );
+                    bean.setNames(new ArrayList(SchemeValues.toStringList((LList)cdr)));
                     
                 } else if ( params.equals( car ) ) {
                     if ( ! ( cdr instanceof LList ) ) {
@@ -276,10 +270,10 @@ public class help implements Runnable {
                         int seriesNo = -1;
                         for ( Object o4: ((LList)o3)) {
                             if ( seriesNo < 0 ) {
-                                if ( ! SchemeUtils.isQuantity( o4 ) ) {
+                                if ( ! SchemeValues.isQuantity( o4 ) ) {
                                     throw new IllegalArgumentException( "the first element in a list in the param paramer must be a number" );
                                 }
-                                seriesNo = SchemeUtils.toInteger( o4 );
+                                seriesNo = SchemeValues.toInteger( o4 );
                                 continue;
                             } else {
                                 if ( ! ( o4 instanceof LList ) ) {
@@ -297,28 +291,28 @@ public class help implements Runnable {
                             }
                             bean.addParameter( 
                                 seriesNo,                            // series number 
-                                SchemeUtils.toString ( l4.get( 0 )), // names
-                                SchemeUtils.toString ( l4.get( 1 )), // type, 
+                                SchemeValues.toString ( l4.get( 0 )), // names
+                                SchemeValues.toString ( l4.get( 1 )), // type, 
                                 Boolean.FALSE.equals ( l4.get( 2 )) ?
                                         null :
-                                            SchemeUtils.toString(l4.get( 2 )), // defaultValue,
-                                            SchemeUtils.toBoolean( l4.get( 3 )), // isVariable,
-                                            SchemeUtils.toString ( l4.get( 4 ))  //description );
+                                            SchemeValues.toString(l4.get( 2 )), // defaultValue,
+                                            SchemeValues.toBoolean( l4.get( 3 )), // isVariable,
+                                            SchemeValues.toString ( l4.get( 4 ))  //description );
                                     );
                         }
 
                     }
                 } else if ( returns.equals( car ) ) {
-                    bean.setReturnValueDescription( SchemeUtils.toString( ((Pair)cdr).getCar() ));
+                    bean.setReturnValueDescription( SchemeValues.toString( ((Pair)cdr).getCar() ));
                 } else if ( shortDescription.equals( car ) ) {
-                    bean.setShortDescription( SchemeUtils.toString(
+                    bean.setShortDescription( SchemeValues.toString(
                         String.join( "", 
-                            SchemeUtils.anySchemeValueListToStringList(
+                            SchemeValues.toStringList(
                                 ((Pair)cdr)))));
                 } else if ( longDescription.equals( car ) ) {
-                    bean.setLongDescription( SchemeUtils.toString( 
+                    bean.setLongDescription( SchemeValues.toString( 
                         String.join( "", 
-                            SchemeUtils.anySchemeValueListToStringList(
+                            SchemeValues.toStringList(
                                 ((Pair)cdr)))));
                 } else {
                     throw new IllegalArgumentException( "unknown field name " + car );
@@ -381,7 +375,7 @@ public class help implements Runnable {
 //            System.out.println(
 //                outputMarkdownReference0(
 //                    DescriptiveDocumentCategory.valueOf((Symbol)arg1), env));
-////              SchemeUtils.toSchemeSymbol( sb.toString() );
+////              SchemeValues.toSchemeSymbol( sb.toString() );
             return Values.empty;
         }
     }

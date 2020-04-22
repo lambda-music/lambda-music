@@ -28,8 +28,8 @@ public class SchemeEngineLib {
         }
     }
     public static void initScheme( Environment env ) {
-        SchemeUtils.defineLambda(env, currentSchemeEngine  );
-        SchemeUtils.defineLambda(env, isCurrentSchemeEnginePresent );
+        SchemeValues.defineLambda(env, currentSchemeEngine  );
+        SchemeValues.defineLambda(env, isCurrentSchemeEnginePresent );
     }
 
 }

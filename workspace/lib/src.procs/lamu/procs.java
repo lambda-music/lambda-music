@@ -11,7 +11,7 @@ import gnu.mapping.Environment;
 import gnu.mapping.Values;
 import kawa.Shell;
 import lamu.lib.doc.LamuDocument;
-import lamu.lib.evaluators.SchemeUtils;
+import lamu.lib.evaluators.SchemeValues;
 import lamu.lib.log.Logger;
 import lamu.lib.procs.PulsarProcessWrapper;
 import lamu.lib.scheme.proc.MultipleNamedProcedure1;
@@ -38,7 +38,7 @@ public class procs implements Runnable {
    //                l.add( 1, new File( System.getProperty( "user.dir" ) ) );
    //                args = l.toArray();
             
-            List<String> list = SchemeUtils.anySchemeValueListToStringList( Arrays.asList(args) );
+            List<String> list = SchemeValues.toStringList( Arrays.asList(args) );
             ProcessBuilder sb = new ProcessBuilder( list );
             
             // XXX ??? (Tue, 24 Mar 2020 06:09:27 +0900) <<< This should be integrated.
@@ -108,7 +108,7 @@ public class procs implements Runnable {
 
         @Override
         public Object apply1(Object arg1) throws Throwable {
-            Thread.sleep( SchemeUtils.toInteger( arg1 ));
+            Thread.sleep( SchemeValues.toInteger( arg1 ));
             return Values.empty;
         }
     }
@@ -122,10 +122,10 @@ public class procs implements Runnable {
      *            the scheme instance to initialize.
      */
     public static void initScheme( Environment env ) {
-        SchemeUtils.defineLambda( env, createProcessProc);
-        SchemeUtils.defineLambda( env, destroyProcessProc); 
-        SchemeUtils.defineLambda( env, killProcessProc);
-        SchemeUtils.defineLambda( env, sleepProc );
+        SchemeValues.defineLambda( env, createProcessProc);
+        SchemeValues.defineLambda( env, destroyProcessProc); 
+        SchemeValues.defineLambda( env, killProcessProc);
+        SchemeValues.defineLambda( env, sleepProc );
     }
 
     @Override

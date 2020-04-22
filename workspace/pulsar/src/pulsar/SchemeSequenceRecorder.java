@@ -10,7 +10,7 @@ import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import lamu.lib.evaluators.Invokable;
-import lamu.lib.evaluators.SchemeUtils;
+import lamu.lib.evaluators.SchemeValues;
 import lamu.lib.log.Logger;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
@@ -118,11 +118,11 @@ public class SchemeSequenceRecorder implements MetroSequence, SchemeSequenceRead
                 this.eventBuffer.setResultList( out );
                 
                 for ( Object notation : this.notations ) {
-                    Object a = SchemeUtils.alistGet( NoteListCommon.ID_OFFSET , (LList)notation, Boolean.FALSE );
+                    Object a = SchemeValues.alistGet( NoteListCommon.ID_OFFSET , (LList)notation, Boolean.FALSE );
                     if ( a instanceof Boolean ) {
                         
                     } else {
-                        double d = SchemeUtils.toDouble( a );
+                        double d = SchemeValues.toDouble( a );
                         if ( from <= d && d < to ) {
                             logInfo( Double.toString( from ) );
                             // MOVED FROM SchemeSequence (Wed, 06 Nov 2019 17:07:05 +0900)

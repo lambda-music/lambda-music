@@ -6,6 +6,7 @@
 	<classpathentry kind="src" path="src.help"/>
 	<classpathentry kind="src" path="src.procs"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry exported="true" kind="lib" path="lib/kawa.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/kawa.jar" sourcepath="lib/kawa-3.0-src.zip"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/lib-kawautil"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

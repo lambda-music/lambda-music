@@ -38,7 +38,7 @@ import gnu.mapping.Symbol;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.evaluators.Invokable;
 import lamu.lib.evaluators.InvokableSchemeProcedure;
-import lamu.lib.evaluators.SchemeUtils;
+import lamu.lib.evaluators.SchemeValues;
 import lamu.lib.log.Logger;
 import metro.Metro;
 import metro.MetroException;
@@ -346,8 +346,8 @@ public class Pulsar extends Metro implements PulsarLib, PulsarLibDelegator, Appl
             if ( fromObj == null || toObj == null ) {
                 break;
             }
-            String from = fromObj != null ? SchemeUtils.toString( fromObj ) : null;
-            String to   = toObj   != null ? SchemeUtils.toString( toObj   ) : null;
+            String from = fromObj != null ? SchemeValues.toString( fromObj ) : null;
+            String to   = toObj   != null ? SchemeValues.toString( toObj   ) : null;
             proc.apply(pulsar, from, to );
         }
     }

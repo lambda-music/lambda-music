@@ -70,17 +70,17 @@ public class StreamEvaluator implements Evaluator, NameCaptionHolder {
         
         Object lispValue;
         try {
-            lispValue = SchemeUtils.string2scheme( resultReceiver.scriptResult );
+            lispValue = SchemeValues.string2lisp( resultReceiver.scriptResult );
         } catch (IOException e) {
             throw new RuntimeException( e );
         }
-        Object lispValueStatus = SchemeUtils.cdr( SchemeUtils.assq( "status" ,  lispValue ) );
-        Object lispValueMessage= SchemeUtils.cdr( SchemeUtils.assq( "message" , lispValue ) );
+        Object lispValueStatus = SchemeValues.cdr( SchemeValues.assq( "status" ,  lispValue ) );
+        Object lispValueMessage= SchemeValues.cdr( SchemeValues.assq( "message" , lispValue ) );
         if ( SUCCEEDED.equals( lispValueStatus ) ) {
             return SchemeResult.createSucceededByObject( lispValueMessage );
             
         } else if ( FAILED.equals( lispValueStatus ) ) {
-            return SchemeResult.createError( SchemeUtils.schemeStringToJavaString( lispValueMessage ) );
+            return SchemeResult.createError( SchemeValues.toString( lispValueMessage ) );
         } else {
             throw new RuntimeException( "" );
         }

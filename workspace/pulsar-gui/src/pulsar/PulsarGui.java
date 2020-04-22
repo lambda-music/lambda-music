@@ -10,7 +10,7 @@ import java.util.logging.Level;
 import javax.swing.JSplitPane;
 
 import gnu.mapping.Procedure;
-import lamu.lib.evaluators.SchemeUtils;
+import lamu.lib.evaluators.SchemeValues;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.proc.MultipleNamedProcedure1;
 import lamu.lib.scheme.proc.MultipleNamedProcedureN;
@@ -117,10 +117,10 @@ public class PulsarGui {
         @Override
         public Object applyN(Object[] args) throws Throwable {
             if ( 0 < args.length ) {
-                double value = SchemeUtils.toDouble(args[0]);
+                double value = SchemeValues.toDouble(args[0]);
                 getCurrent().pb_position.setValue((int) (value * PulsarFrame.PB_POSITION_MAX) );
             }
-            return SchemeUtils.NO_RESULT;
+            return SchemeValues.NO_RESULT;
         }
     }
 
@@ -132,7 +132,7 @@ public class PulsarGui {
         @Override
         public Object applyN(Object[] args) throws Throwable {
             getCurrent().guiClear();
-            return SchemeUtils.NO_RESULT;
+            return SchemeValues.NO_RESULT;
         }
     }
 
@@ -148,20 +148,20 @@ public class PulsarGui {
                 Object object = argList.get(0);
                 if ( object instanceof JSplitPane ) {
                     JSplitPane pane = (JSplitPane) object;
-                    return SchemeUtils.toSchemeNumber( pane.getDividerLocation() );
+                    return SchemeValues.toSchemeNumber( pane.getDividerLocation() );
                 } else {
-                    return SchemeUtils.toSchemeNumber( -1 );
+                    return SchemeValues.toSchemeNumber( -1 );
                 }
             } else if ( 2 == argList.size() ) {
                 Object object = argList.get(0);
                 if ( object instanceof JSplitPane ) {
                     JSplitPane pane = (JSplitPane) object;
-                    int location = SchemeUtils.toInteger( argList.get(1) );
+                    int location = SchemeValues.toInteger( argList.get(1) );
                     pane.setDividerLocation( location );
                     pane.revalidate();
-                    return SchemeUtils.toSchemeNumber( pane.getDividerLocation() );
+                    return SchemeValues.toSchemeNumber( pane.getDividerLocation() );
                 } else {
-                    return SchemeUtils.toSchemeNumber( -1 );
+                    return SchemeValues.toSchemeNumber( -1 );
                 }
 
             } else {
@@ -184,11 +184,11 @@ public class PulsarGui {
             if ( 0 == args.length ) {
                 
             } else {
-                size.height = SchemeUtils.toInteger(args[0]);
+                size.height = SchemeValues.toInteger(args[0]);
                 pulsarGui.frame.setSize(size);
                 pulsarGui.frame.revalidate();
             }
-            return SchemeUtils.toSchemeNumber( size.height );
+            return SchemeValues.toSchemeNumber( size.height );
         }
     }
 
@@ -204,11 +204,11 @@ public class PulsarGui {
             if ( 0 == args.length ) {
                 
             } else {
-                size.width = SchemeUtils.toInteger(args[0]);
+                size.width = SchemeValues.toInteger(args[0]);
                 pulsarGui.frame.setSize(size);
                 pulsarGui.frame.revalidate();
             }
-            return SchemeUtils.toSchemeNumber( size.width );
+            return SchemeValues.toSchemeNumber( size.width );
         }
     }
 
@@ -223,11 +223,11 @@ public class PulsarGui {
             Point pos = pulsarGui.frame.getLocation();
             if ( 0 == args.length ) {
             } else {
-                pos.x = SchemeUtils.toInteger(args[0]);
+                pos.x = SchemeValues.toInteger(args[0]);
                 pulsarGui.frame.setLocation( pos);
                 pulsarGui.frame.revalidate();
             }
-            return SchemeUtils.toSchemeNumber( pos.x );
+            return SchemeValues.toSchemeNumber( pos.x );
         }
     }
 
@@ -242,11 +242,11 @@ public class PulsarGui {
             Point pos = pulsarGui.frame.getLocation();
             if ( 0 == args.length ) {
             } else {
-                pos.y = SchemeUtils.toInteger(args[0]);
+                pos.y = SchemeValues.toInteger(args[0]);
                 pulsarGui.frame.setLocation( pos);
                 pulsarGui.frame.revalidate();
             }
-            return SchemeUtils.toSchemeNumber( pos.y );
+            return SchemeValues.toSchemeNumber( pos.y );
         }
     }
 
@@ -262,19 +262,19 @@ public class PulsarGui {
             if ( 0 == argList.size() ) {
                 if ( pulsarGui.rootPane instanceof JSplitPane ) {
                     JSplitPane pane = (JSplitPane) pulsarGui.rootPane;
-                    return SchemeUtils.toSchemeNumber( pane.getDividerLocation() );
+                    return SchemeValues.toSchemeNumber( pane.getDividerLocation() );
                 } else {
-                    return SchemeUtils.toSchemeNumber( -1 );
+                    return SchemeValues.toSchemeNumber( -1 );
                 }
             } else if ( 1 == argList.size() ) {
                 if ( pulsarGui.rootPane instanceof JSplitPane ) {
                     JSplitPane pane = (JSplitPane) pulsarGui.rootPane;
-                    int location = SchemeUtils.toInteger( argList.get(0) );
+                    int location = SchemeValues.toInteger( argList.get(0) );
                     pane.setDividerLocation( location );
                     pulsarGui.frame.revalidate();
-                    return SchemeUtils.toSchemeNumber( pane.getDividerLocation() );
+                    return SchemeValues.toSchemeNumber( pane.getDividerLocation() );
                 } else {
-                    return SchemeUtils.toSchemeNumber( -1 );
+                    return SchemeValues.toSchemeNumber( -1 );
                 }
             } else {
                 throw new RuntimeException( 
@@ -296,7 +296,7 @@ public class PulsarGui {
                 sb.append( o.toString() ).append( " " );
             }
             getCurrent().frame.getKawapad().insertText( sb.toString().trim() );
-            return SchemeUtils.NO_RESULT;
+            return SchemeValues.NO_RESULT;
         }
     }
 
@@ -307,8 +307,8 @@ public class PulsarGui {
 
         @Override
         public Object apply1(Object arg1) throws Throwable {
-            getCurrent().setTempoDisplay( SchemeUtils.toDouble( arg1 ) );
-            return SchemeUtils.NO_RESULT;
+            getCurrent().setTempoDisplay( SchemeValues.toDouble( arg1 ) );
+            return SchemeValues.NO_RESULT;
         }
     }
 

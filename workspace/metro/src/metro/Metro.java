@@ -50,7 +50,6 @@ import org.jaudiolibs.jnajack.JackTimebaseCallback;
 import org.jaudiolibs.jnajack.JackTransportState;
 
 import lamu.lib.evaluators.Invokable;
-import lamu.lib.evaluators.SchemeUtils;
 import lamu.lib.log.Logger;
 
 /**
@@ -228,7 +227,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                 portName,
                 flag,
                 this.client.registerPort( 
-                    SchemeUtils.anyToString(portName), 
+                    Utils.anyToString(portName), 
                     JackPortType.MIDI, 
                     flag
                     )

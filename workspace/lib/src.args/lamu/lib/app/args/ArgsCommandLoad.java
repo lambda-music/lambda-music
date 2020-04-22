@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import lamu.lib.evaluators.SchemeUtils;
-
 public class ArgsCommandLoad extends ArgsCommand {
     @Override
     protected String commandName() {
@@ -32,7 +30,7 @@ public class ArgsCommandLoad extends ArgsCommand {
             String uri = outSeqArgs.remove(0);
             
             // Read the file as a string value.
-            String content = SchemeUtils.readAllAsString(uri);
+            String content = Utils.readAllAsString(uri);
             
             // Parse the string value into a list of string values. 
             List<String> scriptContent = ArgsQuotedStringSplitter.splitString(content); 

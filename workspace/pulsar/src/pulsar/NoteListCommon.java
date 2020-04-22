@@ -14,7 +14,7 @@ import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import gnu.math.IntNum;
 import gnu.math.RealNum;
-import lamu.lib.evaluators.SchemeUtils;
+import lamu.lib.evaluators.SchemeValues;
 import metro.Metro;
 import metro.MetroPort;
 import metro.MetroSyncType;
@@ -94,7 +94,7 @@ public class NoteListCommon {
     public static final NoteListValueGenerator<Symbol> SYMBOL_NULL = (NoteListValueGenerator<Symbol>) NoteListValueGenerator.NULL;
 
     static final NoteListValueGenerator<Symbol> DEFAULT_VALUE_TYPE = 
-            new NoteListValueGenerator.Default<Symbol>( SchemeUtils.toSchemeSymbol( "note" ) ) ;
+            new NoteListValueGenerator.Default<Symbol>( SchemeValues.toSchemeSymbol( "note" ) ) ;
 
     static final NoteListValueConverter<Boolean> S2J_BOOLEAN = new NoteListValueConverter<Boolean>() {
         @Override
@@ -109,13 +109,13 @@ public class NoteListCommon {
     static final NoteListValueConverter<Integer> S2J_INTEGER = new NoteListValueConverter<Integer>() {
         @Override
         public Integer convert(Object value) {
-            return SchemeUtils.toInteger( value );
+            return SchemeValues.toInteger( value );
         }
     };
     static final NoteListValueConverter<IntNum> J2S_INTEGER = new NoteListValueConverter<IntNum>() {
         @Override
         public IntNum convert(Object value) {
-            return SchemeUtils.toSchemeNumber( (int)value );
+            return SchemeValues.toSchemeNumber( (int)value );
         }
     };
 
@@ -131,13 +131,13 @@ public class NoteListCommon {
     static final NoteListValueConverter<Double> S2J_DOUBLE = new NoteListValueConverter<Double>() {
         @Override
         public Double convert(Object value) {
-            return SchemeUtils.toDouble( value );
+            return SchemeValues.toDouble( value );
         }
     };
     static final NoteListValueConverter<RealNum> J2S_DOUBLE = new NoteListValueConverter<RealNum>() {
         @Override
         public RealNum convert(Object value) {
-            return SchemeUtils.toSchemeNumber( (double)value );
+            return SchemeValues.toSchemeNumber( (double)value );
         }
     };
 
@@ -197,13 +197,13 @@ public class NoteListCommon {
     static final NoteListValueConverter<IString> J2S_STRING = new NoteListValueConverter<IString>() {
         @Override
         public IString convert(Object value) {
-            return SchemeUtils.toSchemeString( value.toString() );
+            return SchemeValues.toSchemeString( value.toString() );
         }
     };
     static final NoteListValueConverter<String> S2J_STRING = new NoteListValueConverter<String>() {
         @Override
         public String convert(Object value) {
-            return SchemeUtils.schemeStringToJavaString( value.toString() );
+            return SchemeValues.toString( value );
         }
     };
 
@@ -372,13 +372,13 @@ public class NoteListCommon {
     static final NoteListValueConverter<MetroSyncType> S2J_SYNC_TYPE = new NoteListValueConverter<MetroSyncType>() {
         @Override
         public MetroSyncType convert(Object value) {
-            return MetroSyncType.toSyncType( SchemeUtils.schemeSymbolToJavaString( SchemeUtils.schemeNullCheck( value ) ) );
+            return MetroSyncType.toSyncType( SchemeValues.toString(SchemeValues.schemeNullCheck( value )) );
         }
     };
     static final NoteListValueConverter<Symbol> J2S_SYNC_TYPE = new NoteListValueConverter<Symbol>() {
         @Override
         public Symbol convert(Object value) {
-            return SchemeUtils.toSchemeSymbol( ((MetroSyncType)value ).name().toLowerCase() );
+            return SchemeValues.toSchemeSymbol( ((MetroSyncType)value ).name().toLowerCase() );
         }
     };
     
@@ -415,7 +415,7 @@ public class NoteListCommon {
         }
         @Override
         public Symbol generate() {
-            return SchemeUtils.schemeSymbol( createTempNewId() );
+            return SchemeValues.toSchemeSymbol( createTempNewId() );
         }
     };
 

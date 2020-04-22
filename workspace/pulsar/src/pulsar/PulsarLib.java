@@ -21,7 +21,7 @@ import gnu.math.IntNum;
 import lamu.lib.doc.LamuDocument;
 import lamu.lib.evaluators.Invokable;
 import lamu.lib.evaluators.InvokableSchemeProcedure;
-import lamu.lib.evaluators.SchemeUtils;
+import lamu.lib.evaluators.SchemeValues;
 import lamu.lib.log.Logger;
 import lamu.lib.scheme.proc.MultipleNamedProcedure0;
 import lamu.lib.scheme.proc.MultipleNamedProcedure1;
@@ -248,12 +248,12 @@ public interface PulsarLib {
          *    a newly created list which can safely be modified.
          */
         static List<Object> readParamTrackName( Object object ) { 
-            object = SchemeUtils.schemeNullCheck( object );
+            object = SchemeValues.schemeNullCheck( object );
             
             if ( object instanceof Pair ) {
                 return new ArrayList<>( (Pair)object );
             } else {
-                return new ArrayList<>( Arrays.asList( SchemeUtils.schemeNullCheck( object ) ) );
+                return new ArrayList<>( Arrays.asList( SchemeValues.schemeNullCheck( object ) ) );
             }
         }
         
@@ -309,7 +309,7 @@ public interface PulsarLib {
          * @return
          */
         static Procedure readParamTrackSearcher( Object object ) { 
-            object = SchemeUtils.schemeNullCheck( object );
+            object = SchemeValues.schemeNullCheck( object );
             // TAG SEARCH
             if ( object instanceof Procedure ) {
                 return (Procedure) object;
@@ -362,14 +362,14 @@ public interface PulsarLib {
         }
         
         static double readParamSyncOffset(Object object) {
-            return SchemeUtils.toDouble( object );
+            return SchemeValues.toDouble( object );
         }
         static MetroSyncType readParamSyncType(Object object) {
-            object = SchemeUtils.schemeNullCheck(object);
+            object = SchemeValues.schemeNullCheck(object);
             if ( object == null ) {
                 return MetroSyncType.IMMEDIATE;
             } else {
-                return MetroSyncType.toSyncType( SchemeUtils.toString( object ) );
+                return MetroSyncType.toSyncType( SchemeValues.toString( object ) );
             }
         }
         static Procedure readParamProcedure(Object arg) {
@@ -565,8 +565,8 @@ public interface PulsarLib {
 
             @Override
             public Object apply1(Object arg0) throws Throwable {
-                getPulsar().open( SchemeUtils.toString( arg0 ) );
-                return SchemeUtils.NO_RESULT;
+                getPulsar().open( SchemeValues.toString( arg0 ) );
+                return SchemeValues.NO_RESULT;
             }
         }
 
@@ -597,7 +597,7 @@ public interface PulsarLib {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 getPulsar().close();
-                return SchemeUtils.NO_RESULT;
+                return SchemeValues.NO_RESULT;
             }
         }
 
@@ -709,7 +709,7 @@ public interface PulsarLib {
                         pulsar.destroyOutputPort( p );
                     }
                 }
-                return SchemeUtils.NO_RESULT;
+                return SchemeValues.NO_RESULT;
             }
         }
 
@@ -731,7 +731,7 @@ public interface PulsarLib {
                         pulsar.destroyInputPort( p );
                     }
                 }
-                return SchemeUtils.NO_RESULT;
+                return SchemeValues.NO_RESULT;
             }
         }
 
@@ -822,7 +822,7 @@ public interface PulsarLib {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 Pulsar.connectProc( getPulsar(), args, Pulsar.ConnectProcedure.CONNECT );
-                return SchemeUtils.NO_RESULT;
+                return SchemeValues.NO_RESULT;
             }
         }
 
@@ -839,7 +839,7 @@ public interface PulsarLib {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 Pulsar.connectProc(getPulsar(), args, Pulsar.ConnectProcedure.DISCONNECT );
-                return SchemeUtils.NO_RESULT;
+                return SchemeValues.NO_RESULT;
             }
         }
 
@@ -869,7 +869,7 @@ public interface PulsarLib {
 
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                return Pair.makeList( getPulsar().getAvailableOutputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
+                return Pair.makeList( getPulsar().getAvailableOutputPorts().stream().map( (v)->SchemeValues.toSchemeString(v) )
                     .collect( Collectors.toList() ) );
             }
         }
@@ -886,7 +886,7 @@ public interface PulsarLib {
 
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                return Pair.makeList( getPulsar().getAvailableInputPorts().stream().map( (v)->SchemeUtils.toSchemeString(v) )
+                return Pair.makeList( getPulsar().getAvailableInputPorts().stream().map( (v)->SchemeValues.toSchemeString(v) )
                     .collect( Collectors.toList() ) );
             }
         }
@@ -908,7 +908,7 @@ public interface PulsarLib {
                 } else {
                     throw new RuntimeException( "invalid argument length" );
                 }
-                return SchemeUtils.NO_RESULT;
+                return SchemeValues.NO_RESULT;
             }
         }
 
@@ -976,7 +976,7 @@ public interface PulsarLib {
                 } else {
                     throw new RuntimeException( "invalid argument length" );
                 }
-                return SchemeUtils.NO_RESULT;
+                return SchemeValues.NO_RESULT;
             }
         }
 
@@ -1039,7 +1039,7 @@ public interface PulsarLib {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 getPulsar().setPlaying( true ); 
-                return SchemeUtils.NO_RESULT;
+                return SchemeValues.NO_RESULT;
             }
         }
 
@@ -1068,7 +1068,7 @@ public interface PulsarLib {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 getPulsar().setPlaying( false ); 
-                return SchemeUtils.NO_RESULT;
+                return SchemeValues.NO_RESULT;
             }
         }
 
@@ -1098,7 +1098,7 @@ public interface PulsarLib {
             public Object applyN(Object[] args) throws Throwable {
                 long shutdownWaitNow;
                 if ( 0 < args.length  ) {
-                    shutdownWaitNow = SchemeUtils.toLong( args[0] );
+                    shutdownWaitNow = SchemeValues.toLong( args[0] );
                 } else {
                     shutdownWaitNow = Pulsar.shutdownWait;
                 }
@@ -1150,7 +1150,7 @@ public interface PulsarLib {
                 logInfo( "Pulsar Scheme API: TAP-TEMPO" );
                 Pulsar pulsar = getPulsar();
                 double bpm = pulsar.getTempoTapper().tap( pulsar.getBeatsPerMinute() );
-                return SchemeUtils.toSchemeNumber( bpm );
+                return SchemeValues.toSchemeNumber( bpm );
             }
         }
 
@@ -1186,11 +1186,11 @@ public interface PulsarLib {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 if ( 0 < args.length ) {
-                    double bpm = SchemeUtils.toDouble(args[0]);
+                    double bpm = SchemeValues.toDouble(args[0]);
                     getPulsar().setBeatsPerMinute( bpm );
                 }
        
-                return SchemeUtils.NO_RESULT;
+                return SchemeValues.NO_RESULT;
             }
         }
 
@@ -1225,7 +1225,7 @@ public interface PulsarLib {
             @Override
             public Object apply0() throws Throwable {
                 getPulsar().rewind();
-                return SchemeUtils.NO_RESULT;
+                return SchemeValues.NO_RESULT;
             }
         }
 
@@ -1271,7 +1271,7 @@ public interface PulsarLib {
                         pulsar.notifyTrackChange();
                     }
                 }
-                return SchemeUtils.NO_RESULT;
+                return SchemeValues.NO_RESULT;
             }
         }
 
@@ -1458,12 +1458,12 @@ public interface PulsarLib {
                         }
                         
                         if ( 3< args.length ) {
-                            recordLength = SchemeUtils.toDouble( args[3] );
+                            recordLength = SchemeValues.toDouble( args[3] );
                         } else {
                             recordLength = -1;
                         }
                         if ( 4< args.length ) {
-                            looper = SchemeUtils.toBoolean( args[4] );
+                            looper = SchemeValues.toBoolean( args[4] );
                         } else {
                             looper = true;
                         }
@@ -1689,7 +1689,7 @@ public interface PulsarLib {
             @Override
             public Object apply0() throws Throwable {
                 getPulsar().notifyTrackChange();
-                return SchemeUtils.NO_RESULT;
+                return SchemeValues.NO_RESULT;
             }
         }
 
@@ -1762,7 +1762,7 @@ public interface PulsarLib {
             @Override
             public Object apply0() throws Throwable {
                 getPulsar().clearTracks();
-                return SchemeUtils.NO_RESULT;
+                return SchemeValues.NO_RESULT;
             }
         }
 
@@ -1790,7 +1790,7 @@ public interface PulsarLib {
 
             @Override
             public Object apply0() throws Throwable {
-                return SchemeUtils.javaNullCheck( getPulsar().getMainTrack() );
+                return SchemeValues.javaNullCheck( getPulsar().getMainTrack() );
             }
         }
 
@@ -1809,41 +1809,41 @@ public interface PulsarLib {
         }
         
         public void initScheme( Environment env ) {
-            SchemeUtils.defineLambda( env, currentPulsarProc );
-            SchemeUtils.defineLambda( env, isCurrentPulsarPresentProc );
-            SchemeUtils.defineLambda( env, isOpenProc );
-            SchemeUtils.defineLambda( env, openProc );
-            SchemeUtils.defineLambda( env, closeProc );
-            SchemeUtils.defineLambda( env, openOutputProc );
-            SchemeUtils.defineLambda( env, openInputProc );
-            SchemeUtils.defineLambda( env, closeOutputProc );
-            SchemeUtils.defineLambda( env, closeInputProc );
-            SchemeUtils.defineLambda( env, listOutputProc );
-            SchemeUtils.defineLambda( env, listInputProc );
-            SchemeUtils.defineLambda( env, connectProc );
-            SchemeUtils.defineLambda( env, disconnectProc );
-            SchemeUtils.defineLambda( env, listAllOutputProc );
-            SchemeUtils.defineLambda( env, listAllInputProc );
-            SchemeUtils.defineLambda( env, setMainProc );
-            SchemeUtils.defineLambda( env, getMainProc );
-            SchemeUtils.defineLambda( env, setPlayingProc );
-            SchemeUtils.defineLambda( env, isPlayingProc );
-            SchemeUtils.defineLambda( env, playProc );
-            SchemeUtils.defineLambda( env, stopProc );
-            SchemeUtils.defineLambda( env, quitProc );
-            SchemeUtils.defineLambda( env, tapTempoProc );
-            SchemeUtils.defineLambda( env, setTempoProc );
-            SchemeUtils.defineLambda( env, rewindProc );
-            SchemeUtils.defineLambda( env, simultaneousProc );
-            SchemeUtils.defineLambda( env, getTrackProc );
-            SchemeUtils.defineLambda( env, newTrackProc );
-            SchemeUtils.defineLambda( env, newRecordingTrackProc );
-            SchemeUtils.defineLambda( env, removeTrackProc );
-            SchemeUtils.defineLambda( env, putTrackProc );
-            SchemeUtils.defineLambda( env, notifyTrackChangeProc );
-            SchemeUtils.defineLambda( env, listTracksProc );
-            SchemeUtils.defineLambda( env, clearTracksProc );
-            SchemeUtils.defineLambda( env, getMainTrackProc );
+            SchemeValues.defineLambda( env, currentPulsarProc );
+            SchemeValues.defineLambda( env, isCurrentPulsarPresentProc );
+            SchemeValues.defineLambda( env, isOpenProc );
+            SchemeValues.defineLambda( env, openProc );
+            SchemeValues.defineLambda( env, closeProc );
+            SchemeValues.defineLambda( env, openOutputProc );
+            SchemeValues.defineLambda( env, openInputProc );
+            SchemeValues.defineLambda( env, closeOutputProc );
+            SchemeValues.defineLambda( env, closeInputProc );
+            SchemeValues.defineLambda( env, listOutputProc );
+            SchemeValues.defineLambda( env, listInputProc );
+            SchemeValues.defineLambda( env, connectProc );
+            SchemeValues.defineLambda( env, disconnectProc );
+            SchemeValues.defineLambda( env, listAllOutputProc );
+            SchemeValues.defineLambda( env, listAllInputProc );
+            SchemeValues.defineLambda( env, setMainProc );
+            SchemeValues.defineLambda( env, getMainProc );
+            SchemeValues.defineLambda( env, setPlayingProc );
+            SchemeValues.defineLambda( env, isPlayingProc );
+            SchemeValues.defineLambda( env, playProc );
+            SchemeValues.defineLambda( env, stopProc );
+            SchemeValues.defineLambda( env, quitProc );
+            SchemeValues.defineLambda( env, tapTempoProc );
+            SchemeValues.defineLambda( env, setTempoProc );
+            SchemeValues.defineLambda( env, rewindProc );
+            SchemeValues.defineLambda( env, simultaneousProc );
+            SchemeValues.defineLambda( env, getTrackProc );
+            SchemeValues.defineLambda( env, newTrackProc );
+            SchemeValues.defineLambda( env, newRecordingTrackProc );
+            SchemeValues.defineLambda( env, removeTrackProc );
+            SchemeValues.defineLambda( env, putTrackProc );
+            SchemeValues.defineLambda( env, notifyTrackChangeProc );
+            SchemeValues.defineLambda( env, listTracksProc );
+            SchemeValues.defineLambda( env, clearTracksProc );
+            SchemeValues.defineLambda( env, getMainTrackProc );
         }
         
         public static class PulsarLibStaticValueImplementation extends PulsarLibImplementation {

@@ -50,7 +50,7 @@ public class MultiplexEvaluator implements Evaluator, ApplicationComponent {
         @Override
         public Object apply2(Object arg1, Object arg2) throws Throwable {
             map.put( arg1, arg2 );
-            return SchemeUtils.NO_RESULT;
+            return SchemeValues.NO_RESULT;
         }
     };
     public static final Procedure getvar = new MultipleNamedProcedure1() {

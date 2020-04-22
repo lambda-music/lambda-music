@@ -2,6 +2,7 @@ package lamu.lib.evaluators;
 
 import java.io.File;
 import java.io.Reader;
+import java.util.Arrays;
 
 import gnu.expr.Language;
 import gnu.mapping.Environment;
@@ -41,8 +42,9 @@ public class SchemeEvaluatorLib {
      * {@link SchemeEvaluatorImplementation#evaluateScheme(Scheme, Runnable, Reader, File, File, String)}  
      */
     public static void initScheme( Environment env ) {
-        SchemeUtils.defineVar(env, kawa.standard.load.loadRelative , "source" );
-        SchemeUtils.defineLambda( env, currentScheme );
-        SchemeUtils.defineLambda( env, currentEnvironment );
+
+        SchemeValues.defineVar( env, kawa.standard.load.loadRelative, Arrays.asList( "source" ) );
+        SchemeValues.defineLambda( env, currentScheme );
+        SchemeValues.defineLambda( env, currentEnvironment );
     }
 }

@@ -144,7 +144,7 @@ class SchemeEvaluatorImplementation {
                 try {
                     schemeScript.close();
                 } catch (IOException e1) {
-                    SchemeUtils.logError( "failed to close the stream" , e1 );
+                    logError( "failed to close the stream" , e1 );
                 }
                 
                 Shell.currentLoadPath.set( savedPath );

@@ -79,7 +79,7 @@ public class SchemePrinter {
         StringWriter out = new StringWriter();
         try {
             OutPort outPort = new OutPort( out, false, true );
-            SchemeUtils.toString( print_proc.apply2( resultObject, outPort ) );
+            SchemeValues.toString( print_proc.apply2( resultObject, outPort ) );
             outPort.flush();
             return out.toString();
         } catch (Throwable e) {

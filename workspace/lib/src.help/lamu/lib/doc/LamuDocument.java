@@ -11,7 +11,7 @@ import java.util.logging.Level;
 
 import gnu.mapping.Symbol;
 import lamu.lib.evaluators.SchemeDocument;
-import lamu.lib.evaluators.SchemeUtils;
+import lamu.lib.evaluators.SchemeValues;
 import lamu.lib.log.Logger;
 
 public class LamuDocument implements Cloneable  {
@@ -350,7 +350,7 @@ public class LamuDocument implements Cloneable  {
     }
 
     public void setNames(Symbol ... names ) {
-        setNames( SchemeUtils.symbolsToStrings( names ) );
+        setNames( SchemeValues.toStringList(Arrays.asList( names )));
     }
 
     
@@ -360,7 +360,7 @@ public class LamuDocument implements Cloneable  {
                    "#| (%1$s) is a documentation procedure.\n "
                  + " | Execute (help %1$s) for further information. \n"
                  + "  |# help %1$s \n",  name );
-        return SchemeDocument.makeSchemeDocument( SchemeUtils.toSchemeString( s ));
+        return SchemeDocument.makeSchemeDocument( SchemeValues.toSchemeString( s ));
     }
     @Override
     public String toString() {

@@ -94,7 +94,7 @@ import lamu.lib.evaluators.MultiplexEvaluator;
 import lamu.lib.evaluators.SchemeEvaluatorUtils;
 import lamu.lib.evaluators.SchemePrinter;
 import lamu.lib.evaluators.SchemeResult;
-import lamu.lib.evaluators.SchemeUtils;
+import lamu.lib.evaluators.SchemeValues;
 import lamu.lib.evaluators.ThreadManager;
 import lamu.lib.log.Logger;
 import lamu.lib.log.SimpleConsole;
@@ -342,7 +342,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
 //     */
 //    public void initVariable() {
 //        logInfo( "initVariable******************************************************************" );
-//        SchemeUtils.putVar( Environment.getCurrent(), instanceID, Kawapad.this );
+//        Utils.putVar( Environment.getCurrent(), instanceID, Kawapad.this );
 //    }
 //
 //    transient boolean initializeDone = false;
@@ -2665,10 +2665,10 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     static {
         SchemeEvaluatorUtils.executeExternalFile( null, "kawapad initialization",  getInitFile() );
     }
-
+    
     public static class ConsoleObject {
         static String formatLogger(Object[] args) {
-            return String.join( " ", SchemeUtils.anySchemeValueListToStringList( Arrays.asList( args ) ) );
+            return String.join( " ", SchemeValues.toStringList( Arrays.asList( args ) ) );
         }
         public void info( Object ... args ){
             SimpleConsole.getConsole().addText( formatLogger( args ) );
@@ -3392,7 +3392,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
 
         @Override
         public Object apply1(Object arg1 ) throws Throwable {
-            return SchemeUtils.toSchemeString(   
+            return SchemeValues.toSchemeString(   
                 Kawapad.correctIndentation( Kawapad.this, 
                     SchemePrinter.printSchemeValue( arg1 )));
         }
@@ -3428,8 +3428,8 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
 
         @Override
         public Object apply2(Object arg1,Object arg2) throws Throwable {
-            String filePath = SchemeUtils.anyToString( arg1 );
-            float  fontSize = SchemeUtils.toFloat( arg2 );
+            String filePath = SchemeValues.anyToString( arg1 );
+            float  fontSize = SchemeValues.toFloat( arg2 );
             Font font = Kawapad.loadFont( filePath, fontSize );
             Kawapad kawapad = Kawapad.this;
             kawapad.setFont( font );
@@ -3464,8 +3464,8 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
 
         @Override
         public Object apply2(Object arg1,Object arg2) throws Throwable {
-            String filePath = SchemeUtils.anyToString( arg1 );
-            float  fontSize = SchemeUtils.toFloat( arg2 );
+            String filePath = SchemeValues.anyToString( arg1 );
+            float  fontSize = SchemeValues.toFloat( arg2 );
             Font font = Kawapad.loadFont( filePath, fontSize );
             Kawapad.setUIFont( new FontUIResource(font));
             return Values.empty;

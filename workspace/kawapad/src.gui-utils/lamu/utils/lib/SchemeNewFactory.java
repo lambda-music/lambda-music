@@ -60,7 +60,7 @@ import gnu.mapping.Symbol;
 import gnu.math.IntNum;
 import lamu.lib.evaluators.Invokable;
 import lamu.lib.evaluators.InvokableSchemeProcedure;
-import lamu.lib.evaluators.SchemeUtils;
+import lamu.lib.evaluators.SchemeValues;
 import lamu.lib.log.Logger;
 
 public abstract class SchemeNewFactory {
@@ -124,7 +124,7 @@ public abstract class SchemeNewFactory {
         if ( key == null )
             throw new RuntimeException("key is not specified");
         
-        String keyString = SchemeUtils.anyToString(key);
+        String keyString = SchemeValues.anyToString(key);
         SchemeNewFactory factory = map.get(keyString);
         if ( factory == null ) {
             throw new RuntimeException("unknown object type (" + keyString + ")" );
@@ -225,7 +225,7 @@ public abstract class SchemeNewFactory {
             } else {
                 for ( Object e : args ) {
                     if ( e instanceof Symbol ) {
-                        String symbol = SchemeUtils.schemeSymbolToJavaString(e);
+                        String symbol = SchemeValues.toString(e);
                         switch ( symbol ) {
                             case "selected" :
                                 if ( result.size() == 0 ) {
@@ -240,11 +240,11 @@ public abstract class SchemeNewFactory {
                         }
                     } else if ( e instanceof Pair ) {
                         Pair p = (Pair) e;
-                        String caption = SchemeUtils.toString( p.getCar() );
+                        String caption = SchemeValues.toString( p.getCar() );
                         Object userObject = p.getCdr();
                         result.add( f.create(listener, caption, userObject  ) );
                     } else {
-                        String caption = SchemeUtils.toString(e);
+                        String caption = SchemeValues.toString(e);
                         result.add( f.create(listener, caption, caption) );
                     }
                 }
@@ -270,7 +270,7 @@ public abstract class SchemeNewFactory {
             @Override
             Object create(List<Object> args ) {
                 if ( 0<args.size()  ) {
-                    return new JLabel( SchemeUtils.toString( args.get(0) ) );
+                    return new JLabel( SchemeValues.toString( args.get(0) ) );
                 } else {
                     return EmptyList.emptyList;
                 }
@@ -287,15 +287,15 @@ public abstract class SchemeNewFactory {
                         Object arg0 = args.get(0);
                         if ( arg0 instanceof Pair ) {
                             Pair pair = (Pair) arg0;
-                            caption = SchemeUtils.toString( pair.getCar() );
+                            caption = SchemeValues.toString( pair.getCar() );
                             userObject = pair.getCdr();
                         } else {
-                            caption = SchemeUtils.toString( arg0 );
+                            caption = SchemeValues.toString( arg0 );
                             userObject = EmptyList.emptyList;
                         }
                     }
 
-                    JPulsarTextField textField = new JPulsarTextField( SchemeUtils.toString( caption ), SchemeUtils.toInteger( args.get(1) ) ) ;
+                    JPulsarTextField textField = new JPulsarTextField( SchemeValues.toString( caption ), SchemeValues.toInteger( args.get(1) ) ) ;
                     
                     Procedure procedure = (Procedure) args.get(2);
                     {
@@ -314,7 +314,7 @@ public abstract class SchemeNewFactory {
                                     
                                     procedure.applyN( new Object[] {
                                             true,
-                                            SchemeUtils.toSchemeString( textField.getText() ),
+                                            SchemeValues.toSchemeString( textField.getText() ),
                                             ((JUserObjectContainer)textField).getUserObject(),
                                             textField,
                                             e
@@ -374,8 +374,8 @@ public abstract class SchemeNewFactory {
                 if ( args.size() == 0 ) {
                     PulsarGuiUtils.guiLayout(panel, "default" );
                 } else if ( 1 <= args.size() ) {
-                    String title = 0< args.size() ? SchemeUtils.anyToString( args.remove(0) ) : "Group";
-                    String type  = 0< args.size() ? SchemeUtils.anyToString( args.remove(0) ) : "default";
+                    String title = 0< args.size() ? SchemeValues.anyToString( args.remove(0) ) : "Group";
+                    String type  = 0< args.size() ? SchemeValues.anyToString( args.remove(0) ) : "default";
                     Object[] optionalArguments = args.toArray();
                     
                     // TODO SEE pulsarGui-layout! (Mon, 15 Jul 2019 10:05:46 +0900)
@@ -396,10 +396,10 @@ public abstract class SchemeNewFactory {
                         Object arg0 = args.get(0);
                         if ( arg0 instanceof Pair ) {
                             Pair pair = (Pair) arg0;
-                            caption = SchemeUtils.toString( pair.getCar() );
+                            caption = SchemeValues.toString( pair.getCar() );
                             userObject = pair.getCdr();
                         } else {
-                            caption = SchemeUtils.toString( arg0 );
+                            caption = SchemeValues.toString( arg0 );
                             userObject = EmptyList.emptyList;
                         }
                     }
@@ -422,7 +422,7 @@ public abstract class SchemeNewFactory {
                                     
                                     procedure.applyN( new Object[] {
                                             true,
-                                            SchemeUtils.toSchemeString( button.getText() ),
+                                            SchemeValues.toSchemeString( button.getText() ),
                                             ((JUserObjectContainer)button).getUserObject(),
                                             button,
                                             e
@@ -451,10 +451,10 @@ public abstract class SchemeNewFactory {
                         Object arg0 = args.get(0);
                         if ( arg0 instanceof Pair ) {
                             Pair pair = (Pair) arg0;
-                            caption = SchemeUtils.toString( pair.getCar() );
+                            caption = SchemeValues.toString( pair.getCar() );
                             userObject = pair.getCdr();
                         } else {
-                            caption = SchemeUtils.toString( arg0 );
+                            caption = SchemeValues.toString( arg0 );
                             userObject = EmptyList.emptyList;
                         }
                     }
@@ -471,7 +471,7 @@ public abstract class SchemeNewFactory {
                             public void mousePressed(MouseEvent e) {
                                 executor.invoke( 
                                         true,
-                                        SchemeUtils.toSchemeString( button.getText() ),
+                                        SchemeValues.toSchemeString( button.getText() ),
                                         ((JUserObjectContainer)button).getUserObject(),
                                         button,
                                         e
@@ -485,7 +485,7 @@ public abstract class SchemeNewFactory {
                                     case KeyEvent.VK_ENTER:
                                         executor.invoke( 
                                                 true,
-                                                SchemeUtils.toSchemeString( button.getText() ),
+                                                SchemeValues.toSchemeString( button.getText() ),
                                                 ((JUserObjectContainer)button).getUserObject(),
                                                 button,
                                                 e
@@ -648,11 +648,11 @@ public abstract class SchemeNewFactory {
                     for ( Object o : args ) {
                         if ( o instanceof Pair ) {
                             Pair p = (Pair) o;
-                            String caption = SchemeUtils.toString( p.getCar());
+                            String caption = SchemeValues.toString( p.getCar());
                             Object userObject = p.getCdr();
                             items.add( new PulsarListItem(caption, userObject));
                         } else if ( o instanceof IString ) {
-                            items.add( new PulsarListItem( SchemeUtils.toString(o), null));
+                            items.add( new PulsarListItem( SchemeValues.toString(o), null));
                         } else if ( o instanceof Symbol ) {
                             if ( items.size() == 0  ) {
                                 throw new RuntimeException("error : no item was created");

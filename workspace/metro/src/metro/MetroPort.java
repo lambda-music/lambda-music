@@ -3,8 +3,6 @@ package metro;
 import org.jaudiolibs.jnajack.JackPort;
 import org.jaudiolibs.jnajack.JackPortFlags;
 
-import lamu.lib.evaluators.SchemeUtils;
-
 public class MetroPort {
     boolean valid = true;
     Object name;
@@ -30,7 +28,7 @@ public class MetroPort {
     
     @Override
     public String toString() {
-        return SchemeUtils.anyToString( name );
+        return Utils.anyToString( name );
     }
     @Override
     public boolean equals(Object obj) {
