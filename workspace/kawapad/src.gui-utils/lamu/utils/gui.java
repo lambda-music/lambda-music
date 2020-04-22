@@ -4,11 +4,11 @@ import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Values;
 import gnu.mapping.WrongArguments;
-import lamu.lib.doc.LamuDocument;
-import lamu.lib.evaluators.InvokableSchemeProcedure;
-import lamu.lib.evaluators.SchemeValues;
-import lamu.lib.scheme.proc.MultipleNamedProcedure0;
-import lamu.lib.scheme.proc.MultipleNamedProcedureN;
+import lamu.lib.helps.LamuDocument;
+import lamu.lib.kawautils.InvokableSchemeProcedure;
+import lamu.lib.kawautils.SchemeValues;
+import lamu.lib.kawautils.procedures.MultipleNamedProcedure0;
+import lamu.lib.kawautils.procedures.MultipleNamedProcedureN;
 import lamu.utils.lib.PulsarGuiUtils;
 import lamu.utils.lib.PulsarSharedTimer;
 

@@ -5,8 +5,8 @@ import java.util.Collection;
 import java.util.Deque;
 
 import lamu.lib.app.ApplicationVessel;
-import lamu.lib.app.args.ArgsCommand;
-import lamu.lib.app.args.ArgsCommandState;
+import lamu.lib.args.ArgsCommand;
+import lamu.lib.args.ArgsCommandState;
 import lamu.lib.stream.Stream;
 
 /**

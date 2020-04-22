@@ -7,6 +7,5 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/lib-loggerutils"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/lib-lamu"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/lib-kawautils"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/lib"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -10,10 +10,10 @@ import java.util.logging.Level;
 import javax.swing.JSplitPane;
 
 import gnu.mapping.Procedure;
-import lamu.lib.evaluators.SchemeValues;
+import lamu.lib.kawautils.SchemeValues;
+import lamu.lib.kawautils.procedures.MultipleNamedProcedure1;
+import lamu.lib.kawautils.procedures.MultipleNamedProcedureN;
 import lamu.lib.log.Logger;
-import lamu.lib.scheme.proc.MultipleNamedProcedure1;
-import lamu.lib.scheme.proc.MultipleNamedProcedureN;
 import lamu.utils.lib.JNamedPanel;
 
 public class PulsarGui {

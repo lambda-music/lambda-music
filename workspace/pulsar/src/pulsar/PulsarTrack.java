@@ -3,7 +3,7 @@ package pulsar;
 import java.util.Collection;
 
 import gnu.lists.LList;
-import lamu.lib.evaluators.Invokable;
+import lamu.lib.Invokable;
 import metro.Metro;
 import metro.MetroSequence;
 import metro.MetroTrack;

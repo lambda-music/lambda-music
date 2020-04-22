@@ -14,7 +14,7 @@ import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import gnu.math.IntNum;
 import gnu.math.RealNum;
-import lamu.lib.evaluators.SchemeValues;
+import lamu.lib.kawautils.SchemeValues;
 import metro.Metro;
 import metro.MetroPort;
 import metro.MetroSyncType;

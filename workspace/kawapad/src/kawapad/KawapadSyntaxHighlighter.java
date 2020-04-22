@@ -11,7 +11,7 @@ import javax.swing.text.AttributeSet;
 
 import gnu.lists.LList;
 import lamu.lib.evaluators.SchemeResult;
-import lamu.lib.evaluators.SchemeValues;
+import lamu.lib.kawautils.SchemeValues;
 
 public class KawapadSyntaxHighlighter extends SyntaxHighlighter {
     private static final boolean DEBUG=false;

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/java-8-openjdk-amd64"/>
+	<classpathentry kind="src" path="src.evaluators"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/lib-kawautils"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/lib-lamu"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/lib-loggerutils"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

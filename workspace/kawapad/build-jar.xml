@@ -13,7 +13,7 @@
                 <attribute name="Class-Path" value="."/>
             </manifest>
             <fileset dir="${dir.jarfile}/bin"/>
-            <fileset dir="${dir.workspace}/lib/bin"/>
+            <fileset dir="${dir.workspace}/lib-evaluators/bin"/>
             <fileset dir="${dir.workspace}/lib-lamu/bin"/>
             <fileset dir="${dir.workspace}/lib-kawautils/bin"/>
             <fileset dir="${dir.workspace}/lib-loggerutils/bin"/>

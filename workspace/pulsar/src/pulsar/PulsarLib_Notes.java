@@ -4,9 +4,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import gnu.mapping.Environment;
-import lamu.lib.doc.LamuDocument;
-import lamu.lib.doc.NoteListSynopsisFormatter;
-import lamu.lib.evaluators.SchemeValues;
+import lamu.lib.helps.LamuDocument;
+import lamu.lib.helps.NoteListSynopsisFormatter;
+import lamu.lib.kawautils.SchemeValues;
 
 public class PulsarLib_Notes {
     public static final String NOTES_ID = "pulsar-notations";

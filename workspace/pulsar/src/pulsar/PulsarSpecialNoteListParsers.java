@@ -69,8 +69,8 @@ import java.util.logging.Level;
 import gnu.lists.LList;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
-import lamu.lib.evaluators.EvaluatorUtils;
-import lamu.lib.evaluators.SchemeValues;
+import lamu.lib.kawautils.InvokableSchemeProcedure;
+import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.log.Logger;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
@@ -396,7 +396,7 @@ public class PulsarSpecialNoteListParsers {
             Object[] args = {};
             // See the note ... XXX_SYNC_01
             ((MetroBufferedMidiReceiver<T>) buffer).exec( offset, 
-                    EvaluatorUtils.createRunnableAndInvocable( procedure0, args ));
+                    InvokableSchemeProcedure.createRunnableAndInvocable( procedure0, args ));
         }
         
         public LList exec(double offset, Runnable runnable) {

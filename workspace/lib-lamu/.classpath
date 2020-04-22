@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="src.commons"/>
+	<classpathentry kind="src" path="src.apps"/>
+	<classpathentry kind="src" path="src.streams"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/lib-loggerutils"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

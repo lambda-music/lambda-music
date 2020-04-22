@@ -17,18 +17,18 @@ import lamu.lib.ForceLoadingClass;
 import lamu.lib.Version;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.app.ApplicationVessel;
-import lamu.lib.app.args.ArgsCommand;
-import lamu.lib.app.args.ArgsCommandEcho;
-import lamu.lib.app.args.ArgsCommandExec;
-import lamu.lib.app.args.ArgsCommandFork;
-import lamu.lib.app.args.ArgsCommandLoad;
-import lamu.lib.app.args.ArgsCommandMacro;
-import lamu.lib.app.args.ArgsCommandState;
-import lamu.lib.app.process.ForkedProcess;
-import lamu.lib.doc.LamuDocument;
+import lamu.lib.args.ArgsCommand;
+import lamu.lib.args.ArgsCommandEcho;
+import lamu.lib.args.ArgsCommandExec;
+import lamu.lib.args.ArgsCommandFork;
+import lamu.lib.args.ArgsCommandLoad;
+import lamu.lib.args.ArgsCommandMacro;
+import lamu.lib.args.ArgsCommandState;
+import lamu.lib.args.forking.ForkedProcess;
 import lamu.lib.evaluators.SchemeEngineLib;
 import lamu.lib.evaluators.SchemeEvaluatorLib;
 import lamu.lib.evaluators.repl.SimpleReplService;
+import lamu.lib.helps.LamuDocument;
 import lamu.lib.log.Logger;
 import lamu.lib.procs.InstanceManagerComponent;
 import lamu.lib.stream.NullStream;
@@ -221,7 +221,7 @@ public class LamuApplication {
      * (Sun, 29 Mar 2020 03:35:24 +0900)
      * 
      * (Tue, 21 Apr 2020 12:27:44 +0900)
-     * Moved from {@link lamu.lib.app.args.ArgsCommandState}
+     * Moved from {@link lamu.lib.args.ArgsCommandState}
      */
     static void initState( LamuCommandState state ) {
         if ( ConsoleChecker.consoleExists() ) {

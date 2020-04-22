@@ -11,7 +11,7 @@ import java.util.logging.Level;
 
 import gnu.lists.AbstractSequence;
 import gnu.lists.Pair;
-import lamu.lib.evaluators.SchemeValues;
+import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.log.Logger;
 
 public class LayoutUtils {

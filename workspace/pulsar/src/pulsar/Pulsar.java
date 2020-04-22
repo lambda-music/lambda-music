@@ -35,10 +35,10 @@ import javax.swing.JComboBox;
 
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
+import lamu.lib.Invokable;
 import lamu.lib.app.ApplicationComponent;
-import lamu.lib.evaluators.Invokable;
-import lamu.lib.evaluators.InvokableSchemeProcedure;
-import lamu.lib.evaluators.SchemeValues;
+import lamu.lib.kawautils.InvokableSchemeProcedure;
+import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.log.Logger;
 import metro.Metro;
 import metro.MetroException;

@@ -61,13 +61,13 @@ import javax.swing.event.ChangeListener;
 
 import gnu.mapping.Values;
 import kawapad.KawapadFrame;
+import lamu.lib.Invokable;
 import lamu.lib.app.ApplicationComponent;
 import lamu.lib.evaluators.AsyncEvaluator;
 import lamu.lib.evaluators.EvaluatorReceiver;
-import lamu.lib.evaluators.Invokable;
 import lamu.lib.evaluators.MultiplexEvaluator;
 import lamu.lib.evaluators.SchemeResult;
-import lamu.lib.evaluators.SchemeValues;
+import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.log.Logger;
 import lamu.lib.log.SimpleConsole;
 import lamu.lib.swing.AcceleratorKeyList;

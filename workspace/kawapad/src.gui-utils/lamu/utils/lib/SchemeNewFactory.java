@@ -58,9 +58,9 @@ import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import gnu.math.IntNum;
-import lamu.lib.evaluators.Invokable;
-import lamu.lib.evaluators.InvokableSchemeProcedure;
-import lamu.lib.evaluators.SchemeValues;
+import lamu.lib.Invokable;
+import lamu.lib.kawautils.InvokableSchemeProcedure;
+import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.log.Logger;
 
 public abstract class SchemeNewFactory {

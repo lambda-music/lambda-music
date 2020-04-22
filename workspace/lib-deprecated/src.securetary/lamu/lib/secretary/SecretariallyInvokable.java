@@ -1,6 +1,6 @@
 package lamu.lib.secretary;
 
-import lamu.lib.evaluators.Invokable;
+import lamu.lib.Invokable;
 
 public class SecretariallyInvokable<R> implements Invokable {
     private SecretaryMessageQueue<R> messageQueue;

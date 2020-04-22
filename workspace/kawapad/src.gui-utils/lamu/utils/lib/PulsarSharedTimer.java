@@ -1,6 +1,6 @@
 package lamu.utils.lib;
 
-import lamu.lib.evaluators.Invokable;
+import lamu.lib.Invokable;
 
 public class PulsarSharedTimer {
     public static final java.util.Timer timer = new java.util.Timer("PulsarTimer", true );

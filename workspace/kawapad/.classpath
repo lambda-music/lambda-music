@@ -4,9 +4,9 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="src.action"/>
 	<classpathentry kind="src" path="src.gui-utils"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/lib"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/lib-kawautils"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/lib-lamu"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/lib-loggerutils"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/lib-evaluators"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

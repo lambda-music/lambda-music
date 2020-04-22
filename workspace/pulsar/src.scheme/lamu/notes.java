@@ -1,10 +1,10 @@
 package lamu;
 
-import lamu.lib.evaluators.SchemeEvaluatorUtils;
+import lamu.lib.kawautils.SchemeEvaluation;
 
 public class notes implements Runnable {
     @Override
     public void run() {
-        SchemeEvaluatorUtils.executeResourceInTheCurrentContext( this.getClass(), "lib/basic-notes.scm"  );
+        SchemeEvaluation.executeResourceInTheCurrentContext( this.getClass(), "lib/basic-notes.scm"  );
     }
 }

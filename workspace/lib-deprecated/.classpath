@@ -4,7 +4,6 @@
 	<classpathentry kind="src" path="src.securetary"/>
 	<classpathentry kind="src" path="src.thread-current"/>
 	<classpathentry kind="src" path="src.thread-initializers"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/lib"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/lib-kawautils"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/lib-lamu"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/lib-loggerutils"/>

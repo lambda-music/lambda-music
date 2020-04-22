@@ -7,53 +7,56 @@
     <property environment="env"/>
     <property name="lamu.location" value="../lamu"/>
     <property name="pulsar-gui.location" value="../pulsar-gui"/>
-    <property name="lib-lamu.location" value="../lib-lamu"/>
     <property name="lib-loggerutils.location" value="../lib-loggerutils"/>
+    <property name="lib-lamu.location" value="../lib-lamu"/>
     <property name="lib-kawautils.location" value="../lib-kawautils"/>
-    <property name="lib.location" value="../lib"/>
+    <property name="lib-evaluators.location" value="../lib-evaluators"/>
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.8"/>
     <property name="source" value="1.8"/>
-    <path id="lib-lamu.classpath">
-        <pathelement location="${lib-lamu.location}/bin"/>
-    </path>
     <path id="lib-loggerutils.classpath">
         <pathelement location="${lib-loggerutils.location}/bin"/>
     </path>
+    <path id="lib-lamu.classpath">
+        <pathelement location="${lib-lamu.location}/bin"/>
+        <path refid="lib-loggerutils.classpath"/>
+    </path>
     <path id="lib-kawautils.classpath">
-        <pathelement location="${lib-kawautils.location}/bin"/>
         <pathelement location="${lib-kawautils.location}/lib/kawa.jar"/>
+        <pathelement location="${lib-kawautils.location}/bin"/>
         <path refid="lib-lamu.classpath"/>
         <path refid="lib-loggerutils.classpath"/>
     </path>
-    <path id="lib.classpath">
-        <pathelement location="${lib.location}/bin"/>
+    <path id="lib-evaluators.classpath">
+        <pathelement location="${lib-evaluators.location}/bin"/>
         <path refid="lib-kawautils.classpath"/>
         <path refid="lib-lamu.classpath"/>
         <path refid="lib-loggerutils.classpath"/>
     </path>
     <path id="kawapad.classpath">
         <pathelement location="bin"/>
-        <pathelement location="kawapad.jar"/>
-        <path refid="lib.classpath"/>
         <path refid="lib-kawautils.classpath"/>
         <path refid="lib-lamu.classpath"/>
         <path refid="lib-loggerutils.classpath"/>
+        <path refid="lib-evaluators.classpath"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src">
+                <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src.action">
+                <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src.gui-utils">
+                <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
@@ -62,17 +65,17 @@
         <delete dir="bin"/>
     </target>
     <target depends="clean" name="cleanall">
-        <ant antfile="build.xml" dir="${lib-lamu.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${lib-loggerutils.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${lib-lamu.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${lib-kawautils.location}" inheritAll="false" target="clean"/>
-        <ant antfile="build.xml" dir="${lib.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${lib-evaluators.location}" inheritAll="false" target="clean"/>
     </target>
     <target depends="build-subprojects,build-project" name="build"/>
     <target name="build-subprojects">
-        <ant antfile="build.xml" dir="${lib-lamu.location}" inheritAll="false" target="build-project"/>
         <ant antfile="build.xml" dir="${lib-loggerutils.location}" inheritAll="false" target="build-project"/>
+        <ant antfile="build.xml" dir="${lib-lamu.location}" inheritAll="false" target="build-project"/>
         <ant antfile="build.xml" dir="${lib-kawautils.location}" inheritAll="false" target="build-project"/>
-        <ant antfile="build.xml" dir="${lib.location}" inheritAll="false" target="build-project"/>
+        <ant antfile="build.xml" dir="${lib-evaluators.location}" inheritAll="false" target="build-project"/>
     </target>
     <target depends="init" name="build-project">
         <echo message="${ant.project.name}: ${ant.file}"/>
