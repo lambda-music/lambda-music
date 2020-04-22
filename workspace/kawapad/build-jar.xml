@@ -17,6 +17,7 @@
             <fileset dir="${dir.workspace}/lib-lamucommons/bin"/>
             <fileset dir="${dir.workspace}/lib-kawautils/bin"/>
             <fileset dir="${dir.workspace}/lib-loggerutils/bin"/>
+            <fileset dir="${dir.workspace}/lib-procs/bin"/>
             <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/lib-kawautils/lib/kawa.jar"/>
         </jar>
     </target>

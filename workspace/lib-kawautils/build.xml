@@ -10,6 +10,7 @@
     <property name="lib-args.location" value="../lib-args"/>
     <property name="lib-deprecated.location" value="../lib-deprecated"/>
     <property name="lib-evaluators.location" value="../lib-evaluators"/>
+    <property name="lib-procs.location" value="../lib-procs"/>
     <property name="pulsar.location" value="../pulsar"/>
     <property name="pulsar-gui.location" value="../pulsar-gui"/>
     <property name="lib-loggerutils.location" value="../lib-loggerutils"/>
@@ -83,6 +84,8 @@
         <ant antfile="build.xml" dir="${lib-deprecated.location}" inheritAll="false" target="build"/>
         <ant antfile="build.xml" dir="${lib-evaluators.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${lib-evaluators.location}" inheritAll="false" target="build"/>
+        <ant antfile="build.xml" dir="${lib-procs.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${lib-procs.location}" inheritAll="false" target="build"/>
         <ant antfile="build.xml" dir="${pulsar.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${pulsar.location}" inheritAll="false" target="build"/>
         <ant antfile="build.xml" dir="${pulsar-gui.location}" inheritAll="false" target="clean"/>

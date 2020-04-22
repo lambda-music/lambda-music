@@ -12,6 +12,7 @@
     <property name="lib-evaluators.location" value="../lib-evaluators"/>
     <property name="lib-kawautils.location" value="../lib-kawautils"/>
     <property name="lib-lamucommons.location" value="../lib-lamucommons"/>
+    <property name="lib-procs.location" value="../lib-procs"/>
     <property name="metro.location" value="../metro"/>
     <property name="pulsar.location" value="../pulsar"/>
     <property name="pulsar-gui.location" value="../pulsar-gui"/>
@@ -58,6 +59,8 @@
         <ant antfile="build.xml" dir="${lib-kawautils.location}" inheritAll="false" target="build"/>
         <ant antfile="build.xml" dir="${lib-lamucommons.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${lib-lamucommons.location}" inheritAll="false" target="build"/>
+        <ant antfile="build.xml" dir="${lib-procs.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${lib-procs.location}" inheritAll="false" target="build"/>
         <ant antfile="build.xml" dir="${metro.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${metro.location}" inheritAll="false" target="build"/>
         <ant antfile="build.xml" dir="${pulsar.location}" inheritAll="false" target="clean"/>

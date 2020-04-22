@@ -21,6 +21,7 @@
             <fileset dir="${dir.workspace}/lib-kawautils/bin"/>
             <fileset dir="${dir.workspace}/lib-lamucommons/bin"/>
             <fileset dir="${dir.workspace}/lib-loggerutils/bin"/>
+            <fileset dir="${dir.workspace}/lib-procs/bin"/>
             <fileset dir="${dir.workspace}/kawapad/bin"/>
             <fileset dir="${dir.workspace}/lamu/bin"/>
             <fileset dir="${dir.workspace}/metro/bin"/>

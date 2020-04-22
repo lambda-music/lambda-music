@@ -11,5 +11,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/pulsar-gui"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/lib-evaluators"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/lib-args"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/lib-procs"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- WARNING: Eclipse auto-generated file.
+              Any modifications will be overwritten.
+              To include a user specific buildfile here, simply create one in the same
+              directory with the processing instruction <?eclipse.ant.import?>
+              as the first entry and export the buildfile again. --><project basedir="." default="build" name="lib-procs">
+    <property environment="env"/>
+    <property name="lamu.location" value="../lamu"/>
+    <property name="lib-args.location" value="../lib-args"/>
+    <property name="lib-loggerutils.location" value="../lib-loggerutils"/>
+    <property name="lib-lamucommons.location" value="../lib-lamucommons"/>
+    <property name="lib-kawautils.location" value="../lib-kawautils"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.8"/>
+    <property name="source" value="1.8"/>
+    <path id="lib-loggerutils.classpath">
+        <pathelement location="${lib-loggerutils.location}/bin"/>
+    </path>
+    <path id="lib-lamucommons.classpath">
+        <pathelement location="${lib-lamucommons.location}/bin"/>
+        <path refid="lib-loggerutils.classpath"/>
+    </path>
+    <path id="lib-kawautils.classpath">
+        <pathelement location="${lib-kawautils.location}/lib/kawa.jar"/>
+        <pathelement location="${lib-kawautils.location}/bin"/>
+        <path refid="lib-lamucommons.classpath"/>
+        <path refid="lib-loggerutils.classpath"/>
+    </path>
+    <path id="lib-procs.classpath">
+        <pathelement location="bin"/>
+        <path refid="lib-lamucommons.classpath"/>
+        <path refid="lib-loggerutils.classpath"/>
+        <path refid="lib-kawautils.classpath"/>
+    </path>
+    <target name="init">
+        <mkdir dir="bin"/>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src.procs">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete dir="bin"/>
+    </target>
+    <target depends="clean" name="cleanall">
+        <ant antfile="build.xml" dir="${lib-loggerutils.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${lib-lamucommons.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${lib-kawautils.location}" inheritAll="false" target="clean"/>
+    </target>
+    <target depends="build-subprojects,build-project" name="build"/>
+    <target name="build-subprojects">
+        <ant antfile="build.xml" dir="${lib-loggerutils.location}" inheritAll="false" target="build-project"/>
+        <ant antfile="build.xml" dir="${lib-lamucommons.location}" inheritAll="false" target="build-project"/>
+        <ant antfile="build.xml" dir="${lib-kawautils.location}" inheritAll="false" target="build-project"/>
+    </target>
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
+            <src path="src.procs"/>
+            <classpath refid="lib-procs.classpath"/>
+        </javac>
+    </target>
+    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects">
+        <ant antfile="build.xml" dir="${lamu.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${lamu.location}" inheritAll="false" target="build"/>
+        <ant antfile="build.xml" dir="${lib-args.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${lib-args.location}" inheritAll="false" target="build"/>
+    </target>
+</project>
