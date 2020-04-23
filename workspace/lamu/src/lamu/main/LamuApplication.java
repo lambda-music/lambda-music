@@ -114,7 +114,7 @@ public class LamuApplication {
         
         availableCommands.add( new ArgsCommandFork( "lamu", LamuApplication.class, forkListener ));
         availableCommands.add( new ArgsCommandLoad( "load" ) );
-        availableCommands.add( new ArgsCommandExec( "exec" ) );
+        availableCommands.add( new ArgsCommandExec( DEFAULT_COMMAND_EXEC ) );
         availableCommands.add( new ArgsCommandEcho( "echo" ) );
         availableCommands.addAll( ArgsCommandMacro.load( getInitFile() ) );
 
@@ -129,7 +129,7 @@ public class LamuApplication {
         
         availableCommands.add( ArgsCommandMacro.create( 
             DEFAULT_COMMAND + " " + 
-            DEFAULT_COMMAND_OPEN + " $*{$}" ));
+            DEFAULT_COMMAND_EXEC + " $*{$}" ));
 
         return availableCommands;
     }
@@ -168,6 +168,7 @@ public class LamuApplication {
                 String commandName = outNamedArgs.get( "command" ).getValue();
                 logInfo( "default mode command : --command=" + commandName );
                 arguments.addAll( 0, Arrays.asList(  TRIGGER_FOR_ADVANCED_COMMAND_MODE, commandName ) );
+
                 
             } else if ( outNamedArgs.containsKey( "exec" ) || outNamedArgs.containsKey( "e" ) ) {
                 // --exec/-e are equivalent to --command=exec
@@ -182,9 +183,12 @@ public class LamuApplication {
                 String fileName = outNamedArgs.get( "load" ).getValue();
                 logInfo( "default mode command : --load=" + fileName );
                 arguments.addAll( 0, Arrays.asList(  TRIGGER_FOR_ADVANCED_COMMAND_MODE, DEFAULT_COMMAND_LOAD, fileName ) );
-                
+            } else if ( outNamedArgs.containsKey( "open" ) || outNamedArgs.containsKey( "o" ) ) {
+                // --open/-o are equivalent to --command=open
+                logInfo( "default mode command : --open" );
+                arguments.addAll( 0, Arrays.asList(  TRIGGER_FOR_ADVANCED_COMMAND_MODE, DEFAULT_COMMAND_OPEN ) );
             } else {
-                // The default command.
+                // The default command. This is equivalent to `--command=default`. See  DEFAULT_COMMAND.
                 arguments.addAll( 0, Arrays.asList(  TRIGGER_FOR_ADVANCED_COMMAND_MODE, DEFAULT_COMMAND ) );
             }
         }
