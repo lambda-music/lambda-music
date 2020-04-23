@@ -56,6 +56,8 @@ public interface PulsarLib {
     Procedure getQuit();
     Procedure getTapTempo();
     Procedure getSetTempo();
+    Procedure getGetTempo();
+    Procedure getGetBarsPerSecond();
     Procedure getRewind();
     Procedure getSimultaneous();
     Procedure getGetTrack();
@@ -124,6 +126,12 @@ public interface PulsarLib {
 
         public default Procedure getSetTempo() {
             return getPulsarLibImplementation().getSetTempo();
+        }
+        public default Procedure getGetTempo() {
+            return getPulsarLibImplementation().getGetTempo();
+        }
+        public default Procedure getGetBarsPerSecond() {
+            return getPulsarLibImplementation().getGetBarsPerSecond();
         }
 
         public default Procedure getTapTempo() {
@@ -1175,7 +1183,37 @@ public interface PulsarLib {
             }
         }
 
-        public final SetTempoProc setTempoProc = new SetTempoProc(new String[] { "set-tempo" });
+        
+        public final GetTempoProc getTempoProc = new GetTempoProc(new String[] { "get-tempo", "getbpm" });
+        @Override
+        public Procedure getGetTempo() { return getTempoProc; }
+        public final class GetTempoProc extends MultipleNamedProcedureN {
+            public GetTempoProc(String[] names) {
+                super(names);
+            }
+            @Override
+            public Object applyN(Object[] args) throws Throwable {
+                return getPulsar().getBeatsPerMinute();
+            }
+        }
+
+        public static final GetTempoDoc getTempoDoc =  new GetTempoDoc();
+        public static final class GetTempoDoc extends PulsarProceduralDescriptiveDoc {
+            {
+                setCategory( Pulsar.DOCS_ID );
+                setNames( "get-tempo" );
+                setParameterDescription( "" );
+                setReturnValueDescription( "::number" );
+                setShortDescription( "gets the current tempo. " );
+                setLongDescription( ""
+                                    + "This procedure returns the value of current tempo as a beat-per-minutes value. "
+                                    + "See (help tap-tempo) for further information."
+                                    + THROWS_AN_ERROR_IF_NOT_OPEN );
+            }
+        }
+
+        
+        public final SetTempoProc setTempoProc = new SetTempoProc(new String[] { "set-tempo", "setbpm" });
         @Override
         public Procedure getSetTempo() { return setTempoProc; }
         public final class SetTempoProc extends MultipleNamedProcedureN {
@@ -1214,6 +1252,36 @@ public interface PulsarLib {
             }
         }
 
+
+        public final GetBarsPerSecondProc getBarsPerSecondProc = new GetBarsPerSecondProc(new String[] { "get-bars-per-second", "bps" });
+        @Override
+        public Procedure getGetBarsPerSecond() { return getBarsPerSecondProc; }
+        public final class GetBarsPerSecondProc extends MultipleNamedProcedureN {
+            public GetBarsPerSecondProc(String[] names) {
+                super(names);
+            }
+            @Override
+            public Object applyN(Object[] args) throws Throwable {
+                return SchemeValues.toSchemeNumber( getPulsar().getBarsPerSecond() );
+            }
+        }
+
+        public static final GetBarsPerSecondDoc getSecondDoc =  new GetBarsPerSecondDoc();
+        public static final class GetBarsPerSecondDoc extends PulsarProceduralDescriptiveDoc {
+            {
+                setCategory( Pulsar.DOCS_ID );
+                setNames( "get-bars-per-second" );
+                setParameterDescription( "" );
+                setReturnValueDescription( "::number" );
+                setShortDescription( "gets the current tempo. " );
+                setLongDescription( ""
+                                    + "This procedure returns the value of current tempo as a beat-per-minutes value. "
+                                    + "See (help tap-tempo) for further information."
+                                    + THROWS_AN_ERROR_IF_NOT_OPEN );
+            }
+        }
+
+        
         public final RewindProc rewindProc = new RewindProc(new String[] { "rewind" });
         @Override
         public Procedure getRewind() { return rewindProc; }
@@ -1832,7 +1900,9 @@ public interface PulsarLib {
             SchemeValues.defineLambda( env, stopProc );
             SchemeValues.defineLambda( env, quitProc );
             SchemeValues.defineLambda( env, tapTempoProc );
+            SchemeValues.defineLambda( env, getTempoProc );
             SchemeValues.defineLambda( env, setTempoProc );
+            SchemeValues.defineLambda( env, getBarsPerSecondProc );
             SchemeValues.defineLambda( env, rewindProc );
             SchemeValues.defineLambda( env, simultaneousProc );
             SchemeValues.defineLambda( env, getTrackProc );

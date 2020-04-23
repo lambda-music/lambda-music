@@ -133,6 +133,10 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         this.beatsPerBar = beatsPerBar;
         // reprepareTrack();
     }
+    
+    public double getBarsPerSecond() {
+        return beatsPerMinute/240d;
+    }
 
     /**
      * This property can control when a track creates the next sequence pattern. The

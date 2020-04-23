@@ -61,6 +61,7 @@ public class hello {
         return fieldNameIsIgnored;
     }
     
-    
-
+    public String doHello( String a ) {
+        return a + "hello";
+    }
 }
