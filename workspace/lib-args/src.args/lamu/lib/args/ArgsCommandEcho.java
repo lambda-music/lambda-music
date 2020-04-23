@@ -3,9 +3,15 @@ package lamu.lib.args;
 import java.util.List;
 
 public class ArgsCommandEcho extends ArgsCommand {
+    private String commandName = "echo";
+    public ArgsCommandEcho(String commandName) {
+        super();
+        this.commandName = commandName;
+    }
+
     @Override
     protected String commandName() {
-        return "echo";
+        return commandName;
     }
 
     @Override

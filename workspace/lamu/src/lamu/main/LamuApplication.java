@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +19,7 @@ import lamu.lib.ForceLoadingClass;
 import lamu.lib.Version;
 import lamu.lib.apps.ApplicationComponent;
 import lamu.lib.apps.ApplicationVessel;
+import lamu.lib.args.Args;
 import lamu.lib.args.ArgsCommand;
 import lamu.lib.args.ArgsCommandEcho;
 import lamu.lib.args.ArgsCommandExec;
@@ -24,6 +27,7 @@ import lamu.lib.args.ArgsCommandFork;
 import lamu.lib.args.ArgsCommandLoad;
 import lamu.lib.args.ArgsCommandMacro;
 import lamu.lib.args.ArgsCommandState;
+import lamu.lib.args.ArgsNamedArgument;
 import lamu.lib.args.forking.ForkedProcess;
 import lamu.lib.evaluators.SchemeEngineLib;
 import lamu.lib.evaluators.SchemeEvaluatorLib;
@@ -41,63 +45,20 @@ import pulsar.PulsarLib_Notes;
 import pulsar.PulsarLib_Procs;
 
 public class LamuApplication {
+    static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
+    static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
+    static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
+    static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }
+    
+    //
+    private LamuApplication() {
+    }
+
     // (Sun, 29 Mar 2020 23:16:11 +0900)
     static {
         readEnvironmentToSystemPropertyMap();
         initLogger();
     }
-
-    static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
-    static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
-    static void logInfo(String msg) { LOGGER.log(Level.INFO, msg); }
-    static void logWarn(String msg) { LOGGER.log(Level.WARNING, msg); }
-    private LamuApplication() {
-    }
-
-    static File getInitFile() {
-        return new File( System.getProperty("user.home"), ".lamu/default-arguments.conf");
-    }
-    
-    static List<ArgsCommand> createAvailableCommandList() throws IOException {
-        List<ArgsCommand> availableCommands = new ArrayList<>();
-        availableCommands.add( new LamuApplicationBuilder() );
-        
-        ArgsCommandFork.ForkListener forkListener = new ArgsCommandFork.ForkListener() {
-            @Override
-            public void notifyForkedProcess( ArgsCommandState state0, ForkedProcess process ) {
-                LamuCommandState state = (LamuCommandState) state0;
-                
-                // Create a vessel and put it to the vessel list.
-                ApplicationVessel vessel = new ApplicationVessel( "ForkedVessel" );
-                vessel.add( process );
-                
-                // Push it to the stack for vessels.
-                state.vessels.push( vessel );
-            }
-        };
-        
-        availableCommands.add( new ArgsCommandFork( "lamu", LamuApplication.class, forkListener ));
-        availableCommands.add( new ArgsCommandLoad() );
-        availableCommands.add( new ArgsCommandExec() );
-        availableCommands.add( new ArgsCommandEcho() );
-        availableCommands.addAll( ArgsCommandMacro.load( getInitFile() ) );
-
-        // this is a fall back.
-        availableCommands.add( ArgsCommandMacro.create( 
-                    LamuScript.DEFAULT_COMMAND_LOAD + " " + 
-                    " create scheme + pulsar + repl $*{--load=$} +" ));
-
-        availableCommands.add( ArgsCommandMacro.create( 
-                    LamuScript.DEFAULT_COMMAND_OPEN + " " + 
-                    " create scheme + pulsar + repl + gui $*{$} +" ));
-        
-        availableCommands.add( ArgsCommandMacro.create( 
-            LamuScript.DEFAULT_COMMAND + " " + 
-            LamuScript.DEFAULT_COMMAND_OPEN + " $*{$}" ));
-
-        return availableCommands;
-    }
-
 
     static void loadBasicClasses() {
         // For documentation.
@@ -122,7 +83,127 @@ public class LamuApplication {
         
         LamuDocument.debugOut();
     }
+    static File getInitFile() {
+        return new File( System.getProperty("user.home"), ".lamu/default-arguments.conf");
+    }
+    
+    static final String TRIGGER_FOR_ADVANCED_COMMAND_MODE = "advanced";
+    static final String DEFAULT_COMMAND_OPEN = "open";
+    static final String DEFAULT_COMMAND_EXEC = "exec";
+    static final String DEFAULT_COMMAND_LOAD = "load";
+    static final String DEFAULT_COMMAND      = "default";
 
+    
+    static List<ArgsCommand> createAvailableCommandList() throws IOException {
+        List<ArgsCommand> availableCommands = new ArrayList<>();
+        availableCommands.add( new LamuApplicationBuilder() );
+        
+        ArgsCommandFork.ForkListener forkListener = new ArgsCommandFork.ForkListener() {
+            @Override
+            public void notifyForkedProcess( ArgsCommandState state0, ForkedProcess process ) {
+                LamuCommandState state = (LamuCommandState) state0;
+                
+                // Create a vessel and put it to the vessel list.
+                ApplicationVessel vessel = new ApplicationVessel( "ForkedVessel" );
+                vessel.add( process );
+                
+                // Push it to the stack for vessels.
+                state.vessels.push( vessel );
+            }
+        };
+        
+        availableCommands.add( new ArgsCommandFork( "lamu", LamuApplication.class, forkListener ));
+        availableCommands.add( new ArgsCommandLoad( "load" ) );
+        availableCommands.add( new ArgsCommandExec( "exec" ) );
+        availableCommands.add( new ArgsCommandEcho( "echo" ) );
+        availableCommands.addAll( ArgsCommandMacro.load( getInitFile() ) );
+
+        // this is a fall back.
+        availableCommands.add( ArgsCommandMacro.create( 
+                    DEFAULT_COMMAND_LOAD + " " + 
+                    " create scheme + pulsar + repl $*{--load=$} +" ));
+
+        availableCommands.add( ArgsCommandMacro.create( 
+                    DEFAULT_COMMAND_OPEN + " " + 
+                    " create scheme + pulsar + repl + gui $*{$} +" ));
+        
+        availableCommands.add( ArgsCommandMacro.create( 
+            DEFAULT_COMMAND + " " + 
+            DEFAULT_COMMAND_OPEN + " $*{$}" ));
+
+        return availableCommands;
+    }
+
+    
+    public static void executeScript( ArgsCommandState state, String[] args ) throws IOException {
+        executeScript0( state, new ArrayList<>( Arrays.asList(args)) );
+    }
+    public static void executeScript0(ArgsCommandState state, List<String> arguments) {
+        // Put a proper default command.
+        defaultCommandInterpolation( arguments ); 
+
+        Args.executeScript( state, arguments );
+    }
+
+    /**
+     * Perform the default command interpolation on the passed argument list.
+     * 
+     * If the first element is not TRIGGER_FOR_ADVANCED_COMMAND_MODE, regard it as
+     * the "default mode". Let's put the TRIGGER_FOR_ADVANCED_COMMAND_MODE and a
+     * propert default command name which fits to the condition.
+     * 
+     * @param arguments
+     *    the target argument list
+     */
+    static void defaultCommandInterpolation(List<String> arguments) {
+        if ( arguments.size() == 0 || ! TRIGGER_FOR_ADVANCED_COMMAND_MODE.equals( arguments.get( 0 ))) {
+            List<String> outSeqArgs = new ArrayList<>();
+            Map<String, ArgsNamedArgument> outNamedArgs = new HashMap<>();
+            Args.parseArguments( arguments, outSeqArgs, outNamedArgs );
+
+            if ( false ) {
+                // 
+            } else if ( outNamedArgs.containsKey( "command" ) ) {
+                // --command=[command-name] invokes a specific command   
+                String commandName = outNamedArgs.get( "command" ).getValue();
+                logInfo( "default mode command : --command=" + commandName );
+                arguments.addAll( 0, Arrays.asList(  TRIGGER_FOR_ADVANCED_COMMAND_MODE, commandName ) );
+                
+            } else if ( outNamedArgs.containsKey( "exec" ) || outNamedArgs.containsKey( "e" ) ) {
+                // --exec/-e are equivalent to --command=exec
+                logInfo( "default mode command : --exec" );
+                arguments.addAll( 0, Arrays.asList(  TRIGGER_FOR_ADVANCED_COMMAND_MODE, DEFAULT_COMMAND_EXEC ) );
+                
+            } else if ( outNamedArgs.containsKey( "load" )) {
+                // --load is equivalent to --command=load. The purpos of this command is mainly
+                // to support shebang. Shebang accepts only one command-line argument with only one filename;
+                // shebang cannot accept command-line arguments more than two.
+                
+                String fileName = outNamedArgs.get( "load" ).getValue();
+                logInfo( "default mode command : --load=" + fileName );
+                arguments.addAll( 0, Arrays.asList(  TRIGGER_FOR_ADVANCED_COMMAND_MODE, DEFAULT_COMMAND_LOAD, fileName ) );
+                
+            } else {
+                // The default command.
+                arguments.addAll( 0, Arrays.asList(  TRIGGER_FOR_ADVANCED_COMMAND_MODE, DEFAULT_COMMAND ) );
+            }
+        }
+
+        // Remove the first element; at this point, it always equals to TRIGGER_FOR_ADVANCED_COMMAND_MODE. 
+        if ( ! TRIGGER_FOR_ADVANCED_COMMAND_MODE.equals( arguments.remove(0))) {
+            throw new Error( "internal error" );
+        };
+    }
+
+    
+    
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    
+    
     static void initKawaImportPath() {
         String value = System.getProperty("kawa.import.path");
         if (value == null)
@@ -271,7 +352,7 @@ public class LamuApplication {
         List<ArgsCommand> availableCommands = createAvailableCommandList();
         LamuCommandState state = new LamuCommandState( availableCommands );
         initState( state );
-        LamuScript.parse( state, args );
+        executeScript( state, args );
         
 
         List<ApplicationVessel> vesselList = new ArrayList<>( state.vessels );

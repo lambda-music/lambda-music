@@ -13,9 +13,15 @@ import java.util.Map;
 import lamu.lib.kawautils.SchemeValues;
 
 public class ArgsCommandExec extends ArgsCommand {
+    private String commandName = "exec";
+    public ArgsCommandExec(String commandName) {
+        super();
+        this.commandName = commandName;
+    }
+
     @Override
     protected String commandName() {
-        return "exec";
+        return commandName;
     }
     
     static <T> void setCollection( Collection<T> from, Collection<T> to ) {

@@ -8,9 +8,15 @@ import java.util.List;
 import java.util.Map;
 
 public class ArgsCommandLoad extends ArgsCommand {
+    private String commandName = "load";
+    public ArgsCommandLoad(String commandName) {
+        super();
+        this.commandName = commandName;
+    }
+
     @Override
     protected String commandName() {
-        return "load";
+        return commandName;
     }
     
     static <T> void setCollection( Collection<T> from, Collection<T> to ) {
