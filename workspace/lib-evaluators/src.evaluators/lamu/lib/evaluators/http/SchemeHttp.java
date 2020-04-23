@@ -22,7 +22,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
-import lamu.lib.app.ApplicationComponent;
+import lamu.lib.apps.ApplicationComponent;
 import lamu.lib.evaluators.MultiplexEvaluator;
 import lamu.lib.evaluators.SchemeResult;
 import lamu.lib.log.Logger;

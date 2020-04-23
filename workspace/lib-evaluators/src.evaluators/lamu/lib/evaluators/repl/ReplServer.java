@@ -8,9 +8,9 @@ import lamu.lib.evaluators.EvaluatorReceiver;
 import lamu.lib.evaluators.MultiplexEvaluator;
 import lamu.lib.evaluators.SchemeResult;
 import lamu.lib.evaluators.ThreadManager;
-import lamu.lib.stream.SisoReceiver;
-import lamu.lib.stream.SisoReceiverListener;
-import lamu.lib.stream.StdioStream;
+import lamu.lib.streams.SisoReceiver;
+import lamu.lib.streams.SisoReceiverListener;
+import lamu.lib.streams.StdioStream;
 
 public class ReplServer extends ReplClientServer {
     protected final ThreadManager threadManager;

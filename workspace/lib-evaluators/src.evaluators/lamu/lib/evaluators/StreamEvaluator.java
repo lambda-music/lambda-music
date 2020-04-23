@@ -14,10 +14,10 @@ import lamu.lib.evaluators.repl.ReplClient;
 import lamu.lib.evaluators.repl.ReplClient.ReplClientResultReceiver;
 import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.log.Logger;
-import lamu.lib.stream.NullOutputStream;
-import lamu.lib.stream.SisoReceiver;
-import lamu.lib.stream.Stream;
-import lamu.lib.stream.StreamPump;
+import lamu.lib.streams.NullOutputStream;
+import lamu.lib.streams.SisoReceiver;
+import lamu.lib.streams.Stream;
+import lamu.lib.streams.StreamPump;
 
 public class StreamEvaluator implements Evaluator, NameCaptionHolder {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

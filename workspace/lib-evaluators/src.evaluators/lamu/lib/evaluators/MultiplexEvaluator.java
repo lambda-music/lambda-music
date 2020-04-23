@@ -15,7 +15,7 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 
 import gnu.mapping.Procedure;
-import lamu.lib.app.ApplicationComponent;
+import lamu.lib.apps.ApplicationComponent;
 import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure1;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure2;

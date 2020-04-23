@@ -11,10 +11,10 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 
 import lamu.lib.log.Logger;
-import lamu.lib.stream.SisoReceiver;
-import lamu.lib.stream.SisoReceiverListener;
-import lamu.lib.stream.SisoReceiverMessage;
-import lamu.lib.stream.StdioStream;
+import lamu.lib.streams.SisoReceiver;
+import lamu.lib.streams.SisoReceiverListener;
+import lamu.lib.streams.SisoReceiverMessage;
+import lamu.lib.streams.StdioStream;
 
 public class ReplClient extends ReplClientServer {
     public static interface ReplClientResultReceiver {

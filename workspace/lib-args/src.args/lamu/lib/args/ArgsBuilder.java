@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-import lamu.lib.app.ApplicationComponent;
+import lamu.lib.apps.ApplicationComponent;
 import lamu.lib.log.Logger;
 
 public class ArgsBuilder {

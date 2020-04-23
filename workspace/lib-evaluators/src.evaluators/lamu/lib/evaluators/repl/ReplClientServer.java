@@ -7,9 +7,9 @@ import java.util.HashMap;
 import java.util.regex.Pattern;
 
 import lamu.lib.MersenneTwisterFast;
-import lamu.lib.stream.SisoReceiver;
-import lamu.lib.stream.SisoReceiverListener;
-import lamu.lib.stream.SisoReceiverServiceListener;
+import lamu.lib.streams.SisoReceiver;
+import lamu.lib.streams.SisoReceiverListener;
+import lamu.lib.streams.SisoReceiverServiceListener;
 
 public abstract class ReplClientServer implements SisoReceiverListener, SisoReceiverServiceListener {
     public static final String ERROR_COMMAND = "error";

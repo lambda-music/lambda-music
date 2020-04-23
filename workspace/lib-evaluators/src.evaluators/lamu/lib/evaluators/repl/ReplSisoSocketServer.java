@@ -5,9 +5,9 @@ import java.net.Socket;
 
 import lamu.lib.evaluators.MultiplexEvaluator;
 import lamu.lib.evaluators.ThreadManager;
-import lamu.lib.stream.JavaSocketStream;
-import lamu.lib.stream.SisoReceiver;
-import lamu.lib.stream.SisoSocketServer;
+import lamu.lib.streams.JavaSocketStream;
+import lamu.lib.streams.SisoReceiver;
+import lamu.lib.streams.SisoSocketServer;
 
 /**
  * Note that this class is not fully implemented. (Sun, 29 Mar 2020 04:13:01 +0900)

@@ -12,10 +12,10 @@ import lamu.lib.evaluators.EvaluatorReceiver;
 import lamu.lib.evaluators.MultiplexEvaluator;
 import lamu.lib.evaluators.SchemeResult;
 import lamu.lib.evaluators.ThreadManager;
-import lamu.lib.stream.SisoReceiver;
-import lamu.lib.stream.SisoReceiverListener;
-import lamu.lib.stream.SisoReceiverServiceListener;
-import lamu.lib.stream.StdioStream;
+import lamu.lib.streams.SisoReceiver;
+import lamu.lib.streams.SisoReceiverListener;
+import lamu.lib.streams.SisoReceiverServiceListener;
+import lamu.lib.streams.StdioStream;
 
 /**
  * An older version of {@link ReplClientServer}. This version adopts the

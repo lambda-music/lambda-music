@@ -11,10 +11,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
-import lamu.lib.app.ApplicationComponent;
+import lamu.lib.apps.ApplicationComponent;
 import lamu.lib.log.Logger;
 import lamu.lib.procs.InstanceManager;
-import lamu.lib.stream.Stream;
+import lamu.lib.streams.Stream;
 
 public class ForkedProcess implements ApplicationComponent, Stream {
     public static ForkedProcess forkJavaProcess( String canonicalNameOfMainClass, List<String> arguments ) {

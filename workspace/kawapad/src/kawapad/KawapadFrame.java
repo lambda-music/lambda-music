@@ -48,8 +48,8 @@ import javax.swing.SwingUtilities;
 
 import lamu.lib.ForceLoadingClass;
 import lamu.lib.Version;
-import lamu.lib.app.ApplicationComponent;
-import lamu.lib.app.ApplicationVessel;
+import lamu.lib.apps.ApplicationComponent;
+import lamu.lib.apps.ApplicationVessel;
 import lamu.lib.evaluators.MultiplexEvaluator;
 import lamu.lib.helps.LamuAbstractDocument;
 import lamu.lib.log.LogFormatter;

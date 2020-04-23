@@ -1,9 +1,9 @@
 package lamu.lib.evaluators.repl;
 
-import lamu.lib.stream.SisoReceiver;
-import lamu.lib.stream.SisoReceiverListener;
-import lamu.lib.stream.SisoReceiverServiceListener;
-import lamu.lib.stream.StdioStream;
+import lamu.lib.streams.SisoReceiver;
+import lamu.lib.streams.SisoReceiverListener;
+import lamu.lib.streams.SisoReceiverServiceListener;
+import lamu.lib.streams.StdioStream;
 
 public class SimpleReplService implements SisoReceiverListener, SisoReceiverServiceListener {
     @Override

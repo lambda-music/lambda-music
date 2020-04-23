@@ -84,7 +84,7 @@ import kawapad.KawapadSelection.ShrinkParenthesisSelector;
 import kawapad.KawapadSelection.SideParenthesisSelector;
 import kawapad.lib.undomanagers.GroupedUndoManager;
 import kawapad.lib.undomanagers.UndoManagers;
-import lamu.lib.app.ApplicationComponent;
+import lamu.lib.apps.ApplicationComponent;
 import lamu.lib.evaluators.AsyncEvaluator;
 import lamu.lib.evaluators.AsyncThreadManager;
 import lamu.lib.evaluators.EvaluatorReceiver;

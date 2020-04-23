@@ -1,6 +1,6 @@
 package lamu.lib.procs;
 
-import lamu.lib.app.ApplicationComponent;
+import lamu.lib.apps.ApplicationComponent;
 
 public final class InstanceManagerComponent implements ApplicationComponent {
     @Override
