@@ -9,7 +9,7 @@
     <target name="create_run_jar">
         <jar destfile="${dir.jarfile}/lamu.jar" filesetmanifest="mergewithoutmain">
             <manifest>
-                <attribute name="Main-Class" value="lamu.LamuApplication"/>
+                <attribute name="Main-Class" value="lamu.main.LamuApplication"/>
                 <attribute name="Class-Path" value="."/>
             </manifest>
             <zipfileset excludes="META-INF/*.SF" src="${dir.workspace}/metro/lib/jna-4.5.0.jar"/>

@@ -43,6 +43,7 @@
         <mkdir dir="bin"/>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src.args">
+                <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
@@ -73,20 +74,5 @@
     <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects">
         <ant antfile="build.xml" dir="${lamu.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${lamu.location}" inheritAll="false" target="build"/>
-    </target>
-    <target name="ReplClient">
-        <java classname="lamu.lib.evaluators.repl.ReplClient" failonerror="true" fork="yes">
-            <classpath refid="lib-args.classpath"/>
-        </java>
-    </target>
-    <target name="SchemeUtils">
-        <java classname="lamu.lib.evaluators.SchemeUtils" failonerror="true" fork="yes">
-            <classpath refid="lib-args.classpath"/>
-        </java>
-    </target>
-    <target name="ReplServer">
-        <java classname="lamu.lib.evaluators.repl.ReplServer" failonerror="true" fork="yes">
-            <classpath refid="lib-args.classpath"/>
-        </java>
     </target>
 </project>

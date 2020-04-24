@@ -36,35 +36,33 @@ public class ArgsCommandExec extends ArgsCommand {
         Map<String, ArgsNamedArgument> outNamedArgs = new HashMap<>();
         Args.parseArguments( arguments, outSeqArgs, outNamedArgs);
         
-        try {
-            // Get the first argument as a filename and remove it.
-            // Do no remove the current value because the current value should be used afterwards.
-            String uri = outSeqArgs.get(0);
+        if (outSeqArgs.isEmpty() ) {
             
-            // Read the file as a string value.
-            String content = new String( Files.readAllBytes( Paths.get(uri)), StandardCharsets.UTF_8 );
-            Object object = SchemeValues.string2lisp(content);
-            String contentLisp;
-            if ( object instanceof CharSequence ) {
-                contentLisp = SchemeValues.anyToString( object );
-            } else {
-                // Currently support only string values.
-                throw new Error( "the first element of the file as a Lisp list must be a string value " + object );
+        } else {
+            try {
+                // Get the first argument as a filename and remove it.
+                // Do no remove the current value because the current value should be used afterwards.
+                String uri = outSeqArgs.get(0);
+
+                // Read the file as a string value.
+                String content = new String( Files.readAllBytes( Paths.get(uri)), StandardCharsets.UTF_8 );
+                Object object = SchemeValues.string2lisp(content);
+                String contentLisp;
+                if ( object instanceof CharSequence ) {
+                    contentLisp = SchemeValues.anyToString( object );
+                } else {
+                    // Currently support only string values.
+                    throw new Error( "the first element of the file as a Lisp list must be a string value " + object );
+                }
+
+                // Parse the string value into a list of string values. 
+                List<String> scriptContent = ArgsQuotedStringSplitter.splitString(contentLisp); 
+
+                // Execute the string list as a script program.
+                Args.executeMacro( state, uri, scriptContent, arguments, outSeqArgs, outNamedArgs, recursiveCount  );
+            } catch (IOException e) {
+                throw new Error(e);
             }
-
-            // Parse the string value into a list of string values. 
-            List<String> scriptContent = ArgsQuotedStringSplitter.splitString(contentLisp); 
-            
-            // Execute the string list as a script program.
-            Args.executeMacro( state, uri, scriptContent, arguments, outSeqArgs, outNamedArgs, recursiveCount  );
-            
-
-        } catch (IOException e) {
-            throw new Error(e);
-        }
-
-        if ( arguments.isEmpty() ) {
-            throw new Error( "no argument was specified" );
         }
     }
 }

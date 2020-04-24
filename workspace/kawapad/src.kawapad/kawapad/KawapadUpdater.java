@@ -4,7 +4,6 @@ import javax.swing.SwingUtilities;
 
 import lamu.lib.evaluators.EvaluatorReceiver;
 import lamu.lib.evaluators.SchemeResult;
-import lamu.lib.log.SimpleConsole;
 
 public class KawapadUpdater {
     public static EvaluatorReceiver create(
@@ -93,7 +92,9 @@ public class KawapadUpdater {
                 // if error, insert anyway unless doReportError is false;
                 if ( doReportError ) {
                     procInsert( schemeResult, schemeScript );
-                	SimpleConsole.getConsole().addText( schemeResult.getError());
+                    
+                    // REMOVED (Fri, 24 Apr 2020 15:56:47 +0900)
+                	// SimpleConsole.getConsole().addText( schemeResult.getError());
                 }
             }
         }

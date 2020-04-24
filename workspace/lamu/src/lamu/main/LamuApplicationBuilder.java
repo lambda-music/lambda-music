@@ -727,10 +727,10 @@ public class LamuApplicationBuilder extends ArgsCommandBuild {
         builder.registerFactory( "gui",              new PulsarGuiArgumentParserElementFactory());
         builder.registerFactory( "http",             new SchemeHttpServerArgumentParserElementFactory());
         builder.registerFactory( "simple-repl",      new SimpleReplArgumentParserElementFactory());
-        builder.registerFactory( "logger-stream",    new LoggerArgumentParserElementFactory());
-        builder.registerFactory( "stdio-stream",     new StdioArgumentParserElementFactory());
-        builder.registerFactory( "null-stream",      new NullStreamArgumentParserElementFactory());
-        builder.registerFactory( "forked-stream",    new ForkedArgumentParserElementFactory());
+        builder.registerFactory( "loggerio",         new LoggerArgumentParserElementFactory());
+        builder.registerFactory( "stdio",            new StdioArgumentParserElementFactory());
+        builder.registerFactory( "nullio",           new NullStreamArgumentParserElementFactory());
+        builder.registerFactory( "forkio",           new ForkedArgumentParserElementFactory());
         
         builder.registerFactory( "reference",        new OutputReferenceArgumentParserElementFactory());
         builder.registerFactory( "reference-list",   new AllAvailableReferenceArgumentParserElementFactory());

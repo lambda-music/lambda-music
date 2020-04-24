@@ -33,6 +33,7 @@ import lamu.lib.evaluators.SchemeEngineLib;
 import lamu.lib.evaluators.SchemeEvaluatorLib;
 import lamu.lib.evaluators.repl.SimpleReplService;
 import lamu.lib.helps.LamuDocument;
+import lamu.lib.log.LogFormatter;
 import lamu.lib.log.Logger;
 import lamu.lib.procs.InstanceManagerComponent;
 import lamu.lib.streams.NullStream;
@@ -121,11 +122,11 @@ public class LamuApplication {
         // this is a fall back.
         availableCommands.add( ArgsCommandMacro.create( 
                     DEFAULT_COMMAND_LOAD + " " + 
-                    " create scheme + pulsar + repl $*{--load=$} +" ));
+                    " create scheme + repl $*{--load=$} +" ));
 
         availableCommands.add( ArgsCommandMacro.create( 
                     DEFAULT_COMMAND_OPEN + " " + 
-                    " create scheme + pulsar + repl + gui $*{$} +" ));
+                    " create scheme + repl + gui $*{$} +" ));
         
         availableCommands.add( ArgsCommandMacro.create( 
             DEFAULT_COMMAND + " " + 
@@ -156,7 +157,12 @@ public class LamuApplication {
      *    the target argument list
      */
     static void defaultCommandInterpolation(List<String> arguments) {
-        if ( arguments.size() == 0 || ! TRIGGER_FOR_ADVANCED_COMMAND_MODE.equals( arguments.get( 0 ))) {
+        if ( arguments.isEmpty() ) {
+            // --open/-o are equivalent to --command=open
+            logInfo( "default mode command : no arg; therefore, forwarded to `command=open`" );
+            arguments.addAll( 0, Arrays.asList(  TRIGGER_FOR_ADVANCED_COMMAND_MODE, DEFAULT_COMMAND_OPEN ) );
+            
+        } else if ( ! TRIGGER_FOR_ADVANCED_COMMAND_MODE.equals( arguments.get( 0 ))) {
             List<String> outSeqArgs = new ArrayList<>();
             Map<String, ArgsNamedArgument> outNamedArgs = new HashMap<>();
             Args.parseArguments( arguments, outSeqArgs, outNamedArgs );
@@ -339,6 +345,8 @@ public class LamuApplication {
         // e1.printStackTrace();
         // }
 
+        // Revived (Fri, 24 Apr 2020 15:43:57 +0900)
+        LogFormatter.init();
 
         // Initialize Kawa import path in the first place.
         initKawaImportPath();
@@ -346,7 +354,7 @@ public class LamuApplication {
         // This causes invoking various initialization procedures.
         loadBasicClasses();
 
-        System.err.println("*** WELCOME TO PULSAR ***");
+        System.err.println("*** WELCOME TO LAMU APPLICATION ***");
         System.err.println("VERSION : " + Version.get( Pulsar.class ));
         //		LogFormatter.init();
         LamuPrinter.init();

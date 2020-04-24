@@ -45,6 +45,7 @@
         <mkdir dir="bin"/>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src.pulsar">
+                <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
@@ -75,15 +76,5 @@
     <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects">
         <ant antfile="build.xml" dir="${lamu.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${lamu.location}" inheritAll="false" target="build"/>
-    </target>
-    <target name="PulsarLib.PulsarLibImplementation.PulsarLibCurrentValueImplementation">
-        <java classname="pulsar.PulsarLib$PulsarLibImplementation$PulsarLibCurrentValueImplementation" failonerror="true" fork="yes">
-            <classpath refid="pulsar.classpath"/>
-        </java>
-    </target>
-    <target name="PulsarMidiNoteListParsers">
-        <java classname="pulsar.PulsarMidiNoteListParsers" failonerror="true" fork="yes">
-            <classpath refid="pulsar.classpath"/>
-        </java>
     </target>
 </project>

@@ -5,8 +5,8 @@
     </tstamp>
     <property name="dir.buildfile" value="." />
     <property name="dir.workspace" value="${dir.buildfile}/.." />
-    <property name="file.pulsar.version" value="${dir.workspace}/pulsar/src/pulsar/version.txt" />
-    <property name="file.kawapad.version" value="${dir.workspace}/kawapad/src/kawapad/version.txt" />
+    <property name="file.pulsar.version" value="${dir.workspace}/pulsar/src.pulsar/pulsar/version.txt" />
+    <property name="file.kawapad.version" value="${dir.workspace}/kawapad/src.kawapad/kawapad/version.txt" />
     <echo message="${BUILD_DATE}" file="${file.kawapad.version}" />
     <echo message="${BUILD_DATE}" file="${file.pulsar.version}" />
 

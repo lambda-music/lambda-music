@@ -1914,6 +1914,7 @@ public interface PulsarLib {
             SchemeValues.defineLambda( env, listTracksProc );
             SchemeValues.defineLambda( env, clearTracksProc );
             SchemeValues.defineLambda( env, getMainTrackProc );
+            SchemeValues.defineVar( env, getPulsar(), Arrays.asList( "pu" ) );
         }
         
         public static class PulsarLibStaticValueImplementation extends PulsarLibImplementation {

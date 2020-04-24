@@ -398,6 +398,21 @@ JACK, it throws an exception.
 
 --------------------------------------------------------
 
+GET-TEMPO
+====================
+
+#### SYNOPSIS ####
+    (get-tempo)::number
+
+### DESCRIPTION ###
+gets the current tempo. This procedure returns the value of current tempo as a
+beat-per-minutes value. See \(help tap-tempo\) for further information.In case the current
+sequencer system has not established any connection to the JACK, it throws an exception.
+
+
+
+--------------------------------------------------------
+
 SET-TEMPO
 ====================
 
@@ -411,6 +426,21 @@ argument. thought, the result of passing extreme values to the procedure is not 
 
 See \(help tap-tempo\) for further information.In case the current sequencer
 system has not established any connection to the JACK, it throws an exception.
+
+
+
+--------------------------------------------------------
+
+GET-BARS-PER-SECOND
+====================
+
+#### SYNOPSIS ####
+    (get-bars-per-second)::number
+
+### DESCRIPTION ###
+gets the current tempo. This procedure returns the value of current tempo as a
+beat-per-minutes value. See \(help tap-tempo\) for further information.In case the current
+sequencer system has not established any connection to the JACK, it throws an exception.
 
 
 

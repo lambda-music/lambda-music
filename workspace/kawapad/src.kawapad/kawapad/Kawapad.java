@@ -1076,7 +1076,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         }
         //DocumentListener
         public void insertUpdate(DocumentEvent e) {
-            logInfo( "insert" );
+//            logInfo( "insert" );
 //            updateMatchingParentheses2(2);
             kawapad.fileModified = true;
 //              System.err.println("PulsarScratchPadTextPaneController.insertUpdate()");

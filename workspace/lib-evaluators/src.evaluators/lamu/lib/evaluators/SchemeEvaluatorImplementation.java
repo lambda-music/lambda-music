@@ -5,7 +5,11 @@ import java.io.IOException;
 import java.io.Reader;
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
+// MODIFIED ON (Fri, 24 Apr 2020 14:46:28 +0900) >>>
+//import lamu.lib.log.Logger;
+// MODIFIED ON (Fri, 24 Apr 2020 14:46:28 +0900) <<<
 import gnu.kawa.io.InPort;
 import gnu.kawa.io.OutPort;
 import gnu.kawa.io.Path;
@@ -13,7 +17,6 @@ import gnu.lists.Consumer;
 import gnu.mapping.CallContext;
 import kawa.Shell;
 import kawa.standard.Scheme;
-import lamu.lib.log.Logger;
 
 class SchemeEvaluatorImplementation {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
