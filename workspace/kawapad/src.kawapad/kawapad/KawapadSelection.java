@@ -46,10 +46,19 @@ public class KawapadSelection {
 
     static final int THE_FINAL_CORRECTION = 1;
 
-    static boolean expandSelectedParentheses(Kawapad textPane) {
+    public static boolean expandSelectedParentheses(Kawapad textPane) {
         return expandSelectedParentheses(textPane.getParenthesisStack(),
             getText(textPane.getDocument()),
             textPane.getCaret());
+    }
+    public static void expandSelectedParenthesesToTheOuterMost( Kawapad kawapad ) {
+        // In order to avoid entering an infinite loop,
+        // we use /for/ loop instead of /while/ loop;
+        for ( int i=0; i<100; i++ ) {
+            if ( expandSelectedParentheses( kawapad ) ) {
+                break;
+            }
+        }
     }
 
     static boolean expandSelectedParentheses(KawapadParenthesisStack stack, CharSequence text, Caret caret) {
@@ -942,5 +951,4 @@ public class KawapadSelection {
             }
         }
     }
-
 }

@@ -279,7 +279,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
             public Document createDefaultDocument() {
                 SyntaxHighlighterStyledDocument document = (SyntaxHighlighterStyledDocument) super.createDefaultDocument();
                 
-                document.addDocumentListener( kawapadListener );
+                document.addDocumentListener( kawapadDocumentListener );
                 
                 if ( ENABLED_SYNTAX_HIGHLIGHTING ) {
                     document.setDocumentFilter(getSyntaxHighlighter());
@@ -622,7 +622,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
                         
                     case "(" :
                     case ")" :
-                        kawapadListener.updateMatchingParentheses2(3);
+                        kawapadCaretListener.updateMatchingParentheses2(3);
 //                        kawapadListener.setCaretUpdateHighlightOffset(-1);
 //                        updateHighlightParenthesesLater( target, -1 );
 //                        highlightMatchningParentheses( kawapad, 0 );
@@ -1026,10 +1026,29 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     //
     //////////////////////////////////////////////////////////////////////////////////////////
     
+    private class KawapadDocumentListener implements DocumentListener  {
+        //DocumentListener
+        public void insertUpdate(DocumentEvent e) {
+//            logInfo( "insert" );
+//            updateMatchingParentheses2(2);
+            kawapad.fileModified = true;
+//              System.err.println("PulsarScratchPadTextPaneController.insertUpdate()");
+//            kp.updatePopup( Kawapad.this.getCaret() );
+        }
+        public void removeUpdate(DocumentEvent e) {
+            kawapad.fileModified = true;
+//              System.err.println("PulsarScratchPadTextPaneController.removeUpdate()");
+//            kp.updatePopup( Kawapad.this.getCaret() );
+        }
+        public void changedUpdate(DocumentEvent e) {
+//              fileModified = true;
+//              System.err.println("PulsarScratchPadTextPaneController.changedUpdate() : ignored");
+//            updatePopup( Kawapad.this.getCaret() );
+        }
+    }
     
-    
-    private class KawapadListenerProcessor implements CaretListener, DocumentListener  {
-        KawapadListenerProcessor() {
+    private class KawapadCaretListener implements CaretListener {
+        KawapadCaretListener() {
             super();
         }
         int offsetTTL = 0;
@@ -1046,6 +1065,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
             this.offsetTTL = i;
             updateMatchingParentheses2();
         }
+        
         // CaretListener
         public void caretUpdate(CaretEvent e) {
             if ( DEBUG_PARENTHESIS )
@@ -1074,30 +1094,13 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
 //                popup.hide();
 
         }
-        //DocumentListener
-        public void insertUpdate(DocumentEvent e) {
-//            logInfo( "insert" );
-//            updateMatchingParentheses2(2);
-            kawapad.fileModified = true;
-//              System.err.println("PulsarScratchPadTextPaneController.insertUpdate()");
-//            kp.updatePopup( Kawapad.this.getCaret() );
-        }
-        public void removeUpdate(DocumentEvent e) {
-            kawapad.fileModified = true;
-//              System.err.println("PulsarScratchPadTextPaneController.removeUpdate()");
-//            kp.updatePopup( Kawapad.this.getCaret() );
-        }
-        public void changedUpdate(DocumentEvent e) {
-//              fileModified = true;
-//              System.err.println("PulsarScratchPadTextPaneController.changedUpdate() : ignored");
-//            updatePopup( Kawapad.this.getCaret() );
-        }
     }
-    private KawapadListenerProcessor kawapadListener = new KawapadListenerProcessor();
+    private final KawapadDocumentListener kawapadDocumentListener = new KawapadDocumentListener();
+    private final KawapadCaretListener kawapadCaretListener = new KawapadCaretListener();
     {
 //        MOVED TO EditorKit; see the constructor. (Sun, 29 Mar 2020 03:58:28 +0900) 
 //        this.getDocument().addDocumentListener( kawapadListener );
-        this.addCaretListener( kawapadListener );
+        this.addCaretListener( kawapadCaretListener );
     }
     
     //////////////////////////////////////////////////////////////////////////////////////////

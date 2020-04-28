@@ -24,13 +24,7 @@ final class RunnableReplaceTextWithEntireBlockOnTextPane implements Runnable {
                     kawapad.getUndoManager().startGroup();
                     kawapad.getUndoManager().setSuspended(true);
                     
-                    // In order to avoid entering an infinite loop,
-                    // we use /for/ loop instead of /while/ loop;
-                    for ( int i=0; i<100; i++ ) {
-                        if ( KawapadSelection.expandSelectedParentheses( kawapad ) ) {
-                            break;
-                        }
-                    }
+                    KawapadSelection.expandSelectedParenthesesToTheOuterMost( kawapad );
                     kawapad.replaceSelection( result );
                 } finally {
                     kawapad.getUndoManager().setSuspended(false);
