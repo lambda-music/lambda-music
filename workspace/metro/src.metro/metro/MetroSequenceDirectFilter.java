@@ -2,6 +2,7 @@ package metro;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -17,9 +18,27 @@ public class MetroSequenceDirectFilter implements MetroSequence, MetroLock {
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
-
-    public MetroSequenceDirectFilter( int delay, MetroPort inputPort, MetroPort outputPort ) {
+    
+    public static void test( int[] aaa ) {
+        System.out.println( "hello:" );
+        for ( int i: aaa) {
+            System.out.println( i);
+        }
+    }
+    
+    public MetroSequenceDirectFilter( int delay, int threshold, int[] velocityMap, MetroPort inputPort, MetroPort outputPort ) {
+        if ( delay < 0 )
+            throw new IllegalArgumentException("`delay` cannot be less than zero" );
+        if ( threshold < 0 )
+            throw new IllegalArgumentException("`threshold` cannot be less than zero" );
+        if ( velocityMap == null )
+            throw new IllegalArgumentException("`velocityMap` cannot be null" );
+        if ( velocityMap.length < 128 )
+            throw new IllegalArgumentException("the size of `velocityMap` must be greater than or equal to 128" );
+        
         this.delay = delay;
+        this.threshold = threshold;
+        this.velocityMap = velocityMap;
         this.inputPort = inputPort;
         this.outputPort = outputPort;
     }
@@ -37,6 +56,7 @@ public class MetroSequenceDirectFilter implements MetroSequence, MetroLock {
         return lock;
     }
     
+    
     int delay = -1;
     public int getDelay() {
         return delay;
@@ -44,7 +64,12 @@ public class MetroSequenceDirectFilter implements MetroSequence, MetroLock {
     public void setDelay(int delay) {
         this.delay = delay;
     }
-    
+
+    int[] velocityMap;
+    public int[] getVelocityMap() {
+        return velocityMap;
+    }
+
     int threshold = 100;
     public int getThreshold() {
         return threshold;
@@ -148,6 +173,13 @@ public class MetroSequenceDirectFilter implements MetroSequence, MetroLock {
         bufferMove( workBuffer, delay );
     }
     public void bufferPostProcess(List<MetroMidiEvent> out) {
+        for ( MetroMidiEvent e : out ) {
+            int midiCommand = e.getMidiCommand();
+            if ( midiCommand == noteOn || midiCommand == noteOff ) {
+                byte[] midiData = e.getMidiData();
+                midiData[2] = (byte)velocityMap[ MetroMidi.MASK_7BIT & midiData[2] ]; 
+            }
+        }
     }
     private static int noteOn = MetroMidi.MIDI_NOTE_ON.statusHigher4bit;
     private static int noteOff = MetroMidi.MIDI_NOTE_OFF.statusHigher4bit;
