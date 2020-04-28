@@ -57,8 +57,10 @@ public class KawapadUpdater {
 //                Kawapad.logInfo( resultString );
                 SwingUtilities.invokeLater( new RunnableInsertTextToTextPane( kawapad, resultString, true, doResetFileModified ) );
             } else {
-                // do not insert.
-                Kawapad.logInfo( "KawapadEvaluator: do not insert (2). " + schemeResult.getValue() );
+                Kawapad.logInfo( "KawapadEvaluator: insert empty values (2). " + schemeResult.getValue() );
+                SwingUtilities.invokeLater( new RunnableInsertTextToTextPane( kawapad, "\n#| |#", true, doResetFileModified ) );
+//                // do not insert.
+//                Kawapad.logInfo( "KawapadEvaluator: do not insert (2). " + schemeResult.getValue() );
             }
         }
         private void procReplace( SchemeResult schemeResult ) {

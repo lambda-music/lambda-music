@@ -23,6 +23,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -1095,12 +1097,92 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
 
         }
     }
+    
+    final ActionEvent KAWAPAD_ACTION_EVENT = new ActionEvent( this, ActionEvent.ACTION_PERFORMED, null );
+    private class KawapadMouseListener implements MouseListener {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if ( ( e.getButton() & MouseEvent.BUTTON1 ) != 0 ) {
+                if ( e.getClickCount() == 2 ) {
+                    logInfo("KawapadMouseListener:2");
+                    e.consume();
+//                LISPWORD_SELECT_CURRENT_ACTION.actionPerformed(KAWAPAD_ACTION_EVENT);
+                } else if ( e.getClickCount() == 3 ) {
+                    logInfo("KawapadMouseListener:3");
+                    e.consume();
+                    KawapadSelection.expandSelectedParentheses(kawapad);
+                } else if ( e.getClickCount() == 4 ) {
+                    logInfo("KawapadMouseListener:4");
+                    e.consume();
+                    KawapadSelection.expandSelectedParenthesesToTheOuterMost(kawapad);
+                }
+            } else if ( ( e.getButton() & MouseEvent.BUTTON2 ) != 0 ) {
+                if ( e.getClickCount() == 1) {
+                    e.consume();
+                    int p = kawapad.viewToModel( e.getPoint());
+                    Caret caret = kawapad.getCaret();
+                    if ( caret.getDot() == caret.getMark() ||
+                        ( p < caret.getDot() && p < caret.getMark() ) ||  
+                        (  caret.getDot() < p && caret.getMark() < p )  
+                        ) 
+                    {
+                        kawapad.setCaretPosition( p );
+                        KawapadSelection.expandSelectedParenthesesToTheOuterMost(kawapad);
+                    } else {
+                        
+                    }
+                    
+                    String text = getTextDefault();
+                    if ( text == null || text.trim().equals("") ) {
+                        logInfo( "viewToModel:" + p );
+//                        kawapad.moveCaretPosition( p );
+                    } else {
+                        if ( ( e.getModifiers() & MouseEvent.CTRL_MASK) != 0 ) {
+                            RUN_ACTION.actionPerformed( KAWAPAD_ACTION_EVENT );
+                        } else {
+                            EVALUATE_ACTION.actionPerformed( KAWAPAD_ACTION_EVENT );
+                        }
+                    }
+                } else {
+                    e.consume();
+                }
+            }
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            // TODO Auto-generated method stub
+            
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            // TODO Auto-generated method stub
+            
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+            // TODO Auto-generated method stub
+            
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+            // TODO Auto-generated method stub
+            
+        }
+    }
     private final KawapadDocumentListener kawapadDocumentListener = new KawapadDocumentListener();
     private final KawapadCaretListener kawapadCaretListener = new KawapadCaretListener();
+    private final KawapadMouseListener kawapadMouseListener = new KawapadMouseListener();
     {
 //        MOVED TO EditorKit; see the constructor. (Sun, 29 Mar 2020 03:58:28 +0900) 
 //        this.getDocument().addDocumentListener( kawapadListener );
         this.addCaretListener( kawapadCaretListener );
+        this.addMouseListener( kawapadMouseListener );
+        MouseListenerWrapper.wrap( kawapad );
+        MouseListenerWrapper.addMouseListenerFirst( kawapad, kawapadMouseListener );
     }
     
     //////////////////////////////////////////////////////////////////////////////////////////

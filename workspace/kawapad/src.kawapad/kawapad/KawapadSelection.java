@@ -47,7 +47,8 @@ public class KawapadSelection {
     static final int THE_FINAL_CORRECTION = 1;
 
     public static boolean expandSelectedParentheses(Kawapad textPane) {
-        return expandSelectedParentheses(textPane.getParenthesisStack(),
+        return expandSelectedParentheses(
+            textPane.getParenthesisStack(),
             getText(textPane.getDocument()),
             textPane.getCaret());
     }
@@ -350,6 +351,7 @@ public class KawapadSelection {
         return -1;
     }
 
+    static final ExpandParenthesisSelector PARENTHESES_EXPAND_TRANSFORMER = new ExpandParenthesisSelector(); 
     static class ExpandParenthesisSelector extends CaretTransformer {
         @Override
         protected boolean process(CharSequence text, CaretPos before, CaretPos after) {

@@ -409,6 +409,6 @@ public class KawapadTextualIncrement implements MenuInitializer {
         }
     }
     
-    final TextualIncrementAction TEXTUAL_INCREMENT_ACTION = new TextualIncrementAction();
-    final TextualDecrementAction TEXTUAL_DECREMENT_ACTION = new TextualDecrementAction();
+    public final TextualIncrementAction TEXTUAL_INCREMENT_ACTION = new TextualIncrementAction();
+    public final TextualDecrementAction TEXTUAL_DECREMENT_ACTION = new TextualDecrementAction();
 }
