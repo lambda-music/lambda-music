@@ -55,8 +55,8 @@ public class KawapadSelection {
     public static void expandSelectedParenthesesToTheOuterMost( Kawapad kawapad ) {
         // In order to avoid entering an infinite loop,
         // we use /for/ loop instead of /while/ loop;
-        for ( int i=0; i<100; i++ ) {
-            if ( expandSelectedParentheses( kawapad ) ) {
+        for ( int i=0; i<1000; i++ ) {
+            if ( ! expandSelectedParentheses( kawapad ) ) {
                 break;
             }
         }
