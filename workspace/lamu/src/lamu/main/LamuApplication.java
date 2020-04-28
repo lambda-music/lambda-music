@@ -97,7 +97,7 @@ public class LamuApplication {
     
     static List<ArgsCommand> createAvailableCommandList() throws IOException {
         List<ArgsCommand> availableCommands = new ArrayList<>();
-        availableCommands.add( new LamuApplicationBuilder() );
+        availableCommands.add( new LamuApplicationBuilder( "create" ) );
         
         ArgsCommandFork.ForkListener forkListener = new ArgsCommandFork.ForkListener() {
             @Override

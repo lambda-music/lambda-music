@@ -52,6 +52,11 @@ public class LamuApplicationBuilder extends ArgsCommandBuild {
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
+    public LamuApplicationBuilder(String commandName) {
+        super(commandName);
+    }
+
+
     static final String MSG_NO_STREAM_ERROR     = "no stream is available";
     static final String MSG_NO_LANG_ERROR  = "no evaluator was specified";
     static final String MSG_OUTPUT_HELP_ERROR   = "an error occured in output-help";

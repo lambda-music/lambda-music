@@ -3,9 +3,14 @@ package lamu.lib.args;
 import java.util.List;
 
 public abstract class ArgsCommandBuild extends ArgsCommand {
+    private String commandName = "create";
+    public ArgsCommandBuild(String commandName) {
+        super();
+        this.commandName = commandName;
+    }
     @Override
     protected String commandName() {
-        return "create";
+        return commandName;
     }
     protected ArgsBuilder create() {
         return new ArgsBuilder();
