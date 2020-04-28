@@ -1756,9 +1756,11 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     
     class LispWordSelectAction extends TextAction2 {
         CaretTransformer transformer;
-        private LispWordSelectAction( String name, CaretTransformer transformer ) {
+        int direction;
+        private LispWordSelectAction( String name, CaretTransformer transformer, int direction ) {
             super( name );
             this.transformer = transformer;
+            this.direction = direction;
         }
         
         @Override
@@ -1779,11 +1781,26 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
             }
             if ( b ) {
                 LISPWORD_SELECT_CURRENT_ACTION.actionPerformed( e );
+                if ( direction < 0 ) {
+                    if ( caret.getMark() < caret.getDot() ) {
+                        swapCaretDirection(caret);
+                    }
+                } else if ( 0 < direction ) {
+                    if ( caret.getDot() < caret.getMark() ) {
+                        swapCaretDirection(caret);
+                    }
+                }
             } else {
                 resetHorzScrollPos();
                 transformer.transform( getParenthesisStack(), document, caret );
                 moveToSelection();
             }
+        }
+
+        public void swapCaretDirection(Caret caret) {
+            int tmp = caret.getMark();
+            caret.setDot( caret.getMark());
+            caret.moveDot( tmp );
         }
     }
 
@@ -1793,7 +1810,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
     public final Action LISPWORD_SELECT_RIGHT_ACTION = 
-        new LispWordSelectAction( KAWAPAD_LISPWORD_SELECT_RIGHT, KawapadSelection.LISPWORD_SELECT_RIGHT_TRANSFORMER )
+        new LispWordSelectAction( KAWAPAD_LISPWORD_SELECT_RIGHT, KawapadSelection.LISPWORD_SELECT_RIGHT_TRANSFORMER, +1 )
     {
         {
             putValue( Action2.CAPTION, "Select the Word on the Cursor." );
@@ -1807,7 +1824,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
     public final Action LISPWORD_SELECT_LEFT_ACTION = 
-        new LispWordSelectAction( KAWAPAD_LISPWORD_SELECT_LEFT, KawapadSelection.LISPWORD_SELECT_LEFT_TRANSFORMER ) 
+        new LispWordSelectAction( KAWAPAD_LISPWORD_SELECT_LEFT, KawapadSelection.LISPWORD_SELECT_LEFT_TRANSFORMER , -1 ) 
     {
         {
             putValue( Action2.CAPTION, "Select the Word on the Cursor." );
