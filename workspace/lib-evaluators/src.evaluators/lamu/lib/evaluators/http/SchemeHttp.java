@@ -247,7 +247,6 @@ public class SchemeHttp implements ApplicationComponent {
                         threadInitializer,    
                         requestString, 
                         null, 
-                        null, 
                         "web-scratchpad" );
             String responseString;
             
@@ -281,7 +280,6 @@ public class SchemeHttp implements ApplicationComponent {
                 multiplexEvaluator.evaluate( 
                     threadInitializer,    
                     requestString, 
-                    null, 
                     null, 
                     "web-scratchpad" );
             String responseString;

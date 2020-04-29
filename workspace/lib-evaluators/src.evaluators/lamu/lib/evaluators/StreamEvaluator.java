@@ -50,7 +50,7 @@ public class StreamEvaluator implements Evaluator, NameCaptionHolder {
 
     @Override
     public SchemeResult evaluate( 
-        Runnable threadInitializer, Reader schemeScript, File currentDirectory, File currentFile, String currentURI ) 
+        Runnable threadInitializer, Reader schemeScript, File currentFile, String currentURI ) 
     {
         this.setCurrentEvaluator();
 

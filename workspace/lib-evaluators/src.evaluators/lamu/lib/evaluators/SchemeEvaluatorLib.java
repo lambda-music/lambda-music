@@ -1,12 +1,7 @@
 package lamu.lib.evaluators;
 
-import java.io.File;
-import java.io.Reader;
-import java.util.Arrays;
-
 import gnu.expr.Language;
 import gnu.mapping.Environment;
-import kawa.standard.Scheme;
 import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure0;
 
@@ -34,17 +29,7 @@ public class SchemeEvaluatorLib {
             return Language.getDefaultLanguage();
         }
     }
-
-    //////////////////////////////////////////////////////////////////////////////////////////
-    // Scheme Initializer 
-    //////////////////////////////////////////////////////////////////////////////////////////
-    /**
-     * "loadRelative" was moved from 
-     * {@link SchemeEvaluatorImplementation#evaluateScheme(Scheme, Runnable, Reader, File, File, String)}  
-     */
     public static void initScheme( Environment env ) {
-
-        SchemeValues.defineVar( env, kawa.standard.load.loadRelative, Arrays.asList( "source" ) );
         SchemeValues.defineLambda( env, currentScheme );
         SchemeValues.defineLambda( env, currentEnvironment );
     }

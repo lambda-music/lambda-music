@@ -29,8 +29,7 @@ import lamu.lib.args.ArgsCommandMacro;
 import lamu.lib.args.ArgsCommandState;
 import lamu.lib.args.ArgsNamedArgument;
 import lamu.lib.args.forking.ForkedProcess;
-import lamu.lib.evaluators.SchemeEngineLib;
-import lamu.lib.evaluators.SchemeEvaluatorLib;
+import lamu.lib.evaluators.EvaluatorLib;
 import lamu.lib.evaluators.repl.SimpleReplService;
 import lamu.lib.helps.LamuDocument;
 import lamu.lib.log.LogFormatter;
@@ -73,8 +72,7 @@ public class LamuApplication {
         ForceLoadingClass.force(lamu.scheme.class );
         ForceLoadingClass.force(lamu.procs.class );
 
-        ForceLoadingClass.force(SchemeEngineLib.class);
-        ForceLoadingClass.force(SchemeEvaluatorLib.class);
+        ForceLoadingClass.force(EvaluatorLib.class);
 
         // See those static blocks.
         ForceLoadingClass.force(Kawapad.class);

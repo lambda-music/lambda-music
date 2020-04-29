@@ -185,15 +185,13 @@ public class MultiplexEvaluator implements Evaluator, ApplicationComponent {
     public SchemeResult evaluate(
         Runnable threadInitializer, 
         Reader schemeScript, 
-        File currentDirectory,
-        File currentFile, 
+        File currentFile,
         String currentURI) 
     {
         this.setCurrentEvaluator();
         return this.getPrimaryEvaluator().evaluate(
             threadInitializer, 
             schemeScript, 
-            currentDirectory, 
             currentFile, 
             currentURI );
     }

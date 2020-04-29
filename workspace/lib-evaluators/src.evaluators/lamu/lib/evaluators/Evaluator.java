@@ -40,8 +40,6 @@ public interface Evaluator {
      *    Specifies the thread initializers  
      * @param schemeScript
      *    The scheme script to be executed. 
-     * @param currentDirectory
-     *    This parameter is ignored.
      * @param currentFile
      *    Specifies the current executing file if it actually exists; this can be null if it does not exist.
      * @param currentURI
@@ -54,8 +52,7 @@ public interface Evaluator {
     abstract SchemeResult evaluate(
             Runnable threadInitializer, 
             Reader schemeScript, 
-            File currentDirectory, 
-            File currentFile,
+            File currentFile, 
             String currentURI );
 
     default void setCurrentEvaluator() {
@@ -65,14 +62,12 @@ public interface Evaluator {
     default SchemeResult evaluate( 
             Runnable threadInitializer, 
             String schemeScriptString, 
-            File currentDirectory, 
             File currentFile, 
             String currentURI ) 
     {
         return evaluate( 
             threadInitializer, 
             new StringReader( schemeScriptString ),
-            currentDirectory, 
             currentFile, 
             currentURI );
     }
@@ -85,7 +80,6 @@ public interface Evaluator {
             threadInitializer,
             new StringReader( schemeScriptString ),
             null, 
-            null, 
             currentURI );
     }
     default SchemeResult evaluate( 
@@ -96,7 +90,6 @@ public interface Evaluator {
             null,
             new StringReader( schemeScriptString ),
             null, 
-            null, 
             currentURI );
     }
 
@@ -105,7 +98,6 @@ public interface Evaluator {
             return evaluate( 
                 threadInitializer,
                 new InputStreamReader( new FileInputStream( schemeScriptFile ) ), 
-                schemeScriptFile.getParentFile(), 
                 schemeScriptFile, 
                 schemeScriptFile.getPath() 
                     );
@@ -121,7 +113,6 @@ public interface Evaluator {
                 threadInitializer, 
                 new InputStreamReader( parentClass.getResource( resourcePath ).openStream() ), 
                 null, 
-                null, 
                 resourcePath 
                     );
         } catch ( IOException e ) {
@@ -133,7 +124,6 @@ public interface Evaluator {
             return evaluate( 
                 null, 
                 new InputStreamReader( parentClass.getResource( resourcePath ).openStream() ), 
-                null, 
                 null, 
                 resourcePath ); 
         } catch ( IOException e ) {

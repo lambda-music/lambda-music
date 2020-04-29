@@ -148,6 +148,7 @@ public class SchemeValues {
         }
         return result;
     }
+    
     public static String lisp2string( Object schemeValue ) {
         return gnu.kawa.functions.DisplayFormat.schemeWriteFormat.format( schemeValue );
     }

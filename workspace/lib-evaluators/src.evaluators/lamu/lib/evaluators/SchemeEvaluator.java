@@ -54,7 +54,6 @@ public class SchemeEvaluator implements Evaluator, NameCaptionHolder {
     public SchemeResult evaluate( 
             Runnable threadInitializer, 
             Reader schemeScript, 
-            File currentDirectory, 
             File currentFile, 
             String currentURI )
     {
@@ -62,7 +61,6 @@ public class SchemeEvaluator implements Evaluator, NameCaptionHolder {
             scheme,
             privateThreadInitializer, 
             schemeScript, 
-            currentDirectory, 
             currentFile, 
             currentURI );
     }

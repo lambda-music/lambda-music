@@ -35,7 +35,6 @@ class EvaluatorRunnable implements Runnable {
             receiver.receive( this.evaluator.evaluate( 
                 threadInitializer, 
                 schemeScript, 
-                currentDirectory, 
                 currentFile, 
                 currentURI ) );
         } catch ( Throwable t ) {
