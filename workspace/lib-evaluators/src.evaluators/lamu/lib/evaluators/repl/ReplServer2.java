@@ -1,5 +1,6 @@
 package lamu.lib.evaluators.repl;
 
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -330,10 +331,9 @@ public class ReplServer2 implements SisoReceiverListener, SisoReceiverServiceLis
                 AsyncEvaluator.executeAsync(
                     threadManager, 
                     receiver.getThreadInitializer(), 
-                    script, 
+                    new StringReader( script ), 
                     multiplexEvaluator, 
                     resultReceiver, 
-                    null, 
                     null, 
                     "console(repl)" );
             }

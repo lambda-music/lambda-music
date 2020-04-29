@@ -31,6 +31,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Dictionary;
@@ -246,10 +247,9 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
                     Runnable runnable = Logger.temporaryDisable(
                             AsyncEvaluator.createEvaluationRunner( 
                                     null, 
-                                    schemeScript, 
+                                    new StringReader( schemeScript ), 
                                     getKawapad().getEvaluator(), 
                                     receiver, 
-                                    kawapad.getCurrentDirectory(), 
                                     kawapad.getCurrentFile(), 
                                     "scratchpad" ));
                     runnable.run();

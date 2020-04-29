@@ -55,6 +55,9 @@ public interface Evaluator {
             File currentFile, 
             String currentURI );
 
+    /**
+     * This method must be properly called by {@link #evaluate(Runnable, Reader, File, String)} 
+     */
     default void setCurrentEvaluator() {
         threadLocal.set(this);
     }

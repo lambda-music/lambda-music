@@ -57,6 +57,7 @@ public class SchemeEvaluator implements Evaluator, NameCaptionHolder {
             File currentFile, 
             String currentURI )
     {
+        this.setCurrentEvaluator();
         return SchemeEvaluatorImplementation.evaluateSchemeProc( 
             scheme,
             privateThreadInitializer, 

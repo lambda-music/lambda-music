@@ -1,22 +1,21 @@
 package lamu.lib.evaluators;
 
 import java.io.File;
+import java.io.Reader;
 
 class EvaluatorRunnable implements Runnable {
     final Runnable threadInitializer;
-    final String schemeScript;
+    final Reader schemeScript;
     final Evaluator evaluator;
     final EvaluatorReceiver receiver;
-    final File currentDirectory;
     final File currentFile;
     final String currentURI;
     EvaluatorRunnable(
         Runnable threadInitializer,
-        String schemeScript,
+        Reader schemeScript,
         Evaluator evaluator, 
         EvaluatorReceiver receiver, 
-        File currentDirectory, 
-        File currentFile,
+        File currentFile, 
         String currentURI )
     {
         super();
@@ -24,14 +23,12 @@ class EvaluatorRunnable implements Runnable {
         this.schemeScript = schemeScript;
         this.evaluator    = evaluator;
         this.receiver     = receiver;
-        this.currentDirectory = currentDirectory;
         this.currentFile = currentFile;
         this.currentURI = currentURI;
     }
     @Override
     public void run() {
         try {
-            Evaluator.logInfo( schemeScript );
             receiver.receive( this.evaluator.evaluate( 
                 threadInitializer, 
                 schemeScript, 

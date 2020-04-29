@@ -33,6 +33,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -376,10 +377,9 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
             AsyncEvaluator.executeAsync(
                 threadManager, 
                 null, 
-                schemeScript, 
+                new StringReader( schemeScript ), 
                 evaluator, 
                 receiver, 
-                kawapad.getCurrentDirectory(), 
                 kawapad.getCurrentFile(), 
                 "scratchpad" );
         } else {
@@ -2972,8 +2972,17 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     }
 
     private void openFileProc(File filePath) throws IOException {
-        String s = new String( Files.readAllBytes( filePath.toPath() ),  Charset.defaultCharset() );
-        setTextProc( filePath, s );
+        if ( ( ! filePath.exists() ) || ( ! filePath.isFile() ) ) {
+            filePath.getParentFile().mkdirs();
+            if ( ! filePath.createNewFile() ) {
+                throw new RuntimeException( "cannot create the specified file (" + filePath.getPath() + ")" );
+            }
+            setTextProc( filePath, "\n#| empty file |#\n\n" );
+        } else {
+            String s = new String( Files.readAllBytes( filePath.toPath() ),  Charset.defaultCharset() );
+            setTextProc( filePath, s );
+        }
+
     }
     /**
      *  
@@ -2999,9 +3008,6 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         this.fileModified = false;
     }
     public void openFile( File filePath ) throws IOException {
-        if ( ( ! filePath.exists() ) || ( ! filePath.isFile() ) )
-            throw new RuntimeException( "The specified file does not exist (" + filePath.getPath() + ")" );
-
         if ( ! confirmSave( ConfirmType.OPEN_FILE ) ) {
             return;
         }

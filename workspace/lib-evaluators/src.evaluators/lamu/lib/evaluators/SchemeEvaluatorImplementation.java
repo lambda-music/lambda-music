@@ -3,6 +3,7 @@ package lamu.lib.evaluators;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,62 +52,81 @@ class SchemeEvaluatorImplementation {
             return sb.toString();
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } finally {
+            try {
+                r.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
-    
+
     static final ThreadLocal<File> currentBaseFile = new ThreadLocal<File>();
-    
+
     static SchemeResult evaluateSchemeProc( 
-            Scheme scheme, Runnable threadInitializer, 
-            Reader schemeScript, File currentFile, String schemeScriptURI )
+        Scheme scheme, Runnable threadInitializer, 
+        Reader scriptReader, File currentFile, String schemeScriptURI )
     {
-        logInfo( "=== Execute Scheme ===" );
-        
-        if ( scheme == null ) {
-            return SchemeResult.createError( 
-                new NullPointerException( 
-                    "could not execute the given script because Scheme engine is not initialized. \n" + 
-                    readAll( schemeScript )));
-        }
-
-        // schemeSecretary.initializeSchemeForCurrentThread();
-        synchronized ( scheme ) {
-            // Initialize threads : 
-            // Therefore threadInitializer should keep the default thread initializer at here,
-            // calling initializeCurrentThread() here is merely a fallback for initializing Scheme object.
-            // Call initializeCurrentThread() here in case that no thread initializer was specified.
-            
-            SchemeEvaluator.initializeCurrentThread( scheme );
-            if ( threadInitializer == null ) {
-                logWarn( "No thread initializer was specified " );
-            } else {
-                if ( DEBUG )
-                    logInfo( "threadInitializer=" + threadInitializer.toString() );
-                try {
-                    threadInitializer.run();
-                } catch ( Throwable t ) {
-                    logError( "The thread initializer specified failed. ", t);
-                }
-            }
-            
-            
-            // Set current directory to the default load path.
-            // Note that <i>Shell.currentLoadPath</i> is not documented in the official documentation.
-            // The variable Shell.currentLoadPath is only referred in kawa.standard.load and 
-            // this is the only way to affect the //load//'s behavior.
-            
-            // FIXME
-            // Now I realized that currentLoadPath only affect to (load-relative) and
-            // it will by no means affect to (load) sigh. 
-            // This code effectively makes (load-relative) current directory aware.
-            // But I think it is cumbersome to ask users to use load-relative procedure in
-            // every situation. IMO load-relative supposed to be default.
-            // I'm thinking about it.  (Thu, 15 Aug 2019 16:21:22 +0900)
-
-            Path savedLoadPath = (Path) Shell.currentLoadPath.get();
-            File savedBaseFile = currentBaseFile.get(); 
+        String script;
+        Reader bufferedScriptReader;
+        try {
+            script = readAll(scriptReader);
+            bufferedScriptReader = new StringReader( script );
+        } finally {
             try {
+                scriptReader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        logInfo( "=== Execute Scheme ===\n" + script + "\n==============\n");
+        try {
+            if ( scheme == null ) {
+                return SchemeResult.createError( 
+                    new NullPointerException( 
+                        "could not execute the given script because Scheme engine is not initialized. \n" + 
+                            script ));
+            }
+
+            // schemeSecretary.initializeSchemeForCurrentThread();
+            // synchronized ( scheme ) // disabled   
+            {
+                // Initialize threads : 
+                // Therefore threadInitializer should keep the default thread initializer at here,
+                // calling initializeCurrentThread() here is merely a fallback for initializing Scheme object.
+                // Call initializeCurrentThread() here in case that no thread initializer was specified.
+
+                SchemeEvaluator.initializeCurrentThread( scheme );
+                if ( threadInitializer == null ) {
+                    logWarn( "No thread initializer was specified " );
+                } else {
+                    if ( DEBUG )
+                        logInfo( "threadInitializer=" + threadInitializer.toString() );
+                    try {
+                        threadInitializer.run();
+                    } catch ( Throwable t ) {
+                        logError( "The thread initializer specified failed. ", t);
+                    }
+                }
+
+                // Set current directory to the default load path.
+                // Note that <i>Shell.currentLoadPath</i> is not documented in the official documentation.
+                // The variable Shell.currentLoadPath is only referred in kawa.standard.load and 
+                // this is the only way to affect the //load//'s behavior.
+
+                // FIXME
+                // Now I realized that currentLoadPath only affect to (load-relative) and
+                // it will by no means affect to (load) sigh. 
+                // This code effectively makes (load-relative) current directory aware.
+                // But I think it is cumbersome to ask users to use load-relative procedure in
+                // every situation. IMO load-relative supposed to be default.
+                // I'm thinking about it.  (Thu, 15 Aug 2019 16:21:22 +0900)
+
+                Path savedLoadPath = (Path) Shell.currentLoadPath.get();
+                File savedBaseFile = currentBaseFile.get(); 
                 try {
+                    // Initialize `currentLoadPath`.
                     {
                         File parentDirectory;
                         if ( currentFile != null ) {
@@ -114,9 +134,11 @@ class SchemeEvaluatorImplementation {
                         } else {
                             parentDirectory = new File(".").getAbsoluteFile().getCanonicalFile();
                         }
-                        
+
                         Shell.currentLoadPath.set( Path.valueOf( parentDirectory ) );
                     }
+                    
+                    // Initialize `currentBaseFile`.
                     {
                         currentBaseFile.set( currentFile == null ? null : currentFile.getAbsoluteFile() );
                     }
@@ -143,7 +165,7 @@ class SchemeEvaluatorImplementation {
                     }
 
                     // {@link kawa.Shell#runFile(InputStream, Path, gnu.mapping.Environment, boolean, int) }
-                    Object resultValue = scheme.eval( new InPort( schemeScript, Path.valueOf( schemeScriptURI ) ) );
+                    Object resultValue = scheme.eval( new InPort( bufferedScriptReader, Path.valueOf( schemeScriptURI ) ) );
                     // Object result = Shell.run( schemeScript, schemeScriptURI, scheme.getEnvironment(), true, 0 ); 
 
                     return SchemeResult.createSucceededByObject( resultValue );
@@ -153,15 +175,22 @@ class SchemeEvaluatorImplementation {
                     return SchemeResult.createError( e );
                 } finally {
                     try {
-                        schemeScript.close();
-                    } catch (IOException e1) {
-                        logError( "failed to close the stream" , e1 );
+                        Shell.currentLoadPath.set( savedLoadPath );
+                    } catch ( Throwable e ) {
+                        logError("ignored",e);
                     }
-
+                    try {
+                        currentBaseFile.set( savedBaseFile);
+                    } catch ( Throwable e ) {
+                        logError("ignored",e);
+                    }
                 }
-            } finally {
-                Shell.currentLoadPath.set( savedLoadPath );
-                currentBaseFile.set( savedBaseFile);
+            }
+        } finally {
+            try {
+                bufferedScriptReader.close();
+            } catch (Throwable e1) {
+                logError( "failed to close the stream" , e1 );
             }
         }
     }

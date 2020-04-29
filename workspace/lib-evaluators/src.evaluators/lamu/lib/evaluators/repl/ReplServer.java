@@ -1,5 +1,6 @@
 package lamu.lib.evaluators.repl;
 
+import java.io.StringReader;
 import java.util.regex.Pattern;
 
 import lamu.lib.evaluators.AsyncEvaluator;
@@ -132,10 +133,9 @@ public class ReplServer extends ReplClientServer {
                 AsyncEvaluator.executeAsync(
                     threadManager, 
                     receiver.getThreadInitializer(), 
-                    script, 
+                    new StringReader( script ), 
                     multiplexEvaluator, 
                     resultReceiver, 
-                    null, 
                     null, 
                     "console(repl)" );
             }

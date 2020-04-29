@@ -1,15 +1,15 @@
 package lamu.lib.evaluators;
 
 import java.io.File;
+import java.io.Reader;
 
 public class AsyncEvaluator {
     public static void executeAsync(
         ThreadManager threadManager,
         Runnable threadInitializer, 
-        String schemeScript, 
+        Reader schemeScript, 
         Evaluator evaluator, 
         EvaluatorReceiver receiver,
-        File currentDirectory, 
         File currentFile, 
         String currentURI)
     {
@@ -19,16 +19,14 @@ public class AsyncEvaluator {
                 schemeScript, 
                 evaluator, 
                 receiver, 
-                currentDirectory, 
                 currentFile, 
                 currentURI ));
     }
     public static Runnable createEvaluationRunner(
         Runnable threadInitializer, 
-        String schemeScript,
+        Reader schemeScript,
         Evaluator evaluator,
         EvaluatorReceiver receiver, 
-        File currentDirectory, 
         File currentFile, 
         String currentURI )
     {
@@ -37,8 +35,7 @@ public class AsyncEvaluator {
             schemeScript, 
             evaluator, 
             receiver, 
-            currentDirectory,
-            currentFile, 
+            currentFile,
             currentURI );
     }
 }

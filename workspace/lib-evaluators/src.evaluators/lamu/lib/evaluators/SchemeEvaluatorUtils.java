@@ -3,11 +3,11 @@ package lamu.lib.evaluators;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.Reader;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 
 import lamu.lib.kawautils.SchemeValues;
@@ -51,17 +51,47 @@ public class SchemeEvaluatorUtils {
         File resolvedFile = new File( file.getParentFile(), f.getPath() );
         return resolvedFile;
     }
+    
+    static final class EvaluatorReceiverImplementation implements EvaluatorReceiver {
+        final CountDownLatch latch = new CountDownLatch(2);
+        volatile SchemeResult schemeResult;
+        @Override
+        public void receive(SchemeResult schemeResult) {
+            this.schemeResult = schemeResult;
+            this.latch.countDown();
+        }
+    }
+
     public static Object use( File f ) throws IOException {
         Evaluator evaluator = Evaluator.getCurrent();
         if ( evaluator == null ) {
             throw new IllegalStateException("NO EVALUATOR ERROR : currently, no evaluator was configured.");
         }
         
-        File resolvedFile = useResolve(f);
-        try ( Reader reader = new FileReader(resolvedFile) ) {
-            SchemeResult result = evaluator.evaluate( null, reader, resolvedFile, resolvedFile.getAbsolutePath() );
-            return result.getValue();
+        ThreadManager threadManager = ThreadManager.getCurrent();
+        if ( threadManager == null ) {
+            throw new IllegalStateException("NO THREAD MANAGER ERROR : currently, no thread manager was configured.");
         }
+
+        EvaluatorReceiverImplementation resultReceiver = new EvaluatorReceiverImplementation();
+        File resolvedFile = useResolve(f);
+
+        AsyncEvaluator.executeAsync(
+            threadManager, 
+            null, 
+            new FileReader(resolvedFile),
+            evaluator, 
+            resultReceiver, 
+            resolvedFile, 
+            resolvedFile.getAbsolutePath() );
+        
+        resultReceiver.latch.countDown();
+        try {
+            resultReceiver.latch.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        return resultReceiver.schemeResult.getValue();
     }
     public static Object useRead( File file ) throws IOException {
         File resolvedFile = useResolve(file);
