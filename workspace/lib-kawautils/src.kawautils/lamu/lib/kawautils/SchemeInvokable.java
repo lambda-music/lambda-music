@@ -24,9 +24,9 @@ import gnu.mapping.Procedure;
 import lamu.lib.Invokable;
 import lamu.lib.InvokablyRunnable;
 
-public class InvokableSchemeProcedure implements Invokable {
+public class SchemeInvokable implements Invokable {
     private final Procedure procedure;
-    public InvokableSchemeProcedure( Procedure procedure ) {
+    public SchemeInvokable( Procedure procedure ) {
         this.procedure = procedure;
     }
     @Override
@@ -37,10 +37,10 @@ public class InvokableSchemeProcedure implements Invokable {
             throw new RuntimeException(e);
         }
     }
-    public static Runnable createRunnableAndInvocable( Procedure procedure, Object... args) {
-        return new InvokablyRunnable( createSecretarillyInvokable( procedure ), args );
+    public static Runnable createRunnable( Procedure procedure, Object... args) {
+        return new InvokablyRunnable( create( procedure ), args );
     }
-    public static Invokable createSecretarillyInvokable( Procedure procedure ) {
-        return new InvokableSchemeProcedure( procedure );  
+    public static Invokable create( Procedure procedure ) {
+        return new SchemeInvokable( procedure );  
     }
 }

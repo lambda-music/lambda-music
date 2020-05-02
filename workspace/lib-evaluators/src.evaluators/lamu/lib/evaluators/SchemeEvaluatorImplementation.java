@@ -7,6 +7,7 @@ import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 // MODIFIED ON (Fri, 24 Apr 2020 14:46:28 +0900) >>>
 //import lamu.lib.log.Logger;
@@ -63,15 +64,16 @@ class SchemeEvaluatorImplementation {
 
     static final ThreadLocal<File> currentBaseFile = new ThreadLocal<File>();
 
+    static final Pattern PAT_CURRENT_FILE = Pattern.compile( Pattern.quote( "#!current-file" ) + "\\b", Pattern.MULTILINE );
+    static final Pattern PAT_CURRENT_DIR  = Pattern.compile( Pattern.quote( "#!current-dir"  ) + "\\b", Pattern.MULTILINE);
+    
     static SchemeResult evaluateSchemeProc( 
         Scheme scheme, Runnable threadInitializer, 
         Reader scriptReader, File currentFile, String schemeScriptURI )
     {
         String script;
-        Reader bufferedScriptReader;
         try {
             script = readAll(scriptReader);
-            bufferedScriptReader = new StringReader( script );
         } finally {
             try {
                 scriptReader.close();
@@ -79,8 +81,27 @@ class SchemeEvaluatorImplementation {
                 e.printStackTrace();
             }
         }
-        
+        // Deduce the parent directory.
+        if ( currentFile != null ) {
+            currentFile = currentFile.getAbsoluteFile();
+        } else {
+            currentFile = new File("./noname.scm").getAbsoluteFile();
+        }
+        File currentDirectory = currentFile.getAbsoluteFile().getParentFile();
+
+        // Interpolate Macros (Sat, 02 May 2020 17:49:18 +0900)
+        {
+            String currentFilePath      = '"' + currentFile.getAbsolutePath() + '"';
+            String currentDirectoryPath = '"' + currentDirectory.getAbsolutePath() +'"';
+            script = PAT_CURRENT_FILE.matcher( script ).replaceAll(  currentFilePath  );
+            script = PAT_CURRENT_DIR.matcher( script ).replaceAll(  currentDirectoryPath ) ;
+        }
+
+        logInfo( "#!current-file:" + currentFile );
+        logInfo( "#!currentDirectory:" + currentDirectory);
         logInfo( "=== Execute Scheme ===\n" + script + "\n==============\n");
+
+        Reader bufferedScriptReader = new StringReader( script );
         try {
             if ( scheme == null ) {
                 return SchemeResult.createError( 
@@ -128,14 +149,8 @@ class SchemeEvaluatorImplementation {
                 try {
                     // Initialize `currentLoadPath`.
                     {
-                        File parentDirectory;
-                        if ( currentFile != null ) {
-                            parentDirectory = currentFile.getAbsoluteFile().getParentFile();
-                        } else {
-                            parentDirectory = new File(".").getAbsoluteFile().getCanonicalFile();
-                        }
 
-                        Shell.currentLoadPath.set( Path.valueOf( parentDirectory ) );
+                        Shell.currentLoadPath.set( Path.valueOf( currentDirectory ) );
                     }
                     
                     // Initialize `currentBaseFile`.

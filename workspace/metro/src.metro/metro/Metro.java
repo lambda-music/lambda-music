@@ -187,7 +187,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
             metro.open( clientName );
             synchronized ( metro.getMetroLock() ) {
                 try {
-                    metro.registerTrack( metro.createTrack( "main", null, sequence ) );
+                    metro.registerTrack( MetroTrack.create( "main", null, sequence ) );
                 } finally {
                     metro.notifyTrackChange();
                 }
@@ -315,11 +315,6 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     public Collection<MetroTrack> getTrackByTag( String tag ) {
         return searchTracksByTag( tag );
     }
-    
-    public MetroTrack createTrack( Object name, Collection<Object> tags, MetroSequence sequence ) {
-        return new MetroTrack( this, name, tags, sequence );
-    }
-
     
     
 /*  
@@ -714,9 +709,9 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                         // "registeredTrack" in its event handlers.
                         ArrayList<MetroTrack> arrayList = new ArrayList<>( this.registeredTracks );
                         for ( MetroTrack track : arrayList ) {
-                            track.prepare( barLengthInFrames );
+                            track.prepare( Metro.this, barLengthInFrames );
                             // ADDED (Sun, 30 Sep 2018 12:39:32 +0900)
-                            track.checkBuffer( this,  barLengthInFrames );
+                            track.checkBuffer( Metro.this,  barLengthInFrames );
                         }
                     }       
                     this.unregisteredTracks.clear();
@@ -760,7 +755,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                     int barLengthInFrames = this.getOneBarLengthInFrames();
                     // int barInFrames = Metro.calcBarInFrames( this, this.client, this.position );
                     for ( MetroTrack track : this.tracks ) {
-                        track.reprepare( barLengthInFrames, prevBeatsPerMinute, beatsPerMinute );
+                        track.reprepare( this, barLengthInFrames, prevBeatsPerMinute, beatsPerMinute );
                     }
                 }
             }
@@ -915,7 +910,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                 
                 if ( true )
                     for ( MetroTrack track : this.tracks ) {
-                        track.progressCursor( nframes, this.outputMidiEventList );
+                        track.progressCursor( this, nframes, this.outputMidiEventList );
                     }
                 
                 // sort the every event 

@@ -28,23 +28,17 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.logging.Level;
 
 import javax.swing.JComboBox;
 
-import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import lamu.lib.Invokable;
 import lamu.lib.apps.ApplicationComponent;
-import lamu.lib.kawautils.InvokableSchemeProcedure;
 import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.log.Logger;
 import metro.Metro;
 import metro.MetroException;
-import metro.MetroPort;
-import metro.MetroSequence;
-import metro.MetroTrack;
 import pulsar.PulsarLib.PulsarLibDelegator;
 
 /**
@@ -352,20 +346,7 @@ public class Pulsar extends Metro implements PulsarLib, PulsarLibDelegator, Appl
         }
     }
     
-    @Override
-    public MetroTrack createTrack(Object name, Collection<Object> tags, MetroSequence sequence) {
-        return new PulsarTrack( this, name, tags, sequence );
-    }
-
-    public MetroTrack createTrack( Object name, Collection<Object> tags, Procedure procedure ) {
-        return this.createTrack( name, tags, new SchemeSequence( InvokableSchemeProcedure.createSecretarillyInvokable( procedure ) ) );
-    }
     
-    public MetroTrack createRecordingTrack( Object name, Collection<Object> tags, List<MetroPort> inputPorts, List<MetroPort> outputPorts,
-            double recordLength, boolean looper ) 
-    {
-        return this.createTrack( name, tags, SchemeSequenceRecorder.createSchemeSequenceRecorder( inputPorts, outputPorts, recordLength, looper ) );
-    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //

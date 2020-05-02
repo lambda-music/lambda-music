@@ -6,10 +6,13 @@ import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
+import gnu.expr.Keyword;
 import gnu.kawa.slib.srfi1;
 import gnu.lists.EmptyList;
 import gnu.lists.IString;
@@ -272,4 +275,16 @@ public class SchemeValues {
     //    public static final void defineVar( Environment env, Object value, String ... names ) {
     //        defineVar( env, value, Arrays.asList( names ) );
     //    }
+    
+    
+    public static void parseArguments( Object[] args, Map<String,Object> namedArgs, List<Object> plainArgs ) {
+        for ( Iterator<Object> i=Arrays.asList( args ).iterator(); i.hasNext();  ) {
+            Object o = i.next();
+            if ( Keyword.isKeyword( o ) ) {
+                 namedArgs.put(((Keyword)o).getName(), i.hasNext()? i.next() : null );
+            } else {
+                plainArgs.add(o);
+            }
+        }
+    }
 }

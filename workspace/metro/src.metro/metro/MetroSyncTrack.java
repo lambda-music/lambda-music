@@ -17,9 +17,9 @@ public interface MetroSyncTrack {
     MetroSyncType getSyncType();
     MetroSyncTrack getSyncTrack();
     double getSyncOffset();
-    int getLatestLengthInFrames();
+    int getLatestLengthInFrames(Metro metro);
     
-    public static void setSyncStatus( MetroSyncTrack track, int barLengthInFrames) {
+    public static void setSyncStatus( Metro metro, MetroSyncTrack track, int barLengthInFrames) {
         int offset = (int) (-1.0d * track.getSyncOffset() * barLengthInFrames);
 
         switch ( track.getSyncType() ) {
@@ -49,7 +49,7 @@ public interface MetroSyncTrack {
                     track.setCursor( offset );
                     logWarn( "`serial` was specified but syncTrack was not passed." );
                 } else {
-                    int length = track.getSyncTrack().getLatestLengthInFrames();
+                    int length = track.getSyncTrack().getLatestLengthInFrames(metro);
                     if ( length < 0 ) {
                         track.setCursor( offset );
                         logWarn(  "`serial` was specified but track-length was not supported on the track; it was treated as immediate mode." );

@@ -59,7 +59,7 @@ import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import gnu.math.IntNum;
 import lamu.lib.Invokable;
-import lamu.lib.kawautils.InvokableSchemeProcedure;
+import lamu.lib.kawautils.SchemeInvokable;
 import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.log.Logger;
 
@@ -213,7 +213,7 @@ public abstract class SchemeNewFactory {
                 procedure = (Procedure) args.get( last );
                 args.remove(last);
             }
-            ActionListener listener = f.createActionListener( InvokableSchemeProcedure.createSecretarillyInvokable( procedure ) );
+            ActionListener listener = f.createActionListener( SchemeInvokable.create( procedure ) );
 
             List<Object> result = new ArrayList();
             
@@ -465,7 +465,7 @@ public abstract class SchemeNewFactory {
 //                  Language lang = Language.getDefaultLanguage();
                     {
                         JPulsarButton button = new JPulsarButton( caption );
-                        Invokable executor = InvokableSchemeProcedure.createSecretarillyInvokable( procedure );
+                        Invokable executor = SchemeInvokable.create( procedure );
                         button.addMouseListener(new MouseAdapter() {
                             @Override
                             public void mousePressed(MouseEvent e) {

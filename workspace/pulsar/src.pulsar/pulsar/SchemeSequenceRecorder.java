@@ -18,18 +18,19 @@ import metro.MetroCollector;
 import metro.MetroException;
 import metro.MetroMidiEvent;
 import metro.MetroPort;
+import metro.MetroReadable;
 import metro.MetroSequence;
 import metro.MetroTrack;
 import metro.SimpleMetroEventBuffer;
 
 
-public class SchemeSequenceRecorder implements MetroSequence, SchemeSequenceReadable, Invokable {
+public class SchemeSequenceRecorder implements MetroSequence, MetroReadable, Invokable {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }
     static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }
     static void logWarn (String msg             ) { LOGGER.log(Level.WARNING,  msg      ); }
 
-    public static SchemeSequenceRecorder createSchemeSequenceRecorder(
+    public static SchemeSequenceRecorder create(
             List<MetroPort> inputPorts, List<MetroPort> outputPorts, 
             double recordLength, boolean loop ) {
         return new SchemeSequenceRecorder( inputPorts, outputPorts, recordLength, loop );
@@ -62,7 +63,7 @@ public class SchemeSequenceRecorder implements MetroSequence, SchemeSequenceRead
 
     static final Procedure reverse = (Procedure) gnu.kawa.slib.srfi1.reverse.get();
     @Override
-    public LList readMusic() {
+    public LList readContent() {
         try {
             return (LList)reverse.apply1( notations );
         } catch (Throwable e) {

@@ -20,7 +20,7 @@ import gnu.mapping.Symbol;
 import gnu.math.IntNum;
 import lamu.lib.Invokable;
 import lamu.lib.helps.LamuDocument;
-import lamu.lib.kawautils.InvokableSchemeProcedure;
+import lamu.lib.kawautils.SchemeInvokable;
 import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure0;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure1;
@@ -61,6 +61,7 @@ public interface PulsarLib {
     Procedure getRewind();
     Procedure getSimultaneous();
     Procedure getGetTrack();
+    Procedure getGetTrackPosition();
     Procedure getNewTrack();
     Procedure getNewRecordingTrack();
     Procedure getRemoveTrack();
@@ -114,6 +115,9 @@ public interface PulsarLib {
 
         public default Procedure getGetTrack() {
             return getPulsarLibImplementation().getGetTrack();
+        }
+        public default Procedure getGetTrackPosition() {
+            return getPulsarLibImplementation().getGetTrackPosition();
         }
 
         public default Procedure getSimultaneous() {
@@ -339,7 +343,7 @@ public interface PulsarLib {
             return 
                     getPulsar().searchTrack(
                         readParamSearchTrackFilter(
-                            InvokableSchemeProcedure.createSecretarillyInvokable( readParamTrackSearcher( arg ) )));
+                            SchemeInvokable.create( readParamTrackSearcher( arg ) )));
         }
 
         // TODO
@@ -347,7 +351,7 @@ public interface PulsarLib {
             if ( object instanceof MetroTrack ) {
                 return Arrays.<MetroTrack>asList((MetroTrack)object);
             } else if ( object instanceof Procedure ) {
-                return Arrays.asList( getPulsar().createTrack( null, null, (Procedure)object ));
+                return Arrays.asList( PulsarTrack.createTrack( null, null, (Procedure)object ));
             } else if ( object instanceof LList ) {
                 if ( ((LList)object).isEmpty() ) {
                     return Collections.emptyList();
@@ -356,7 +360,7 @@ public interface PulsarLib {
                         if (((Pair)object).getCar() instanceof MetroTrack) {
                             return (List<MetroTrack>) object;
                         } else if ( NoteListParser.isNotationList(object) ) {
-                            return Arrays.asList( getPulsar().createTrack( null, null, new TrackProcedure( (Pair) object ) ) );
+                            return Arrays.asList( PulsarTrack.createTrack( null, null, new TrackProcedure( (Pair) object ) ) );
                         } else {
                             return readParamSearchTrack( object );
                         }
@@ -912,7 +916,7 @@ public interface PulsarLib {
                 logInfo("set-main");
                 if ( args.length == 1 ) {
                     Procedure procedure = (Procedure)args[0];
-                    getPulsar().setMainProcedure( InvokableSchemeProcedure.createSecretarillyInvokable( procedure ) );
+                    getPulsar().setMainProcedure( SchemeInvokable.create( procedure ) );
                 } else {
                     throw new RuntimeException( "invalid argument length" );
                 }
@@ -1398,6 +1402,47 @@ public interface PulsarLib {
                                     + THROWS_AN_ERROR_IF_NOT_OPEN );
             }
         }
+        
+        
+        
+        
+        public final Procedure getTrackPositionProc = new GetTrackPositionProc(new String[] { "get-track-position", "gettp" });
+        @Override
+        public Procedure getGetTrackPosition() { return getTrackPositionProc; }
+        public final class GetTrackPositionProc extends MultipleNamedProcedure1 {
+            public GetTrackPositionProc(String[] names) {
+                super(names);
+            }
+
+            @Override
+            public Object apply1( Object arg1 ) throws Throwable {
+                if ( Boolean.FALSE.equals( arg1 ) ) { 
+                    return Boolean.FALSE;
+                } else {
+                    MetroTrack track = ((MetroTrack)arg1);
+                    double position= track.getTrackPosition( getPulsar() );
+                    return SchemeValues.toSchemeNumber( position );
+                }
+            }
+        }
+
+        public static final GetTrackPositionBean getTrackPositionBean = new GetTrackPositionBean();
+        public static final class GetTrackPositionBean extends PulsarProceduralDescriptiveDoc {
+            {
+                setCategory( Pulsar.DOCS_ID );
+                setNames( "get-track-position", "gettp" );
+                setParameterDescription( "" );
+                setReturnValueDescription( "::void" );
+                setShortDescription( "||<name/>|| gets the current position of the given track." );
+                setLongDescription( ""
+                                    + "" 
+                                 );
+            }
+        }
+
+        
+        
+        
 
         public static final AboutTrackSpecDoc aboutTrackSpecDoc = new AboutTrackSpecDoc();
         public static final class AboutTrackSpecDoc extends PulsarProceduralDescriptiveDoc {
@@ -1453,7 +1498,7 @@ public interface PulsarLib {
                     default :
                         throw new IllegalArgumentException();
                 }
-                return getPulsar().createTrack( name, tags, procedure );
+                return PulsarTrack.createTrack( name, tags, procedure );
             }
         }
 
@@ -1541,7 +1586,7 @@ public interface PulsarLib {
                     default :
                         throw new IllegalArgumentException();
                 }
-                return getPulsar().createRecordingTrack( name, tags, inputPorts, outputPorts, recordLength, looper );
+                return PulsarTrack.createRecordingTrack( name, tags, inputPorts, outputPorts, recordLength, looper );
             }
         }
 
@@ -1906,6 +1951,7 @@ public interface PulsarLib {
             SchemeValues.defineLambda( env, rewindProc );
             SchemeValues.defineLambda( env, simultaneousProc );
             SchemeValues.defineLambda( env, getTrackProc );
+            SchemeValues.defineLambda( env, getTrackPositionProc );
             SchemeValues.defineLambda( env, newTrackProc );
             SchemeValues.defineLambda( env, newRecordingTrackProc );
             SchemeValues.defineLambda( env, removeTrackProc );

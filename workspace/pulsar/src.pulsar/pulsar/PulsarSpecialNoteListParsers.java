@@ -69,7 +69,7 @@ import java.util.logging.Level;
 import gnu.lists.LList;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
-import lamu.lib.kawautils.InvokableSchemeProcedure;
+import lamu.lib.kawautils.SchemeInvokable;
 import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.log.Logger;
 import metro.Metro;
@@ -396,7 +396,7 @@ public class PulsarSpecialNoteListParsers {
             Object[] args = {};
             // See the note ... XXX_SYNC_01
             ((MetroBufferedMidiReceiver<T>) buffer).exec( offset, 
-                    InvokableSchemeProcedure.createRunnableAndInvocable( procedure0, args ));
+                    SchemeInvokable.createRunnable( procedure0, args ));
         }
         
         public LList exec(double offset, Runnable runnable) {
@@ -498,7 +498,7 @@ public class PulsarSpecialNoteListParsers {
                 
                 try {
                     pulsar.registerTrack( 
-                        pulsar.createTrack( id, tags, procedure ).setSyncStatus( syncType, syncTrack, syncOffset));
+                        PulsarTrack.createTrack( id, tags, procedure ).setSyncStatus( syncType, syncTrack, syncOffset));
                 } finally {
                     pulsar.notifyTrackChange();
                 }

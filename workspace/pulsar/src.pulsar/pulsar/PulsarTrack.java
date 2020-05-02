@@ -1,36 +1,22 @@
 package pulsar;
 
 import java.util.Collection;
+import java.util.List;
 
-import gnu.lists.LList;
-import lamu.lib.Invokable;
-import metro.Metro;
-import metro.MetroSequence;
+import gnu.mapping.Procedure;
+import metro.MetroPort;
 import metro.MetroTrack;
 
-public class PulsarTrack extends MetroTrack implements SchemeSequenceReadable, Invokable {
-    public PulsarTrack(Metro metro, Object name, Collection<Object> tags, MetroSequence sequence) {
-        super( metro, name, tags, sequence );
-    }
-    
+public class PulsarTrack {
 
-    @Override
-    public LList readMusic() {
-        if ( this.getSequence() instanceof SchemeSequenceReadable ) {
-            return ((SchemeSequenceReadable)(this.getSequence())).readMusic();
-        } else {
-            throw new RuntimeException( "Unsupported sequence object error" );
-        }
+    public static MetroTrack createTrack( Object name, Collection<Object> tags, Procedure procedure ) {
+        return MetroTrack.create( name, tags, new SchemeSequence( procedure ) );
     }
 
-    @Override
-    public Object invoke(Object... args) {
-        MetroSequence sequence = getSequence();
-        if ( sequence instanceof Invokable ) {
-            return ((Invokable)sequence).invoke( args );
-        } else {
-            throw new IllegalStateException( "the sequence is not an invokable object." );
-        }
+    public static MetroTrack createRecordingTrack( Object name, Collection<Object> tags, List<MetroPort> inputPorts, List<MetroPort> outputPorts,
+            double recordLength, boolean looper ) 
+    {
+        return MetroTrack.create( name, tags, SchemeSequenceRecorder.create( inputPorts, outputPorts, recordLength, looper ) );
     }
-    
+
 }

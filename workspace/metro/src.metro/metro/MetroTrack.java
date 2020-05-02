@@ -32,6 +32,7 @@ import java.util.logging.Level;
 
 import org.jaudiolibs.jnajack.JackException;
 
+import lamu.lib.Invokable;
 import lamu.lib.log.Logger;
 
 /*
@@ -45,11 +46,15 @@ import lamu.lib.log.Logger;
  * @author Ats Oka
  *
  */
-public class MetroTrack implements MetroLock, MetroSyncTrack, MetroNamedTrack {
+public class MetroTrack implements MetroSyncTrack, MetroNamedTrack, MetroReadable, Invokable {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
+
+    public static MetroTrack create(Object name, Collection<Object> tags, MetroSequence sequence) {
+        return new MetroTrack(name, tags, sequence);
+    }
 
     private static final boolean DEBUG = false;
 
@@ -70,10 +75,10 @@ public class MetroTrack implements MetroLock, MetroSyncTrack, MetroNamedTrack {
      */
     final int id = (int) (Math.random()* Integer.MAX_VALUE);
     
-    /**
-     * 
-     */
-    private final Metro metro;
+//    /**
+//     * 
+//     */
+//    private final Metro metro;
     /**
      * Note that the String object which is stored in name field must be interned.  
      */
@@ -158,9 +163,6 @@ public class MetroTrack implements MetroLock, MetroSyncTrack, MetroNamedTrack {
      * {@link Metro#createTrack(String, Collection, MetroSequence, MetroSyncType, MetroTrack, double)}
      * and users should not call this constructor directory. Though it is still left public
      * for further hacking.
-     * 
-     * @param metro
-     *            Specifying the parent metro object.
      * @param name
      *            Specifying the identifier of the track.
      * @param tags
@@ -169,7 +171,7 @@ public class MetroTrack implements MetroLock, MetroSyncTrack, MetroNamedTrack {
      * @param sequence
      *            Specifying the sequence object to play.
      */
-    public MetroTrack( Metro metro, Object name, Collection<Object> tags, MetroSequence sequence ) {
+    public MetroTrack( Object name, Collection<Object> tags, MetroSequence sequence ) {
         if ( name == null )
             this.name = createUniqueTrackName();
         else
@@ -181,7 +183,6 @@ public class MetroTrack implements MetroLock, MetroSyncTrack, MetroNamedTrack {
         else
             this.tags = new ArrayList( tags );
 
-        this.metro = metro;
         this.sequence = sequence;
         
         this.syncType = MetroSyncType.IMMEDIATE;
@@ -209,17 +210,17 @@ public class MetroTrack implements MetroLock, MetroSyncTrack, MetroNamedTrack {
         }
     }
     
-    public Object getMetroTrackLock() {
-        // TODO COUNTERMEASURE_FOR_LOCKING (Mon, 23 Sep 2019 08:33:32 +0900)
-        return this.metro.getMetroLock();
-//        return buffers;
-    }
+//    public Object getMetroTrackLock() {
+//        // TODO COUNTERMEASURE_FOR_LOCKING (Mon, 23 Sep 2019 08:33:32 +0900)
+//        return this.metro.getMetroLock();
+////        return buffers;
+//    }
 
-    @Override
-    public Object getMetroLock() {
-        // TODO COUNTERMEASURE_FOR_LOCKING (Mon, 23 Sep 2019 08:33:32 +0900)
-        return this.metro.getMetroLock();
-    }
+//    @Override
+//    public Object getMetroLock() {
+//        // TODO COUNTERMEASURE_FOR_LOCKING (Mon, 23 Sep 2019 08:33:32 +0900)
+//        return this.metro.getMetroLock();
+//    }
     
     public MetroSequence getSequence() {
         return this.sequence;
@@ -245,11 +246,13 @@ public class MetroTrack implements MetroLock, MetroSyncTrack, MetroNamedTrack {
             this.ending = true;
         }
     }
-    public double getTrackPosition() {
-        if ( lastLengthInFrames < 0 || cursor < 0) {
-            return 0;
-        } else {
-            return (double)( cursor - lastAccumulatedLength + lastLengthInFrames )  / (double)lastLengthInFrames;
+    public double getTrackPosition( Metro metro ) {
+        synchronized ( metro.getMetroLock() ) {
+            if ( lastLengthInFrames < 0 || cursor < 0) {
+                return 0;
+            } else {
+                return (double)( cursor - lastAccumulatedLength + lastLengthInFrames )  / (double)lastLengthInFrames;
+            }
         }
     }
     
@@ -287,8 +290,8 @@ public class MetroTrack implements MetroLock, MetroSyncTrack, MetroNamedTrack {
     }
     
     @Override
-    public int getLatestLengthInFrames() {
-        synchronized ( this.getMetroTrackLock() ) {
+    public int getLatestLengthInFrames(Metro metro) {
+        synchronized ( metro.getMetroLock() ) {
             BlockingQueue<MetroEventBuffer> bufs = this.getBuffers();
             if ( bufs.size() == 0 )
                 return 0;
@@ -385,9 +388,11 @@ public class MetroTrack implements MetroLock, MetroSyncTrack, MetroNamedTrack {
      * as offset value of the current frame.  
      * 
      */
-    protected void progressCursor( int nframes, List<MetroMidiEvent> result ) throws JackException {
-        synchronized ( this.getMetroTrackLock() ) {
-            this.metro.clearAllPorts();
+    protected void progressCursor( Metro metro, int nframes, List<MetroMidiEvent> result ) throws JackException {
+        synchronized ( metro.getMetroLock() ) {
+            
+            // This method is actually called twice; may be unnecessary. (Fri, 01 May 2020 16:56:38 +0900)
+            metro.clearAllPorts();
 
             int currentCursor = this.cursor;
             int nextCursor = currentCursor + nframes;
@@ -473,21 +478,21 @@ public class MetroTrack implements MetroLock, MetroSyncTrack, MetroNamedTrack {
     /**
      * This method will be called only once by the Metro messaging thread when
      * MetroTrack is added to registered Track.
-     * 
+     * @param metro TODO
      * @param barLengthInFrames
      */
-    void prepare( int barLengthInFrames ) {
+    void prepare( Metro metro, int barLengthInFrames ) {
         if ( prepared ) 
             throw new IllegalStateException();
         this.prepared = true;
 
-        MetroSyncTrack.setSyncStatus( this, barLengthInFrames );
+        MetroSyncTrack.setSyncStatus( metro, this, barLengthInFrames );
     }
 
-    void reprepare( int barLengthInFrames, double prevBeatsPerMinute, double beatsPerMinute ) throws MetroException 
+    void reprepare( Metro metro, int barLengthInFrames, double prevBeatsPerMinute, double beatsPerMinute ) throws MetroException 
     {
         try {
-            synchronized ( this.getMetroTrackLock() ) {
+            synchronized ( metro.getMetroLock() ) {
                 int prevLengthInFrame = -1;
                 int lengthInFrame = -1;
                 {
@@ -557,7 +562,7 @@ public class MetroTrack implements MetroLock, MetroSyncTrack, MetroNamedTrack {
     private static final int MIN_UPDATE_THRESHOLD = 256;
     private static final int MAX_UPDATE_THRESHOLD = 44100*4;
     protected  void checkBuffer( Metro metro, int barLengthInFrames) throws JackException {
-        synchronized ( this.getMetroTrackLock() ) { // << ADDED synchronided (Sun, 30 Sep 2018 11:45:13 +0900)
+        synchronized ( metro.getMetroLock() ) { // << ADDED synchronided (Sun, 30 Sep 2018 11:45:13 +0900)
 //          if ( this.buffers.size() < BUFFER_SIZE ) {
 //              this.offerNewBuffer( metro, client, position );
 //          }
@@ -602,13 +607,14 @@ public class MetroTrack implements MetroLock, MetroSyncTrack, MetroNamedTrack {
         }
     }
     
-    protected  void clearBuffer() {
-        synchronized ( this.getMetroTrackLock() ) {
-            this.buffers.clear();
-            this.cursor =0;
-            this.totalCursor = 0;
-        }
-    }
+//    protected void clearBuffer() {
+//        synchronized ( this.getMetroTrackLock() ) {
+//            this.buffers.clear();
+//            this.cursor =0;
+//            this.totalCursor = 0;
+//        }
+//    }
+    
 //  public void resetBuffer() {
 //      synchronized ( this.getMetroTrackLock() ) {
 //          this.buffers.clear();
@@ -617,7 +623,7 @@ public class MetroTrack implements MetroLock, MetroSyncTrack, MetroNamedTrack {
 //  }
 
     private void offerNewBuffer( Metro metro, int barLengthInFrames ) throws JackException {
-        synchronized ( this.getMetroTrackLock() ) {
+        synchronized ( metro.getMetroLock() ) {
             
 //          logInfo( "offerNewBuffer:" );
             if ( this.ending ) {
@@ -687,6 +693,27 @@ public class MetroTrack implements MetroLock, MetroSyncTrack, MetroNamedTrack {
             }
         }
     }
+    
+    @Override
+    public Object readContent() {
+        MetroSequence seq = this.getSequence();
+        if ( seq instanceof MetroReadable ) {
+            return ((MetroReadable)seq).readContent();
+        } else {
+            throw new RuntimeException( "the current sequence is not readable" );
+        }
+    }
+    
+    @Override
+    public Object invoke(Object... args) {
+        MetroSequence sequence = getSequence();
+        if ( sequence instanceof Invokable ) {
+            return ((Invokable)sequence).invoke( args );
+        } else {
+            throw new IllegalStateException( "the current sequence is not an invokable object." );
+        }
+    }
+
     @Override
     public boolean equals(Object obj) {
         if ( false ) {

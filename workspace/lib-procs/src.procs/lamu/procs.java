@@ -1,15 +1,14 @@
 package lamu;
 
+import java.io.File;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 
-import gnu.kawa.io.Path;
 import gnu.mapping.Environment;
 import gnu.mapping.Values;
-import kawa.Shell;
 import lamu.lib.helps.LamuDocument;
 import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure1;
@@ -25,6 +24,7 @@ public class procs implements Runnable {
 
     public static final LamuDocument createProcessBean = null;
 
+    public static final String NAMEDARG_DIRECTORY = "dir";
     public static final CreateProcessProc createProcessProc = new CreateProcessProc(new String[] { "create-process", "newp" });
     public static final class CreateProcessProc extends MultipleNamedProcedureN {
         public CreateProcessProc(String[] names) {
@@ -33,22 +33,31 @@ public class procs implements Runnable {
 
         @Override
         public Object applyN(Object[] args) throws Throwable {
+            HashMap<String,Object> namedArgs = new HashMap<>();
+            ArrayList<Object> plainArgs = new ArrayList<>();
+            SchemeValues.parseArguments(args, namedArgs, plainArgs);
+            
    //                List l =  new ArrayList( Arrays.asList( args ) );
    //                l.add( 0, Keyword.make( "directory" ) );
    //                l.add( 1, new File( System.getProperty( "user.dir" ) ) );
    //                args = l.toArray();
             
-            List<String> list = SchemeValues.toStringList( Arrays.asList(args) );
-            ProcessBuilder sb = new ProcessBuilder( list );
+            List<String> stringPlainArgs = SchemeValues.toStringList( plainArgs );
+            ProcessBuilder sb = new ProcessBuilder( stringPlainArgs );
+
+            // The new way to set the current directory. (Sun, 03 May 2020 02:35:09 +0900)
+            if ( namedArgs.containsKey(NAMEDARG_DIRECTORY)) {
+                sb.directory( new File(SchemeValues.toString( namedArgs.get(NAMEDARG_DIRECTORY))).getCanonicalFile());
+            }
             
-            // XXX ??? (Tue, 24 Mar 2020 06:09:27 +0900) <<< This should be integrated.
-            sb.directory( ((Path) Shell.currentLoadPath.get()).toFile() );
+//            // XXX ??? (Tue, 24 Mar 2020 06:09:27 +0900) <<< This should be integrated.
+//            sb.directory( ((Path) Shell.currentLoadPath.get()).toFile() );
             
             // TODO the IO should be able to controlled. this is bogus.
             // REMOVED (Tue, 24 Mar 2020 05:20:12 +0900) >>>
             // sb.inheritIO();
             // REMOVED (Tue, 24 Mar 2020 05:20:12 +0900) <<<
-            return new PulsarProcessWrapper( sb.start(), new ArrayList( list ) );
+            return new PulsarProcessWrapper( sb.start(), new ArrayList( stringPlainArgs ) );
         }
     }
 

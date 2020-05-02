@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import gnu.mapping.Environment;
-import gnu.mapping.Procedure;
 import gnu.mapping.Values;
 import gnu.math.DFloNum;
 import lamu.lib.Invokable;
@@ -17,47 +16,11 @@ import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure0;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure1;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedureN;
+import metro.MetroReadable;
 import metro.MetroTrack;
 import pulsar.PulsarLib.PulsarLibImplementation.PulsarProceduralDescriptiveDoc;
 
 public class PulsarLib_Procs {
-
-    public static final Procedure getTrackPositionProc = new GetTrackPositionProc(new String[] { "get-track-position", "gettp" });
-    public static final class GetTrackPositionProc extends MultipleNamedProcedure1 {
-        public GetTrackPositionProc(String[] names) {
-            super(names);
-        }
-
-        @Override
-        public Object apply1( Object arg1 ) throws Throwable {
-            if ( Boolean.FALSE.equals( arg1 ) ) { 
-                return Boolean.FALSE;
-            } else {
-                MetroTrack track = ((MetroTrack)arg1);
-                double position=-1d;
-                synchronized ( track.getMetroTrackLock() ) {
-                    position = track.getTrackPosition();
-                }
-                
-                return SchemeValues.toSchemeNumber( position );
-            }
-        }
-    }
-
-    public static final GetTrackPositionBean getTrackPositionBean = new GetTrackPositionBean();
-    public static final class GetTrackPositionBean extends PulsarProceduralDescriptiveDoc {
-        {
-            setCategory( Pulsar.DOCS_ID );
-            setNames( "get-track-position", "gettp" );
-            setParameterDescription( "" );
-            setReturnValueDescription( "::void" );
-            setShortDescription( "||<name/>|| gets the current position of the given track." );
-            setLongDescription( ""
-                                + "" 
-                             );
-        }
-    }
-
     public static final PrintStackTraceProc printStackTraceProc = new PrintStackTraceProc(new String[] { "print-stack-trace" });
     public static final class PrintStackTraceProc extends MultipleNamedProcedure0 {
         public PrintStackTraceProc(String[] names) {
@@ -258,8 +221,8 @@ public class PulsarLib_Procs {
                 throw new IllegalArgumentException("insufficient argument length (length<1)" );
             }
             Object arg0 = args[0];
-            if ( arg0 instanceof SchemeSequenceReadable ) {
-                return ((SchemeSequenceReadable)arg0).readMusic();
+            if ( arg0 instanceof MetroReadable ) {
+                return ((MetroReadable)arg0).readContent();
             } else { 
                 throw new IllegalArgumentException( "the argument is not a readable track. " + arg0 );
             }
@@ -367,7 +330,6 @@ public class PulsarLib_Procs {
      */
     
     public static void initScheme( Environment env ) {
-        SchemeValues.defineLambda( env, getTrackPositionProc );
         SchemeValues.defineLambda( env, printStackTraceProc);
         SchemeValues.defineLambda( env, displayWarnProc);
         SchemeValues.defineLambda( env, newlineWarnProc);

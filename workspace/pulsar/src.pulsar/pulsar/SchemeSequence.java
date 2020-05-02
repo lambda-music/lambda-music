@@ -30,16 +30,18 @@ import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 import lamu.lib.Invokable;
+import lamu.lib.kawautils.SchemeInvokable;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedureN;
 import lamu.lib.log.Logger;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroCollector;
 import metro.MetroMidiEvent;
+import metro.MetroReadable;
 import metro.MetroSequence;
 import metro.MetroTrack;
 
-public class SchemeSequence implements MetroSequence, SchemeSequenceReadable, Invokable {
+public class SchemeSequence implements MetroSequence, MetroReadable, Invokable {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
@@ -97,6 +99,9 @@ public class SchemeSequence implements MetroSequence, SchemeSequenceReadable, In
     public SchemeSequence ( Invokable procedure ) {
         this.invokable = procedure;
     }
+    public SchemeSequence( Procedure procedure ) {
+        this.invokable = SchemeInvokable.create(procedure);
+    }
     @Override
     public Object invoke(Object... args) {
         return invokable.invoke( args );
@@ -138,7 +143,7 @@ public class SchemeSequence implements MetroSequence, SchemeSequenceReadable, In
     }
 
     @Override
-    public LList readMusic() {
+    public LList readContent() {
         throw new UnsupportedOperationException();
     }
 }

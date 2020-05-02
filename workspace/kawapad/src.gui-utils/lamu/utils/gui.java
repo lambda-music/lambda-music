@@ -5,7 +5,7 @@ import gnu.mapping.Procedure;
 import gnu.mapping.Values;
 import gnu.mapping.WrongArguments;
 import lamu.lib.helps.LamuDocument;
-import lamu.lib.kawautils.InvokableSchemeProcedure;
+import lamu.lib.kawautils.SchemeInvokable;
 import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure0;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedureN;
@@ -25,7 +25,7 @@ public class gui implements Runnable {
             Runnable runnable = PulsarSharedTimer.createTimer( null/*TODO (Sun, 12 Apr 2020 20:43:01 +0900)*/ , 
                 SchemeValues.toInteger( arg1 ), 
                 -1, 
-                InvokableSchemeProcedure.createSecretarillyInvokable( (Procedure)arg2 ) );
+                SchemeInvokable.create( (Procedure)arg2 ) );
             
             return new MultipleNamedProcedure0() {
                 public Object apply0() throws Throwable {
@@ -40,7 +40,7 @@ public class gui implements Runnable {
             Runnable runnable = PulsarSharedTimer.createTimer( null/*TODO (Sun, 12 Apr 2020 20:43:01 +0900)*/, 
                 SchemeValues.toInteger( arg0 ), 
                 SchemeValues.toInteger( arg1 ), 
-                InvokableSchemeProcedure.createSecretarillyInvokable( (Procedure)arg2 ) );
+                SchemeInvokable.create( (Procedure)arg2 ) );
    
             return new MultipleNamedProcedure0() {
                 public Object apply0() throws Throwable {
