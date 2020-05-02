@@ -90,7 +90,10 @@ public final class SchemeResult {
         return this.error == null;
     }
     public final boolean isEmpty() {
-        return this.error == null && ( this.value == null || Values.empty.equals( this.value ) );
+        // MODIFIED (Sun, 03 May 2020 05:23:18 +0900) >>>        
+        // return this.error == null && ( this.value == null || Values.empty.equals( this.value ) );
+        return    this.error == null && (                       Values.empty.equals( this.value ) );
+        // MODIFIED (Sun, 03 May 2020 05:23:18 +0900) <<<        
     }
     public Object getValue() {
         return value;
@@ -125,7 +128,10 @@ public final class SchemeResult {
         else if ( s.equals( "" ) )
             return "";
         else
-            return "#|\n" + endWithLineFeed( s ) + "|#\n";
+            // MODIFIED (Sun, 03 May 2020 05:23:18 +0900) >>>        
+            // return "#|\n" + endWithLineFeed( s ) + "|#\n";
+            return    ""     + endWithLineFeed( s ) + "";
+            // MODIFIED (Sun, 03 May 2020 05:23:18 +0900) >>>        
     }
     
     public static String endWithLineFeed(String s) {

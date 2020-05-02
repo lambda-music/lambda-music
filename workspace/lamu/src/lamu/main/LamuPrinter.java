@@ -26,7 +26,10 @@ public class LamuPrinter {
                     return sb.toString();
                 } else  {
 //                    gnu.kawa.io.PrettyWriter.lineLengthLoc.set( 1000 );
-                    return SchemePrinter.prettyPrintProc( value );
+                    if ( value == null )
+                        return "#!null";
+                    else 
+                        return SchemePrinter.prettyPrintProc( value );
 //                    return SchemePrinter.DEFAULT_SCHEME_VALUE_PRINTER.format( value );
                 }
             }

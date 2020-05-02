@@ -58,7 +58,10 @@ public class KawapadUpdater {
                 SwingUtilities.invokeLater( new RunnableInsertTextToTextPane( kawapad, resultString, true, doResetFileModified ) );
             } else {
                 Kawapad.logInfo( "KawapadEvaluator: insert empty values (2). " + schemeResult.getValue() );
-                SwingUtilities.invokeLater( new RunnableInsertTextToTextPane( kawapad, "\n#| |#", true, doResetFileModified ) );
+                // MODIFIED (Sun, 03 May 2020 05:23:18 +0900) >>>        
+                // SwingUtilities.invokeLater( new RunnableInsertTextToTextPane( kawapad, "\n#| |#", true, doResetFileModified ) );
+                SwingUtilities.invokeLater(   new RunnableInsertTextToTextPane( kawapad, "\n#|no-result|#", true, doResetFileModified ) );
+                // MODIFIED (Sun, 03 May 2020 05:23:18 +0900) <<<        
 //                // do not insert.
 //                Kawapad.logInfo( "KawapadEvaluator: do not insert (2). " + schemeResult.getValue() );
             }
