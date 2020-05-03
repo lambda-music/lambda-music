@@ -405,20 +405,21 @@ public class MetroTrack implements MetroSyncTrack, MetroNamedTrack, MetroReadabl
 
                 int actualCursor     = currentCursor - cursorOffset;
                 int actualNextCursor = nextCursor    - cursorOffset;
-                
-                boolean found= false;
-                for ( Iterator<MetroEvent> ie = buf.getMetroEventList().iterator(); ie.hasNext();  ) {
-                    MetroEvent e = ie.next();
-                    
-                    if ( e.isBetweenInFrames( actualCursor, actualNextCursor ) ) {
-                        found = true;
-                        e.process( metro, actualCursor );
-                        if ( e instanceof MetroMidiEvent ) {
-                            result.add( (MetroMidiEvent)e );
+                if ( this.isTrackEnabled() ) { // <<< ADDED (Sun, 03 May 2020 17:59:12 +0900)
+                    boolean found= false;
+                    for ( Iterator<MetroEvent> ie = buf.getMetroEventList().iterator(); ie.hasNext();  ) {
+                        MetroEvent e = ie.next();
+
+                        if ( e.isBetweenInFrames( actualCursor, actualNextCursor ) ) {
+                            found = true;
+                            e.process( metro, actualCursor );
+                            if ( e instanceof MetroMidiEvent ) {
+                                result.add( (MetroMidiEvent)e );
+                            }
+                        } else {
+                            if ( found ) // SEE COMMENT_A (Fri, 02 Aug 2019 19:20:40 +0900)
+                                break;
                         }
-                    } else {
-                        if ( found ) // SEE COMMENT_A (Fri, 02 Aug 2019 19:20:40 +0900)
-                            break;
                     }
                 }
 
