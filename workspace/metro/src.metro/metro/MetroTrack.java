@@ -90,7 +90,20 @@ public class MetroTrack implements MetroSyncTrack, MetroNamedTrack, MetroReadabl
     public Object getName() {
         return name;
     }
+    public MetroSequence getSequence() {
+        return this.sequence;
+    }
+    public Collection<Object> getTags() {
+        return tags;
+    }
     
+    public boolean isEnabled() {
+        return enabled;
+    }
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
     protected transient boolean prepared = false;
     protected transient boolean enabled = true;
 
@@ -222,22 +235,6 @@ public class MetroTrack implements MetroSyncTrack, MetroNamedTrack, MetroReadabl
 //        return this.metro.getMetroLock();
 //    }
     
-    public MetroSequence getSequence() {
-        return this.sequence;
-    }
-    public Object getTrackName() {
-        return name;
-    }
-    public Collection<Object> getTrackTags() {
-        return tags;
-    }
-    
-    public boolean isTrackEnabled() {
-        return enabled;
-    }
-    public void setTrackEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
     public void removeGracefully() {
         if ( this.ending ) {
             logWarn( "removeGracefully was called; but the track is already removed." );
@@ -246,7 +243,7 @@ public class MetroTrack implements MetroSyncTrack, MetroNamedTrack, MetroReadabl
             this.ending = true;
         }
     }
-    public double getTrackPosition( Metro metro ) {
+    public double getPosition( Metro metro ) {
         synchronized ( metro.getMetroLock() ) {
             if ( lastLengthInFrames < 0 || cursor < 0) {
                 return 0;
@@ -405,7 +402,7 @@ public class MetroTrack implements MetroSyncTrack, MetroNamedTrack, MetroReadabl
 
                 int actualCursor     = currentCursor - cursorOffset;
                 int actualNextCursor = nextCursor    - cursorOffset;
-                if ( this.isTrackEnabled() ) { // <<< ADDED (Sun, 03 May 2020 17:59:12 +0900)
+                if ( this.isEnabled() ) { // <<< ADDED (Sun, 03 May 2020 17:59:12 +0900)
                     boolean found= false;
                     for ( Iterator<MetroEvent> ie = buf.getMetroEventList().iterator(); ie.hasNext();  ) {
                         MetroEvent e = ie.next();

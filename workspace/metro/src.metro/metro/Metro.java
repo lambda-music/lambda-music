@@ -414,7 +414,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     {
         for ( Iterator<MetroTrack> i = allTracks.iterator(); i.hasNext();  ) {
              MetroTrack track = i.next();
-             if ( track.getTrackTags().contains( tag ) ) {
+             if ( track.getTags().contains( tag ) ) {
                  resultTracks.add( track );
              }
         }
@@ -1131,7 +1131,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     }
 
     private void removeFormerTrack(MetroTrack track, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset) {
-        removeTrack( searchTrack( track.getTrackName() ), syncType, syncTrack, syncOffset );
+        removeTrack( searchTrack( track.getName() ), syncType, syncTrack, syncOffset );
     }
     public void putTrack( MetroTrack track, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset )  {
         removeFormerTrack( track, syncType, syncTrack, syncOffset );

@@ -1420,7 +1420,7 @@ public interface PulsarLib {
                     return Boolean.FALSE;
                 } else {
                     MetroTrack track = ((MetroTrack)arg1);
-                    double position= track.getTrackPosition( getPulsar() );
+                    double position= track.getPosition( getPulsar() );
                     return SchemeValues.toSchemeNumber( position );
                 }
             }
