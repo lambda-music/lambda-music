@@ -307,7 +307,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         List<MetroTrack> tempAllTracks = replicateAllTracks();
         for ( Iterator<MetroTrack> i=tempAllTracks.iterator(); i.hasNext(); ) {
             MetroTrack track = i.next();
-            logWarn( "" + track.name );
+            logWarn( "" + track.getName() );
         }
         logWarn( "Dump all tracks <=== " );
     }
@@ -385,7 +385,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
 
         for ( Iterator<MetroTrack> i=tempAllTracks.iterator(); i.hasNext(); ) {
             MetroTrack track = i.next();
-            if ( Boolean.FALSE.equals( invokable.invoke( track.name, track.tags ) ) ) {
+            if ( Boolean.FALSE.equals( invokable.invoke( track.getName(), track.getTags()) ) ) {
                 continue;
             } else {
                 resultAllTracks.add( track );
@@ -902,16 +902,9 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
             }
 
             synchronized ( this.getMetroLock() ) {
-//                ************* REMOVED ************ (Thu, 16 Apr 2020 12:05:26 +0900) IMPORTANT!
-//                if ( 0 < this.inputMidiEventList.size() )
-                    for ( MetroTrack track : this.tracks ) {
-                        track.sequence.processDirect( this, nframes, track.totalCursor, this.inputMidiEventList, this.outputMidiEventList );
-                    }
-                
-                if ( true )
-                    for ( MetroTrack track : this.tracks ) {
-                        track.progressCursor( this, nframes, this.outputMidiEventList );
-                    }
+                for ( MetroTrack track : this.tracks ) {
+                    track.progressCursor( this, nframes, this.inputMidiEventList, this.outputMidiEventList );
+                }
                 
                 // sort the every event 
                 this.outputMidiEventList.sort( MetroMidiEvent.COMPARATOR );
@@ -1090,7 +1083,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         checkState();
 
         if ( DEBUG ) { 
-            logInfo( "****** DESTROYED a track is destroyed " + ( track == null ? "(null track)" : track.id ) );
+            logInfo( "****** DESTROYED a track is destroyed " + ( track == null ? "(null track)" : track.getUniqueID() ) );
         }
         if ( track == null )
             throw new NullPointerException( "track was null" );

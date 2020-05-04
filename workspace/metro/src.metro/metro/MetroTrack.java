@@ -73,7 +73,11 @@ public class MetroTrack implements MetroSyncTrack, MetroNamedTrack, MetroReadabl
     /*
      * This value is only for debugging purpose. 
      */
-    final int id = (int) (Math.random()* Integer.MAX_VALUE);
+    private final int uniqueID = (int) (Math.random()* Integer.MAX_VALUE);
+    int getUniqueID() {
+        return uniqueID;
+    }
+
     
 //    /**
 //     * 
@@ -82,9 +86,9 @@ public class MetroTrack implements MetroSyncTrack, MetroNamedTrack, MetroReadabl
     /**
      * Note that the String object which is stored in name field must be interned.  
      */
-    protected final Object name;
-    protected final Collection<Object> tags;
-    protected final MetroSequence sequence;
+    private final Object name;
+    private final Collection<Object> tags;
+    private final MetroSequence sequence;
 
     @Override
     public Object getName() {
@@ -104,8 +108,8 @@ public class MetroTrack implements MetroSyncTrack, MetroNamedTrack, MetroReadabl
         this.enabled = enabled;
     }
 
-    protected transient boolean prepared = false;
-    protected transient boolean enabled = true;
+    private transient boolean prepared = false;
+    private transient boolean enabled = true;
 
 //  private static final int BUFFER_SIZE = 2;
 // MODIFIED >>> (Mon, 08 Jul 2019 20:29:49 +0900)
@@ -118,15 +122,14 @@ public class MetroTrack implements MetroSyncTrack, MetroNamedTrack, MetroReadabl
     private transient MetroSyncTrack syncTrack;
     private transient double syncOffset=0.0d;
     private BlockingQueue<MetroEventBuffer> buffers = new LinkedBlockingQueue<>();
-    protected transient int totalCursor = 0;
-    protected transient int cursor = 0;
-    protected transient int lastLengthInFrames = 0;
-    protected transient int lastAccumulatedLength = 0;
+    private transient int totalCursor = 0;
+    private transient int cursor = 0;
+    private transient int lastLengthInFrames = 0;
+    private transient int lastAccumulatedLength = 0;
     
-    transient boolean ending = false;
-    transient boolean endingDone = false;
-    transient double endingLength = 0;
-    transient Runnable endingProc = null;
+    private transient boolean ending = false;
+    private transient boolean endingDone = false;
+    private transient double endingLength = 0;
     
     @Override
     public int getCursor() {
@@ -148,7 +151,7 @@ public class MetroTrack implements MetroSyncTrack, MetroNamedTrack, MetroReadabl
         return buffers;
     }
     
-    void reset() {
+    private void reset() {
         prepared = false;
         enabled = true;
         
@@ -164,7 +167,6 @@ public class MetroTrack implements MetroSyncTrack, MetroNamedTrack, MetroReadabl
         ending = false;
         endingDone = false;
         endingLength = 0;
-        endingProc = null;
         
 //        eventListenerable.clearEventListeners();
     }
@@ -362,8 +364,6 @@ public class MetroTrack implements MetroSyncTrack, MetroNamedTrack, MetroReadabl
      *                    |            |             *
      */
 
-    static int BUFFER_REMOVAL_STRATEGY = 3;
-
     /* 
      * (Sat, 23 Dec 2017 23:16:25 +0900)
      * 
@@ -385,7 +385,11 @@ public class MetroTrack implements MetroSyncTrack, MetroNamedTrack, MetroReadabl
      * as offset value of the current frame.  
      * 
      */
-    protected void progressCursor( Metro metro, int nframes, List<MetroMidiEvent> result ) throws JackException {
+    protected void progressCursor( Metro metro, int nframes, List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList ) throws JackException {
+        
+        // Moved from Metro class (Mon, 04 May 2020 22:02:08 +0900)
+        this.getSequence().processDirect( metro, nframes, totalCursor, inputMidiEventList, outputMidiEventList );
+
         synchronized ( metro.getMetroLock() ) {
             
             // This method is actually called twice; may be unnecessary. (Fri, 01 May 2020 16:56:38 +0900)
@@ -411,7 +415,7 @@ public class MetroTrack implements MetroSyncTrack, MetroNamedTrack, MetroReadabl
                             found = true;
                             e.process( metro, actualCursor );
                             if ( e instanceof MetroMidiEvent ) {
-                                result.add( (MetroMidiEvent)e );
+                                outputMidiEventList.add( (MetroMidiEvent)e );
                             }
                         } else {
                             if ( found ) // SEE COMMENT_A (Fri, 02 Aug 2019 19:20:40 +0900)
@@ -559,7 +563,7 @@ public class MetroTrack implements MetroSyncTrack, MetroNamedTrack, MetroReadabl
     private int cacheUpdateThreshold = -1;
     private static final int MIN_UPDATE_THRESHOLD = 256;
     private static final int MAX_UPDATE_THRESHOLD = 44100*4;
-    protected  void checkBuffer( Metro metro, int barLengthInFrames) throws JackException {
+    void checkBuffer( Metro metro, int barLengthInFrames) throws JackException {
         synchronized ( metro.getMetroLock() ) { // << ADDED synchronided (Sun, 30 Sep 2018 11:45:13 +0900)
 //          if ( this.buffers.size() < BUFFER_SIZE ) {
 //              this.offerNewBuffer( metro, client, position );
