@@ -498,6 +498,11 @@ public class PulsarSpecialNoteListParsers {
                 else
                     syncTrack = searchSyncTrack( pulsar, syncTrackId );
                 
+                if ( !(syncTrack instanceof MetroSyncTrack)) {
+                    // is throwing exception here allowed?? (Tue, 05 May 2020 16:27:20 +0900) 
+                    throw new IllegalArgumentException("syncType must be a sync track" );
+                }
+                
                 try {
                     MetroBufferedTrack track = PulsarTrack.createTrack( id, tags, procedure );
                     track.setSyncStatus( syncType, (MetroSyncTrack) syncTrack, syncOffset );
@@ -667,7 +672,8 @@ public class PulsarSpecialNoteListParsers {
         }
         @Override
         void removeTrackProc(Metro metro, MetroTrack track) {
-            ((MetroBufferedTrack) track).removeGracefully();
+            track.removeGracefully(metro);
+//            ((MetroBufferedTrack) track).removeGracefully(this);
         }
     }
 

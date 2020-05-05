@@ -5,8 +5,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.jaudiolibs.jnajack.JackException;
-
 public abstract class MetroTrack {
     /**
      * Note that the String object which is stored in name field must be interned.  
@@ -86,5 +84,20 @@ public abstract class MetroTrack {
     public abstract void processBuffer(Metro metro, int barLengthInFrames) throws MetroException;
     
     public abstract void progressCursor(Metro metro, int nframes, 
-        List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList ) throws JackException;
+        List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList ) throws MetroException;
+
+    // Moved from MetroSyncTrack (Tue, 05 May 2020 16:47:27 +0900)
+    /**
+     * Removes this track from the parent Metro object. Calling this method has no
+     * effect if this track does not belong to the specified Metro object, This
+     * method calls {@link Metro#unregisterTrack(Collection)} method to remove this
+     * track. This behavior is a default implementation. Any subclasses which
+     * inherit this class should properly reimplement their desirable behavior.
+     * 
+     * @param metro
+     *    The parent Metro object.
+     */
+    public void removeGracefully(Metro metro) {
+        metro.unregisterTrack( this );
+    }
 }

@@ -762,7 +762,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                     // int barInFrames = Metro.calcBarInFrames( this, this.client, this.position );
                     for ( MetroTrack track : this.tracks ) {
                         if ( track instanceof MetroBufferedTrack )
-                            ((MetroBufferedTrack) track).reprepareBuffer( this, barLengthInFrames, prevBeatsPerMinute, beatsPerMinute );
+                            ((MetroBufferedTrack) track).reprepareSyncStatus( this, barLengthInFrames );
                     }
                 }
             }
@@ -1136,6 +1136,8 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     public void putTrack( MetroTrack track, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset )  {
         removeFormerTrack( track, syncType, syncTrack, syncOffset );
         if ( track instanceof MetroSyncTrack ) {
+            if ( syncTrack!=null & !(syncTrack instanceof MetroSyncTrack))
+                throw new IllegalArgumentException("syncType must be a sync track" );
             ((MetroSyncTrack)track).setSyncStatus( syncType, (MetroSyncTrack)syncTrack, syncOffset );
         }
         registerTrack( track );
@@ -1143,6 +1145,8 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     public void putTrack( Collection<MetroTrack> trackList, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset )  {
         for ( MetroTrack track : trackList ) {
             if ( track instanceof MetroSyncTrack ) {
+                if ( syncTrack!=null & !(syncTrack instanceof MetroSyncTrack))
+                    throw new IllegalArgumentException("syncType must be a sync track" );
                 ((MetroSyncTrack) track).setSyncStatus( syncType, (MetroSyncTrack) syncTrack, syncOffset );
             }
             
@@ -1160,11 +1164,12 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                 unregisterTrack( track );
                 break;
             case SERIAL :
-                if ( track instanceof MetroSyncTrack ) {
-                    ((MetroSyncTrack)track).removeGracefully();
-                } else {
-                    unregisterTrack( track );
-                }
+                track.removeGracefully(this);
+//                if ( track instanceof MetroSyncTrack ) {
+//                    ((MetroSyncTrack)track).removeGracefully(this);
+//                } else {
+//                    unregisterTrack( track );
+//                }
                 break;
         }
     }
@@ -1178,11 +1183,12 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                 break;
             case SERIAL :
                 for ( MetroTrack track : trackList ) {
-                    if ( track instanceof MetroSyncTrack ) {
-                        ((MetroSyncTrack)track).removeGracefully();
-                    } else {
-                        unregisterTrack( track );
-                    }
+                    track.removeGracefully(this);
+//                    if ( track instanceof MetroSyncTrack ) {
+//                        ((MetroSyncTrack)track).removeGracefully(this);
+//                    } else {
+//                        unregisterTrack( track );
+//                    }
                 }
                 break;
         }

@@ -106,15 +106,24 @@ public class MetroBufferedTrack extends MetroSyncTrack implements MetroSequencea
     private transient boolean endingDone = false;
     private transient double endingLength = 0;
     
-    @Override
     public int getCursor() {
         return cursor;
     }
-    @Override
     public void setCursor(int cursor) {
         this.cursor = cursor;
         this.totalCursor = cursor;
     }
+
+    @Override
+    public int getCurrentPositionInFrames(Metro metro) {
+        return this.getCursor();
+    }
+    @Override
+    public void setCurrentPositionInFrames(Metro metro, int position) {
+        this.setCursor(position);
+    }
+
+    
     
     /*
      * This must be used with synchronization.
@@ -127,8 +136,8 @@ public class MetroBufferedTrack extends MetroSyncTrack implements MetroSequencea
     }
     
     @Override
-    public void reset() {
-        super.reset();
+    public void resetSyncStatus() {
+        super.resetSyncStatus();
         prepared = false;
         enabled = true;
         
@@ -178,7 +187,7 @@ public class MetroBufferedTrack extends MetroSyncTrack implements MetroSequencea
 //    }
     
     @Override
-    public void removeGracefully() {
+    public void removeGracefully(Metro metro) {
         if ( this.ending ) {
             logWarn( "removeGracefully was called; but the track is already removed." );
         } else {
@@ -199,7 +208,7 @@ public class MetroBufferedTrack extends MetroSyncTrack implements MetroSequencea
 
     
     @Override
-    public int getLatestLengthInFrames(Metro metro) {
+    public int getCurrentLengthInFrames(Metro metro) {
         synchronized ( metro.getMetroLock() ) {
             BlockingQueue<MetroEventBuffer> bufs = this.getBuffers();
             if ( bufs.size() == 0 )
@@ -296,7 +305,7 @@ public class MetroBufferedTrack extends MetroSyncTrack implements MetroSequencea
      * 
      */
     @Override
-    public void progressCursor( Metro metro, int nframes, List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList ) throws JackException {
+    public void progressCursor( Metro metro, int nframes, List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList ) throws MetroException {
         
         // Moved from Metro class (Mon, 04 May 2020 22:02:08 +0900)
         this.getSequence().processDirect( metro, nframes, totalCursor, inputMidiEventList, outputMidiEventList );
@@ -304,7 +313,12 @@ public class MetroBufferedTrack extends MetroSyncTrack implements MetroSequencea
         synchronized ( metro.getMetroLock() ) {
             
             // This method is actually called twice; may be unnecessary. (Fri, 01 May 2020 16:56:38 +0900)
-            metro.clearAllPorts();
+            try {
+                metro.clearAllPorts();
+            } catch (JackException e1) {
+                // This is very likely removed in a near future.
+                throw new MetroException(e1);
+            }
 
             int currentCursor = this.cursor;
             int nextCursor = currentCursor + nframes;
@@ -394,16 +408,16 @@ public class MetroBufferedTrack extends MetroSyncTrack implements MetroSequencea
      * @param metro TODO
      * @param barLengthInFrames
      */
-    public void prepareBuffer( Metro metro, int barLengthInFrames ) {
+    public void prepareSyncStatus( Metro metro, int barLengthInFrames ) {
         if ( prepared ) 
             throw new IllegalStateException();
 
         this.prepared = true;
 
-        MetroSyncTrack.setSyncStatus( metro, this, barLengthInFrames );
+        MetroSyncTrack.prepareSyncStatus( metro, this, barLengthInFrames );
     }
 
-    public void reprepareBuffer( Metro metro, int barLengthInFrames, double prevBeatsPerMinute, double beatsPerMinute ) throws MetroException {
+    public void reprepareSyncStatus( Metro metro, int barLengthInFrames ) throws MetroException {
         try {
             synchronized ( metro.getMetroLock() ) {
                 int prevLengthInFrame = -1;
@@ -479,9 +493,9 @@ public class MetroBufferedTrack extends MetroSyncTrack implements MetroSequencea
             if ( barLengthInFrames != lastBarLengthInFrames ) {
                 lastBarLengthInFrames = barLengthInFrames;
                 if ( ! prepared ) {
-                    prepareBuffer(metro, barLengthInFrames);
+                    prepareSyncStatus(metro, barLengthInFrames);
                 } else {
-                    reprepareBuffer(metro, barLengthInFrames, 0d, 0d );
+                    reprepareSyncStatus(metro, barLengthInFrames );
                 }
             }
             

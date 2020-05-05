@@ -31,8 +31,8 @@ public abstract class MetroSyncTrack extends MetroTrack {
     /**
      * 
      */
-    public void reset() {
-        syncType = null;
+    public void resetSyncStatus() {
+        syncType = MetroSyncType.IMMEDIATE;
         syncTrack = null;
         syncOffset = 0.0d;
     }
@@ -50,28 +50,31 @@ public abstract class MetroSyncTrack extends MetroTrack {
      * 
      */
     public void setSyncStatus( MetroSyncType syncType, MetroSyncTrack syncTrack, double syncOffset ) {
-        this.reset();
+        this.resetSyncStatus();
         this.syncType = syncType;
         this.syncTrack = syncTrack;
         this.syncOffset = syncOffset;
     }
 
 
-    public abstract int getCursor();
-    public abstract void setCursor(int cursor);
-    public abstract int getLatestLengthInFrames(Metro metro);
+    // (Tue, 05 May 2020 18:58:13 +0900) This method was formerly getCursor() 
+    public abstract int getCurrentPositionInFrames(Metro metro);
+    // (Tue, 05 May 2020 18:58:13 +0900) This method was formerly setCursor() 
+    public abstract void setCurrentPositionInFrames(Metro metro, int position);
+    // (Tue, 05 May 2020 18:58:13 +0900) This method was formerly getLatestLengthInFrames() 
+    public abstract int getCurrentLengthInFrames(Metro metro);
+    // (Tue, 05 May 2020 18:58:13 +0900) This method was formerly getPosition() 
     public abstract double getPosition(Metro metro);
-    public abstract void removeGracefully();
     
-    public static void setSyncStatus( Metro metro, MetroSyncTrack track, int barLengthInFrames) {
+    public static void prepareSyncStatus( Metro metro, MetroSyncTrack track, int barLengthInFrames) {
         int offset = (int) (-1.0d * track.getSyncOffset() * barLengthInFrames);
 
         switch ( track.getSyncType() ) {
             case IMMEDIATE :
             {
-                track.setCursor( offset );
+                track.setCurrentPositionInFrames( metro, offset );
                 if ( DEBUG )
-                    logInfo( "prepare(immediate):" + track.getCursor() );
+                    logInfo( "prepare(immediate):" + track.getCurrentPositionInFrames(metro) );
                 if ( track.getSyncTrack() != null ) {
                     logWarn( "syncTrack was specified but the track was ignored because syncType was `immediate`." );
                 }
@@ -80,30 +83,30 @@ public abstract class MetroSyncTrack extends MetroTrack {
             case PARALLEL :
             {
                 if ( track.getSyncTrack() == null ) {
-                    track.setCursor( offset );
+                    track.setCurrentPositionInFrames( metro, offset );
                     logWarn(  "`parallel` was specified but syncTrack was not specified; it was treated as immediate mode." );
                 } else {
-                    track.setCursor( track.getSyncTrack().getCursor() + offset );
+                    track.setCurrentPositionInFrames( metro, track.getSyncTrack().getCurrentPositionInFrames(metro) + offset );
                 }
 
             }
             break;
             case SERIAL :
                 if ( track.getSyncTrack() == null ) {
-                    track.setCursor( offset );
+                    track.setCurrentPositionInFrames( metro, offset );
                     logWarn( "`serial` was specified but syncTrack was not passed." );
                 } else {
-                    int length = track.getSyncTrack().getLatestLengthInFrames(metro);
+                    int length = track.getSyncTrack().getCurrentLengthInFrames(metro);
                     if ( length < 0 ) {
-                        track.setCursor( offset );
+                        track.setCurrentPositionInFrames( metro, offset );
                         logWarn(  "`serial` was specified but track-length was not supported on the track; it was treated as immediate mode." );
                     } else {
-                        track.setCursor( track.getSyncTrack().getCursor() - length + offset );
+                        track.setCurrentPositionInFrames( metro, track.getSyncTrack().getCurrentPositionInFrames(metro) - length + offset );
                     }
 
 //                    synchronized ( track.getSyncTrack().getMetroTrackLock() ) {
-//                        track.setCursor( 
-//                                track.getSyncTrack().getCursor() - 
+//                        track.setCurrentPositionInFrames( 
+//                                track.getSyncTrack().getCurrentPositionInFrames() - 
 //                                track.getSyncTrack().getBuffers().peek().getLengthInFrames() + 
 //                                offset );
 //                    }
