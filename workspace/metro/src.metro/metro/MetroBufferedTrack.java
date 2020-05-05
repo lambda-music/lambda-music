@@ -50,6 +50,40 @@ public class MetroBufferedTrack extends MetroSyncTrack implements MetroSequencea
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
+    /**
+     * This is a utility method to create a Metro instance with a single sequence.
+     * 
+     * @param clientName
+     * @param sequence
+     * @return
+     * @throws MetroException
+     */
+    public static Metro startClient( String clientName, MetroSequence sequence ) throws MetroException {
+        try {
+            Metro metro = new Metro();
+            metro.open( clientName );
+            synchronized ( metro.getMetroLock() ) {
+                try {
+                    metro.registerTrack( create( "main", null, sequence ) );
+                } finally {
+                    metro.notifyTrackChange();
+                }
+            }
+            return metro;
+        } catch (MetroException ex) {
+            Metro.logError( null, ex);
+            throw ex;
+        }
+    }
+
+    /**
+     * A factory method to create an instance of {@link MetroBufferedTrack}.
+     *  
+     * @param name
+     * @param tags
+     * @param sequence
+     * @return
+     */
     public static MetroBufferedTrack create(Object name, Collection<Object> tags, MetroSequence sequence) {
         return new MetroBufferedTrack(name, tags, sequence);
     }
@@ -418,6 +452,17 @@ public class MetroBufferedTrack extends MetroSyncTrack implements MetroSequencea
     }
 
     public void reprepareSyncStatus( Metro metro, int barLengthInFrames ) throws MetroException {
+        // Note (Wed, 06 Nov 2019 05:47:26 +0900)
+        // This method could be called by setting tempo procedures and 
+        // that time could be at the time when it is not opened.
+        // In that case, we should ignore the request and should not 
+        // raise execptions.
+        // 
+        // Note.2 (Wed, 06 May 2020 02:37:17 +0900)
+        // This comment is moved from Metro.reprepareTrack() method.
+        // The reprepareTrack() method was ditched from the code.
+        // This comment should be rewritten.
+
         try {
             synchronized ( metro.getMetroLock() ) {
                 int prevLengthInFrame = -1;
@@ -654,5 +699,4 @@ public class MetroBufferedTrack extends MetroSyncTrack implements MetroSequencea
             throw new IllegalStateException( "the current sequence is not an invokable object." );
         }
     }
-
 } 

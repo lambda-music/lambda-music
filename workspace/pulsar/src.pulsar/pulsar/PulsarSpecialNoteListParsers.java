@@ -74,7 +74,6 @@ import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.log.Logger;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
-import metro.MetroBufferedTrack;
 import metro.MetroCollector;
 import metro.MetroPort;
 import metro.MetroSyncTrack;
@@ -504,9 +503,12 @@ public class PulsarSpecialNoteListParsers {
                 }
                 
                 try {
-                    MetroBufferedTrack track = PulsarTrack.createTrack( id, tags, procedure );
-                    track.setSyncStatus( syncType, (MetroSyncTrack) syncTrack, syncOffset );
-                    pulsar.registerTrack( track );
+                    // INTEGRATED (Wed, 06 May 2020 02:35:15 +0900) >>>
+                    // MetroBufferedTrack track = PulsarTrack.createTrack( id, tags, procedure );
+                    // track.setSyncStatus( syncType, (MetroSyncTrack) syncTrack, syncOffset );
+                    // pulsar.registerTrack( track );
+                    pulsar.putTrack( PulsarTrack.createTrack( id, tags, procedure ), syncType, syncTrack, syncOffset  );
+                    // INTEGRATED (Wed, 06 May 2020 02:35:15 +0900) <<<
                 } finally {
                     pulsar.notifyTrackChange();
                 }

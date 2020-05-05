@@ -174,33 +174,6 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         return this.playing ; 
     }
 
-    /**
-     * This is a utility method to create a Metro instance with a single sequence.
-     * 
-     * @param clientName
-     * @param sequence
-     * @return
-     * @throws MetroException
-     */
-    public static Metro startClient( String clientName, MetroSequence sequence ) throws MetroException {
-        try {
-            Metro metro = new Metro();
-            metro.open( clientName );
-            synchronized ( metro.getMetroLock() ) {
-                try {
-                    metro.registerTrack( MetroBufferedTrack.create( "main", null, sequence ) );
-                } finally {
-                    metro.notifyTrackChange();
-                }
-            }
-            return metro;
-        } catch (MetroException ex) {
-            logError( null, ex);
-            throw ex;
-        }
-    }
-    
-    
     public MetroPort createInputPort(Object portName) throws MetroException {
         return createPort(portName, this.inputPortList, JackPortFlags.JackPortIsInput);
     }
@@ -748,27 +721,6 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         }
     }
     
-    // NOT USED
-    void reprepareTrack(double prevBeatsPerMinute, double beatsPerMinute) throws MetroException {
-        // Note (Wed, 06 Nov 2019 05:47:26 +0900)
-        // This method could be called by setting tempo procedures and 
-        // that time could be at the time when it is not opened.
-        // In that case, we should ignore the request and should not 
-        // raise execptions.
-        if ( isOpened ) {
-            synchronized ( this.getMetroLock() ) {
-                if ( ! tracks.isEmpty() ) {
-                    int barLengthInFrames = this.getOneBarLengthInFrames();
-                    // int barInFrames = Metro.calcBarInFrames( this, this.client, this.position );
-                    for ( MetroTrack track : this.tracks ) {
-                        if ( track instanceof MetroBufferedTrack )
-                            ((MetroBufferedTrack) track).reprepareSyncStatus( this, barLengthInFrames );
-                    }
-                }
-            }
-        }
-    }
-
     private String[] getAvailableOutputPorts_impl() throws JackException {
         return this.jack.getPorts( this.client, "", JackPortType.MIDI, EnumSet.of( JackPortFlags.JackPortIsOutput ) );
     }
