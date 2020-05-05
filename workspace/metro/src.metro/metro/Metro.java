@@ -122,7 +122,8 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     public void setBeatsPerMinute(double beatsPerMinute) throws MetroException {
         beatsPerMinute = beatsPerMinute < 1 ? 1 : beatsPerMinute;
         this.beatsPerMinute = beatsPerMinute;
-        reprepareTrack( beatsPerMinute, this.beatsPerMinute );
+//        EXPERIMENTALY REMOVED (Tue, 05 May 2020 08:51:48 +0900) 
+//        reprepareTrack( beatsPerMinute, this.beatsPerMinute );
     }
 
     private long beatsPerBar = 4;
@@ -187,7 +188,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
             metro.open( clientName );
             synchronized ( metro.getMetroLock() ) {
                 try {
-                    metro.registerTrack( MetroTrack.create( "main", null, sequence ) );
+                    metro.registerTrack( MetroBufferedTrack.create( "main", null, sequence ) );
                 } finally {
                     metro.notifyTrackChange();
                 }
@@ -684,8 +685,9 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                     int barLengthInFrames = this.getOneBarLengthInFrames();
 
                     for ( MetroTrack track : this.tracks  ) {
-                        track.checkBuffer( this,  barLengthInFrames );
+                        track.processBuffer( this,  barLengthInFrames );
                     }
+//                    this.getMetroLock().wait( 1 );
 
                     for ( Runnable r : this.messageQueue ) {
                         try {
@@ -709,9 +711,12 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                         // "registeredTrack" in its event handlers.
                         ArrayList<MetroTrack> arrayList = new ArrayList<>( this.registeredTracks );
                         for ( MetroTrack track : arrayList ) {
-                            track.prepare( Metro.this, barLengthInFrames );
+                            // REMOVED (Tue, 05 May 2020 07:58:05 +0900) >>>
+                            // track.onStartBuffer( Metro.this, barLengthInFrames );
+                            // REMOVED (Tue, 05 May 2020 07:58:05 +0900) <<<
+                            
                             // ADDED (Sun, 30 Sep 2018 12:39:32 +0900)
-                            track.checkBuffer( Metro.this,  barLengthInFrames );
+                            track.processBuffer( Metro.this,  barLengthInFrames );
                         }
                     }       
                     this.unregisteredTracks.clear();
@@ -743,6 +748,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         }
     }
     
+    // NOT USED
     void reprepareTrack(double prevBeatsPerMinute, double beatsPerMinute) throws MetroException {
         // Note (Wed, 06 Nov 2019 05:47:26 +0900)
         // This method could be called by setting tempo procedures and 
@@ -755,7 +761,8 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                     int barLengthInFrames = this.getOneBarLengthInFrames();
                     // int barInFrames = Metro.calcBarInFrames( this, this.client, this.position );
                     for ( MetroTrack track : this.tracks ) {
-                        track.reprepare( this, barLengthInFrames, prevBeatsPerMinute, beatsPerMinute );
+                        if ( track instanceof MetroBufferedTrack )
+                            ((MetroBufferedTrack) track).reprepareBuffer( this, barLengthInFrames, prevBeatsPerMinute, beatsPerMinute );
                     }
                 }
             }
@@ -1128,11 +1135,17 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     }
     public void putTrack( MetroTrack track, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset )  {
         removeFormerTrack( track, syncType, syncTrack, syncOffset );
-        registerTrack( track.setSyncStatus( syncType, syncTrack, syncOffset ) );
+        if ( track instanceof MetroSyncTrack ) {
+            ((MetroSyncTrack)track).setSyncStatus( syncType, (MetroSyncTrack)syncTrack, syncOffset );
+        }
+        registerTrack( track );
     }
     public void putTrack( Collection<MetroTrack> trackList, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset )  {
         for ( MetroTrack track : trackList ) {
-            track.setSyncStatus( syncType, syncTrack, syncOffset );
+            if ( track instanceof MetroSyncTrack ) {
+                ((MetroSyncTrack) track).setSyncStatus( syncType, (MetroSyncTrack) syncTrack, syncOffset );
+            }
+            
             removeFormerTrack( track, syncType, syncTrack, syncOffset );
         }
         registerTrack( trackList );
@@ -1147,7 +1160,11 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                 unregisterTrack( track );
                 break;
             case SERIAL :
-                track.removeGracefully();
+                if ( track instanceof MetroSyncTrack ) {
+                    ((MetroSyncTrack)track).removeGracefully();
+                } else {
+                    unregisterTrack( track );
+                }
                 break;
         }
     }
@@ -1161,7 +1178,11 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                 break;
             case SERIAL :
                 for ( MetroTrack track : trackList ) {
-                    track.removeGracefully();
+                    if ( track instanceof MetroSyncTrack ) {
+                        ((MetroSyncTrack)track).removeGracefully();
+                    } else {
+                        unregisterTrack( track );
+                    }
                 }
                 break;
         }

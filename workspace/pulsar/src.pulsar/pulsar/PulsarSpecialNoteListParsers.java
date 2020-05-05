@@ -74,8 +74,10 @@ import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.log.Logger;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
+import metro.MetroBufferedTrack;
 import metro.MetroCollector;
 import metro.MetroPort;
+import metro.MetroSyncTrack;
 import metro.MetroSyncType;
 import metro.MetroTrack;
 
@@ -497,8 +499,9 @@ public class PulsarSpecialNoteListParsers {
                     syncTrack = searchSyncTrack( pulsar, syncTrackId );
                 
                 try {
-                    pulsar.registerTrack( 
-                        PulsarTrack.createTrack( id, tags, procedure ).setSyncStatus( syncType, syncTrack, syncOffset));
+                    MetroBufferedTrack track = PulsarTrack.createTrack( id, tags, procedure );
+                    track.setSyncStatus( syncType, (MetroSyncTrack) syncTrack, syncOffset );
+                    pulsar.registerTrack( track );
                 } finally {
                     pulsar.notifyTrackChange();
                 }
@@ -664,7 +667,7 @@ public class PulsarSpecialNoteListParsers {
         }
         @Override
         void removeTrackProc(Metro metro, MetroTrack track) {
-            track.removeGracefully();
+            ((MetroBufferedTrack) track).removeGracefully();
         }
     }
 

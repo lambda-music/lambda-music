@@ -17,6 +17,7 @@ import lamu.lib.kawautils.procedures.MultipleNamedProcedure0;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure1;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedureN;
 import metro.MetroReadable;
+import metro.MetroSequenceable;
 import metro.MetroTrack;
 import pulsar.PulsarLib.PulsarLibImplementation.PulsarProceduralDescriptiveDoc;
 
@@ -177,7 +178,7 @@ public class PulsarLib_Procs {
         @Override
         public Object apply1(Object arg0 ) throws Throwable {
             if ( arg0 instanceof MetroTrack ) {
-                return ((MetroTrack)arg0).getSequence();
+                return ((MetroSequenceable)arg0).getSequence();
             } else {
                 throw new IllegalArgumentException( "the argument is not a track object." );
             }
