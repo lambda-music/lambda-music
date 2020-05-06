@@ -30,7 +30,6 @@ import java.util.logging.Level;
 
 import org.jaudiolibs.jnajack.JackException;
 
-import lamu.lib.Invokable;
 import lamu.lib.log.Logger;
 
 /*
@@ -44,49 +43,11 @@ import lamu.lib.log.Logger;
  * @author Ats Oka
  *
  */
-public class MetroBufferedTrack extends MetroSyncTrack implements MetroSequenceable, MetroReadable, Invokable {
+public abstract class MetroBufferedTrack extends MetroSyncTrack  {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
-
-    /**
-     * This is a utility method to create a Metro instance with a single sequence.
-     * 
-     * @param clientName
-     * @param sequence
-     * @return
-     * @throws MetroException
-     */
-    public static Metro startClient( String clientName, MetroSequence sequence ) throws MetroException {
-        try {
-            Metro metro = new Metro();
-            metro.open( clientName );
-            synchronized ( metro.getMetroLock() ) {
-                try {
-                    metro.registerTrack( create( "main", null, sequence ) );
-                } finally {
-                    metro.notifyTrackChange();
-                }
-            }
-            return metro;
-        } catch (MetroException ex) {
-            Metro.logError( null, ex);
-            throw ex;
-        }
-    }
-
-    /**
-     * A factory method to create an instance of {@link MetroBufferedTrack}.
-     *  
-     * @param name
-     * @param tags
-     * @param sequence
-     * @return
-     */
-    public static MetroBufferedTrack create(Object name, Collection<Object> tags, MetroSequence sequence) {
-        return new MetroBufferedTrack(name, tags, sequence);
-    }
 
     private static final boolean DEBUG = false;
 
@@ -107,11 +68,6 @@ public class MetroBufferedTrack extends MetroSyncTrack implements MetroSequencea
 //     * 
 //     */
 //    private final Metro metro;
-    private final MetroSequence sequence;
-    @Override
-    public MetroSequence getSequence() {
-        return this.sequence;
-    }
     
     public boolean isEnabled() {
         return enabled;
@@ -129,6 +85,7 @@ public class MetroBufferedTrack extends MetroSyncTrack implements MetroSequencea
 //  private static final double MARGIN_LENGTH = 9;   
 // MODIFIED <<< 
 
+    public abstract <T> void processBuffered( Metro metro, MetroBufferedMidiReceiver<T> buffer );
 
     private BlockingQueue<MetroEventBuffer> buffers = new LinkedBlockingQueue<>();
     private transient int totalCursor = 0;
@@ -202,9 +159,8 @@ public class MetroBufferedTrack extends MetroSyncTrack implements MetroSequencea
      * @param sequence
      *            Specifying the sequence object to play.
      */
-    public MetroBufferedTrack( Object name, Collection<Object> tags, MetroSequence sequence ) {
+    public MetroBufferedTrack( Object name, Collection<Object> tags ) {
         super(name,tags);
-        this.sequence = sequence;
     }
     
     
@@ -340,9 +296,9 @@ public class MetroBufferedTrack extends MetroSyncTrack implements MetroSequencea
      */
     @Override
     public void progressCursor( Metro metro, int nframes, List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList ) throws MetroException {
-        
-        // Moved from Metro class (Mon, 04 May 2020 22:02:08 +0900)
-        this.getSequence().processDirect( metro, nframes, totalCursor, inputMidiEventList, outputMidiEventList );
+        // REMOVED (Wed, 06 May 2020 08:12:20 +0900) >>>
+        // // Moved from Metro class (Mon, 04 May 2020 22:02:08 +0900)
+        // this.getSequence().processDirect( metro, nframes, totalCursor, inputMidiEventList, outputMidiEventList );
 
         synchronized ( metro.getMetroLock() ) {
             
@@ -608,6 +564,7 @@ public class MetroBufferedTrack extends MetroSyncTrack implements MetroSequencea
 //      }
 //  }
 
+
     private void offerNewBuffer( Metro metro, int barLengthInFrames ) throws JackException {
         synchronized ( metro.getMetroLock() ) {
             
@@ -656,7 +613,7 @@ public class MetroBufferedTrack extends MetroSyncTrack implements MetroSequencea
 
 //              logInfo( "offerNewBuffer:normal (" + this.name  + ")");
                 MetroEventBuffer buf = MetroEventBuffer.create();
-                this.sequence.processBuffered( metro, this, buf );
+                this.processBuffered( metro, buf );
                 buf.prepare( barLengthInFrames, true );
 
                 if ( DEBUG && ( buf.size() >0 ) )
@@ -677,26 +634,6 @@ public class MetroBufferedTrack extends MetroSyncTrack implements MetroSequencea
                         logInfo( "offerNewBuffer(" + getName() + ") CONTINUE" );
                 }
             }
-        }
-    }
-    
-    @Override
-    public Object readContent() {
-        MetroSequence seq = this.getSequence();
-        if ( seq instanceof MetroReadable ) {
-            return ((MetroReadable)seq).readContent();
-        } else {
-            throw new RuntimeException( "the current sequence is not readable" );
-        }
-    }
-    
-    @Override
-    public Object invoke(Object... args) {
-        MetroSequence sequence = getSequence();
-        if ( sequence instanceof Invokable ) {
-            return ((Invokable)sequence).invoke( args );
-        } else {
-            throw new IllegalStateException( "the current sequence is not an invokable object." );
         }
     }
 } 

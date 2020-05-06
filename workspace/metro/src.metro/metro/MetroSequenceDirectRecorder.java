@@ -4,8 +4,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class MetroSequenceDirectRecorder implements MetroSequence, MetroLock {
-    public MetroSequenceDirectRecorder( int recordLength, boolean looper, MetroPort inputPort, MetroPort outputPort ) {
+public class MetroSequenceDirectRecorder extends MetroTrack {
+    public MetroSequenceDirectRecorder( Object name, List<Object> tags, int recordLength, boolean looper, MetroPort inputPort, MetroPort outputPort ) {
+        super(name,tags);
         this.recordLength = recordLength;
         this.looper = looper;
         this.inputPort = inputPort;
@@ -30,12 +31,6 @@ public class MetroSequenceDirectRecorder implements MetroSequence, MetroLock {
         this.mode = mode;
     }
 
-    private final Object lock = new Object();
-    @Override
-    public Object getMetroLock() {
-        return lock;
-    }
-    
     boolean looper = false;
     public void setLooper(boolean repeatPlay) {
         this.looper = repeatPlay;
@@ -58,9 +53,19 @@ public class MetroSequenceDirectRecorder implements MetroSequence, MetroLock {
     }
     private Iterator<MetroMidiFrame> player = null;
 
+    private volatile int totalCursor = 0;
+    
     @Override
-    public void processDirect(Metro metro, int nframes, int totalCursor, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
-        switch ( this.mode ) {
+    public void processBuffer(Metro metro, int barLengthInFrames) throws MetroException {
+    }
+    @Override
+    public void progressCursor(
+        Metro metro, int nframes, 
+        List<MetroMidiEvent> inputMidiEventList,
+        List<MetroMidiEvent> outputMidiEventList ) throws MetroException 
+    {
+        try {
+            switch ( this.mode ) {
             case PLAY:
                 if ( player == null ) {
                     player = frames.iterator();
@@ -73,30 +78,27 @@ public class MetroSequenceDirectRecorder implements MetroSequence, MetroLock {
                 }
                 
                 if ( ! player.hasNext() ) {
-                    out.addAll( player.next().getMidiEventList() );
+                    outputMidiEventList.addAll( player.next().getMidiEventList() );
                 }
-
+                
                 break;
             case RECORD:
                 if ( 0< this.recordLength && this.recordLength < totalCursor ) {
                     this.setMode( Mode.PLAY );
                 } else {
                     ArrayList<MetroMidiEvent> list = new ArrayList<>();
-                    for ( MetroMidiEvent e : in ) {
+                    for ( MetroMidiEvent e : inputMidiEventList ) {
                         if ( e.getPort().equals( this.inputPort ) ) {
                             e.setPort( this.outputPort );
                             list.add(e);
                         }
                     }
-                    synchronized ( getMetroLock() ) {
-                        frames.add( new MetroMidiFrame( totalCursor, list ) );
-                    }
+                    frames.add( new MetroMidiFrame( totalCursor, list ) );
                 }
                 break;
+            }
+        } finally {
+            this.totalCursor += nframes;
         }
-    }
-
-    @Override
-    public <T> void processBuffered( Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer ) {
     }
 }

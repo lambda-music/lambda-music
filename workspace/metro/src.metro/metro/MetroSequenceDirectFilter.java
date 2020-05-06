@@ -12,7 +12,7 @@ import java.util.logging.Level;
 
 import lamu.lib.log.Logger;
 
-public class MetroSequenceDirectFilter implements MetroSequence, MetroLock {
+public class MetroSequenceDirectFilter extends MetroTrack {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -25,7 +25,9 @@ public class MetroSequenceDirectFilter implements MetroSequence, MetroLock {
         }
     }
     
-    public MetroSequenceDirectFilter( int delay, int threshold, int[] velocityMap, MetroPort inputPort, MetroPort outputPort ) {
+    public MetroSequenceDirectFilter( Object name, List<Object> tags, int delay, int threshold, int[] velocityMap, MetroPort inputPort, MetroPort outputPort ) {
+        super( name, tags );
+        
         if ( delay < 0 )
             throw new IllegalArgumentException("`delay` cannot be less than zero" );
         if ( threshold < 0 )
@@ -48,11 +50,6 @@ public class MetroSequenceDirectFilter implements MetroSequence, MetroLock {
     }
     public MetroPort getOutputPort() {
         return outputPort;
-    }
-    private final Object lock = new Object();
-    @Override
-    public Object getMetroLock() {
-        return lock;
     }
     
     
@@ -207,7 +204,15 @@ public class MetroSequenceDirectFilter implements MetroSequence, MetroLock {
     }
 
     @Override
-    public void processDirect(Metro metro, int nframes, int totalCursor, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
+    public void processBuffer(Metro metro, int barLengthInFrames) throws MetroException {
+    }
+    @Override
+    public void progressCursor(
+        Metro metro, 
+        int nframes, 
+        List<MetroMidiEvent> inputMidiEventList,
+        List<MetroMidiEvent> outputMidiEventList ) throws MetroException 
+    {
 //        if ( true ) {
 //            bufferReplacePort(in, inputPort , outputPort );
 //            out.addAll(in);
@@ -219,13 +224,13 @@ public class MetroSequenceDirectFilter implements MetroSequence, MetroLock {
 
         synchronized ( this ) {
             workBuffer.clear();
-            bufferDuplicate(   workBuffer, in );
+            bufferDuplicate(   workBuffer, inputMidiEventList );
             bufferReplacePort( workBuffer, inputPort , outputPort );
             bufferPreProcess( workBuffer );
             bufferInput ( buffer, workBuffer );
             bufferProcess( buffer );
-            bufferOutput( buffer, out, 0, nframes );
-            bufferPostProcess( out );
+            bufferOutput( buffer, outputMidiEventList, 0, nframes );
+            bufferPostProcess( outputMidiEventList );
             bufferMove  ( buffer, nframes * -1 );
         }
         
@@ -247,9 +252,5 @@ public class MetroSequenceDirectFilter implements MetroSequence, MetroLock {
          * 
          * bufferSort  ( buffer );
          */
-    }
-
-    @Override
-    public <T> void processBuffered( Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer ) {
     }
 }

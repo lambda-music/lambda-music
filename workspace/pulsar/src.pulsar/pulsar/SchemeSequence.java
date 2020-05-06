@@ -23,7 +23,6 @@ package pulsar;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.logging.Level;
 
 import gnu.lists.LList;
@@ -35,13 +34,11 @@ import lamu.lib.kawautils.procedures.MultipleNamedProcedureN;
 import lamu.lib.log.Logger;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
+import metro.MetroBufferedTrack;
 import metro.MetroCollector;
-import metro.MetroMidiEvent;
-import metro.MetroReadable;
-import metro.MetroSequence;
 import metro.MetroTrack;
 
-public class SchemeSequence implements MetroSequence, MetroReadable, Invokable {
+public class SchemeSequence extends MetroBufferedTrack implements Invokable {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
@@ -96,28 +93,22 @@ public class SchemeSequence implements MetroSequence, MetroReadable, Invokable {
      * 
      */
     final Invokable invokable;
-    public SchemeSequence ( Invokable procedure ) {
+    public SchemeSequence ( Object name, Collection<Object> tags, Invokable procedure ) {
+        super( name, tags );
         this.invokable = procedure;
     }
-    public SchemeSequence( Procedure procedure ) {
+    public SchemeSequence( Object name, Collection<Object> tags, Procedure procedure ) {
+        super( name, tags );
         this.invokable = SchemeInvokable.create(procedure);
     }
     @Override
     public Object invoke(Object... args) {
         return invokable.invoke( args );
     }
-
+    
     @Override
-    public void processDirect( Metro metro, int nframes, int totalCursor, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
-        // out.addAll( in ); TODO ******************************
-//        MetroMidi.receiveMidiMessage( MetroMidiReceiver.LoggingToError.getInstance(), in );
-//        System.err.println( "in.size()" + in.size());
-//        System.err.println( "out.size()" + out.size());
-    }
-
-
-    @Override
-    public <T> void processBuffered( Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer ) {
+    public <T> void processBuffered(Metro metro, MetroBufferedMidiReceiver<T> buffer) {
+        MetroTrack track = this;
         // System.out.println("Metro.sequence.new MetroSequence() {...}.initBuffer()" );
 //      buf.humanize( 0.0d, 3 );
         try {
@@ -140,10 +131,5 @@ public class SchemeSequence implements MetroSequence, MetroReadable, Invokable {
         } catch ( Exception e ) {
             LOGGER.log(Level.SEVERE, "", e);
         }
-    }
-
-    @Override
-    public LList readContent() {
-        throw new UnsupportedOperationException();
     }
 }

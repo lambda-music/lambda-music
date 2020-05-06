@@ -1,6 +1,7 @@
 package pulsar;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -13,27 +14,26 @@ import lamu.lib.Invokable;
 import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.log.Logger;
 import metro.Metro;
-import metro.MetroBufferedMidiReceiver;
 import metro.MetroCollector;
 import metro.MetroException;
 import metro.MetroMidiEvent;
 import metro.MetroPort;
 import metro.MetroReadable;
-import metro.MetroSequence;
 import metro.MetroTrack;
 import metro.SimpleMetroEventBuffer;
 
 
-public class SchemeSequenceRecorder implements MetroSequence, MetroReadable, Invokable {
+public class SchemeSequenceRecorder extends MetroTrack implements MetroReadable, Invokable {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }
     static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }
     static void logWarn (String msg             ) { LOGGER.log(Level.WARNING,  msg      ); }
 
     public static SchemeSequenceRecorder create(
+        Object name, Collection<Object> tags,
             List<MetroPort> inputPorts, List<MetroPort> outputPorts, 
             double recordLength, boolean loop ) {
-        return new SchemeSequenceRecorder( inputPorts, outputPorts, recordLength, loop );
+        return new SchemeSequenceRecorder( name, tags, inputPorts, outputPorts, recordLength, loop );
     }
 
     final SchemeSimpleMidiReceiver receiver;
@@ -43,7 +43,11 @@ public class SchemeSequenceRecorder implements MetroSequence, MetroReadable, Inv
     @SuppressWarnings("unused")
     private boolean loop;
     private transient LList notations = EmptyList.emptyList;
-    private SchemeSequenceRecorder( List<MetroPort> inputPorts, List<MetroPort> outputPorts, double recordLength, boolean loop ) {
+    
+    public SchemeSequenceRecorder(Object name, Collection<Object> tags, 
+        List<MetroPort> inputPorts, List<MetroPort> outputPorts, double recordLength, boolean loop ) 
+    {
+        super(name, tags);
         this.inputPorts = inputPorts;
         this.outputPorts = outputPorts;
         this.recordLength = recordLength;
@@ -86,7 +90,17 @@ public class SchemeSequenceRecorder implements MetroSequence, MetroReadable, Inv
         this.playing = playing;
     }
     @Override
-    public void processDirect(Metro metro, int nframes, int totalCursor, List<MetroMidiEvent> in, List<MetroMidiEvent> out) {
+    public void processBuffer(Metro metro, int barLengthInFrames) throws MetroException {
+    }
+
+    private volatile int totalCursor = 0;
+    @Override
+    public void progressCursor(
+        Metro metro, 
+        int nframes, 
+        List<MetroMidiEvent> inputMidiEventList,
+        List<MetroMidiEvent> outputMidiEventList) throws MetroException 
+    {
         try {
             int oneBarLengthInFrames = metro.getOneBarLengthInFrames();
             
@@ -99,7 +113,7 @@ public class SchemeSequenceRecorder implements MetroSequence, MetroReadable, Inv
             }
 
             if ( recording ) {
-                for ( MetroMidiEvent e : in ) {
+                for ( MetroMidiEvent e : inputMidiEventList ) {
                     if ( inputPorts.contains( e.getPort() ) ) {
                         LList list = this.receiver.receive( e, currentPos, oneBarLengthInFrames );
                         if ( list != null ) {
@@ -116,7 +130,7 @@ public class SchemeSequenceRecorder implements MetroSequence, MetroReadable, Inv
                 
                 this.eventBuffer.setCursorOffset( totalCursor );
                 this.eventBuffer.setOneBarLengthInFrames( oneBarLengthInFrames );
-                this.eventBuffer.setResultList( out );
+                this.eventBuffer.setResultList( outputMidiEventList );
                 
                 for ( Object notation : this.notations ) {
                     Object a = SchemeValues.alistGet( NoteListCommon.ID_OFFSET , (LList)notation, Boolean.FALSE );
@@ -135,12 +149,11 @@ public class SchemeSequenceRecorder implements MetroSequence, MetroReadable, Inv
             }
         } catch (MetroException e) {
             logError( "could not get bar length : failed to send midi messages.", e );
+        } finally {
+            this.totalCursor += nframes;
         }
     }
 
-    @Override
-    public <T> void processBuffered(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer) {
-    }
     
     static final Symbol recordingOn  = Symbol.valueOf( "rec-on" );
     static final Symbol recordingOff = Symbol.valueOf( "rec-off" );
