@@ -17,7 +17,6 @@ import lamu.lib.kawautils.procedures.MultipleNamedProcedure0;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure1;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedureN;
 import metro.MetroReadable;
-import metro.MetroSequenceable;
 import metro.MetroTrack;
 import pulsar.PulsarLib.PulsarLibImplementation.PulsarProceduralDescriptiveDoc;
 
@@ -167,23 +166,6 @@ public class PulsarLib_Procs {
         }
     }
 
-    public static final LamuDocument trackToProcedureBean = null;
-
-    public static final TrackToProcedureProc trackToProcedureProc = new TrackToProcedureProc(new String[] { "track->procedure" });
-    public static final class TrackToProcedureProc extends MultipleNamedProcedure1 {
-        public TrackToProcedureProc(String[] names) {
-            super(names);
-        }
-
-        @Override
-        public Object apply1(Object arg0 ) throws Throwable {
-            if ( arg0 instanceof MetroTrack ) {
-                return ((MetroSequenceable)arg0).getSequence();
-            } else {
-                throw new IllegalArgumentException( "the argument is not a track object." );
-            }
-        }
-    }
 
     public static final LamuDocument applyTrackBean = null;
     
@@ -336,7 +318,6 @@ public class PulsarLib_Procs {
         SchemeValues.defineLambda( env, newlineWarnProc);
         SchemeValues.defineLambda( env, typeofProc);
         SchemeValues.defineLambda( env, isTrackProc);
-        SchemeValues.defineLambda( env, trackToProcedureProc);
         SchemeValues.defineLambda( env, applyTrackProc);
         SchemeValues.defineLambda( env, readTrackProc);
         SchemeValues.defineLambda( env, randomProc);
