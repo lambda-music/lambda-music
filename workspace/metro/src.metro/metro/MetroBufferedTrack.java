@@ -76,7 +76,6 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
         this.enabled = enabled;
     }
 
-    private transient boolean prepared = false;
     private transient boolean enabled = true;
 
 //  private static final int BUFFER_SIZE = 2;
@@ -129,7 +128,6 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
     @Override
     public void resetSyncStatus() {
         super.resetSyncStatus();
-        prepared = false;
         enabled = true;
         
         buffers.clear();
@@ -397,20 +395,16 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
      * MetroTrack is added to registered Track.
      * @param metro TODO
      * @param barLengthInFrames
+     * @throws MetroException 
      */
     @Override
-    public void prepareSyncStatus( Metro metro, int barLengthInFrames ) {
-        if ( prepared ) 
-            throw new IllegalStateException();
-
-        this.prepared = true;
-
-        MetroSyncTrack track= this;
-        MetroSyncTrack.prepareSyncStatus( metro, track.getSyncType(), track.getSyncTrack(), track.getSyncOffset(), this, barLengthInFrames );
+    public void prepareSyncStatus( Metro metro, int barLengthInFrames ) throws MetroException {
+        MetroSyncTrack.prepareSyncStatus( metro, this, barLengthInFrames );
     }
 
     @Override
     public void reprepareSyncStatus( Metro metro, int barLengthInFrames ) throws MetroException {
+        
         // Note (Wed, 06 Nov 2019 05:47:26 +0900)
         // This method could be called by setting tempo procedures and 
         // that time could be at the time when it is not opened.
@@ -490,19 +484,10 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
     private static final int MAX_UPDATE_THRESHOLD = 44100*4;
     
     
-    int lastBarLengthInFrames = -1;
     @Override
     public void processBuffer( Metro metro, int barLengthInFrames) throws MetroException {
         synchronized ( metro.getMetroLock() ) { // << ADDED synchronided (Sun, 30 Sep 2018 11:45:13 +0900)
-            if ( barLengthInFrames != lastBarLengthInFrames ) {
-                lastBarLengthInFrames = barLengthInFrames;
-                if ( ! prepared ) {
-                    prepareSyncStatus(metro, barLengthInFrames);
-                } else {
-                    reprepareSyncStatus(metro, barLengthInFrames );
-                }
-            }
-            
+            super.processBuffer(metro, barLengthInFrames);
             
 //          if ( this.buffers.size() < BUFFER_SIZE ) {
 //              this.offerNewBuffer( metro, client, position );

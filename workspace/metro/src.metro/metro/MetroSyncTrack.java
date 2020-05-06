@@ -27,14 +27,18 @@ public abstract class MetroSyncTrack extends MetroTrack {
     public double getSyncOffset() {
         return syncOffset;
     }
-    
+
+    private volatile int lastBarLengthInFrames = -1;
+    private volatile boolean syncPrepared = false;
+
     /**
      * 
      */
     public void resetSyncStatus() {
-        syncType = MetroSyncType.IMMEDIATE;
-        syncTrack = null;
-        syncOffset = 0.0d;
+        this.syncPrepared = false;
+        this.syncType = MetroSyncType.IMMEDIATE;
+        this.syncTrack = null;
+        this.syncOffset = 0.0d;
     }
 
     /**
@@ -66,12 +70,32 @@ public abstract class MetroSyncTrack extends MetroTrack {
     // (Tue, 05 May 2020 18:58:13 +0900) This method was formerly getPosition() 
     public abstract double getPosition(Metro metro);
 
-    // (Thu, 07 May 2020 01:53:26 +0900) Created 
-    public abstract void reprepareSyncStatus(Metro metro, int barLengthInFrames) throws MetroException;
-    // (Thu, 07 May 2020 01:53:26 +0900) Created 
+    // Created (Thu, 07 May 2020 03:14:15 +0900)
     public abstract void prepareSyncStatus(Metro metro, int barLengthInFrames) throws MetroException;
+    // Created (Thu, 07 May 2020 03:14:15 +0900)
+    public abstract void reprepareSyncStatus(Metro metro, int barLengthInFrames) throws MetroException;
+    
+    
+    @Override
+    public void processBuffer( Metro metro, int barLengthInFrames) throws MetroException {
+        synchronized ( metro.getMetroLock() ) { // << ADDED synchronided (Sun, 30 Sep 2018 11:45:13 +0900)
+            if ( barLengthInFrames != lastBarLengthInFrames ) {
+                lastBarLengthInFrames = barLengthInFrames;
+                if ( ! syncPrepared ) {
+                    syncPrepared = true;
+                    prepareSyncStatus(metro, barLengthInFrames);
+                } else {
+                    reprepareSyncStatus(metro, barLengthInFrames );
+                }
+            }
+        }
+    }
 
-    public static void prepareSyncStatus( Metro metro, MetroSyncType syncType, MetroSyncTrack syncTrack, double syncOffset, MetroSyncTrack track, int barLengthInFrames) {
+    public static void prepareSyncStatus( Metro metro, MetroSyncTrack track, int barLengthInFrames) {
+        MetroSyncType syncType = track.getSyncType();
+        MetroSyncTrack syncTrack = track.getSyncTrack(); 
+        double syncOffset = track.getSyncOffset();
+        
         int offset = (int) (-1.0d * syncOffset * barLengthInFrames);
 
         switch ( syncType ) {
