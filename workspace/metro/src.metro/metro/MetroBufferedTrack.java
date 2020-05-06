@@ -398,15 +398,18 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
      * @param metro TODO
      * @param barLengthInFrames
      */
+    @Override
     public void prepareSyncStatus( Metro metro, int barLengthInFrames ) {
         if ( prepared ) 
             throw new IllegalStateException();
 
         this.prepared = true;
 
-        MetroSyncTrack.prepareSyncStatus( metro, this, barLengthInFrames );
+        MetroSyncTrack track= this;
+        MetroSyncTrack.prepareSyncStatus( metro, track.getSyncType(), track.getSyncTrack(), track.getSyncOffset(), this, barLengthInFrames );
     }
 
+    @Override
     public void reprepareSyncStatus( Metro metro, int barLengthInFrames ) throws MetroException {
         // Note (Wed, 06 Nov 2019 05:47:26 +0900)
         // This method could be called by setting tempo procedures and 
@@ -415,7 +418,7 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
         // raise execptions.
         // 
         // Note.2 (Wed, 06 May 2020 02:37:17 +0900)
-        // This comment is moved from Metro.reprepareTrack() method.
+        // This comment is moved from Metro#reprepareTrack() method.
         // The reprepareTrack() method was ditched from the code.
         // This comment should be rewritten.
 

@@ -65,49 +65,54 @@ public abstract class MetroSyncTrack extends MetroTrack {
     public abstract int getCurrentLengthInFrames(Metro metro);
     // (Tue, 05 May 2020 18:58:13 +0900) This method was formerly getPosition() 
     public abstract double getPosition(Metro metro);
-    
-    public static void prepareSyncStatus( Metro metro, MetroSyncTrack track, int barLengthInFrames) {
-        int offset = (int) (-1.0d * track.getSyncOffset() * barLengthInFrames);
 
-        switch ( track.getSyncType() ) {
+    // (Thu, 07 May 2020 01:53:26 +0900) Created 
+    public abstract void reprepareSyncStatus(Metro metro, int barLengthInFrames) throws MetroException;
+    // (Thu, 07 May 2020 01:53:26 +0900) Created 
+    public abstract void prepareSyncStatus(Metro metro, int barLengthInFrames) throws MetroException;
+
+    public static void prepareSyncStatus( Metro metro, MetroSyncType syncType, MetroSyncTrack syncTrack, double syncOffset, MetroSyncTrack track, int barLengthInFrames) {
+        int offset = (int) (-1.0d * syncOffset * barLengthInFrames);
+
+        switch ( syncType ) {
             case IMMEDIATE :
             {
                 track.setCurrentPositionInFrames( metro, offset );
                 if ( DEBUG )
                     logInfo( "prepare(immediate):" + track.getCurrentPositionInFrames(metro) );
-                if ( track.getSyncTrack() != null ) {
+                if ( syncTrack != null ) {
                     logWarn( "syncTrack was specified but the track was ignored because syncType was `immediate`." );
                 }
             }
             break;
             case PARALLEL :
             {
-                if ( track.getSyncTrack() == null ) {
+                if ( syncTrack == null ) {
                     track.setCurrentPositionInFrames( metro, offset );
                     logWarn(  "`parallel` was specified but syncTrack was not specified; it was treated as immediate mode." );
                 } else {
-                    track.setCurrentPositionInFrames( metro, track.getSyncTrack().getCurrentPositionInFrames(metro) + offset );
+                    track.setCurrentPositionInFrames( metro, syncTrack.getCurrentPositionInFrames(metro) + offset );
                 }
 
             }
             break;
             case SERIAL :
-                if ( track.getSyncTrack() == null ) {
+                if ( syncTrack == null ) {
                     track.setCurrentPositionInFrames( metro, offset );
                     logWarn( "`serial` was specified but syncTrack was not passed." );
                 } else {
-                    int length = track.getSyncTrack().getCurrentLengthInFrames(metro);
+                    int length = syncTrack.getCurrentLengthInFrames(metro);
                     if ( length < 0 ) {
                         track.setCurrentPositionInFrames( metro, offset );
                         logWarn(  "`serial` was specified but track-length was not supported on the track; it was treated as immediate mode." );
                     } else {
-                        track.setCurrentPositionInFrames( metro, track.getSyncTrack().getCurrentPositionInFrames(metro) - length + offset );
+                        track.setCurrentPositionInFrames( metro, syncTrack.getCurrentPositionInFrames(metro) - length + offset );
                     }
 
-//                    synchronized ( track.getSyncTrack().getMetroTrackLock() ) {
+//                    synchronized ( syncTrack().getMetroTrackLock() ) {
 //                        track.setCurrentPositionInFrames( 
-//                                track.getSyncTrack().getCurrentPositionInFrames() - 
-//                                track.getSyncTrack().getBuffers().peek().getLengthInFrames() + 
+//                                syncTrack().getCurrentPositionInFrames() - 
+//                                syncTrack().getBuffers().peek().getLengthInFrames() + 
 //                                offset );
 //                    }
                 }
