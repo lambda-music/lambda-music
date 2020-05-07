@@ -157,8 +157,9 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
      * @param sequence
      *            Specifying the sequence object to play.
      */
-    public MetroBufferedTrack( Object name, Collection<Object> tags ) {
-        super(name,tags);
+    public MetroBufferedTrack( Object name, Collection<Object> tags, 
+        MetroSyncType syncType, MetroSyncTrack syncTrack, double syncOffset) {
+        super(name,tags,syncType,syncTrack,syncOffset);
     }
     
     

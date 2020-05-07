@@ -36,6 +36,8 @@ import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroBufferedTrack;
 import metro.MetroCollector;
+import metro.MetroSyncTrack;
+import metro.MetroSyncType;
 import metro.MetroTrack;
 
 public class SchemeSequence extends MetroBufferedTrack implements Invokable {
@@ -93,12 +95,12 @@ public class SchemeSequence extends MetroBufferedTrack implements Invokable {
      * 
      */
     final Invokable invokable;
-    public SchemeSequence ( Object name, Collection<Object> tags, Invokable procedure ) {
-        super( name, tags );
+    public SchemeSequence ( Object name, Collection<Object> tags, MetroSyncType syncType, MetroSyncTrack syncTrack, double syncOffset, Invokable procedure ) {
+        super(name,tags,syncType,syncTrack,syncOffset);
         this.invokable = procedure;
     }
-    public SchemeSequence( Object name, Collection<Object> tags, Procedure procedure ) {
-        super( name, tags );
+    public SchemeSequence( Object name, Collection<Object> tags, MetroSyncType syncType, MetroSyncTrack syncTrack, double syncOffset, Procedure procedure ) {
+        super(name,tags,syncType,syncTrack,syncOffset);
         this.invokable = SchemeInvokable.create(procedure);
     }
     @Override

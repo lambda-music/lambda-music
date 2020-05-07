@@ -1082,16 +1082,33 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         }
     }
 
-    private void removeFormerTrack(MetroTrack track, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset) {
+    private void removeFormerTrack(MetroTrack track ) {
+        MetroSyncType syncType;
+        MetroTrack syncTrack;
+        double syncOffset;
+        if (track instanceof MetroSyncTrack ) {
+            MetroSyncTrack st = (MetroSyncTrack) track;
+            syncType = st.getSyncType();
+            syncTrack = st.getSyncTrack();
+            syncOffset = st.getSyncOffset();
+        } else {
+            syncType = MetroSyncType.IMMEDIATE;
+            syncTrack = null;
+            syncOffset = 0.0d;
+        }
         removeTrack( searchTrack( track.getName() ), syncType, syncTrack, syncOffset );
     }
     public void putTrack( MetroTrack track, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset )  {
-        removeFormerTrack( track, syncType, syncTrack, syncOffset );
+        removeFormerTrack( track );
         if ( track instanceof MetroSyncTrack ) {
             if ( syncTrack!=null & !(syncTrack instanceof MetroSyncTrack))
                 throw new IllegalArgumentException("syncType must be a sync track" );
             ((MetroSyncTrack)track).setSyncStatus( syncType, (MetroSyncTrack)syncTrack, syncOffset );
         }
+        registerTrack( track );
+    }
+    public void putTrack( MetroTrack track )  {
+        removeFormerTrack( track );
         registerTrack( track );
     }
     public void putTrack( Collection<MetroTrack> trackList, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset )  {
@@ -1102,7 +1119,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                 ((MetroSyncTrack) track).setSyncStatus( syncType, (MetroSyncTrack) syncTrack, syncOffset );
             }
             
-            removeFormerTrack( track, syncType, syncTrack, syncOffset );
+            removeFormerTrack( track );
         }
         registerTrack( trackList );
     }

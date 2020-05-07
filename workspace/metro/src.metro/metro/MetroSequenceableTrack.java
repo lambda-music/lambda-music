@@ -11,8 +11,10 @@ public class MetroSequenceableTrack extends MetroBufferedTrack implements MetroS
         return this.sequence;
     }
     
-    public MetroSequenceableTrack(Object name, Collection<Object> tags, MetroSequence sequence ) {
-        super(name, tags);
+    public MetroSequenceableTrack(Object name, Collection<Object> tags,
+        MetroSyncType syncType, MetroSyncTrack syncTrack, double syncOffset,
+        MetroSequence sequence ) {
+        super(name, tags, syncType, syncTrack, syncOffset);
         this.sequence = sequence;
     }
     @Override
@@ -54,7 +56,7 @@ public class MetroSequenceableTrack extends MetroBufferedTrack implements MetroS
             metro.open( clientName );
             synchronized ( metro.getMetroLock() ) {
                 try {
-                    metro.registerTrack( create( "main", null, sequence ) );
+                    metro.registerTrack( create( "main", null, MetroSyncType.IMMEDIATE,null,0.0d, sequence ) );
                 } finally {
                     metro.notifyTrackChange();
                 }
@@ -74,7 +76,9 @@ public class MetroSequenceableTrack extends MetroBufferedTrack implements MetroS
      * @param sequence
      * @return
      */
-    public static MetroSequenceableTrack create(Object name, Collection<Object> tags, MetroSequence sequence) {
-        return new MetroSequenceableTrack(name, tags, sequence);
+    public static MetroSequenceableTrack create(Object name, Collection<Object> tags,
+        MetroSyncType syncType, MetroSyncTrack syncTrack, double syncOffset,
+        MetroSequence sequence) {
+        return new MetroSequenceableTrack(name, tags, syncType,syncTrack,syncOffset,sequence);
     }
 }

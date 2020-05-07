@@ -507,7 +507,7 @@ public class PulsarSpecialNoteListParsers {
                     // MetroBufferedTrack track = PulsarTrack.createTrack( id, tags, procedure );
                     // track.setSyncStatus( syncType, (MetroSyncTrack) syncTrack, syncOffset );
                     // pulsar.registerTrack( track );
-                    pulsar.putTrack( PulsarTrack.createTrack( id, tags, procedure ), syncType, syncTrack, syncOffset  );
+                    pulsar.putTrack( PulsarTrack.createTrack( id, tags,  syncType, (MetroSyncTrack) syncTrack, syncOffset, procedure ));
                     // INTEGRATED (Wed, 06 May 2020 02:35:15 +0900) <<<
                 } finally {
                     pulsar.notifyTrackChange();
