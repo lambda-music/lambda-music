@@ -1098,68 +1098,24 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         }
         removeTrack( searchTrack( track.getName() ), syncType, syncTrack, syncOffset );
     }
-    public void putTrack( MetroTrack track, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset )  {
-        removeFormerTrack( track );
-        if ( track instanceof MetroSyncTrack ) {
-            if ( syncTrack!=null & !(syncTrack instanceof MetroSyncTrack))
-                throw new IllegalArgumentException("syncType must be a sync track" );
-            ((MetroSyncTrack)track).setSyncStatus( syncType, (MetroSyncTrack)syncTrack, syncOffset );
-        }
-        registerTrack( track );
-    }
-    public void putTrack( MetroTrack track )  {
-        removeFormerTrack( track );
-        registerTrack( track );
-    }
-    public void putTrack( Collection<MetroTrack> trackList, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset )  {
+    private void removeFormerTrack(Collection<MetroTrack> trackList ) {
         for ( MetroTrack track : trackList ) {
-            if ( track instanceof MetroSyncTrack ) {
-                if ( syncTrack!=null & !(syncTrack instanceof MetroSyncTrack))
-                    throw new IllegalArgumentException("syncType must be a sync track" );
-                ((MetroSyncTrack) track).setSyncStatus( syncType, (MetroSyncTrack) syncTrack, syncOffset );
-            }
-            
             removeFormerTrack( track );
         }
+    }
+        
+    public void putTrack(List<MetroTrack> trackList, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset) {
+        // TODO
+        putTrack( trackList );
+    }
+
+    public void putTrack( Collection<MetroTrack> trackList )  {
+        removeFormerTrack( trackList );
         registerTrack( trackList );
     }
-    public void removeTrack( MetroTrack track, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset )  {
-        if ( track == null )
-            return;
-        
-        switch ( syncType ) {
-            case IMMEDIATE :
-            case PARALLEL :
-                unregisterTrack( track );
-                break;
-            case SERIAL :
-                track.removeGracefully(this);
-//                if ( track instanceof MetroSyncTrack ) {
-//                    ((MetroSyncTrack)track).removeGracefully(this);
-//                } else {
-//                    unregisterTrack( track );
-//                }
-                break;
-        }
-    }
     public void removeTrack( Collection<MetroTrack> trackList, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset )  {
-        switch ( syncType ) {
-            case IMMEDIATE :
-            case PARALLEL :
-                for ( MetroTrack track : trackList ) {
-                    unregisterTrack( track );
-                }
-                break;
-            case SERIAL :
-                for ( MetroTrack track : trackList ) {
-                    track.removeGracefully(this);
-//                    if ( track instanceof MetroSyncTrack ) {
-//                        ((MetroSyncTrack)track).removeGracefully(this);
-//                    } else {
-//                        unregisterTrack( track );
-//                    }
-                }
-                break;
+        for ( MetroTrack track : trackList ) {
+            track.remove(this, syncType, syncTrack, syncOffset);
         }
     }
 

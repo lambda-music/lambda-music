@@ -507,7 +507,7 @@ public class PulsarSpecialNoteListParsers {
                     // MetroBufferedTrack track = PulsarTrack.createTrack( id, tags, procedure );
                     // track.setSyncStatus( syncType, (MetroSyncTrack) syncTrack, syncOffset );
                     // pulsar.registerTrack( track );
-                    pulsar.putTrack( PulsarTrack.createTrack( id, tags,  syncType, (MetroSyncTrack) syncTrack, syncOffset, procedure ));
+                    pulsar.putTrack( Arrays.asList( PulsarTrack.createTrack( id, tags,  syncType, (MetroSyncTrack) syncTrack, syncOffset, procedure )));
                     // INTEGRATED (Wed, 06 May 2020 02:35:15 +0900) <<<
                 } finally {
                     pulsar.notifyTrackChange();
@@ -674,7 +674,7 @@ public class PulsarSpecialNoteListParsers {
         }
         @Override
         void removeTrackProc(Metro metro, MetroTrack track) {
-            track.removeGracefully(metro);
+            track.remove(metro, MetroSyncType.IMMEDIATE);
 //            ((MetroBufferedTrack) track).removeGracefully(this);
         }
     }

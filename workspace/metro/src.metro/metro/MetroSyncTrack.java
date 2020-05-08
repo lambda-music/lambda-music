@@ -78,7 +78,7 @@ public abstract class MetroSyncTrack extends MetroTrack {
     // Created (Thu, 07 May 2020 03:14:15 +0900)
     public abstract void reprepareSyncStatus(Metro metro, int barLengthInFrames) throws MetroException;
     
-    
+
     @Override
     public void processBuffer( Metro metro, int barLengthInFrames) throws MetroException {
         synchronized ( metro.getMetroLock() ) { // << ADDED synchronided (Sun, 30 Sep 2018 11:45:13 +0900)

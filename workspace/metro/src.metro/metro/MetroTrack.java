@@ -86,18 +86,13 @@ public abstract class MetroTrack {
     public abstract void progressCursor(Metro metro, int nframes, 
         List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList ) throws MetroException;
 
-    // Moved from MetroSyncTrack (Tue, 05 May 2020 16:47:27 +0900)
-    /**
-     * Removes this track from the parent Metro object. Calling this method has no
-     * effect if this track does not belong to the specified Metro object, This
-     * method calls {@link Metro#unregisterTrack(Collection)} method to remove this
-     * track. This behavior is a default implementation. Any subclasses which
-     * inherit this class should properly reimplement their desirable behavior.
-     * 
-     * @param metro
-     *    The parent Metro object.
-     */
-    public void removeGracefully(Metro metro) {
-        metro.unregisterTrack( this );
+    // ADDED (Thu, 07 May 2020 13:03:35 +0900)    
+    public void remove(Metro metro, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset ) {
+        metro.unregisterTrack(this);
     }
+    // TODO ADDED (Sat, 09 May 2020 01:33:54 +0900)
+    public void remove(Metro metro, MetroSyncType syncType  ) {
+        metro.unregisterTrack(this);
+    }
+
 }

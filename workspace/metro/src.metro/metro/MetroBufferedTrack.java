@@ -175,7 +175,19 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
 //        return this.metro.getMetroLock();
 //    }
     
-    @Override
+    // Moved from MetroSyncTrack (Tue, 05 May 2020 16:47:27 +0900)
+    // Moved from MetroTrack (Thu, 07 May 2020 13:03:00 +0900)
+    /**
+     * Removes this track from the parent Metro object. Calling this method has no
+     * effect if this track does not belong to the specified Metro object, This
+     * method calls {@link Metro#unregisterTrack(Collection)} method to remove this
+     * track. This behavior is a default implementation. Any subclasses which
+     * inherit this class should properly reimplement their desirable behavior.
+     * 
+     * @param metro
+     *    The parent Metro object.
+     */
+
     public void removeGracefully(Metro metro) {
         if ( this.ending ) {
             logWarn( "removeGracefully was called; but the track is already removed." );
@@ -199,7 +211,7 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
     @Override
     public int getCurrentLengthInFrames(Metro metro) {
         synchronized ( metro.getMetroLock() ) {
-            BlockingQueue<MetroEventBuffer> bufs = this.getBuffers();
+            BlockingQueue<MetroEventBuffer> bufs = this.buffers;
             if ( bufs.size() == 0 )
                 return 0;
             else

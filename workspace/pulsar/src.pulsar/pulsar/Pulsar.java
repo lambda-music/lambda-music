@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 
 import javax.swing.JComboBox;
@@ -39,6 +40,8 @@ import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.log.Logger;
 import metro.Metro;
 import metro.MetroException;
+import metro.MetroSyncType;
+import metro.MetroTrack;
 import pulsar.PulsarLib.PulsarLibDelegator;
 
 /**
