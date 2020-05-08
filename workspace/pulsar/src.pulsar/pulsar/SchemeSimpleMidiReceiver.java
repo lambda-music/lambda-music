@@ -21,7 +21,7 @@ public class SchemeSimpleMidiReceiver {
         this.receiver.setPort( port );
     }
 
-    public LList receive(MetroMidiEvent e, int currentPos, int oneBarLengthInFrames ) {
+    public LList receive(MetroMidiEvent e, long currentPos, long oneBarLengthInFrames ) {
         this.receiver.setOffset( ( (double)(currentPos + e.getMidiOffset() ) / (double)oneBarLengthInFrames ) );
         LList list = MetroMidiMessageGen.receive( this.receiver, e.getMidiData() );
         return list;

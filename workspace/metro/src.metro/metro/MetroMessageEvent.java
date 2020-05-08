@@ -30,7 +30,7 @@ public class MetroMessageEvent extends DefaultMetroEvent {
         metro.postMessage( message );
     }
     @Override
-    public void process(Metro metro, int cursor) {
+    public void process(Metro metro, long cursor) {
         execute( metro );
     }
 }

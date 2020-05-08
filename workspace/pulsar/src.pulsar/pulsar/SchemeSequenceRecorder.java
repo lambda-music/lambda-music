@@ -90,23 +90,23 @@ public class SchemeSequenceRecorder extends MetroTrack implements MetroReadable,
         this.playing = playing;
     }
     @Override
-    public void processBuffer(Metro metro, int barLengthInFrames) throws MetroException {
+    public void processBuffer(Metro metro, long barLengthInFrames) throws MetroException {
     }
 
-    private volatile int totalCursor = 0;
+    private volatile long totalCursor = 0;
     @Override
     public void progressCursor(
         Metro metro, 
-        int nframes, 
+        long nframes, 
         List<MetroMidiEvent> inputMidiEventList,
         List<MetroMidiEvent> outputMidiEventList) throws MetroException 
     {
         try {
-            int oneBarLengthInFrames = metro.getOneBarLengthInFrames();
+            long oneBarLengthInFrames = metro.getOneBarLengthInFrames();
             
-            int currentPos;
+            long currentPos;
             if ( 0 < this.recordLength ) {
-                int recordingLengthInFrames = (int)(this.recordLength * oneBarLengthInFrames);
+                long recordingLengthInFrames = (long)(this.recordLength * oneBarLengthInFrames);
                 currentPos = totalCursor % recordingLengthInFrames;
             } else {
                 currentPos = totalCursor;

@@ -37,24 +37,24 @@ public class SimpleMetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiv
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
-    private volatile int cursorOffset=0;
-    public int getCursorOffset() {
+    private volatile long cursorOffset=0;
+    public long getCursorOffset() {
         return cursorOffset;
     }
 
-    public void setCursorOffset(int cursorOffset) {
+    public void setCursorOffset(long cursorOffset) {
         this.cursorOffset = cursorOffset;
     }
-    private volatile int oneBarLengthInFrames=1;
-    public int getOneBarLengthInFrames() {
+    private volatile long oneBarLengthInFrames=1;
+    public long getOneBarLengthInFrames() {
         return oneBarLengthInFrames;
     }
 
-    public void setOneBarLengthInFrames(int oneBarLengthInFrames) {
+    public void setOneBarLengthInFrames(long oneBarLengthInFrames) {
         this.oneBarLengthInFrames = oneBarLengthInFrames;
     }
 
-    public SimpleMetroEventBuffer( int oneBarLengthInFrames ) {
+    public SimpleMetroEventBuffer( long oneBarLengthInFrames ) {
         super( MetroMidiMessage.getInstance() );
         this.oneBarLengthInFrames = oneBarLengthInFrames;
     }
@@ -76,7 +76,7 @@ public class SimpleMetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiv
         if ( data == null )
             return null;
         
-        int midiOffset = ((int)(offset * (double)this.oneBarLengthInFrames)) - this.cursorOffset;
+        long midiOffset = ((long)(offset * (double)this.oneBarLengthInFrames)) - this.cursorOffset;
         // Create an event object.
         DefaultMetroMidiEvent event = new DefaultMetroMidiEvent( midiOffset, outputPort, data );
         

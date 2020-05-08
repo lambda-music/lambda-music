@@ -4,7 +4,7 @@ public class DefaultMetroMidiEvent implements MetroMidiEvent {
     public static DefaultMetroMidiEvent duplicate( MetroMidiEvent e ) {
         return new DefaultMetroMidiEvent(e);
     }
-    public DefaultMetroMidiEvent(int midiOffset, MetroPort outputPort, byte[] midiData) {
+    public DefaultMetroMidiEvent(long midiOffset, MetroPort outputPort, byte[] midiData) {
         super();
         this.midiOffset = midiOffset;
         this.outputPort = outputPort;
@@ -28,17 +28,17 @@ public class DefaultMetroMidiEvent implements MetroMidiEvent {
         return newArr;
     }
 
-    private volatile int midiOffset;
+    private volatile long midiOffset;
     @Override
-    public final int getMidiOffset() {
+    public final long getMidiOffset() {
         return midiOffset;
     }
     @Override
-    public final void setMidiOffset(int midiOffset) {
+    public final void setMidiOffset(long midiOffset) {
         this.midiOffset = midiOffset;
     }
     @Override
-    public void moveMidiOffset(int offset) {
+    public void moveMidiOffset(long offset) {
         this.midiOffset += offset;
     }
 

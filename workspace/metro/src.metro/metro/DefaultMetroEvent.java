@@ -61,21 +61,21 @@ public abstract class DefaultMetroEvent implements MetroEvent {
         return from <= this.barOffset && this.barOffset < to;
     }
     
-    private volatile int barOffsetInFrames;
+    private volatile long barOffsetInFrames;
     @Override
-    public final int getBarOffsetInFrames() {
+    public final long getBarOffsetInFrames() {
         return barOffsetInFrames;
     }
     @Override
-    public void setBarOffsetInFrames(int barOffsetInFrames) {
+    public void setBarOffsetInFrames(long barOffsetInFrames) {
         this.barOffsetInFrames = barOffsetInFrames;
     }
     @Override
-    public void prepareBarOffsetInFrames( int barLengthInFrames ){
-        this.barOffsetInFrames = (int)(this.barOffset * barLengthInFrames );
+    public void prepareBarOffsetInFrames( long barLengthInFrames ){
+        this.barOffsetInFrames = (long)(this.barOffset * barLengthInFrames );
     }
     @Override
-    public boolean isBetweenInFrames( int from, int to ) {
+    public boolean isBetweenInFrames( long from, long to ) {
         return from <= this.barOffsetInFrames && this.barOffsetInFrames < to;
     }
     

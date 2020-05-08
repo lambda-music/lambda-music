@@ -36,8 +36,8 @@ class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroEvent
     
     private double length = 1.0d;
     private boolean prepared = false;
-    private int barLengthInFrames=-1;
-    private int lengthInFrames = -1;
+    private long barLengthInFrames=-1;
+    private long lengthInFrames = -1;
     private final List<MetroEvent> metroEventList = new ArrayList<MetroEvent>(10);
     
     double getLength() {
@@ -88,12 +88,12 @@ class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroEvent
         
         return max;
     }
-    public int getBarLengthInFrames() {
+    public long getBarLengthInFrames() {
         if ( ! prepared )
             throw new RuntimeException("not prepared");
         return barLengthInFrames;
     }
-    public int getLengthInFrames() {
+    public long getLengthInFrames() {
         if ( ! prepared )
             throw new RuntimeException("not prepared");
         return lengthInFrames;
@@ -103,7 +103,7 @@ class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroEvent
         return metroEventList;
     }
     
-    public void prepare( int barLengthInFrames, boolean doSort ) throws JackException {
+    public void prepare( long barLengthInFrames, boolean doSort ) throws JackException {
         if ( doSort && false )
             this.metroEventList.sort( MetroEvent.BAR_OFFSET_COMPARATOR );
         
@@ -113,14 +113,14 @@ class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroEvent
         this.prepared = true;
     }
     
-    private void prepareBarOffsetInFrames( int barLengthInFrames ) {
+    private void prepareBarOffsetInFrames( long barLengthInFrames ) {
         //      System.out.println("MetroMidiEventBuffer.calcInFrames() barInFrames="  + barInFrames );
         for ( MetroEvent e : this.metroEventList ) {
             e.prepareBarOffsetInFrames( barLengthInFrames );
         }
         //      System.out.println( "this.length " + this.length  );
         this.barLengthInFrames = barLengthInFrames;
-        this.lengthInFrames = (int) (this.length * (double)barLengthInFrames);
+        this.lengthInFrames = (long) (this.length * (double)barLengthInFrames);
         
         if ( DEBUG ) 
             logInfo( "MetroMidiEventBuffer.calcInFrames() barInFrames="  + barLengthInFrames + " / lengthInFrames=" + this.lengthInFrames  + "/ length=" + this.length);

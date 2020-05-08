@@ -5,7 +5,7 @@ import java.util.List;
 public interface MetroEventInFrames extends MetroEventProcess {
     /**
      * Check if the position of this event is inside the duration specified in the
-     * parameter. See {@link MetroTrack#progressCursor(Metro, int, List, List) } for further
+     * parameter. See {@link MetroTrack#progressCursor(Metro, long, List, List) } for further
      * information.
      * 
      * This methods is called as a callback of JACKAudio processing; this method
@@ -21,9 +21,9 @@ public interface MetroEventInFrames extends MetroEventProcess {
      *            exclusive.
      * @return <code>true</code> if this event is inside the duration.
      */
-    boolean isBetweenInFrames(int from, int to);
-    void prepareBarOffsetInFrames(int barLengthInFrames);
-    int getBarOffsetInFrames();
-    void setBarOffsetInFrames( int barOffsetInFrames );
+    boolean isBetweenInFrames(long from, long to);
+    void prepareBarOffsetInFrames(long barLengthInFrames);
+    long getBarOffsetInFrames();
+    void setBarOffsetInFrames( long barOffsetInFrames );
 }
 

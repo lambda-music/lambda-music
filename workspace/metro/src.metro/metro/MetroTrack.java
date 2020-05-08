@@ -75,15 +75,15 @@ public abstract class MetroTrack {
     /*
      * This value is only for debugging purpose. 
      */
-    private final int uniqueID = (int) (Math.random()* Integer.MAX_VALUE);
-    int getUniqueID() {
+    private final long uniqueID = (int) (Math.random()* Long.MAX_VALUE);
+    long getUniqueID() {
         return uniqueID;
     }
 
     // This method was formerly checkBuffer()
-    public abstract void processBuffer(Metro metro, int barLengthInFrames) throws MetroException;
+    public abstract void processBuffer(Metro metro, long barLengthInFrames) throws MetroException;
     
-    public abstract void progressCursor(Metro metro, int nframes, 
+    public abstract void progressCursor(Metro metro, long nframes, 
         List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList ) throws MetroException;
 
     // ADDED (Thu, 07 May 2020 13:03:35 +0900)    

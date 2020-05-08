@@ -96,7 +96,7 @@ public class MetroSequenceDirectFilter extends MetroTrack {
             buffer.add( i.next() );
         }
     }
-    static void bufferMove( Collection<MetroMidiEvent> buffer, int width ) {
+    static void bufferMove( Collection<MetroMidiEvent> buffer, long width ) {
         for ( Iterator<MetroMidiEvent> i=buffer.iterator(); i.hasNext(); ) {
             MetroMidiEvent e = i.next();
             e.moveMidiOffset( width );
@@ -105,10 +105,10 @@ public class MetroSequenceDirectFilter extends MetroTrack {
             }
         }
     }
-    static void bufferOutput( Collection<MetroMidiEvent> buffer, Collection<MetroMidiEvent> obj, int rangeFrom, int rangeTo ) {
+    static void bufferOutput( Collection<MetroMidiEvent> buffer, Collection<MetroMidiEvent> obj, long rangeFrom, long rangeTo ) {
         for ( Iterator<MetroMidiEvent> i=buffer.iterator(); i.hasNext(); ) {
             MetroMidiEvent e = i.next();
-            int offset = e.getMidiOffset();
+            long offset = e.getMidiOffset();
             if ( rangeFrom <= offset  && offset <= rangeTo ) {
                 obj.add( DefaultMetroMidiEvent.duplicate(e) );
             }
@@ -118,9 +118,9 @@ public class MetroSequenceDirectFilter extends MetroTrack {
         int noteon = MetroMidi.MIDI_NOTE_ON.getStatusHigher4bit();
         @Override
         public int compare(MetroMidiEvent o1, MetroMidiEvent o2) {
-            int o0 = o1.getMidiOffset() - o2.getMidiOffset();
+            long o0 = o1.getMidiOffset() - o2.getMidiOffset();
             if ( o0 != 0 ) { 
-                return o0;
+                return (int) o0;
             } else {
                 int ch1 = MetroMidi.getMidiChannel( o1.getMidiData() );
                 int ch2 = MetroMidi.getMidiChannel( o2.getMidiData() );
@@ -204,12 +204,12 @@ public class MetroSequenceDirectFilter extends MetroTrack {
     }
 
     @Override
-    public void processBuffer(Metro metro, int barLengthInFrames) throws MetroException {
+    public void processBuffer(Metro metro, long barLengthInFrames) throws MetroException {
     }
     @Override
     public void progressCursor(
         Metro metro, 
-        int nframes, 
+        long nframes, 
         List<MetroMidiEvent> inputMidiEventList,
         List<MetroMidiEvent> outputMidiEventList ) throws MetroException 
     {

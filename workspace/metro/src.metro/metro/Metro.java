@@ -655,7 +655,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     //          System.err.println( s );
                 
                 synchronized ( this.getMetroLock() ) {
-                    int barLengthInFrames = this.getOneBarLengthInFrames();
+                    long barLengthInFrames = this.getOneBarLengthInFrames();
 
                     for ( MetroTrack track : this.tracks  ) {
                         track.processBuffer( this,  barLengthInFrames );
@@ -821,6 +821,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
      */
     @Override
     public boolean process(JackClient client, int nframes) {
+        long l_nframes = nframes;
         if ( ! this.playing ) {
             return true;
         }
@@ -862,7 +863,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
 
             synchronized ( this.getMetroLock() ) {
                 for ( MetroTrack track : this.tracks ) {
-                    track.progressCursor( this, nframes, this.inputMidiEventList, this.outputMidiEventList );
+                    track.progressCursor( this, l_nframes, this.inputMidiEventList, this.outputMidiEventList );
                 }
                 
                 // sort the every event 
@@ -877,7 +878,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                 for ( MetroMidiEvent e : this.outputMidiEventList ) {
                     JackMidi.eventWrite(
                             e.getPort().jackPort, 
-                            e.getMidiOffset(), 
+                            (int)e.getMidiOffset(), 
                             e.getMidiData(), 
                             e.getMidiData().length 
                             );
@@ -1132,19 +1133,19 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     }
 
     private final JackPosition jackPosition = new JackPosition();
-    public int getOneBarLengthInFrames() throws MetroException {
+    public long getOneBarLengthInFrames() throws MetroException {
         synchronized ( this.getMetroLock() ) {
             return calcOneBarLengthInFrames( this, this.client, this.jackPosition );
         }
     }
 
-    public static int calcOneBarLengthInFrames( Metro metro, JackClient client, JackPosition position) throws MetroException {
+    public static long calcOneBarLengthInFrames( Metro metro, JackClient client, JackPosition position) throws MetroException {
         // logInfo("Metro.offerNewBuffer()" + this.buffers.size() );
         // beat per minute
         double bpm;
         // beat per bar 
         double bpb;
-        int frameRate;
+        long frameRate;
         try {
             client.transportQuery( position );
             bpm = position.getBeatsPerMinute();
@@ -1165,7 +1166,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         }
         
         double beatInSecond = 1.0d / ( bpm / 60.0d /*seconds*/ );
-        int barInFrames = (int) (beatInSecond * frameRate * bpb);
+        long barInFrames = (long) (beatInSecond * frameRate * bpb);
         return barInFrames;
     }
     

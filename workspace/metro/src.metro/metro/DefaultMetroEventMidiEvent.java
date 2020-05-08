@@ -34,20 +34,20 @@ public class DefaultMetroEventMidiEvent extends DefaultMetroEvent implements Met
         this.midiData = data;
     }
     
-    private volatile int midiOffset;
+    private volatile long midiOffset;
     @Override
-    public final int getMidiOffset() {
+    public final long getMidiOffset() {
         return midiOffset;
     }
     @Override
-    public final void setMidiOffset(int midiOffset) {
+    public final void setMidiOffset(long midiOffset) {
         this.midiOffset = midiOffset;
     }
     @Override
-    public void moveMidiOffset(int offset) {
+    public void moveMidiOffset(long offset) {
         this.midiOffset += offset;
     }
-    public void calcMidiOffset( int cursor ) {
+    public void calcMidiOffset( long cursor ) {
         this.setMidiOffset( this.getBarOffsetInFrames() - cursor );
     }
 
@@ -72,7 +72,7 @@ public class DefaultMetroEventMidiEvent extends DefaultMetroEvent implements Met
     }
     
     @Override
-    public void process(Metro metro, int cursor) {
+    public void process(Metro metro, long cursor) {
         calcMidiOffset( cursor );
     }
     

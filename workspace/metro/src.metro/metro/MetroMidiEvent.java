@@ -39,8 +39,8 @@ public interface MetroMidiEvent extends Comparable<MetroMidiEvent> {
     };
     
     public static int compare( MetroMidiEvent o1, MetroMidiEvent o2 ) {
-        int of1 = o1.getMidiOffset();
-        int of2 = o2.getMidiOffset();
+        long of1 = o1.getMidiOffset();
+        long of2 = o2.getMidiOffset();
         if ( of1 != of2 ) {
             if ( of1 < of2 ) {
                 return -1;
@@ -76,9 +76,9 @@ public interface MetroMidiEvent extends Comparable<MetroMidiEvent> {
         return 0;
     }
 
-    int       getMidiOffset();
-    void      setMidiOffset( int midiOffset );
-    void      moveMidiOffset( int offset );
+    long      getMidiOffset();
+    void      setMidiOffset( long midiOffset );
+    void      moveMidiOffset( long offset );
 
     MetroPort getPort();
     void      setPort( MetroPort port );
@@ -94,6 +94,6 @@ public interface MetroMidiEvent extends Comparable<MetroMidiEvent> {
     }
     
     public default int compareTo( MetroMidiEvent o ) {
-        return this.getMidiOffset() - o.getMidiOffset();
+        return (int) (this.getMidiOffset() - o.getMidiOffset());
     }
 }

@@ -31,7 +31,7 @@ public abstract class MetroSyncTrack extends MetroTrack {
         return syncOffset;
     }
 
-    private volatile int lastBarLengthInFrames = -1;
+    private volatile long lastBarLengthInFrames = -1;
     private volatile boolean syncPrepared = false;
 
     /**
@@ -65,22 +65,22 @@ public abstract class MetroSyncTrack extends MetroTrack {
 
 
     // (Tue, 05 May 2020 18:58:13 +0900) This method was formerly getCursor() 
-    public abstract int getCurrentPositionInFrames(Metro metro);
+    public abstract long getCurrentPositionInFrames(Metro metro);
     // (Tue, 05 May 2020 18:58:13 +0900) This method was formerly setCursor() 
-    public abstract void setCurrentPositionInFrames(Metro metro, int position);
+    public abstract void setCurrentPositionInFrames(Metro metro, long position);
     // (Tue, 05 May 2020 18:58:13 +0900) This method was formerly getLatestLengthInFrames() 
-    public abstract int getCurrentLengthInFrames(Metro metro);
+    public abstract long getCurrentLengthInFrames(Metro metro);
     // (Tue, 05 May 2020 18:58:13 +0900) This method was formerly getPosition() 
     public abstract double getPosition(Metro metro);
 
     // Created (Thu, 07 May 2020 03:14:15 +0900)
-    public abstract void prepareSyncStatus(Metro metro, int barLengthInFrames) throws MetroException;
+    public abstract void prepareSyncStatus(Metro metro, long barLengthInFrames) throws MetroException;
     // Created (Thu, 07 May 2020 03:14:15 +0900)
-    public abstract void reprepareSyncStatus(Metro metro, int barLengthInFrames) throws MetroException;
+    public abstract void reprepareSyncStatus(Metro metro, long barLengthInFrames) throws MetroException;
     
 
     @Override
-    public void processBuffer( Metro metro, int barLengthInFrames) throws MetroException {
+    public void processBuffer( Metro metro, long barLengthInFrames) throws MetroException {
         synchronized ( metro.getMetroLock() ) { // << ADDED synchronided (Sun, 30 Sep 2018 11:45:13 +0900)
             if ( barLengthInFrames != lastBarLengthInFrames ) {
                 lastBarLengthInFrames = barLengthInFrames;
@@ -94,12 +94,12 @@ public abstract class MetroSyncTrack extends MetroTrack {
         }
     }
 
-    public static void prepareSyncStatus( Metro metro, MetroSyncTrack track, int barLengthInFrames) {
+    public static void prepareSyncStatus( Metro metro, MetroSyncTrack track, long barLengthInFrames) {
         MetroSyncType syncType = track.getSyncType();
         MetroSyncTrack syncTrack = track.getSyncTrack(); 
         double syncOffset = track.getSyncOffset();
         
-        int offset = (int) (-1.0d * syncOffset * barLengthInFrames);
+        long offset = (long) (-1.0d * syncOffset * barLengthInFrames);
 
         switch ( syncType ) {
             case IMMEDIATE :
@@ -128,7 +128,7 @@ public abstract class MetroSyncTrack extends MetroTrack {
                     track.setCurrentPositionInFrames( metro, offset );
                     logWarn( "`serial` was specified but syncTrack was not passed." );
                 } else {
-                    int length = syncTrack.getCurrentLengthInFrames(metro);
+                    long length = syncTrack.getCurrentLengthInFrames(metro);
                     if ( length < 0 ) {
                         track.setCurrentPositionInFrames( metro, offset );
                         logWarn(  "`serial` was specified but track-length was not supported on the track; it was treated as immediate mode." );

@@ -17,11 +17,11 @@ public class MetroVoidTrack extends MetroTrack {
         super(name, tags);
     }
     @Override
-    public void processBuffer(Metro metro, int barLengthInFrames) throws MetroException {
+    public void processBuffer(Metro metro, long barLengthInFrames) throws MetroException {
     }
     @Override
     public void progressCursor(
-        Metro metro, int nframes, 
+        Metro metro, long nframes, 
         List<MetroMidiEvent> inputMidiEventList,
         List<MetroMidiEvent> outputMidiEventList) throws MetroException 
     {
