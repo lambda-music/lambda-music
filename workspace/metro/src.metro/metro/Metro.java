@@ -807,14 +807,6 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         }
     }
     
-    void clearAllPorts() throws JackException {
-        checkState();
-        Metro metro = this;
-        for ( MetroPort p : metro.outputPortList ) {
-            JackMidi.clearBuffer( p.jackPort );
-        }
-    }
-
     /**
      * This method handles JACK's <code>process</code> event.
      * This is possibly called by JACK's thread.   
@@ -827,10 +819,8 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         }
         
         try {
-            // JackMidi.clearBuffer(this.outputPort);
             for ( MetroPort p : Metro.this.outputPortList )
                 JackMidi.clearBuffer( p.jackPort );
-            
             
             this.inputMidiEventList.clear();
             this.outputMidiEventList.clear();
@@ -845,20 +835,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                     byte[] data = new byte[size];
                     this.midiEvent.read( data );
                     this.inputMidiEventList.add( new DefaultMetroMidiEvent( this.midiEvent.time(), inputPort, data ) );
-
-//                    this.sb.setLength(0);
-//                    this.sb.append(this.midiEvent.time());
-//                    this.sb.append(": ");
-//                    for (int j = 0; j < size; j++) {
-//                        this.sb.append((j == 0) ? "" : ", ");
-//                        this.sb.append(this.data[j] & 0xFF);
-//                    }
-//                     debugQueue.offer(sb.toString());
-
-//                    if ( 0 < Metro.this.outputPortList.size() )
-//                      JackMidi.eventWrite( Metro.this.outputPortList.get( 0 ), this.midiEvent.time(), this.data, this.midiEvent.size());
                 }
-//                logInfo( "ev:" + eventCount + " this.outputMidiEventList  : " + this.outputMidiEventList.size() );
             }
 
             synchronized ( this.getMetroLock() ) {

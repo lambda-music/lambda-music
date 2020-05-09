@@ -33,6 +33,13 @@ class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroEvent
         this.endCalled = true;
         return null;
     }
+    private long seqNo=-1;
+    long getSeqNo() {
+        return seqNo;
+    }
+    public void setSeqNo(long seqNo) {
+        this.seqNo = seqNo;
+    }
     
     private double length = 1.0d;
     private boolean prepared = false;
