@@ -510,7 +510,7 @@ public class PulsarSpecialNoteListParsers {
                     pulsar.putTrack( Arrays.asList( PulsarTrack.createTrack( id, tags,  syncType, (MetroSyncTrack) syncTrack, syncOffset, procedure )));
                     // INTEGRATED (Wed, 06 May 2020 02:35:15 +0900) <<<
                 } finally {
-                    pulsar.notifyTrackChange();
+                    pulsar.notifyTrackChange("update");
                 }
             }
         }
@@ -557,7 +557,7 @@ public class PulsarSpecialNoteListParsers {
                 try {
                     pulsar.removeTrack( trackList, syncType, syncTrack, syncOffset );
                 } finally {
-                    pulsar.notifyTrackChange();
+                    pulsar.notifyTrackChange("update");
                 }
                 
             }
@@ -614,7 +614,7 @@ public class PulsarSpecialNoteListParsers {
                                     }
                                 }
                             } finally {
-                                metro.notifyTrackChange();
+                                metro.notifyTrackChange("update");
                             }
                         }
                     }
@@ -658,7 +658,7 @@ public class PulsarSpecialNoteListParsers {
                 try {
                     metro.unregisterTrack(track);
                 } finally {
-                    metro.notifyTrackChange();
+                    metro.notifyTrackChange("update");
                 }
             }
         }

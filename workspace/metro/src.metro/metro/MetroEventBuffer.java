@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
-import org.jaudiolibs.jnajack.JackException;
-
 import lamu.lib.log.Logger;
 
 class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroEvent,byte[]> implements MetroDumper {
@@ -110,7 +108,7 @@ class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroEvent
         return metroEventList;
     }
     
-    public void prepare( long barLengthInFrames, boolean doSort ) throws JackException {
+    public void prepare( long barLengthInFrames, boolean doSort ) {
         if ( doSort && false )
             this.metroEventList.sort( MetroEvent.BAR_OFFSET_COMPARATOR );
         

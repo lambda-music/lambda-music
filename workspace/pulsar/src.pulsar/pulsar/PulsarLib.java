@@ -1363,7 +1363,7 @@ public interface PulsarLib {
                         }
                     } finally {
                         pulsar.leaveTrackChangeBlock();
-                        pulsar.notifyTrackChange();
+                        pulsar.notifyTrackChange("update");
                     }
                 }
                 return SchemeValues.NO_RESULT;
@@ -1877,7 +1877,7 @@ public interface PulsarLib {
 
             @Override
             public Object apply0() throws Throwable {
-                getPulsar().notifyTrackChange();
+                getPulsar().notifyTrackChange("update");
                 return SchemeValues.NO_RESULT;
             }
         }

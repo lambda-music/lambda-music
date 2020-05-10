@@ -58,7 +58,7 @@ public class MetroSequenceableTrack extends MetroBufferedTrack implements MetroS
                 try {
                     metro.registerTrack( create( "main", null, MetroSyncType.IMMEDIATE,null,0.0d, sequence ) );
                 } finally {
-                    metro.notifyTrackChange();
+                    metro.notifyTrackChange("update");
                 }
             }
             return metro;

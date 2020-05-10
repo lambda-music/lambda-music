@@ -637,7 +637,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         checkState();
         synchronized ( this.getMetroLock() ) {
             this.tracks.clear();
-            this.notifyTrackChange();
+            this.notifyTrackChange("update");
         }
     }
 
@@ -709,7 +709,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                      * Also note that looping excessively fast causes holding getMetroLock() longer time;
                      * this very likely leads Pulsar works jumpy. 
                      */
-                    this.getMetroLock().wait( 1 );
+                    this.getMetroLock().wait( 0 );
                 }
 //              logInfo( this.tracks.size() );
 //              Thread.sleep(0);
@@ -896,14 +896,14 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
      * <p>
      * Any caller of the methods {@link #registerTrack(MetroTrack)} and
      * {@link #unregisterTrack(MetroTrack)} has responsibility to call
-     * {@link #notifyTrackChange()} method after calling. When multiple tracks are
+     * {@link #notifyTrackChange(Object)} method after calling. When multiple tracks are
      * registered/unregistered at once, the caller must call
-     * {@link #notifyTrackChange()} at least once a session and not necessarily call
+     * {@link #notifyTrackChange(Object)} at least once a session and not necessarily call
      * every time registering a track.
      * <p>
      * It is preferable that a user who performs any bulk-registering calls
-     * {@link #notifyTrackChange()} method only once after the registering a set of
-     * track and they should avoid to redundantly call {@link #notifyTrackChange()}
+     * {@link #notifyTrackChange(Object)} method only once after the registering a set of
+     * track and they should avoid to redundantly call {@link #notifyTrackChange(Object)}
      * multiple times.
      * <p>
      * Any caller of this method should place the calling inside a synchronized
@@ -918,11 +918,11 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
      *  notifyCheckBuffer();
      * }
      * </pre>
-     * 
+     * @param message TODO
      * @param track
      */
 
-    public void notifyTrackChange() {
+    public void notifyTrackChange( Object message ) {
         synchronized ( this.getMetroLock() ) {
             if ( entrantCount == 0 ) {
                 this.getMetroLock().notify();
@@ -986,6 +986,8 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         
         synchronized (getMetroLock()) {
             this.registeredTracks.add( track );
+            // ADDED (Sun, 10 May 2020 23:10:26 +0900)
+            notifyTrackChange("register-track");
         }
         if ( Metro.mainTrackId.equals( track.getName() ) ) {
             this.mainTrack = track;
@@ -1001,6 +1003,8 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         
         synchronized (getMetroLock()) {
             this.registeredTracks.addAll( trackList );
+            // ADDED (Sun, 10 May 2020 23:10:26 +0900)
+            notifyTrackChange("register-track");
         }
         for ( MetroTrack track : trackList ) {
             if ( Metro.mainTrackId.equals( track.getName() ) ) {
@@ -1026,6 +1030,8 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
             throw new NullPointerException( "track was null" );
         synchronized (getMetroLock()) {
             this.unregisteredTracks.add( track );
+            // ADDED (Sun, 10 May 2020 23:10:26 +0900)
+            notifyTrackChange("unregister-track");
         }
     }
     public void unregisterTrack( Collection<MetroTrack> trackList ) {
@@ -1056,7 +1062,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
             logInfo( "****** postMessage 1");
         synchronized ( getMetroLock() ) {
             this.messageQueue.add( runnable );
-            this.notifyTrackChange();
+            this.notifyTrackChange("update");
         }
     }
 
