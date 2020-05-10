@@ -1534,8 +1534,8 @@ public interface PulsarLib {
                         List<Object> lst = readParamTrackName( args[0] );
                         name = lst.remove(0);
                         tags = lst;
-                        procedure = readParamProcedure(args[1]);
-                        syncType      = readParamSyncType( args[3] );
+                        procedure     = readParamProcedure(args[1]);
+                        syncType      = readParamSyncType( args[2] );
                         syncTrackList = Collections.EMPTY_LIST; 
                         syncOffset    = 0.0d;
                         break;
@@ -1545,8 +1545,8 @@ public interface PulsarLib {
                         name = lst.remove(0);
                         tags = lst;
                         procedure     = readParamProcedure(args[1]);
-                        syncType      = readParamSyncType( args[3] );
-                        syncTrackList = readParamCreateTrack( args[4] );
+                        syncType      = readParamSyncType( args[2] );
+                        syncTrackList = readParamCreateTrack( args[3] );
                         syncOffset    = 0.0d;
                         break;
                     }
@@ -1555,9 +1555,9 @@ public interface PulsarLib {
                         name = lst.remove(0);
                         tags = lst;
                         procedure     = readParamProcedure(args[1]);
-                        syncType      = readParamSyncType( args[3] );
-                        syncTrackList = readParamCreateTrack( args[4] );
-                        syncOffset    = readParamSyncOffset( args[5] );
+                        syncType      = readParamSyncType( args[2] );
+                        syncTrackList = readParamCreateTrack( args[3] );
+                        syncOffset    = readParamSyncOffset( args[4] );
                         break;
                     }
                     default :
