@@ -43,7 +43,8 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
     private static final boolean DEBUG = false;
-
+    private static final boolean DEBUG_BUF = false;
+    
     public boolean isEnabled() {
         return enabled;
     }
@@ -322,23 +323,23 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
         synchronized ( metro.getMetroLock() ) {
             long currentCursor = this.cursor;
             long nextCursor    = currentCursor + nframes;
-            long bufferSeqNo   = currentBufferSeqNo;
-            Collection<MetroEventBuffer> bufs = new ArrayList<>( this.buffers );
+            long currentBufferSeqNo   = this.currentBufferSeqNo;
+            Collection<MetroEventBuffer> buffers = new ArrayList<>( this.buffers );
             
             // This keeps negative offset value for the current cursor position. 
             long cursorOffset = 0;
 
             // Total the bar length of all buffers which are before the current buffer.
-            for ( Iterator<MetroEventBuffer> ibuf = bufs.iterator(); ibuf.hasNext(); ) {
-                MetroEventBuffer buf = ibuf.next();
-                if ( bufferSeqNo == buf.getSeqNo() ) {
+            for ( Iterator<MetroEventBuffer> i = buffers.iterator(); i.hasNext(); ) {
+                MetroEventBuffer buf = i.next();
+                if ( currentBufferSeqNo == buf.getSeqNo() ) {
                     break;
                 }
                 cursorOffset -= buf.getBarLengthInFrames();
             }
 
-            for ( Iterator<MetroEventBuffer> ibuf = bufs.iterator(); ibuf.hasNext(); ) {
-                MetroEventBuffer buf = ibuf.next();
+            for ( Iterator<MetroEventBuffer> i = buffers.iterator(); i.hasNext(); ) {
+                MetroEventBuffer buf = i.next();
 
                 // Translate the cursorOffset to the buffer-local coordinate system. 
                 long from  = currentCursor - cursorOffset;
@@ -357,9 +358,9 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
                 boolean done = false;
                 for(;;){
                     MetroEventBuffer currBuf=null;
-                    for ( Iterator<MetroEventBuffer> ibuf = bufs.iterator();ibuf.hasNext(); ) {
-                        MetroEventBuffer buf = ibuf.next();
-                        if ( bufferSeqNo == buf.getSeqNo() ) {
+                    for ( Iterator<MetroEventBuffer> i = buffers.iterator();i.hasNext(); ) {
+                        MetroEventBuffer buf = i.next();
+                        if ( currentBufferSeqNo == buf.getSeqNo() ) {
                             currBuf = buf;
                             break;
                         }
@@ -370,18 +371,18 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
                         // ignore it for now.
                         logWarn( String.format( 
                             "ERROR === CANNOT FIND CURRENT BUFFER === :%5s nextCursor=%3s bufferSeqNo=%s bufcount=%s", 
-                            getName(), nextCursor, bufferSeqNo, bufs.size()));
+                            getName(), nextCursor, currentBufferSeqNo, buffers.size()));
                         done = true;
                     } else {
                         long lengthInFrames = currBuf.getLengthInFrames();
                         
                         if ( lengthInFrames <= nextCursor ) {
                             nextCursor -= lengthInFrames;
-                            bufferSeqNo ++;
+                            currentBufferSeqNo ++;
                             done = true;
                             if (DEBUG) {
                                 logInfo( String.format( "update-cursor:%5s next=%3s/%3s bufferSeqNo=%s bufcount=%s", 
-                                    getName(), nextCursor, lengthInFrames, bufferSeqNo, bufs.size() ));
+                                    getName(), nextCursor, lengthInFrames, currentBufferSeqNo, buffers.size() ));
                             }
                             continue;
                         }
@@ -395,7 +396,7 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
             
             this.cursor = nextCursor  ;
             this.totalCursor += nframes;
-            this.currentBufferSeqNo = bufferSeqNo;
+            this.currentBufferSeqNo = currentBufferSeqNo;
             
 //            if ( DEBUG && false )
 //                logInfo( "progressCursor(2):" + currentCursor + "/" + (bufs.isEmpty() ? "empty" : bufs.peek().getLengthInFrames()  ));
@@ -506,24 +507,70 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
         synchronized ( metro.getMetroLock() ) { // << ADDED synchronided (Sun, 30 Sep 2018 11:45:13 +0900)
             super.processBuffer(metro, barLengthInFrames);
             
-            double backwardBufferLength = 0;
-            double forewardBufferLength = 0;
-            int backwardBufferCount = 0;
-            int forewardBufferCount = 0;
-            long bufferSeqNo = currentBufferSeqNo;
-            boolean found =false;
-            for ( Iterator<MetroEventBuffer> i=this.buffers.iterator(); i.hasNext(); ) {
-                MetroEventBuffer buf = i.next();
-                if (! found ) {
-                    if ( bufferSeqNo == buf.getSeqNo() ) {
-                        found = true;
-                        continue;
+            double backwardBufferLength;
+            double forewardBufferLength;
+            int backwardBufferCount;
+            int forewardBufferCount;
+            long currentBufferSeqNo = this.currentBufferSeqNo;
+            Queue<MetroEventBuffer> buffersSnapshot = this.buffers;
+            
+            {
+                for(;;) {
+                    // 1. Examine the current buffer list's status.
+                    backwardBufferLength = 0;
+                    forewardBufferLength = 0;
+                    backwardBufferCount = 0;
+                    forewardBufferCount = 0;
+
+                    boolean found =false;
+                    long theLastBufferSeqNo = -1;
+                    for ( Iterator<MetroEventBuffer> i=buffersSnapshot.iterator(); i.hasNext(); ) {
+                        MetroEventBuffer buf = i.next();
+                        long seqNo = buf.getSeqNo();
+                        theLastBufferSeqNo = seqNo;
+                        if (! found ) {
+                            if ( currentBufferSeqNo == seqNo ) {
+                                found = true;
+                                continue;
+                            }
+                            backwardBufferLength+= buf.getLength();
+                            backwardBufferCount++;
+                        } else {
+                            forewardBufferLength += buf.getLength();
+                            forewardBufferCount++;
+                        }
                     }
-                    backwardBufferLength+= buf.getLength();
-                    backwardBufferCount++;
-                } else {
-                    forewardBufferLength += buf.getLength();
-                    forewardBufferCount++;
+                    if ( found )
+                        break;
+                    
+                    
+                    // 2. In case the buffer underflows:
+                    {
+                        /*
+                         *  (Tue, 12 May 2020 03:27:03 +0900)
+                         *  
+                         * Note that (theLastBufferSeqNo==-1) means that there is no buffer on the buffer list.
+                         * 
+                         * Also note that when (theLastBufferSeqNo==-1) and the currentBufferSeqNo==0 which is 
+                         * very likely on the start up time. In that case, it should create one buffer.
+                         * This is the reason why the initial value of `theLastBufferSeqNo` is -1 which causes
+                         * it to execute only once.
+                         */
+                        if ( theLastBufferSeqNo < currentBufferSeqNo ) {
+                            for ( long i=theLastBufferSeqNo; i<currentBufferSeqNo; i++ ) {
+                                MetroEventBuffer buf = this.createNewBuffer( metro, barLengthInFrames );
+                                buffersSnapshot.offer( buf );
+                            }
+                        } else {
+                            /*
+                             *  In this case, it might be highly unusual. It is very likely not happening;
+                             *  therefore ignore it for now. (Tue, 12 May 2020 03:27:03 +0900)
+                             */
+                            logWarn( "****** UNUSUAL CASE ********" );
+                        }
+                    }
+                    // 3. Restart this procedure. In the next time, it should found the current buffer. 
+                    continue;
                 }
             }
 
@@ -537,9 +584,26 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
                 logInfo( "---" );
             }
 
+            
+            // Create bufferes ahead.
+            {
+                for ( int i=0; i<256; i++ ) {
+                    if ( (forewardBufferCount<1) || ( forewardBufferLength < thresholdForewardBufferLength ) ) {
+                        MetroEventBuffer buf = this.createNewBuffer( metro, barLengthInFrames );
+                        buffersSnapshot.offer( buf );
+
+                        // TODO
+                        forewardBufferLength += buf.getLength();
+                        forewardBufferCount++;
+                    } else {
+                        break;
+                    }
+                }
+            }
+
             // Remove bufferes behind.
             {
-                for ( Iterator<MetroEventBuffer> i=this.buffers.iterator(); i.hasNext(); ) {
+                for ( Iterator<MetroEventBuffer> i=buffersSnapshot.iterator(); i.hasNext(); ) {
                     MetroEventBuffer buf = i.next();
                     double length = buf.getLength();
                     if ( (1 < backwardBufferCount) && ( thresholdBackwardBufferLength < backwardBufferLength - length) ) {
@@ -558,16 +622,6 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
                 }
             }
 
-            // Create bufferes ahead.
-            for ( int i=0; i<256; i++ ) {
-                if ( (forewardBufferCount<1) || ( forewardBufferLength < thresholdForewardBufferLength ) ) {
-                    MetroEventBuffer buf = this.offerNewBuffer( metro, barLengthInFrames );
-                    forewardBufferLength += buf.getLength();
-                    forewardBufferCount++;
-                } else {
-                    break;
-                }
-            }
             if ( DEBUG ) {
                 logInfo( String.format( "name=%s", getName() ));
                 logInfo( String.format( "backwardBufferLength=%s", backwardBufferLength ));
@@ -585,13 +639,12 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
      * See {@link MetroBufferedTrack#currentBufferSeqNo
      */
     private volatile long createdBufferSeqNo = 0;
-    private void offerNewBufferProc( MetroEventBuffer buf, long barLengthInFrames ) {
+    private void initNewBuffer( MetroEventBuffer buf, long barLengthInFrames ) {
         buf.prepare( barLengthInFrames, true );
         buf.setSeqNo( createdBufferSeqNo ++ );
-        this.buffers.offer( buf );
     }
 
-    private MetroEventBuffer offerNewBuffer( Metro metro, long barLengthInFrames ) {
+    private MetroEventBuffer createNewBuffer( Metro metro, long barLengthInFrames ) {
         synchronized ( metro.getMetroLock() ) {
             
 //          logInfo( "offerNewBuffer:" );
@@ -603,7 +656,7 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
                         logInfo( "offerNewBuffer(): endingDone is true" );
                     MetroEventBuffer buf = MetroEventBuffer.create();
                     buf.length( 1.0 );
-                    offerNewBufferProc(buf, barLengthInFrames);
+                    initNewBuffer(buf, barLengthInFrames);
 //                    this.buffers.offer( receiver );
                     return buf;
                 } else {
@@ -627,7 +680,7 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
                         }
                     });
                     buf.length( this.endingLength  );
-                    offerNewBufferProc(buf, barLengthInFrames);
+                    initNewBuffer(buf, barLengthInFrames);
                     return buf;
 //                    this.buffers.offer( buf );
                 }
@@ -641,9 +694,9 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
 //              logInfo( "offerNewBuffer:normal (" + this.name  + ")");
                 MetroEventBuffer buf = MetroEventBuffer.create();
                 this.processBuffered( metro, buf );
-                offerNewBufferProc(buf, barLengthInFrames);
+                initNewBuffer(buf, barLengthInFrames);
 
-                if ( DEBUG && ( buf.size() >0 ) )
+                if ( DEBUG_BUF && ( buf.size() >0 ) )
                     logInfo( buf.dump("") );
                 
 //                this.buffers.offer( buf );

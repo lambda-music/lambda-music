@@ -893,6 +893,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     
     // @see METRO_LOCK_WAIT
     /**
+     * <b>The following description is obsolete.(Tue, 12 May 2020 02:35:12 +0900)</b><br/>
      * <p>
      * Any caller of the methods {@link #registerTrack(MetroTrack)} and
      * {@link #unregisterTrack(MetroTrack)} has responsibility to call
