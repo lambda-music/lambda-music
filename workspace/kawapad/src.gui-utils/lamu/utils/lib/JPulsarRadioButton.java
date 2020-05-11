@@ -30,7 +30,7 @@ public class JPulsarRadioButton extends JRadioButton implements JUserObjectConta
         super(text);
     }
 
-    transient Object userObject=null;
+    volatile Object userObject=null;
     @Override
     public Object getUserObject() {
         return userObject;

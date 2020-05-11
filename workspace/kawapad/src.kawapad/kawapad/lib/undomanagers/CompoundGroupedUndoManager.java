@@ -95,7 +95,7 @@ public class CompoundGroupedUndoManager extends UndoManager implements GroupedUn
 
     private static final boolean DEBUG_ADD_EDIT = false;
     private static final boolean DEBUG_SUSPENDED = false;
-    protected transient boolean suspended = false;
+    protected volatile boolean suspended = false;
     public CompoundGroupedUndoManager() {
         this.startGroup();
     }
@@ -117,8 +117,8 @@ public class CompoundGroupedUndoManager extends UndoManager implements GroupedUn
     }
     
     
-    protected transient CompoundEdit compoundEdit = null;
-    protected transient boolean requestNewCompoundEdit = true;
+    protected volatile CompoundEdit compoundEdit = null;
+    protected volatile boolean requestNewCompoundEdit = true;
     public synchronized void startGroup0() {
         if ( DEBUG )
             logInfo( "CompoundGroupedUndoManager.startGroup() suspended=" + suspended );

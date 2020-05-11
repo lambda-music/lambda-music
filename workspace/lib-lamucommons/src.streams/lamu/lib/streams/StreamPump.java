@@ -19,7 +19,7 @@ public class StreamPump implements ApplicationComponent, Runnable {
     int bufSize = 1024*1024;
     InputStream in;
     OutputStream out;
-    transient Thread thread;
+    volatile Thread thread;
     public StreamPump( InputStream in, OutputStream out ) {
         super();
         this.in = in;

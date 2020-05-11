@@ -23,7 +23,7 @@ public class Secretary<R> extends SecretaryMessageQueue<R> {
     public Secretary() {
     }
 
-    private transient R executive;
+    private volatile R executive;
 
     @Override
     protected R getExecutive() {

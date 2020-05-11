@@ -199,10 +199,10 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     Runnable timerHandle = null;
     public void initTrackPositionUpdater() {
         Invokable invokable2 = new Invokable() {
-            transient int counter = 0;
-            transient double lastPosition = 0.0d;
-            transient double position = 0.0d;
-            transient double velo = 0.0d;
+            volatile int counter = 0;
+            volatile double lastPosition = 0.0d;
+            volatile double position = 0.0d;
+            volatile double velo = 0.0d;
 
             void setValue( double p ) {
                 while ( 0<=p && 1 < p ) {
@@ -295,9 +295,9 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
         };
     }
 
-    transient boolean updatingTempoDisplay = false;
-    transient boolean updatingTempoDisplay_slider = false;
-    transient boolean updatingTempoDisplay_button = false;
+    volatile boolean updatingTempoDisplay = false;
+    volatile boolean updatingTempoDisplay_slider = false;
+    volatile boolean updatingTempoDisplay_button = false;
     protected synchronized void setTempoDisplay( double bpm ) {
         if ( updatingTempoDisplay )
             return;
@@ -336,10 +336,10 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     JComponent rootPane; 
     JPanel staticPaneOuter;
     JScrollPane userPaneOuter;
-    transient boolean isComboBoxUpdating = false;
+    volatile boolean isComboBoxUpdating = false;
     JComboBox<String> cb_relatedFiles;
     JTextField tf_currentFile;
-    transient JSlider sl_tempoSlider;
+    volatile JSlider sl_tempoSlider;
     
     public void requestClose() {
         super.requestClose();
@@ -536,7 +536,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     JComponent pulsarRootPane;
     JPanel staticPane;
     JNamedPanel userPane;
-    transient JButton tapTempoButton;
+    volatile JButton tapTempoButton;
     void initGui() {
         // this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setDefaultCloseOperation( JFrame.DO_NOTHING_ON_CLOSE );

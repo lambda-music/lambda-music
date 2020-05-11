@@ -113,7 +113,7 @@ public class InstanceManager<T> {
             report();
         }
     }
-    transient boolean destroyed =false;
+    volatile boolean destroyed =false;
     public void destroyAll() {
         synchronized ( getInstances() ) {
             if ( destroyed )

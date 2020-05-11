@@ -23,7 +23,7 @@ public class JPulsarTextField extends JTextField implements JUserObjectContainer
     public JPulsarTextField(Document doc, String text, int columns) {
         super(doc, text, columns);
     }
-    transient Object userObject=null;
+    volatile Object userObject=null;
     @Override
     public Object getUserObject() {
         return userObject;

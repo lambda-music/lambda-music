@@ -127,8 +127,8 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Appl
     }
 
     class EventManager {
-        transient boolean startDone = false;
-        transient boolean endDone = false;
+        volatile boolean startDone = false;
+        volatile boolean endDone = false;
         void callStart() {
             if ( ! this.startDone ) {
                 this.startDone = true;
@@ -141,7 +141,7 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Appl
                 SisoReceiver.this.listener.end( SisoReceiver.this );
             }
         }
-        transient boolean quitWhenInputExited = true;
+        volatile boolean quitWhenInputExited = true;
         synchronized void setQuitWhenInputExited( boolean quitWhenInputExited ) {
             this.quitWhenInputExited = quitWhenInputExited;
 
@@ -149,7 +149,7 @@ public class SisoReceiver<T extends SisoReceiverServiceListener> implements Appl
                 callEnd();
             }
         }
-        transient boolean exitedInput = false;
+        volatile boolean exitedInput = false;
         synchronized void notifyStartInput() {
             callStart();
         }

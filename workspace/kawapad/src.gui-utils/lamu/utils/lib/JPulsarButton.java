@@ -20,7 +20,7 @@ public class JPulsarButton extends JButton implements JUserObjectContainer {
     public JPulsarButton(String text) {
         super(text);
     }
-    transient Object userObject=null;
+    volatile Object userObject=null;
     @Override
     public Object getUserObject() {
         return userObject;

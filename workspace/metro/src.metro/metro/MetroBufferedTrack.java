@@ -52,7 +52,7 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
         this.enabled = enabled;
     }
 
-    private transient boolean enabled = true;
+    private volatile boolean enabled = true;
 
     public abstract <T> void processBuffered( Metro metro, MetroBufferedMidiReceiver<T> buffer );
 
@@ -65,14 +65,14 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
      */
     private Queue<MetroEventBuffer> buffers = new ArrayDeque<>();
     
-    private transient long totalCursor = 0;
-    private transient long cursor = 0;
-    private transient long lastLengthInFrames = 0;
-    private transient long lastAccumulatedLength = 0;
+    private volatile long totalCursor = 0;
+    private volatile long cursor = 0;
+    private volatile long lastLengthInFrames = 0;
+    private volatile long lastAccumulatedLength = 0;
     
-    private transient boolean ending = false;
-    private transient boolean endingDone = false;
-    private transient double endingLength = 0;
+    private volatile boolean ending = false;
+    private volatile boolean endingDone = false;
+    private volatile double endingLength = 0;
     
     public long getCursor() {
         return cursor;

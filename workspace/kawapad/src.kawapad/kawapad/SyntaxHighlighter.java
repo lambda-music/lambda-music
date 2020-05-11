@@ -141,7 +141,7 @@ public abstract class SyntaxHighlighter extends DocumentFilter {
     final StyledDocument emptyDocument = new DefaultStyledDocument();
     final Timer timer = new Timer(true);
     final Object lock = new Object();
-    transient TimerTask theLastRunnable = null;
+    volatile TimerTask theLastRunnable = null;
     
     private void handleTextChanged( FilterBypass fb, int offset, int length ) {
         TimerTask r = null;

@@ -29,7 +29,7 @@ public class JPulsarCheckBox extends JCheckBox implements JUserObjectContainer {
     public JPulsarCheckBox(String text) {
         super(text);
     }
-    transient Object userObject=null;
+    volatile Object userObject=null;
     @Override
     public Object getUserObject() {
         return userObject;

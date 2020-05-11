@@ -42,7 +42,7 @@ public class SchemeSequenceRecorder extends MetroTrack implements MetroReadable,
     private double recordLength;
     @SuppressWarnings("unused")
     private boolean loop;
-    private transient LList notations = EmptyList.emptyList;
+    private volatile LList notations = EmptyList.emptyList;
     
     public SchemeSequenceRecorder(Object name, Collection<Object> tags, 
         List<MetroPort> inputPorts, List<MetroPort> outputPorts, double recordLength, boolean loop ) 

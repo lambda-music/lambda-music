@@ -301,7 +301,7 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
      */
 
 //  ADDED >>> (Tue, 06 Aug 2019 09:29:54 +0900)
-//    private transient boolean initialized =false;
+//    private volatile boolean initialized =false;
 //    public synchronized void init() {
 //        if ( initialized ) {
 //            return;

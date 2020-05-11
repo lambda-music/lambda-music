@@ -12,7 +12,7 @@ public class KawapadParenthesisStack {
             this.dot = dot;
         }
     }
-    private transient boolean locked = false;
+    private volatile boolean locked = false;
     public boolean isLocked() {
         return this.locked;
     }

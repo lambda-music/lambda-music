@@ -102,7 +102,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     private ArrayList<MetroMidiEvent> inputMidiEventList = new ArrayList<MetroMidiEvent>();
     private ArrayList<MetroMidiEvent> outputMidiEventList = new ArrayList<MetroMidiEvent>();
 
-    private transient MetroTrack mainTrack = null; 
+    private volatile MetroTrack mainTrack = null; 
     /**
      * A field which tracks a reference to the main track by best effort.
      * This field occasionally points to an outdated main track.
@@ -154,7 +154,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     }
 
 
-    private transient boolean playing = false;
+    private volatile boolean playing = false;
     private void checkState() {
         if ( ! isOpened )
             throw new IllegalStateException( "not opened" );
@@ -930,7 +930,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
             }
         }
     }
-    private transient int entrantCount =0;
+    private volatile int entrantCount =0;
     public void enterTrackChangeBlock() {
         synchronized ( this.getMetroLock() ) {
             this.entrantCount ++;

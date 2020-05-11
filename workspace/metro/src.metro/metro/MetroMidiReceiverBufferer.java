@@ -18,8 +18,8 @@ public abstract class MetroMidiReceiverBufferer<OUTER,INNER> implements MetroMid
     public MetroMidiReceiverBufferer( MetroBufferedMidiReceiver<INNER> receiver ) {
         this.receiver = receiver;
     }
-    private transient MetroPort port;
-    private transient double offset;
+    private volatile MetroPort port;
+    private volatile double offset;
     public MetroPort getPort() {
         return port;
     }

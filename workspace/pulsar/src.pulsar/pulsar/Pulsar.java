@@ -194,7 +194,7 @@ public class Pulsar extends Metro implements PulsarLib, PulsarLibDelegator, Appl
      * sequencer and effectively this method starts a song. Whenever a user call
      * {@link Pulsar#rewind()}, this invokable will be invoked.
      */
-    transient Invokable mainProcedure = null;
+    volatile Invokable mainProcedure = null;
 
     /**
      * Sets the main-invokable object.

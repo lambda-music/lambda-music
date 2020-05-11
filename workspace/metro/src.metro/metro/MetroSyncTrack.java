@@ -18,9 +18,9 @@ public abstract class MetroSyncTrack extends MetroTrack {
         this.syncTrack = syncTrack;
         this.syncOffset = syncOffset;
     }
-    private transient MetroSyncType syncType = MetroSyncType.IMMEDIATE;
-    private transient MetroSyncTrack syncTrack = null;
-    private transient double syncOffset=0.0d;
+    private volatile MetroSyncType syncType = MetroSyncType.IMMEDIATE;
+    private volatile MetroSyncTrack syncTrack = null;
+    private volatile double syncOffset=0.0d;
     public MetroSyncType getSyncType() {
         return syncType;
     }

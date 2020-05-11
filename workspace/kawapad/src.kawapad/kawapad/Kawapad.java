@@ -150,7 +150,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
 
     ////////////////////////////////////////////////////////////////////////////
 
-    static transient int uniqueIDCounter = 0;
+    static volatile int uniqueIDCounter = 0;
 
     static String getUniqueID( int uniqueIDCounter ) {
         return "kawapad-" + uniqueIDCounter;
@@ -357,14 +357,14 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
 //        Utils.putVar( Environment.getCurrent(), instanceID, Kawapad.this );
 //    }
 //
-//    transient boolean initializeDone = false;
+//    volatile boolean initializeDone = false;
 //    public synchronized void initialize() {
 //        if ( initializeDone ) return;
 //        initializeDone = true;
 //        initVariable();
 //        Kawapad.eventHandlers.invokeEventHandler( kawapad, KawapadEventHandlers.CREATE, kawapad );
 //    }
-//    transient boolean finalizeDone = false;
+//    volatile boolean finalizeDone = false;
 //    public synchronized void finalize() {
 //        if ( finalizeDone ) return;
 //        finalizeDone = true;

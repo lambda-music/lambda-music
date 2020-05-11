@@ -17,7 +17,7 @@ public abstract class MetroTrack {
     public Collection<Object> getTags() {
         return tags;
     }
-    private static transient int uniqueTrackNameCounter = 0;
+    private static volatile int uniqueTrackNameCounter = 0;
     private synchronized static String createUniqueTrackName() {
             return "track-" + ( uniqueTrackNameCounter ++ ); 
     }
