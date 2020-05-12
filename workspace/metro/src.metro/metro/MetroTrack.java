@@ -81,7 +81,7 @@ public abstract class MetroTrack {
     }
 
     // This method was formerly checkBuffer()
-    public abstract void processBuffer(Metro metro, long barLengthInFrames) throws MetroException;
+    public abstract void progressBuffer(Metro metro, long barLengthInFrames) throws MetroException;
     
     public abstract void progressCursor(Metro metro, long nframes, 
         List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList ) throws MetroException;

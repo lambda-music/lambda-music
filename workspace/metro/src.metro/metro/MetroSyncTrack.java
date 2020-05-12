@@ -80,7 +80,7 @@ public abstract class MetroSyncTrack extends MetroTrack {
     
 
     @Override
-    public void processBuffer( Metro metro, long barLengthInFrames) throws MetroException {
+    public void progressBuffer( Metro metro, long barLengthInFrames) throws MetroException {
         int flag= 0;
         synchronized ( metro.getMetroLock() ) { // << ADDED synchronided (Sun, 30 Sep 2018 11:45:13 +0900)
             if ( barLengthInFrames != lastBarLengthInFrames ) {

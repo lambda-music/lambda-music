@@ -53,7 +53,7 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
 
     private volatile boolean enabled = true;
 
-    public abstract <T> void processBuffered( Metro metro, MetroBufferedMidiReceiver<T> buffer );
+    public abstract <T> void generateBuffer( Metro metro, MetroBufferedMidiReceiver<T> buffer );
 
     
     /*
@@ -534,7 +534,7 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
     private static final double thresholdForewardBufferLength = 2.0d; 
 
     @Override
-    public void processBuffer( Metro metro, long barLengthInFrames) throws MetroException {
+    public void progressBuffer( Metro metro, long barLengthInFrames) throws MetroException {
         double backwardBufferLength;
         double forewardBufferLength;
         int backwardBufferCount;
@@ -547,7 +547,7 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
         
         // Creating a snapshot of the current status.
         synchronized ( metro.getMetroLock() ) { // << ADDED synchronided (Sun, 30 Sep 2018 11:45:13 +0900)
-            super.processBuffer(metro, barLengthInFrames);
+            super.progressBuffer(metro, barLengthInFrames);
             
             currentBufferSeqNo = this.currentBufferSeqNo;
             buffers = new ArrayList<>( this.buffers );
@@ -754,7 +754,7 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
 
 //              logInfo( "offerNewBuffer:normal (" + this.name  + ")");
                 MetroEventBuffer buf = MetroEventBuffer.create();
-                this.processBuffered( metro, buf );
+                this.generateBuffer( metro, buf );
                 initNewBuffer(buf, barLengthInFrames);
 
                 if ( DEBUG_BUF && ( buf.size() >0 ) )

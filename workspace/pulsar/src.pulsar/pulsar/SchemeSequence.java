@@ -109,7 +109,7 @@ public class SchemeSequence extends MetroBufferedTrack implements Invokable {
     }
     
     @Override
-    public <T> void processBuffered(Metro metro, MetroBufferedMidiReceiver<T> buffer) {
+    public <T> void generateBuffer(Metro metro, MetroBufferedMidiReceiver<T> buffer) {
         MetroTrack track = this;
         // System.out.println("Metro.sequence.new MetroSequence() {...}.initBuffer()" );
 //      buf.humanize( 0.0d, 3 );

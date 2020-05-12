@@ -18,7 +18,7 @@ public class MetroSequenceableTrack extends MetroBufferedTrack implements MetroS
         this.sequence = sequence;
     }
     @Override
-    public <T> void processBuffered(Metro metro, MetroBufferedMidiReceiver<T> buffer) {
+    public <T> void generateBuffer(Metro metro, MetroBufferedMidiReceiver<T> buffer) {
         this.sequence.processBuffered(metro, this, buffer);
     }
 

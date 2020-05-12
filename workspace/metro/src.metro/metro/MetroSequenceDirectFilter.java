@@ -204,7 +204,7 @@ public class MetroSequenceDirectFilter extends MetroTrack {
     }
 
     @Override
-    public void processBuffer(Metro metro, long barLengthInFrames) throws MetroException {
+    public void progressBuffer(Metro metro, long barLengthInFrames) throws MetroException {
     }
     @Override
     public void progressCursor(

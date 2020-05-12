@@ -683,7 +683,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                 
                 {
                     for ( MetroTrack track : tracks2  ) {
-                        track.processBuffer( this,  barLengthInFrames );
+                        track.progressBuffer( this,  barLengthInFrames );
                     }
                     for ( Runnable r : messageQueue2 ) {
                         try {
