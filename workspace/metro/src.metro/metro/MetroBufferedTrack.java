@@ -44,7 +44,6 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
 
     private static final boolean DEBUG = false;
     private static final boolean DEBUG_BUF = false;
-    
     public boolean isEnabled() {
         return enabled;
     }
@@ -186,11 +185,13 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
         }
     }
 
+    private static final long SEQ_NO_NOT_INITIALIZED = -1;
+    
     // ADDED (Sun, 10 May 2020 02:10:20 +0900) BUFFER_SEQ_NO
     /**
      * See {@link MetroBufferedTrack#createdBufferSeqNo}
      */
-    private volatile long currentBufferSeqNo = 0;
+    private volatile long currentBufferSeqNo = SEQ_NO_NOT_INITIALIZED;
 
 //  @Override
 //  public boolean equals(Object obj) {
@@ -324,6 +325,10 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
             long currentCursor = this.cursor;
             long nextCursor    = currentCursor + nframes;
             long currentBufferSeqNo   = this.currentBufferSeqNo;
+            if ( currentBufferSeqNo == SEQ_NO_NOT_INITIALIZED ) {
+                return;
+            }
+            
             Collection<MetroEventBuffer> buffers = new ArrayList<>( this.buffers );
             
             // This keeps negative offset value for the current cursor position. 
@@ -335,7 +340,7 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
                 if ( currentBufferSeqNo == buf.getSeqNo() ) {
                     break;
                 }
-                cursorOffset -= buf.getBarLengthInFrames();
+                cursorOffset -= buf.getLengthInFrames();
             }
 
             for ( Iterator<MetroEventBuffer> i = buffers.iterator(); i.hasNext(); ) {
@@ -398,13 +403,17 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
             this.totalCursor += nframes;
             this.currentBufferSeqNo = currentBufferSeqNo;
             
+//            logInfo( "this.cursor:" + getName() + ":"  + this.cursor );
+            
 //            if ( DEBUG && false )
 //                logInfo( "progressCursor(2):" + currentCursor + "/" + (bufs.isEmpty() ? "empty" : bufs.peek().getLengthInFrames()  ));
         }
     }
 
     
-    private boolean searchEventBuffer(Metro metro, MetroEventBuffer buf, List<MetroMidiEvent> output, 
+    private boolean searchEventBuffer( Metro metro, 
+        MetroEventBuffer buf, 
+        List<MetroMidiEvent> output, 
         long from,
         long to) 
     {
@@ -506,131 +515,134 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
     public void processBuffer( Metro metro, long barLengthInFrames) throws MetroException {
         synchronized ( metro.getMetroLock() ) { // << ADDED synchronided (Sun, 30 Sep 2018 11:45:13 +0900)
             super.processBuffer(metro, barLengthInFrames);
-            
+
             double backwardBufferLength;
             double forewardBufferLength;
             int backwardBufferCount;
             int forewardBufferCount;
             long currentBufferSeqNo = this.currentBufferSeqNo;
             Queue<MetroEventBuffer> buffersSnapshot = this.buffers;
-            
             {
-                for(;;) {
-                    // 1. Examine the current buffer list's status.
-                    backwardBufferLength = 0;
-                    forewardBufferLength = 0;
-                    backwardBufferCount = 0;
-                    forewardBufferCount = 0;
+                {
+                    for(;;) {
+                        // 1. Examine the current buffer list's status.
+                        backwardBufferLength = 0;
+                        forewardBufferLength = 0;
+                        backwardBufferCount = 0;
+                        forewardBufferCount = 0;
 
-                    boolean found =false;
-                    long theLastBufferSeqNo = -1;
-                    for ( Iterator<MetroEventBuffer> i=buffersSnapshot.iterator(); i.hasNext(); ) {
-                        MetroEventBuffer buf = i.next();
-                        long seqNo = buf.getSeqNo();
-                        theLastBufferSeqNo = seqNo;
-                        if (! found ) {
-                            if ( currentBufferSeqNo == seqNo ) {
-                                found = true;
-                                continue;
+                        boolean found =false;
+                        long theLastBufferSeqNo = -1;
+                        for ( Iterator<MetroEventBuffer> i=buffersSnapshot.iterator(); i.hasNext(); ) {
+                            MetroEventBuffer buf = i.next();
+                            long seqNo = buf.getSeqNo();
+                            theLastBufferSeqNo = seqNo;
+                            if (! found ) {
+                                if ( currentBufferSeqNo == seqNo ) {
+                                    found = true;
+                                    continue;
+                                }
+                                backwardBufferLength+= buf.getLength();
+                                backwardBufferCount++;
+                            } else {
+                                forewardBufferLength += buf.getLength();
+                                forewardBufferCount++;
                             }
-                            backwardBufferLength+= buf.getLength();
-                            backwardBufferCount++;
-                        } else {
+                        }
+                        if ( found )
+                            break;
+
+
+                        // 2. In case the buffer underflows:
+                        {
+                            /*
+                             *  (Tue, 12 May 2020 03:27:03 +0900)
+                             *  
+                             * Note that (theLastBufferSeqNo==-1) means that there is no buffer on the buffer list.
+                             * 
+                             * Also note that when (theLastBufferSeqNo==-1) and the currentBufferSeqNo==0 which is 
+                             * very likely on the start up time. In that case, it should create one buffer.
+                             * This is the reason why the initial value of `theLastBufferSeqNo` is -1 which causes
+                             * it to execute only once.
+                             */
+                            if ((currentBufferSeqNo == SEQ_NO_NOT_INITIALIZED) || (theLastBufferSeqNo < currentBufferSeqNo) ) {
+                                // Initialize the seq no; this value will be reflected to `this.currentBufferSeqNo`.
+                                currentBufferSeqNo = 0;
+                                for ( long i=theLastBufferSeqNo; i<currentBufferSeqNo; i++ ) {
+                                    MetroEventBuffer buf = this.createNewBuffer( metro, barLengthInFrames );
+                                    buffersSnapshot.offer( buf );
+                                }
+                            } else {
+                                /*
+                                 *  In this case, it might be highly unusual. It is very likely not happening;
+                                 *  therefore ignore it for now. (Tue, 12 May 2020 03:27:03 +0900)
+                                 */
+                                logWarn( "****** UNUSUAL CASE ********" );
+                            }
+                        }
+                        // 3. Restart this procedure. In the next time, it should found the current buffer. 
+                        continue;
+                    }
+                }
+
+                if ( DEBUG ) {
+                    logInfo( "==============" );
+                    logInfo( String.format( "name=%s", getName() ));
+                    logInfo( String.format( "backwardBufferLength=%s", backwardBufferLength ));
+                    logInfo( String.format( "backwardBufferCount=%s", backwardBufferCount   ));
+                    logInfo( String.format( "forewardBufferLength=%s", forewardBufferLength ));
+                    logInfo( String.format( "forewardBufferCount=%s", forewardBufferCount   ));
+                    logInfo( "---" );
+                }
+
+
+                // Create bufferes ahead.
+                {
+                    for ( int i=0; i<256; i++ ) {
+                        if ( (forewardBufferCount<1) || ( forewardBufferLength < thresholdForewardBufferLength ) ) {
+                            MetroEventBuffer buf = this.createNewBuffer( metro, barLengthInFrames );
+                            buffersSnapshot.offer( buf );
+
+                            // TODO
                             forewardBufferLength += buf.getLength();
                             forewardBufferCount++;
+                        } else {
+                            break;
                         }
                     }
-                    if ( found )
-                        break;
-                    
-                    
-                    // 2. In case the buffer underflows:
-                    {
-                        /*
-                         *  (Tue, 12 May 2020 03:27:03 +0900)
-                         *  
-                         * Note that (theLastBufferSeqNo==-1) means that there is no buffer on the buffer list.
-                         * 
-                         * Also note that when (theLastBufferSeqNo==-1) and the currentBufferSeqNo==0 which is 
-                         * very likely on the start up time. In that case, it should create one buffer.
-                         * This is the reason why the initial value of `theLastBufferSeqNo` is -1 which causes
-                         * it to execute only once.
-                         */
-                        if ( theLastBufferSeqNo < currentBufferSeqNo ) {
-                            for ( long i=theLastBufferSeqNo; i<currentBufferSeqNo; i++ ) {
-                                MetroEventBuffer buf = this.createNewBuffer( metro, barLengthInFrames );
-                                buffersSnapshot.offer( buf );
+                }
+
+                // Remove bufferes behind.
+                {
+                    for ( Iterator<MetroEventBuffer> i=buffersSnapshot.iterator(); i.hasNext(); ) {
+                        MetroEventBuffer buf = i.next();
+                        double length = buf.getLength();
+                        if ( (2 < backwardBufferCount) && ( thresholdBackwardBufferLength < backwardBufferLength - length) ) {
+                            if ( DEBUG ) {
+                                logInfo( String.format( "removing backward buffer: length=%s count=%s" , backwardBufferLength, backwardBufferCount ) );
+                            }
+                            backwardBufferLength -= length;
+                            backwardBufferCount--;
+                            i.remove();
+                            if ( DEBUG ) {
+                                logInfo( String.format( "removed  backward buffer: length=%s count=%s" , backwardBufferLength, backwardBufferCount ) );
                             }
                         } else {
-                            /*
-                             *  In this case, it might be highly unusual. It is very likely not happening;
-                             *  therefore ignore it for now. (Tue, 12 May 2020 03:27:03 +0900)
-                             */
-                            logWarn( "****** UNUSUAL CASE ********" );
+                            break;
                         }
                     }
-                    // 3. Restart this procedure. In the next time, it should found the current buffer. 
-                    continue;
+                }
+
+                if ( DEBUG ) {
+                    logInfo( String.format( "name=%s", getName() ));
+                    logInfo( String.format( "backwardBufferLength=%s", backwardBufferLength ));
+                    logInfo( String.format( "backwardBufferCount=%s", backwardBufferCount   ));
+                    logInfo( String.format( "forewardBufferLength=%s", forewardBufferLength ));
+                    logInfo( String.format( "forewardBufferCount=%s", forewardBufferCount   ));
+                    logInfo( "" );
                 }
             }
-
-            if ( DEBUG ) {
-                logInfo( "==============" );
-                logInfo( String.format( "name=%s", getName() ));
-                logInfo( String.format( "backwardBufferLength=%s", backwardBufferLength ));
-                logInfo( String.format( "backwardBufferCount=%s", backwardBufferCount   ));
-                logInfo( String.format( "forewardBufferLength=%s", forewardBufferLength ));
-                logInfo( String.format( "forewardBufferCount=%s", forewardBufferCount   ));
-                logInfo( "---" );
-            }
-
-            
-            // Create bufferes ahead.
-            {
-                for ( int i=0; i<256; i++ ) {
-                    if ( (forewardBufferCount<1) || ( forewardBufferLength < thresholdForewardBufferLength ) ) {
-                        MetroEventBuffer buf = this.createNewBuffer( metro, barLengthInFrames );
-                        buffersSnapshot.offer( buf );
-
-                        // TODO
-                        forewardBufferLength += buf.getLength();
-                        forewardBufferCount++;
-                    } else {
-                        break;
-                    }
-                }
-            }
-
-            // Remove bufferes behind.
-            {
-                for ( Iterator<MetroEventBuffer> i=buffersSnapshot.iterator(); i.hasNext(); ) {
-                    MetroEventBuffer buf = i.next();
-                    double length = buf.getLength();
-                    if ( (1 < backwardBufferCount) && ( thresholdBackwardBufferLength < backwardBufferLength - length) ) {
-                        if ( DEBUG ) {
-                            logInfo( String.format( "removing backward buffer: length=%s count=%s" , backwardBufferLength, backwardBufferCount ) );
-                        }
-                        backwardBufferLength -= length;
-                        backwardBufferCount--;
-                        i.remove();
-                        if ( DEBUG ) {
-                            logInfo( String.format( "removed  backward buffer: length=%s count=%s" , backwardBufferLength, backwardBufferCount ) );
-                        }
-                    } else {
-                        break;
-                    }
-                }
-            }
-
-            if ( DEBUG ) {
-                logInfo( String.format( "name=%s", getName() ));
-                logInfo( String.format( "backwardBufferLength=%s", backwardBufferLength ));
-                logInfo( String.format( "backwardBufferCount=%s", backwardBufferCount   ));
-                logInfo( String.format( "forewardBufferLength=%s", forewardBufferLength ));
-                logInfo( String.format( "forewardBufferCount=%s", forewardBufferCount   ));
-                logInfo( "" );
-            }
-
+            this.currentBufferSeqNo= currentBufferSeqNo;
         }
     }
     

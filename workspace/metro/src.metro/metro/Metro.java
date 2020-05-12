@@ -646,21 +646,21 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
      */
     @Override
     public void run()  {
-        try {
-            logInfo("Metro.run()");
-            
-            while ( true ) {
-    //          logInfo("Metro.run()");
-    //          String s = this.debugQueue.take();
-    //          System.err.println( s );
-                
+        logInfo("Metro.run()");
+
+        while ( true ) {
+            //          logInfo("Metro.run()");
+            //          String s = this.debugQueue.take();
+            //          System.err.println( s );
+
+            try {
                 synchronized ( this.getMetroLock() ) {
                     long barLengthInFrames = this.getOneBarLengthInFrames();
 
                     for ( MetroTrack track : this.tracks  ) {
                         track.processBuffer( this,  barLengthInFrames );
                     }
-//                    this.getMetroLock().wait( 1 );
+                    //                    this.getMetroLock().wait( 1 );
 
                     for ( Runnable r : this.messageQueue ) {
                         try {
@@ -669,7 +669,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                             logError( "An error occured in a message object", e);
                         }
                     }
-                    
+
                     // Added comment (Wed, 07 Aug 2019 01:26:19 +0900)
                     // remove specified tracks.
                     this.tracks.removeAll(this.unregisteredTracks );
@@ -678,7 +678,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                     // this.tracks.removeAll( this.registeredTracks );
                     // add new tracks.  
                     this.tracks.addAll( this.registeredTracks );
-                    
+
                     if ( ! this.registeredTracks.isEmpty() ) {
                         // duplicate the list since the "prepare" method possiblly modify the 
                         // "registeredTrack" in its event handlers.
@@ -687,7 +687,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                             // REMOVED (Tue, 05 May 2020 07:58:05 +0900) >>>
                             // track.onStartBuffer( Metro.this, barLengthInFrames );
                             // REMOVED (Tue, 05 May 2020 07:58:05 +0900) <<<
-                            
+
                             // ADDED (Sun, 30 Sep 2018 12:39:32 +0900)
                             track.processBuffer( Metro.this,  barLengthInFrames );
                         }
@@ -711,14 +711,17 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                      */
                     this.getMetroLock().wait( 0 );
                 }
-//              logInfo( this.tracks.size() );
-//              Thread.sleep(0);
+            } catch ( InterruptedException e ) {
+                // ignore
+                logWarn( "interrupted" );
+                break;
+            } catch ( Throwable e ) {
+                logError("", e);
             }
-        } catch ( InterruptedException e ) {
-            // ignore
-        } catch ( Throwable e ) {
-            throw new RuntimeException( e );
+            //              logInfo( this.tracks.size() );
+            //              Thread.sleep(0);
         }
+        logInfo("Metro.run() : exited");
     }
     
     private String[] getAvailableOutputPorts_impl() throws JackException {
@@ -839,9 +842,11 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
             }
 
             synchronized ( this.getMetroLock() ) {
+//                logInfo( "===" );
                 for ( MetroTrack track : this.tracks ) {
                     track.progressCursor( this, l_nframes, this.inputMidiEventList, this.outputMidiEventList );
                 }
+//                logInfo( "" );
                 
                 // sort the every event 
                 this.outputMidiEventList.sort( MetroMidiEvent.COMPARATOR );

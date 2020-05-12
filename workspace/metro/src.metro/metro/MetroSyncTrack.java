@@ -11,7 +11,7 @@ public abstract class MetroSyncTrack extends MetroTrack {
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
-    static final boolean DEBUG = false;
+    static final boolean DEBUG = true;
     public MetroSyncTrack(Object name, Collection<Object> tags, MetroSyncType syncType, MetroSyncTrack syncTrack, double syncOffset ) {
         super(name, tags);
         this.syncType = syncType;
@@ -95,11 +95,20 @@ public abstract class MetroSyncTrack extends MetroTrack {
     }
 
     public static void prepareSyncStatus( Metro metro, MetroSyncTrack track, long barLengthInFrames) {
-        MetroSyncType syncType = track.getSyncType();
+        MetroSyncType syncType   = track.getSyncType();
         MetroSyncTrack syncTrack = track.getSyncTrack(); 
-        double syncOffset = track.getSyncOffset();
+        double syncOffset        = track.getSyncOffset();
+        long offset = (long) ((1.0d * syncOffset) * barLengthInFrames);
         
-        long offset = (long) (-1.0d * syncOffset * barLengthInFrames);
+        if ( DEBUG ) {
+            
+            logInfo( "===prepareSyncStatus===" );
+            logInfo( "syncType:" + syncType );
+            logInfo( "syncTrack:" + syncTrack );
+            logInfo( "syncOffset:" + syncOffset );
+            if(syncTrack !=null)
+                logInfo( "syncTrack.getCurrentPositionInFrames(metro)" + syncTrack.getCurrentPositionInFrames(metro) );
+        }
 
         switch ( syncType ) {
             case IMMEDIATE :
@@ -114,6 +123,9 @@ public abstract class MetroSyncTrack extends MetroTrack {
             break;
             case PARALLEL :
             {
+                if ( DEBUG )
+                    logInfo( "prepare(parallel):" + track.getCurrentPositionInFrames(metro) );
+
                 if ( syncTrack == null ) {
                     track.setCurrentPositionInFrames( metro, offset );
                     logWarn(  "`parallel` was specified but syncTrack was not specified; it was treated as immediate mode." );
@@ -124,6 +136,9 @@ public abstract class MetroSyncTrack extends MetroTrack {
             }
             break;
             case SERIAL :
+                if ( DEBUG )
+                    logInfo( "prepare(SERIAL):" + track.getCurrentPositionInFrames(metro) );
+
                 if ( syncTrack == null ) {
                     track.setCurrentPositionInFrames( metro, offset );
                     logWarn( "`serial` was specified but syncTrack was not passed." );
@@ -146,6 +161,9 @@ public abstract class MetroSyncTrack extends MetroTrack {
                 break;
             default :
                 throw new RuntimeException( "Internal Error" ); // this won't occur.
+        }
+        if ( DEBUG ) {
+            logInfo("");
         }
     }
 }
