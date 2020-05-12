@@ -11,7 +11,7 @@ public abstract class MetroSyncTrack extends MetroTrack {
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
-    static final boolean DEBUG = true;
+    static final boolean DEBUG = false;
     public MetroSyncTrack(Object name, Collection<Object> tags, MetroSyncType syncType, MetroSyncTrack syncTrack, double syncOffset ) {
         super(name, tags);
         this.syncType = syncType;

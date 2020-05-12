@@ -2,19 +2,6 @@ Lamu API Reference
 ======================
 
 
-GET-TRACK-POSITION
-====================
-
-#### SYNOPSIS ####
-    (get-track-position|gettp)::void
-
-### DESCRIPTION ###
-||get-track-position|| gets the current position of the given track.
-
-
-
---------------------------------------------------------
-
 PRINT-STACK-TRACE
 ====================
 
@@ -492,6 +479,19 @@ GET-TRACK
 arguments. The tracks are stored in a linked list. See \(help about-track-spec\). In case
 the current sequencer system has not established any connection to the JACK, it
 throws an exception.
+
+
+
+--------------------------------------------------------
+
+GET-TRACK-POSITION
+====================
+
+#### SYNOPSIS ####
+    (get-track-position|gettp)::void
+
+### DESCRIPTION ###
+||get-track-position|| gets the current position of the given track.
 
 
 
