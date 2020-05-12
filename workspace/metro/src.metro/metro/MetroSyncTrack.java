@@ -81,16 +81,22 @@ public abstract class MetroSyncTrack extends MetroTrack {
 
     @Override
     public void processBuffer( Metro metro, long barLengthInFrames) throws MetroException {
+        int flag= 0;
         synchronized ( metro.getMetroLock() ) { // << ADDED synchronided (Sun, 30 Sep 2018 11:45:13 +0900)
             if ( barLengthInFrames != lastBarLengthInFrames ) {
                 lastBarLengthInFrames = barLengthInFrames;
                 if ( ! syncPrepared ) {
                     syncPrepared = true;
-                    prepareSyncStatus(metro, barLengthInFrames);
+                    flag = 1;
                 } else {
-                    reprepareSyncStatus(metro, barLengthInFrames );
+                    flag = 2;
                 }
             }
+        }
+        if ( flag == 1 ) {
+            prepareSyncStatus(metro, barLengthInFrames);
+        } else if ( flag == 2 ) {
+            reprepareSyncStatus(metro, barLengthInFrames );
         }
     }
 
