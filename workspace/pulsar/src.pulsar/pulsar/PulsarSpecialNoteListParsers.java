@@ -408,7 +408,7 @@ public class PulsarSpecialNoteListParsers {
     
     static abstract class TrackEventParser extends SpecialNoteListParserElement {
         MetroTrack searchSyncTrack( Pulsar pulsar, Object id ) {
-            List<MetroTrack> trackList = pulsar.searchTrack( id );
+            List<MetroTrack> trackList = pulsar.getTracks( id );
             if ( trackList.isEmpty() ) {
                 logWarn( "PARSER_PUT : syncTrackId '" + id + "' was not found and it was ignored. " );
                 return null;
@@ -538,7 +538,7 @@ public class PulsarSpecialNoteListParsers {
                 if ( id == null ) 
                     trackList = null;
                 else
-                    trackList = pulsar.searchTrack( id );
+                    trackList = pulsar.getTracks( id );
                 
                 if ( syncTrackId == null )
                     syncTrack = null;
@@ -600,7 +600,7 @@ public class PulsarSpecialNoteListParsers {
                                     if ( v instanceof MetroTrack ) {
                                         trackList = Arrays.asList(  (MetroTrack) v );
                                     } else {
-                                        trackList = metro.searchTrack( v );
+                                        trackList = metro.getTracks( v );
                                     }
                                     // MODIFIED <<< (Sun, 15 Sep 2019 11:16:06 +0900)
 
@@ -627,7 +627,7 @@ public class PulsarSpecialNoteListParsers {
                     public void run() {
                         // synchronized block added at (Mon, 29 Jul 2019 13:36:52 +0900)
                         synchronized ( metro.getMetroLock() ) {
-                            for ( MetroTrack t : metro.searchTracksByTagSet(tags) ) {
+                            for ( MetroTrack t : metro.getTracks(tags) ) {
                                 removeTrackProc( metro, t );
                             }
                         }

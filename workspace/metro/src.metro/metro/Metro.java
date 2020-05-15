@@ -293,10 +293,6 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         logWarn( "Dump all tracks <=== " );
     }
     
-    public Collection<MetroTrack> getTrackByTag( String tag ) {
-        return searchTracksByTag( tag );
-    }
-    
     
 /*  
     public MetroTrack addTrack(
@@ -358,55 +354,37 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
 //          return tempAllTracks.get( Integer.parseInt( name.substring(0,name.length()-1) ) );
 //      }
 //  } else {
-    
+
+    /**
+     * See {@link MetroTrackSelector} .
+     * 
+     * @param tracks
+     * @param selector
+     * @return
+     */
+    public static List<MetroTrack> selectTrack( List<MetroTrack> tracks, MetroSelector<MetroTrack> selector ) {
+        if ( selector == null )
+            throw new NullPointerException( "selector == null" );
+        ArrayList<MetroTrack> result = new ArrayList<>();
+        selector.selectTracks( tracks, result );
+        return result;
+    }
     /**
      * See {@link MetroTrackSelector} .
      * @param selector
      * @return
      */
     public List<MetroTrack> getTracks( MetroSelector<MetroTrack> selector ) {
-        if ( selector == null )
-            throw new NullPointerException( "selector == null" );
-        ArrayList<MetroTrack> result = new ArrayList<>();
-        selector.selectTracks( replicateAllTracks(), result );
-        return result;
+        return selectTrack( replicateAllTracks(), selector );
     }
-    
-    public List<MetroTrack> searchTrack( Invokable invokable ) {
+    public List<MetroTrack> getTracks( Invokable invokable ) {
         return getTracks( MetroTrackSelector.createLinewiseInvokableSelector(invokable) );
     }
-    public List<MetroTrack> searchTrack( Object name ) {
+    public List<MetroTrack> getTracks( Object name ) {
         return getTracks( MetroTrackSelector.createNameSelector( name ));
     }
-
-    
-    public List<MetroTrack> searchTrack2( Invokable invokable ) {
-        List<MetroTrack> tempAllTracks = replicateAllTracks();
-        List<MetroTrack> resultAllTracks = new ArrayList<>();
-
-        for ( Iterator<MetroTrack> i=tempAllTracks.iterator(); i.hasNext(); ) {
-            MetroTrack track = i.next();
-            if ( Boolean.FALSE.equals( invokable.invoke( track.getName(), track.getTags()) ) ) {
-                continue;
-            } else {
-                resultAllTracks.add( track );
-            }
-        }
-        if ( DEBUG )
-            logInfo( "searchTrack() null" );
-        //          logWarn( "searchTrack() WARNING \"" + name + "\"  was not found." );
-        return resultAllTracks;
-    }
-    
-    public List<MetroTrack> searchTrack2( Object name ) {
-        if ( name == null ) throw new NullPointerException( "name was null" );
-        List<MetroTrack> list = searchTrack( new Invokable() {
-            @Override
-            public Object invoke(Object... args) {
-                return name.equals( args[0] );
-            }
-        });
-        return list;
+    public List<MetroTrack> getTracks( Collection<? extends Object> tags ) {
+        return getTracks( MetroTrackSelector.createOrSelector( tags ));
     }
 
     private List<MetroTrack> searchTracksByTagImpl( String tag, 
@@ -422,11 +400,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         return resultTracks;
     }
 
-    public Collection<MetroTrack> searchTracksByTag( String tag ) {
-        return searchTracksByTagImpl(tag, replicateAllTracks(), new ArrayList<>() );
-    }
-
-    public Collection<MetroTrack> searchTracksByTagSet( Collection<String> tagSet ) {
+    public Collection<MetroTrack> searchTracksByTagSet2( Collection<String> tagSet ) {
         HashSet<MetroTrack> resultTracks = new HashSet<>();
         List<MetroTrack> tempAllTracks = replicateAllTracks();
         for ( String tag : tagSet ) {
@@ -1169,7 +1143,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
             syncTrack = null;
             syncOffset = 0.0d;
         }
-        removeTrack( searchTrack( track.getName() ), syncType, syncTrack, syncOffset );
+        removeTrack( getTracks( track.getName() ), syncType, syncTrack, syncOffset );
     }
     private void removeFormerTrack(Collection<MetroTrack> trackList ) {
         for ( MetroTrack track : trackList ) {

@@ -343,7 +343,7 @@ public interface PulsarLib {
          */
         List<MetroTrack> readParamSearchTrack(Object arg) {
             return 
-                    getPulsar().searchTrack(
+                    getPulsar().getTracks(
                         readParamSearchTrackFilter(
                             SchemeInvokable.create( readParamTrackSearcher( arg ) )));
         }

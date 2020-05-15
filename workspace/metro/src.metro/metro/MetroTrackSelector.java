@@ -1,5 +1,6 @@
 package metro;
 
+import java.util.Collection;
 import java.util.List;
 
 import lamu.lib.Invokable;
@@ -12,6 +13,20 @@ public class MetroTrackSelector {
                 for ( MetroTrack track : objects ) {
                     if ( name.equals( track.getName() ) ) {
                         selectedObjects.add(track);
+                    }
+                }
+            }
+        };
+    }
+    public static final MetroSelector<MetroTrack> createOrSelector( Collection<? extends Object> tags ) {
+        return new MetroSelector<MetroTrack>() {
+            @Override
+            public void selectTracks(List<MetroTrack> objects, List<MetroTrack> selectedObjects) {
+                for ( MetroTrack track : objects ) {
+                    for ( Object tag : tags ) {
+                        if ( tag.equals( track.getName() ) || track.getTags().contains( tag )) {
+                            selectedObjects.add(track);
+                        }
                     }
                 }
             }
