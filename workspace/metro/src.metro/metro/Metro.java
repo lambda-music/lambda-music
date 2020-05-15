@@ -29,7 +29,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -293,34 +292,6 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         logWarn( "Dump all tracks <=== " );
     }
     
-    
-/*  
-    public MetroTrack addTrack(
-            String name, Collection<String> tags, MetroSequence sequence,
-            SyncType syncType, MetroTrack syncTrack, double syncOffset ) 
-    {
-        MetroTrack track = createTrack(name, tags, sequence, syncType, syncTrack, syncOffset);
-        registerTrack(track);
-        return track;
-    }
-    public MetroTrack deleteTrack(
-            MetroTrack track, SyncType syncType, MetroTrack syncTrack, double syncOffset ) 
-    {
-        switch ( syncType ) {
-            case IMMEDIATE:
-                unregisterTrack( track );
-                break;
-            case PARALLEL:
-                track.removeGracefully( null );
-                break;
-            case SERIAL : 
-                break;
-        }
-        registerTrack(track);
-        return track;
-    }
-*/
-    
     /*
      * This duplicates the "this.tracks" object inside a synchronized block. This
      * effectively make these algorithms managing "this.track" get outside from
@@ -332,28 +303,6 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
             return new ArrayList<MetroTrack>( this.tracks );
         }
     }
-
-//  if ( name.endsWith("!" ) ) {
-//      if ( "last!".equals( name )) {
-//          if ( tempAllTracks.size() == 0 ) {
-//              if ( DEBUG ) logInfo( "searchTrack() last! null (last! was specified but the current track contains no element)" );
-//              return null;
-//          } else {
-//              if ( DEBUG ) logInfo( "searchTrack() last!" );
-//              return tempAllTracks.get( tempAllTracks.size() -1 );
-//          }
-//      } else if ( "first!".equals( name )) {
-//          if ( tempAllTracks.size() == 0 ) {
-//              if ( DEBUG ) logInfo( "searchTrack() first! null (first! was specified but the current track contains no element)" );
-//              return null;
-//          } else {
-//              if ( DEBUG ) logInfo( "searchTrack() first!" );
-//              return tempAllTracks.get( tempAllTracks.size() -1 );
-//          }
-//      } else {
-//          return tempAllTracks.get( Integer.parseInt( name.substring(0,name.length()-1) ) );
-//      }
-//  } else {
 
     /**
      * See {@link MetroTrackSelector} .
@@ -387,93 +336,6 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         return getTracks( MetroTrackSelector.createOrSelector( tags ));
     }
 
-    private List<MetroTrack> searchTracksByTagImpl( String tag, 
-            List<MetroTrack> allTracks, 
-            ArrayList<MetroTrack> resultTracks ) 
-    {
-        for ( Iterator<MetroTrack> i = allTracks.iterator(); i.hasNext();  ) {
-             MetroTrack track = i.next();
-             if ( track.getTags().contains( tag ) ) {
-                 resultTracks.add( track );
-             }
-        }
-        return resultTracks;
-    }
-
-    public Collection<MetroTrack> searchTracksByTagSet2( Collection<String> tagSet ) {
-        HashSet<MetroTrack> resultTracks = new HashSet<>();
-        List<MetroTrack> tempAllTracks = replicateAllTracks();
-        for ( String tag : tagSet ) {
-            resultTracks.addAll( searchTracksByTagImpl( tag, tempAllTracks, new ArrayList<MetroTrack>() ) );
-        }
-        return resultTracks;
-    }
-    
-//  This method was removed. (Mon, 29 Jul 2019 11:37:24 +0900)
-//  At the time of removing, there were two occurrences of referring this method.
-//  These are inlined. 
-//  public void removeTrack( String name ) {
-//      removeTrack( getTrack( name ) );
-//  }
-//  This method was removed. (Mon, 29 Jul 2019 09:55:02 +0900)
-//  At the time of removing, no method refers this.
-//  public void removeTrack( Object nameObject ) {
-//      removeTrack( getTrack( nameObject ) );
-//  }
-
-//  This method was removed at (Mon, 29 Jul 2019 09:13:06 +0900)
-//  public MetroTrack createTrack(  
-//          String name, Collection<String> tags, MetroSequence sequence,
-//          SyncType syncType, Object syncTrackObject, double syncOffset) 
-//  {
-//      MetroTrack syncTrack = getTrack( syncTrackObject ); 
-//      return new MetroTrack( this, name, tags, sequence, syncType, syncTrack, syncOffset );
-//  }
-    
-    
-//  @Deprecated
-//  public void enableTrackByTag( String tag, boolean enabled ) {
-//      for ( MetroTrack track : searchTrackByTag( tag ) ) {
-//          track.setTrackEnabled( enabled );
-//      }
-//  }
-
-
-    /**
-     * This method removes the specified track directory. This method requires
-     * inherently dangerous operation and may cause a
-     * ConcurrentModificationException to be thrown. This method should not be used.
-     * 
-     * @param name
-     */
-//  removed (Mon, 29 Jul 2019 10:30:21 +0900)
-//  @Deprecated
-//  public void removeLogicDirect( String name ) {
-//      Iterator<MetroTrack> iterator = lookupTrackDirect(name);
-//      if ( iterator != null  ) {
-//          iterator.remove();
-//      }
-//  }
-
-    /**
-     * This method removes the specified track directory. This method requires
-     * inherently dangerous operation and may cause a
-     * ConcurrentModificationException to be thrown. This method should not be used.
-     * 
-     * @param name
-     */
-//  removed (Mon, 29 Jul 2019 10:30:21 +0900)
-//  @Deprecated
-//  private Iterator<MetroTrack> lookupTrackDirect( String name ) {
-//      name = name.intern();
-//      for ( Iterator<MetroTrack> i=tracks.iterator(); i.hasNext(); ) {
-//          MetroTrack track = i.next();
-//          if ( track.name == name ) {
-//              return i;
-//          }
-//      }
-//      return null;
-//  }
 
     // INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900) 
     /**
