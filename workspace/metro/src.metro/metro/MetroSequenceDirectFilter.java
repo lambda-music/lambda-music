@@ -211,7 +211,7 @@ public class MetroSequenceDirectFilter extends MetroTrack {
         Metro metro, 
         long nframes, 
         List<MetroMidiEvent> inputMidiEventList,
-        List<MetroMidiEvent> outputMidiEventList ) throws MetroException 
+        List<MetroMidiEvent> outputMidiEventList, List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList ) throws MetroException 
     {
 //        if ( true ) {
 //            bufferReplacePort(in, inputPort , outputPort );

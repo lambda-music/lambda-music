@@ -320,7 +320,9 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
     
 
     @Override
-    public void progressCursor( Metro metro, long nframes, List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList ) throws MetroException {
+    public void progressCursor( Metro metro, long nframes,
+        List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList, 
+        List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList ) throws MetroException {
         long currentCursor;
         long nextCursor;
         long currentBufferSeqNo;
@@ -358,7 +360,7 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
                 long to    = nextCursor    - cursorOffset;
 
                 // Search all of the corresponding events and process  them. 
-                searchEventBuffer( metro, buf, outputMidiEventList, from, to );
+                searchEventBuffer( metro, buf.getMetroEventList(),      outputMidiEventList, registeringTrackList, unregisteringTrackList, from, to );
 
                 // move the cursor offset.
                 cursorOffset = cursorOffset + buf.getLengthInFrames();
@@ -416,23 +418,21 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
     }
 
     
-    private boolean searchEventBuffer( Metro metro, 
-        MetroEventBuffer buf, 
-        List<MetroMidiEvent> output, 
-        long from,
-        long to) 
+    protected boolean searchEventBuffer( Metro metro, 
+        List<MetroEvent> inputMidiEventList, 
+        List<MetroMidiEvent> outputMidiEventList, 
+        List<MetroTrack> registeringTrackList,
+        List<MetroTrack> unregisteringTrackList, long from, long to) 
     {
         if ( this.isEnabled() ) { // <<< ADDED (Sun, 03 May 2020 17:59:12 +0900)
             boolean found= false;
-            for ( Iterator<MetroEvent> ie = buf.getMetroEventList().iterator(); ie.hasNext();  ) {
+            for ( Iterator<MetroEvent> ie = inputMidiEventList.iterator(); ie.hasNext();  ) {
                 MetroEvent e = ie.next();
 
                 if ( e.isBetweenInFrames( from, to ) ) {
                     found = true;
                     e.process( metro, from );
-                    if ( e instanceof MetroMidiEvent ) {
-                        output.add( (MetroMidiEvent)e );
-                    }
+                    e.processOutput(outputMidiEventList, registeringTrackList, unregisteringTrackList);
                 } else {
                     if ( found ) // SEE COMMENT_A (Fri, 02 Aug 2019 19:20:40 +0900)
                         break;

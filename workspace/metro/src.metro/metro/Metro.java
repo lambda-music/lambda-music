@@ -84,6 +84,8 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     }
     
     static final boolean DEBUG = false;
+
+    private static final int MAX_TRACK_LOOP_COUNT = 128;
     
     protected Jack jack = null;
     protected JackClient client = null;
@@ -100,9 +102,12 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     private final ArrayList<MetroTrack> unregisteredTracks = new ArrayList<MetroTrack>();
     private final ArrayList<Runnable>  messageQueue = new ArrayList<Runnable>();
     
-    private ArrayList<MetroTrack> tracksSnapshot = new ArrayList<MetroTrack>();
-    private ArrayList<MetroMidiEvent> inputMidiEventList = new ArrayList<MetroMidiEvent>();
-    private ArrayList<MetroMidiEvent> outputMidiEventList = new ArrayList<MetroMidiEvent>();
+    private ArrayList<MetroTrack> tracksSnapshot = new ArrayList<MetroTrack>(256);
+    private ArrayList<MetroTrack> finalTracks = new ArrayList<MetroTrack>(256);
+    private ArrayList<MetroMidiEvent> finalInputMidiEventList = new ArrayList<MetroMidiEvent>(1024);
+    private ArrayList<MetroMidiEvent> finalOutputMidiEventList = new ArrayList<MetroMidiEvent>(1024);
+    private ArrayList<MetroTrack> finalRegisteringTrackList = new ArrayList<MetroTrack>(256);
+    private ArrayList<MetroTrack> finalUnregisteringTrackList = new ArrayList<MetroTrack>(256);
 
     private volatile MetroTrack mainTrack = null; 
     /**
@@ -832,12 +837,20 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
             for ( MetroPort p : Metro.this.outputPortList )
                 JackMidi.clearBuffer( p.jackPort );
             
-            ArrayList<MetroMidiEvent> inputMidiEventList2 = this.inputMidiEventList;
-            ArrayList<MetroMidiEvent> outputMidiEventList2 = this.outputMidiEventList;
+            ArrayList<MetroTrack> tracksSnapshot = this.tracksSnapshot;
+            ArrayList<MetroTrack> finalTracksSnapshot = this.finalTracks;
+            ArrayList<MetroMidiEvent> finalInputMidiEventList = this.finalInputMidiEventList;
+            ArrayList<MetroMidiEvent> finalOutputMidiEventList = this.finalOutputMidiEventList;
+            ArrayList<MetroTrack> finalRegisteringTrackList = this.finalRegisteringTrackList;
+            ArrayList<MetroTrack> finalUnregisteringTrackList = this.finalUnregisteringTrackList;
             
-            inputMidiEventList2.clear();
-            outputMidiEventList2.clear();
             tracksSnapshot.clear();
+            finalTracksSnapshot.clear();
+            finalInputMidiEventList.clear();
+            finalOutputMidiEventList.clear();
+            finalRegisteringTrackList.clear();
+            finalUnregisteringTrackList.clear();
+
             
             for ( Iterator<MetroPort> pi = this.inputPortList.iterator(); pi.hasNext(); ) {
                 MetroPort inputPort = pi.next();
@@ -848,7 +861,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                     int size = this.midiEvent.size();
                     byte[] data = new byte[size];
                     this.midiEvent.read( data );
-                    inputMidiEventList2.add( new DefaultMetroMidiEvent( this.midiEvent.time(), inputPort, data ) );
+                    finalInputMidiEventList.add( new DefaultMetroMidiEvent( this.midiEvent.time(), inputPort, data ) );
                 }
             }
 
@@ -858,21 +871,56 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
             }
             
             {
-                for ( MetroTrack track : tracksSnapshot ) {
-                    track.progressCursor( this, l_nframes, inputMidiEventList2, outputMidiEventList2 );
+                int trackLoopCount = 0;
+                ArrayList<MetroTrack> currTrackList = tracksSnapshot;
+                for(;;) {
+                    if ( MAX_TRACK_LOOP_COUNT <trackLoopCount ) {
+                        logError( "=== ERROR:" + MAX_TRACK_LOOP_COUNT  + "<trackLoopCount ===", new Exception() );
+                        break;
+                    }
+                    ArrayList<MetroTrack> nextTrackList = new ArrayList<>();
+                    for ( MetroTrack track : currTrackList ) {
+                        track.inputMidiEventList.addAll( finalInputMidiEventList );
+                        track.outputMidiEventList.clear();
+                        track.registeringTrack.clear();
+                        track.unregisteringTrack.clear();
+                        track.progressCursor( this, l_nframes, 
+                            track.inputMidiEventList, 
+                            track.outputMidiEventList, 
+                            track.registeringTrack,
+                            track.unregisteringTrack );
+                        nextTrackList.addAll(track.registeringTrack);
+                        finalRegisteringTrackList.addAll( track.registeringTrack );
+                        finalUnregisteringTrackList.addAll( track.unregisteringTrack );
+                    }
+                    if ( nextTrackList.isEmpty() ) {
+                        break;
+                    } else {
+                        currTrackList= nextTrackList;
+                        trackLoopCount++;
+                        continue;
+                    }
+                }
+                
+                finalTracksSnapshot.addAll(tracksSnapshot );
+                finalTracksSnapshot.addAll( finalRegisteringTrackList );
+                finalTracksSnapshot.removeAll( finalUnregisteringTrackList );
+                
+                for ( MetroTrack track : finalTracksSnapshot ) {
+                    finalOutputMidiEventList.addAll( track.outputMidiEventList ); 
                 }
 //                logInfo( "" );
                 
                 // sort the every event 
-                outputMidiEventList2.sort( MetroMidiEvent.COMPARATOR );
+                finalOutputMidiEventList.sort( MetroMidiEvent.COMPARATOR );
                 
-                if ( ! outputMidiEventList2.isEmpty() )
-                    if ( DEBUG ) logInfo( outputMidiEventList2.toString() );
+                if ( ! finalOutputMidiEventList.isEmpty() )
+                    if ( DEBUG ) logInfo( finalOutputMidiEventList.toString() );
 
 //                logInfo( "output count : "+ this.outputMidiEventList.size() );
                 
                 // output the events
-                for ( MetroMidiEvent e : outputMidiEventList2 ) {
+                for ( MetroMidiEvent e : finalOutputMidiEventList ) {
                     JackMidi.eventWrite(
                             e.getPort().jackPort, 
                             (int)e.getMidiOffset(), 

@@ -1,8 +1,11 @@
 package pulsar;
 
+import java.util.List;
+
 import gnu.lists.LList;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroPort;
+import metro.MetroTrack;
 
 public class SchemeBufferedMidiReceiver implements MetroBufferedMidiReceiver<LList> {
     public static final SchemeBufferedMidiReceiver INSTANCE = new SchemeBufferedMidiReceiver();
@@ -35,6 +38,10 @@ public class SchemeBufferedMidiReceiver implements MetroBufferedMidiReceiver<LLi
         // (Mon, 11 Nov 2019 10:48:35 +0900) currently this method is not used; only for future compatibilities.
         // This method cannot be achieved.
         // return pulsar.PulsarSpecialNoteListParsers.PARSER_EXEC.exec( offset, runnable );
+        return null;
+    }
+    @Override
+    public LList tracks(double offset, String operation, List<MetroTrack> tracks) {
         return null;
     }
     @Override

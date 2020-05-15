@@ -1,6 +1,8 @@
 package metro;
 
-public abstract  class MetroBufferedToNonBufferedMidiReceiver<OUTER,INNER> implements MetroBufferedMidiReceiver<OUTER> {
+import java.util.List;
+
+public abstract class MetroBufferedToNonBufferedMidiReceiver<OUTER,INNER> implements MetroBufferedMidiReceiver<OUTER> {
     private final MetroMidiReceiver<INNER> receiver;
     public MetroBufferedToNonBufferedMidiReceiver( MetroMidiReceiver<INNER> receiver ) {
         this.receiver = receiver;
@@ -23,13 +25,31 @@ public abstract  class MetroBufferedToNonBufferedMidiReceiver<OUTER,INNER> imple
         return this.receive( "error", offset, port, receiver.error(string));
     }
     
-    // special
+    /*
+     * <h1>The MIDI Special Methods</h1>
+     * (Thu, 14 May 2020 04:25:41 +0900)
+     * 
+     * The Special MIDI methods are the methods which do not have corresponding MIDI events.
+     * Currently there are four such methods. Even though these are defined here, 
+     * these methods should be re-implemented in the sub-classes which derive this class.
+     * These implementations are intended to be used only in the classes which generate MIDI events
+     * which usually emit nothing. Those classes which should receive such special events must 
+     * reimplement these special methods. 
+     *  
+     */
+    @Override
     public OUTER exec( double offset, Runnable runnable ) {
         return this.receive( "exec", offset, null, null );
     }
+    @Override
+    public OUTER tracks(double offset, String operation, List<MetroTrack> tracks) {
+        return this.receive( "tracks", offset, null, null );
+    }
+    @Override
     public OUTER event( double offset, OUTER event ) {
         return this.receive( "event", offset, null, null );
     }
+    @Override
     public OUTER length( double length ) {
         return this.receive( "length", Double.NaN, null, null );
     }

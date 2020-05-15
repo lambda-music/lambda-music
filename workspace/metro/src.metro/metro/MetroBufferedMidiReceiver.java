@@ -19,6 +19,9 @@
  */
 
 package metro;
+
+import java.util.List;
+
 /**
  * @see MetroMidiReceiver .
  * @author Ats Oka
@@ -31,6 +34,7 @@ public interface MetroBufferedMidiReceiver<T> {
 
     // special 
     public T exec(  double offset, Runnable runnable );
+    public T tracks( double offset, String operation, List<MetroTrack> tracks );
     public T event( double offset, T event );
     public T length( double length );
     

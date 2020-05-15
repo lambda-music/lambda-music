@@ -34,7 +34,7 @@ public class MetroThruTrack extends MetroTrack {
     public void progressCursor(
         Metro metro, long nframes, 
         List<MetroMidiEvent> inputMidiEventList,
-        List<MetroMidiEvent> outputMidiEventList) throws MetroException 
+        List<MetroMidiEvent> outputMidiEventList, List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList) throws MetroException 
     {
         MetroSequenceDirectFilter.bufferReplacePort( inputMidiEventList, inputPort , outputPort );
         outputMidiEventList.addAll(inputMidiEventList);
