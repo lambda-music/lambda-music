@@ -358,9 +358,29 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
 //          return tempAllTracks.get( Integer.parseInt( name.substring(0,name.length()-1) ) );
 //      }
 //  } else {
-
+    
+    /**
+     * See {@link MetroTrackSelector} .
+     * @param selector
+     * @return
+     */
+    public List<MetroTrack> getTracks( MetroSelector<MetroTrack> selector ) {
+        if ( selector == null )
+            throw new NullPointerException( "selector == null" );
+        ArrayList<MetroTrack> result = new ArrayList<>();
+        selector.selectTracks( replicateAllTracks(), result );
+        return result;
+    }
     
     public List<MetroTrack> searchTrack( Invokable invokable ) {
+        return getTracks( MetroTrackSelector.createLinewiseInvokableSelector(invokable) );
+    }
+    public List<MetroTrack> searchTrack( Object name ) {
+        return getTracks( MetroTrackSelector.createNameSelector( name ));
+    }
+
+    
+    public List<MetroTrack> searchTrack2( Invokable invokable ) {
         List<MetroTrack> tempAllTracks = replicateAllTracks();
         List<MetroTrack> resultAllTracks = new ArrayList<>();
 
@@ -378,7 +398,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         return resultAllTracks;
     }
     
-    public List<MetroTrack> searchTrack( Object name ) {
+    public List<MetroTrack> searchTrack2( Object name ) {
         if ( name == null ) throw new NullPointerException( "name was null" );
         List<MetroTrack> list = searchTrack( new Invokable() {
             @Override
