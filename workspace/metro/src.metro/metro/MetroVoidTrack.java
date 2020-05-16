@@ -23,7 +23,7 @@ public class MetroVoidTrack extends MetroTrack {
     public void progressCursor(
         Metro metro, long nframes, 
         List<MetroMidiEvent> inputMidiEventList,
-        List<MetroMidiEvent> outputMidiEventList, List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList) throws MetroException 
+        List<MetroMidiEvent> outputMidiEventList, List<MetroTrack> tracks, List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList) throws MetroException 
     {
     }
 }

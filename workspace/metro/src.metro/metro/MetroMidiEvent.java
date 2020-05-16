@@ -20,9 +20,7 @@
 
 package metro;
 
-import java.util.Collection;
 import java.util.Comparator;
-import java.util.List;
 
 /**
  * This interface represents actual MIDI events. THe objects that implements
@@ -31,7 +29,7 @@ import java.util.List;
  * 
  * @author ats
  */
-public interface MetroMidiEvent extends Comparable<MetroMidiEvent>, MetroEventOutput {
+public interface MetroMidiEvent extends Comparable<MetroMidiEvent> {
     public static final Comparator<? super MetroMidiEvent> COMPARATOR = new Comparator<MetroMidiEvent>() {
         @Override
         public int compare(MetroMidiEvent o1, MetroMidiEvent o2) {
@@ -97,14 +95,5 @@ public interface MetroMidiEvent extends Comparable<MetroMidiEvent>, MetroEventOu
     
     public default int compareTo( MetroMidiEvent o ) {
         return (int) (this.getMidiOffset() - o.getMidiOffset());
-    }
-    
-    /**
-     * This method adds the current event to the buffer.
-     * See {@link MetroEventOutput#processOutput(Collection, List, List)}.
-     */
-    @Override
-    public default <T extends MetroEventOutput> void processOutput(Collection<T> output, List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList) {
-        output.add((T)this);
     }
 }

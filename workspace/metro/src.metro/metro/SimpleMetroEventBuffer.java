@@ -22,7 +22,6 @@ package metro;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Collection;
-import java.util.List;
 import java.util.logging.Level;
 
 import lamu.lib.log.Logger;
@@ -93,7 +92,7 @@ public class SimpleMetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiv
         return null;
     }
     @Override
-    public MetroMidiEvent tracks(double offset, String operation, List<MetroTrack> tracks) {
+    public MetroMidiEvent tracks(double offset, String operation, MetroSelector<MetroTrack> trackSelector) {
         logWarn( "called an unimplemented method - tracks" );
         return null;
     }

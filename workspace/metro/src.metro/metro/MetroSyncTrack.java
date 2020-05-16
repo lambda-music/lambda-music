@@ -74,33 +74,34 @@ public abstract class MetroSyncTrack extends MetroTrack {
     public abstract double getPosition(Metro metro);
 
     // Created (Thu, 07 May 2020 03:14:15 +0900)
-    public abstract void prepareSyncStatus(Metro metro, long barLengthInFrames) throws MetroException;
-    // Created (Thu, 07 May 2020 03:14:15 +0900)
     public abstract void reprepareSyncStatus(Metro metro, long barLengthInFrames) throws MetroException;
     
 
+
     @Override
-    public void progressBuffer( Metro metro, long barLengthInFrames) throws MetroException {
-        int flag= 0;
-        synchronized ( metro.getMetroLock() ) { // << ADDED synchronided (Sun, 30 Sep 2018 11:45:13 +0900)
-            if ( barLengthInFrames != lastBarLengthInFrames ) {
-                lastBarLengthInFrames = barLengthInFrames;
-                if ( ! syncPrepared ) {
-                    syncPrepared = true;
-                    flag = 1;
-                } else {
-                    flag = 2;
-                }
-            }
-        }
-        if ( flag == 1 ) {
-            prepareSyncStatus(metro, barLengthInFrames);
-        } else if ( flag == 2 ) {
+    public void progressBuffer( Metro metro, long barLengthInFrames ) throws MetroException {
+        synchronizeTrack( metro, barLengthInFrames );
+        if ( this.lastBarLengthInFrames != barLengthInFrames ) {
+            this.lastBarLengthInFrames = barLengthInFrames;
             reprepareSyncStatus(metro, barLengthInFrames );
         }
     }
 
-    public static void prepareSyncStatus( Metro metro, MetroSyncTrack track, long barLengthInFrames) {
+    /**
+     * This method will be called only once by the Metro messaging thread when
+     * MetroTrack is added to registered Track.
+     * @param metro TODO
+     * @param barLengthInFrames
+     * @throws MetroException 
+     */
+    public void synchronizeTrack( Metro metro, long barLengthInFrames ) throws MetroException {
+        if ( ! this.syncPrepared ) {
+            this.syncPrepared = true;
+            MetroSyncTrack.synchronizeTrack( metro, this, barLengthInFrames );
+        }
+    }
+
+    public static void synchronizeTrack( Metro metro, MetroSyncTrack track, long barLengthInFrames) {
         MetroSyncType syncType   = track.getSyncType();
         MetroSyncTrack syncTrack = track.getSyncTrack(); 
         double syncOffset        = track.getSyncOffset();
@@ -108,7 +109,7 @@ public abstract class MetroSyncTrack extends MetroTrack {
         
         if ( DEBUG ) {
             
-            logInfo( "===prepareSyncStatus===" );
+            logInfo( "===synchronizeTrack===" );
             logInfo( "syncType:" + syncType );
             logInfo( "syncTrack:" + syncTrack );
             logInfo( "syncOffset:" + syncOffset );

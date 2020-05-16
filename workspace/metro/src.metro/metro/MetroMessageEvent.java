@@ -20,6 +20,9 @@
 
 package metro;
 
+import java.util.Collection;
+import java.util.List;
+
 public class MetroMessageEvent extends DefaultMetroEvent {
     private final Runnable message;
     public MetroMessageEvent( String id, double offset, Runnable message ) {
@@ -32,5 +35,13 @@ public class MetroMessageEvent extends DefaultMetroEvent {
     @Override
     public void process(Metro metro, long cursor) {
         execute( metro );
+    }
+    @Override
+    public void processOutput(
+        Collection<MetroMidiEvent> output, 
+        List<MetroTrack> tracks,
+        List<MetroTrack> registeringTrackList, 
+        List<MetroTrack> unregisteringTrackList) 
+    {
     }
 }

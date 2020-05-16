@@ -36,17 +36,17 @@ public class MetroTrackEvent extends DefaultMetroEvent implements MetroEventOutp
     public static final String REMOVE_TRACKS="REMOVE_TRACKS";
     
     private final String operation;
-    private final Collection<MetroTrack> tracks;
-    public MetroTrackEvent( String id, double offset, String operation, Collection<MetroTrack> tracks ) {
+    private final MetroSelector<MetroTrack> trackSelector;
+    public MetroTrackEvent( String id, double offset, String operation, MetroSelector<MetroTrack> trackSelector ) {
         super(id, offset);
         this.operation = operation;
-        this.tracks = tracks;
+        this.trackSelector = trackSelector;
     }
     public String getOperation() {
         return operation;
     }
-    public Collection<MetroTrack> getTracks() {
-        return tracks;
+    public Collection<MetroTrack> getTracks( List<MetroTrack> tracks ) {
+        return Metro.selectTrack(tracks, this.trackSelector );
     }
     @Override
     public String toString() {
@@ -55,14 +55,24 @@ public class MetroTrackEvent extends DefaultMetroEvent implements MetroEventOutp
     @Override
     public void process(Metro metro, long cursor) {
     }
+    
+    /**
+     * This method adds the current track  to the track list.
+     * See {@link MetroEventOutput#processOutput(Collection, List, List, List)}.
+     */
     @Override
-    public <T extends MetroEventOutput> void processOutput(Collection<T> output, List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList) {
+    public void processOutput(
+        Collection<MetroMidiEvent> output, 
+        List<MetroTrack> tracks, 
+        List<MetroTrack> registeringTrackList, 
+        List<MetroTrack> unregisteringTrackList)
+    {
         switch ( operation ) {
         case PUT_TRACKS :
-            registeringTrackList.addAll(this.tracks);
+            registeringTrackList.addAll( Metro.selectTrack(tracks, this.trackSelector));
             break;
         case REMOVE_TRACKS :
-            unregisteringTrackList.addAll(this.tracks);
+            unregisteringTrackList.addAll( Metro.selectTrack(tracks, this.trackSelector));
             break;
         default :
             logWarn("===== MetroTrackEvent : UNKNOWN TYPE " + operation + "====");

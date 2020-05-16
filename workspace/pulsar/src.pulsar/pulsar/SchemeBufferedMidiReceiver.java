@@ -1,10 +1,9 @@
 package pulsar;
 
-import java.util.List;
-
 import gnu.lists.LList;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroPort;
+import metro.MetroSelector;
 import metro.MetroTrack;
 
 public class SchemeBufferedMidiReceiver implements MetroBufferedMidiReceiver<LList> {
@@ -41,7 +40,9 @@ public class SchemeBufferedMidiReceiver implements MetroBufferedMidiReceiver<LLi
         return null;
     }
     @Override
-    public LList tracks(double offset, String operation, List<MetroTrack> tracks) {
+    public LList tracks(double offset, String operation, MetroSelector<MetroTrack> trackSelector) {
+        // (Sat, 16 May 2020 12:09:39 +0900) 
+        // This method cannot be achieved.
         return null;
     }
     @Override

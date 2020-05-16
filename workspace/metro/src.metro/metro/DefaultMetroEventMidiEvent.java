@@ -21,8 +21,10 @@
 package metro;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
-public class DefaultMetroEventMidiEvent extends DefaultMetroEvent implements MetroMidiEvent, MetroEvent {
+class DefaultMetroEventMidiEvent extends DefaultMetroEvent implements MetroMidiEvent, MetroEvent, MetroEventOutput {
     public DefaultMetroEventMidiEvent( String id, double offset, MetroPort outputPort, byte[] data ) {
         super( id, offset );
         this.outputPort = outputPort;
@@ -74,6 +76,19 @@ public class DefaultMetroEventMidiEvent extends DefaultMetroEvent implements Met
     @Override
     public void process(Metro metro, long cursor) {
         calcMidiOffset( cursor );
+    }
+    
+    /**
+     * This method adds the current event to the buffer.
+     * See {@link MetroEventOutput#processOutput(Collection, List, List, List)}.
+     */
+    @Override
+    public void processOutput(
+        Collection<MetroMidiEvent> output, 
+        List<MetroTrack> tracks, 
+        List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList) 
+    {
+        output.add(this);
     }
     
 //    @Override

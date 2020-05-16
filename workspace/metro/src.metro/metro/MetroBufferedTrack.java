@@ -322,7 +322,7 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
     @Override
     public void progressCursor( Metro metro, long nframes,
         List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList, 
-        List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList ) throws MetroException {
+        List<MetroTrack> tracks, List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList ) throws MetroException {
         long currentCursor;
         long nextCursor;
         long currentBufferSeqNo;
@@ -360,7 +360,11 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
                 long to    = nextCursor    - cursorOffset;
 
                 // Search all of the corresponding events and process  them. 
-                searchEventBuffer( metro, buf.getMetroEventList(),      outputMidiEventList, registeringTrackList, unregisteringTrackList, from, to );
+                searchEventBuffer( metro, 
+                    buf.getMetroEventList(),
+                    outputMidiEventList, 
+                    tracks, 
+                    registeringTrackList, unregisteringTrackList, from, to );
 
                 // move the cursor offset.
                 cursorOffset = cursorOffset + buf.getLengthInFrames();
@@ -421,8 +425,8 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
     protected boolean searchEventBuffer( Metro metro, 
         List<MetroEvent> inputMidiEventList, 
         List<MetroMidiEvent> outputMidiEventList, 
-        List<MetroTrack> registeringTrackList,
-        List<MetroTrack> unregisteringTrackList, long from, long to) 
+        List<MetroTrack> tracks,
+        List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList, long from, long to) 
     {
         if ( this.isEnabled() ) { // <<< ADDED (Sun, 03 May 2020 17:59:12 +0900)
             boolean found= false;
@@ -432,7 +436,8 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
                 if ( e.isBetweenInFrames( from, to ) ) {
                     found = true;
                     e.process( metro, from );
-                    e.processOutput(outputMidiEventList, registeringTrackList, unregisteringTrackList);
+                    if ( e instanceof MetroEventOutput )
+                        ((MetroEventOutput)e).processOutput( outputMidiEventList, tracks, registeringTrackList, unregisteringTrackList );
                 } else {
                     if ( found ) // SEE COMMENT_A (Fri, 02 Aug 2019 19:20:40 +0900)
                         break;
@@ -444,17 +449,6 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
         }
     }
 
-    /**
-     * This method will be called only once by the Metro messaging thread when
-     * MetroTrack is added to registered Track.
-     * @param metro TODO
-     * @param barLengthInFrames
-     * @throws MetroException 
-     */
-    @Override
-    public void prepareSyncStatus( Metro metro, long barLengthInFrames ) throws MetroException {
-        MetroSyncTrack.prepareSyncStatus( metro, this, barLengthInFrames );
-    }
 
     @Override
     public void reprepareSyncStatus( Metro metro, long barLengthInFrames ) throws MetroException {

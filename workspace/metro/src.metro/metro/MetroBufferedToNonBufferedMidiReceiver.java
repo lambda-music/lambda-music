@@ -1,7 +1,5 @@
 package metro;
 
-import java.util.List;
-
 public abstract class MetroBufferedToNonBufferedMidiReceiver<OUTER,INNER> implements MetroBufferedMidiReceiver<OUTER> {
     private final MetroMidiReceiver<INNER> receiver;
     public MetroBufferedToNonBufferedMidiReceiver( MetroMidiReceiver<INNER> receiver ) {
@@ -42,7 +40,7 @@ public abstract class MetroBufferedToNonBufferedMidiReceiver<OUTER,INNER> implem
         return this.receive( "exec", offset, null, null );
     }
     @Override
-    public OUTER tracks(double offset, String operation, List<MetroTrack> tracks) {
+    public OUTER tracks(double offset, String operation, MetroSelector<MetroTrack> trackSelector) {
         return this.receive( "tracks", offset, null, null );
     }
     @Override
