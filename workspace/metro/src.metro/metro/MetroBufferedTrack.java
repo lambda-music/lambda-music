@@ -321,19 +321,24 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
 
     @Override
     public void progressCursor( Metro metro, long nframes,
-        long measureLengthInFrames, List<MetroMidiEvent> inputMidiEventList, 
-        List<MetroMidiEvent> outputMidiEventList, List<MetroTrack> tracks, List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList ) throws MetroException 
+        long measureLengthInFrames, 
+        List<MetroMidiEvent> inputMidiEventList, 
+        List<MetroMidiEvent> outputMidiEventList, 
+        List<MetroTrack> tracks, 
+        List<MetroTrack> registeringTrackList, 
+        List<MetroTrack> unregisteringTrackList ) throws MetroException 
     {
-        // Initialize synchronizing status with the track.
-        synchronizeTrack( metro, measureLengthInFrames );
+        // Before everything, initialize synchronizing status with the track.
+        // In most case, this method does nothing and returns immediately.
+        synchronizeTrack( metro, tracks, measureLengthInFrames );
+        
+        reprepareTrack( metro, measureLengthInFrames );
 
-        // 
+        // Start the process.
         long currentCursor;
         long nextCursor;
         long currentBufferSeqNo;
         Collection<MetroEventBuffer> buffers;
-
-
         
         synchronized ( metro.getMetroLock() ) {
             currentCursor      = this.cursor;
@@ -457,8 +462,33 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
     }
 
 
-    @Override
-    public void reprepareSyncStatus( Metro metro, long barLengthInFrames ) throws MetroException {
+    private volatile long lastMeasureLengthInFrames = -1;
+    /**
+     * This method watches the value specified in measureLengthInFrames and if it detects any change on the value,
+     * it invokes {@link #reprepareTrack(Metro, long)} method to re-prepare the track object.
+     * 
+     * @param metro
+     * @param measureLengthInFrames
+     * @throws MetroException
+     * @see
+     */
+    public void reprepareTrack(Metro metro, long measureLengthInFrames) throws MetroException {
+        if ( this.lastMeasureLengthInFrames != measureLengthInFrames ) {
+            this.lastMeasureLengthInFrames = measureLengthInFrames;
+            reprepareTrack0(metro, measureLengthInFrames );
+        }
+    }
+
+    // Created (Thu, 07 May 2020 03:14:15 +0900)
+    /**
+     * The position of a note is stored as a float value; the value has to be converted to an integer value
+     * in order to be processed by JACKAudio. In this system, this conversion is called "preparing track".
+     * 
+     * @param metro
+     * @param measureLengthInFrames
+     * @throws MetroException
+     */
+    protected void reprepareTrack0( Metro metro, long measureLengthInFrames ) throws MetroException {
         
         // Note (Wed, 06 Nov 2019 05:47:26 +0900)
         // This method could be called by setting tempo procedures and 
@@ -494,7 +524,7 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
 
             // double ratio = magnifyCursorPosition( prevBeatsPerMinute, beatsPerMinute );
             for ( MetroEventBuffer buffer : buffers2 ) {
-                buffer.prepare(barLengthInFrames, false);
+                buffer.prepare(measureLengthInFrames, false);
             }
 
             {
@@ -535,7 +565,7 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
     private static final double thresholdForewardBufferLength = 2.0d; 
 
     @Override
-    public void progressBuffer( Metro metro, long barLengthInFrames) throws MetroException {
+    public void progressBuffer( Metro metro, long measureLengthInFrames) throws MetroException {
         double backwardBufferLength;
         double forewardBufferLength;
         int backwardBufferCount;
@@ -548,8 +578,6 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
         
         // Creating a snapshot of the current status.
         synchronized ( metro.getMetroLock() ) { // << ADDED synchronided (Sun, 30 Sep 2018 11:45:13 +0900)
-            super.progressBuffer(metro, barLengthInFrames);
-            
             currentBufferSeqNo = this.currentBufferSeqNo;
             buffers = new ArrayList<>( this.buffers );
             buffersToAdd = new ArrayList<>();
@@ -608,7 +636,7 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
                                 // Initialize the seq no; this value will be reflected to `this.currentBufferSeqNo`.
                                 currentBufferSeqNo = 0;
                                 for ( long i=theLastBufferSeqNo; i<currentBufferSeqNo; i++ ) {
-                                    MetroEventBuffer buf = this.createNewBuffer( metro, barLengthInFrames );
+                                    MetroEventBuffer buf = this.createNewBuffer( metro, measureLengthInFrames );
                                     buffers.add( buf );
                                     buffersToAdd.add( buf );
                                 }
@@ -640,7 +668,7 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
                 {
                     for ( int i=0; i<256; i++ ) {
                         if ( (forewardBufferCount<1) || ( forewardBufferLength < thresholdForewardBufferLength ) ) {
-                            MetroEventBuffer buf = this.createNewBuffer( metro, barLengthInFrames );
+                            MetroEventBuffer buf = this.createNewBuffer( metro, measureLengthInFrames );
                             buffers.add( buf );
                             buffersToAdd.add(buf);
 

@@ -5,15 +5,17 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class MetroTrack {
+public abstract class MetroTrack implements MetroAbstractTrack {
     /**
      * Note that the String object which is stored in name field must be interned.  
      */
     private final Object name;
     private final Collection<Object> tags;
+    @Override
     public Object getName() {
         return name;
     }
+    @Override
     public Collection<Object> getTags() {
         return tags;
     }
@@ -81,14 +83,15 @@ public abstract class MetroTrack {
     }
 
     // This method was formerly checkBuffer()
-    public abstract void progressBuffer(Metro metro, long barLengthInFrames) throws MetroException;
+    public abstract void progressBuffer(Metro metro, long measureLengthInFrames) throws MetroException;
     
     public abstract void progressCursor(Metro metro, long nframes, 
         long measureLengthInFrames, 
         List<MetroMidiEvent> inputMidiEventList, 
         List<MetroMidiEvent> outputMidiEventList, 
         List<MetroTrack> tracks,
-        List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList ) throws MetroException;
+        List<MetroTrack> registeringTrackList, 
+        List<MetroTrack> unregisteringTrackList ) throws MetroException;
     
     final List<MetroMidiEvent> inputMidiEventList = new ArrayList<>();
     final List<MetroMidiEvent> outputMidiEventList = new ArrayList<>();

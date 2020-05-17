@@ -2,6 +2,7 @@ package metro;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 
 import lamu.lib.log.Logger;
@@ -24,14 +25,13 @@ public abstract class MetroSyncTrack extends MetroTrack {
     public MetroSyncType getSyncType() {
         return syncType;
     }
-    public MetroSyncTrack  getSyncTrack() {
+    public MetroSyncTrack getSyncTrack() {
         return syncTrack;
     }
     public double getSyncOffset() {
         return syncOffset;
     }
 
-    private volatile long lastBarLengthInFrames = -1;
     private volatile boolean syncPrepared = false;
 
     /**
@@ -73,34 +73,24 @@ public abstract class MetroSyncTrack extends MetroTrack {
     // (Tue, 05 May 2020 18:58:13 +0900) This method was formerly getPosition() 
     public abstract double getPosition(Metro metro);
 
-    // Created (Thu, 07 May 2020 03:14:15 +0900)
-    public abstract void reprepareSyncStatus(Metro metro, long barLengthInFrames) throws MetroException;
-    
 
-
-    @Override
-    public void progressBuffer( Metro metro, long barLengthInFrames ) throws MetroException {
-        if ( this.lastBarLengthInFrames != barLengthInFrames ) {
-            this.lastBarLengthInFrames = barLengthInFrames;
-            reprepareSyncStatus(metro, barLengthInFrames );
-        }
-    }
 
     /**
      * This method will be called only once by the Metro messaging thread when
      * MetroTrack is added to registered Track.
      * @param metro TODO
+     * @param tracks TODO
      * @param measureLengthInFrames
      * @throws MetroException 
      */
-    public void synchronizeTrack( Metro metro, long measureLengthInFrames ) throws MetroException {
+    public void synchronizeTrack( Metro metro, List<MetroTrack> tracks, long measureLengthInFrames ) throws MetroException {
         if ( ! this.syncPrepared ) {
             this.syncPrepared = true;
-            MetroSyncTrack.synchronizeTrack( metro, this, measureLengthInFrames );
+            MetroSyncTrack.synchronizeTrack( metro, this, tracks, measureLengthInFrames );
         }
     }
 
-    public static void synchronizeTrack( Metro metro, MetroSyncTrack track, long measureLengthInFrames) {
+    public static void synchronizeTrack( Metro metro, MetroSyncTrack track, List<MetroTrack> tracks, long measureLengthInFrames) {
         MetroSyncType syncType   = track.getSyncType();
         MetroSyncTrack syncTrack = track.getSyncTrack(); 
         double syncOffset        = track.getSyncOffset();

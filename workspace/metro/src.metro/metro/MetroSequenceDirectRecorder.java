@@ -56,7 +56,7 @@ public class MetroSequenceDirectRecorder extends MetroTrack {
     private volatile int totalCursor = 0;
     
     @Override
-    public void progressBuffer(Metro metro, long barLengthInFrames) throws MetroException {
+    public void progressBuffer(Metro metro, long measureLengthInFrames) throws MetroException {
     }
     @Override
     public void progressCursor(
