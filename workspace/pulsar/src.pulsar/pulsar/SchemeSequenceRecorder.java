@@ -98,15 +98,13 @@ public class SchemeSequenceRecorder extends MetroTrack implements MetroReadable,
     public void progressCursor(
         Metro metro, 
         long nframes, 
-        List<MetroMidiEvent> inputMidiEventList,
-        List<MetroMidiEvent> outputMidiEventList, List<MetroTrack> tracks, List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList) throws MetroException 
+        long measureLengthInFrames,
+        List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList, List<MetroTrack> tracks, List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList) throws MetroException 
     {
         try {
-            long oneBarLengthInFrames = metro.getOneBarLengthInFrames();
-            
             long currentPos;
             if ( 0 < this.recordLength ) {
-                long recordingLengthInFrames = (long)(this.recordLength * oneBarLengthInFrames);
+                long recordingLengthInFrames = (long)(this.recordLength * measureLengthInFrames);
                 currentPos = totalCursor % recordingLengthInFrames;
             } else {
                 currentPos = totalCursor;
@@ -115,7 +113,7 @@ public class SchemeSequenceRecorder extends MetroTrack implements MetroReadable,
             if ( recording ) {
                 for ( MetroMidiEvent e : inputMidiEventList ) {
                     if ( inputPorts.contains( e.getPort() ) ) {
-                        LList list = this.receiver.receive( e, currentPos, oneBarLengthInFrames );
+                        LList list = this.receiver.receive( e, currentPos, measureLengthInFrames );
                         if ( list != null ) {
                             this.notations = Pair.make( list, notations );
                         }
@@ -125,11 +123,11 @@ public class SchemeSequenceRecorder extends MetroTrack implements MetroReadable,
             }
             
             if ( playing ) {
-                double from = ((double)totalCursor           ) / (double)oneBarLengthInFrames;
-                double to   = ((double)totalCursor + nframes ) / (double)oneBarLengthInFrames;
+                double from = ((double)totalCursor           ) / (double)measureLengthInFrames;
+                double to   = ((double)totalCursor + nframes ) / (double)measureLengthInFrames;
                 
                 this.eventBuffer.setCursorOffset( totalCursor );
-                this.eventBuffer.setOneBarLengthInFrames( oneBarLengthInFrames );
+                this.eventBuffer.setOneBarLengthInFrames( measureLengthInFrames );
                 this.eventBuffer.setResultList( outputMidiEventList );
                 
                 for ( Object notation : this.notations ) {
@@ -147,8 +145,6 @@ public class SchemeSequenceRecorder extends MetroTrack implements MetroReadable,
                     }
                 }
             }
-        } catch (MetroException e) {
-            logError( "could not get bar length : failed to send midi messages.", e );
         } finally {
             this.totalCursor += nframes;
         }

@@ -80,7 +80,6 @@ public abstract class MetroSyncTrack extends MetroTrack {
 
     @Override
     public void progressBuffer( Metro metro, long barLengthInFrames ) throws MetroException {
-        synchronizeTrack( metro, barLengthInFrames );
         if ( this.lastBarLengthInFrames != barLengthInFrames ) {
             this.lastBarLengthInFrames = barLengthInFrames;
             reprepareSyncStatus(metro, barLengthInFrames );
@@ -91,21 +90,21 @@ public abstract class MetroSyncTrack extends MetroTrack {
      * This method will be called only once by the Metro messaging thread when
      * MetroTrack is added to registered Track.
      * @param metro TODO
-     * @param barLengthInFrames
+     * @param measureLengthInFrames
      * @throws MetroException 
      */
-    public void synchronizeTrack( Metro metro, long barLengthInFrames ) throws MetroException {
+    public void synchronizeTrack( Metro metro, long measureLengthInFrames ) throws MetroException {
         if ( ! this.syncPrepared ) {
             this.syncPrepared = true;
-            MetroSyncTrack.synchronizeTrack( metro, this, barLengthInFrames );
+            MetroSyncTrack.synchronizeTrack( metro, this, measureLengthInFrames );
         }
     }
 
-    public static void synchronizeTrack( Metro metro, MetroSyncTrack track, long barLengthInFrames) {
+    public static void synchronizeTrack( Metro metro, MetroSyncTrack track, long measureLengthInFrames) {
         MetroSyncType syncType   = track.getSyncType();
         MetroSyncTrack syncTrack = track.getSyncTrack(); 
         double syncOffset        = track.getSyncOffset();
-        long offset = (long) ((1.0d * syncOffset) * barLengthInFrames);
+        long offset = (long) ((1.0d * syncOffset) * measureLengthInFrames);
         
         if ( DEBUG ) {
             

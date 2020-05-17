@@ -84,11 +84,11 @@ public abstract class MetroTrack {
     public abstract void progressBuffer(Metro metro, long barLengthInFrames) throws MetroException;
     
     public abstract void progressCursor(Metro metro, long nframes, 
+        long measureLengthInFrames, 
         List<MetroMidiEvent> inputMidiEventList, 
         List<MetroMidiEvent> outputMidiEventList, 
-        List<MetroTrack> tracks, 
-        List<MetroTrack> registeringTrackList,
-        List<MetroTrack> unregisteringTrackList ) throws MetroException;
+        List<MetroTrack> tracks,
+        List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList ) throws MetroException;
     
     final List<MetroMidiEvent> inputMidiEventList = new ArrayList<>();
     final List<MetroMidiEvent> outputMidiEventList = new ArrayList<>();

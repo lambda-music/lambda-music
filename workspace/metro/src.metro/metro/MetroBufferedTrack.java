@@ -321,13 +321,20 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
 
     @Override
     public void progressCursor( Metro metro, long nframes,
-        List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList, 
-        List<MetroTrack> tracks, List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList ) throws MetroException {
+        long measureLengthInFrames, List<MetroMidiEvent> inputMidiEventList, 
+        List<MetroMidiEvent> outputMidiEventList, List<MetroTrack> tracks, List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList ) throws MetroException 
+    {
+        // Initialize synchronizing status with the track.
+        synchronizeTrack( metro, measureLengthInFrames );
+
+        // 
         long currentCursor;
         long nextCursor;
         long currentBufferSeqNo;
         Collection<MetroEventBuffer> buffers;
 
+
+        
         synchronized ( metro.getMetroLock() ) {
             currentCursor      = this.cursor;
             nextCursor         = currentCursor + nframes;

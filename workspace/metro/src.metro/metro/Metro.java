@@ -126,6 +126,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     public void setBeatsPerMinute(double beatsPerMinute) throws MetroException {
         beatsPerMinute = beatsPerMinute < 1 ? 1 : beatsPerMinute;
         this.beatsPerMinute = beatsPerMinute;
+        this.resetMeasureLengthInFrames();
 //        EXPERIMENTALY REMOVED (Tue, 05 May 2020 08:51:48 +0900) 
 //        reprepareTrack( beatsPerMinute, this.beatsPerMinute );
     }
@@ -521,7 +522,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
 //                List<MetroTrack> registeredTracks2;
 
                 synchronized ( this.getMetroLock() ) {
-                    barLengthInFrames = this.getOneBarLengthInFrames();
+                    barLengthInFrames = this.getMeasureLengthInFrames();
 
                     this.tracks.removeAll( this.unregisteredTracks );
                     this.tracks.addAll( this.registeredTracks );
@@ -687,6 +688,14 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
             return true;
         }
         
+        long measureLengthInFrames;
+        try {
+            measureLengthInFrames = getMeasureLengthInFrames();
+        } catch (MetroException e1) {
+            logError("", e1);
+            return true;
+        }
+        
         try {
             for ( MetroPort p : Metro.this.outputPortList )
                 JackMidi.clearBuffer( p.jackPort );
@@ -736,11 +745,11 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                         track.registeringTrack.clear();
                         track.unregisteringTrack.clear();
                         track.progressCursor( this, l_nframes, 
+                            measureLengthInFrames, 
                             track.inputMidiEventList, 
-                            track.outputMidiEventList, 
-                            finalTracksSnapshot,
-                            track.registeringTrack, 
-                            track.unregisteringTrack );
+                            track.outputMidiEventList,
+                            finalTracksSnapshot, 
+                            track.registeringTrack, track.unregisteringTrack );
                         
                         // 2. Preparing the final track list. 
                         finalTracksSnapshot.addAll( track.registeringTrack );
@@ -1033,20 +1042,32 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     }
     
     @Override
-    public void updatePosition(JackClient invokingClient, JackTransportState state, int nframes, JackPosition position,
+    public void updatePosition(
+        JackClient invokingClient, 
+        JackTransportState state, int nframes, JackPosition position,
             boolean newPosition) {
-        logInfo("JackAudio: the current position changed " + position );
+        logInfo("==========JackAudio: the current position changed ============== " + position );
         
     }
 
     private final JackPosition jackPosition = new JackPosition();
-    public long getOneBarLengthInFrames() throws MetroException {
+    private long measureLengthInFrames = -1;
+    public void resetMeasureLengthInFrames() throws MetroException {
         synchronized ( this.getMetroLock() ) {
-            return calcOneBarLengthInFrames( this, this.client, this.jackPosition );
+            this.measureLengthInFrames=-1;
+        }
+    }
+    
+    public long getMeasureLengthInFrames() throws MetroException {
+        synchronized ( this.getMetroLock() ) {
+            if ( this.measureLengthInFrames < 0 ) {
+                this.measureLengthInFrames = calcMeasureLengthInFrames( this, this.client, this.jackPosition );
+            }
+            return this.measureLengthInFrames;
         }
     }
 
-    public static long calcOneBarLengthInFrames( Metro metro, JackClient client, JackPosition position) throws MetroException {
+    public static long calcMeasureLengthInFrames( Metro metro, JackClient client, JackPosition position) throws MetroException {
         // logInfo("Metro.offerNewBuffer()" + this.buffers.size() );
         // beat per minute
         double bpm;

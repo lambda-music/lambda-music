@@ -22,8 +22,8 @@ public class MetroVoidTrack extends MetroTrack {
     @Override
     public void progressCursor(
         Metro metro, long nframes, 
-        List<MetroMidiEvent> inputMidiEventList,
-        List<MetroMidiEvent> outputMidiEventList, List<MetroTrack> tracks, List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList) throws MetroException 
+        long measureLengthInFrames,
+        List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList, List<MetroTrack> tracks, List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList) throws MetroException 
     {
     }
 }
