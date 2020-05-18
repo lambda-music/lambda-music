@@ -543,7 +543,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                 
                 {
                     for ( MetroTrack track : tracks2  ) {
-                        track.progressBuffer( this,  barLengthInFrames );
+                        track.getTrack().progressBuffer( this,  track, barLengthInFrames );
                     }
                     for ( Runnable r : messageQueue2 ) {
                         try {
@@ -744,12 +744,12 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                         track.outputMidiEventList.clear();
                         track.registeringTrack.clear();
                         track.unregisteringTrack.clear();
-                        track.progressCursor( this, l_nframes, 
+                        track.getTrack().progressCursor( this, track, 
+                            l_nframes, 
                             measureLengthInFrames, 
-                            track.inputMidiEventList, 
-                            track.outputMidiEventList,
-                            finalTracksSnapshot, 
-                            track.registeringTrack, track.unregisteringTrack );
+                            track.inputMidiEventList,
+                            track.outputMidiEventList, 
+                            finalTracksSnapshot, track.registeringTrack, track.unregisteringTrack );
                         
                         // 2. Preparing the final track list. 
                         finalTracksSnapshot.addAll( track.registeringTrack );
@@ -999,10 +999,10 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         }
     }
 
-    private void removeFormerTrack(MetroTrack track, MetroTrackSynchronizer trackSynchronizer ) {
+    private void removeFormerTrack(MetroTrack track, MetroSeqSynchronizer trackSynchronizer ) {
         removeTrack( getTracks( track.getName() ), trackSynchronizer );
     }
-    private void removeFormerTrack(Collection<MetroTrack> trackList, MetroTrackSynchronizer trackSynchronizer ) {
+    private void removeFormerTrack(Collection<MetroTrack> trackList, MetroSeqSynchronizer trackSynchronizer ) {
         for ( MetroTrack track : trackList ) {
             removeFormerTrack( track, trackSynchronizer );
         }
@@ -1014,10 +1014,10 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     }
 
     public void putTrack( Collection<MetroTrack> trackList )  {
-        removeFormerTrack( trackList, MetroTrackSynchronizer.IMMEDIATE ); // TODO
+        removeFormerTrack( trackList, MetroSeqSynchronizer.IMMEDIATE ); // TODO
         registerTrack( trackList );
     }
-    public void removeTrack( Collection<MetroTrack> trackList, MetroTrackSynchronizer trackSynchronizer )  {
+    public void removeTrack( Collection<MetroTrack> trackList, MetroSeqSynchronizer trackSynchronizer )  {
         for ( MetroTrack track : trackList ) {
             track.remove(this, trackSynchronizer );
         }

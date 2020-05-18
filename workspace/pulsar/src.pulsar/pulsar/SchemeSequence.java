@@ -34,12 +34,12 @@ import lamu.lib.kawautils.procedures.MultipleNamedProcedureN;
 import lamu.lib.log.Logger;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
-import metro.MetroBufferedTrack;
+import metro.MetroBufferedTrackSeq;
 import metro.MetroCollector;
 import metro.MetroTrack;
-import metro.MetroTrackSynchronizer;
+import metro.MetroSeqSynchronizer;
 
-public class SchemeSequence extends MetroBufferedTrack implements Invokable {
+public class SchemeSequence extends MetroBufferedTrackSeq implements Invokable {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
@@ -94,12 +94,12 @@ public class SchemeSequence extends MetroBufferedTrack implements Invokable {
      * 
      */
     final Invokable invokable;
-    public SchemeSequence ( Object name, Collection<Object> tags, MetroTrackSynchronizer trackSynchronizer, Invokable procedure ) {
-        super(name,tags,trackSynchronizer);
+    public SchemeSequence ( MetroSeqSynchronizer trackSynchronizer, Invokable procedure ) {
+        super(trackSynchronizer);
         this.invokable = procedure;
     }
-    public SchemeSequence( Object name, Collection<Object> tags, MetroTrackSynchronizer trackSynchronizer,  Procedure procedure ) {
-        super(name,tags,trackSynchronizer);
+    public SchemeSequence( MetroSeqSynchronizer trackSynchronizer,  Procedure procedure ) {
+        super(trackSynchronizer);
         this.invokable = SchemeInvokable.create(procedure);
     }
     @Override
@@ -108,8 +108,7 @@ public class SchemeSequence extends MetroBufferedTrack implements Invokable {
     }
     
     @Override
-    public <T> void generateBuffer(Metro metro, MetroBufferedMidiReceiver<T> buffer) {
-        MetroTrack track = this;
+    public <T> void generateBuffer(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer) {
         // System.out.println("Metro.sequence.new MetroSequence() {...}.initBuffer()" );
 //      buf.humanize( 0.0d, 3 );
         try {

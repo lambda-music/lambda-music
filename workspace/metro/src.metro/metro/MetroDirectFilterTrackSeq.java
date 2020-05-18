@@ -12,7 +12,7 @@ import java.util.logging.Level;
 
 import lamu.lib.log.Logger;
 
-public class MetroSequenceDirectFilter extends MetroTrack {
+public class MetroDirectFilterTrackSeq implements MetroTrackSeq {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -25,9 +25,7 @@ public class MetroSequenceDirectFilter extends MetroTrack {
         }
     }
     
-    public MetroSequenceDirectFilter( Object name, List<Object> tags, int delay, int threshold, int[] velocityMap, MetroPort inputPort, MetroPort outputPort ) {
-        super( name, tags );
-        
+    public MetroDirectFilterTrackSeq( int delay, int threshold, int[] velocityMap, MetroPort inputPort, MetroPort outputPort ) {
         if ( delay < 0 )
             throw new IllegalArgumentException("`delay` cannot be less than zero" );
         if ( threshold < 0 )
@@ -204,14 +202,14 @@ public class MetroSequenceDirectFilter extends MetroTrack {
     }
 
     @Override
-    public void progressBuffer(Metro metro, long measureLengthInFrames) throws MetroException {
+    public void progressBuffer(Metro metro, MetroTrack track, long measureLengthInFrames) throws MetroException {
     }
     @Override
     public void progressCursor(
         Metro metro, 
-        long nframes, 
-        long measureLengthInFrames,
-        List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList, List<MetroTrack> tracks, List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList ) throws MetroException 
+        MetroTrack track, 
+        long nframes,
+        long measureLengthInFrames, List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList, List<MetroTrack> tracks, List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList ) throws MetroException 
     {
 //        if ( true ) {
 //            bufferReplacePort(in, inputPort , outputPort );

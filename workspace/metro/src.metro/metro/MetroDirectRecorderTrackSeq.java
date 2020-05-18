@@ -4,9 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class MetroSequenceDirectRecorder extends MetroTrack {
-    public MetroSequenceDirectRecorder( Object name, List<Object> tags, int recordLength, boolean looper, MetroPort inputPort, MetroPort outputPort ) {
-        super(name,tags);
+public class MetroDirectRecorderTrackSeq implements MetroTrackSeq {
+    public MetroDirectRecorderTrackSeq( int recordLength, boolean looper, MetroPort inputPort, MetroPort outputPort ) {
         this.recordLength = recordLength;
         this.looper = looper;
         this.inputPort = inputPort;
@@ -56,13 +55,13 @@ public class MetroSequenceDirectRecorder extends MetroTrack {
     private volatile int totalCursor = 0;
     
     @Override
-    public void progressBuffer(Metro metro, long measureLengthInFrames) throws MetroException {
+    public void progressBuffer(Metro metro, MetroTrack track, long measureLengthInFrames) throws MetroException {
     }
     @Override
     public void progressCursor(
-        Metro metro, long nframes, 
-        long measureLengthInFrames,
-        List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList, List<MetroTrack> tracks, List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList ) throws MetroException 
+        Metro metro, MetroTrack track, 
+        long nframes,
+        long measureLengthInFrames, List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList, List<MetroTrack> tracks, List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList ) throws MetroException 
     {
         try {
             switch ( this.mode ) {

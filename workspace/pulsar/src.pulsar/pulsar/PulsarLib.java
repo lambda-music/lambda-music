@@ -28,11 +28,11 @@ import lamu.lib.kawautils.procedures.MultipleNamedProcedure2;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedureN;
 import lamu.lib.log.Logger;
 import metro.MetroPort;
-import metro.MetroSyncTrack;
+import metro.MetroSyncSeq;
 import metro.MetroSyncType;
 import metro.MetroTrack;
 import metro.MetroTradTrackSynchronizer;
-import metro.MetroVoidTrack;
+import metro.MetroVoidTrackSeq;
 
 public interface PulsarLib {
     Procedure getGetCurrentPulsar();
@@ -1443,7 +1443,7 @@ public interface PulsarLib {
                 if ( Boolean.FALSE.equals( arg1 ) ) { 
                     return Boolean.FALSE;
                 } else {
-                    MetroSyncTrack track = ((MetroSyncTrack)arg1);
+                    MetroSyncSeq track = ((MetroSyncSeq)arg1);
                     double position = track.getPosition( getPulsar() );
                     return SchemeValues.toSchemeNumber( position );
                 }
@@ -1512,7 +1512,7 @@ public interface PulsarLib {
 
                 switch ( args.length  ){
                     case 0 : 
-                        track = new MetroVoidTrack(null, null);
+                        track =  new MetroTrack( null, null, MetroVoidTrackSeq.getInstance() );
                     case 1 :
                         name          = null;
                         tags          = null;
@@ -1569,10 +1569,7 @@ public interface PulsarLib {
 
                 
                 if ( track == null ) {
-                    if ( syncTrack!=null && !( syncTrack instanceof MetroSyncTrack)) {
-                        throw new IllegalArgumentException( "syncTrack must be a MetroSyncTrack object" );
-                    }
-                    track = PulsarTrack.createTrack( name, tags, syncType, syncTrack, syncOffset, procedure);
+                    track = PulsarTrack.createTrack( name, tags, MetroTradTrackSynchronizer.create( syncType, syncTrack, syncOffset), procedure);
                 }
                 
                 return track;

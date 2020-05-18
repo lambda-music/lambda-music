@@ -76,7 +76,7 @@ import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroCollector;
 import metro.MetroPort;
-import metro.MetroSyncTrack;
+import metro.MetroSyncSeq;
 import metro.MetroSyncType;
 import metro.MetroTrack;
 import metro.MetroTradTrackSynchronizer;
@@ -498,7 +498,7 @@ public class PulsarSpecialNoteListParsers {
                 else
                     syncTrack = searchSyncTrack( pulsar, syncTrackId );
                 
-                if ( !(syncTrack instanceof MetroSyncTrack)) {
+                if ( !(syncTrack instanceof MetroSyncSeq)) {
                     // is throwing exception here allowed?? (Tue, 05 May 2020 16:27:20 +0900) 
                     throw new IllegalArgumentException("syncType must be a sync track" );
                 }
@@ -508,7 +508,12 @@ public class PulsarSpecialNoteListParsers {
                     // MetroBufferedTrack track = PulsarTrack.createTrack( id, tags, procedure );
                     // track.setSyncStatus( syncType, (MetroSyncTrack) syncTrack, syncOffset );
                     // pulsar.registerTrack( track );
-                    pulsar.putTrack( Arrays.asList( PulsarTrack.createTrack( id, tags,  syncType, syncTrack, syncOffset, procedure )));
+                    pulsar.putTrack( 
+                        Arrays.asList(
+                            PulsarTrack.createTrack(
+                                id, tags, MetroTradTrackSynchronizer.create(
+                                    syncType, syncTrack, syncOffset), procedure )));
+                    
                     // INTEGRATED (Wed, 06 May 2020 02:35:15 +0900) <<<
                 } finally {
                     pulsar.notifyTrackChange("update");

@@ -5,19 +5,21 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class MetroTrack implements MetroAbstractTrack {
+public class MetroTrack {
     /**
      * Note that the String object which is stored in name field must be interned.  
      */
     private final Object name;
     private final Collection<Object> tags;
-    @Override
+    private final MetroTrackSeq track;
     public Object getName() {
         return name;
     }
-    @Override
     public Collection<Object> getTags() {
         return tags;
+    }
+    public MetroTrackSeq getTrack() {
+        return track;
     }
     private static volatile int uniqueTrackNameCounter = 0;
     private synchronized static String createUniqueTrackName() {
@@ -31,7 +33,7 @@ public abstract class MetroTrack implements MetroAbstractTrack {
             return name;
         }
     }
-    public MetroTrack(Object name, Collection<Object> tags) {
+    public MetroTrack(Object name, Collection<Object> tags, MetroTrackSeq track ) {
         super();
         if ( name == null )
             this.name = createUniqueTrackName();
@@ -44,6 +46,10 @@ public abstract class MetroTrack implements MetroAbstractTrack {
         else
             this.tags = new ArrayList( tags );
 
+        if ( track == null )
+            this.track = MetroVoidTrackSeq.getInstance();
+        else
+            this.track = track;
     }
 
     @Override
@@ -82,16 +88,6 @@ public abstract class MetroTrack implements MetroAbstractTrack {
         return uniqueID;
     }
 
-    // This method was formerly checkBuffer()
-    public abstract void progressBuffer(Metro metro, long measureLengthInFrames) throws MetroException;
-    
-    public abstract void progressCursor(Metro metro, long nframes, 
-        long measureLengthInFrames, 
-        List<MetroMidiEvent> inputMidiEventList, 
-        List<MetroMidiEvent> outputMidiEventList, 
-        List<MetroTrack> tracks,
-        List<MetroTrack> registeringTrackList, 
-        List<MetroTrack> unregisteringTrackList ) throws MetroException;
     
     final List<MetroMidiEvent> inputMidiEventList = new ArrayList<>();
     final List<MetroMidiEvent> outputMidiEventList = new ArrayList<>();
@@ -99,7 +95,7 @@ public abstract class MetroTrack implements MetroAbstractTrack {
     final List<MetroTrack> unregisteringTrack = new ArrayList<>();
 
     // ADDED (Thu, 07 May 2020 13:03:35 +0900)    
-    public void remove(Metro metro, MetroTrackSynchronizer trackSynchronizer ) {
+    public void remove(Metro metro, MetroSeqSynchronizer trackSynchronizer ) {
         metro.unregisterTrack(this);
     }
     // TODO ADDED (Sat, 09 May 2020 01:33:54 +0900)

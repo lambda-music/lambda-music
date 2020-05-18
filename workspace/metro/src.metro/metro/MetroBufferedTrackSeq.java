@@ -36,7 +36,7 @@ import lamu.lib.log.Logger;
  * @author Ats Oka
  *
  */
-public abstract class MetroBufferedTrack extends MetroTrack implements MetroSyncTrack  {
+public abstract class MetroBufferedTrackSeq implements MetroTrackSeq, MetroSyncSeq  {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -53,7 +53,7 @@ public abstract class MetroBufferedTrack extends MetroTrack implements MetroSync
 
     private volatile boolean enabled = true;
 
-    public abstract <T> void generateBuffer( Metro metro, MetroBufferedMidiReceiver<T> buffer );
+    public abstract <T> void generateBuffer( Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer );
 
     
     /*
@@ -107,8 +107,7 @@ public abstract class MetroBufferedTrack extends MetroTrack implements MetroSync
      * @param sequence
      *            Specifying the sequence object to play.
      */
-    public MetroBufferedTrack( Object name, Collection<Object> tags, MetroTrackSynchronizer trackSynchronizer ) {
-        super(name,tags);
+    public MetroBufferedTrackSeq( MetroSeqSynchronizer trackSynchronizer ) {
         this.trackSynchronizer = trackSynchronizer;
     }
 //    public MetroBufferedTrack( Object name, Collection<Object> tags, 
@@ -177,7 +176,7 @@ public abstract class MetroBufferedTrack extends MetroTrack implements MetroSync
     
     // ADDED (Sun, 10 May 2020 02:10:20 +0900) BUFFER_SEQ_NO
     /**
-     * See {@link MetroBufferedTrack#createdBufferSeqNo}
+     * See {@link MetroBufferedTrackSeq#createdBufferSeqNo}
      */
     private volatile long currentBufferSeqNo = SEQ_NO_NOT_INITIALIZED;
 
@@ -308,7 +307,8 @@ public abstract class MetroBufferedTrack extends MetroTrack implements MetroSync
     
 
     @Override
-    public void progressCursor( Metro metro, long nframes,
+    public void progressCursor( Metro metro, MetroTrack track,
+        long nframes, 
         long measureLengthInFrames, 
         List<MetroMidiEvent> inputMidiEventList, 
         List<MetroMidiEvent> outputMidiEventList, 
@@ -318,7 +318,7 @@ public abstract class MetroBufferedTrack extends MetroTrack implements MetroSync
     {
         // Before everything, initialize synchronizing status with the track.
         // In most case, this method does nothing and returns immediately.
-        synchronizeTrack( metro, tracks, measureLengthInFrames );
+        synchronizeTrack( metro, track, tracks, measureLengthInFrames );
         
         reprepareTrack( metro, measureLengthInFrames );
 
@@ -388,7 +388,7 @@ public abstract class MetroBufferedTrack extends MetroTrack implements MetroSync
                         // ignore it for now.
                         logWarn( String.format( 
                             "ERROR === CANNOT FIND CURRENT BUFFER === :%5s nextCursor=%3s bufferSeqNo=%s bufcount=%s", 
-                            getName(), nextCursor, currentBufferSeqNo, buffers.size()));
+                            track.getName(), nextCursor, currentBufferSeqNo, buffers.size()));
                         done = true;
                     } else {
                         long lengthInFrames = currBuf.getLengthInFrames();
@@ -399,7 +399,7 @@ public abstract class MetroBufferedTrack extends MetroTrack implements MetroSync
                             done = true;
                             if (DEBUG) {
                                 logInfo( String.format( "update-cursor:%5s next=%3s/%3s bufferSeqNo=%s bufcount=%s", 
-                                    getName(), nextCursor, lengthInFrames, currentBufferSeqNo, buffers.size() ));
+                                    track.getName(), nextCursor, lengthInFrames, currentBufferSeqNo, buffers.size() ));
                             }
                             continue;
                         }
@@ -466,8 +466,8 @@ public abstract class MetroBufferedTrack extends MetroTrack implements MetroSync
         endingLength = 0;
     }
     
-    private MetroTrackSynchronizer trackSynchronizer;
-    public MetroTrackSynchronizer getTrackSynchronizer() {
+    private MetroSeqSynchronizer trackSynchronizer;
+    public MetroSeqSynchronizer getTrackSynchronizer() {
         return trackSynchronizer;
     }
 
@@ -476,15 +476,16 @@ public abstract class MetroBufferedTrack extends MetroTrack implements MetroSync
      * This method will be called only once by the Metro messaging thread when
      * MetroTrack is added to registered Track.
      * @param metro TODO
+     * @param track TODO
      * @param tracks TODO
      * @param measureLengthInFrames
      * @throws MetroException 
      */
-    public void synchronizeTrack( Metro metro, List<MetroTrack> tracks, long measureLengthInFrames ) throws MetroException {
+    public void synchronizeTrack( Metro metro, MetroTrack track, List<MetroTrack> tracks, long measureLengthInFrames ) throws MetroException {
         if ( ! this.syncPrepared ) {
             this.syncPrepared = true;
             long positionInFrames = 
-                this.trackSynchronizer.syncronizeTrack( metro, this, tracks, measureLengthInFrames );
+                this.trackSynchronizer.syncronizeTrack( metro, track, tracks, measureLengthInFrames );
             this.setCurrentPositionInFrames(metro, positionInFrames);
         }
     }
@@ -594,7 +595,7 @@ public abstract class MetroBufferedTrack extends MetroTrack implements MetroSync
     private static final double thresholdForewardBufferLength = 2.0d; 
 
     @Override
-    public void progressBuffer( Metro metro, long measureLengthInFrames) throws MetroException {
+    public void progressBuffer( Metro metro, MetroTrack track, long measureLengthInFrames) throws MetroException {
         double backwardBufferLength;
         double forewardBufferLength;
         int backwardBufferCount;
@@ -665,7 +666,7 @@ public abstract class MetroBufferedTrack extends MetroTrack implements MetroSync
                                 // Initialize the seq no; this value will be reflected to `this.currentBufferSeqNo`.
                                 currentBufferSeqNo = 0;
                                 for ( long i=theLastBufferSeqNo; i<currentBufferSeqNo; i++ ) {
-                                    MetroEventBuffer buf = this.createNewBuffer( metro, measureLengthInFrames );
+                                    MetroEventBuffer buf = this.createNewBuffer( metro, track, measureLengthInFrames );
                                     buffers.add( buf );
                                     buffersToAdd.add( buf );
                                 }
@@ -684,7 +685,7 @@ public abstract class MetroBufferedTrack extends MetroTrack implements MetroSync
 
                 if ( DEBUG ) {
                     logInfo( "==============" );
-                    logInfo( String.format( "name=%s", getName() ));
+                    logInfo( String.format( "name=%s", track.getName() ));
                     logInfo( String.format( "backwardBufferLength=%s", backwardBufferLength ));
                     logInfo( String.format( "backwardBufferCount=%s", backwardBufferCount   ));
                     logInfo( String.format( "forewardBufferLength=%s", forewardBufferLength ));
@@ -697,7 +698,7 @@ public abstract class MetroBufferedTrack extends MetroTrack implements MetroSync
                 {
                     for ( int i=0; i<256; i++ ) {
                         if ( (forewardBufferCount<1) || ( forewardBufferLength < thresholdForewardBufferLength ) ) {
-                            MetroEventBuffer buf = this.createNewBuffer( metro, measureLengthInFrames );
+                            MetroEventBuffer buf = this.createNewBuffer( metro, track, measureLengthInFrames );
                             buffers.add( buf );
                             buffersToAdd.add(buf);
 
@@ -733,7 +734,7 @@ public abstract class MetroBufferedTrack extends MetroTrack implements MetroSync
                 }
 
                 if ( DEBUG ) {
-                    logInfo( String.format( "name=%s", getName() ));
+                    logInfo( String.format( "name=%s", track.getName() ));
                     logInfo( String.format( "backwardBufferLength=%s", backwardBufferLength ));
                     logInfo( String.format( "backwardBufferCount=%s", backwardBufferCount   ));
                     logInfo( String.format( "forewardBufferLength=%s", forewardBufferLength ));
@@ -755,7 +756,7 @@ public abstract class MetroBufferedTrack extends MetroTrack implements MetroSync
     
     // ADDED (Sun, 10 May 2020 02:10:20 +0900) BUFFER_SEQ_NO
     /**
-     * See {@link MetroBufferedTrack#currentBufferSeqNo
+     * See {@link MetroBufferedTrackSeq#currentBufferSeqNo
      */
     private volatile long createdBufferSeqNo = 0;
     private void initNewBuffer( MetroEventBuffer buf, long barLengthInFrames ) {
@@ -763,7 +764,7 @@ public abstract class MetroBufferedTrack extends MetroTrack implements MetroSync
         buf.setSeqNo( createdBufferSeqNo ++ );
     }
 
-    private MetroEventBuffer createNewBuffer( Metro metro, long barLengthInFrames ) {
+    private MetroEventBuffer createNewBuffer( Metro metro, MetroTrack track, long barLengthInFrames ) {
         synchronized ( metro.getMetroLock() ) {
             
 //          logInfo( "offerNewBuffer:" );
@@ -780,7 +781,7 @@ public abstract class MetroBufferedTrack extends MetroTrack implements MetroSync
                     return buf;
                 } else {
                     if ( DEBUG )
-                        logInfo( "offerNewBuffer(" + getName() + ") setting true endingDone " );
+                        logInfo( "offerNewBuffer(" + track.getName() + ") setting true endingDone " );
                     this.endingDone = true;
 
                     MetroEventBuffer buf = MetroEventBuffer.create();
@@ -788,10 +789,10 @@ public abstract class MetroBufferedTrack extends MetroTrack implements MetroSync
                         @Override
                         public void run() {
                             if ( DEBUG )
-                                logInfo( "offerNewBuffer(" + getName() + ") UNREGISTER THIS" );
+                                logInfo( "offerNewBuffer(" + track.getName() + ") UNREGISTER THIS" );
                             synchronized ( metro.getMetroLock() ) {
                                 try {
-                                    metro.unregisterTrack( MetroBufferedTrack.this );
+                                    metro.unregisterTrack( track );
                                 } finally {
                                     metro.notifyTrackChange("update");
                                 }
@@ -812,7 +813,7 @@ public abstract class MetroBufferedTrack extends MetroTrack implements MetroSync
 
 //              logInfo( "offerNewBuffer:normal (" + this.name  + ")");
                 MetroEventBuffer buf = MetroEventBuffer.create();
-                this.generateBuffer( metro, buf );
+                this.generateBuffer( metro, track, buf );
                 initNewBuffer(buf, barLengthInFrames);
 
                 if ( DEBUG_BUF && ( buf.size() >0 ) )
@@ -822,7 +823,7 @@ public abstract class MetroBufferedTrack extends MetroTrack implements MetroSync
                 
                 if ( buf.endCalled() ) {
                     if ( DEBUG )
-                        logInfo( "offerNewBuffer(" + getName() + ") ENDING started");
+                        logInfo( "offerNewBuffer(" + track.getName() + ") ENDING started");
                     this.ending = true;
                     this.endingLength = buf.getActualLength();
                     if ( this.endingLength < 1 )
@@ -830,7 +831,7 @@ public abstract class MetroBufferedTrack extends MetroTrack implements MetroSync
                     // buf.dump();
                 } else {
                     if ( DEBUG )
-                        logInfo( "offerNewBuffer(" + getName() + ") CONTINUE" );
+                        logInfo( "offerNewBuffer(" + track.getName() + ") CONTINUE" );
                 }
                 return buf;
             }

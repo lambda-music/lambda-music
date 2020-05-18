@@ -1,7 +1,6 @@
 package pulsar;
 
 import java.lang.invoke.MethodHandles;
-import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -20,20 +19,19 @@ import metro.MetroMidiEvent;
 import metro.MetroPort;
 import metro.MetroReadable;
 import metro.MetroTrack;
+import metro.MetroTrackSeq;
 import metro.SimpleMetroEventBuffer;
 
 
-public class SchemeSequenceRecorder extends MetroTrack implements MetroReadable, Invokable {
+public class SchemeRecorderTrackSeq implements MetroTrackSeq, MetroReadable, Invokable {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }
     static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }
     static void logWarn (String msg             ) { LOGGER.log(Level.WARNING,  msg      ); }
 
-    public static SchemeSequenceRecorder create(
-        Object name, Collection<Object> tags,
-            List<MetroPort> inputPorts, List<MetroPort> outputPorts, 
-            double recordLength, boolean loop ) {
-        return new SchemeSequenceRecorder( name, tags, inputPorts, outputPorts, recordLength, loop );
+    public static SchemeRecorderTrackSeq create( 
+        List<MetroPort> inputPorts, List<MetroPort> outputPorts, double recordLength, boolean loop ) {
+        return new SchemeRecorderTrackSeq( inputPorts, outputPorts, recordLength, loop );
     }
 
     final SchemeSimpleMidiReceiver receiver;
@@ -44,10 +42,7 @@ public class SchemeSequenceRecorder extends MetroTrack implements MetroReadable,
     private boolean loop;
     private volatile LList notations = EmptyList.emptyList;
     
-    public SchemeSequenceRecorder(Object name, Collection<Object> tags, 
-        List<MetroPort> inputPorts, List<MetroPort> outputPorts, double recordLength, boolean loop ) 
-    {
-        super(name, tags);
+    public SchemeRecorderTrackSeq( List<MetroPort> inputPorts, List<MetroPort> outputPorts, double recordLength, boolean loop ) {
         this.inputPorts = inputPorts;
         this.outputPorts = outputPorts;
         this.recordLength = recordLength;
@@ -90,16 +85,16 @@ public class SchemeSequenceRecorder extends MetroTrack implements MetroReadable,
         this.playing = playing;
     }
     @Override
-    public void progressBuffer(Metro metro, long measureLengthInFrames) throws MetroException {
+    public void progressBuffer(Metro metro, MetroTrack track, long measureLengthInFrames) throws MetroException {
     }
 
     private volatile long totalCursor = 0;
     @Override
     public void progressCursor(
         Metro metro, 
-        long nframes, 
-        long measureLengthInFrames,
-        List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList, List<MetroTrack> tracks, List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList) throws MetroException 
+        MetroTrack track, 
+        long nframes,
+        long measureLengthInFrames, List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList, List<MetroTrack> tracks, List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList) throws MetroException 
     {
         try {
             long currentPos;

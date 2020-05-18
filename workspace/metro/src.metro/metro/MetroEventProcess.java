@@ -12,7 +12,7 @@ public interface MetroEventProcess {
     /**
      * Defines the procedure to execute when this event is activated. This method is
      * usually called when {@link #between(int, int)} returned <code>true</code>.
-     * See {@link MetroTrack#progressCursor(Metro, long, long, List, List, List, List, List) } for further information.
+     * See {@link MetroTrack#progressCursor(Metro, MetroTrack, long, long, List, List, List, List, List) } for further information.
      * 
      * This methods is called as a callback of JACKAudio processing; this method
      * should return as soon as possible. The heavy processing that blocks for

@@ -6,44 +6,46 @@ import java.util.logging.Level;
 
 import lamu.lib.log.Logger;
 
-public class MetroTradTrackSynchronizer implements MetroTrackSynchronizer {
+public class MetroTradTrackSynchronizer implements MetroSeqSynchronizer {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
     static final boolean DEBUG = false;
 
-    public static MetroTrackSynchronizer create( MetroSyncType syncType, MetroTrack syncTrack,  double syncOffset) {
+    public static MetroSeqSynchronizer create( MetroSyncType syncType, MetroTrack syncTrack,  double syncOffset) {
         return new MetroTradTrackSynchronizer(syncType, syncTrack, syncOffset);
     }
     MetroSyncType syncType   ;
-    MetroSyncTrack syncTrack ; 
+    MetroTrack syncTrack ; 
     double syncOffset        ;
-    private MetroTradTrackSynchronizer(MetroSyncType syncType, MetroSyncTrack syncTrack, double syncOffset) {
+    private MetroTradTrackSynchronizer(MetroSyncType syncType, MetroTrack syncTrack, double syncOffset) {
         this.syncType = syncType;
         this.syncTrack = syncTrack;
-        this.syncOffset = syncOffset;
-    }
-    private MetroTradTrackSynchronizer(MetroSyncType syncType, MetroTrack syncTrack, double syncOffset) {
-        if ( syncTrack != null &&  !(syncTrack instanceof MetroSyncTrack) )
-            throw new IllegalArgumentException( );
-        this.syncType = syncType;
-        this.syncTrack = (MetroSyncTrack)syncTrack;
         this.syncOffset = syncOffset;
     }
     @Override
     public long syncronizeTrack(
         Metro metro, 
-        MetroSyncTrack track, 
+        MetroTrack track, 
         List<MetroTrack> tracks,
         long measureLengthInFrames) 
     {
         return MetroTradTrackSynchronizer.synchronizeTrack( metro, track, tracks, measureLengthInFrames, syncType, syncTrack, syncOffset );
     }
     
-    public static long synchronizeTrack( Metro metro, MetroSyncTrack track, List<MetroTrack> tracks, long measureLengthInFrames, 
-        MetroSyncType syncType, MetroSyncTrack syncTrack, double syncOffset ) 
+    public static long synchronizeTrack( 
+        Metro metro,
+        MetroTrack track, 
+        List<MetroTrack> tracks, 
+        long measureLengthInFrames,
+        MetroSyncType syncType,
+        MetroTrack syncTrack,
+        double syncOffset ) 
     {
+        MetroSyncSeq seq = (MetroSyncSeq)track.getTrack();
+        MetroSyncSeq syncSeq = syncTrack == null ? null : (MetroSyncSeq)syncTrack.getTrack();
+        
         long result;
         long offset = (long) ((1.0d * syncOffset) * measureLengthInFrames);
 
@@ -51,10 +53,10 @@ public class MetroTradTrackSynchronizer implements MetroTrackSynchronizer {
 
             logInfo( "===synchronizeTrack===" );
             logInfo( "syncType:" + syncType );
-            logInfo( "syncTrack:" + syncTrack );
+            logInfo( "syncSeq:" + syncSeq );
             logInfo( "syncOffset:" + syncOffset );
-            if(syncTrack !=null)
-                logInfo( "syncTrack.getCurrentPositionInFrames(metro)" + syncTrack.getCurrentPositionInFrames(metro) );
+            if(syncSeq !=null)
+                logInfo( "syncTrack.getCurrentPositionInFrames(metro)" + syncSeq.getCurrentPositionInFrames(metro) );
         }
 
         switch ( syncType ) {
@@ -62,8 +64,8 @@ public class MetroTradTrackSynchronizer implements MetroTrackSynchronizer {
         {
             result = offset;
             if ( DEBUG )
-                logInfo( "prepare(immediate):" + track.getCurrentPositionInFrames(metro) );
-            if ( syncTrack != null ) {
+                logInfo( "prepare(immediate):" + seq.getCurrentPositionInFrames(metro) );
+            if ( syncSeq != null ) {
                 logWarn( "syncTrack was specified but the track was ignored because syncType was `immediate`." );
             }
         }
@@ -71,32 +73,32 @@ public class MetroTradTrackSynchronizer implements MetroTrackSynchronizer {
         case PARALLEL :
         {
             if ( DEBUG )
-                logInfo( "prepare(parallel):" + track.getCurrentPositionInFrames(metro) );
+                logInfo( "prepare(parallel):" + seq.getCurrentPositionInFrames(metro) );
 
             result = offset;
-            if ( syncTrack == null ) {
+            if ( syncSeq == null ) {
                 result = offset;
                 logWarn(  "`parallel` was specified but syncTrack was not specified; it was treated as immediate mode." );
             } else {
-                result = syncTrack.getCurrentPositionInFrames(metro) + offset;
+                result = syncSeq.getCurrentPositionInFrames(metro) + offset;
             }
 
         }
         break;
         case SERIAL :
             if ( DEBUG )
-                logInfo( "prepare(SERIAL):" + track.getCurrentPositionInFrames(metro) );
+                logInfo( "prepare(SERIAL):" + seq.getCurrentPositionInFrames(metro) );
 
-            if ( syncTrack == null ) {
+            if ( syncSeq == null ) {
                 result = offset;
                 logWarn( "`serial` was specified but syncTrack was not passed." );
             } else {
-                long length = syncTrack.getCurrentLengthInFrames(metro);
+                long length = syncSeq.getCurrentLengthInFrames(metro);
                 if ( length < 0 ) {
                     result = offset;
                     logWarn(  "`serial` was specified but track-length was not supported on the track; it was treated as immediate mode." );
                 } else {
-                    result = syncTrack.getCurrentPositionInFrames(metro) - length + offset;
+                    result = syncSeq.getCurrentPositionInFrames(metro) - length + offset;
                 }
 
                 //                    synchronized ( syncTrack().getMetroTrackLock() ) {

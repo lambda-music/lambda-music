@@ -5,18 +5,15 @@ import java.util.List;
 
 import gnu.mapping.Procedure;
 import metro.MetroPort;
-import metro.MetroSyncType;
 import metro.MetroTrack;
-import metro.MetroTradTrackSynchronizer;
+import metro.MetroSeqSynchronizer;
 
 public class PulsarTrack {
-    public static SchemeSequence createTrack( Object name, Collection<Object> tags, 
-        MetroSyncType syncType, MetroTrack syncTrack, double syncOffset, Procedure procedure ) 
-    {
-        return new SchemeSequence( name, tags, MetroTradTrackSynchronizer.create( syncType, syncTrack, syncOffset), procedure );
+    public static MetroTrack createTrack( Object name, Collection<Object> tags, MetroSeqSynchronizer trackSynchronizer, Procedure procedure ){
+        return new MetroTrack( name, tags, new SchemeSequence( trackSynchronizer, procedure ));
     }
 
-    public static SchemeSequenceRecorder createRecordingTrack( Object name, Collection<Object> tags, 
+    public static MetroTrack createRecordingTrack( Object name, Collection<Object> tags, 
 //        MetroSyncType syncType, 
 //        MetroSyncTrack syncTrack, 
 //        double syncOffset, 
@@ -26,7 +23,7 @@ public class PulsarTrack {
         boolean looper 
         ) 
     {
-        return SchemeSequenceRecorder.create( name, tags, inputPorts, outputPorts, recordLength, looper );
+        return new MetroTrack( name, tags, SchemeRecorderTrackSeq.create( inputPorts, outputPorts, recordLength, looper ));
     }
 
 }
