@@ -28,11 +28,11 @@ import lamu.lib.kawautils.procedures.MultipleNamedProcedure2;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedureN;
 import lamu.lib.log.Logger;
 import metro.MetroPort;
-import metro.MetroSyncSeq;
+import metro.MetroSyncSequence;
 import metro.MetroSyncType;
 import metro.MetroTrack;
-import metro.MetroTradTrackSynchronizer;
-import metro.MetroVoidTrackSeq;
+import metro.MetroTradSequenceSynchronizer;
+import metro.MetroVoidSequence;
 
 public interface PulsarLib {
     Procedure getGetCurrentPulsar();
@@ -1443,7 +1443,7 @@ public interface PulsarLib {
                 if ( Boolean.FALSE.equals( arg1 ) ) { 
                     return Boolean.FALSE;
                 } else {
-                    MetroSyncSeq track = ((MetroSyncSeq)arg1);
+                    MetroSyncSequence track = ((MetroSyncSequence)arg1);
                     double position = track.getPosition( getPulsar() );
                     return SchemeValues.toSchemeNumber( position );
                 }
@@ -1512,7 +1512,7 @@ public interface PulsarLib {
 
                 switch ( args.length  ){
                     case 0 : 
-                        track =  new MetroTrack( null, null, MetroVoidTrackSeq.getInstance() );
+                        track =  new MetroTrack( null, null, MetroVoidSequence.getInstance() );
                     case 1 :
                         name          = null;
                         tags          = null;
@@ -1569,7 +1569,7 @@ public interface PulsarLib {
 
                 
                 if ( track == null ) {
-                    track = PulsarTrack.createTrack( name, tags, MetroTradTrackSynchronizer.create( syncType, syncTrack, syncOffset), procedure);
+                    track = PulsarTrack.createTrack( name, tags, MetroTradSequenceSynchronizer.create( syncType, syncTrack, syncOffset), procedure);
                 }
                 
                 return track;
@@ -1839,7 +1839,7 @@ public interface PulsarLib {
 
             @Override
             void procTrack( List<MetroTrack> trackList, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset ) {
-                getPulsar().removeTrack(trackList, MetroTradTrackSynchronizer.create( syncType, syncTrack, syncOffset ));
+                getPulsar().removeTrack(trackList, MetroTradSequenceSynchronizer.create( syncType, syncTrack, syncOffset ));
             }
         }
 

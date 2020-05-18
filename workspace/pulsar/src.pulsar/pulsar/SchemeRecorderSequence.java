@@ -19,19 +19,19 @@ import metro.MetroMidiEvent;
 import metro.MetroPort;
 import metro.MetroReadable;
 import metro.MetroTrack;
-import metro.MetroTrackSeq;
+import metro.MetroSequence;
 import metro.SimpleMetroEventBuffer;
 
 
-public class SchemeRecorderTrackSeq implements MetroTrackSeq, MetroReadable, Invokable {
+public class SchemeRecorderSequence implements MetroSequence, MetroReadable, Invokable {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }
     static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }
     static void logWarn (String msg             ) { LOGGER.log(Level.WARNING,  msg      ); }
 
-    public static SchemeRecorderTrackSeq create( 
+    public static SchemeRecorderSequence create( 
         List<MetroPort> inputPorts, List<MetroPort> outputPorts, double recordLength, boolean loop ) {
-        return new SchemeRecorderTrackSeq( inputPorts, outputPorts, recordLength, loop );
+        return new SchemeRecorderSequence( inputPorts, outputPorts, recordLength, loop );
     }
 
     final SchemeSimpleMidiReceiver receiver;
@@ -42,7 +42,7 @@ public class SchemeRecorderTrackSeq implements MetroTrackSeq, MetroReadable, Inv
     private boolean loop;
     private volatile LList notations = EmptyList.emptyList;
     
-    public SchemeRecorderTrackSeq( List<MetroPort> inputPorts, List<MetroPort> outputPorts, double recordLength, boolean loop ) {
+    public SchemeRecorderSequence( List<MetroPort> inputPorts, List<MetroPort> outputPorts, double recordLength, boolean loop ) {
         this.inputPorts = inputPorts;
         this.outputPorts = outputPorts;
         this.recordLength = recordLength;

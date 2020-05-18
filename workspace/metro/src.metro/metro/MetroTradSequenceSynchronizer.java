@@ -6,20 +6,20 @@ import java.util.logging.Level;
 
 import lamu.lib.log.Logger;
 
-public class MetroTradTrackSynchronizer implements MetroSeqSynchronizer {
+public class MetroTradSequenceSynchronizer implements MetroSequenceSynchronizer {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
     static final boolean DEBUG = false;
 
-    public static MetroSeqSynchronizer create( MetroSyncType syncType, MetroTrack syncTrack,  double syncOffset) {
-        return new MetroTradTrackSynchronizer(syncType, syncTrack, syncOffset);
+    public static MetroSequenceSynchronizer create( MetroSyncType syncType, MetroTrack syncTrack,  double syncOffset) {
+        return new MetroTradSequenceSynchronizer(syncType, syncTrack, syncOffset);
     }
     MetroSyncType syncType   ;
     MetroTrack syncTrack ; 
     double syncOffset        ;
-    private MetroTradTrackSynchronizer(MetroSyncType syncType, MetroTrack syncTrack, double syncOffset) {
+    private MetroTradSequenceSynchronizer(MetroSyncType syncType, MetroTrack syncTrack, double syncOffset) {
         this.syncType = syncType;
         this.syncTrack = syncTrack;
         this.syncOffset = syncOffset;
@@ -31,7 +31,7 @@ public class MetroTradTrackSynchronizer implements MetroSeqSynchronizer {
         List<MetroTrack> tracks,
         long measureLengthInFrames) 
     {
-        return MetroTradTrackSynchronizer.synchronizeTrack( metro, track, tracks, measureLengthInFrames, syncType, syncTrack, syncOffset );
+        return MetroTradSequenceSynchronizer.synchronizeTrack( metro, track, tracks, measureLengthInFrames, syncType, syncTrack, syncOffset );
     }
     
     public static long synchronizeTrack( 
@@ -43,8 +43,8 @@ public class MetroTradTrackSynchronizer implements MetroSeqSynchronizer {
         MetroTrack syncTrack,
         double syncOffset ) 
     {
-        MetroSyncSeq seq = (MetroSyncSeq)track.getTrack();
-        MetroSyncSeq syncSeq = syncTrack == null ? null : (MetroSyncSeq)syncTrack.getTrack();
+        MetroSyncSequence seq = (MetroSyncSequence)track.getSequence();
+        MetroSyncSequence syncSeq = syncTrack == null ? null : (MetroSyncSequence)syncTrack.getSequence();
         
         long result;
         long offset = (long) ((1.0d * syncOffset) * measureLengthInFrames);

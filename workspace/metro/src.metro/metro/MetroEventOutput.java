@@ -15,7 +15,7 @@ public interface MetroEventOutput {
      * Currently only {@link MetroMidiEvent} class defines a meaningful behavior. 
      * See {@link MetroMidiEvent#processOutput(Collection, List, List, List)}.
      * 
-     * See also {@link MetroBufferedTrackSeq#searchEventBuffer(Metro, java.util.List, List, List, List, List, long, long)}
+     * See also {@link MetroBufferedSequence#searchEventBuffer(Metro, java.util.List, List, List, List, List, long, long)}
      * because it is the only method which calls this method. 
      * 
      * @param output

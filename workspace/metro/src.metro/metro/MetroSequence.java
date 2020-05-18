@@ -2,7 +2,7 @@ package metro;
 
 import java.util.List;
 
-public interface MetroTrackSeq {
+public interface MetroSequence {
     // This method was formerly checkBuffer()
     /**
      * 

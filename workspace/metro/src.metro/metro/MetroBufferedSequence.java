@@ -36,7 +36,7 @@ import lamu.lib.log.Logger;
  * @author Ats Oka
  *
  */
-public abstract class MetroBufferedTrackSeq implements MetroTrackSeq, MetroSyncSeq  {
+public abstract class MetroBufferedSequence implements MetroSyncSequence  {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -107,7 +107,7 @@ public abstract class MetroBufferedTrackSeq implements MetroTrackSeq, MetroSyncS
      * @param sequence
      *            Specifying the sequence object to play.
      */
-    public MetroBufferedTrackSeq( MetroSeqSynchronizer trackSynchronizer ) {
+    public MetroBufferedSequence( MetroSequenceSynchronizer trackSynchronizer ) {
         this.trackSynchronizer = trackSynchronizer;
     }
 //    public MetroBufferedTrack( Object name, Collection<Object> tags, 
@@ -176,7 +176,7 @@ public abstract class MetroBufferedTrackSeq implements MetroTrackSeq, MetroSyncS
     
     // ADDED (Sun, 10 May 2020 02:10:20 +0900) BUFFER_SEQ_NO
     /**
-     * See {@link MetroBufferedTrackSeq#createdBufferSeqNo}
+     * See {@link MetroBufferedSequence#createdBufferSeqNo}
      */
     private volatile long currentBufferSeqNo = SEQ_NO_NOT_INITIALIZED;
 
@@ -466,8 +466,8 @@ public abstract class MetroBufferedTrackSeq implements MetroTrackSeq, MetroSyncS
         endingLength = 0;
     }
     
-    private MetroSeqSynchronizer trackSynchronizer;
-    public MetroSeqSynchronizer getTrackSynchronizer() {
+    private MetroSequenceSynchronizer trackSynchronizer;
+    public MetroSequenceSynchronizer getTrackSynchronizer() {
         return trackSynchronizer;
     }
 
@@ -756,7 +756,7 @@ public abstract class MetroBufferedTrackSeq implements MetroTrackSeq, MetroSyncS
     
     // ADDED (Sun, 10 May 2020 02:10:20 +0900) BUFFER_SEQ_NO
     /**
-     * See {@link MetroBufferedTrackSeq#currentBufferSeqNo
+     * See {@link MetroBufferedSequence#currentBufferSeqNo
      */
     private volatile long createdBufferSeqNo = 0;
     private void initNewBuffer( MetroEventBuffer buf, long barLengthInFrames ) {

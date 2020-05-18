@@ -6,10 +6,10 @@ import java.util.List;
 import gnu.mapping.Procedure;
 import metro.MetroPort;
 import metro.MetroTrack;
-import metro.MetroSeqSynchronizer;
+import metro.MetroSequenceSynchronizer;
 
 public class PulsarTrack {
-    public static MetroTrack createTrack( Object name, Collection<Object> tags, MetroSeqSynchronizer trackSynchronizer, Procedure procedure ){
+    public static MetroTrack createTrack( Object name, Collection<Object> tags, MetroSequenceSynchronizer trackSynchronizer, Procedure procedure ){
         return new MetroTrack( name, tags, new SchemeSequence( trackSynchronizer, procedure ));
     }
 
@@ -23,7 +23,7 @@ public class PulsarTrack {
         boolean looper 
         ) 
     {
-        return new MetroTrack( name, tags, SchemeRecorderTrackSeq.create( inputPorts, outputPorts, recordLength, looper ));
+        return new MetroTrack( name, tags, SchemeRecorderSequence.create( inputPorts, outputPorts, recordLength, looper ));
     }
 
 }

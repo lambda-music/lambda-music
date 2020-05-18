@@ -12,7 +12,7 @@ import java.util.logging.Level;
 
 import lamu.lib.log.Logger;
 
-public class MetroDirectFilterTrackSeq implements MetroTrackSeq {
+public class MetroDirectFilterSequence implements MetroSequence {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -25,7 +25,7 @@ public class MetroDirectFilterTrackSeq implements MetroTrackSeq {
         }
     }
     
-    public MetroDirectFilterTrackSeq( int delay, int threshold, int[] velocityMap, MetroPort inputPort, MetroPort outputPort ) {
+    public MetroDirectFilterSequence( int delay, int threshold, int[] velocityMap, MetroPort inputPort, MetroPort outputPort ) {
         if ( delay < 0 )
             throw new IllegalArgumentException("`delay` cannot be less than zero" );
         if ( threshold < 0 )

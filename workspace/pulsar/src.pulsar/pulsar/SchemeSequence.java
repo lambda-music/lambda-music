@@ -34,12 +34,12 @@ import lamu.lib.kawautils.procedures.MultipleNamedProcedureN;
 import lamu.lib.log.Logger;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
-import metro.MetroBufferedTrackSeq;
+import metro.MetroBufferedSequence;
 import metro.MetroCollector;
 import metro.MetroTrack;
-import metro.MetroSeqSynchronizer;
+import metro.MetroSequenceSynchronizer;
 
-public class SchemeSequence extends MetroBufferedTrackSeq implements Invokable {
+public class SchemeSequence extends MetroBufferedSequence implements Invokable {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
@@ -94,11 +94,11 @@ public class SchemeSequence extends MetroBufferedTrackSeq implements Invokable {
      * 
      */
     final Invokable invokable;
-    public SchemeSequence ( MetroSeqSynchronizer trackSynchronizer, Invokable procedure ) {
+    public SchemeSequence ( MetroSequenceSynchronizer trackSynchronizer, Invokable procedure ) {
         super(trackSynchronizer);
         this.invokable = procedure;
     }
-    public SchemeSequence( MetroSeqSynchronizer trackSynchronizer,  Procedure procedure ) {
+    public SchemeSequence( MetroSequenceSynchronizer trackSynchronizer,  Procedure procedure ) {
         super(trackSynchronizer);
         this.invokable = SchemeInvokable.create(procedure);
     }

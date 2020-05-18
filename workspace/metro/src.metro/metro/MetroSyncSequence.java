@@ -1,6 +1,6 @@
 package metro;
 
-public interface MetroSyncSeq {
+public interface MetroSyncSequence extends MetroSequence {
     // (Tue, 05 May 2020 18:58:13 +0900) This method was formerly getCursor() 
     public abstract long getCurrentPositionInFrames(Metro metro);
     // (Tue, 05 May 2020 18:58:13 +0900) This method was formerly setCursor() 

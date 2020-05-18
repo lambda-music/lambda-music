@@ -11,15 +11,15 @@ public class MetroTrack {
      */
     private final Object name;
     private final Collection<Object> tags;
-    private final MetroTrackSeq track;
+    private final MetroSequence sequence;
     public Object getName() {
         return name;
     }
     public Collection<Object> getTags() {
         return tags;
     }
-    public MetroTrackSeq getTrack() {
-        return track;
+    public MetroSequence getSequence() {
+        return sequence;
     }
     private static volatile int uniqueTrackNameCounter = 0;
     private synchronized static String createUniqueTrackName() {
@@ -33,7 +33,7 @@ public class MetroTrack {
             return name;
         }
     }
-    public MetroTrack(Object name, Collection<Object> tags, MetroTrackSeq track ) {
+    public MetroTrack(Object name, Collection<Object> tags, MetroSequence track ) {
         super();
         if ( name == null )
             this.name = createUniqueTrackName();
@@ -47,9 +47,9 @@ public class MetroTrack {
             this.tags = new ArrayList( tags );
 
         if ( track == null )
-            this.track = MetroVoidTrackSeq.getInstance();
+            this.sequence = MetroVoidSequence.getInstance();
         else
-            this.track = track;
+            this.sequence = track;
     }
 
     @Override
@@ -95,7 +95,7 @@ public class MetroTrack {
     final List<MetroTrack> unregisteringTrack = new ArrayList<>();
 
     // ADDED (Thu, 07 May 2020 13:03:35 +0900)    
-    public void remove(Metro metro, MetroSeqSynchronizer trackSynchronizer ) {
+    public void remove(Metro metro, MetroSequenceSynchronizer trackSynchronizer ) {
         metro.unregisterTrack(this);
     }
     // TODO ADDED (Sat, 09 May 2020 01:33:54 +0900)
