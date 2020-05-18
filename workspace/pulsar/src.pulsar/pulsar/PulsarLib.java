@@ -28,9 +28,10 @@ import lamu.lib.kawautils.procedures.MultipleNamedProcedure2;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedureN;
 import lamu.lib.log.Logger;
 import metro.MetroPort;
-import metro.MetroSyncTrack;
+import metro.MetroSyncTrackAbstract;
 import metro.MetroSyncType;
 import metro.MetroTrack;
+import metro.MetroTradTrackSynchronizer;
 import metro.MetroVoidTrack;
 
 public interface PulsarLib {
@@ -1442,7 +1443,7 @@ public interface PulsarLib {
                 if ( Boolean.FALSE.equals( arg1 ) ) { 
                     return Boolean.FALSE;
                 } else {
-                    MetroSyncTrack track = ((MetroSyncTrack)arg1);
+                    MetroSyncTrackAbstract track = ((MetroSyncTrackAbstract)arg1);
                     double position = track.getPosition( getPulsar() );
                     return SchemeValues.toSchemeNumber( position );
                 }
@@ -1568,10 +1569,10 @@ public interface PulsarLib {
 
                 
                 if ( track == null ) {
-                    if ( syncTrack!=null && !( syncTrack instanceof MetroSyncTrack)) {
+                    if ( syncTrack!=null && !( syncTrack instanceof MetroSyncTrackAbstract)) {
                         throw new IllegalArgumentException( "syncTrack must be a MetroSyncTrack object" );
                     }
-                    track = PulsarTrack.createTrack( name, tags, syncType, (MetroSyncTrack) syncTrack, syncOffset, procedure);
+                    track = PulsarTrack.createTrack( name, tags, syncType, syncTrack, syncOffset, procedure);
                 }
                 
                 return track;
@@ -1841,7 +1842,7 @@ public interface PulsarLib {
 
             @Override
             void procTrack( List<MetroTrack> trackList, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset ) {
-                getPulsar().removeTrack(trackList, syncType, syncTrack, syncOffset);
+                getPulsar().removeTrack(trackList, MetroTradTrackSynchronizer.create( syncType, syncTrack, syncOffset ));
             }
         }
 

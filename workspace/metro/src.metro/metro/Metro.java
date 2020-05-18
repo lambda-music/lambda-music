@@ -999,25 +999,12 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         }
     }
 
-    private void removeFormerTrack(MetroTrack track ) {
-        MetroSyncType syncType;
-        MetroTrack syncTrack;
-        double syncOffset;
-        if (track instanceof MetroSyncTrack ) {
-            MetroSyncTrack st = (MetroSyncTrack) track;
-            syncType = st.getSyncType();
-            syncTrack = st.getSyncTrack();
-            syncOffset = st.getSyncOffset();
-        } else {
-            syncType = MetroSyncType.IMMEDIATE;
-            syncTrack = null;
-            syncOffset = 0.0d;
-        }
-        removeTrack( getTracks( track.getName() ), syncType, syncTrack, syncOffset );
+    private void removeFormerTrack(MetroTrack track, MetroTrackSynchronizer trackSynchronizer ) {
+        removeTrack( getTracks( track.getName() ), trackSynchronizer );
     }
-    private void removeFormerTrack(Collection<MetroTrack> trackList ) {
+    private void removeFormerTrack(Collection<MetroTrack> trackList, MetroTrackSynchronizer trackSynchronizer ) {
         for ( MetroTrack track : trackList ) {
-            removeFormerTrack( track );
+            removeFormerTrack( track, trackSynchronizer );
         }
     }
         
@@ -1027,12 +1014,12 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     }
 
     public void putTrack( Collection<MetroTrack> trackList )  {
-        removeFormerTrack( trackList );
+        removeFormerTrack( trackList, MetroTrackSynchronizer.IMMEDIATE ); // TODO
         registerTrack( trackList );
     }
-    public void removeTrack( Collection<MetroTrack> trackList, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset )  {
+    public void removeTrack( Collection<MetroTrack> trackList, MetroTrackSynchronizer trackSynchronizer )  {
         for ( MetroTrack track : trackList ) {
-            track.remove(this, syncType, syncTrack, syncOffset);
+            track.remove(this, trackSynchronizer );
         }
     }
 

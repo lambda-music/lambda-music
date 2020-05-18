@@ -36,7 +36,7 @@ import lamu.lib.log.Logger;
  * @author Ats Oka
  *
  */
-public abstract class MetroBufferedTrack extends MetroSyncTrack  {
+public abstract class MetroBufferedTrack extends MetroTrack implements MetroSyncTrackAbstract  {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -86,27 +86,11 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
         return this.getCursor();
     }
     @Override
-    public void setCurrentPositionInFrames(Metro metro, long position) {
-        this.setCursor(position);
+    public void setCurrentPositionInFrames(Metro metro, long positionInFrames) {
+        this.setCursor(positionInFrames);
     }
 
-    
-    @Override
-    public void resetSyncStatus() {
-        super.resetSyncStatus();
-        enabled = true;
-        
-        buffers.clear();
-        cursor = 0;
-        lastLengthInFrames = 0;
-        lastAccumulatedLength = 0;
-        
-        ending = false;
-        endingDone = false;
-        endingLength = 0;
-        
-//        eventListenerable.clearEventListeners();
-    }
+
     
     /**
      * Create a MetroTrack object with default synchronizing status.
@@ -123,10 +107,14 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
      * @param sequence
      *            Specifying the sequence object to play.
      */
-    public MetroBufferedTrack( Object name, Collection<Object> tags, 
-        MetroSyncType syncType, MetroSyncTrack syncTrack, double syncOffset) {
-        super(name,tags,syncType,syncTrack,syncOffset);
+    public MetroBufferedTrack( Object name, Collection<Object> tags, MetroTrackSynchronizer trackSynchronizer ) {
+        super(name,tags);
+        this.trackSynchronizer = trackSynchronizer;
     }
+//    public MetroBufferedTrack( Object name, Collection<Object> tags, 
+//        MetroSyncType syncType, MetroSyncTrack syncTrack, double syncOffset) {
+//        super(name,tags,syncType,syncTrack,syncOffset);
+//    }
     
     
 //    public Object getMetroTrackLock() {
@@ -461,6 +449,47 @@ public abstract class MetroBufferedTrack extends MetroSyncTrack  {
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    private volatile boolean syncPrepared = false;
+    public void resetSyncStatus() {
+        syncPrepared = false;
+        enabled = true;
+        
+        buffers.clear();
+        cursor = 0;
+        lastLengthInFrames = 0;
+        lastAccumulatedLength = 0;
+        
+        ending = false;
+        endingDone = false;
+        endingLength = 0;
+    }
+    
+    private MetroTrackSynchronizer trackSynchronizer;
+    public MetroTrackSynchronizer getTrackSynchronizer() {
+        return trackSynchronizer;
+    }
+
+
+    /**
+     * This method will be called only once by the Metro messaging thread when
+     * MetroTrack is added to registered Track.
+     * @param metro TODO
+     * @param tracks TODO
+     * @param measureLengthInFrames
+     * @throws MetroException 
+     */
+    public void synchronizeTrack( Metro metro, List<MetroTrack> tracks, long measureLengthInFrames ) throws MetroException {
+        if ( ! this.syncPrepared ) {
+            this.syncPrepared = true;
+            long positionInFrames = 
+                this.trackSynchronizer.syncronizeTrack( metro, this, tracks, measureLengthInFrames );
+            this.setCurrentPositionInFrames(metro, positionInFrames);
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private volatile long lastMeasureLengthInFrames = -1;
     /**

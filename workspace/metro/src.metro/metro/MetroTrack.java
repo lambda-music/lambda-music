@@ -99,7 +99,7 @@ public abstract class MetroTrack implements MetroAbstractTrack {
     final List<MetroTrack> unregisteringTrack = new ArrayList<>();
 
     // ADDED (Thu, 07 May 2020 13:03:35 +0900)    
-    public void remove(Metro metro, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset ) {
+    public void remove(Metro metro, MetroTrackSynchronizer trackSynchronizer ) {
         metro.unregisterTrack(this);
     }
     // TODO ADDED (Sat, 09 May 2020 01:33:54 +0900)
