@@ -7,7 +7,7 @@ public interface MetroTrackSynchronizer {
         return new MetroTrackSynchronizer() {
             @Override
             public long syncronizeTrack(
-                Metro metro, MetroSyncTrackAbstract track, 
+                Metro metro, MetroSynchronizedTrack track, 
                 List<MetroTrack> tracks,
                 long measureLengthInFrames) {
                 return delay;
@@ -15,5 +15,5 @@ public interface MetroTrackSynchronizer {
         };
     }
     public static final MetroTrackSynchronizer IMMEDIATE = create(0);
-    long syncronizeTrack( Metro metro, MetroSyncTrackAbstract track, List<MetroTrack> tracks, long measureLengthInFrames );
+    long syncronizeTrack( Metro metro, MetroSynchronizedTrack track, List<MetroTrack> tracks, long measureLengthInFrames );
 }

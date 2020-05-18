@@ -76,7 +76,7 @@ import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroCollector;
 import metro.MetroPort;
-import metro.MetroSyncTrackAbstract;
+import metro.MetroSynchronizedTrack;
 import metro.MetroSyncType;
 import metro.MetroTrack;
 import metro.MetroTradTrackSynchronizer;
@@ -498,7 +498,7 @@ public class PulsarSpecialNoteListParsers {
                 else
                     syncTrack = searchSyncTrack( pulsar, syncTrackId );
                 
-                if ( !(syncTrack instanceof MetroSyncTrackAbstract)) {
+                if ( !(syncTrack instanceof MetroSynchronizedTrack)) {
                     // is throwing exception here allowed?? (Tue, 05 May 2020 16:27:20 +0900) 
                     throw new IllegalArgumentException("syncType must be a sync track" );
                 }
