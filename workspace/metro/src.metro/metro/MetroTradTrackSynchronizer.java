@@ -17,32 +17,32 @@ public class MetroTradTrackSynchronizer implements MetroTrackSynchronizer {
         return new MetroTradTrackSynchronizer(syncType, syncTrack, syncOffset);
     }
     MetroSyncType syncType   ;
-    MetroSynchronizedTrack syncTrack ; 
+    MetroSyncTrack syncTrack ; 
     double syncOffset        ;
-    private MetroTradTrackSynchronizer(MetroSyncType syncType, MetroSynchronizedTrack syncTrack, double syncOffset) {
+    private MetroTradTrackSynchronizer(MetroSyncType syncType, MetroSyncTrack syncTrack, double syncOffset) {
         this.syncType = syncType;
         this.syncTrack = syncTrack;
         this.syncOffset = syncOffset;
     }
     private MetroTradTrackSynchronizer(MetroSyncType syncType, MetroTrack syncTrack, double syncOffset) {
-        if ( syncTrack != null &&  !(syncTrack instanceof MetroSynchronizedTrack) )
+        if ( syncTrack != null &&  !(syncTrack instanceof MetroSyncTrack) )
             throw new IllegalArgumentException( );
         this.syncType = syncType;
-        this.syncTrack = (MetroSynchronizedTrack)syncTrack;
+        this.syncTrack = (MetroSyncTrack)syncTrack;
         this.syncOffset = syncOffset;
     }
     @Override
     public long syncronizeTrack(
         Metro metro, 
-        MetroSynchronizedTrack track, 
+        MetroSyncTrack track, 
         List<MetroTrack> tracks,
         long measureLengthInFrames) 
     {
         return MetroTradTrackSynchronizer.synchronizeTrack( metro, track, tracks, measureLengthInFrames, syncType, syncTrack, syncOffset );
     }
     
-    public static long synchronizeTrack( Metro metro, MetroSynchronizedTrack track, List<MetroTrack> tracks, long measureLengthInFrames, 
-        MetroSyncType syncType, MetroSynchronizedTrack syncTrack, double syncOffset ) 
+    public static long synchronizeTrack( Metro metro, MetroSyncTrack track, List<MetroTrack> tracks, long measureLengthInFrames, 
+        MetroSyncType syncType, MetroSyncTrack syncTrack, double syncOffset ) 
     {
         long result;
         long offset = (long) ((1.0d * syncOffset) * measureLengthInFrames);

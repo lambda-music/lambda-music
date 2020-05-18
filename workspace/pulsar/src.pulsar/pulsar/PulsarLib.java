@@ -28,7 +28,7 @@ import lamu.lib.kawautils.procedures.MultipleNamedProcedure2;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedureN;
 import lamu.lib.log.Logger;
 import metro.MetroPort;
-import metro.MetroSynchronizedTrack;
+import metro.MetroSyncTrack;
 import metro.MetroSyncType;
 import metro.MetroTrack;
 import metro.MetroTradTrackSynchronizer;
@@ -1443,7 +1443,7 @@ public interface PulsarLib {
                 if ( Boolean.FALSE.equals( arg1 ) ) { 
                     return Boolean.FALSE;
                 } else {
-                    MetroSynchronizedTrack track = ((MetroSynchronizedTrack)arg1);
+                    MetroSyncTrack track = ((MetroSyncTrack)arg1);
                     double position = track.getPosition( getPulsar() );
                     return SchemeValues.toSchemeNumber( position );
                 }
@@ -1569,7 +1569,7 @@ public interface PulsarLib {
 
                 
                 if ( track == null ) {
-                    if ( syncTrack!=null && !( syncTrack instanceof MetroSynchronizedTrack)) {
+                    if ( syncTrack!=null && !( syncTrack instanceof MetroSyncTrack)) {
                         throw new IllegalArgumentException( "syncTrack must be a MetroSyncTrack object" );
                     }
                     track = PulsarTrack.createTrack( name, tags, syncType, syncTrack, syncOffset, procedure);

@@ -36,7 +36,7 @@ import lamu.lib.log.Logger;
  * @author Ats Oka
  *
  */
-public abstract class MetroBufferedTrack extends MetroTrack implements MetroSynchronizedTrack  {
+public abstract class MetroBufferedTrack extends MetroTrack implements MetroSyncTrack  {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
