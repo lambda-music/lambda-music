@@ -23,6 +23,7 @@ package metro;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -36,7 +37,7 @@ import lamu.lib.log.Logger;
  * @author Ats Oka
  *
  */
-public abstract class MetroBufferedSequence implements MetroSyncSequence  {
+public abstract class MetroBufferedSequence implements MetroSequence, MetroSynchronizable, MetroSynchronizedStarter, MetroSynchronizedStopper  {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -107,8 +108,8 @@ public abstract class MetroBufferedSequence implements MetroSyncSequence  {
      * @param sequence
      *            Specifying the sequence object to play.
      */
-    public MetroBufferedSequence( MetroSequenceSynchronizer trackSynchronizer ) {
-        this.trackSynchronizer = trackSynchronizer;
+    public MetroBufferedSequence() {
+        this.startSynchronizer = MetroTrackSynchronizer.IMMEDIATE;
     }
 //    public MetroBufferedTrack( Object name, Collection<Object> tags, 
 //        MetroSyncType syncType, MetroSyncTrack syncTrack, double syncOffset) {
@@ -466,9 +467,24 @@ public abstract class MetroBufferedSequence implements MetroSyncSequence  {
         endingLength = 0;
     }
     
-    private MetroSequenceSynchronizer trackSynchronizer;
-    public MetroSequenceSynchronizer getTrackSynchronizer() {
-        return trackSynchronizer;
+    private MetroTrackSynchronizer startSynchronizer = MetroTrackSynchronizer.IMMEDIATE;
+;
+    @Override
+    public MetroTrackSynchronizer getStartSynchronizer() {
+        return startSynchronizer;
+    }
+    @Override
+    public void setStartSynchronizer(MetroTrackSynchronizer startSynchronizer) {
+        this.startSynchronizer = startSynchronizer == null ?  MetroTrackSynchronizer.IMMEDIATE : startSynchronizer;
+    }
+    private MetroTrackSynchronizer stopSynchronizer=MetroTrackSynchronizer.IMMEDIATE;
+    @Override
+    public MetroTrackSynchronizer getStopSynchronizer() {
+        return stopSynchronizer ;
+    }
+    @Override
+    public void setStopSynchronizer(MetroTrackSynchronizer stopSynchronizer) {
+        this.stopSynchronizer = stopSynchronizer == null ? MetroTrackSynchronizer.IMMEDIATE : stopSynchronizer;
     }
 
 
@@ -485,7 +501,7 @@ public abstract class MetroBufferedSequence implements MetroSyncSequence  {
         if ( ! this.syncPrepared ) {
             this.syncPrepared = true;
             long positionInFrames = 
-                this.trackSynchronizer.syncronizeTrack( metro, track, tracks, measureLengthInFrames );
+                this.startSynchronizer.syncronizeTrack( metro, track, tracks, measureLengthInFrames );
             this.setCurrentPositionInFrames(metro, positionInFrames);
         }
     }
@@ -792,7 +808,7 @@ public abstract class MetroBufferedSequence implements MetroSyncSequence  {
                                 logInfo( "offerNewBuffer(" + track.getName() + ") UNREGISTER THIS" );
                             synchronized ( metro.getMetroLock() ) {
                                 try {
-                                    metro.unregisterTrack( track );
+                                    metro.unregisterTrack( Arrays.asList( track ) );
                                 } finally {
                                     metro.notifyTrackChange("update");
                                 }

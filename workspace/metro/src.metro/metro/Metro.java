@@ -332,7 +332,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         return getTracks( MetroTrackSelector.createNameSelector( name ));
     }
     public List<MetroTrack> getTracks( Collection<? extends Object> tags ) {
-        return getTracks( MetroTrackSelector.createOrSelector( tags ));
+        return getTracks( MetroTrackSelector.createTagOrSelector( tags ));
     }
 
 
@@ -909,23 +909,6 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
      * @see {@link #registerTrack(MetroTrack)}
      * @param track
      */
-    public void registerTrack( MetroTrack track ) {
-        checkState();
-        if ( DEBUG ) 
-            logInfo( "MetroTrack#registerTrack(MetroTrack)" );
-        
-        if ( track == null )
-            throw new NullPointerException( "track is null" );
-        
-        synchronized (getMetroLock()) {
-            this.registeredTracks.add( track );
-            // ADDED (Sun, 10 May 2020 23:10:26 +0900)
-            notifyTrackChange("register-track");
-        }
-        if ( Metro.mainTrackId.equals( track.getName() ) ) {
-            this.mainTrack = track;
-        }
-    }
     public void registerTrack( Collection<MetroTrack> trackList ) {
         checkState();
         if ( DEBUG ) 
@@ -933,12 +916,14 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         
         if ( trackList == null )
             throw new NullPointerException( "the passed list is null" );
-        
+
         synchronized (getMetroLock()) {
             this.registeredTracks.addAll( trackList );
             // ADDED (Sun, 10 May 2020 23:10:26 +0900)
             notifyTrackChange("register-track");
         }
+        
+        // ???
         for ( MetroTrack track : trackList ) {
             if ( Metro.mainTrackId.equals( track.getName() ) ) {
                 this.mainTrack = track;
@@ -953,20 +938,6 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
      * @see {@link #registerTrack(MetroTrack)}
      * @param track
      */
-    public void unregisterTrack( MetroTrack track ) {
-        checkState();
-
-        if ( DEBUG ) { 
-            logInfo( "****** DESTROYED a track is destroyed " + ( track == null ? "(null track)" : track.getUniqueID() ) );
-        }
-        if ( track == null )
-            throw new NullPointerException( "track was null" );
-        synchronized (getMetroLock()) {
-            this.unregisteredTracks.add( track );
-            // ADDED (Sun, 10 May 2020 23:10:26 +0900)
-            notifyTrackChange("unregister-track");
-        }
-    }
     public void unregisterTrack( Collection<MetroTrack> trackList ) {
         checkState();
 
@@ -999,25 +970,51 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         }
     }
 
-    private void removeFormerTrack(MetroTrack track, MetroSequenceSynchronizer trackSynchronizer ) {
+    private void removeFormerTrack(MetroTrack track, MetroTrackSynchronizer trackSynchronizer ) {
         removeTrack( getTracks( track.getName() ), trackSynchronizer );
     }
-    private void removeFormerTrack(Collection<MetroTrack> trackList, MetroSequenceSynchronizer trackSynchronizer ) {
+    private void removeFormerTrack(Collection<MetroTrack> trackList, MetroTrackSynchronizer trackSynchronizer ) {
         for ( MetroTrack track : trackList ) {
             removeFormerTrack( track, trackSynchronizer );
         }
     }
         
-    public void putTrack(List<MetroTrack> trackList, MetroSyncType syncType, MetroTrack syncTrack, double syncOffset) {
-        // TODO
-        putTrack( trackList );
+    public void putTrack( MetroTrack track )  {
+        putTrack( Arrays.asList(track), null );
     }
-
-    public void putTrack( Collection<MetroTrack> trackList )  {
-        removeFormerTrack( trackList, MetroSequenceSynchronizer.IMMEDIATE ); // TODO
+    public void putTrack( List<MetroTrack> trackList )  {
+        putTrack( trackList, null );
+    }
+    public void putTrack( List<MetroTrack> trackList, MetroTrackSynchronizer trackSynchronizer )  {
+        removeFormerTrack( trackList, trackSynchronizer );
+        
+        // Set the track synchronizer to the tracks.
+        if ( trackSynchronizer != null ) {
+            for ( MetroTrack track : trackList ) { 
+                MetroSequence sequence = track.getSequence();
+                if ( sequence instanceof MetroSynchronizedStarter ) {
+                    ((MetroSynchronizedStarter)sequence).setStartSynchronizer(trackSynchronizer);
+                }
+            }
+        }
         registerTrack( trackList );
     }
-    public void removeTrack( Collection<MetroTrack> trackList, MetroSequenceSynchronizer trackSynchronizer )  {
+    public void removeTrack( Collection<MetroTrack> trackList )  {
+        removeTrack( trackList, null );
+    }
+
+    public void removeTrack( Collection<MetroTrack> trackList, MetroTrackSynchronizer trackSynchronizer )  {
+        // Set the track synchronizer to the tracks.
+        if ( trackSynchronizer != null ) {
+            for ( MetroTrack track : trackList ) { 
+                MetroSequence sequence = track.getSequence();
+                if ( sequence instanceof MetroSynchronizedStopper ) {
+                    ((MetroSynchronizedStopper)sequence).setStopSynchronizer(trackSynchronizer);
+                }
+            }
+        }
+
+        // TODO
         for ( MetroTrack track : trackList ) {
             track.remove(this, trackSynchronizer );
         }

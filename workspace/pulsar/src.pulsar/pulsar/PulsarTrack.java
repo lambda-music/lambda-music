@@ -1,19 +1,16 @@
 package pulsar;
 
-import java.util.Collection;
 import java.util.List;
 
 import gnu.mapping.Procedure;
 import metro.MetroPort;
-import metro.MetroTrack;
-import metro.MetroSequenceSynchronizer;
+import metro.MetroSequence;
 
 public class PulsarTrack {
-    public static MetroTrack createTrack( Object name, Collection<Object> tags, MetroSequenceSynchronizer trackSynchronizer, Procedure procedure ){
-        return new MetroTrack( name, tags, new SchemeSequence( trackSynchronizer, procedure ));
+    public static SchemeSequence createSequence( Procedure procedure ){
+        return new SchemeSequence( procedure );
     }
-
-    public static MetroTrack createRecordingTrack( Object name, Collection<Object> tags, 
+    public static MetroSequence createRecordingTrack(  
 //        MetroSyncType syncType, 
 //        MetroSyncTrack syncTrack, 
 //        double syncOffset, 
@@ -23,7 +20,7 @@ public class PulsarTrack {
         boolean looper 
         ) 
     {
-        return new MetroTrack( name, tags, SchemeRecorderSequence.create( inputPorts, outputPorts, recordLength, looper ));
+        return SchemeRecorderSequence.create( inputPorts, outputPorts, recordLength, looper );
     }
 
 }

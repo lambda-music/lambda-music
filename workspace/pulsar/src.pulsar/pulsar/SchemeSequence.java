@@ -37,7 +37,6 @@ import metro.MetroBufferedMidiReceiver;
 import metro.MetroBufferedSequence;
 import metro.MetroCollector;
 import metro.MetroTrack;
-import metro.MetroSequenceSynchronizer;
 
 public class SchemeSequence extends MetroBufferedSequence implements Invokable {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -94,12 +93,10 @@ public class SchemeSequence extends MetroBufferedSequence implements Invokable {
      * 
      */
     final Invokable invokable;
-    public SchemeSequence ( MetroSequenceSynchronizer trackSynchronizer, Invokable procedure ) {
-        super(trackSynchronizer);
+    public SchemeSequence ( Invokable procedure ) {
         this.invokable = procedure;
     }
-    public SchemeSequence( MetroSequenceSynchronizer trackSynchronizer,  Procedure procedure ) {
-        super(trackSynchronizer);
+    public SchemeSequence( Procedure procedure ) {
         this.invokable = SchemeInvokable.create(procedure);
     }
     @Override

@@ -6,14 +6,14 @@ import java.util.logging.Level;
 
 import lamu.lib.log.Logger;
 
-public class MetroTradSequenceSynchronizer implements MetroSequenceSynchronizer {
+public class MetroTradSequenceSynchronizer implements MetroTrackSynchronizer {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
     static final boolean DEBUG = false;
 
-    public static MetroSequenceSynchronizer create( MetroSyncType syncType, MetroTrack syncTrack,  double syncOffset) {
+    public static MetroTrackSynchronizer create( MetroSyncType syncType, MetroTrack syncTrack,  double syncOffset) {
         return new MetroTradSequenceSynchronizer(syncType, syncTrack, syncOffset);
     }
     MetroSyncType syncType   ;
@@ -43,8 +43,8 @@ public class MetroTradSequenceSynchronizer implements MetroSequenceSynchronizer 
         MetroTrack syncTrack,
         double syncOffset ) 
     {
-        MetroSyncSequence seq = (MetroSyncSequence)track.getSequence();
-        MetroSyncSequence syncSeq = syncTrack == null ? null : (MetroSyncSequence)syncTrack.getSequence();
+        MetroSynchronizable seq = (MetroSynchronizable)track.getSequence();
+        MetroSynchronizable syncSeq = syncTrack == null ? null : (MetroSynchronizable)syncTrack.getSequence();
         
         long result;
         long offset = (long) ((1.0d * syncOffset) * measureLengthInFrames);

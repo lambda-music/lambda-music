@@ -76,9 +76,10 @@ import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroCollector;
 import metro.MetroPort;
-import metro.MetroSyncSequence;
 import metro.MetroSyncType;
+import metro.MetroSynchronizable;
 import metro.MetroTrack;
+import metro.MetroTrackSynchronizer;
 import metro.MetroTradSequenceSynchronizer;
 
 /**
@@ -498,7 +499,7 @@ public class PulsarSpecialNoteListParsers {
                 else
                     syncTrack = searchSyncTrack( pulsar, syncTrackId );
                 
-                if ( !(syncTrack instanceof MetroSyncSequence)) {
+                if ( !(syncTrack instanceof MetroSynchronizable)) {
                     // is throwing exception here allowed?? (Tue, 05 May 2020 16:27:20 +0900) 
                     throw new IllegalArgumentException("syncType must be a sync track" );
                 }
@@ -509,10 +510,7 @@ public class PulsarSpecialNoteListParsers {
                     // track.setSyncStatus( syncType, (MetroSyncTrack) syncTrack, syncOffset );
                     // pulsar.registerTrack( track );
                     pulsar.putTrack( 
-                        Arrays.asList(
-                            PulsarTrack.createTrack(
-                                id, tags, MetroTradSequenceSynchronizer.create(
-                                    syncType, syncTrack, syncOffset), procedure )));
+                            MetroTrack.create(id, tags, PulsarTrack.createSequence(procedure)));
                     
                     // INTEGRATED (Wed, 06 May 2020 02:35:15 +0900) <<<
                 } finally {
@@ -660,13 +658,7 @@ public class PulsarSpecialNoteListParsers {
         }
         @Override
         void removeTrackProc(Metro metro, MetroTrack track) {
-            synchronized ( metro.getMetroLock() ) {
-                try {
-                    metro.unregisterTrack(track);
-                } finally {
-                    metro.notifyTrackChange("update");
-                }
-            }
+            metro.removeTrack( Arrays.asList(track), MetroTrackSynchronizer.IMMEDIATE);
         }
     }
     
@@ -680,8 +672,7 @@ public class PulsarSpecialNoteListParsers {
         }
         @Override
         void removeTrackProc(Metro metro, MetroTrack track) {
-            track.remove(metro, MetroSyncType.IMMEDIATE);
-//            ((MetroBufferedTrack) track).removeGracefully(this);
+            metro.removeTrack( Arrays.asList(track), MetroTrackSynchronizer.IMMEDIATE);
         }
     }
 

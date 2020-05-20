@@ -1,11 +1,26 @@
 package metro;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 public class MetroTrack {
+    public static MetroTrack create( Object name, Collection<Object> tags, MetroSequence sequence ){
+        return new MetroTrack( name, tags, sequence );
+    }
+    public static MetroTrack create( Object name, Collection<Object> tags, MetroSequence sequence,
+        MetroTrackSynchronizer startSynchronizer,
+        MetroTrackSynchronizer stopSynchronizer )
+    {
+        MetroTrack metroTrack = new MetroTrack( name, tags, sequence );
+        if ( sequence instanceof MetroSynchronizedStarter )
+            ((MetroSynchronizedStarter)sequence).setStartSynchronizer(startSynchronizer);
+        if ( sequence instanceof MetroSynchronizedStopper )
+            ((MetroSynchronizedStopper)sequence).setStopSynchronizer(stopSynchronizer);
+        return metroTrack;
+    }
     /**
      * Note that the String object which is stored in name field must be interned.  
      */
@@ -33,7 +48,14 @@ public class MetroTrack {
             return name;
         }
     }
-    public MetroTrack(Object name, Collection<Object> tags, MetroSequence track ) {
+    /**
+     * This constructor should be called only by {@link Metro#putTrack(Collection, MetroTrackSynchronizer)}
+     *  
+     * @param name
+     * @param tags
+     * @param sequence
+     */
+    MetroTrack(Object name, Collection<Object> tags, MetroSequence sequence ) {
         super();
         if ( name == null )
             this.name = createUniqueTrackName();
@@ -46,10 +68,10 @@ public class MetroTrack {
         else
             this.tags = new ArrayList( tags );
 
-        if ( track == null )
+        if ( sequence == null )
             this.sequence = MetroVoidSequence.getInstance();
         else
-            this.sequence = track;
+            this.sequence = sequence;
     }
 
     @Override
@@ -83,11 +105,10 @@ public class MetroTrack {
     /*
      * This value is only for debugging purpose. 
      */
-    private final long uniqueID = (int) (Math.random()* Long.MAX_VALUE);
+    private final long uniqueID = (int)(Math.random() * Long.MAX_VALUE);
     long getUniqueID() {
         return uniqueID;
     }
-
     
     final List<MetroMidiEvent> inputMidiEventList = new ArrayList<>();
     final List<MetroMidiEvent> outputMidiEventList = new ArrayList<>();
@@ -95,12 +116,19 @@ public class MetroTrack {
     final List<MetroTrack> unregisteringTrack = new ArrayList<>();
 
     // ADDED (Thu, 07 May 2020 13:03:35 +0900)    
-    public void remove(Metro metro, MetroSequenceSynchronizer trackSynchronizer ) {
-        metro.unregisterTrack(this);
+    /**
+     *  TODO
+     * @param metro
+     * @param trackSynchronizer
+     */
+    public void remove( Metro metro, MetroTrackSynchronizer trackSynchronizer ) {
+        MetroSequence sequence = this.getSequence();
+        if ( sequence instanceof MetroSynchronizedStopper ) {
+            ((MetroSynchronizedStopper)sequence).setStopSynchronizer(trackSynchronizer);
+        }
+        metro.unregisterTrack(Arrays.asList(this));
     }
-    // TODO ADDED (Sat, 09 May 2020 01:33:54 +0900)
-    public void remove(Metro metro, MetroSyncType syncType  ) {
-        metro.unregisterTrack(this);
+    public void remove( Metro metro ) {
+        remove( metro, null);
     }
-
 }
