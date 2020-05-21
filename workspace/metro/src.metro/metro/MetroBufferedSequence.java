@@ -109,7 +109,7 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
      *            Specifying the sequence object to play.
      */
     public MetroBufferedSequence() {
-        this.startSynchronizer = MetroTrackSynchronizer.IMMEDIATE;
+        this.startSynchronizer = MetroTrackSynchronizerBasic.immediate();
     }
 //    public MetroBufferedTrack( Object name, Collection<Object> tags, 
 //        MetroSyncType syncType, MetroSyncTrack syncTrack, double syncOffset) {
@@ -467,7 +467,7 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
         endingLength = 0;
     }
     
-    private MetroTrackSynchronizer startSynchronizer = MetroTrackSynchronizer.IMMEDIATE;
+    private MetroTrackSynchronizer startSynchronizer = MetroTrackSynchronizerBasic.immediate();
 ;
     @Override
     public MetroTrackSynchronizer getStartSynchronizer() {
@@ -475,16 +475,16 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
     }
     @Override
     public void setStartSynchronizer(MetroTrackSynchronizer startSynchronizer) {
-        this.startSynchronizer = startSynchronizer == null ?  MetroTrackSynchronizer.IMMEDIATE : startSynchronizer;
+        this.startSynchronizer = startSynchronizer == null ?  MetroTrackSynchronizerBasic.immediate() : startSynchronizer;
     }
-    private MetroTrackSynchronizer stopSynchronizer=MetroTrackSynchronizer.IMMEDIATE;
+    private MetroTrackSynchronizer stopSynchronizer=MetroTrackSynchronizerBasic.immediate();
     @Override
     public MetroTrackSynchronizer getStopSynchronizer() {
         return stopSynchronizer ;
     }
     @Override
     public void setStopSynchronizer(MetroTrackSynchronizer stopSynchronizer) {
-        this.stopSynchronizer = stopSynchronizer == null ? MetroTrackSynchronizer.IMMEDIATE : stopSynchronizer;
+        this.stopSynchronizer = stopSynchronizer == null ? MetroTrackSynchronizerBasic.immediate() : stopSynchronizer;
     }
 
 

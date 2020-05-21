@@ -106,14 +106,15 @@ public class Pulsar extends Metro implements PulsarLib, PulsarLibDelegator, Appl
     }
 
     public static final String DOCS_ID = "pulsar-procedures";
-
+    
+    public static final Object MAIN_TRACK_NAME = Symbol.valueOf( "main" );
     static {
         /*
          *  Replace the main track id when Pulsar class is loaded to VM.
          *  Since here, the entire system can refer the main track as a Scheme's symbol.
          *  (Tue, 07 Jan 2020 20:05:06 +0900)
          */
-        Metro.setMainTrackId( Symbol.valueOf( "main" ) );
+        Metro.setMainTrackName( MAIN_TRACK_NAME );
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////

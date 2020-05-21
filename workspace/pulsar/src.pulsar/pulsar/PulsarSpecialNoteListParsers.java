@@ -79,7 +79,7 @@ import metro.MetroPort;
 import metro.MetroSyncType;
 import metro.MetroSynchronizable;
 import metro.MetroTrack;
-import metro.MetroTrackSynchronizer;
+import metro.MetroTrackSynchronizerBasic;
 import metro.MetroTradSequenceSynchronizer;
 
 /**
@@ -658,7 +658,7 @@ public class PulsarSpecialNoteListParsers {
         }
         @Override
         void removeTrackProc(Metro metro, MetroTrack track) {
-            metro.removeTrack( Arrays.asList(track), MetroTrackSynchronizer.IMMEDIATE);
+            metro.removeTrack( Arrays.asList(track), MetroTrackSynchronizerBasic.immediate());
         }
     }
     
@@ -672,7 +672,7 @@ public class PulsarSpecialNoteListParsers {
         }
         @Override
         void removeTrackProc(Metro metro, MetroTrack track) {
-            metro.removeTrack( Arrays.asList(track), MetroTrackSynchronizer.IMMEDIATE);
+            metro.removeTrack( Arrays.asList(track), MetroTrackSynchronizerBasic.immediate());
         }
     }
 

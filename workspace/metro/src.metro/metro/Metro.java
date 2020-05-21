@@ -63,9 +63,12 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
     private final Object lock = new Object();
     
-    public static Object mainTrackId = new Object();
-    public static synchronized void setMainTrackId( Object id ) {
-        Metro.mainTrackId = id;
+    public static Object mainTrackName = new Object();
+    public static synchronized void setMainTrackName( Object name ) {
+        Metro.mainTrackName = name;
+    }
+    public static synchronized Object getMainTrackName() {
+        return Metro.mainTrackName;
     }
     
     
@@ -329,10 +332,10 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         return getTracks( MetroTrackSelector.createLinewiseInvokableSelector(invokable) );
     }
     public List<MetroTrack> getTracks( Object name ) {
-        return getTracks( MetroTrackSelector.createNameSelector( name ));
+        return getTracks( MetroTrackSelector.nameSelector( name ));
     }
     public List<MetroTrack> getTracks( Collection<? extends Object> tags ) {
-        return getTracks( MetroTrackSelector.createTagOrSelector( tags ));
+        return getTracks( MetroTrackSelector.tagOrSelector( tags ));
     }
 
 
@@ -925,7 +928,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
         
         // ???
         for ( MetroTrack track : trackList ) {
-            if ( Metro.mainTrackId.equals( track.getName() ) ) {
+            if ( Metro.mainTrackName.equals( track.getName() ) ) {
                 this.mainTrack = track;
                 break;
             }
