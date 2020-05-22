@@ -86,7 +86,7 @@ class DefaultMetroEventMidiEvent extends DefaultMetroEvent implements MetroMidiE
     public void processOutput(
         Collection<MetroMidiEvent> output, 
         List<MetroTrack> tracks, 
-        List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList) 
+        List<MetroTrack> registeringTracks, List<MetroTrack> unregisteringTracks) 
     {
         output.add(this);
     }

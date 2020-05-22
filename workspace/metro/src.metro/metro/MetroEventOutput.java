@@ -20,12 +20,12 @@ public interface MetroEventOutput {
      * 
      * @param output
      * @param tracks TODO
-     * @param registeringTrackList TODO
-     * @param unregisteringTrackList TODO
+     * @param registeringTracks TODO
+     * @param unregisteringTracks TODO
      */
     public void processOutput( 
         Collection<MetroMidiEvent> output, 
         List<MetroTrack> tracks, 
-        List<MetroTrack> registeringTrackList,
-        List<MetroTrack> unregisteringTrackList ); 
+        List<MetroTrack> registeringTracks,
+        List<MetroTrack> unregisteringTracks ); 
 }

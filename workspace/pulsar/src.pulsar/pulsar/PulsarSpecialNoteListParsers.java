@@ -398,8 +398,7 @@ public class PulsarSpecialNoteListParsers {
             
             Object[] args = {};
             // See the note ... XXX_SYNC_01
-            ((MetroBufferedMidiReceiver<T>) buffer).exec( offset, 
-                    SchemeInvokable.createRunnable( procedure0, args ));
+             buffer.exec( offset,SchemeInvokable.createRunnable( procedure0, args ));
         }
         
         public LList exec(double offset, Runnable runnable) {

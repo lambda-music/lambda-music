@@ -3,8 +3,7 @@ package pulsar;
 import gnu.lists.LList;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroPort;
-import metro.MetroSelector;
-import metro.MetroTrack;
+import metro.MetroTrackManipulator;
 
 public class SchemeBufferedMidiReceiver implements MetroBufferedMidiReceiver<LList> {
     public static final SchemeBufferedMidiReceiver INSTANCE = new SchemeBufferedMidiReceiver();
@@ -40,7 +39,7 @@ public class SchemeBufferedMidiReceiver implements MetroBufferedMidiReceiver<LLi
         return null;
     }
     @Override
-    public LList tracks(double offset, String operation, MetroSelector<MetroTrack> trackSelector) {
+    public LList tracks(double offset, MetroTrackManipulator trackManipulator) {
         // (Sat, 16 May 2020 12:09:39 +0900) 
         // This method cannot be achieved.
         return null;

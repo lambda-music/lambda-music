@@ -311,11 +311,11 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
     public void progressCursor( Metro metro, MetroTrack track,
         long nframes, 
         long measureLengthInFrames, 
-        List<MetroMidiEvent> inputMidiEventList, 
-        List<MetroMidiEvent> outputMidiEventList, 
+        List<MetroMidiEvent> inputMidiEvents, 
+        List<MetroMidiEvent> outputMidiEvents, 
         List<MetroTrack> tracks, 
-        List<MetroTrack> registeringTrackList, 
-        List<MetroTrack> unregisteringTrackList ) throws MetroException 
+        List<MetroTrack> registeringTracks, 
+        List<MetroTrack> unregisteringTracks ) throws MetroException 
     {
         // Before everything, initialize synchronizing status with the track.
         // In most case, this method does nothing and returns immediately.
@@ -363,9 +363,9 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
                 // Search all of the corresponding events and process  them. 
                 searchEventBuffer( metro, 
                     buf.getMetroEventList(),
-                    outputMidiEventList, 
+                    outputMidiEvents, 
                     tracks, 
-                    registeringTrackList, unregisteringTrackList, from, to );
+                    registeringTracks, unregisteringTracks, from, to );
 
                 // move the cursor offset.
                 cursorOffset = cursorOffset + buf.getLengthInFrames();

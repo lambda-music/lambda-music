@@ -32,9 +32,9 @@ public class MetroThruSequence implements MetroSequence {
     public void progressCursor(
         Metro metro, MetroTrack track, 
         long nframes,
-        long measureLengthInFrames, List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList, List<MetroTrack> tracks, List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList) throws MetroException 
+        long measureLengthInFrames, List<MetroMidiEvent> inputMidiEvents, List<MetroMidiEvent> outputMidiEvents, List<MetroTrack> tracks, List<MetroTrack> registeringTracks, List<MetroTrack> unregisteringTracks) throws MetroException 
     {
-        MetroDirectFilterSequence.bufferReplacePort( inputMidiEventList, inputPort , outputPort );
-        outputMidiEventList.addAll(inputMidiEventList);
+        MetroDirectFilterSequence.bufferReplacePort( inputMidiEvents, inputPort , outputPort );
+        outputMidiEvents.addAll(inputMidiEvents);
     }
 }

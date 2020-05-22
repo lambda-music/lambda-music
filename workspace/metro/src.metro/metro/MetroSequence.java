@@ -19,18 +19,18 @@ public interface MetroSequence {
      * @param track
      * @param nframes
      * @param measureLengthInFrames
-     * @param inputMidiEventList
-     * @param outputMidiEventList
+     * @param inputMidiEvents
+     * @param outputMidiEvents
      * @param tracks
-     * @param registeringTrackList
-     * @param unregisteringTrackList
+     * @param registeringTracks
+     * @param unregisteringTracks
      * @throws MetroException
      */
     public abstract void progressCursor(Metro metro, MetroTrack track, 
         long nframes, 
         long measureLengthInFrames, 
-        List<MetroMidiEvent> inputMidiEventList, 
-        List<MetroMidiEvent> outputMidiEventList,
+        List<MetroMidiEvent> inputMidiEvents, 
+        List<MetroMidiEvent> outputMidiEvents,
         List<MetroTrack> tracks, 
-        List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList ) throws MetroException;
+        List<MetroTrack> registeringTracks, List<MetroTrack> unregisteringTracks ) throws MetroException;
 }

@@ -36,17 +36,14 @@ public class MetroTrackEvent extends DefaultMetroEvent implements MetroEventOutp
     public static final String REMOVE_TRACKS="REMOVE_TRACKS";
     
     private final String operation;
-    private final MetroSelector<MetroTrack> trackSelector;
-    public MetroTrackEvent( String id, double offset, String operation, MetroSelector<MetroTrack> trackSelector ) {
+    private final MetroTrackManipulator trackManipulator;
+    public MetroTrackEvent( String id, double offset, String operation, MetroTrackManipulator trackManipulator ) {
         super(id, offset);
         this.operation = operation;
-        this.trackSelector = trackSelector;
+        this.trackManipulator = trackManipulator;
     }
     public String getOperation() {
         return operation;
-    }
-    public Collection<MetroTrack> getTracks( List<MetroTrack> tracks ) {
-        return Metro.selectTrack(tracks, this.trackSelector );
     }
     @Override
     public String toString() {
@@ -64,19 +61,9 @@ public class MetroTrackEvent extends DefaultMetroEvent implements MetroEventOutp
     public void processOutput(
         Collection<MetroMidiEvent> output, 
         List<MetroTrack> tracks, 
-        List<MetroTrack> registeringTrackList, 
-        List<MetroTrack> unregisteringTrackList)
+        List<MetroTrack> registeringTracks, 
+        List<MetroTrack> unregisteringTracks)
     {
-        switch ( operation ) {
-        case PUT_TRACKS :
-            registeringTrackList.addAll( Metro.selectTrack(tracks, this.trackSelector));
-            break;
-        case REMOVE_TRACKS :
-            unregisteringTrackList.addAll( Metro.selectTrack(tracks, this.trackSelector));
-            break;
-        default :
-            logWarn("===== MetroTrackEvent : UNKNOWN TYPE " + operation + "====");
-            break;
-        }
+        trackManipulator.createTracks(tracks, registeringTracks, unregisteringTracks);
     }
 }

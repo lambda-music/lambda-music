@@ -94,7 +94,7 @@ public class SchemeRecorderSequence implements MetroSequence, MetroReadable, Inv
         Metro metro, 
         MetroTrack track, 
         long nframes,
-        long measureLengthInFrames, List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList, List<MetroTrack> tracks, List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList) throws MetroException 
+        long measureLengthInFrames, List<MetroMidiEvent> inputMidiEvents, List<MetroMidiEvent> outputMidiEvents, List<MetroTrack> tracks, List<MetroTrack> registeringTracks, List<MetroTrack> unregisteringTracks) throws MetroException 
     {
         try {
             long currentPos;
@@ -106,7 +106,7 @@ public class SchemeRecorderSequence implements MetroSequence, MetroReadable, Inv
             }
 
             if ( recording ) {
-                for ( MetroMidiEvent e : inputMidiEventList ) {
+                for ( MetroMidiEvent e : inputMidiEvents ) {
                     if ( inputPorts.contains( e.getPort() ) ) {
                         LList list = this.receiver.receive( e, currentPos, measureLengthInFrames );
                         if ( list != null ) {
@@ -123,7 +123,7 @@ public class SchemeRecorderSequence implements MetroSequence, MetroReadable, Inv
                 
                 this.eventBuffer.setCursorOffset( totalCursor );
                 this.eventBuffer.setOneBarLengthInFrames( measureLengthInFrames );
-                this.eventBuffer.setResultList( outputMidiEventList );
+                this.eventBuffer.setResultList( outputMidiEvents );
                 
                 for ( Object notation : this.notations ) {
                     Object a = SchemeValues.alistGet( NoteListCommon.ID_OFFSET , (LList)notation, Boolean.FALSE );

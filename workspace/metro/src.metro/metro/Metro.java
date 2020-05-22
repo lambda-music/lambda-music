@@ -307,35 +307,21 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     }
 
     /**
-     * See {@link MetroTrackSelector} .
-     * 
-     * @param tracks
-     * @param trackSelector
-     * @return
-     */
-    public static List<MetroTrack> selectTrack( List<MetroTrack> tracks, MetroSelector<MetroTrack> trackSelector ) {
-        if ( trackSelector == null )
-            throw new NullPointerException( "selector == null" );
-        ArrayList<MetroTrack> result = new ArrayList<>();
-        trackSelector.selectTracks( tracks, result );
-        return result;
-    }
-    /**
-     * See {@link MetroTrackSelector} .
+     * See {@link MetroTrackSelectorBasic} .
      * @param selector
      * @return
      */
-    public List<MetroTrack> getTracks( MetroSelector<MetroTrack> selector ) {
-        return selectTrack( replicateAllTracks(), selector );
+    public List<MetroTrack> getTracks( MetroTrackSelector selector ) {
+        return MetroTrackSelector.doSelectTracks( replicateAllTracks(), selector );
     }
     public List<MetroTrack> getTracks( Invokable invokable ) {
-        return getTracks( MetroTrackSelector.createLinewiseInvokableSelector(invokable) );
+        return getTracks( MetroTrackSelectorBasic.createLinewiseInvokableSelector(invokable) );
     }
     public List<MetroTrack> getTracks( Object name ) {
-        return getTracks( MetroTrackSelector.nameSelector( name ));
+        return getTracks( MetroTrackSelectorBasic.nameSelector( name ));
     }
     public List<MetroTrack> getTracks( Collection<? extends Object> tags ) {
-        return getTracks( MetroTrackSelector.tagOrSelector( tags ));
+        return getTracks( MetroTrackSelectorBasic.tagOrSelector( tags ));
     }
 
 

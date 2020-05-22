@@ -40,7 +40,7 @@ public abstract class MetroBufferedToNonBufferedMidiReceiver<OUTER,INNER> implem
         return this.receive( "exec", offset, null, null );
     }
     @Override
-    public OUTER tracks(double offset, String operation, MetroSelector<MetroTrack> trackSelector) {
+    public OUTER tracks(double offset, MetroTrackManipulator trackManipulator) {
         return this.receive( "tracks", offset, null, null );
     }
     @Override

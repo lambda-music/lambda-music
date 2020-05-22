@@ -61,7 +61,7 @@ public class MetroDirectRecorderSequence implements MetroSequence {
     public void progressCursor(
         Metro metro, MetroTrack track, 
         long nframes,
-        long measureLengthInFrames, List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList, List<MetroTrack> tracks, List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList ) throws MetroException 
+        long measureLengthInFrames, List<MetroMidiEvent> inputMidiEvents, List<MetroMidiEvent> outputMidiEvents, List<MetroTrack> tracks, List<MetroTrack> registeringTracks, List<MetroTrack> unregisteringTracks ) throws MetroException 
     {
         try {
             switch ( this.mode ) {
@@ -77,7 +77,7 @@ public class MetroDirectRecorderSequence implements MetroSequence {
                 }
                 
                 if ( ! player.hasNext() ) {
-                    outputMidiEventList.addAll( player.next().getMidiEventList() );
+                    outputMidiEvents.addAll( player.next().getMidiEventList() );
                 }
                 
                 break;
@@ -86,7 +86,7 @@ public class MetroDirectRecorderSequence implements MetroSequence {
                     this.setMode( Mode.PLAY );
                 } else {
                     ArrayList<MetroMidiEvent> list = new ArrayList<>();
-                    for ( MetroMidiEvent e : inputMidiEventList ) {
+                    for ( MetroMidiEvent e : inputMidiEvents ) {
                         if ( e.getPort().equals( this.inputPort ) ) {
                             e.setPort( this.outputPort );
                             list.add(e);

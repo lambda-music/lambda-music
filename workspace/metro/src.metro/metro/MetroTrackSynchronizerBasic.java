@@ -25,7 +25,7 @@ public class MetroTrackSynchronizerBasic {
     public static MetroTrackSynchronizer immediate() {
         return MetroTrackSynchronizerBasic.IMMEDIATE;
     }
-    public static MetroTrackSynchronizer parallel( MetroSelector<MetroTrack> trackSelector, double delay ) {
+    public static MetroTrackSynchronizer parallel( MetroTrackSelector trackSelector, double delay ) {
         return new MetroTrackSynchronizer() {
             @Override
             public long syncronizeTrack( Metro metro, MetroTrack track, List<MetroTrack> tracks, long measureLengthInFrames) {
@@ -50,7 +50,7 @@ public class MetroTrackSynchronizerBasic {
             }
         };
     }
-    public static MetroTrackSynchronizer serial( MetroSelector<MetroTrack> trackSelector, double delay ) {
+    public static MetroTrackSynchronizer serial( MetroTrackSelector trackSelector, double delay ) {
         return new MetroTrackSynchronizer() {
             @Override
             public long syncronizeTrack( Metro metro, MetroTrack track, List<MetroTrack> tracks, long measureLengthInFrames) {

@@ -209,7 +209,7 @@ public class MetroDirectFilterSequence implements MetroSequence {
         Metro metro, 
         MetroTrack track, 
         long nframes,
-        long measureLengthInFrames, List<MetroMidiEvent> inputMidiEventList, List<MetroMidiEvent> outputMidiEventList, List<MetroTrack> tracks, List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList ) throws MetroException 
+        long measureLengthInFrames, List<MetroMidiEvent> inputMidiEvents, List<MetroMidiEvent> outputMidiEvents, List<MetroTrack> tracks, List<MetroTrack> registeringTracks, List<MetroTrack> unregisteringTracks ) throws MetroException 
     {
 //        if ( true ) {
 //            bufferReplacePort(in, inputPort , outputPort );
@@ -222,13 +222,13 @@ public class MetroDirectFilterSequence implements MetroSequence {
 
         synchronized ( this ) {
             workBuffer.clear();
-            bufferDuplicate(   workBuffer, inputMidiEventList );
+            bufferDuplicate(   workBuffer, inputMidiEvents );
             bufferReplacePort( workBuffer, inputPort , outputPort );
             bufferPreProcess( workBuffer );
             bufferInput ( buffer, workBuffer );
             bufferProcess( buffer );
-            bufferOutput( buffer, outputMidiEventList, 0, nframes );
-            bufferPostProcess( outputMidiEventList );
+            bufferOutput( buffer, outputMidiEvents, 0, nframes );
+            bufferPostProcess( outputMidiEvents );
             bufferMove  ( buffer, nframes * -1 );
         }
         
