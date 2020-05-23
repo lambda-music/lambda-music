@@ -610,6 +610,11 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
     private static final double thresholdBackwardBufferLength = 2.0d; 
     private static final double thresholdForewardBufferLength = 2.0d; 
 
+
+    private final ArrayList<MetroEventBuffer> share_buffers = new ArrayList<>();
+    private final ArrayList<MetroEventBuffer> share_buffersToAdd  = new ArrayList<>();
+    private final ArrayList<MetroEventBuffer> share_buffersTmp  = new ArrayList<>();
+
     @Override
     public void progressBuffer( Metro metro, MetroTrack track, long measureLengthInFrames) throws MetroException {
         double backwardBufferLength;
@@ -617,16 +622,19 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
         int backwardBufferCount;
         int forewardBufferCount;
         long currentBufferSeqNo;
-        ArrayList<MetroEventBuffer> buffers;
-        ArrayList<MetroEventBuffer> buffersToAdd;
+        share_buffers.clear();
+        share_buffersToAdd.clear();
+        share_buffersTmp.clear(); 
+        ArrayList<MetroEventBuffer> buffers      = share_buffers;
+        ArrayList<MetroEventBuffer> buffersToAdd = share_buffersToAdd;
+        ArrayList<MetroEventBuffer> buffersTmp   = share_buffersTmp;; 
         long buffersToRemove;
-        
+
         
         // Creating a snapshot of the current status.
         synchronized ( metro.getMetroLock() ) { // << ADDED synchronided (Sun, 30 Sep 2018 11:45:13 +0900)
+            buffers.addAll( this.buffers );
             currentBufferSeqNo = this.currentBufferSeqNo;
-            buffers = new ArrayList<>( this.buffers );
-            buffersToAdd = new ArrayList<>();
             buffersToRemove = 0;
         }
         
@@ -681,10 +689,13 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
                             if ((currentBufferSeqNo == SEQ_NO_NOT_INITIALIZED) || (theLastBufferSeqNo < currentBufferSeqNo) ) {
                                 // Initialize the seq no; this value will be reflected to `this.currentBufferSeqNo`.
                                 currentBufferSeqNo = 0;
-                                for ( long i=theLastBufferSeqNo; i<currentBufferSeqNo; i++ ) {
-                                    MetroEventBuffer buf = this.createNewBuffer( metro, track, measureLengthInFrames );
-                                    buffers.add( buf );
-                                    buffersToAdd.add( buf );
+                                {
+                                    buffersTmp.clear();
+                                    for ( long i=theLastBufferSeqNo; i<currentBufferSeqNo; i++ ) {
+                                        this.createNewBuffer( metro, track, measureLengthInFrames, buffersTmp );
+                                    }
+                                    buffers.addAll( buffersTmp );
+                                    buffersToAdd.addAll( buffersTmp );
                                 }
                             } else {
                                 /*
@@ -712,15 +723,16 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
 
                 // Create bufferes ahead.
                 {
+                    
                     for ( int i=0; i<256; i++ ) {
                         if ( (forewardBufferCount<1) || ( forewardBufferLength < thresholdForewardBufferLength ) ) {
-                            MetroEventBuffer buf = this.createNewBuffer( metro, track, measureLengthInFrames );
-                            buffers.add( buf );
-                            buffersToAdd.add(buf);
-
+                            buffersTmp.clear();
+                            double length = this.createNewBuffer( metro, track, measureLengthInFrames, buffersTmp );
+                            buffers.addAll( buffersTmp );
+                            buffersToAdd.addAll( buffersTmp );
                             // TODO
-                            forewardBufferLength += buf.getLength();
-                            forewardBufferCount++;
+                            forewardBufferLength += length;
+                            forewardBufferCount += buffersTmp.size();
                         } else {
                             break;
                         }
@@ -780,9 +792,9 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
         buf.setSeqNo( createdBufferSeqNo ++ );
     }
 
-    private MetroEventBuffer createNewBuffer( Metro metro, MetroTrack track, long barLengthInFrames ) {
+    private double createNewBuffer( Metro metro, MetroTrack track, long barLengthInFrames, List<MetroEventBuffer> result ) {
+        double length=0.0d;
         synchronized ( metro.getMetroLock() ) {
-            
 //          logInfo( "offerNewBuffer:" );
             if ( this.ending ) {
 //              logInfo( "offerNewBuffer:ending (" + this.name  + ")");
@@ -794,7 +806,8 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
                     buf.length( 1.0 );
                     initNewBuffer(buf, barLengthInFrames);
 //                    this.buffers.offer( receiver );
-                    return buf;
+                    result.add( buf );
+                    length += buf.getLength();
                 } else {
                     if ( DEBUG )
                         logInfo( "offerNewBuffer(" + track.getName() + ") setting true endingDone " );
@@ -817,7 +830,8 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
                     });
                     buf.length( this.endingLength  );
                     initNewBuffer(buf, barLengthInFrames);
-                    return buf;
+                    result.add( buf );
+                    length += buf.getLength();
 //                    this.buffers.offer( buf );
                 }
                 
@@ -830,7 +844,7 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
 //              logInfo( "offerNewBuffer:normal (" + this.name  + ")");
                 MetroEventBuffer buf = MetroEventBuffer.create();
                 this.generateBuffer( metro, track, buf );
-                initNewBuffer(buf, barLengthInFrames);
+                this.initNewBuffer(buf, barLengthInFrames);
 
                 if ( DEBUG_BUF && ( buf.size() >0 ) )
                     logInfo( buf.dump("") );
@@ -849,8 +863,10 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
                     if ( DEBUG )
                         logInfo( "offerNewBuffer(" + track.getName() + ") CONTINUE" );
                 }
-                return buf;
+                result.add( buf );
+                length += buf.getLength();
             }
         }
+        return length;
     }
 } 
