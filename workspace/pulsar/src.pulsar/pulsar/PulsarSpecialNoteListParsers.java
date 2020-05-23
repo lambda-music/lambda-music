@@ -558,7 +558,7 @@ public class PulsarSpecialNoteListParsers {
                 }
                 
                 try {
-                    pulsar.removeTrack( trackList, MetroTradSequenceSynchronizer.create(syncType, syncTrack, syncOffset) );
+                    pulsar.removeTrack( trackList, MetroTradSequenceSynchronizer.create( syncType, syncTrack, syncOffset ) );
                 } finally {
                     pulsar.notifyTrackChange("update");
                 }

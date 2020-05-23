@@ -43,7 +43,7 @@ class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroEvent
     private boolean prepared = false;
     private long barLengthInFrames=-1;
     private long lengthInFrames = -1;
-    private final List<MetroEvent> metroEventList = new ArrayList<MetroEvent>(10);
+    private final List<MetroEvent> metroEvents = new ArrayList<MetroEvent>(10);
     
     double getLength() {
         return length;
@@ -89,7 +89,7 @@ class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroEvent
     }
     public double getActualLength() {
         double max = 0;
-        for ( MetroEvent e : this.metroEventList )
+        for ( MetroEvent e : this.metroEvents )
             if ( max < e.getBarOffset() ) 
                 max = e.getBarOffset();
         
@@ -106,13 +106,13 @@ class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroEvent
         return lengthInFrames;
     }
     
-    public List<MetroEvent> getMetroEventList() {
-        return metroEventList;
+    public List<MetroEvent> getMetroEvents() {
+        return metroEvents;
     }
     
     public void prepare( long barLengthInFrames, boolean doSort ) {
         if ( doSort && false )
-            this.metroEventList.sort( MetroEvent.BAR_OFFSET_COMPARATOR );
+            this.metroEvents.sort( MetroEvent.BAR_OFFSET_COMPARATOR );
         
         //        int barLengthInFrames = Metro.calcBarInFrames( metro, client, position );
         this.prepareBarOffsetInFrames( barLengthInFrames );
@@ -122,7 +122,7 @@ class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroEvent
     
     private void prepareBarOffsetInFrames( long barLengthInFrames ) {
         //      System.out.println("MetroMidiEventBuffer.calcInFrames() barInFrames="  + barInFrames );
-        for ( MetroEvent e : this.metroEventList ) {
+        for ( MetroEvent e : this.metroEvents ) {
             e.prepareBarOffsetInFrames( barLengthInFrames );
         }
         //      System.out.println( "this.length " + this.length  );
@@ -134,11 +134,11 @@ class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroEvent
     }
     
     public int size() {
-        return this.metroEventList.size();
+        return this.metroEvents.size();
     }
     
     MetroEvent receive(MetroEvent event) {
-        this.metroEventList.add(event);
+        this.metroEvents.add(event);
         return event;
     }
     
@@ -159,7 +159,7 @@ class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroEvent
         sb.append( prefix ).append( "length         : " + this.length        ).append( "\n" );
         sb.append( prefix ).append( "lengthInFrames : " + this.lengthInFrames).append( "\n" );
         int i = 0;
-        for ( MetroEvent e : this.metroEventList ) {
+        for ( MetroEvent e : this.metroEvents ) {
             sb.append( prefix ).append( "    No" + i).append( "\n" );
             sb.append( prefix ).append( e.dump( "    " )).append( "\n" );
             i++;

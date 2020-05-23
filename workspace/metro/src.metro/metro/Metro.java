@@ -102,7 +102,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     private final ArrayList<MetroTrack> tracks = new ArrayList<MetroTrack>();
     private final ArrayList<MetroTrack> registeredTracks = new ArrayList<MetroTrack>();
     private final ArrayList<MetroTrack> unregisteredTracks = new ArrayList<MetroTrack>();
-    private final ArrayList<Runnable>  messageQueue = new ArrayList<Runnable>();
+    private final ArrayList<MetroMessage>  messageQueue = new ArrayList<MetroMessage>();
     
     private ArrayList<MetroTrack> tracksSnapshot = new ArrayList<MetroTrack>(256);
     private ArrayList<MetroTrack> finalTracksSnapshot = new ArrayList<MetroTrack>(256);
@@ -507,7 +507,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
             try {
                 long barLengthInFrames;
                 List<MetroTrack> tracks2;
-                List<Runnable> messageQueue2;
+                List<MetroMessage> messageQueue2;
 //                List<MetroTrack> registeredTracks2;
 
                 synchronized ( this.getMetroLock() ) {
@@ -534,9 +534,9 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                     for ( MetroTrack track : tracks2  ) {
                         track.getSequence().progressBuffer( this,  track, barLengthInFrames );
                     }
-                    for ( Runnable r : messageQueue2 ) {
+                    for ( MetroMessage message : messageQueue2 ) {
                         try {
-                            r.run();
+                            message.executeMessage( Metro.this, tracks2, barLengthInFrames);
                         } catch ( Throwable e ) {
                             logError( "An error occured in a message object", e);
                         }
@@ -789,7 +789,11 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
 //                      e.getData().length 
 //                      );
             }
-            
+            synchronized ( this.getMetroLock() ) {
+                this.tracks.clear();
+                this.tracks.addAll(finalTracksSnapshot);
+            }
+
             return true;
         } catch (JackException ex) {
             logError( "ERROR" , ex);
@@ -948,7 +952,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
      * @param runnable
      *            the procedure to run at a later time.
      */
-    public void postMessage( Runnable runnable ) {
+    public void postMessage( MetroMessage runnable ) {
         checkState();
 
         if ( DEBUG )
@@ -993,17 +997,6 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
     }
 
     public void removeTrack( Collection<MetroTrack> trackList, MetroTrackSynchronizer trackSynchronizer )  {
-        // Set the track synchronizer to the tracks.
-        if ( trackSynchronizer != null ) {
-            for ( MetroTrack track : trackList ) { 
-                MetroSequence sequence = track.getSequence();
-                if ( sequence instanceof MetroSynchronizedStopper ) {
-                    ((MetroSynchronizedStopper)sequence).setStopSynchronizer(trackSynchronizer);
-                }
-            }
-        }
-
-        // TODO
         for ( MetroTrack track : trackList ) {
             track.remove(this, trackSynchronizer );
         }

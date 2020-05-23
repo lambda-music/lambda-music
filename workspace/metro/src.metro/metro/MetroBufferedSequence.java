@@ -65,14 +65,11 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
      */
     private Queue<MetroEventBuffer> buffers = new ArrayDeque<>();
     
+    private volatile long totalCurosrMax = Long.MAX_VALUE;
     private volatile long totalCursor = 0;
     private volatile long cursor = 0;
     private volatile long lastLengthInFrames = 0;
     private volatile long lastAccumulatedLength = 0;
-    
-    private volatile boolean ending = false;
-    private volatile boolean endingDone = false;
-    private volatile double endingLength = 0;
     
     public long getCursor() {
         return cursor;
@@ -111,45 +108,23 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
     public MetroBufferedSequence() {
         this.startSynchronizer = MetroTrackSynchronizerBasic.immediate();
     }
-//    public MetroBufferedTrack( Object name, Collection<Object> tags, 
-//        MetroSyncType syncType, MetroSyncTrack syncTrack, double syncOffset) {
-//        super(name,tags,syncType,syncTrack,syncOffset);
-//    }
-    
-    
-//    public Object getMetroTrackLock() {
-//        // TODO COUNTERMEASURE_FOR_LOCKING (Mon, 23 Sep 2019 08:33:32 +0900)
-//        return this.metro.getMetroLock();
-////        return buffers;
-//    }
 
-//    @Override
-//    public Object getMetroLock() {
-//        // TODO COUNTERMEASURE_FOR_LOCKING (Mon, 23 Sep 2019 08:33:32 +0900)
-//        return this.metro.getMetroLock();
-//    }
-    
-    // Moved from MetroSyncTrack (Tue, 05 May 2020 16:47:27 +0900)
-    // Moved from MetroTrack (Thu, 07 May 2020 13:03:00 +0900)
-    /**
-     * Removes this track from the parent Metro object. Calling this method has no
-     * effect if this track does not belong to the specified Metro object, This
-     * method calls {@link Metro#unregisterTrack(Collection)} method to remove this
-     * track. This behavior is a default implementation. Any subclasses which
-     * inherit this class should properly reimplement their desirable behavior.
-     * 
-     * @param metro
-     *    The parent Metro object.
-     */
-
-    public void removeGracefully(Metro metro) {
-        if ( this.ending ) {
-            logWarn( "removeGracefully was called; but the track is already removed." );
-        } else {
-            logInfo( "removeGracefully was called; the ending flag is set." );
-            this.ending = true;
+    public void removeGracefully(Metro metro, long syncOffset ) {
+        synchronized ( metro.getMetroLock() ) {
+            // added (Sat, 23 May 2020 16:03:20 +0900)
+            this.totalCurosrMax = this.totalCursor + syncOffset;
         }
     }
+    @Override
+    public void stop( Metro metro, MetroTrack track ) {
+        synchronized ( metro.getMetroLock() ) {
+            List<MetroTrack> tracksSnapshot = metro.replicateAllTracks();
+            long currentLengthInFrames = getCurrentLengthInFrames(metro);
+            long syncronizeTrack = stopSynchronizer.syncronizeTrack( metro, track, tracksSnapshot, currentLengthInFrames);
+            removeGracefully(metro, syncronizeTrack );
+        }
+    }
+    
     @Override
     public double getPosition( Metro metro ) {
         synchronized ( metro.getMetroLock() ) {
@@ -308,7 +283,9 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
     
 
     @Override
-    public void progressCursor( Metro metro, MetroTrack track,
+    public void progressCursor( 
+        Metro metro, 
+        MetroTrack track,
         long nframes, 
         long measureLengthInFrames, 
         List<MetroMidiEvent> inputMidiEvents, 
@@ -362,10 +339,12 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
 
                 // Search all of the corresponding events and process  them. 
                 searchEventBuffer( metro, 
-                    buf.getMetroEventList(),
+                    buf.getMetroEvents(),
                     outputMidiEvents, 
                     tracks, 
-                    registeringTracks, unregisteringTracks, from, to );
+                    registeringTracks,
+                    unregisteringTracks, 
+                    from, to );
 
                 // move the cursor offset.
                 cursorOffset = cursorOffset + buf.getLengthInFrames();
@@ -417,6 +396,13 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
             this.cursor = nextCursor  ;
             this.totalCursor += nframes;
             this.currentBufferSeqNo = currentBufferSeqNo;
+            
+            // (Sat, 23 May 2020 16:04:56 +0900)
+            if ( this.totalCurosrMax <= this.totalCursor ) {
+                logInfo("totalCurosrMax:"+ this.totalCurosrMax);
+
+                unregisteringTracks.add( track );
+            }
         }
         //            if ( DEBUG && false )
         //                logInfo( "progressCursor(2):" + currentCursor + "/" + (bufs.isEmpty() ? "empty" : bufs.peek().getLengthInFrames()  ));
@@ -461,14 +447,9 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
         cursor = 0;
         lastLengthInFrames = 0;
         lastAccumulatedLength = 0;
-        
-        ending = false;
-        endingDone = false;
-        endingLength = 0;
     }
     
     private MetroTrackSynchronizer startSynchronizer = MetroTrackSynchronizerBasic.immediate();
-;
     @Override
     public MetroTrackSynchronizer getStartSynchronizer() {
         return startSynchronizer;
@@ -477,7 +458,7 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
     public void setStartSynchronizer(MetroTrackSynchronizer startSynchronizer) {
         this.startSynchronizer = startSynchronizer == null ?  MetroTrackSynchronizerBasic.immediate() : startSynchronizer;
     }
-    private MetroTrackSynchronizer stopSynchronizer=MetroTrackSynchronizerBasic.immediate();
+    private MetroTrackSynchronizer stopSynchronizer = MetroTrackSynchronizerBasic.immediate();
     @Override
     public MetroTrackSynchronizer getStopSynchronizer() {
         return stopSynchronizer ;
@@ -795,76 +776,71 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
     private double createNewBuffer( Metro metro, MetroTrack track, long barLengthInFrames, List<MetroEventBuffer> result ) {
         double length=0.0d;
         synchronized ( metro.getMetroLock() ) {
-//          logInfo( "offerNewBuffer:" );
-            if ( this.ending ) {
-//              logInfo( "offerNewBuffer:ending (" + this.name  + ")");
 
-                if ( this.endingDone ) {
-                    if ( DEBUG )
-                        logInfo( "offerNewBuffer(): endingDone is true" );
+            {
+                boolean endCalled=false;
+                double endingLength=0.0d;
+                {
+                    
                     MetroEventBuffer buf = MetroEventBuffer.create();
-                    buf.length( 1.0 );
-                    initNewBuffer(buf, barLengthInFrames);
-//                    this.buffers.offer( receiver );
+                    this.generateBuffer( metro, track, buf );
+                    this.initNewBuffer(buf, barLengthInFrames);
+                    
+                    if ( DEBUG_BUF && ( buf.size() >0 ) )
+                        logInfo( buf.dump("") );
+                    
                     result.add( buf );
                     length += buf.getLength();
-                } else {
-                    if ( DEBUG )
-                        logInfo( "offerNewBuffer(" + track.getName() + ") setting true endingDone " );
-                    this.endingDone = true;
-
-                    MetroEventBuffer buf = MetroEventBuffer.create();
-                    buf.exec( this.endingLength , new Runnable() {
-                        @Override
-                        public void run() {
-                            if ( DEBUG )
-                                logInfo( "offerNewBuffer(" + track.getName() + ") UNREGISTER THIS" );
-                            synchronized ( metro.getMetroLock() ) {
-                                try {
-                                    metro.unregisterTrack( Arrays.asList( track ) );
-                                } finally {
-                                    metro.notifyTrackChange("update");
-                                }
-                            }
-                        }
-                    });
-                    buf.length( this.endingLength  );
-                    initNewBuffer(buf, barLengthInFrames);
-                    result.add( buf );
-                    length += buf.getLength();
-//                    this.buffers.offer( buf );
+                    
+                    // 1. ending 1
+                    if ( buf.endCalled() ) {
+                        endCalled = true;
+                        endingLength = buf.getActualLength();
+                        if ( endingLength < 1 )
+                            endingLength = 1;
+                    }
                 }
-                
-            } else {
-                // ??? is this really necessary? (Sun, 19 Apr 2020 09:48:14 +0900)
-                // REMOVED (Sun, 19 Apr 2020 16:05:49 +0900) 
-                // initialize the current thread
-                // this.metro.getThreadInitializerCollection().initialize();
 
-//              logInfo( "offerNewBuffer:normal (" + this.name  + ")");
-                MetroEventBuffer buf = MetroEventBuffer.create();
-                this.generateBuffer( metro, track, buf );
-                this.initNewBuffer(buf, barLengthInFrames);
-
-                if ( DEBUG_BUF && ( buf.size() >0 ) )
-                    logInfo( buf.dump("") );
-                
-//                this.buffers.offer( buf );
-                
-                if ( buf.endCalled() ) {
+                if ( endCalled ) {
                     if ( DEBUG )
                         logInfo( "offerNewBuffer(" + track.getName() + ") ENDING started");
-                    this.ending = true;
-                    this.endingLength = buf.getActualLength();
-                    if ( this.endingLength < 1 )
-                        this.endingLength = 1;
-                    // buf.dump();
-                } else {
-                    if ( DEBUG )
-                        logInfo( "offerNewBuffer(" + track.getName() + ") CONTINUE" );
+                    
+                    // 2. ending 2
+                    {
+                        MetroEventBuffer buf = MetroEventBuffer.create();
+                        buf.exec( endingLength , new Runnable() {
+                            @Override
+                            public void run() {
+                                if ( DEBUG )
+                                    logInfo( "offerNewBuffer(" + track.getName() + ") UNREGISTER THIS" );
+                                synchronized ( metro.getMetroLock() ) {
+                                    try {
+                                        metro.unregisterTrack( Arrays.asList( track ) );
+                                    } finally {
+                                        metro.notifyTrackChange("update");
+                                    }
+                                }
+                            }
+                        });
+                        buf.length( endingLength  );
+                        initNewBuffer(buf, barLengthInFrames);
+                        result.add( buf );
+                        length += buf.getLength();
+                    }
+                    
+                    // 3. ending 3
+                    {
+                        if ( DEBUG )
+                            logInfo( "offerNewBuffer(): endingDone is true" );
+
+                        MetroEventBuffer buf = MetroEventBuffer.create();
+                        buf.length( 1.0 );
+                        initNewBuffer(buf, barLengthInFrames);
+                        result.add( buf );
+                        length += buf.getLength();
+                        
+                    }
                 }
-                result.add( buf );
-                length += buf.getLength();
             }
         }
         return length;

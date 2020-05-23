@@ -24,8 +24,26 @@ import java.util.Collection;
 import java.util.List;
 
 public class MetroMessageEvent extends DefaultMetroEvent {
-    private final Runnable message;
-    public MetroMessageEvent( String id, double offset, Runnable message ) {
+    public static final class MetroRunnableMessage implements MetroMessage {
+        private final Runnable runnable;
+        public MetroRunnableMessage(Runnable runnable) {
+            this.runnable = runnable;
+        }
+        @Override
+        public void executeMessage(
+            Metro metro, 
+            List<MetroTrack> tracks, 
+            long measureLengthInFrames) 
+        {
+            runnable.run();
+        }
+    }
+    private final MetroMessage message;
+    public MetroMessageEvent( String id, double offset, Runnable runnable ) {
+        super(id, offset);
+        this.message = new MetroRunnableMessage(runnable);
+    }
+    public MetroMessageEvent( String id, double offset, MetroMessage message ) {
         super(id, offset);
         this.message = message;
     }

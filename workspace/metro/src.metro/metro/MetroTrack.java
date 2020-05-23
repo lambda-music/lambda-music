@@ -124,11 +124,12 @@ public class MetroTrack {
     public void remove( Metro metro, MetroTrackSynchronizer trackSynchronizer ) {
         MetroSequence sequence = this.getSequence();
         if ( sequence instanceof MetroSynchronizedStopper ) {
-            ((MetroSynchronizedStopper)sequence).setStopSynchronizer(trackSynchronizer);
+            MetroSynchronizedStopper syncSequence = (MetroSynchronizedStopper)sequence;
+            if ( trackSynchronizer != null )
+                syncSequence.setStopSynchronizer(trackSynchronizer);
+            syncSequence.stop(metro, this);
+        } else {
+            metro.unregisterTrack(Arrays.asList(this));
         }
-        metro.unregisterTrack(Arrays.asList(this));
-    }
-    public void remove( Metro metro ) {
-        remove( metro, null);
     }
 }
