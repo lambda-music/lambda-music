@@ -6,6 +6,7 @@ import java.util.List;
 public interface MetroTrackSelector {
     void selectTracks( List<MetroTrack> tracks, List<MetroTrack> selectedTracks );
 
+    
     /**
      * See {@link MetroTrackSelectorBasic} .
      * 
