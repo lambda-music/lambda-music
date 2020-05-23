@@ -399,7 +399,7 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
             
             // (Sat, 23 May 2020 16:04:56 +0900)
             if ( this.totalCurosrMax <= this.totalCursor ) {
-                logInfo("totalCurosrMax:"+ this.totalCurosrMax);
+                logInfo( "The track is being removed. " + this.totalCurosrMax );
 
                 unregisteringTracks.add( track );
             }
