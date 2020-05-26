@@ -1,5 +1,6 @@
 package metro;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 public interface MetroRemt extends MetroMant {
@@ -19,6 +20,6 @@ public interface MetroRemt extends MetroMant {
      *    
      */
     default void removeTrack( MetroTrackSelector selector, MetroTrackSynchronizer synchronizer ) {
-        manipulateTrack( MetroTrackManipulatorBasic.removing( selector ) );
+        manipulateTrack( Arrays.asList( MetroTrackManipulatorBasic.removing(selector)));
     };
 }

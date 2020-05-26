@@ -991,21 +991,22 @@ public class Metro implements MetroMant,MetroPutt,MetroRemt, MetroLock,
      * @param manipulator
      *            the procedure to run at a later time.
      */
-    public void postMessage( MetroTrackManipulator manipulator ) {
+    public void postMessage( List<MetroTrackManipulator> manipulators ) {
         checkState();
 
         if ( DEBUG )
             logInfo( "****** postMessage 1");
+        
         synchronized ( getMetroLock() ) {
-            this.messageQueue.add( manipulator );
+            this.messageQueue.addAll( manipulators );
             this.notifyTrackChange("update");
         }
     }
 
     
     @Override
-    public void manipulateTrack( MetroTrackManipulator manipulator ) {
-        postMessage( manipulator );
+    public void manipulateTrack( List<MetroTrackManipulator> manipulators ) {
+        postMessage( manipulators );
     }
     
     @Override

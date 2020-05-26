@@ -75,6 +75,7 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
         return cursor;
     }
     public void setCursor(long cursor) {
+        logInfo("setCursor:" + cursor );
         this.cursor = cursor;
         this.totalCursor = cursor;
     }
@@ -303,106 +304,108 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
         Collection<MetroEventBuffer> buffers;
         
         synchronized ( metro.getMetroLock() ) {
-            // Before everything, initialize synchronizing status with the track.
-            // In most case, this method does nothing and returns immediately.
-            synchronizeTrack( metro, track, tracks, measureLengthInFrames );
-            reprepareTrack( metro, measureLengthInFrames );
+            synchronized ( metro.getMetroLock() ) {
+                // Before everything, initialize synchronizing status with the track.
+                // In most case, this method does nothing and returns immediately.
+                synchronizeTrack( metro, track, tracks, measureLengthInFrames );
+                reprepareTrack( metro, measureLengthInFrames );
 
-            currentCursor      = this.cursor;
-            nextCursor         = currentCursor + nframes;
-            currentBufferSeqNo = this.currentBufferSeqNo;
-            buffers = new ArrayList<>( this.buffers );
-        }
-
-        {
-            if ( currentBufferSeqNo == SEQ_NO_NOT_INITIALIZED ) {
-                return;
+                currentCursor      = this.cursor;
+                nextCursor         = currentCursor + nframes;
+                currentBufferSeqNo = this.currentBufferSeqNo;
+                buffers = new ArrayList<>( this.buffers );
             }
-
-            // This keeps negative offset value for the current cursor position. 
-            long cursorOffset = 0;
-
-            // Total the bar length of all buffers which are before the current buffer.
-            for ( Iterator<MetroEventBuffer> i = buffers.iterator(); i.hasNext(); ) {
-                MetroEventBuffer buf = i.next();
-                if ( currentBufferSeqNo == buf.getSeqNo() ) {
-                    break;
-                }
-                cursorOffset -= buf.getLengthInFrames();
-            }
-
-            for ( Iterator<MetroEventBuffer> i = buffers.iterator(); i.hasNext(); ) {
-                MetroEventBuffer buf = i.next();
-
-                // Translate the cursorOffset to the buffer-local coordinate system. 
-                long from  = currentCursor - cursorOffset;
-                long to    = nextCursor    - cursorOffset;
-
-                // Search all of the corresponding events and process  them. 
-                searchEventBuffer( metro, 
-                    buf.getMetroEvents(),
-                    outputMidiEvents, 
-                    tracks, 
-                    registeringTracks,
-                    finalizingTracks, 
-                    unregisteringTracks, from, to );
-
-                // move the cursor offset.
-                cursorOffset = cursorOffset + buf.getLengthInFrames();
-            }
-
 
             {
-                boolean done = false;
-                for(;;){
-                    MetroEventBuffer currBuf=null;
-                    for ( Iterator<MetroEventBuffer> i = buffers.iterator();i.hasNext(); ) {
-                        MetroEventBuffer buf = i.next();
-                        if ( currentBufferSeqNo == buf.getSeqNo() ) {
-                            currBuf = buf;
-                            break;
-                        }
-                    }
-                    if ( currBuf == null ) {
-                        // `currBuf == null` implies either buffer-underflow or buffer-overflow.
-                        // A special measurement is required; but since it is not likely happening, 
-                        // ignore it for now.
-                        logWarn( String.format( 
-                            "ERROR === CANNOT FIND CURRENT BUFFER === :%5s nextCursor=%3s bufferSeqNo=%s bufcount=%s", 
-                            track.getName(), nextCursor, currentBufferSeqNo, buffers.size()));
-                        done = true;
-                    } else {
-                        long lengthInFrames = currBuf.getLengthInFrames();
+                if ( currentBufferSeqNo == SEQ_NO_NOT_INITIALIZED ) {
+                    return;
+                }
 
-                        if ( lengthInFrames <= nextCursor ) {
-                            nextCursor -= lengthInFrames;
-                            currentBufferSeqNo ++;
-                            done = true;
-                            if (DEBUG) {
-                                logInfo( String.format( "update-cursor:%5s next=%3s/%3s bufferSeqNo=%s bufcount=%s", 
-                                    track.getName(), nextCursor, lengthInFrames, currentBufferSeqNo, buffers.size() ));
+                // This keeps negative offset value for the current cursor position. 
+                long cursorOffset = 0;
+
+                // Total the bar length of all buffers which are before the current buffer.
+                for ( Iterator<MetroEventBuffer> i = buffers.iterator(); i.hasNext(); ) {
+                    MetroEventBuffer buf = i.next();
+                    if ( currentBufferSeqNo == buf.getSeqNo() ) {
+                        break;
+                    }
+                    cursorOffset -= buf.getLengthInFrames();
+                }
+
+                for ( Iterator<MetroEventBuffer> i = buffers.iterator(); i.hasNext(); ) {
+                    MetroEventBuffer buf = i.next();
+
+                    // Translate the cursorOffset to the buffer-local coordinate system. 
+                    long from  = currentCursor - cursorOffset;
+                    long to    = nextCursor    - cursorOffset;
+
+                    // Search all of the corresponding events and process  them. 
+                    searchEventBuffer( metro, 
+                        buf.getMetroEvents(),
+                        outputMidiEvents, 
+                        tracks, 
+                        registeringTracks,
+                        finalizingTracks, 
+                        unregisteringTracks, from, to );
+
+                    // move the cursor offset.
+                    cursorOffset = cursorOffset + buf.getLengthInFrames();
+                }
+
+
+                {
+                    boolean done = false;
+                    for(;;){
+                        MetroEventBuffer currBuf=null;
+                        for ( Iterator<MetroEventBuffer> i = buffers.iterator();i.hasNext(); ) {
+                            MetroEventBuffer buf = i.next();
+                            if ( currentBufferSeqNo == buf.getSeqNo() ) {
+                                currBuf = buf;
+                                break;
                             }
-                            continue;
                         }
-                    }
-                    break;
-                }
-                if ( done ) {
-                    metro.notifyTrackChange("update");
-                }
-            }
-            //            logInfo( "this.cursor:" + getName() + ":"  + this.cursor );
-        }
-        synchronized ( metro.getMetroLock() ) {
-            this.cursor = nextCursor  ;
-            this.totalCursor += nframes;
-            this.currentBufferSeqNo = currentBufferSeqNo;
-            
-            // (Sat, 23 May 2020 16:04:56 +0900)
-            if ( this.totalCurosrMax <= this.totalCursor ) {
-                logInfo( "The track is being removed. " + this.totalCurosrMax );
+                        if ( currBuf == null ) {
+                            // `currBuf == null` implies either buffer-underflow or buffer-overflow.
+                            // A special measurement is required; but since it is not likely happening, 
+                            // ignore it for now.
+                            logWarn( String.format( 
+                                "ERROR === CANNOT FIND CURRENT BUFFER === :%5s nextCursor=%3s bufferSeqNo=%s bufcount=%s", 
+                                track.getName(), nextCursor, currentBufferSeqNo, buffers.size()));
+                            done = true;
+                        } else {
+                            long lengthInFrames = currBuf.getLengthInFrames();
 
-                unregisteringTracks.add( track );
+                            if ( lengthInFrames <= nextCursor ) {
+                                nextCursor -= lengthInFrames;
+                                currentBufferSeqNo ++;
+                                done = true;
+                                if (DEBUG) {
+                                    logInfo( String.format( "update-cursor:%5s next=%3s/%3s bufferSeqNo=%s bufcount=%s", 
+                                        track.getName(), nextCursor, lengthInFrames, currentBufferSeqNo, buffers.size() ));
+                                }
+                                continue;
+                            }
+                        }
+                        break;
+                    }
+                    if ( done ) {
+                        metro.notifyTrackChange("update");
+                    }
+                }
+                //            logInfo( "this.cursor:" + getName() + ":"  + this.cursor );
+            }
+            synchronized ( metro.getMetroLock() ) {
+                this.cursor = nextCursor  ;
+                this.totalCursor += nframes;
+                this.currentBufferSeqNo = currentBufferSeqNo;
+
+                // (Sat, 23 May 2020 16:04:56 +0900)
+                if ( this.totalCurosrMax <= this.totalCursor ) {
+                    logInfo( "The track is being removed. " + this.totalCurosrMax );
+
+                    unregisteringTracks.add( track );
+                }
             }
         }
         //            if ( DEBUG && false )
@@ -593,6 +596,8 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
 
     private static final double thresholdBackwardBufferLength = 2.0d; 
     private static final double thresholdForewardBufferLength = 2.0d; 
+    private static final long thresholdBackwardBufferCount = 2; 
+    private static final long thresholdForewardBufferCount = 1; 
 
 
     private final ArrayList<MetroEventBuffer> share_buffers = new ArrayList<>();
@@ -686,7 +691,7 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
                                  *  In this case, it might be highly unusual. It is very likely not happening;
                                  *  therefore ignore it for now. (Tue, 12 May 2020 03:27:03 +0900)
                                  */
-                                logWarn( "****** UNUSUAL CASE ********" );
+                                logError( "****** UNUSUAL CASE ********", new Error("CHECK THE SITUATION") );
                             }
                         }
                         // 3. Restart this procedure. In the next time, it should found the current buffer. 
@@ -709,7 +714,7 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
                 {
                     
                     for ( int i=0; i<256; i++ ) {
-                        if ( (forewardBufferCount<1) || ( forewardBufferLength < thresholdForewardBufferLength ) ) {
+                        if ( (forewardBufferCount<thresholdForewardBufferCount) || ( forewardBufferLength < thresholdForewardBufferLength ) ) {
                             buffersTmp.clear();
                             double length = this.createNewBuffer( metro, track, measureLengthInFrames, buffersTmp );
                             buffers.addAll( buffersTmp );
@@ -728,7 +733,7 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
                     for ( Iterator<MetroEventBuffer> i=buffers.iterator(); i.hasNext(); ) {
                         MetroEventBuffer buf = i.next();
                         double length = buf.getLength();
-                        if ( (2 < backwardBufferCount) && ( thresholdBackwardBufferLength < backwardBufferLength - length) ) {
+                        if ( (thresholdBackwardBufferCount < backwardBufferCount) && ( thresholdBackwardBufferLength < backwardBufferLength - length) ) {
                             if ( DEBUG ) {
                                 logInfo( String.format( "removing backward buffer: length=%s count=%s" , backwardBufferLength, backwardBufferCount ) );
                             }

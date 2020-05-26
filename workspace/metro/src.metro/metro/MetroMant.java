@@ -1,5 +1,7 @@
 package metro;
 
+import java.util.List;
+
 public interface MetroMant {
-    void manipulateTrack( MetroTrackManipulator manipulator );
+    void manipulateTrack( List<MetroTrackManipulator> manipulators );
 }

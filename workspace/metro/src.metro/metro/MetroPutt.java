@@ -12,15 +12,14 @@ public interface MetroPutt extends MetroMant {
     }
     public default void putTrack( List<MetroTrack> tracks, MetroTrackSynchronizer trackSynchronizer )  {
         manipulateTrack(
-            MetroTrackManipulatorBasic.synchronizedStopper(
-                MetroTrackManipulatorBasic.removing( 
-                    MetroTrackSelectorBasic.correspondingNamedTrack(tracks)),
-                trackSynchronizer));
-        
-        manipulateTrack( 
-            MetroTrackManipulatorBasic.synchronizedStarter(
-                MetroTrackManipulatorBasic.registering(
-                    MetroTrackSelectorBasic.constant(tracks)),
-                trackSynchronizer));
+            Arrays.asList(
+                MetroTrackManipulatorBasic.synchronizedStopper(
+                    MetroTrackManipulatorBasic.removing( 
+                        MetroTrackSelectorBasic.correspondingNamedTrack(tracks)),
+                    trackSynchronizer),
+                MetroTrackManipulatorBasic.synchronizedStarter(
+                    MetroTrackManipulatorBasic.registering(
+                        MetroTrackSelectorBasic.constant(tracks)),
+                    trackSynchronizer)));
     }
 }

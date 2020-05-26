@@ -34,24 +34,33 @@ public class MetroTrackSynchronizerBasic {
 
     }
     
-    
+    static final class LongTrackSynchronizer implements MetroTrackSynchronizer {
+        private final long syncOffset;
+        public LongTrackSynchronizer(long syncOffset) {
+            this.syncOffset = syncOffset;
+        }
+        @Override
+        public long syncronizeTrack( Metro metro, MetroTrack track, List<MetroTrack> tracks, long measureLengthInFrames) {
+            return syncOffset;
+        }
+    }
     public static MetroTrackSynchronizer immediate(long syncOffset) {
-        return new MetroTrackSynchronizer() {
-            @Override
-            public long syncronizeTrack( Metro metro, MetroTrack track, List<MetroTrack> tracks, long measureLengthInFrames) {
-                return syncOffset;
-            }
-        };
+        return new LongTrackSynchronizer(syncOffset);
+    }
+    static final class DoubleImmediateTrackSynchronizer implements MetroTrackSynchronizer {
+        private final double syncOffset;
+        public DoubleImmediateTrackSynchronizer( double syncOffset) {
+            this.syncOffset = syncOffset;
+        }
+        @Override
+        public long syncronizeTrack( Metro metro, MetroTrack track, List<MetroTrack> tracks, long measureLengthInFrames) {
+            return (long) (syncOffset*measureLengthInFrames);
+        }
     }
     public static MetroTrackSynchronizer immediate(double syncOffset) {
-        return new MetroTrackSynchronizer() {
-            @Override
-            public long syncronizeTrack( Metro metro, MetroTrack track, List<MetroTrack> tracks, long measureLengthInFrames) {
-                return (long) (syncOffset*measureLengthInFrames);
-            }
-        };
+        return new DoubleImmediateTrackSynchronizer(syncOffset);
     }
-    public static final MetroTrackSynchronizer IMMEDIATE = immediate(0);
+    static final MetroTrackSynchronizer IMMEDIATE = immediate(0);
     public static MetroTrackSynchronizer immediate() {
         return MetroTrackSynchronizerBasic.IMMEDIATE;
     }
@@ -69,7 +78,7 @@ public class MetroTrackSynchronizerBasic {
     }
     
 
-    public static final class ParallelTrackSynchronizer implements MetroTrackSynchronizer {
+    static final class ParallelTrackSynchronizer implements MetroTrackSynchronizer {
         private final MetroTrackSelector syncTrack;
         private final double             syncOffset;
 
@@ -93,6 +102,7 @@ public class MetroTrackSynchronizerBasic {
                 currentPosition = 0;
             } else {
                 MetroSequence sequence = selectedTracks.get(0).getSequence();
+                MetroTrackSynchronizerBasic.logWarn( "track selector selected track (" + syncTrack + ")" );
                 if ( sequence instanceof MetroSynchronizable ) {
                     currentPosition = ((MetroSynchronizable)sequence).getCurrentPositionInFrames(metro);
                 } else {
@@ -151,6 +161,7 @@ public class MetroTrackSynchronizerBasic {
                 currentLength  = 0;
             } else {
                 MetroSequence sequence = selectedTracks.get(0).getSequence();
+                MetroTrackSynchronizerBasic.logWarn( "track selector selected track=(" + syncTrack + ")" );
                 if ( sequence instanceof MetroSynchronizable ) {
                     MetroSynchronizable syncSeq = (MetroSynchronizable)sequence;
                     currentLength = syncSeq.getCurrentLengthInFrames(metro);

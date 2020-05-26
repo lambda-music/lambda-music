@@ -20,6 +20,7 @@
 
 package metro;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -49,7 +50,7 @@ public class MetroMessageEvent extends DefaultMetroEvent {
         this.manipulator = manipulator;
     }
     public void execute( Metro metro ) {
-        metro.postMessage( manipulator );
+        metro.postMessage( Arrays.asList( manipulator ) );
     }
     @Override
     public void process(Metro metro, long cursor) {
