@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 
 import lamu.lib.Invokable;
@@ -40,8 +41,8 @@ public class MetroTrackSelectorBasic {
     static final class MetroTrackSelectorAll implements MetroTrackSelector {
         static final MetroTrackSelector INSTANCE = new MetroTrackSelectorAll();
         @Override
-        public void selectTracks(List<MetroTrack> tracks, List<MetroTrack> selectedTracks) {
-            selectedTracks.addAll(tracks);
+        public void selectTracks(List<MetroTrack> currentTracks, List<MetroTrack> selectedTracks) {
+            selectedTracks.addAll(currentTracks);
         }
 
         @Override
@@ -67,9 +68,9 @@ public class MetroTrackSelectorBasic {
     public static final MetroTrackSelector nameSelector( Object name ) {
         return new MetroTrackSelector() {
             @Override
-            public void selectTracks(List<MetroTrack> tracks, List<MetroTrack> selectedTracks) {
-                for ( MetroTrack track : tracks ) {
-                    if ( name.equals( track.getName() ) ) {
+            public void selectTracks(List<MetroTrack> currentTracks, List<MetroTrack> selectedTracks) {
+                for ( MetroTrack track : currentTracks ) {
+                    if ( Objects.equals( name, track.getName())) {
                         selectedTracks.add(track);
                     }
                 }
@@ -83,10 +84,10 @@ public class MetroTrackSelectorBasic {
     public static final MetroTrackSelector nameSelector( Collection<? extends Object> names ) {
         return new MetroTrackSelector() {
             @Override
-            public void selectTracks(List<MetroTrack> tracks, List<MetroTrack> selectedTracks) {
-                for ( MetroTrack track : tracks ) {
+            public void selectTracks(List<MetroTrack> currentTracks, List<MetroTrack> selectedTracks) {
+                for ( MetroTrack track : currentTracks ) {
                     for ( Object name : names ) {
-                        if ( name.equals( track.getName())) {
+                        if ( Objects.equals( name, track.getName())) {
                             selectedTracks.add(track);
                             break;
                         }
@@ -121,8 +122,8 @@ public class MetroTrackSelectorBasic {
     public static final MetroTrackSelector tagOrSelector( Collection<? extends Object> tags ) {
         return new MetroTrackSelector() {
             @Override
-            public void selectTracks(List<MetroTrack> tracks, List<MetroTrack> selectedTracks) {
-                for ( MetroTrack track : tracks ) {
+            public void selectTracks(List<MetroTrack> currentTracks, List<MetroTrack> selectedTracks) {
+                for ( MetroTrack track : currentTracks ) {
                     for ( Object tag : tags ) {
                         if ( tag.equals( track.getName() ) || track.getTags().contains( tag )) {
                             selectedTracks.add(track);
@@ -160,8 +161,8 @@ public class MetroTrackSelectorBasic {
     public static final MetroTrackSelector tagAndSelector( Collection<? extends Object> tags ) {
         return new MetroTrackSelector() {
             @Override
-            public void selectTracks(List<MetroTrack> tracks, List<MetroTrack> selectedTracks) {
-                for ( MetroTrack track : tracks ) {
+            public void selectTracks(List<MetroTrack> currentTracks, List<MetroTrack> selectedTracks) {
+                for ( MetroTrack track : currentTracks ) {
                     boolean flag = true;
                     for ( Object tag : tags ) {
                         if ( tag.equals( track.getName() ) || track.getTags().contains( tag )) {
@@ -203,7 +204,7 @@ public class MetroTrackSelectorBasic {
     public static final MetroTrackSelector constant( MetroTrack track ) {
         return new MetroTrackSelector() {
             @Override
-            public void selectTracks(List<MetroTrack> tracks, List<MetroTrack> selectedTracks) {
+            public void selectTracks(List<MetroTrack> currentTracks, List<MetroTrack> selectedTracks) {
                 selectedTracks.add( track );
             }
             @Override
@@ -215,12 +216,31 @@ public class MetroTrackSelectorBasic {
     public static final MetroTrackSelector constant( Collection<MetroTrack> tracks ) {
         return new MetroTrackSelector() {
             @Override
-            public void selectTracks(List<MetroTrack> tracks, List<MetroTrack> selectedTracks) {
+            public void selectTracks(List<MetroTrack> currentTracks, List<MetroTrack> selectedTracks) {
                 selectedTracks.addAll( tracks );
             }
             @Override
             public String toString() {
                 return "[MetroTrackSelector tracks:(" + tracks + ")]";
+            }
+        };
+    }
+    public static final MetroTrackSelector correspondingNamedTrack( Collection<MetroTrack> tracks ) {
+        return new MetroTrackSelector() {
+            @Override
+            public void selectTracks(List<MetroTrack> currentTracks, List<MetroTrack> selectedTracks) {
+                for ( MetroTrack ct : currentTracks ) {
+                    for ( MetroTrack t : tracks ) {
+                        if (Objects.equals(ct.getName(),t.getName())) {
+                            selectedTracks.add( ct );
+                            break;
+                        }
+                    }
+                }
+            }
+            @Override
+            public String toString() {
+                return "[MetroTrackSelector corresponding tracks:(" + tracks + ")]";
             }
         };
     }
@@ -247,8 +267,8 @@ public class MetroTrackSelectorBasic {
     public static final MetroTrackSelector createInvokableSelector( Invokable invokable ) {
         return new MetroTrackSelector() {
             @Override
-            public void selectTracks(List<MetroTrack> tracks, List<MetroTrack> selectedTracks) {
-                invokable.invoke( tracks, selectedTracks );
+            public void selectTracks(List<MetroTrack> currentTracks, List<MetroTrack> selectedTracks) {
+                invokable.invoke( currentTracks, selectedTracks );
             }
             @Override
             public String toString() {
@@ -274,8 +294,8 @@ public class MetroTrackSelectorBasic {
     public static final MetroTrackSelector createLinewiseInvokableSelector( Invokable invokable ) {
         return new MetroTrackSelector() {
             @Override
-            public void selectTracks(List<MetroTrack> tracks, List<MetroTrack> selectedTracks) {
-                for ( MetroTrack track : tracks ) {
+            public void selectTracks(List<MetroTrack> currentTracks, List<MetroTrack> selectedTracks) {
+                for ( MetroTrack track : currentTracks ) {
                     if ( Boolean.FALSE.equals( invokable.invoke( track.getName(), track.getTags()) ) ) {
                         continue;
                     } else {

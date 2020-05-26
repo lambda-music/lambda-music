@@ -55,15 +55,16 @@ public class MetroTrackEvent extends DefaultMetroEvent implements MetroEventOutp
     
     /**
      * This method adds the current track  to the track list.
-     * See {@link MetroEventOutput#processOutput(Collection, List, List, List)}.
+     * See {@link MetroEventOutput#processOutput(Collection, List, List, List, List)}.
      */
     @Override
     public void processOutput(
         Collection<MetroMidiEvent> output, 
         List<MetroTrack> tracks, 
         List<MetroTrack> registeringTracks, 
+        List<MetroTrack> finalizingTracks, 
         List<MetroTrack> unregisteringTracks)
     {
-        trackManipulator.createTracks(tracks, registeringTracks, unregisteringTracks);
+        trackManipulator.manipulateTracks(tracks, registeringTracks, finalizingTracks, unregisteringTracks);
     }
 }

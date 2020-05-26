@@ -61,7 +61,7 @@ public class MetroDirectRecorderSequence implements MetroSequence {
     public void progressCursor(
         Metro metro, MetroTrack track, 
         long nframes,
-        long measureLengthInFrames, List<MetroMidiEvent> inputMidiEvents, List<MetroMidiEvent> outputMidiEvents, List<MetroTrack> tracks, List<MetroTrack> registeringTracks, List<MetroTrack> unregisteringTracks ) throws MetroException 
+        long measureLengthInFrames, List<MetroMidiEvent> inputMidiEvents, List<MetroMidiEvent> outputMidiEvents, List<MetroTrack> tracks, List<MetroTrack> registeringTracks, List<MetroTrack> finalizingTracks, List<MetroTrack> unregisteringTracks ) throws MetroException 
     {
         try {
             switch ( this.mode ) {

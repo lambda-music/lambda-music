@@ -69,6 +69,42 @@ public class MetroTrackSynchronizerBasic {
     }
     
 
+    public static final class ParallelTrackSynchronizer implements MetroTrackSynchronizer {
+        private final MetroTrackSelector syncTrack;
+        private final double             syncOffset;
+
+        public ParallelTrackSynchronizer(MetroTrackSelector syncTrack, double syncOffset) {
+            this.syncTrack  = syncTrack;
+            this.syncOffset = syncOffset;
+        }
+
+        @Override
+        public long syncronizeTrack( Metro metro, MetroTrack track, List<MetroTrack> tracks, long measureLengthInFrames) {
+            ArrayList<MetroTrack> selectedTracks = new ArrayList<>();
+            syncTrack.selectTracks(tracks, selectedTracks);
+            long currentPosition;
+            long delayInFrames = (long)(syncOffset * measureLengthInFrames);
+
+            if ( selectedTracks.isEmpty() ) {
+                MetroTrackSynchronizerBasic.logWarn( "=== no track was selected ===" );
+                MetroTrackSynchronizerBasic.logWarn( "track selector (" + syncTrack + ")" );
+                MetroTrackSynchronizerBasic.logWarn( "current tracks (" + tracks + ")" );
+                MetroTrackSynchronizerBasic.logError( "" , new Error() );
+                currentPosition = 0;
+            } else {
+                MetroSequence sequence = selectedTracks.get(0).getSequence();
+                if ( sequence instanceof MetroSynchronizable ) {
+                    currentPosition = ((MetroSynchronizable)sequence).getCurrentPositionInFrames(metro);
+                } else {
+                    MetroTrackSynchronizerBasic.logError( "the specified track sequence was not synchronizable (" + sequence + ")" , new Exception());
+                    currentPosition = 0;
+                }
+            }
+            MetroTrackSynchronizerBasic.logInfo( "synchronizer(parallel):" + track.getName() + ":" + currentPosition  + "/" + delayInFrames );
+            return currentPosition + delayInFrames;
+        }
+    }
+
     /**
      * 
      * @param syncTrack
@@ -76,29 +112,7 @@ public class MetroTrackSynchronizerBasic {
      * @return
      */
     public static MetroTrackSynchronizer parallel( MetroTrackSelector syncTrack, double syncOffset ) {
-        return new MetroTrackSynchronizer() {
-            @Override
-            public long syncronizeTrack( Metro metro, MetroTrack track, List<MetroTrack> tracks, long measureLengthInFrames) {
-                ArrayList<MetroTrack> selectedTracks = new ArrayList<>();
-                syncTrack.selectTracks(tracks, selectedTracks);
-                long currentPosition;
-                long delayInFrames = (long)(syncOffset * measureLengthInFrames);
-
-                if ( selectedTracks.isEmpty() ) {
-                    MetroTrackSynchronizerBasic.logError( "no track was selected (" + syncTrack + ")" , new Exception());
-                    currentPosition = 0;
-                } else {
-                    MetroSequence sequence = selectedTracks.get(0).getSequence();
-                    if ( sequence instanceof MetroSynchronizable ) {
-                        currentPosition = ((MetroSynchronizable)sequence).getCurrentPositionInFrames(metro);
-                    } else {
-                        MetroTrackSynchronizerBasic.logError( "the specified track sequence was not synchronizable (" + sequence + ")" , new Exception());
-                        currentPosition = 0;
-                    }
-                }
-                return currentPosition + delayInFrames;
-            }
-        };
+        return new ParallelTrackSynchronizer(syncTrack, syncOffset);
     }
 
     static {
@@ -112,38 +126,46 @@ public class MetroTrackSynchronizerBasic {
         addFactory( "parallel" , factory );
         addFactory( "para" , factory );
         addFactory( "p" , factory );
-    }
+    } 
 
     
-    public static MetroTrackSynchronizer serial( MetroTrackSelector syncTrack, double syncOffset ) {
-        return new MetroTrackSynchronizer() {
-            @Override
-            public long syncronizeTrack( Metro metro, MetroTrack track, List<MetroTrack> tracks, long measureLengthInFrames) {
-                ArrayList<MetroTrack> selectedTracks = new ArrayList<>();
-                syncTrack.selectTracks(tracks, selectedTracks);
-                long currentPosition;
-                long currentLength ;
-                long delayInFrames = (long)(syncOffset * measureLengthInFrames);
-
-                if ( selectedTracks.isEmpty() ) {
-                    MetroTrackSynchronizerBasic.logError( "no track was selected (" + syncTrack + ")" , new Exception());
-                    currentPosition = 0;
-                    currentLength  = 0;
+    public static final class SerialTrackSynchronizer implements MetroTrackSynchronizer {
+        private final MetroTrackSelector syncTrack;
+        private final double             syncOffset;
+        public SerialTrackSynchronizer(MetroTrackSelector syncTrack, double syncOffset) {
+            this.syncOffset = syncOffset;
+            this.syncTrack  = syncTrack;
+        }
+        
+        @Override
+        public long syncronizeTrack( Metro metro, MetroTrack track, List<MetroTrack> tracks, long measureLengthInFrames ) {
+            ArrayList<MetroTrack> selectedTracks = new ArrayList<>();
+            syncTrack.selectTracks(tracks, selectedTracks);
+            long currentPosition;
+            long currentLength ;
+            long delayInFrames = (long)(syncOffset * measureLengthInFrames);
+            
+            if ( selectedTracks.isEmpty() ) {
+                MetroTrackSynchronizerBasic.logError( "no track was selected (" + syncTrack + ")" , new Exception());
+                currentPosition = 0;
+                currentLength  = 0;
+            } else {
+                MetroSequence sequence = selectedTracks.get(0).getSequence();
+                if ( sequence instanceof MetroSynchronizable ) {
+                    MetroSynchronizable syncSeq = (MetroSynchronizable)sequence;
+                    currentLength = syncSeq.getCurrentLengthInFrames(metro);
+                    currentPosition = syncSeq.getCurrentPositionInFrames(metro);
                 } else {
-                    MetroSequence sequence = selectedTracks.get(0).getSequence();
-                    if ( sequence instanceof MetroSynchronizable ) {
-                        MetroSynchronizable syncSeq = (MetroSynchronizable)sequence;
-                        currentLength = syncSeq.getCurrentLengthInFrames(metro);
-                        currentPosition = syncSeq.getCurrentPositionInFrames(metro);
-                    } else {
-                        MetroTrackSynchronizerBasic.logError( "the specified track sequence was not synchronizable (" + sequence + ")" , new Exception());
-                        currentLength = 0;
-                        currentPosition = 0;
-                    }
+                    MetroTrackSynchronizerBasic.logError( "the specified track sequence was not synchronizable (" + sequence + ")" , new Exception());
+                    currentLength = 0;
+                    currentPosition = 0;
                 }
-                return currentPosition - currentLength + delayInFrames;
             }
-        };
+            return currentPosition - currentLength + delayInFrames;
+        }
+    }
+    public static MetroTrackSynchronizer serial( MetroTrackSelector syncTrack, double syncOffset ) {
+        return new SerialTrackSynchronizer( syncTrack, syncOffset );
     }
     static {
         final class SerialFactory implements MetroTrackSynchronizerFactory {

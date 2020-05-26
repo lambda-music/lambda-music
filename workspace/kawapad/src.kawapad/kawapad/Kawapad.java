@@ -182,7 +182,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     }
     
     {
-        logInfo("****************8" + getEditorKit().toString() );
+        // logInfo("****************8" + getEditorKit().toString() );
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -720,7 +720,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         }
 
         public void actionPerformed(ActionEvent actionEvent) {
-            logInfo( "do UNDO" );
+//            logInfo( "do UNDO" );
             try {
                 undoManager.undo();
             } catch (CannotUndoException e) {
@@ -746,7 +746,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
             super(name,manager);
         }
         public void actionPerformed(ActionEvent actionEvent) {
-            logInfo( "do REDO" );
+            // logInfo( "do REDO" );
             try {
                 undoManager.redo();
             } catch (CannotRedoException e) {
@@ -1731,7 +1731,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
                     kawapad.scrollRectToVisible( r );
                 }
             });
-            logInfo( ""+ r  );
+//            logInfo( ""+ r  );
         } catch (BadLocationException e) {
             logError( "", e );
         }

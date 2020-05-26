@@ -292,13 +292,9 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
         List<MetroMidiEvent> outputMidiEvents, 
         List<MetroTrack> tracks, 
         List<MetroTrack> registeringTracks, 
+        List<MetroTrack> finalizingTracks,
         List<MetroTrack> unregisteringTracks ) throws MetroException 
     {
-        // Before everything, initialize synchronizing status with the track.
-        // In most case, this method does nothing and returns immediately.
-        synchronizeTrack( metro, track, tracks, measureLengthInFrames );
-        
-        reprepareTrack( metro, measureLengthInFrames );
 
         // Start the process.
         long currentCursor;
@@ -307,6 +303,11 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
         Collection<MetroEventBuffer> buffers;
         
         synchronized ( metro.getMetroLock() ) {
+            // Before everything, initialize synchronizing status with the track.
+            // In most case, this method does nothing and returns immediately.
+            synchronizeTrack( metro, track, tracks, measureLengthInFrames );
+            reprepareTrack( metro, measureLengthInFrames );
+
             currentCursor      = this.cursor;
             nextCursor         = currentCursor + nframes;
             currentBufferSeqNo = this.currentBufferSeqNo;
@@ -343,8 +344,8 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
                     outputMidiEvents, 
                     tracks, 
                     registeringTracks,
-                    unregisteringTracks, 
-                    from, to );
+                    finalizingTracks, 
+                    unregisteringTracks, from, to );
 
                 // move the cursor offset.
                 cursorOffset = cursorOffset + buf.getLengthInFrames();
@@ -413,7 +414,9 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
         List<MetroEvent> inputMidiEventList, 
         List<MetroMidiEvent> outputMidiEventList, 
         List<MetroTrack> tracks,
-        List<MetroTrack> registeringTrackList, List<MetroTrack> unregisteringTrackList, long from, long to) 
+        List<MetroTrack> registeringTrackList, 
+        List<MetroTrack> finalizingTracks,
+        List<MetroTrack> unregisteringTrackList, long from, long to) 
     {
         if ( this.isEnabled() ) { // <<< ADDED (Sun, 03 May 2020 17:59:12 +0900)
             boolean found= false;
@@ -424,7 +427,7 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
                     found = true;
                     e.process( metro, from );
                     if ( e instanceof MetroEventOutput )
-                        ((MetroEventOutput)e).processOutput( outputMidiEventList, tracks, registeringTrackList, unregisteringTrackList );
+                        ((MetroEventOutput)e).processOutput( outputMidiEventList, tracks, registeringTrackList, finalizingTracks, unregisteringTrackList );
                 } else {
                     if ( found ) // SEE COMMENT_A (Fri, 02 Aug 2019 19:20:40 +0900)
                         break;

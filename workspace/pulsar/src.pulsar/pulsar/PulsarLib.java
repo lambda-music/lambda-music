@@ -577,7 +577,7 @@ public interface PulsarLib {
             } else if ( value instanceof Procedure ) {
                 return PulsarSequencerSynchronizer.create((Procedure)value);
             } else {
-                throw new IllegalArgumentException("unsupported value (" +value+ ")");
+                return readParamSynct3( SchemeValues.anyToString( value ) , null, 0.0d  );
             }
         }
         public static MetroTrackSynchronizer readParamSynct3(String syncType, MetroTrackSelector syncTrack, double syncOffset) {
@@ -609,10 +609,13 @@ public interface PulsarLib {
         public static ArrayList<MetroTrack> readParamTracks( Object[] args ) {
             ArrayList<MetroTrack> tracks = new ArrayList<>();
             for ( Object arg : args ) {
+                logInfo("readParamtTrack:" + arg );
                 if ( arg instanceof Collection ) {
                     tracks.addAll(((Collection)arg));
                 } else if ( arg instanceof MetroTrack ) {
                     tracks.add(((MetroTrack)arg));
+                } else {
+                    throw new IllegalArgumentException( "unsupported argument error : ( " + arg + ")" );
                 }
             }
             return tracks;
@@ -1906,7 +1909,7 @@ public interface PulsarLib {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 ArrayList<MetroTrack> tracks = readParamTracks(args);
-                getPulsar().removeTrack(tracks);
+                getPulsar().removeTrack(tracks, null );
                 return EmptyList.emptyList;
             }
         }
@@ -1915,7 +1918,7 @@ public interface PulsarLib {
             "put",
             ""
             + "The sequencer starts to play the added track and it gives the user some controls on "
-            + "how it starts playing the track."    
+            + "how it starts playing the track."
         ).setNames( "put-track", "putt" );
             
         public final Procedure putTrackProc = new PutTrackProc(new String[] { "put-track", "putt" });
@@ -1928,7 +1931,7 @@ public interface PulsarLib {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 ArrayList<MetroTrack> tracks = readParamTracks(args);
-                getPulsar().putTrack(tracks);
+                getPulsar().putTrack( tracks );
                 return EmptyList.emptyList;
             }
         }

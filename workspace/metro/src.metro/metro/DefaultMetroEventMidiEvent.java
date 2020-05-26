@@ -80,13 +80,13 @@ class DefaultMetroEventMidiEvent extends DefaultMetroEvent implements MetroMidiE
     
     /**
      * This method adds the current event to the buffer.
-     * See {@link MetroEventOutput#processOutput(Collection, List, List, List)}.
+     * See {@link MetroEventOutput#processOutput(Collection, List, List, List, List)}.
      */
     @Override
     public void processOutput(
         Collection<MetroMidiEvent> output, 
         List<MetroTrack> tracks, 
-        List<MetroTrack> registeringTracks, List<MetroTrack> unregisteringTracks) 
+        List<MetroTrack> registeringTracks, List<MetroTrack> finalizingTracks, List<MetroTrack> unregisteringTracks) 
     {
         output.add(this);
     }

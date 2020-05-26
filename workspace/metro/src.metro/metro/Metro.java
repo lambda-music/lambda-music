@@ -56,7 +56,9 @@ import lamu.lib.log.Logger;
  * 
  * @author Ats Oka
  */
-public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallback, JackTimebaseCallback, Runnable {
+public class Metro implements MetroMant,MetroPutt,MetroRemt, MetroLock, 
+    JackProcessCallback, JackShutdownCallback, JackTimebaseCallback, Runnable 
+{
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -99,15 +101,23 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
 //  private BlockingQueue<String> debugQueue = new LinkedBlockingQueue<String>();
 //    private StringBuilder sb = new StringBuilder();
     
+    private final ArrayList<MetroTrackManipulator>  messageQueue = new ArrayList<MetroTrackManipulator>();
     private final ArrayList<MetroTrack> tracks = new ArrayList<MetroTrack>();
-    private final ArrayList<MetroTrack> registeredTracks = new ArrayList<MetroTrack>();
-    private final ArrayList<MetroTrack> unregisteredTracks = new ArrayList<MetroTrack>();
-    private final ArrayList<MetroMessage>  messageQueue = new ArrayList<MetroMessage>();
+    private final ArrayList<MetroTrack> registeringTracks = new ArrayList<MetroTrack>();
+    private final ArrayList<MetroTrack> unregisteringTracks = new ArrayList<MetroTrack>();
+    private final ArrayList<MetroTrack> removingTracks = new ArrayList<MetroTrack>();
+
+    private final ArrayList<MetroTrackManipulator>  messageQueueSnapshot0 = new ArrayList<MetroTrackManipulator>();
+    private final ArrayList<MetroTrack> tracksSnapshot0 = new ArrayList<MetroTrack>(256);
+    private final ArrayList<MetroTrack> registeringTracksSnapshot0 = new ArrayList<MetroTrack>(256);
+    private final ArrayList<MetroTrack> unregisteringTracksSnapshot0 = new ArrayList<MetroTrack>(256);
+    private final ArrayList<MetroTrack> removingTracksSnapshot0 = new ArrayList<MetroTrack>(256);
     
-    private ArrayList<MetroTrack> tracksSnapshot = new ArrayList<MetroTrack>(256);
-    private ArrayList<MetroTrack> finalTracksSnapshot = new ArrayList<MetroTrack>(256);
-    private ArrayList<MetroMidiEvent> finalInputMidiEventList = new ArrayList<MetroMidiEvent>(1024);
-    private ArrayList<MetroMidiEvent> finalOutputMidiEventList = new ArrayList<MetroMidiEvent>(1024);
+    private final ArrayList<MetroTrack> tracksSnapshot1 = new ArrayList<MetroTrack>(256);
+    private final ArrayList<MetroTrack> finalTracksSnapshot1 = new ArrayList<MetroTrack>(256);
+    private final ArrayList<MetroMidiEvent> finalInputMidiEvents1 = new ArrayList<MetroMidiEvent>(1024);
+    private final ArrayList<MetroMidiEvent> finalOutputMidiEvents1 = new ArrayList<MetroMidiEvent>(1024);
+    private final ArrayList<MetroTrack> removingTracksSnapshot1 = new ArrayList<MetroTrack>(256);
 
     private volatile MetroTrack mainTrack = null; 
     /**
@@ -505,49 +515,65 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
             //          System.err.println( s );
 
             try {
-                long barLengthInFrames;
-                List<MetroTrack> tracks2;
-                List<MetroMessage> messageQueue2;
-//                List<MetroTrack> registeredTracks2;
+                long measureLengthInFramess2;
+                List<MetroTrack> tracks2         = tracksSnapshot0;
+                List<MetroTrackManipulator> messageQueue2 = this.messageQueueSnapshot0;
+                List<MetroTrack> registeringTracks = this.registeringTracksSnapshot0;
+                List<MetroTrack> removingTracks = this.removingTracksSnapshot0;
+                List<MetroTrack> unregisteringTracks = this.unregisteringTracksSnapshot0;
+
+                tracks2.clear();
+                messageQueue2.clear();
+                registeringTracks.clear();
+                unregisteringTracks.clear();
+                removingTracks.clear();
 
                 synchronized ( this.getMetroLock() ) {
-                    barLengthInFrames = this.getMeasureLengthInFrames();
-
-                    this.tracks.removeAll( this.unregisteredTracks );
-                    this.tracks.addAll( this.registeredTracks );
-                
-                    tracks2 = createSnapshot(this.tracks);
-                    messageQueue2 = createSnapshot(this.messageQueue);
-//                    registeredTracks2 = createSnapshot(this.registeredTracks);
-                    
-                    /*
-                     * Note that it is necessary to duplicate `registeredTracks` since the "prepare" method possiblly modify the
-                     * "registeredTrack" in its event handlers. 
-                     */
-
-                    this.unregisteredTracks.clear();
-                    this.registeredTracks.clear();
-                    this.messageQueue.clear();  
+                synchronized ( this.getMetroLock() ) {
+                    measureLengthInFramess2 = this.getMeasureLengthInFrames();
+                    tracks2.addAll( this.tracks );
+                    messageQueue2.addAll( this.messageQueue );
+                    registeringTracks.addAll( this.registeringTracksSnapshot0 );
+                    removingTracks.addAll( this.removingTracksSnapshot0 );
+                    unregisteringTracks.addAll( this.unregisteringTracksSnapshot0 );
+                    this.unregisteringTracks.clear();
+                    this.registeringTracks.clear();
+                    this.removingTracks.clear();
+                    this.messageQueue.clear();
                 }
-                
+                    
+//                    logInfo( "Metro:run" );
+
                 {
-                    for ( MetroTrack track : tracks2  ) {
-                        track.getSequence().progressBuffer( this,  track, barLengthInFrames );
-                    }
-                    for ( MetroMessage message : messageQueue2 ) {
+                    for ( MetroTrackManipulator message : messageQueue2 ) {
                         try {
-                            message.executeMessage( Metro.this, tracks2, barLengthInFrames);
+                            message.manipulateTracks( 
+                                tracks2,
+                                registeringTracks, 
+                                removingTracks, 
+                                unregisteringTracks );
                         } catch ( Throwable e ) {
                             logError( "An error occured in a message object", e);
                         }
                     }
-//                    for ( MetroTrack track : registeredTracks2 ) {
-//                        // ADDED (Sun, 30 Sep 2018 12:39:32 +0900)
-//                        track.processBuffer( Metro.this,  barLengthInFrames );
-//                    }
+
+                    for ( MetroTrack t : removingTracks ) {
+                        t.remove( this, null );
+                    }
+
+                    for ( MetroTrack track : tracks2  ) {
+                        track.getSequence().progressBuffer( this, track, measureLengthInFramess2 );
+                    }
                 }
-                
                 synchronized ( this.getMetroLock()) {
+                    this.tracks.removeAll( unregisteringTracks );
+                    this.tracks.addAll( registeringTracks );
+//                    logInfo( "registering" + registeringTracks );
+//                    logInfo( "unregistering" + unregisteringTracks );
+                }
+
+                synchronized ( this.getMetroLock()) {
+                    
                     // METRO_LOCK_WAIT
                     // XXX ??? why not zero?? (Thu, 01 Aug 2019 11:49:55 +0900)
                     /*
@@ -563,7 +589,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
                      */
                     this.getMetroLock().wait();
                 }
-                
+                }
             } catch ( InterruptedException e ) {
                 // ignore
                 logWarn( "interrupted" );
@@ -684,116 +710,129 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
             logError("", e1);
             return true;
         }
-        
+
         try {
             for ( MetroPort p : Metro.this.outputPortList )
                 JackMidi.clearBuffer( p.jackPort );
-            
-            ArrayList<MetroTrack> tracksSnapshot = this.tracksSnapshot;
-            ArrayList<MetroTrack> finalTracksSnapshot = this.finalTracksSnapshot;
-            ArrayList<MetroMidiEvent> finalInputMidiEventList = this.finalInputMidiEventList;
-            ArrayList<MetroMidiEvent> finalOutputMidiEventList = this.finalOutputMidiEventList;
-            
+
+            ArrayList<MetroTrack> tracksSnapshot = this.tracksSnapshot1;
+            ArrayList<MetroTrack> finalTracksSnapshot = this.finalTracksSnapshot1;
+            ArrayList<MetroMidiEvent> finalInputMidiEventList = this.finalInputMidiEvents1;
+            ArrayList<MetroMidiEvent> finalOutputMidiEventList = this.finalOutputMidiEvents1;
+            ArrayList<MetroTrack> removingTracksSnapshot = this.removingTracksSnapshot1; 
             tracksSnapshot.clear();
             finalTracksSnapshot.clear();
             finalInputMidiEventList.clear();
             finalOutputMidiEventList.clear();
-
-            
-            for ( Iterator<MetroPort> pi = this.inputPortList.iterator(); pi.hasNext(); ) {
-                MetroPort inputPort = pi.next();
-                
-                int eventCount = JackMidi.getEventCount( inputPort.jackPort );
-                for (int i = 0; i < eventCount; ++i) {
-                    JackMidi.eventGet( this.midiEvent, inputPort.jackPort, i );
-                    int size = this.midiEvent.size();
-                    byte[] data = new byte[size];
-                    this.midiEvent.read( data );
-                    finalInputMidiEventList.add( new DefaultMetroMidiEvent( this.midiEvent.time(), inputPort, data ) );
-                }
-            }
+            removingTracksSnapshot.clear();
 
             synchronized ( this.getMetroLock() ) {
-                tracksSnapshot.addAll( this.tracks );
-            }
-            
-            finalTracksSnapshot.addAll( tracksSnapshot );
-            
-            {
-                int trackLoopCount = 0;
-                ArrayList<MetroTrack> currTrackList = tracksSnapshot;
-                for(;;) {
-                    if ( MAX_TRACK_LOOP_COUNT <trackLoopCount ) {
-                        logError( "=== ERROR:" + MAX_TRACK_LOOP_COUNT  + "<trackLoopCount ===", new Exception() );
-                        break;
-                    }
-                    ArrayList<MetroTrack> nextTrackList = new ArrayList<>();
-                    for ( MetroTrack track : currTrackList ) {
-                        track.inputMidiEventList.addAll( finalInputMidiEventList );
-                        track.outputMidiEventList.clear();
-                        track.registeringTrack.clear();
-                        track.unregisteringTrack.clear();
-                        track.getSequence().progressCursor( this, track, 
-                            l_nframes, 
-                            measureLengthInFrames, 
-                            track.inputMidiEventList,
-                            track.outputMidiEventList, 
-                            finalTracksSnapshot, track.registeringTrack, track.unregisteringTrack );
-                        
-                        // 2. Preparing the final track list. 
-                        finalTracksSnapshot.addAll( track.registeringTrack );
-                        // 3. Preparing the final track list.
-                        finalTracksSnapshot.removeAll( track.unregisteringTrack );
+                for ( Iterator<MetroPort> pi = this.inputPortList.iterator(); pi.hasNext(); ) {
+                    MetroPort inputPort = pi.next();
 
-                        // Prepare the next track.
-                        nextTrackList.addAll( track.registeringTrack );
-                        nextTrackList.removeAll( track.unregisteringTrack );
-                    }
-                    if ( nextTrackList.isEmpty() ) {
-                        break;
-                    } else {
-                        currTrackList= nextTrackList;
-                        trackLoopCount++;
-                        continue;
+                    int eventCount = JackMidi.getEventCount( inputPort.jackPort );
+                    for (int i = 0; i < eventCount; ++i) {
+                        JackMidi.eventGet( this.midiEvent, inputPort.jackPort, i );
+                        int size = this.midiEvent.size();
+                        byte[] data = new byte[size];
+                        this.midiEvent.read( data );
+                        finalInputMidiEventList.add( new DefaultMetroMidiEvent( this.midiEvent.time(), inputPort, data ) );
                     }
                 }
-                
-                
-                // 4. Preparing the final track list.
-                for ( MetroTrack track : finalTracksSnapshot ) {
-                    finalOutputMidiEventList.addAll( track.outputMidiEventList ); 
-                }
-                
-                // sort the every event 
-                finalOutputMidiEventList.sort( MetroMidiEvent.COMPARATOR );
-                
-                if ( ! finalOutputMidiEventList.isEmpty() )
-                    if ( DEBUG ) logInfo( finalOutputMidiEventList.toString() );
 
-//                logInfo( "output count : "+ this.outputMidiEventList.size() );
-                
-                // output the events
-                for ( MetroMidiEvent e : finalOutputMidiEventList ) {
-                    JackMidi.eventWrite(
+                synchronized ( this.getMetroLock() ) {
+                    tracksSnapshot.addAll( this.tracks );
+                }
+
+                finalTracksSnapshot.addAll( tracksSnapshot );
+
+                {
+                    int trackLoopCount = 0;
+                    ArrayList<MetroTrack> currTrackList = tracksSnapshot;
+                    for(;;) {
+                        if ( MAX_TRACK_LOOP_COUNT <trackLoopCount ) {
+                            logError( "=== ERROR:" + MAX_TRACK_LOOP_COUNT  + "<trackLoopCount ===", new Exception() );
+                            break;
+                        }
+                        ArrayList<MetroTrack> nextTrackList = new ArrayList<>();
+                        for ( MetroTrack track : currTrackList ) {
+                            track.inputMidiEvents.addAll( finalInputMidiEventList );
+                            track.outputMidiEvents.clear();
+                            track.registeringTracks.clear();
+                            track.removingTracks.clear(); 
+                            track.unregisteringTracks.clear();
+                            track.getSequence().progressCursor( this, track, 
+                                l_nframes, 
+                                measureLengthInFrames, 
+                                track.inputMidiEvents,
+                                track.outputMidiEvents, 
+                                finalTracksSnapshot, 
+                                track.registeringTracks, 
+                                track.removingTracks, 
+                                track.unregisteringTracks );
+
+                            // 2. Preparing the final track list. 
+                            finalTracksSnapshot.addAll( track.registeringTracks );
+                            // 3. Preparing the final track list.
+                            finalTracksSnapshot.removeAll( track.unregisteringTracks );
+
+                            removingTracksSnapshot.addAll( track.removingTracks );
+
+                            // Prepare the next track.
+                            nextTrackList.addAll( track.registeringTracks );
+                            nextTrackList.removeAll( track.unregisteringTracks );
+                        }
+                        if ( nextTrackList.isEmpty() ) {
+                            break;
+                        } else {
+                            currTrackList= nextTrackList;
+                            trackLoopCount++;
+                            continue;
+                        }
+                    }
+
+
+                    // 4. Preparing the final track list.
+                    for ( MetroTrack track : finalTracksSnapshot ) {
+                        finalOutputMidiEventList.addAll( track.outputMidiEvents ); 
+                    }
+
+                    // sort the every event 
+                    finalOutputMidiEventList.sort( MetroMidiEvent.COMPARATOR );
+
+                    if ( ! finalOutputMidiEventList.isEmpty() )
+                        if ( DEBUG ) logInfo( finalOutputMidiEventList.toString() );
+
+                    //                logInfo( "output count : "+ this.outputMidiEventList.size() );
+
+                    // output the events
+                    for ( MetroMidiEvent e : finalOutputMidiEventList ) {
+                        JackMidi.eventWrite(
                             e.getPort().jackPort, 
                             (int)e.getMidiOffset(), 
                             e.getMidiData(), 
                             e.getMidiData().length 
                             );
-                }
-                
-//              JackMidi.eventWrite( 
-//                      Metro.this.outputPortList.get( e.getOutputPortNo() ), 
-//                      e.getOffsetInFrames() - this.cursor, 
-//                      e.getData(), 
-//                      e.getData().length 
-//                      );
-            }
-            synchronized ( this.getMetroLock() ) {
-                this.tracks.clear();
-                this.tracks.addAll(finalTracksSnapshot);
-            }
+                    }
 
+                    //              JackMidi.eventWrite( 
+                    //                      Metro.this.outputPortList.get( e.getOutputPortNo() ), 
+                    //                      e.getOffsetInFrames() - this.cursor, 
+                    //                      e.getData(), 
+                    //                      e.getData().length 
+                    //                      );
+                }
+                synchronized ( this.getMetroLock() ) {
+                    this.removingTracks.addAll( removingTracksSnapshot );
+                    this.tracks.clear();
+                    this.tracks.addAll( finalTracksSnapshot );
+                }
+
+                if ( ! removingTracksSnapshot.isEmpty() ) {
+                    notifyTrackChange("");
+                }
+
+            }
             return true;
         } catch (JackException ex) {
             logError( "ERROR" , ex);
@@ -911,7 +950,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
             throw new NullPointerException( "the passed list is null" );
 
         synchronized (getMetroLock()) {
-            this.registeredTracks.addAll( trackList );
+            this.registeringTracks.addAll( trackList );
             // ADDED (Sun, 10 May 2020 23:10:26 +0900)
             notifyTrackChange("register-track");
         }
@@ -941,7 +980,7 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
             throw new NullPointerException();
         
         synchronized (getMetroLock()) {
-            this.unregisteredTracks.addAll( trackList );
+            this.unregisteringTracks.addAll( trackList );
         }
     }
     
@@ -949,59 +988,26 @@ public class Metro implements  MetroLock, JackProcessCallback, JackShutdownCallb
      * Post a new message which is denoted by a runnable objects. The messages are
      * invoked by the main thread of this Metro instance.
      * 
-     * @param runnable
+     * @param manipulator
      *            the procedure to run at a later time.
      */
-    public void postMessage( MetroMessage runnable ) {
+    public void postMessage( MetroTrackManipulator manipulator ) {
         checkState();
 
         if ( DEBUG )
             logInfo( "****** postMessage 1");
         synchronized ( getMetroLock() ) {
-            this.messageQueue.add( runnable );
+            this.messageQueue.add( manipulator );
             this.notifyTrackChange("update");
         }
     }
 
-    private void removeFormerTrack(MetroTrack track, MetroTrackSynchronizer trackSynchronizer ) {
-        removeTrack( getTracks( track.getName() ), trackSynchronizer );
+    
+    @Override
+    public void manipulateTrack( MetroTrackManipulator manipulator ) {
+        postMessage( manipulator );
     }
-    private void removeFormerTrack(Collection<MetroTrack> trackList, MetroTrackSynchronizer trackSynchronizer ) {
-        for ( MetroTrack track : trackList ) {
-            removeFormerTrack( track, trackSynchronizer );
-        }
-    }
-        
-    public void putTrack( MetroTrack track )  {
-        putTrack( Arrays.asList(track), null );
-    }
-    public void putTrack( List<MetroTrack> trackList )  {
-        putTrack( trackList, null );
-    }
-    public void putTrack( List<MetroTrack> trackList, MetroTrackSynchronizer trackSynchronizer )  {
-        removeFormerTrack( trackList, trackSynchronizer );
-        
-        // Set the track synchronizer to the tracks.
-        if ( trackSynchronizer != null ) {
-            for ( MetroTrack track : trackList ) { 
-                MetroSequence sequence = track.getSequence();
-                if ( sequence instanceof MetroSynchronizedStarter ) {
-                    ((MetroSynchronizedStarter)sequence).setStartSynchronizer(trackSynchronizer);
-                }
-            }
-        }
-        registerTrack( trackList );
-    }
-    public void removeTrack( Collection<MetroTrack> trackList )  {
-        removeTrack( trackList, null );
-    }
-
-    public void removeTrack( Collection<MetroTrack> trackList, MetroTrackSynchronizer trackSynchronizer )  {
-        for ( MetroTrack track : trackList ) {
-            track.remove(this, trackSynchronizer );
-        }
-    }
-
+    
     @Override
     public void clientShutdown(JackClient client) {
         logInfo("JackAudio: Java MIDI thru test shutdown");

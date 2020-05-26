@@ -110,10 +110,11 @@ public class MetroTrack {
         return uniqueID;
     }
     
-    final List<MetroMidiEvent> inputMidiEventList = new ArrayList<>();
-    final List<MetroMidiEvent> outputMidiEventList = new ArrayList<>();
-    final List<MetroTrack> registeringTrack = new ArrayList<>();
-    final List<MetroTrack> unregisteringTrack = new ArrayList<>();
+    final List<MetroMidiEvent> inputMidiEvents = new ArrayList<>();
+    final List<MetroMidiEvent> outputMidiEvents = new ArrayList<>();
+    final List<MetroTrack> registeringTracks = new ArrayList<>();
+    final List<MetroTrack> removingTracks = new ArrayList<>();
+    final List<MetroTrack> unregisteringTracks = new ArrayList<>();
 
     // ADDED (Thu, 07 May 2020 13:03:35 +0900)    
     /**

@@ -23,6 +23,7 @@ public interface MetroSequence {
      * @param outputMidiEvents
      * @param tracks
      * @param registeringTracks
+     * @param finalizingTracks 
      * @param unregisteringTracks
      * @throws MetroException
      */
@@ -32,5 +33,7 @@ public interface MetroSequence {
         List<MetroMidiEvent> inputMidiEvents, 
         List<MetroMidiEvent> outputMidiEvents,
         List<MetroTrack> tracks, 
-        List<MetroTrack> registeringTracks, List<MetroTrack> unregisteringTracks ) throws MetroException;
+        List<MetroTrack> registeringTracks, 
+        List<MetroTrack> finalizingTracks, 
+        List<MetroTrack> unregisteringTracks ) throws MetroException;
 }
