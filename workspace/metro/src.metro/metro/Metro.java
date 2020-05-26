@@ -564,6 +564,9 @@ public class Metro implements MetroMant,MetroPutt,MetroRemt, MetroLock,
                     for ( MetroTrack track : tracks2  ) {
                         track.getSequence().progressBuffer( this, track, measureLengthInFramess2 );
                     }
+                    for ( MetroTrack track : registeringTracks  ) {
+                        track.getSequence().progressBuffer( this, track, measureLengthInFramess2 );
+                    }
                 }
                 synchronized ( this.getMetroLock()) {
                     this.tracks.removeAll( unregisteringTracks );
