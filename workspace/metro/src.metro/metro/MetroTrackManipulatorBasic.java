@@ -25,10 +25,10 @@ public class MetroTrackManipulatorBasic {
     }
 
     public static MetroTrackManipulator registering(MetroTrackSelector selector) {
-        class MetroTrackRemover implements MetroTrackManipulator {
+        class MetroTrackRegisterer implements MetroTrackManipulator {
             private final MetroTrackSelector selector;
 
-            public MetroTrackRemover(MetroTrackSelector selector) {
+            public MetroTrackRegisterer(MetroTrackSelector selector) {
                 this.selector = selector;
             }
 
@@ -42,13 +42,13 @@ public class MetroTrackManipulatorBasic {
                 selector.selectTracks(currentTracks, registeringTracks);
             }
         }
-        return new MetroTrackRemover(selector);
+        return new MetroTrackRegisterer(selector);
     }
     public static MetroTrackManipulator unregistering(MetroTrackSelector selector) {
-        class MetroTrackRemover implements MetroTrackManipulator {
+        class MetroTrackUnregisterer implements MetroTrackManipulator {
             private final MetroTrackSelector selector;
 
-            public MetroTrackRemover(MetroTrackSelector selector) {
+            public MetroTrackUnregisterer(MetroTrackSelector selector) {
                 this.selector = selector;
             }
 
@@ -62,7 +62,7 @@ public class MetroTrackManipulatorBasic {
                 selector.selectTracks(currentTracks, unregisteringTracks);
             }
         }
-        return new MetroTrackRemover(selector);
+        return new MetroTrackUnregisterer(selector);
     }
 
     private static class MetroTrackSynchronizedStarter implements MetroTrackManipulator {

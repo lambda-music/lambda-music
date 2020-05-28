@@ -14,6 +14,12 @@ public class MetroTrackSynchronizerBasic {
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
+    /////////////////////////////////////////////////////////////////////////////
+    //
+    // Synchronizer Factory Map
+    //
+    /////////////////////////////////////////////////////////////////////////////
+    
     private static HashMap<String,MetroTrackSynchronizerFactory> factoryMap = new HashMap<>();
     public static MetroTrackSynchronizerFactory getFactory( String name ) {
         if ( ! factoryMap.containsKey(name))
@@ -33,10 +39,17 @@ public class MetroTrackSynchronizerBasic {
             throw new IllegalArgumentException( "the argument number("+args.length+") != " + argumentCount );
 
     }
-    
-    static final class LongTrackSynchronizer implements MetroTrackSynchronizer {
+
+    /////////////////////////////////////////////////////////////////////////////
+    //
+    // Long Immediate Synchronizer 
+    // The offset value should be specified by a number which is measured by frame-count.
+    //
+    /////////////////////////////////////////////////////////////////////////////
+
+    static final class LongImmediateTrackSynchronizer implements MetroTrackSynchronizer {
         private final long syncOffset;
-        public LongTrackSynchronizer(long syncOffset) {
+        public LongImmediateTrackSynchronizer(long syncOffset) {
             this.syncOffset = syncOffset;
         }
         @Override
@@ -44,9 +57,16 @@ public class MetroTrackSynchronizerBasic {
             return syncOffset;
         }
     }
-    public static MetroTrackSynchronizer immediate(long syncOffset) {
-        return new LongTrackSynchronizer(syncOffset);
+    public static MetroTrackSynchronizer immediate( long syncOffset ) {
+        return new LongImmediateTrackSynchronizer(syncOffset);
     }
+
+    /////////////////////////////////////////////////////////////////////////////
+    //
+    // Double Immediate Synchronizer 
+    //
+    /////////////////////////////////////////////////////////////////////////////
+    
     static final class DoubleImmediateTrackSynchronizer implements MetroTrackSynchronizer {
         private final double syncOffset;
         public DoubleImmediateTrackSynchronizer( double syncOffset) {
@@ -57,89 +77,208 @@ public class MetroTrackSynchronizerBasic {
             return (long) (syncOffset*measureLengthInFrames);
         }
     }
-    public static MetroTrackSynchronizer immediate(double syncOffset) {
-        return new DoubleImmediateTrackSynchronizer(syncOffset);
-    }
     static final MetroTrackSynchronizer IMMEDIATE = immediate(0);
     public static MetroTrackSynchronizer immediate() {
         return MetroTrackSynchronizerBasic.IMMEDIATE;
     }
-    static {
-        final class ImmediateFactory implements MetroTrackSynchronizerFactory {
-            @Override
-            public MetroTrackSynchronizer createSynchronizer(MetroTrackSelector syncTrack, double syncOffset) {
-                return immediate(syncOffset);
-            }
+    public static MetroTrackSynchronizer immediate(double syncOffset) {
+        return new DoubleImmediateTrackSynchronizer(syncOffset);
+    }
+    static final class ImmediateSynchronizerFactory implements MetroTrackSynchronizerFactory {
+        @Override
+        public MetroTrackSynchronizer createSynchronizer(MetroTrackSelector syncTrack, double syncOffset) {
+            return immediate(syncOffset);
         }
-        MetroTrackSynchronizerFactory factory = new ImmediateFactory();
+    }
+    static {
+        MetroTrackSynchronizerFactory factory = new ImmediateSynchronizerFactory();
         addFactory( "immediate" , factory );
         addFactory( "imme" , factory );
         addFactory( "i" , factory );
     }
-    
 
-    static final class ParallelTrackSynchronizer implements MetroTrackSynchronizer {
+    /////////////////////////////////////////////////////////////////////////////
+    //
+    // Basic Synchronizer 
+    //
+    /////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * This class is an utility base class to implement
+     * {@link MetroTrackSynchronizer}. This class is only for the track
+     * synchronizers and subjected to be local to this class. This class. retrieves
+     * the tracks which are selected by the given track selectors and retrieves four
+     * values which are necessary to calculate the offset, and then call the
+     * {@link #calculateOffset(long, long, long, long, long)} method to calculate
+     * the value.
+     */
+    static abstract class BasicTrackSynchronizer implements MetroTrackSynchronizer {
         private final MetroTrackSelector syncTrack;
         private final double             syncOffset;
 
-        public ParallelTrackSynchronizer(MetroTrackSelector syncTrack, double syncOffset) {
+        public BasicTrackSynchronizer(MetroTrackSelector syncTrack, double syncOffset) {
             this.syncTrack  = syncTrack;
             this.syncOffset = syncOffset;
         }
 
         @Override
         public long syncronizeTrack( Metro metro, MetroTrack track, List<MetroTrack> tracks, long measureLengthInFrames) {
+            // 1.
+            long delayInFrames = (long)(syncOffset * measureLengthInFrames);
+
+            // 2. Get the current position/length of the current track. 
+            long positionInFrames;
+            long lengthInFrames;
+            
+            {
+                MetroSequence sequence = track.getSequence();
+                if ( sequence instanceof MetroSynchronizable ) {
+                    MetroSynchronizable syncSequence = (MetroSynchronizable)sequence;
+                    positionInFrames = syncSequence.getCurrentPositionInFrames(metro);
+                    lengthInFrames   = syncSequence.getCurrentLengthInFrames(metro);
+                } else {
+                    MetroTrackSynchronizerBasic.logError( "the current track sequence was not synchronizable (" + sequence + ")" , new Exception());
+                    positionInFrames = 0;
+                    lengthInFrames   = measureLengthInFrames;
+                }
+            }
+
+            // 3. Invoke the track selector and select tracks.
             ArrayList<MetroTrack> selectedTracks = new ArrayList<>();
             syncTrack.selectTracks(tracks, selectedTracks);
-            long currentPosition;
-            long delayInFrames = (long)(syncOffset * measureLengthInFrames);
+
+
+            // 4. Get the current position/length of the synchronizing target track. 
+            long syncPositionInFrames;
+            long syncLengthInFrames;
 
             if ( selectedTracks.isEmpty() ) {
                 MetroTrackSynchronizerBasic.logWarn( "=== no track was selected ===" );
                 MetroTrackSynchronizerBasic.logWarn( "track selector (" + syncTrack + ")" );
                 MetroTrackSynchronizerBasic.logWarn( "current tracks (" + tracks + ")" );
                 MetroTrackSynchronizerBasic.logError( "" , new Error() );
-                currentPosition = 0;
+                syncPositionInFrames = 0;
+                syncLengthInFrames   = measureLengthInFrames;
             } else {
                 MetroSequence sequence = selectedTracks.get(0).getSequence();
                 MetroTrackSynchronizerBasic.logWarn( "track selector selected track (" + syncTrack + ")" );
                 if ( sequence instanceof MetroSynchronizable ) {
-                    currentPosition = ((MetroSynchronizable)sequence).getCurrentPositionInFrames(metro);
+                    MetroSynchronizable syncSequence = (MetroSynchronizable)sequence;
+                    syncPositionInFrames = syncSequence.getCurrentPositionInFrames(metro);
+                    syncLengthInFrames   = syncSequence.getCurrentLengthInFrames(metro);
                 } else {
                     MetroTrackSynchronizerBasic.logError( "the specified track sequence was not synchronizable (" + sequence + ")" , new Exception());
-                    currentPosition = 0;
+                    syncPositionInFrames = 0;
+                    syncLengthInFrames   = measureLengthInFrames;
                 }
             }
-            MetroTrackSynchronizerBasic.logInfo( "synchronizer(parallel):" + track.getName() + ":" + currentPosition  + "/" + delayInFrames );
-            return currentPosition + delayInFrames;
+            long result = calculateOffset( positionInFrames, lengthInFrames, syncPositionInFrames, syncLengthInFrames, delayInFrames );
+            MetroTrackSynchronizerBasic.logInfo(
+                String.format( "synchronizer(basic)%s: curr %6d/%6d  sync %6d/%6d offset %6d => %6d ",
+                    track.getName(),
+                    positionInFrames,
+                    lengthInFrames,
+                    syncPositionInFrames,
+                    syncLengthInFrames,
+                    delayInFrames,
+                    result ));
+            
+            return result;
+        }
+
+        public abstract long calculateOffset(long positionInFrames, long lengthInFrames, long syncPositionInFrames, long syncLengthInFrames, long delayInFrames);
+    }
+
+
+    /////////////////////////////////////////////////////////////////////////////
+    //
+    // Parallel Head Synchronizer 
+    //
+    /////////////////////////////////////////////////////////////////////////////
+
+    static final class ParallelHeadTrackSynchronizer extends BasicTrackSynchronizer {
+        public ParallelHeadTrackSynchronizer(MetroTrackSelector syncTrack, double syncOffset) {
+            super(syncTrack, syncOffset);
+        }
+        @Override
+        public long calculateOffset(
+            long positionInFrames,
+            long lengthInFrames,
+            long syncPositionInFrames,
+            long syncLengthInFrames,
+            long delayInFrames) 
+        {
+            return syncPositionInFrames + delayInFrames;
+        }
+
+    }
+    public static ParallelHeadTrackSynchronizer parallelHead(MetroTrackSelector syncTrack, double syncOffset) {
+        return new ParallelHeadTrackSynchronizer(syncTrack, syncOffset);
+    }
+    static final class ParallelHeadSynchronizerFactory implements MetroTrackSynchronizerFactory {
+        @Override
+        public MetroTrackSynchronizer createSynchronizer(MetroTrackSelector syncTrack, double syncOffset) {
+            return parallelHead(syncTrack, syncOffset);
         }
     }
-
-    /**
-     * 
-     * @param syncTrack
-     * @param syncOffset
-     * @return
-     */
-    public static MetroTrackSynchronizer parallel( MetroTrackSelector syncTrack, double syncOffset ) {
-        return new ParallelTrackSynchronizer(syncTrack, syncOffset);
-    }
-
     static {
-        final class ParallelFactory implements MetroTrackSynchronizerFactory {
-            @Override
-            public MetroTrackSynchronizer createSynchronizer(MetroTrackSelector syncTrack, double syncOffset) {
-                return parallel(syncTrack, syncOffset );
-            }
-        }
-        MetroTrackSynchronizerFactory factory = new ParallelFactory();
+        MetroTrackSynchronizerFactory factory = new ParallelHeadSynchronizerFactory();
         addFactory( "parallel" , factory );
         addFactory( "para" , factory );
         addFactory( "p" , factory );
+        
+        addFactory( "head" , factory );
+        addFactory( "h" , factory );
+    } 
+
+    /////////////////////////////////////////////////////////////////////////////
+    //
+    // Parallel Bottom Synchronizer 
+    //
+    /////////////////////////////////////////////////////////////////////////////
+    static final class ParallelBottomTrackSynchronizer extends BasicTrackSynchronizer {
+        public ParallelBottomTrackSynchronizer(MetroTrackSelector syncTrack, double syncOffset) {
+            super(syncTrack, syncOffset);
+        }
+        @Override
+        public long calculateOffset(
+            long positionInFrames,
+            long lengthInFrames,
+            long syncPositionInFrames,
+            long syncLengthInFrames,
+            long delayInFrames) 
+        {
+            logInfo( "lengthInFrames:" + lengthInFrames );
+            logInfo( "( syncLengthInFrames - syncPositionInFrames ):" + ( syncLengthInFrames - syncPositionInFrames ) );
+            return
+                lengthInFrames - ( syncLengthInFrames - syncPositionInFrames ) 
+                 + delayInFrames;
+        }
+    }
+
+    public static MetroTrackSynchronizer parallelBottom(MetroTrackSelector syncTrack, double syncOffset) {
+        return new ParallelBottomTrackSynchronizer(syncTrack, syncOffset);
+    }
+    static final class ParallelBottomTrackSynchronizerFactory implements MetroTrackSynchronizerFactory {
+        @Override
+        public MetroTrackSynchronizer createSynchronizer(MetroTrackSelector syncTrack, double syncOffset) {
+            return parallelBottom(syncTrack, syncOffset);
+        }
+    }
+    static {
+        MetroTrackSynchronizerFactory factory = new ParallelBottomTrackSynchronizerFactory();
+        addFactory( "bottom" , factory );
+        addFactory( "b" , factory );
     } 
 
     
-    public static final class SerialTrackSynchronizer implements MetroTrackSynchronizer {
+    /////////////////////////////////////////////////////////////////////////////
+    //
+    // Serial Synchronizer 
+    //
+    /////////////////////////////////////////////////////////////////////////////
+
+    static final class SerialTrackSynchronizer implements MetroTrackSynchronizer {
         private final MetroTrackSelector syncTrack;
         private final double             syncOffset;
         public SerialTrackSynchronizer(MetroTrackSelector syncTrack, double syncOffset) {
@@ -178,21 +317,17 @@ public class MetroTrackSynchronizerBasic {
     public static MetroTrackSynchronizer serial( MetroTrackSelector syncTrack, double syncOffset ) {
         return new SerialTrackSynchronizer( syncTrack, syncOffset );
     }
-    static {
-        final class SerialFactory implements MetroTrackSynchronizerFactory {
-            @Override
-            public MetroTrackSynchronizer createSynchronizer(MetroTrackSelector syncTrack, double syncOffset) {
-                return serial(syncTrack, syncOffset );
-            }
+    static final class SerialSynchronizerFactory implements MetroTrackSynchronizerFactory {
+        @Override
+        public MetroTrackSynchronizer createSynchronizer(MetroTrackSelector syncTrack, double syncOffset) {
+            return serial(syncTrack, syncOffset );
         }
-        MetroTrackSynchronizerFactory factory = new SerialFactory();
+    }
+
+    static {
+        MetroTrackSynchronizerFactory factory = new SerialSynchronizerFactory();
         addFactory( "serial" , factory );
         addFactory( "seri" , factory );
         addFactory( "s" , factory );
     }
-    
-    
-    
-    
-
 }

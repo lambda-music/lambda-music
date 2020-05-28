@@ -23,7 +23,6 @@ package metro;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -140,13 +139,24 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
     
     @Override
     public long getCurrentLengthInFrames(Metro metro) {
+        ArrayList<MetroEventBuffer> buffers;
+        long currentBufferSeqNo;
         synchronized ( metro.getMetroLock() ) {
-            Queue<MetroEventBuffer> bufs = this.buffers;
-            if ( bufs.size() == 0 )
-                return 0;
-            else
-                return bufs.peek().getLengthInFrames(); 
+            buffers = new ArrayList<>(this.buffers);
+            currentBufferSeqNo = this.currentBufferSeqNo;
         }
+        MetroEventBuffer currentBuf =null;
+        for ( Iterator<MetroEventBuffer> i = buffers.iterator(); i.hasNext(); ) {
+            MetroEventBuffer buf = i.next();
+            if ( currentBufferSeqNo == buf.getSeqNo() ) {
+                currentBuf=buf;
+                break;
+            }
+        }
+        if ( currentBuf == null )
+            return 0;
+        else
+            return currentBuf.getLengthInFrames(); 
     }
 
     private static final long SEQ_NO_NOT_INITIALIZED = -1;
@@ -812,31 +822,8 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
                 if ( endCalled ) {
                     if ( DEBUG )
                         logInfo( "offerNewBuffer(" + track.getName() + ") ENDING started");
-                    
+
                     // 2. ending 2
-                    {
-                        MetroEventBuffer buf = MetroEventBuffer.create();
-                        buf.exec( endingLength , new Runnable() {
-                            @Override
-                            public void run() {
-                                if ( DEBUG )
-                                    logInfo( "offerNewBuffer(" + track.getName() + ") UNREGISTER THIS" );
-                                synchronized ( metro.getMetroLock() ) {
-                                    try {
-                                        metro.unregisterTrack( Arrays.asList( track ) );
-                                    } finally {
-                                        metro.notifyTrackChange("update");
-                                    }
-                                }
-                            }
-                        });
-                        buf.length( endingLength  );
-                        initNewBuffer(buf, barLengthInFrames);
-                        result.add( buf );
-                        length += buf.getLength();
-                    }
-                    
-                    // 3. ending 3
                     {
                         if ( DEBUG )
                             logInfo( "offerNewBuffer(): endingDone is true" );
@@ -848,6 +835,33 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
                         length += buf.getLength();
                         
                     }
+
+                    // 3. ending 3
+                    {
+                        MetroEventBuffer buf = MetroEventBuffer.create();
+//                        buf.exec( endingLength , new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                if ( DEBUG )
+//                                    logInfo( "offerNewBuffer(" + track.getName() + ") UNREGISTER THIS" );
+//                                synchronized ( metro.getMetroLock() ) {
+//                                    try {
+//                                        metro.unregisterTrack( Arrays.asList( track ) );
+//                                    } finally {
+//                                        metro.notifyTrackChange("update");
+//                                    }
+//                                }
+//                            }
+//                        });
+                        buf.tracks(0, 
+                            MetroTrackManipulatorBasic.unregistering( 
+                                MetroTrackSelectorBasic.constant( track )));
+                        buf.length( endingLength  );
+                        initNewBuffer(buf, barLengthInFrames);
+                        result.add( buf );
+                        length += buf.getLength();
+                    }
+                    
                 }
             }
         }

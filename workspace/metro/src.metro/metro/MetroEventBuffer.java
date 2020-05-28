@@ -41,7 +41,7 @@ class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroEvent
     
     private double length = 1.0d;
     private boolean prepared = false;
-    private long barLengthInFrames=-1;
+    private long measureLengthInFrames=-1;
     private long lengthInFrames = -1;
     private final List<MetroEvent> metroEvents = new ArrayList<MetroEvent>(10);
     
@@ -95,10 +95,10 @@ class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroEvent
         
         return max;
     }
-    public long getBarLengthInFrames() {
+    public long getMeasureLengthInFrames() {
         if ( ! prepared )
             throw new RuntimeException("not prepared");
-        return barLengthInFrames;
+        return measureLengthInFrames;
     }
     public long getLengthInFrames() {
         if ( ! prepared )
@@ -120,17 +120,17 @@ class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroEvent
         this.prepared = true;
     }
     
-    private void prepareBarOffsetInFrames( long barLengthInFrames ) {
+    private void prepareBarOffsetInFrames( long measureLengthInFrames ) {
         //      System.out.println("MetroMidiEventBuffer.calcInFrames() barInFrames="  + barInFrames );
         for ( MetroEvent e : this.metroEvents ) {
-            e.prepareBarOffsetInFrames( barLengthInFrames );
+            e.prepareBarOffsetInFrames( measureLengthInFrames );
         }
         //      System.out.println( "this.length " + this.length  );
-        this.barLengthInFrames = barLengthInFrames;
-        this.lengthInFrames = (long) (this.length * (double)barLengthInFrames);
+        this.measureLengthInFrames = measureLengthInFrames;
+        this.lengthInFrames = (long) (this.length * (double)measureLengthInFrames);
         
         if ( DEBUG ) 
-            logInfo( "MetroMidiEventBuffer.calcInFrames() barInFrames="  + barLengthInFrames + " / lengthInFrames=" + this.lengthInFrames  + "/ length=" + this.length);
+            logInfo( "MetroMidiEventBuffer.calcInFrames() measureLengthInFrames="  + measureLengthInFrames + " / lengthInFrames=" + this.lengthInFrames  + "/ length=" + this.length);
     }
     
     public int size() {
