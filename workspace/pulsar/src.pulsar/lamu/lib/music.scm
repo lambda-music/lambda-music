@@ -1071,7 +1071,8 @@
            (cons
              (list
                (cons 'type 'tmp-parser-note )
-               (cons 'tmp-len (car notes) ))
+               ; (cons 'tmp-len (car notes) ))
+               (cons 'tmp-len (/ 1 (car notes)) )) ; << modified to take the reciprocal of the value (Fri, 29 May 2020 13:08:49 +0900)
 
              (loop (cdr notes) transpose octave ))
            )
