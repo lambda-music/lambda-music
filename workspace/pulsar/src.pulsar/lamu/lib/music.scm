@@ -796,6 +796,7 @@
     (saw . ((interval . ,(+ -2  7))))
     (se  . ((interval . ,(+ -1  7))))
     (sol . ((interval . ,(+  0  7))))
+    (so  . ((interval . ,(+  0  7)))) ; << added (Fri, 29 May 2020 12:16:59 +0900) 
     (si  . ((interval . ,(+  1  7))))
     (sai . ((interval . ,(+  2  7))))
     (sao . ((interval . ,(+  3  7))))
@@ -815,6 +816,161 @@
     (ta  . ((interval . ,(+  1 11))))
     (tai . ((interval . ,(+  2 11))))
     (tao . ((interval . ,(+  3 11))))
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+    (cbb   . ((interval . ,(+ -2  0))))
+    (c--   . ((interval . ,(+ -2  0))))
+    (cb    . ((interval . ,(+ -1  0))))
+    (c-    . ((interval . ,(+ -1  0))))
+    (c     . ((interval . ,(+  0  0))))
+    (c+    . ((interval . ,(+  1  0))))
+    (c\#   . ((interval . ,(+  1  0))))
+    (c++   . ((interval . ,(+  2  0))))
+    (c\#\# . ((interval . ,(+  2  0))))
+
+    (dbb   . ((interval . ,(+ -2  2))))
+    (d--   . ((interval . ,(+ -2  2))))
+    (db    . ((interval . ,(+ -1  2))))
+    (d-    . ((interval . ,(+ -1  2))))
+    (d     . ((interval . ,(+  0  2))))
+    (d+    . ((interval . ,(+  1  2))))
+    (d\#   . ((interval . ,(+  1  2))))
+    (d++   . ((interval . ,(+  2  2))))
+    (d\#\# . ((interval . ,(+  2  2))))
+
+    (ebb   . ((interval . ,(+ -2  4))))
+    (e--   . ((interval . ,(+ -2  4))))
+    (eb    . ((interval . ,(+ -1  4))))
+    (e-    . ((interval . ,(+ -1  4))))
+    (e     . ((interval . ,(+  0  4))))
+    (e+    . ((interval . ,(+  1  4))))
+    (e\#   . ((interval . ,(+  1  4))))
+    (e++   . ((interval . ,(+  2  4))))
+    (e\#\# . ((interval . ,(+  2  4))))
+
+    (fbb   . ((interval . ,(+ -2  5))))
+    (f--   . ((interval . ,(+ -2  5))))
+    (fb    . ((interval . ,(+ -1  5))))
+    (f-    . ((interval . ,(+ -1  5))))
+    (f     . ((interval . ,(+  0  5))))
+    (f+    . ((interval . ,(+  1  5))))
+    (f\#   . ((interval . ,(+  1  5))))
+    (f++   . ((interval . ,(+  2  5))))
+    (f\#\# . ((interval . ,(+  2  5))))
+
+    (gbb   . ((interval . ,(+ -2  7))))
+    (g--   . ((interval . ,(+ -2  7))))
+    (gb    . ((interval . ,(+ -1  7))))
+    (g-    . ((interval . ,(+ -1  7))))
+    (g     . ((interval . ,(+  0  7))))
+    (g+    . ((interval . ,(+  1  7))))
+    (g\#   . ((interval . ,(+  1  7))))
+    (g++   . ((interval . ,(+  2  7))))
+    (g\#\# . ((interval . ,(+  2  7))))
+
+    (abb   . ((interval . ,(+ -2  9))))
+    (a--   . ((interval . ,(+ -2  9))))
+    (ab    . ((interval . ,(+ -1  9))))
+    (a-    . ((interval . ,(+ -1  9))))
+    (a     . ((interval . ,(+  0  9))))
+    (a+    . ((interval . ,(+  1  9))))
+    (a\#   . ((interval . ,(+  1  9))))
+    (a++   . ((interval . ,(+  2  9))))
+    (a\#\# . ((interval . ,(+  2  9))))
+
+    (bbb   . ((interval . ,(+ -2 11))))
+    (b--   . ((interval . ,(+ -2 11))))
+    (bb    . ((interval . ,(+ -1 11))))
+    (b-    . ((interval . ,(+ -1 11))))
+    (b     . ((interval . ,(+  0 11))))
+    (b+    . ((interval . ,(+  1 11))))
+    (b\#   . ((interval . ,(+  1 11))))
+    (b++   . ((interval . ,(+  2 11))))
+    (b\#\# . ((interval . ,(+  2 11))))
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+    (dobb   . ((interval . ,(+ -2  0))))
+    (do--   . ((interval . ,(+ -2  0))))
+    (dob    . ((interval . ,(+ -1  0))))
+    (do-    . ((interval . ,(+ -1  0))))
+    (do     . ((interval . ,(+  0  0))))
+    (do+    . ((interval . ,(+  1  0))))
+    (do\#   . ((interval . ,(+  1  0))))
+    (do++   . ((interval . ,(+  2  0))))
+    (do\#\# . ((interval . ,(+  2  0))))
+
+    (rebb   . ((interval . ,(+ -2  2))))
+    (re--   . ((interval . ,(+ -2  2))))
+    (reb    . ((interval . ,(+ -1  2))))
+    (re-    . ((interval . ,(+ -1  2))))
+    (re     . ((interval . ,(+  0  2))))
+    (re+    . ((interval . ,(+  1  2))))
+    (re\#   . ((interval . ,(+  1  2))))
+    (re++   . ((interval . ,(+  2  2))))
+    (re\#\# . ((interval . ,(+  2  2))))
+
+    (mibb   . ((interval . ,(+ -2  4))))
+    (mi--   . ((interval . ,(+ -2  4))))
+    (mib    . ((interval . ,(+ -1  4))))
+    (mi-    . ((interval . ,(+ -1  4))))
+    (mi     . ((interval . ,(+  0  4))))
+    (mi+    . ((interval . ,(+  1  4))))
+    (mi\#   . ((interval . ,(+  1  4))))
+    (mi++   . ((interval . ,(+  2  4))))
+    (mi\#\# . ((interval . ,(+  2  4))))
+
+    (fabb   . ((interval . ,(+ -2  5))))
+    (fa--   . ((interval . ,(+ -2  5))))
+    (fab    . ((interval . ,(+ -1  5))))
+    (fa-    . ((interval . ,(+ -1  5))))
+    (fa     . ((interval . ,(+  0  5))))
+    (fa+    . ((interval . ,(+  1  5))))
+    (fa\#   . ((interval . ,(+  1  5))))
+    (fa++   . ((interval . ,(+  2  5))))
+    (fa\#\# . ((interval . ,(+  2  5))))
+
+    (solbb   . ((interval . ,(+ -2  7))))
+    (sol--   . ((interval . ,(+ -2  7))))
+    (solb    . ((interval . ,(+ -1  7))))
+    (sol-    . ((interval . ,(+ -1  7))))
+    (sol     . ((interval . ,(+  0  7))))
+    (sol+    . ((interval . ,(+  1  7))))
+    (sol\#   . ((interval . ,(+  1  7))))
+    (sol++   . ((interval . ,(+  2  7))))
+    (sol\#\# . ((interval . ,(+  2  7))))
+
+    (sobb   . ((interval . ,(+ -2  7))))
+    (so--   . ((interval . ,(+ -2  7))))
+    (sob    . ((interval . ,(+ -1  7))))
+    (so-    . ((interval . ,(+ -1  7))))
+    (so     . ((interval . ,(+  0  7))))
+    (so+    . ((interval . ,(+  1  7))))
+    (so\#   . ((interval . ,(+  1  7))))
+    (so++   . ((interval . ,(+  2  7))))
+    (so\#\# . ((interval . ,(+  2  7))))
+
+    (labb   . ((interval . ,(+ -2  9))))
+    (la--   . ((interval . ,(+ -2  9))))
+    (lab    . ((interval . ,(+ -1  9))))
+    (la-    . ((interval . ,(+ -1  9))))
+    (la     . ((interval . ,(+  0  9))))
+    (la+    . ((interval . ,(+  1  9))))
+    (la\#   . ((interval . ,(+  1  9))))
+    (la++   . ((interval . ,(+  2  9))))
+    (la\#\# . ((interval . ,(+  2  9))))
+
+    (tibb   . ((interval . ,(+ -2 11))))
+    (ti--   . ((interval . ,(+ -2 11))))
+    (tib    . ((interval . ,(+ -1 11))))
+    (ti-    . ((interval . ,(+ -1 11))))
+    (ti     . ((interval . ,(+  0 11))))
+    (ti+    . ((interval . ,(+  1 11))))
+    (ti\#   . ((interval . ,(+  1 11))))
+    (ti++   . ((interval . ,(+  2 11))))
+    (ti\#\# . ((interval . ,(+  2 11))))
+
     ))
 #|
  | a 'tmp-parser-note is a temporary virtual note which is used only in this
@@ -1525,7 +1681,31 @@
 
     result))
 
-; melody : parse simple MML commands and generate pulsar's note data.
+
+; ==============
+; `melody-escape-sharp`
+; ==============
+; This function is only used by `melody` and should be private
+; to the function.
+; Usage :
+;         (melody-escape-sharp "c d# e f# g")
+;          =>  "c d\\# e f\\# g"
+(define (melody-escape-sharp s)
+  (list->string
+    (let loop ((lst (string->list s )))
+      (if (null? lst)
+        '()
+        (let ((curr-val (car lst )))
+          (if (eqv?  curr-val #\# )
+            (cons* #\\ curr-val (loop (cdr lst)))
+            (cons*     curr-val (loop (cdr lst)))))))))
+
+
+
+; ===========
+; `melody`  
+; ============
+; parse simple MML commands and generate pulsar's note data.
 ; (melody '( do re mi fa sol ) )
 ; => (((type . note) (pos . 0)   (len . 1/4) (velo . 3/5) (note . 60))
 ;     ((type . note) (pos . 1/4) (len . 1/4) (velo . 3/5) (note . 62))
@@ -1539,7 +1719,7 @@
     (set! notes 
       (call-with-input-string (string-append
                                 "("
-                                notes 
+                                (melody-escape-sharp notes)
                                 " end)")
                               read)
       ))
