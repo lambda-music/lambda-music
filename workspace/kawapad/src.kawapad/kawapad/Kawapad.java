@@ -1849,9 +1849,10 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         }
 
         public void swapCaretDirection(Caret caret) {
-            int tmp = caret.getMark();
-            caret.setDot( caret.getMark());
-            caret.moveDot( tmp );
+            int mark = caret.getMark();
+            int dot = caret.getDot();
+            caret.setDot( dot );
+            caret.moveDot( mark );
         }
     }
 
@@ -2798,15 +2799,21 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
             Document document = c.getDocument();
             Segment text = KawapadSelection.getText( document );
             Caret caret = c.getCaret();
-            String word = KawapadTemporarySearchHighlighter.getCurrentWord( text, caret );
-            if ( word == null ) {
+            
+            if ( caret.getDot() == caret.getMark() ) {
+                KawapadSelection.LISPWORD_SELECT_CURRENT_TRANSFORMER.transform( getParenthesisStack(), text, caret );
                 return;
             } else {
-                SearchNextWordTransformer transformer = 
+                String word = KawapadTemporarySearchHighlighter.getCurrentWord( text, caret );
+                if ( word == null ) {
+                    return;
+                } else {
+                    SearchNextWordTransformer transformer = 
                         new SearchNextWordTransformer( 
                             word, 
                             wordSearch, direction );
-                transformer.transform( getParenthesisStack(), text, caret );
+                    transformer.transform( getParenthesisStack(), text, caret );
+                }
             }
         }
     }

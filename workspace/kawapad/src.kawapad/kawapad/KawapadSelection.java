@@ -542,8 +542,15 @@ public class KawapadSelection {
     static class SelectCurrentWordTransformer extends LispWordSelectionTransformer {
         @Override
         public boolean process(CharSequence text, CaretPos before, CaretPos after) {
-            after.right = lookup(text, parenthesesSelector, before.right + 1, +1) - 1;
-            after.left = lookup(text, parenthesesSelector, before.left + 0, -1) + 1;
+            int right = lookup(text, parenthesesSelector, before.right + 1, +1) - 1;
+            int left  = lookup(text, parenthesesSelector, before.left + 0, -1) + 1;
+            after.right = right;
+            after.left  = left;
+            if ( Math.abs( after.left - before.left ) < Math.abs( after.right - before.right ) ) {
+                after.direction = -1;
+            } else {
+                after.direction = +1;
+            }
             return true;
         }
     }
