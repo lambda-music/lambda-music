@@ -128,15 +128,22 @@ public class AcceleratorKeyList {
     }
 
     public static void dump(ActionMap actionMap) {
-        System.err.println( "dump:" );
+        dumpProc(actionMap,0);
+    }
+    public static void dumpProc(ActionMap actionMap, int level ) {
+        System.err.println( "dump: level-" + level );
         Object[] keys = actionMap.allKeys();
         for ( Object k : keys ) {
+            Action obj = actionMap.get( k );
             System.err.print( k );
             System.err.print( '=' );
-            System.err.print( actionMap.get( k ) );
+            System.err.print( obj.getValue(Action.NAME ) + ":" + obj.getValue(AcceleratorKeyList.ACCELERATOR_KEY_LIST) + "/" + obj.getValue(AcceleratorKeyList.ACCELERATOR_KEY_LIST) );
             System.err.println( );
         }
         System.err.println( "" );
+        
+        if ( actionMap.getParent() != null )
+            dumpProc( actionMap.getParent() , level + 1);
     }
     
     public static void processAcceleratorKeys( JComponent o ) {

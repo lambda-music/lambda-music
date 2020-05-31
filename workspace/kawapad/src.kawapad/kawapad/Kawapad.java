@@ -147,6 +147,13 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     // ADDED (Fri, 06 Sep 2019 01:05:27 +0900)
     private static final boolean ENABLED_SYNTAX_HIGHLIGHTING = true;
 
+    
+    /**
+     *  See {@link DeselectAction}
+     *   (Sun, 31 May 2020 17:30:02 +0900)
+     */
+    private static final String EDITORKIT_UNSELECT = "unselect".intern();
+
     ////////////////////////////////////////////////////////////////////////////
 
     static volatile int uniqueIDCounter = 0;
@@ -256,6 +263,17 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         
         // This action intercepts our customization so delete it.
         AcceleratorKeyList.purgeKeyFromActionMap( kawapad, DefaultEditorKit.insertTabAction );
+        
+        
+        // Added (Sun, 31 May 2020 17:28:45 +0900)
+        // Remove the default unselect action. 
+        // This default action effectively prevents our customization.
+        if ( false ){
+            // see BUG_UNSELECT (Sun, 31 May 2020 19:06:39 +0900)
+            AcceleratorKeyList.purgeKeyFromActionMap( kawapad, EDITORKIT_UNSELECT );
+            AcceleratorKeyList.dump(kawapad.getActionMap());
+        }
+        
         
         this.syntaxHighlighter = new KawapadSyntaxHighlighter( this );
 
@@ -809,6 +827,34 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
             AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl alt BACK_QUOTE" );
         }
     }
+
+    // `DefaultEditorKit.unselect` was changed to package private with an unknown reason. 
+    public static final String KAWAPAD_DESELECT = EDITORKIT_UNSELECT;  
+
+    /**
+     * This class is not working. See BUG_UNSELECT. (Sun, 31 May 2020 19:07:30 +0900)
+     */
+    // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
+    @AutomatedActionField
+    public final Action DESELECT_ACTION = new DeselectAction( KAWAPAD_DESELECT );
+    class DeselectAction extends TextAction2 {
+        public DeselectAction(String string) {
+            super(string);
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JTextComponent target = getTextComponent(e);
+            Caret caret = target.getCaret();
+            caret.setDot( caret.getDot() );
+//            System.err.println( "SSSSSSSSSSSSSSSSSSSSS" );
+        }
+        {
+            putValue( Action2.CAPTION, "Deselect" );
+            putValue( Action.MNEMONIC_KEY , (int) 's' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ESCAPE" );
+        }
+    }
+
     
     // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
     @AutomatedActionField
@@ -3445,10 +3491,11 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         scheme.add( new JMenuItem( kawapad.RUN_ACTION ) );
         scheme.add( new JMenuItem( kawapad.INTERRUPT_ACTION ) );
         
-//        editMenuItem.add( new JMenuItem( kawapad.UNDO_ACTION ) );
-        edit.add( new JMenuItem( kawapad.REDO_ACTION ) );
         edit.add( new JMenuItem( kawapad.DEBUG_ACTION ) );
+        edit.add( new JMenuItem( kawapad.UNDO_ACTION ) );
+        edit.add( new JMenuItem( kawapad.REDO_ACTION ) );
         edit.add( new JMenuItem( kawapad.PASTE_ACTION ) );
+//        edit.add( new JMenuItem( kawapad.DESELECT_ACTION ) );
         
         edit.addSeparator();
         
