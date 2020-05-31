@@ -121,7 +121,18 @@ public class SchemeIndentationCorrector {
         }
     }
     
-    public static String correctIndentation( Function<String, Boolean> lispWordChecker, String text ) {
+    
+    /**
+     * 
+     * @param lispWordChecker
+     *    A lambda-function which returns the size of the indentation if the given word is a special keyword,
+     *    Otherwise, the lambda-function should return {@link java.lang.Integer#MIN_VALUE }.  
+     * @param text
+     * 
+     * @return
+     *   TODO
+     */
+    public static String correctIndentation( Function<String,Integer> lispWordChecker, String text ) {
         /*
          * In this function, we always presume that ( lines.length == tokenizedLines ).
          */
@@ -190,7 +201,7 @@ public class SchemeIndentationCorrector {
     }
 
     
-    public static int calculateIndentLength( Function<String, Boolean > lispWordChecker, ArrayDeque<Level> stack ) {
+    public static int calculateIndentLength( Function<String,Integer> lispWordChecker, ArrayDeque<Level> stack ) {
         int length = -1;
         Level level = stack.peek();
         if ( 0 == level.tokenized.size()  ) {
@@ -201,10 +212,11 @@ public class SchemeIndentationCorrector {
         } else if ( 2 == level.tokenized.size()  ) {
             length = level.tokenized.get(1).index;
         } else if ( 3 <= level.tokenized.size()  ) {
-            if ( lispWordChecker.apply( level.tokenized.get(1).content ) ) {
-                length = level.tokenized.get(0).index + 2;
-            } else {
+            int indent = lispWordChecker.apply( level.tokenized.get(1).content );
+            if ( indent == Integer.MIN_VALUE ) {
                 length = level.tokenized.get(2).index;
+            } else {
+                length = level.tokenized.get(0).index + indent ;
             }
         }
         return length;
@@ -250,7 +262,7 @@ public class SchemeIndentationCorrector {
     }
     
     
-    public static String calculateIndentSizeO(String text, int pos, Function<String, Boolean > lispWordChecker ) {
+    public static String calculateIndentSizeO(String text, int pos, Function<String,Integer> lispWordChecker ) {
         int beginIndex = SchemeIndentChanger.lookupLineStart(text, pos );
         int endIndex   = SchemeIndentChanger.lookupLineEnd(  text, pos );
         String subText = text.substring(beginIndex, endIndex);
@@ -261,7 +273,7 @@ public class SchemeIndentationCorrector {
         return SchemeIndentChanger.fillStr(' ', length );
     }
     
-    public static String calculateIndentSize(String text, int pos, Function<String,Boolean> lispWordChecker ) {
+    public static String calculateIndentSize(String text, int pos, Function<String,Integer> lispWordChecker ) {
         String subText = text.substring(0, pos) ;
         String[] lines = subText.split( "\n" );
         Tokenized[] tokenizedLines = new Tokenized[ lines.length ];
@@ -299,7 +311,7 @@ public class SchemeIndentationCorrector {
 
         List<String> lispWords = Arrays.asList("lambda" );
 
-        Function<String,Boolean> lispWordChecker = (s)->lispWords.contains(s);
+        Function<String,Integer> lispWordChecker = (s)->lispWords.contains(s) ? 2 : Integer.MIN_VALUE;
         
         System.out.println( correctIndentation( lispWordChecker, "(lambda()\nhello world \n foo)" ));
 

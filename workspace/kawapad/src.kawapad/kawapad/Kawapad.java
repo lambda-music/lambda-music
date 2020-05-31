@@ -501,7 +501,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
             }
         }
     }
-    public static final String calculateIndentSize( String text, int pos, Function<String,Boolean> lispWordChecker ) {
+    public static final String calculateIndentSize( String text, int pos, Function<String,Integer> lispWordChecker ) {
         return SchemeIndentationCorrector.calculateIndentSize( text, pos, lispWordChecker );
     }
     
@@ -3433,12 +3433,20 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
             || i.startsWith("define")
             || i.startsWith("with")
             || i.startsWith("call-with")
-            || i.startsWith("syntax");
+            || i.startsWith("syntax")
+            || i.startsWith( "(" ); // <<< ADDED (Sun, 31 May 2020 22:42:07 +0900)
     }
     
     final ArrayList<String> lispWordList = new ArrayList<>();
-    final Function<String,Boolean> lispWordChecker = (i)->lispWordList.contains(i) || isLispWord(i);
-    public Function<String,Boolean> getLispWordList() {
+    final Function<String,Integer> lispWordChecker = (i)->{
+        if ( i.equals("(")) {
+            return 3;
+        } else if (lispWordList.contains(i) || isLispWord(i))
+            return 2;
+        else
+            return Integer.MIN_VALUE;
+    };
+    public Function<String,Integer> getLispWordList() {
         return lispWordChecker;
     }
     public void addLispKeyword( String s ) {
