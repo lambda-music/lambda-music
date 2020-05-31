@@ -66,7 +66,7 @@ public class KawapadSyntaxHighlighter extends SyntaxHighlighter {
                     SchemeValues.toStringList((LList)result.getValue()));
             
             // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-            keywordList.addAll( kawapad.lispKeywordList );
+            keywordList.addAll( kawapad.lispWordList );
             keywordList.sort( Kawapad.KEYWORD_COMPARATOR );
             
             for ( ListIterator<String> i=keywordList.listIterator(); i.hasNext(); ) {

@@ -20,7 +20,7 @@ public class SchemeEvaluatorUtils {
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
     
-    public static Object executeExternalFile( Runnable threadInitializer, String fileType, File scriptFile ) {
+    public static Object executeStatic( Runnable threadInitializer, String fileType, File scriptFile ) {
         // Read user's configuration file. If any problem is occurred, print its
         // stacktrace in the stderr, and then continue the process.
         try {
@@ -34,7 +34,18 @@ public class SchemeEvaluatorUtils {
                 return null;
             }
         } catch (Throwable e) {
-        	SimpleConsole.getConsole().addText(e);
+                SimpleConsole.getConsole().addText(e);
+            logError( "Ignored an error : ", e );
+            return null;
+        }
+    }
+    public static Object executeStatic( Runnable threadInitializer, String schemeScriptString, String currentURI ) {
+        try {
+            SchemeResult result = new SchemeEvaluator().evaluate( threadInitializer, schemeScriptString , currentURI );
+            result.throwIfError();
+            return result.getValue(); 
+        } catch (Throwable e) {
+                SimpleConsole.getConsole().addText(e);
             logError( "Ignored an error : ", e );
             return null;
         }

@@ -22,8 +22,8 @@ package kawapad;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * October 3, 2018 at 9:52:28 PM
@@ -121,7 +121,7 @@ public class SchemeIndentationCorrector {
         }
     }
     
-    public static String correctIndentation( Collection<String> lispWords, String text ) {
+    public static String correctIndentation( Function<String, Boolean> lispWordChecker, String text ) {
         /*
          * In this function, we always presume that ( lines.length == tokenizedLines ).
          */
@@ -146,7 +146,7 @@ public class SchemeIndentationCorrector {
              */
             if ( 0<i) {
                 if ( 1<stack.size() ) {
-                    int index = calculateIndentLength(lispWords, stack);
+                    int index = calculateIndentLength(lispWordChecker, stack);
                     
                     if ( 0 <=index && ( /* IGNORE BLANK LINES ADDED (Tue, 09 Oct 2018 00:58:59 +0900) */ 
                                         0 < tokenizedLines[i].size() 
@@ -189,8 +189,8 @@ public class SchemeIndentationCorrector {
         return stack;
     }
 
-
-    public static int calculateIndentLength( Collection<String> lispWords, ArrayDeque<Level> stack ) {
+    
+    public static int calculateIndentLength( Function<String, Boolean > lispWordChecker, ArrayDeque<Level> stack ) {
         int length = -1;
         Level level = stack.peek();
         if ( 0 == level.tokenized.size()  ) {
@@ -201,7 +201,7 @@ public class SchemeIndentationCorrector {
         } else if ( 2 == level.tokenized.size()  ) {
             length = level.tokenized.get(1).index;
         } else if ( 3 <= level.tokenized.size()  ) {
-            if ( lispWords.contains( level.tokenized.get(1).content ) ) {
+            if ( lispWordChecker.apply( level.tokenized.get(1).content ) ) {
                 length = level.tokenized.get(0).index + 2;
             } else {
                 length = level.tokenized.get(2).index;
@@ -250,18 +250,18 @@ public class SchemeIndentationCorrector {
     }
     
     
-    public static String calculateIndentSizeO(String text, int pos, Collection<String> lispWords ) {
+    public static String calculateIndentSizeO(String text, int pos, Function<String, Boolean > lispWordChecker ) {
         int beginIndex = SchemeIndentChanger.lookupLineStart(text, pos );
         int endIndex   = SchemeIndentChanger.lookupLineEnd(  text, pos );
         String subText = text.substring(beginIndex, endIndex);
         Tokenized tokenizedLine = tokenize( subText, 0 );
         ArrayDeque<Level> stack = createStack();
         semiExecute(stack, tokenizedLine );
-        int length = calculateIndentLength( lispWords, stack );
+        int length = calculateIndentLength( lispWordChecker, stack );
         return SchemeIndentChanger.fillStr(' ', length );
     }
     
-    public static String calculateIndentSize(String text, int pos, Collection<String> lispWords ) {
+    public static String calculateIndentSize(String text, int pos, Function<String,Boolean> lispWordChecker ) {
         String subText = text.substring(0, pos) ;
         String[] lines = subText.split( "\n" );
         Tokenized[] tokenizedLines = new Tokenized[ lines.length ];
@@ -284,7 +284,7 @@ public class SchemeIndentationCorrector {
          *     See calculateIndexLevel() function. 
          */
         if ( 1<stack.size() ) {
-            int index = calculateIndentLength(lispWords, stack);
+            int index = calculateIndentLength(lispWordChecker, stack);
             if ( 0 <=index  ) {
                 return SchemeIndentChanger.fillStr(' ', index );
             }
@@ -298,16 +298,18 @@ public class SchemeIndentationCorrector {
         System.out.println( result );
 
         List<String> lispWords = Arrays.asList("lambda" );
-        
-        System.out.println( correctIndentation( lispWords, "(lambda()\nhello world \n foo)" ));
 
-        System.out.println( correctIndentation( lispWords, "(lambda args\nhello world \n foo)" ) );
-        System.out.println( correctIndentation( lispWords, "(lambda* args\nhello world \n foo)" ) );
-        System.out.println( correctIndentation( lispWords, "(lambda*  () aa \nhello world \n foo)" ) );
-        System.out.println( correctIndentation( lispWords, "(\n'foo\n 'bar\n 'bum\n )" ) );
-        System.out.println( correctIndentation( lispWords, "('foo\n 'bar\n 'bum\n )" ) );
-        System.out.println( correctIndentation( lispWords, "(\n(\n(\n(\n(\n)\n)\n)\n)\n)\n" ) );
-        System.out.println( correctIndentation( lispWords, "(\n(\n(\n(\n(\n)\n)\n)\n)\n)\n         )\n         )\n(\n(\n" ) );
+        Function<String,Boolean> lispWordChecker = (s)->lispWords.contains(s);
+        
+        System.out.println( correctIndentation( lispWordChecker, "(lambda()\nhello world \n foo)" ));
+
+        System.out.println( correctIndentation( lispWordChecker, "(lambda args\nhello world \n foo)" ) );
+        System.out.println( correctIndentation( lispWordChecker, "(lambda* args\nhello world \n foo)" ) );
+        System.out.println( correctIndentation( lispWordChecker, "(lambda*  () aa \nhello world \n foo)" ) );
+        System.out.println( correctIndentation( lispWordChecker, "(\n'foo\n 'bar\n 'bum\n )" ) );
+        System.out.println( correctIndentation( lispWordChecker, "('foo\n 'bar\n 'bum\n )" ) );
+        System.out.println( correctIndentation( lispWordChecker, "(\n(\n(\n(\n(\n)\n)\n)\n)\n)\n" ) );
+        System.out.println( correctIndentation( lispWordChecker, "(\n(\n(\n(\n(\n)\n)\n)\n)\n)\n         )\n         )\n(\n(\n" ) );
 
     }
 }

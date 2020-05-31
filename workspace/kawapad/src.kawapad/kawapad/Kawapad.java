@@ -40,12 +40,11 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.logging.Level;
 
 import javax.swing.Action;
@@ -474,7 +473,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
                         
                         String text = kawapad.getText();
                         int pos = kawapad.getCaretPosition();
-                        String indentString = calculateIndentSize(text, pos, kawapad.getLispKeywordList() );
+                        String indentString = calculateIndentSize(text, pos, kawapad.getLispWordList() );
                         kawapad.replaceSelection( "\n" + indentString );
                     } finally {
                         kawapad.getUndoManager().setSuspended(false);
@@ -484,8 +483,8 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
             }
         }
     }
-    public static final String calculateIndentSize( String text, int pos, Collection<String> lispWords ) {
-        return SchemeIndentationCorrector.calculateIndentSize( text, pos, lispWords );
+    public static final String calculateIndentSize( String text, int pos, Function<String,Boolean> lispWordChecker ) {
+        return SchemeIndentationCorrector.calculateIndentSize( text, pos, lispWordChecker );
     }
     
     
@@ -2531,7 +2530,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     }
     
     public static final String correctIndentation( Kawapad kawapad, String text ) {
-        return SchemeIndentationCorrector.correctIndentation( kawapad.getLispKeywordList(), text );
+        return SchemeIndentationCorrector.correctIndentation( kawapad.getLispWordList(), text );
     }
 
     public static final String KAWAPAD_INDENTATION_CORRECTOR = "kawapad-indentation-corrector";
@@ -2820,7 +2819,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
      * classes. 
      */
     static {
-        SchemeEvaluatorUtils.executeExternalFile( null, "kawapad initialization",  getInitFile() );
+        SchemeEvaluatorUtils.executeStatic( null, "kawapad initialization",  getInitFile() );
     }
     
     public static class ConsoleObject {
@@ -3375,32 +3374,41 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	private static final List<String> DEFAULT_LISP_WORDS = Arrays.asList( "let", "lambda", "define" );
-    ArrayList<String> lispKeywordList = new ArrayList<>( DEFAULT_LISP_WORDS );
-    public List<String> getLispKeywordList() {
-        return Collections.unmodifiableList( this.lispKeywordList );
+    private static final boolean isLispWord( String i ) {
+        return i.startsWith("lambda")   
+            || i.startsWith("let")
+            || i.startsWith("define")
+            || i.startsWith("with")
+            || i.startsWith("call-with")
+            || i.startsWith("syntax");
+    }
+    
+    final ArrayList<String> lispWordList = new ArrayList<>();
+    final Function<String,Boolean> lispWordChecker = (i)->lispWordList.contains(i) || isLispWord(i);
+    public Function<String,Boolean> getLispWordList() {
+        return lispWordChecker;
     }
     public void addLispKeyword( String s ) {
         synchronized ( Kawapad.this ) {
-            lispKeywordList.add( s );
+            lispWordList.add( s );
             notifySyntaxChangeToAll();
         }
     }
     public void addAllLispKeywords( List<String> s ) {
         synchronized ( Kawapad.this ) {
-            lispKeywordList.addAll( s );
+            lispWordList.addAll( s );
             notifySyntaxChangeToAll();
         }
     }
     public void deleteLispKeyword( String s ) {
         synchronized ( Kawapad.this ) {
-            lispKeywordList.remove( s );
+            lispWordList.remove( s );
             notifySyntaxChangeToAll();
         }
     }
     public void deleteAllLispKeywords( List<String> s ) {
         synchronized ( Kawapad.this ) {
-            lispKeywordList.removeAll( s );
+            lispWordList.removeAll( s );
             notifySyntaxChangeToAll();
         }
     }

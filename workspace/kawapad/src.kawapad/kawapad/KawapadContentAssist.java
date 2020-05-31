@@ -153,7 +153,7 @@ public class KawapadContentAssist {
                 System.err.println( "currentWord:" + currentWord );
             
             ArrayList<String> allKeys = 
-                    new ArrayList<>( EvaluatorUtils.getAllKey( evaluator ) );
+                    new ArrayList<>( EvaluatorUtils.getAllKeys( evaluator ) );
 
             ArrayList<String> keys = new ArrayList<>();
             for ( String key : allKeys ) {
