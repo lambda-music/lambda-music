@@ -8,6 +8,7 @@ Kawapad Keystroke Reference
 |kawapad-undo-action|Undo|  CTRL-Z  |
 |kawapad-redo-action|Redo|  SHIFT-CTRL-Z  |
 |kawapad-debug|Debug|  CTRL-ALT-BACK_QUOTE  |
+|unselect|Deselect|  ESCAPE  |
 |paste-from-clipboard|Paste|  CTRL-V  |
 |caret-backward|caret-backward|  LEFT, CTRL-B  |
 |caret-forward|caret-forward|  RIGHT, CTRL-F  |

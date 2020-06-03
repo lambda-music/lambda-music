@@ -30,19 +30,16 @@
         <mkdir dir="bin"/>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src.commons">
-                <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src.apps">
-                <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src.streams">
-                <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
@@ -87,10 +84,5 @@
         <ant antfile="build.xml" dir="${pulsar.location}" inheritAll="false" target="build"/>
         <ant antfile="build.xml" dir="${pulsar-gui.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${pulsar-gui.location}" inheritAll="false" target="build"/>
-    </target>
-    <target name="ForkedProcess">
-        <java classname="lamu.lib.app.process.ForkedProcess" failonerror="true" fork="yes">
-            <classpath refid="lib-lamucommons.classpath"/>
-        </java>
     </target>
 </project>
