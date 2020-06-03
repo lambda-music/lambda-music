@@ -44,19 +44,16 @@
         <mkdir dir="bin"/>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src.kawapad">
-                <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src.actions">
-                <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src.gui-utils">
-                <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
@@ -91,10 +88,5 @@
         <ant antfile="build.xml" dir="${lamu.location}" inheritAll="false" target="build"/>
         <ant antfile="build.xml" dir="${pulsar-gui.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${pulsar-gui.location}" inheritAll="false" target="build"/>
-    </target>
-    <target name="KawapadFrame">
-        <java classname="kawapad.KawapadFrame" failonerror="true" fork="yes">
-            <classpath refid="kawapad.classpath"/>
-        </java>
     </target>
 </project>

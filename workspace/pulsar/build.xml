@@ -25,6 +25,9 @@
         <pathelement location="${metro.location}/lib/jna-4.5.0.jar"/>
         <pathelement location="${metro.location}/lib/jna-platform-4.5.0.jar"/>
         <pathelement location="${metro.location}/lib/jnajack-1.3.0.jar"/>
+        <pathelement location="${metro.location}/lib/apfloat-aparapi.jar"/>
+        <pathelement location="${metro.location}/lib/apfloat-jscience.jar"/>
+        <pathelement location="${metro.location}/lib/apfloat.jar"/>
         <path refid="lib-loggerutils.classpath"/>
         <path refid="lib-lamucommons.classpath"/>
     </path>
@@ -45,7 +48,6 @@
         <mkdir dir="bin"/>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src.pulsar">
-                <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
