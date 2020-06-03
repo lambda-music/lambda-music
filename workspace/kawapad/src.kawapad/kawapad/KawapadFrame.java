@@ -98,6 +98,20 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
         });
     }
 
+    //////////////////////////////////////////////////////////////////////////////////////////
+    //
+    // getCurrent (the second generation) (Wed, 03 Jun 2020 17:00:46 +0900)
+    //
+    //////////////////////////////////////////////////////////////////////////////////////////
+    
+    private static ThreadLocal<KawapadFrame> threadLocal = new ThreadLocal<KawapadFrame>();
+    public static final KawapadFrame getCurrent() {
+        return threadLocal.get();
+    }
+    static final void setCurrent( KawapadFrame kawapadFrame ) {
+        threadLocal.set( kawapadFrame );
+    }
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -174,6 +188,10 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
                         < getParent().getSize().width;
             }
         };
+        
+        this.kawapad.addThreadInitializer( ()->{
+            setCurrent( this );
+        });
         
 //      this.kawapad.getThreadInitializerCollection().addThreadInitializer( this.getThreadInitializer() );
 

@@ -46,7 +46,18 @@ public class PulsarGui {
     public final Procedure setTempo = new SetTempo(new String[] { "gui-set-tempo" });
     
 
+    /**
+     *  This method should not be used; the newly created applications should
+     *  use {@link PulsarGui#getUserPane()} method.
+     */
     public JNamedPanel getPane() {
+        return getCurrent().userPane;
+    }
+    /**
+     * @return
+     *          the user pane.
+     */
+    public JNamedPanel getUserPane() {
         return getCurrent().userPane;
     }
     public PulsarFrame getFrame() {

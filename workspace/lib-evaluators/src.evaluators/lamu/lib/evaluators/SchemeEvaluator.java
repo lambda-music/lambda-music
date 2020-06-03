@@ -60,7 +60,20 @@ public class SchemeEvaluator implements Evaluator, NameCaptionHolder {
         this.setCurrentEvaluator();
         return SchemeEvaluatorImplementation.evaluateSchemeProc( 
             scheme,
-            privateThreadInitializer, 
+            () -> {
+                try {
+                    if ( privateThreadInitializer!= null )
+                        privateThreadInitializer.run(); 
+                } catch ( Throwable e ) {
+                    logError("", e);
+                }
+                try {
+                    if ( threadInitializer!= null )
+                        threadInitializer.run(); 
+                } catch ( Throwable e ) {
+                    logError("", e);
+                }
+            },
             schemeScript, 
             currentFile, 
             currentURI );

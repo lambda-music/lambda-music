@@ -190,6 +190,14 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
     public PulsarGui getGui() {
         return gui;
     }
+    
+    /**
+     * 
+     * @return
+     */
+    public JNamedPanel getUserPane() {
+        return gui.getUserPane();
+    }
 
     private void initPulsarGui() {
         if ( DO_UPDATE_TRACK_POSION )

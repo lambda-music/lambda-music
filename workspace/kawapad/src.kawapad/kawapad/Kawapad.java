@@ -386,6 +386,28 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
 //        if ( finalizeDone ) return;
 //        finalizeDone = true;
 //    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    //
+    // getCurrent (the second generation) (Wed, 03 Jun 2020 17:00:46 +0900)
+    //
+    //////////////////////////////////////////////////////////////////////////////////////////
+    
+    private static ThreadLocal<Kawapad> threadLocal = new ThreadLocal<Kawapad>();
+    public static final Kawapad getCurrent() {
+        return threadLocal.get();
+    }
+    static final void setCurrent( Kawapad kawapad ) {
+        threadLocal.set( kawapad );
+    }
+    
+    private List<Runnable> threadInitializerList = new ArrayList<Runnable>();
+    public void addThreadInitializer( Runnable r ) {
+        this.threadInitializerList.add(r);
+    }
+    public void removeThreadInitializer( Runnable r ) {
+        this.threadInitializerList.remove(r);
+    }
     
     //////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -399,7 +421,20 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
             ThreadManager threadManager  = this.kawapad.getThreadManager();
             AsyncEvaluator.executeAsync(
                 threadManager, 
-                null, 
+                ()->{
+                    try {
+                        setCurrent( this );
+                    } catch ( Throwable e ) {
+                        logError("", e);
+                    }
+                    for ( Runnable t : threadInitializerList ) {
+                        try {
+                            t.run();
+                        } catch ( Throwable e ) {
+                            logError("", e);
+                        }
+                    }
+                }, 
                 new StringReader( schemeScript ), 
                 evaluator, 
                 receiver, 
