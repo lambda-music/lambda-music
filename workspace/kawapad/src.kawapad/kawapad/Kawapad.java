@@ -526,7 +526,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
                         
                         String text = kawapad.getText();
                         int pos = kawapad.getCaretPosition();
-                        String indentString = calculateIndentSize(text, pos, kawapad.getLispWordList() );
+                        String indentString = calculateIndentSize(text, pos, kawapad.getLispWordChecker() );
                         kawapad.replaceSelection( "\n" + indentString );
                     } finally {
                         kawapad.getUndoManager().setSuspended(false);
@@ -2612,7 +2612,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     }
     
     public static final String correctIndentation( Kawapad kawapad, String text ) {
-        return SchemeIndentationCorrector.correctIndentation( kawapad.getLispWordList(), text );
+        return SchemeIndentationCorrector.correctIndentation( kawapad.getLispWordChecker(), text );
     }
 
     public static final String KAWAPAD_INDENTATION_CORRECTOR = "kawapad-indentation-corrector";
@@ -3038,6 +3038,14 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
             return currentFile.getParentFile();
         }
     }
+
+    // ADDED (Fri, 05 Jun 2020 02:09:15 +0900)
+    public File resolveFile( File file ) {
+        if ( ! file.isAbsolute()  ) {
+            file = new File( getCurrentDirectory(), file.getPath() );
+        }
+        return file;
+    }
     
     static final FileFilter SCHEME_FILE_FILTER = new FileFilter() {
         @Override
@@ -3064,16 +3072,18 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         openNewProc();
     }
 
-    private void openFileProc(File filePath) throws IOException {
-        if ( ( ! filePath.exists() ) || ( ! filePath.isFile() ) ) {
-            filePath.getParentFile().mkdirs();
-            if ( ! filePath.createNewFile() ) {
-                throw new RuntimeException( "cannot create the specified file (" + filePath.getPath() + ")" );
+    private void openFileProc(File file) throws IOException {
+        // ADDED (Fri, 05 Jun 2020 02:09:15 +0900)
+        file = resolveFile( file );
+        if ( ( ! file.exists() ) || ( ! file.isFile() ) ) {
+            file.getParentFile().mkdirs();
+            if ( ! file.createNewFile() ) {
+                throw new RuntimeException( "cannot create the specified file (" + file.getPath() + ")" );
             }
-            setTextProc( filePath, "\n#| empty file |#\n\n" );
+            setTextProc( file, "\n#| empty file |#\n\n" );
         } else {
-            String s = new String( Files.readAllBytes( filePath.toPath() ),  Charset.defaultCharset() );
-            setTextProc( filePath, s );
+            String s = new String( Files.readAllBytes( file.toPath() ),  Charset.defaultCharset() );
+            setTextProc( file, s );
         }
 
     }
@@ -3369,7 +3379,16 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         Kawapad newKawapad = kawapadFrame.getKawapad();
         kawapadFrame.processInit();
         if ( f != null )
-            newKawapad.openFile( f );
+            /*
+             * NOTE: Calling resolveFile() (Fri, 05 Jun 2020 12:37:33 +0900)
+             * 
+             * The filename should resolve to the current directory of the current Kawapad,
+             * otherwise the new Kawapad resolves the filename to the current directory of
+             * itself. It cannot open the specified file properly because the current
+             * directory of the new Kawapad is not set yet at this point.
+             */
+            newKawapad.openFile(
+                this.resolveFile(f));
         return kawapadFrame; 
     }
 
@@ -3461,14 +3480,14 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     //  Keyword Management
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     private static final boolean isLispWord( String i ) {
         return i.startsWith("lambda")   
             || i.startsWith("let")
             || i.startsWith("define")
             || i.startsWith("with")
-            || i.startsWith("call-with")
+            || i.startsWith("call-with") 
             || i.startsWith("syntax")
+            || i.startsWith("object")
             || i.startsWith( "(" ); // <<< ADDED (Sun, 31 May 2020 22:42:07 +0900)
     }
     
@@ -3481,7 +3500,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         else
             return Integer.MIN_VALUE;
     };
-    public Function<String,Integer> getLispWordList() {
+    public Function<String,Integer> getLispWordChecker() {
         return lispWordChecker;
     }
     public void addLispKeyword( String s ) {
