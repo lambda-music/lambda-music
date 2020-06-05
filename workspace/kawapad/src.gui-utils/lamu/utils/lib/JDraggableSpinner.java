@@ -15,12 +15,12 @@ import javax.swing.WindowConstants;
  * <a href="https://www.youtube.com/watch?v=iNlmKQK3ZvA">https://www.youtube.com/watch?v=iNlmKQK3ZvA</a>.<br/>
  *
  */
-public class JDraggableSpiner extends JSpinner {
+public class JDraggableSpinner extends JSpinner {
     public static void main(String[] args) {
         JFrame frame = new JFrame();
         Container pane = frame.getContentPane();
         pane.setLayout( new BoxLayout( pane, BoxLayout.LINE_AXIS ));
-        pane.add( new JDraggableSpiner() );
+        pane.add( new JDraggableSpinner() );
         pane.add( new JButton("aa"));
         pane.doLayout();
         frame.setDefaultCloseOperation( WindowConstants.EXIT_ON_CLOSE );
