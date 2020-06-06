@@ -99,7 +99,8 @@ public class NoteListCommon {
     static final NoteListValueConverter<Boolean> S2J_BOOLEAN = new NoteListValueConverter<Boolean>() {
         @Override
         public Boolean convert(Object value) {
-            return (Boolean)value; 
+            return 
+                (Boolean)SchemeValues.resolveProcedure(value); 
         }
     };
     static final NoteListValueConverter<Boolean> J2S_BOOLEAN = S2J_BOOLEAN;
@@ -109,7 +110,9 @@ public class NoteListCommon {
     static final NoteListValueConverter<Integer> S2J_INTEGER = new NoteListValueConverter<Integer>() {
         @Override
         public Integer convert(Object value) {
-            return SchemeValues.toInteger( value );
+            return 
+                SchemeValues.toInteger( 
+                    SchemeValues.resolveProcedure(value));
         }
     };
     static final NoteListValueConverter<IntNum> J2S_INTEGER = new NoteListValueConverter<IntNum>() {
@@ -131,7 +134,9 @@ public class NoteListCommon {
     static final NoteListValueConverter<Double> S2J_DOUBLE = new NoteListValueConverter<Double>() {
         @Override
         public Double convert(Object value) {
-            return SchemeValues.toDouble( value );
+            return 
+                SchemeValues.toDouble(
+                    SchemeValues.resolveProcedure(value));
         }
     };
     static final NoteListValueConverter<RealNum> J2S_DOUBLE = new NoteListValueConverter<RealNum>() {
@@ -203,7 +208,9 @@ public class NoteListCommon {
     static final NoteListValueConverter<String> S2J_STRING = new NoteListValueConverter<String>() {
         @Override
         public String convert(Object value) {
-            return SchemeValues.toString( value );
+            return 
+                SchemeValues.toString( 
+                    SchemeValues.resolveProcedure(value));
         }
     };
 
@@ -226,6 +233,7 @@ public class NoteListCommon {
     static final NoteListValueConverter<MetroPort> S2J_PORT = new NoteListValueConverter<MetroPort>() {
         @Override
         public MetroPort convert(Object o) {
+            o = SchemeValues.resolveProcedure(o);
             if ( o instanceof MetroPort ) {
                 return (MetroPort)o;
             } else if ( o instanceof Number ) {

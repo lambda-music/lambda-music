@@ -70,6 +70,28 @@ public class SchemeValues {
 //        }
 //    }
     
+    /**
+     * Return the argument value itself if the value is not a procedure; otherwise
+     * this method calls the procedure and return the value with the result of the
+     * procedure.
+     * 
+     * @param schemeVal
+     *    any value.
+     * @return
+     *    the argument value unless it is a procedure.
+     */
+    public static Object resolveProcedure( Object schemeVal ) {
+        Object result = schemeVal;
+        if ( result instanceof Procedure ) {
+            try {
+                result = ((Procedure)result).apply0();
+            } catch (Throwable e) {
+                logError("", e);
+            }
+        }
+        return result;
+    }
+    
     public static boolean isQuantity( Object schemeVal ) {
         return schemeVal instanceof Quantity;
     }
