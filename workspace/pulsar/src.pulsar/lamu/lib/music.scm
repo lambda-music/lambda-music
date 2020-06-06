@@ -2295,6 +2295,7 @@
       (begin
         ; do nothing;
         #f))))
+
 (define (song-reset . args)
   (lambda args
     (if (= (length args) 0)

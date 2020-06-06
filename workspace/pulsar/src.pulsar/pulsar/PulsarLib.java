@@ -286,130 +286,6 @@ public interface PulsarLib {
             }
         }
         
-        /**
-         * Wrap another invokable object in order to filter the undesirable arguments for
-         * readParamTrackSearcher().
-         * 
-         * The tags property of MetroTrack accepts descendants of Collection class. In
-         * the general use case of MetroTrack in Pulsar, it presumes that tags are LList
-         * objects. The list object in ||tags|| property is passed to clients directly.
-         * But since the MetroTrack accepts all types of Collection class descendants,
-         * MetroTrack forces Pulsar to support tags objects which is other than LList.
-         * 
-         * Avoid unnecessary duplication of passed lists, we check the type of each list.
-         * And let is pass through when it is an LList list, and convert it to LList when
-         * it is a general Collection list. (Thu, 22 Aug 2019 12:18:27 +0900) 
-         * 
-         * @param i
-         *     
-         * @return
-         */
-        static Invokable readParamSearchTrackFilter( Invokable i ) {
-            return new Invokable() {
-                @Override
-                public Object invoke(Object... args) {
-                    if ( 0 < args.length ) {
-                        args[1] = filterArg( args[1] );
-                    }
-                    return i.invoke( args );
-                }
-                Object filterArg(Object arg1) {
-                    if ( arg1 == null ) {
-                        return EmptyList.emptyList;
-                    } else if ( arg1 instanceof LList ) {
-                        return arg1;
-                    } else if ( arg1 instanceof Collection ) {
-                        if (((Collection)arg1).isEmpty()) {
-                            return EmptyList.emptyList;
-                        } else {
-                            return Pair.makeList( Arrays.asList(((Collection)arg1).toArray()));
-                        }
-                    } else {
-                        return arg1;
-                    }
-                }
-            };
-        }
-        
-        /**
-         * XXX 
-         * 
-         * @param object
-         * @return
-         */
-        static Procedure readParamTrackSearcher( Object object ) { 
-            object = SchemeValues.schemeNullCheck( object );
-            // TAG SEARCH
-            if ( object instanceof Procedure ) {
-                return (Procedure) object;
-            } else if ( object instanceof Symbol || object instanceof IString ) {
-                return new TagSearchIsProcedure(object);
-            } else {
-                throw new IllegalArgumentException( "unsupported type of the argument (" + object + ")" );
-            }
-        }
-        
-        
-        /**
-         * This method used be `searchTrackCombo()`.
-         * This was renamed at (Wed, 06 Nov 2019 07:38:28 +0900). 
-         * @param arg
-         * @return
-         */
-        List<MetroTrack> readParamSearchTrack(Object arg) {
-            return 
-                    getPulsar().getTracks(
-                        readParamSearchTrackFilter(
-                            SchemeInvokable.create( readParamTrackSearcher( arg ) )));
-        }
-
-        // TODO
-//        List<MetroTrack> readParamCreateTrack( Object object ) {
-//            if ( object instanceof MetroTrack ) {
-//                return Arrays.<MetroTrack>asList((MetroTrack)object);
-//            } else if ( object instanceof Procedure ) {
-//                return Arrays.asList( PulsarTrack.createTrack( null, null, (Procedure)object ));
-//            } else if ( object instanceof LList ) {
-//                if ( ((LList)object).isEmpty() ) {
-//                    return Collections.emptyList();
-//                } else {
-//                    if ( object instanceof Pair ) {
-//                        if (((Pair)object).getCar() instanceof MetroTrack) {
-//                            return (List<MetroTrack>) object;
-//                        } else if ( NoteListParser.isNotationList(object) ) {
-//                            return Arrays.asList( PulsarTrack.createTrack( null, null, new TrackProcedure( (Pair) object ) ) );
-//                        } else {
-//                            return readParamSearchTrack( object );
-//                        }
-//                    } else {
-//                        throw new IllegalArgumentException("unknown type of argument (" + object + ")" ) ;
-//                    }
-//                } 
-//            } else {
-//                return readParamSearchTrack( object );
-//            }
-//        }
-        List<MetroTrack> readParamCreateTrack( Object object ) {
-            if ( object instanceof MetroTrack ) {
-                return Arrays.<MetroTrack>asList((MetroTrack)object);
-            } else if ( object instanceof LList ) {
-                if ( ((LList)object).isEmpty() ) {
-                    return Collections.emptyList();
-                } else {
-                    List<MetroTrack> list = new ArrayList<>();
-                    for ( Object o : ((LList)object)) {
-                        if ( o instanceof MetroTrack ) {
-                            list.add((MetroTrack) o);
-                        } else {
-                            list.addAll( readParamSearchTrack( object ) );
-                        }
-                    }
-                    return list;
-                } 
-            } else {
-                return readParamSearchTrack( object );
-            }
-        }
         
         static double readParamSyncOffset(Object object) {
             return SchemeValues.toDouble( object );
@@ -560,7 +436,7 @@ public interface PulsarLib {
         public static MetroTrackSelector readParamSelt( Object[] args ) {
             switch ( args.length  ){
                 case 0 : 
-                    throw new IllegalArgumentException("an argument is required");
+                    return MetroTrackSelectorBasic.allSelector();
                 case 1 :
                     return readParamSelt1(args[0]);
                 default :
@@ -1553,12 +1429,9 @@ public interface PulsarLib {
 
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                ArrayList<MetroTrack> t = new ArrayList<>();
-                for ( int i=0; i<args.length; i++ ) {
-                    Object arg = args[i];
-                    t.addAll( readParamSearchTrack( arg ) );
-                }
-                return Pair.makeList( t );
+                MetroTrackSelector trackSelector = readParamSelt(args);
+                List<MetroTrack> tracks = MetroTrackSelector.doSelectTracks(getPulsar(), trackSelector);
+                return Pair.makeList( tracks );
             }
         }
 

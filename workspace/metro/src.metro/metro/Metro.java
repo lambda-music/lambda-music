@@ -324,12 +324,21 @@ public class Metro implements MetroMant,MetroPutt,MetroRemt, MetroLock,
     public List<MetroTrack> getTracks( MetroTrackSelector selector ) {
         return MetroTrackSelector.doSelectTracks( replicateAllTracks(), selector );
     }
-    public List<MetroTrack> getTracks( Invokable invokable ) {
-        return getTracks( MetroTrackSelectorBasic.createLinewiseInvokableSelector(invokable) );
-    }
+    /**
+     * TODO TO BE REMOVED 
+     * @param name
+     * @return
+     */
+    @Deprecated
     public List<MetroTrack> getTracks( Object name ) {
         return getTracks( MetroTrackSelectorBasic.nameSelector( name ));
     }
+    /**
+     * TODO TO BE REMOVED 
+     * @param name
+     * @return
+     */
+    @Deprecated
     public List<MetroTrack> getTracks( Collection<? extends Object> tags ) {
         return getTracks( MetroTrackSelectorBasic.tagOrSelector( tags ));
     }
@@ -605,7 +614,7 @@ public class Metro implements MetroMant,MetroPutt,MetroRemt, MetroLock,
         }
         logInfo("Metro.run() : exited");
     }
-    public <T> List<T> createSnapshot(List<T> list) {
+    public static <T> List<T> createSnapshot(List<T> list) {
         return list.isEmpty() ? Collections.EMPTY_LIST : new ArrayList<>( list );
     }
     

@@ -21,4 +21,7 @@ public interface MetroTrackSelector {
         trackSelector.selectTracks( tracks, result );
         return result;
     }
+    public static List<MetroTrack> doSelectTracks( Metro metro, MetroTrackSelector trackSelector ) {
+        return doSelectTracks( metro.replicateAllTracks(), trackSelector );
+    }
 }
