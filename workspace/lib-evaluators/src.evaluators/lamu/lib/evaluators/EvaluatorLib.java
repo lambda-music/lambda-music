@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.Reader;
 import java.util.Arrays;
 
+import gnu.lists.LList;
 import gnu.mapping.Environment;
 import kawa.standard.Scheme;
 import lamu.lib.kawautils.SchemeValues;
@@ -78,6 +79,31 @@ public class EvaluatorLib {
         }
     }
 
+    public static final CurrentThreadManagerProc currentThreadManager = new CurrentThreadManagerProc( new String[] { "current-thread-manager" });
+    public static final class CurrentThreadManagerProc extends MultipleNamedProcedure1 {
+        public CurrentThreadManagerProc(String[] names) {
+            super(names);
+        }
+        @Override
+        public Object apply1( Object arg ) throws Throwable {
+            return ((AsyncThreadManager)ThreadManager.getCurrent()); 
+        }
+    }
+
+    public static final CurrentThreadsProc currentThreads = new CurrentThreadsProc(new String[] { "current-threads" });
+    public static final class CurrentThreadsProc extends MultipleNamedProcedure1 {
+        public CurrentThreadsProc(String[] names) {
+            super(names);
+        }
+
+        @Override
+        public Object apply1( Object arg ) throws Throwable {
+            return
+                LList.makeList(
+                    ((AsyncThreadManager)ThreadManager.getCurrent()).getThreads()); 
+        }
+    }
+
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // Scheme Initializer 
@@ -97,5 +123,6 @@ public class EvaluatorLib {
         SchemeValues.defineLambda( env, useResolve );
         SchemeValues.defineLambda( env, use );
         SchemeValues.defineLambda( env, useRead );
+        SchemeValues.defineLambda( env, currentThreads );
     }
 }

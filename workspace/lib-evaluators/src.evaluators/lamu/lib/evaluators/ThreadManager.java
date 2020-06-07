@@ -1,5 +1,7 @@
 package lamu.lib.evaluators;
 
+import lamu.lib.evaluators.AsyncThreadManager.AsyncThreadManagerThread;
+
 public interface ThreadManager {
     public static final ThreadLocal<ThreadManager> threadLocal = new ThreadLocal<>();
     public static ThreadManager getCurrent(){
@@ -8,6 +10,9 @@ public interface ThreadManager {
     public static void setCurrent( ThreadManager threadManager ){
         threadLocal.set( threadManager );
     }
+    /**
+     * See {@link AsyncThreadManagerThread#run() }
+     */
     default void setCurrentThreadManager() {
         setCurrent(this);
     }
