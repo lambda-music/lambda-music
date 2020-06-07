@@ -7,7 +7,7 @@ import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure0;
 
 public class kawapad implements Runnable {
-    public static final String DOCS_ID = "kawapad-gui-procedures";
+    public static final String DOCS_ID = "kawapad-procedures";
         
     public static final CurrentKawapadProc currentKawapadProc = new CurrentKawapadProc(new String[] { "current-kawapad" });
     public static final class CurrentKawapadProc extends MultipleNamedProcedure0 {

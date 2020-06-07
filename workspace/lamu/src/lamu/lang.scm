@@ -2,6 +2,7 @@
   (import (srfi 1))
   (import (srfi 26))
   (import (kawa pprint))
+  (import (lamu kawapad))
   (import (lamu evaluators))
   (import (lamu procs))
   (import (lamu scheme))
