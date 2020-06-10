@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -380,7 +382,7 @@ public interface PulsarLib {
             } else if ( value instanceof Procedure ) {
                 return MetroTrackSelectorBasic.invokable( SchemeInvokable.create((Procedure) value) );
             } else {
-                return MetroTrackSelectorBasic.name( value );
+                throw new IllegalArgumentException("unsupported argument " + value );
             }
         }
         public static MetroTrackSelector readParamSelt2( Object[] args ) {
@@ -388,9 +390,12 @@ public interface PulsarLib {
                 throw new IllegalArgumentException( "the number of arguments < 2 " );
             
             Object key = args[0];
+            
             String stringKey = SchemeValues.anyToString(key);
+            
             MetroTrackSelectorFactory factory = 
                 MetroTrackSelectorBasic.getFactoryMap().getFactory(stringKey);
+            
             return factory.create( Arrays.copyOfRange(args, 1, args.length ));
         }
         public static Object readParamSelt2old(Object key, Object value) {
@@ -1902,11 +1907,31 @@ public interface PulsarLib {
             public PutTrackProc(String[] names) {
                 super(names);
             }
+            
+            // Reuse the objects for passing parameters to reduce the garbage-collector load.  
+            final Map<String, Object> namedArgs = new HashMap<>();
+            final List<Object> plainArgs = new ArrayList<>();
+            final Object[] trackManipulators = new Object[1]; 
+            
             @Override
-            public Object applyN(Object[] args) throws Throwable {
-                ArrayList<MetroTrack> tracks = readParamTracks(args);
-                getPulsar().putTracks( tracks );
-                return EmptyList.emptyList;
+            public synchronized Object applyN(Object[] args) throws Throwable {
+                namedArgs.clear();
+                plainArgs.clear();
+                SchemeValues.parseArguments(args, namedArgs, plainArgs);
+                
+                MetroTrackSynchronizer trackSynchronizer = 
+                    (MetroTrackSynchronizer) namedArgs.get("start");
+                
+                plainArgs.add(0, "newt");
+                MetroTrackSelector trackSelectors = readParamSelt(plainArgs.toArray(new Object[plainArgs.size()]));
+                MetroTrackManipulator trackManipulator = readParamMant( 
+                    "putt", 
+                    trackSelectors, 
+                    trackSynchronizer);
+                
+                trackManipulators[0] = trackManipulator;
+                
+                return executeTrackProc.applyN( trackManipulators );
             }
         }
 
