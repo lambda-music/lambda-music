@@ -39,6 +39,10 @@ public class MetroMessageEvent extends DefaultMetroEvent {
         {
             runnable.run();
         }
+        @Override
+        public String toString() {
+            return MetroTrackManipulator.toStringProc( "runnable", runnable );
+        }
     }
     private final MetroTrackManipulator manipulator;
     public MetroMessageEvent( String id, double offset, Runnable runnable ) {

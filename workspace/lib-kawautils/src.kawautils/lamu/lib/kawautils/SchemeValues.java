@@ -107,7 +107,6 @@ public class SchemeValues {
     public static long toLong( Object schemeVal ) {
         return ((Quantity) schemeVal).longValue();
     }
-    
     public static IString toSchemeString( String value ) {
         return IString.valueOf( value );
     }

@@ -17,22 +17,24 @@ import gnu.lists.Pair;
 import gnu.mapping.Environment;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
-import gnu.math.IntNum;
 import lamu.lib.Invokable;
 import lamu.lib.helps.LamuDocument;
 import lamu.lib.kawautils.SchemeInvokable;
 import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure0;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure1;
-import lamu.lib.kawautils.procedures.MultipleNamedProcedure2;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedureN;
 import lamu.lib.log.Logger;
 import metro.Metro;
 import metro.MetroPort;
 import metro.MetroSequence;
+import metro.MetroSequenceFactory;
 import metro.MetroSyncType;
 import metro.MetroSynchronizable;
 import metro.MetroTrack;
+import metro.MetroTrackFactory;
+import metro.MetroTrackManipulator;
+import metro.MetroTrackManipulatorBasic;
 import metro.MetroTrackSelector;
 import metro.MetroTrackSelectorBasic;
 import metro.MetroTrackSelectorFactory;
@@ -70,8 +72,10 @@ public interface PulsarLib {
     Procedure getGetBarsPerSecond();
     Procedure getRewind();
     Procedure getSimultaneous();
+    Procedure getExecuteTrack();
     Procedure getGetTrack();
     Procedure getGetTrackPosition();
+    Procedure getManipulateTrack();
     Procedure getSelectTrack();
     Procedure getSyncTrack();
     Procedure getNewTrack();
@@ -119,6 +123,9 @@ public interface PulsarLib {
         public default Procedure getNewRecordingTrack() {
             return getPulsarLibImplementation().getNewRecordingTrack();
         }
+        public default Procedure getManipulateTrack() {
+            return getPulsarLibImplementation().getManipulateTrack();
+        }
         public default Procedure getSelectTrack() {
             return getPulsarLibImplementation().getSelectTrack();
         }
@@ -129,7 +136,9 @@ public interface PulsarLib {
         public default Procedure getNewTrack() {
             return getPulsarLibImplementation().getNewTrack();
         }
-
+        default Procedure getExecuteTrack() {
+            return getPulsarLibImplementation().getExecuteTrack();
+        }
         public default Procedure getGetTrack() {
             return getPulsarLibImplementation().getGetTrack();
         }
@@ -247,29 +256,7 @@ public interface PulsarLib {
         static void logWarn (String msg             ) { LOGGER.log(Level.WARNING,  msg      ); }
 
         protected abstract Pulsar getPulsar();
-        private static final class TagSearchIsProcedure extends MultipleNamedProcedure2 {
-            private final Object value;
-            TagSearchIsProcedure(Object value) {
-                this.value = value;
-            }
-            @Override
-            public Object apply2( Object arg1, Object arg2 ) throws Throwable {
-                return value.equals( arg1 );
-            }
-        }
 
-        final static class TrackProcedure extends MultipleNamedProcedure0 {
-            final LList pair;
-            TrackProcedure( LList pair ) {
-                this.pair = pair;
-            }
-
-            @Override
-            public Object apply0() throws Throwable {
-                return pair;
-            }
-        }
-        
         /**
          *  
          * @param object
@@ -298,32 +285,23 @@ public interface PulsarLib {
                 return MetroSyncType.toSyncType( SchemeValues.toString( object ) );
             }
         }
-        static MetroSequence readParamSequence(Object arg) {
+        static MetroSequenceFactory readParamSequenceFactory(Object arg) {
             if ( arg  == null ) {
-                return MetroVoidSequence.getInstance();
+                return MetroVoidSequence.getFactory();
             } else if ( arg instanceof MetroSequence ) {
-                return (MetroSequence) arg;
+                return PulsarCommon.createConstantSequenceFactory((MetroSequence)arg);
             } else if ( arg instanceof Procedure ) {
-                return PulsarTrack.createSequence(
-                    (Procedure) arg);
-            } else if ( arg  instanceof Pair ) {
-                return PulsarTrack.createSequence(
-                    new TrackProcedure((Pair)arg));
+                return PulsarCommon.createDynamicProcedureSequenceFactory((Procedure) arg);
+            } else if ( arg  instanceof LList ) {
+                return PulsarCommon.createListSequenceFactory((LList)arg);
             } else if ( arg  instanceof Number ) {
-                return PulsarTrack.createSequence(
-                    new TrackProcedure( createRestBar(((Number)arg).intValue())));
+                return PulsarCommon.createListSequenceFactory(PulsarCommon.createRestBar(SchemeValues.toInteger(arg)));
             } else {
                 throw new IllegalArgumentException( "unsupported type of the argument (" + arg + ")" );
             }
         }
-
-        private static LList createRestBar(int intValue) {
-            return 
-                    LList.makeList( Arrays.asList( 
-                        LList.makeList( Arrays.asList(
-                            Pair.make( Symbol.valueOf( "type" ),  Symbol.valueOf( "len" ) ),
-                            Pair.make( Symbol.valueOf( "val" ),   IntNum.valueOf( intValue ))))));
-        }
+                
+        
         protected static List<Object> readParamPortName( Object arg ) {
             if ( arg instanceof Pair ) {
                 return ((Pair)arg);
@@ -365,7 +343,23 @@ public interface PulsarLib {
             return null;
         }
 
-        
+
+        /**
+         * 
+         * @param args
+         * @return
+         */
+        public static MetroTrackManipulator readParamMant(
+            String name, 
+            MetroTrackSelector trackSelector, 
+            MetroTrackSynchronizer trackSynchronizer ) 
+        {
+            return MetroTrackManipulatorBasic
+                .getFactoryMap()
+                .getFactory(name)
+                .create(trackSelector, trackSynchronizer);
+        }
+
         
         public static final Object SELT_KEY_NAME    = Symbol.valueOf("name");
         public static final Object SELT_KEY_TAG     = Symbol.valueOf("tag");
@@ -376,17 +370,17 @@ public interface PulsarLib {
         
         public static MetroTrackSelector readParamSelt1(Object value) {
             if ( value == null || Boolean.FALSE.equals(value) ) {
-                return MetroTrackSelectorBasic.allSelector();
+                return MetroTrackSelectorBasic.all();
             } else if ( value instanceof MetroTrackSelector ) {
                 return (MetroTrackSelector) value;
             } else if ( Metro.getMainTrackName().equals( value ) ) {
-                return MetroTrackSelectorBasic.nameSelector(Metro.getMainTrackName());
+                return MetroTrackSelectorBasic.name(Metro.getMainTrackName());
             } else if ( value instanceof Invokable ) {
-                return MetroTrackSelectorBasic.createInvokableSelector((Invokable)value);
+                return MetroTrackSelectorBasic.invokable((Invokable)value);
             } else if ( value instanceof Procedure ) {
-                return MetroTrackSelectorBasic.createInvokableSelector( SchemeInvokable.create((Procedure) value) );
+                return MetroTrackSelectorBasic.invokable( SchemeInvokable.create((Procedure) value) );
             } else {
-                return MetroTrackSelectorBasic.nameSelector( value );
+                return MetroTrackSelectorBasic.name( value );
             }
         }
         public static MetroTrackSelector readParamSelt2( Object[] args ) {
@@ -395,36 +389,37 @@ public interface PulsarLib {
             
             Object key = args[0];
             String stringKey = SchemeValues.anyToString(key);
-            MetroTrackSelectorFactory factory = MetroTrackSelectorBasic.getFactory(stringKey);
-            return factory.createSelector( Arrays.copyOfRange(args, 1, args.length ));
+            MetroTrackSelectorFactory factory = 
+                MetroTrackSelectorBasic.getFactoryMap().getFactory(stringKey);
+            return factory.create( Arrays.copyOfRange(args, 1, args.length ));
         }
         public static Object readParamSelt2old(Object key, Object value) {
             if ( SELT_KEY_NAME.equals( key ) ) {
                 // name
                 if ( key instanceof Collection ) {
-                    return MetroTrackSelectorBasic.nameSelector((Collection)value );
+                    return MetroTrackSelectorBasic.names((Collection)value );
                 } else {
-                    return MetroTrackSelectorBasic.nameSelector(value);
+                    return MetroTrackSelectorBasic.name(value);
                 }
             } else if ( SELT_KEY_TAG_OR.equals( key ) || SELT_KEY_TAG.equals( key ) ) {
                 // or
-                return MetroTrackSelectorBasic.tagOrSelector((Collection)value );
+                return MetroTrackSelectorBasic.tagOr((Collection)value );
             } else if ( SELT_KEY_TAG_AND.equals( key ) ) {
                 // and
-                return MetroTrackSelectorBasic.tagAndSelector((Collection)value );
+                return MetroTrackSelectorBasic.tagAnd((Collection)value );
             } else if ( SELT_KEY_CONST.equals( key ) ) {
                 // const
                 if ( key instanceof Collection ) {
-                    return MetroTrackSelectorBasic.constant((Collection)value );
+                    return MetroTrackSelectorBasic.trackConstant((Collection)value );
                 } else {
                     return MetroTrackSelectorBasic.constant((MetroTrack)value );
                 }
             } else if ( SELT_KEY_EXEC.equals( key ) ) {
                 // exec
                 if ( key instanceof Invokable ) {
-                    return MetroTrackSelectorBasic.createInvokableSelector((Invokable)value);
+                    return MetroTrackSelectorBasic.invokable((Invokable)value);
                 } else if ( key instanceof Procedure ) {
-                    return MetroTrackSelectorBasic.createInvokableSelector( SchemeInvokable.create((Procedure) value) );
+                    return MetroTrackSelectorBasic.invokable( SchemeInvokable.create((Procedure) value) );
                 } else {
                     throw new IllegalArgumentException("unsupported value (" + value + ")" );
                 }
@@ -436,7 +431,7 @@ public interface PulsarLib {
         public static MetroTrackSelector readParamSelt( Object[] args ) {
             switch ( args.length  ){
                 case 0 : 
-                    return MetroTrackSelectorBasic.allSelector();
+                    return MetroTrackSelectorBasic.all();
                 case 1 :
                     return readParamSelt1(args[0]);
                 default :
@@ -457,7 +452,7 @@ public interface PulsarLib {
             }
         }
         public static MetroTrackSynchronizer readParamSynct3(String syncType, MetroTrackSelector syncTrack, double syncOffset) {
-            MetroTrackSynchronizerFactory factory = MetroTrackSynchronizerBasic.getFactory( syncType );
+            MetroTrackSynchronizerFactory factory = MetroTrackSynchronizerBasic.getFactoryMap().getFactory(syncType);
             return factory.createSynchronizer( syncTrack, syncOffset );
         }
         public static MetroTrackSynchronizer readParamSynct3( Object[] args ) {
@@ -482,6 +477,12 @@ public interface PulsarLib {
         }
         
 
+        /**
+         * 
+         * @param args
+         * @return
+         */
+        @Deprecated
         public static ArrayList<MetroTrack> readParamTracks( Object[] args ) {
             ArrayList<MetroTrack> tracks = new ArrayList<>();
             for ( Object arg : args ) {
@@ -497,6 +498,48 @@ public interface PulsarLib {
             return tracks;
         }
 
+        // ADDED (Mon, 08 Jun 2020 23:22:13 +0900)
+        public static MetroTrackFactory readParamNewTrack(Object[] args) {
+            switch ( args.length ) {
+            case 0:
+                throw new IllegalArgumentException();
+            case 1:
+                return MetroTrackFactory.createDefault( 
+                    null, 
+                    null, 
+                    readParamSequenceFactory(args[0]));
+            case 2: {
+                List<Object> lst = readParamTrackName( args[0] );
+                return MetroTrackFactory.createDefault( 
+                    lst.remove(0), 
+                    lst, 
+                    readParamSequenceFactory(args[1]));
+            }
+            case 3: {
+                List<Object> lst = readParamTrackName( args[0] );
+                return MetroTrackFactory.createDefault( 
+                    lst.remove(0), 
+                    lst,
+                    readParamSequenceFactory(args[1]),
+                    (MetroTrackSynchronizer) args[2],
+                    null);
+            }
+            case 4: {
+                List<Object> lst = readParamTrackName( args[0] );
+                return MetroTrackFactory.createDefault( 
+                    lst.remove(0), 
+                    lst,
+                    readParamSequenceFactory(args[1]),
+                    (MetroTrackSynchronizer) args[2],
+                    (MetroTrackSynchronizer) args[3]);
+            }
+            default :
+                throw new IllegalArgumentException();
+            }
+        }
+        public static MetroTrackSelector readParamNewTrackSelector(Object[] args) {
+            return MetroTrackSelectorBasic.trackFactory( readParamNewTrack( args ) );
+        }
         
 
 
@@ -1419,6 +1462,75 @@ public interface PulsarLib {
             }
         }
 
+
+        public static void exetProc1(
+            List<MetroTrackSelector> selectors,
+            List<MetroTrackManipulator> manipulators,
+            Collection<? extends Object> args )
+        {
+            for ( Object o : args ) {
+                if ( o instanceof MetroTrackSelector ) {
+                    selectors.add((MetroTrackSelector) o);
+                } else if ( o instanceof MetroTrackManipulator ) {
+                    manipulators.add((MetroTrackManipulator) o);
+                } else if ( o instanceof Collection ) {
+                    exetProc1( selectors, manipulators, (Collection<? extends Object>)o);
+                } else {
+                    logWarn( "an unsupported object was detected and ignored " + o );
+                }
+            }
+        }
+
+        public static List<MetroTrack> exetProc2(
+            Metro metro,
+            List<MetroTrackSelector> trackSelectors,
+            List<MetroTrackManipulator> trackManipulators,
+            List<MetroTrack> selectedTracks) 
+        {
+            if (!trackManipulators.isEmpty())
+                metro.manipulateTrack(trackManipulators);
+
+            if (!trackSelectors.isEmpty()) {
+                metro.referTracks(trackSelectors, selectedTracks);
+            }
+            return selectedTracks;
+        }
+        
+        public static List<MetroTrack> exetProc(Metro metro, Object[] args) {
+            List<MetroTrackSelector>    trackSelectors    = new ArrayList<>();
+            List<MetroTrackManipulator> trackManipulators = new ArrayList<>();
+            List<MetroTrack>            selectedTracks    = new ArrayList<>(); // output
+
+            exetProc1(trackSelectors, trackManipulators, Arrays.asList(args));
+            exetProc2(metro, trackSelectors, trackManipulators, selectedTracks);
+            return selectedTracks;
+        }
+
+        public final Procedure executeTrackProc = new ExecuteTrackProc(new String[] { "execute-track", "exet" });
+        @Override
+        public Procedure getExecuteTrack() { return executeTrackProc; }
+        public final class ExecuteTrackProc extends MultipleNamedProcedureN {
+            public ExecuteTrackProc(String[] names) {
+                super(names);
+            }
+            List<MetroTrackSelector>    trackSelectors    = new ArrayList<>();
+            List<MetroTrackManipulator> trackManipulators = new ArrayList<>();
+            List<MetroTrack>            selectedTracks    = new ArrayList<>(); // output
+
+            @Override
+            public synchronized Object applyN(Object[] args) throws Throwable {
+                trackSelectors.clear();
+                trackManipulators.clear();
+                selectedTracks.clear();
+                Metro metro = getPulsar();
+                
+                exetProc1(trackSelectors, trackManipulators, Arrays.asList(args));
+                exetProc2(metro, trackSelectors, trackManipulators, selectedTracks);
+                return LList.makeList(selectedTracks);
+            }
+        }
+        
+        
         public final Procedure getTrackProc = new GetTrackProc(new String[] { "get-track", "gett" });
         @Override
         public Procedure getGetTrack() { return getTrackProc; }
@@ -1429,12 +1541,11 @@ public interface PulsarLib {
 
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                MetroTrackSelector trackSelector = readParamSelt(args);
-                List<MetroTrack> tracks = MetroTrackSelector.doSelectTracks(getPulsar(), trackSelector);
-                return Pair.makeList( tracks );
+                return readParamSelt(args);
             }
         }
 
+        
         public static final GetTrackDoc getTrackDoc = new GetTrackDoc();
         public static final class GetTrackDoc extends PulsarProceduralDescriptiveDoc {
             {
@@ -1516,7 +1627,33 @@ public interface PulsarLib {
             }
         }
 
-
+        public final Procedure manipulateTrackProc = new ManipulateTrackProc( new String[] { "manipulate-track", "mant" });
+        @Override
+        public Procedure getManipulateTrack() { return manipulateTrackProc; }
+        public static final class ManipulateTrackProc extends MultipleNamedProcedureN {
+            public ManipulateTrackProc(String[] names) {
+                super(names);
+            }
+            @Override
+            public Object applyN(Object[] args) throws Throwable {
+                switch ( args.length ) {
+                    case 2:
+                        return readParamMant(
+                            SchemeValues.anyToString( args[0] ),
+                            (MetroTrackSelector) args[1], 
+                            null
+                            );
+                    case 3:
+                        return readParamMant(
+                            SchemeValues.anyToString( args[0] ),
+                            (MetroTrackSelector) args[1],
+                            (MetroTrackSynchronizer) args[2]
+                            );
+                    default :
+                        throw new IllegalArgumentException( "number of the arguments must be 2 or 3" );
+                }
+            }
+        }
 
         public final Procedure selectTrackProc = new SelectTrackProc( new String[] { "select-track", "selt" });
         @Override
@@ -1554,43 +1691,7 @@ public interface PulsarLib {
             }
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                switch ( args.length ) {
-                case 0:
-                    throw new IllegalArgumentException();
-                case 1:
-                    return MetroTrack.create( 
-                        null, 
-                        null, 
-                        readParamSequence(args[0]));
-                case 2: {
-                    List<Object> lst = readParamTrackName( args[0] );
-                    return MetroTrack.create( 
-                        lst.remove(0), 
-                        lst, 
-                        readParamSequence(args[1]));
-                }
-                case 3: {
-                    List<Object> lst = readParamTrackName( args[0] );
-                    return MetroTrack.create( 
-                        lst.remove(0), 
-                        lst,
-                        readParamSequence(args[1]),
-                        (MetroTrackSynchronizer) args[2],
-                        null);
-                }
-                case 4: {
-                    List<Object> lst = readParamTrackName( args[0] );
-                    return MetroTrack.create( 
-                        lst.remove(0), 
-                        lst,
-                        readParamSequence(args[1]),
-                        (MetroTrackSynchronizer) args[2],
-                        (MetroTrackSynchronizer) args[3]
-                        );
-                }
-                default :
-                    throw new IllegalArgumentException();
-                }
+                return readParamNewTrack(args);
             }
         }
 
@@ -1673,7 +1774,7 @@ public interface PulsarLib {
                     default :
                         throw new IllegalArgumentException();
                 }
-                return PulsarTrack.createRecordingTrack( inputPorts, outputPorts, recordLength, looper );
+                return PulsarCommon.createRecordingSequence( inputPorts, outputPorts, recordLength, looper );
             }
         }
 
@@ -1804,7 +1905,7 @@ public interface PulsarLib {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 ArrayList<MetroTrack> tracks = readParamTracks(args);
-                getPulsar().putTrack( tracks );
+                getPulsar().putTracks( tracks );
                 return EmptyList.emptyList;
             }
         }
@@ -1969,8 +2070,10 @@ public interface PulsarLib {
             SchemeValues.defineLambda( env, getBarsPerSecondProc );
             SchemeValues.defineLambda( env, rewindProc );
             SchemeValues.defineLambda( env, simultaneousProc );
+            SchemeValues.defineLambda( env, executeTrackProc );
             SchemeValues.defineLambda( env, getTrackProc );
             SchemeValues.defineLambda( env, getTrackPositionProc );
+            SchemeValues.defineLambda( env, manipulateTrackProc );
             SchemeValues.defineLambda( env, selectTrackProc );
             SchemeValues.defineLambda( env, syncTrackProc );
             SchemeValues.defineLambda( env, newTrackProc );

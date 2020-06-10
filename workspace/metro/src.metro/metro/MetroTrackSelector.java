@@ -1,27 +1,32 @@
 package metro;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public interface MetroTrackSelector {
     void selectTracks( List<MetroTrack> currentTracks, List<MetroTrack> selectedTracks );
-
     
     /**
      * See {@link MetroTrackSelectorBasic} .
      * 
-     * @param tracks
-     * @param trackSelector
-     * @return
+     * @param currentTracks
+     * @param trackSelectors
+     * @param selectedTracks TODO
      */
-    public static List<MetroTrack> doSelectTracks( List<MetroTrack> tracks, MetroTrackSelector trackSelector ) {
-        if ( trackSelector == null )
-            throw new NullPointerException( "selector == null" );
-        ArrayList<MetroTrack> result = new ArrayList<>();
-        trackSelector.selectTracks( tracks, result );
-        return result;
+    public static void executeSelector( List<MetroTrackSelector> trackSelectors, List<MetroTrack> currentTracks, List<MetroTrack> selectedTracks ) {
+        if ( trackSelectors == null )
+            throw new NullPointerException( "trackSelector == null" );
+        
+        currentTracks = Collections.unmodifiableList(currentTracks);
+        for ( MetroTrackSelector trackSelector : trackSelectors ) {
+            trackSelector.selectTracks( currentTracks, selectedTracks );
+        }
     }
-    public static List<MetroTrack> doSelectTracks( Metro metro, MetroTrackSelector trackSelector ) {
-        return doSelectTracks( metro.replicateAllTracks(), trackSelector );
+    
+    public static void executeSelector( Metro metro, List<MetroTrackSelector> trackSelectors, List<MetroTrack> selectedTracks ) {
+        executeSelector( trackSelectors, metro.replicateAllTracks(), selectedTracks );
+    }
+    public static void resolveSelector( List<MetroTrackSelector> trackSelectors, List<MetroTrack> selectedTracks ) {
+        executeSelector( trackSelectors, Collections.emptyList() , selectedTracks );
     }
 }

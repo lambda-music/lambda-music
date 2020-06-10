@@ -49,7 +49,7 @@ public class MetroTrack {
         }
     }
     /**
-     * This constructor should be called only by {@link Metro#putTrack(Collection, MetroTrackSynchronizer)}
+     * This constructor should be called only by {@link Metro#putTracks(Collection, MetroTrackSynchronizer)}
      *  
      * @param name
      * @param tags

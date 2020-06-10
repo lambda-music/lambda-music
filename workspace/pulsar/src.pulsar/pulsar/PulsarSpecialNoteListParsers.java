@@ -77,10 +77,9 @@ import metro.MetroBufferedMidiReceiver;
 import metro.MetroCollector;
 import metro.MetroPort;
 import metro.MetroSyncType;
-import metro.MetroSynchronizable;
 import metro.MetroTrack;
+import metro.MetroTrackManipulatorBasic;
 import metro.MetroTrackSynchronizerBasic;
-import metro.MetroTradSequenceSynchronizer;
 
 /**
  * Defines special note events. 
@@ -429,24 +428,6 @@ public class PulsarSpecialNoteListParsers {
             double soff           = map.get( ID_SYNC_OFFSET, S2J_DOUBLE, DEFAULT_VALUE_DOUBLE_0 );
             Procedure procedure   = map.get( ID_PROCEDURE, S2J_PROCEDURE, (NoteListValueGenerator<Procedure>)NoteListValueGenerator.NULL );
 
-//            List<Object> el = Collections.emptyList();
-//            double offset         = getValue( map, ID_OFFSET, 0.0d, (v)-> SchemeUtils.toDouble( v )   );
-////            String id             = getValue( map, "id",   null, (v)-> SchemeUtils.anyToString(    SchemeUtils.schemeNullCheck( v ) ) );
-//            Object _id            = getValue( map, "id",   null, (v)-> v );
-//            List<Object> tags     = getValue( map, "tags", el,   (v)-> new ArrayList<Object>( (Pair)v ) );
-//            MetroSyncType syty         = getValue( map, "syty", MetroSyncType.SERIAL, (v)-> MetroSyncType.toSyncType( SchemeUtils.schemeSymbolToJavaString( SchemeUtils.schemeNullCheck( v ) ) ) );
-//            String syid           = getValue( map, "syid", null, (v)-> SchemeUtils.anyToString(    SchemeUtils.schemeNullCheck( v ) ) );
-//            double syof           = getValue( map, "syof", 0.0d, (v)-> SchemeUtils.toDouble( v )   );
-//            Procedure procedure   = getValue( map, ID_PROCEDURE, null, (v)->{
-//                return SchemeSequence.asProcedure( v );
-//            });
-//            if ( _id == null ) {
-//                // MODIFIED (Tue, 23 Jul 2019 05:55:01 +0900)
-//                // id = createDefaultId( pulsar.getScheme() );
-//                _id = createTempNewId();
-//            }
-            
-            
             logInfo( "NoteListParserElement: id=" + id );
             
             // See the note ... XXX_SYNC_01
@@ -472,101 +453,114 @@ public class PulsarSpecialNoteListParsers {
 //  };
     public static final PutEventParser PARSER_PUT = new PutEventParser();
     static { register( PARSER_PUT ); }
-    static final class PutEventParser extends TrackEventParser {
+
+    /**
+     * TODO
+     * 
+     * @author ats
+     *
+     */
+    static class PutEventParser extends SpecialNoteListParserElement {
         {
-            // RENAMED (Thu, 01 Aug 2019 13:09:08 +0900)
-            // RENAMED AGAIN (Thu, 10 Oct 2019 04:55:11 +0900)
-            this.shortName = s( "putt" );
-            this.longName  = s( "put-track" );
-            this.parameters = Arrays.asList();
+            this.shortName  = s( "putt" );
+            this.longName   = s( "put-tracks" );
+            this.parameters = Arrays.asList(
+//              new NoteListParserElementParameter.Default(
+//                  "","","","",
+//                      "") 
+                );
+
         }
+
         @Override
-        void processTrack( Pulsar pulsar, Object id, List<Object> tags, Procedure procedure,
-                MetroSyncType syncType, Object syncTrackId, double syncOffset ) {
-            logInfo( "putt id:" + id );
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer, NoteListMap map, MetroCollector<T> result) {
+            Pulsar pulsar = ((Pulsar)metro);
+            double offset         = readMapOffset( map );
+            Object id             = readMapNewId( map );
+            List<Object> tags     = readMapCollection( ID_TAGS, map ); 
+            MetroSyncType styp    = readMapSyncType( map );
+            Object stra           = map.get( ID_SYNC_TRACK_ID, THRU, NULL );
+            double soff           = map.get( ID_SYNC_OFFSET, S2J_DOUBLE, DEFAULT_VALUE_DOUBLE_0 );
+            Procedure procedure   = map.get( ID_PROCEDURE, S2J_PROCEDURE, (NoteListValueGenerator<Procedure>)NoteListValueGenerator.NULL );
+
+            logInfo( "NoteListParserElement: id=" + id );
             
-            // if the target procedure is null, just ignore it.
-            if ( procedure == null )
-                return;
+
+            // TODO
+            buffer.tracks(offset, MetroTrackManipulatorBasic.registering(null));
             
-//            SchemeSequence sequence = pulsar.asSequence( procedure );
-//            SchemeSequence sequence = pulsar.asSequence( procedure );
-            synchronized ( pulsar.getMetroLock() ) {
-                MetroTrack syncTrack;
-                if ( syncTrackId == null )
-                    syncTrack = null;
-                else
-                    syncTrack = searchSyncTrack( pulsar, syncTrackId );
-                
-                if ( !(syncTrack instanceof MetroSynchronizable)) {
-                    // is throwing exception here allowed?? (Tue, 05 May 2020 16:27:20 +0900) 
-                    throw new IllegalArgumentException("syncType must be a sync track" );
-                }
-                
-                try {
-                    // INTEGRATED (Wed, 06 May 2020 02:35:15 +0900) >>>
-                    // MetroBufferedTrack track = PulsarTrack.createTrack( id, tags, procedure );
-                    // track.setSyncStatus( syncType, (MetroSyncTrack) syncTrack, syncOffset );
-                    // pulsar.registerTrack( track );
-                    pulsar.putTrack( 
-                            MetroTrack.create(id, tags, PulsarTrack.createSequence(procedure)));
+            // See the note ... XXX_SYNC_01
+            ((MetroBufferedMidiReceiver<T>) buffer).exec( offset, new Runnable() {
+                @Override
+                public void run() {
+                    logInfo( "NoteListParserElement: exec" );
                     
-                    // INTEGRATED (Wed, 06 May 2020 02:35:15 +0900) <<<
-                } finally {
-                    pulsar.notifyTrackChange("update");
+                    // synchronized block added at (Mon, 29 Jul 2019 13:36:52 +0900)
+                    synchronized ( metro.getMetroLock() ) {                       
+//                        processTrack( pulsar, id, tags, procedure, styp, stra, soff );
+                    }
                 }
-            }
+            });
         }
     }
+
     
     public static final RemoveEventParser PARSER_REMOVE = new RemoveEventParser();
     static { register( PARSER_REMOVE ); }
-    static final class RemoveEventParser extends TrackEventParser {
+    
+
+    /**
+     * TODO
+     * 
+     * @author ats
+     *
+     */
+    static class RemoveEventParser extends SpecialNoteListParserElement {
         {
-            // RENAMED (Thu, 01 Aug 2019 13:09:08 +0900)
-            // RENAMED AGAIN (Thu, 10 Oct 2019 04:55:11 +0900)
-            this.shortName = s( "remt" );
-            this.longName  = s( "remove-track" );
-            this.parameters = Arrays.asList();
+            this.shortName  = s( "remt" );
+            this.longName   = s( "remove-tracks" );
+            this.parameters = Arrays.asList(
+//              new NoteListParserElementParameter.Default(
+//                  "","","","",
+//                      "") 
+                );
+
         }
+
         @Override
-        void processTrack( Pulsar pulsar, Object id, List<Object> tags, Procedure procedure,
-                MetroSyncType syncType, Object syncTrackId, double syncOffset ) {
+        public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer, NoteListMap map, MetroCollector<T> result) {
+            Pulsar pulsar = ((Pulsar)metro);
+            double offset         = readMapOffset( map );
+            Object id             = readMapNewId( map );
+            List<Object> tags     = readMapCollection( ID_TAGS, map ); 
+            MetroSyncType styp    = readMapSyncType( map );
+            Object stra           = map.get( ID_SYNC_TRACK_ID, THRU, NULL );
+            double soff           = map.get( ID_SYNC_OFFSET, S2J_DOUBLE, DEFAULT_VALUE_DOUBLE_0 );
+            Procedure procedure   = map.get( ID_PROCEDURE, S2J_PROCEDURE, (NoteListValueGenerator<Procedure>)NoteListValueGenerator.NULL );
 
-            logInfo( "remt id:" + id );
-            synchronized ( pulsar.getMetroLock() ) {
-                List<MetroTrack> trackList;
-                MetroTrack syncTrack;
+            logInfo( "NoteListParserElement: id=" + id );
+            
 
-                if ( id == null ) 
-                    trackList = null;
-                else
-                    trackList = pulsar.getTracks( id );
-                
-                if ( syncTrackId == null )
-                    syncTrack = null;
-                else
-                    syncTrack = searchSyncTrack( pulsar, syncTrackId );
-                
-                if ( trackList == null ) {
-                    logWarn( "RemoveEventParser: the track (" + id + ") does not exist" );
-                    return;
+            // TODO
+            buffer.tracks(offset, MetroTrackManipulatorBasic.registering(null));
+            
+            // See the note ... XXX_SYNC_01
+            ((MetroBufferedMidiReceiver<T>) buffer).exec( offset, new Runnable() {
+                @Override
+                public void run() {
+                    logInfo( "NoteListParserElement: exec" );
+                    
+                    // synchronized block added at (Mon, 29 Jul 2019 13:36:52 +0900)
+                    synchronized ( metro.getMetroLock() ) {                       
+//                        processTrack( pulsar, id, tags, procedure, styp, stra, soff );
+                    }
                 }
-                
-                if ( syncTrackId != null && syncTrack == null ) {
-                    logWarn( "RemoveEventParser: the sync-track (" + id + ") does not exist" );
-                }
-                
-                try {
-                    pulsar.removeTrack( trackList, MetroTradSequenceSynchronizer.create( syncType, syncTrack, syncOffset ) );
-                } finally {
-                    pulsar.notifyTrackChange("update");
-                }
-                
-            }
+            });
         }
     }
 
+
+    
     
     static abstract class AbstractRemoveEventParser extends SpecialNoteListParserElement {
         abstract void removeTrackProc( Metro metro, MetroTrack track );

@@ -2,7 +2,6 @@ package metro;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -19,27 +18,12 @@ public class MetroTrackSynchronizerBasic {
     // Synchronizer Factory Map
     //
     /////////////////////////////////////////////////////////////////////////////
+
+    private static final MetroFactoryMap<MetroTrackSynchronizerFactory> factoryMap = new MetroFactoryMap<MetroTrackSynchronizerFactory>();
+    public static MetroFactoryMap<MetroTrackSynchronizerFactory> getFactoryMap() {
+        return factoryMap;
+    }
     
-    private static HashMap<String,MetroTrackSynchronizerFactory> factoryMap = new HashMap<>();
-    public static MetroTrackSynchronizerFactory getFactory( String name ) {
-        if ( ! factoryMap.containsKey(name))
-            throw new IllegalArgumentException("unknown factory name (" + name + ")");
-        return factoryMap.get(name);
-    }
-    public static void addFactory( String name, MetroTrackSynchronizerFactory factory ) {
-        if ( factoryMap.containsKey(name))
-            throw new IllegalArgumentException("duplicate factory name (" + name + ")");
-        factoryMap.put( name, factory );
-    }
-
-    static void argumentCheck( Object[] args, int argumentCount ) {
-        if ( args == null )
-            throw new NullPointerException( "the argument array is null" );
-        if ( args.length != argumentCount )
-            throw new IllegalArgumentException( "the argument number("+args.length+") != " + argumentCount );
-
-    }
-
     /////////////////////////////////////////////////////////////////////////////
     //
     // Long Immediate Synchronizer 
@@ -92,9 +76,9 @@ public class MetroTrackSynchronizerBasic {
     }
     static {
         MetroTrackSynchronizerFactory factory = new ImmediateSynchronizerFactory();
-        addFactory( "immediate" , factory );
-        addFactory( "imme" , factory );
-        addFactory( "i" , factory );
+        getFactoryMap().addFactory("immediate", factory);
+        getFactoryMap().addFactory("imme", factory);
+        getFactoryMap().addFactory("i", factory);
     }
 
     /////////////////////////////////////////////////////////////////////////////
@@ -223,12 +207,12 @@ public class MetroTrackSynchronizerBasic {
     }
     static {
         MetroTrackSynchronizerFactory factory = new ParallelHeadSynchronizerFactory();
-        addFactory( "parallel" , factory );
-        addFactory( "para" , factory );
-        addFactory( "p" , factory );
+        getFactoryMap().addFactory("parallel", factory);
+        getFactoryMap().addFactory("para", factory);
+        getFactoryMap().addFactory("p", factory);
         
-        addFactory( "head" , factory );
-        addFactory( "h" , factory );
+        getFactoryMap().addFactory("head", factory);
+        getFactoryMap().addFactory("h", factory);
     } 
 
     /////////////////////////////////////////////////////////////////////////////
@@ -267,8 +251,8 @@ public class MetroTrackSynchronizerBasic {
     }
     static {
         MetroTrackSynchronizerFactory factory = new ParallelBottomTrackSynchronizerFactory();
-        addFactory( "bottom" , factory );
-        addFactory( "b" , factory );
+        getFactoryMap().addFactory("bottom", factory);
+        getFactoryMap().addFactory("b", factory);
     } 
 
     
@@ -326,8 +310,8 @@ public class MetroTrackSynchronizerBasic {
 
     static {
         MetroTrackSynchronizerFactory factory = new SerialSynchronizerFactory();
-        addFactory( "serial" , factory );
-        addFactory( "seri" , factory );
-        addFactory( "s" , factory );
+        getFactoryMap().addFactory("serial", factory);
+        getFactoryMap().addFactory("seri", factory);
+        getFactoryMap().addFactory("s", factory);
     }
 }

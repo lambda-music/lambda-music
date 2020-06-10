@@ -56,7 +56,7 @@ import lamu.lib.log.Logger;
  * 
  * @author Ats Oka
  */
-public class Metro implements MetroMant,MetroPutt,MetroRemt, MetroLock, 
+public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,MetroLock, 
     JackProcessCallback, JackShutdownCallback, JackTimebaseCallback, Runnable 
 {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -316,32 +316,6 @@ public class Metro implements MetroMant,MetroPutt,MetroRemt, MetroLock,
         }
     }
 
-    /**
-     * See {@link MetroTrackSelectorBasic} .
-     * @param selector
-     * @return
-     */
-    public List<MetroTrack> getTracks( MetroTrackSelector selector ) {
-        return MetroTrackSelector.doSelectTracks( replicateAllTracks(), selector );
-    }
-    /**
-     * TODO TO BE REMOVED 
-     * @param name
-     * @return
-     */
-    @Deprecated
-    public List<MetroTrack> getTracks( Object name ) {
-        return getTracks( MetroTrackSelectorBasic.nameSelector( name ));
-    }
-    /**
-     * TODO TO BE REMOVED 
-     * @param name
-     * @return
-     */
-    @Deprecated
-    public List<MetroTrack> getTracks( Collection<? extends Object> tags ) {
-        return getTracks( MetroTrackSelectorBasic.tagOrSelector( tags ));
-    }
 
 
     // INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900) 
@@ -1015,10 +989,17 @@ public class Metro implements MetroMant,MetroPutt,MetroRemt, MetroLock,
         }
     }
 
-    
+    /**
+     * {@link #putTracks(List)} and {@link #getTracks(MetroTrackSelector)} are redirected to this methos. 
+     */
     @Override
     public void manipulateTrack( List<MetroTrackManipulator> manipulators ) {
         postMessage( manipulators );
+    }
+    
+    @Override
+    public void referTracks( List<MetroTrackSelector> trackSelectors, List<MetroTrack> selectedTracks ) {
+        MetroTrackSelector.executeSelector(this, trackSelectors, selectedTracks);
     }
     
     @Override

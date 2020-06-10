@@ -9,17 +9,17 @@ public interface MetroRemt extends MetroMant {
     }
 
     default void removeTrack( Collection<MetroTrack> tracks, MetroTrackSynchronizer trackSynchronizer )  {
-        removeTrack( MetroTrackSelectorBasic.constant(tracks), trackSynchronizer );
+        removeTrack( MetroTrackSelectorBasic.trackConstant(tracks), trackSynchronizer );
     }
 
     /**
      * 
-     * @param selector
-     * @param synchronizer
+     * @param trackSelector
+     * @param trackSynchronizer
      *    Set the synchronizer to the selected tracks before the operation unless it is null.
      *    
      */
-    default void removeTrack( MetroTrackSelector selector, MetroTrackSynchronizer synchronizer ) {
-        manipulateTrack( Arrays.asList( MetroTrackManipulatorBasic.removing(selector)));
+    default void removeTrack( MetroTrackSelector trackSelector, MetroTrackSynchronizer trackSynchronizer ) {
+        manipulateTrack( Arrays.asList( MetroTrackManipulatorBasic.removing(trackSelector)));
     };
 }
