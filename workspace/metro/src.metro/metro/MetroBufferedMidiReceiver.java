@@ -32,7 +32,7 @@ public interface MetroBufferedMidiReceiver<T> {
 
     // special 
     public T exec(  double offset, Runnable runnable );
-    public T tracks( double offset, MetroTrackManipulator trackManipulator );
+    public T exet( double offset, MetroTrackManipulator trackManipulator );
     public T event( double offset, T event );
     public T length( double length );
     

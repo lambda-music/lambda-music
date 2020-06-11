@@ -853,7 +853,7 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
 //                                }
 //                            }
 //                        });
-                        buf.tracks(0, 
+                        buf.exet(0, 
                             MetroTrackManipulatorBasic.unregistering( 
                                 MetroTrackSelectorBasic.constant( track )));
                         buf.length( endingLength  );

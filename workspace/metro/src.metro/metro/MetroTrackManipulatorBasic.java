@@ -259,8 +259,12 @@ public class MetroTrackManipulatorBasic {
     }
     
     static class MetroTrackManipulatorMultiple implements MetroTrackManipulator {
-        private final MetroTrackManipulator[] manipulators;
+        private final List<MetroTrackManipulator> manipulators;
         public MetroTrackManipulatorMultiple(MetroTrackManipulator ... manipulators  ) {
+            super();
+            this.manipulators = Arrays.asList( manipulators );
+        }
+        public MetroTrackManipulatorMultiple(List<MetroTrackManipulator> manipulators ) {
             super();
             this.manipulators = manipulators;
         }
@@ -287,6 +291,9 @@ public class MetroTrackManipulatorBasic {
     
     public static MetroTrackManipulator multiple( MetroTrackManipulator ... args )  {
         return new MetroTrackManipulatorMultiple( args );
+    }
+    public static MetroTrackManipulator multiple( List<MetroTrackManipulator>  argList )  {
+        return new MetroTrackManipulatorMultiple( argList );
     }
 
     

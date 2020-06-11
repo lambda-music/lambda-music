@@ -84,6 +84,7 @@ public class NoteListCommon {
 //  public static final Symbol ID_MIN       = s( "min" );
 //  public static final Symbol ID_MAX       = s( "max" );
     public static final Symbol ID_VALUE     = s( "val" );
+    public static final Symbol ID_MANT      = s( "mant" );
 
     public static final Symbol ID_MESSAGE   = s( "msg" );
     

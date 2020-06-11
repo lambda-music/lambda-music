@@ -92,8 +92,8 @@ public class SimpleMetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiv
         return null;
     }
     @Override
-    public MetroMidiEvent tracks(double offset, MetroTrackManipulator trackManipulator) {
-        logWarn( "called an unimplemented method - tracks" );
+    public MetroMidiEvent exet(double offset, MetroTrackManipulator trackManipulator) {
+        logWarn( "called an unimplemented method - exet" );
         return null;
     }
 

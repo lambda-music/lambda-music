@@ -30,7 +30,7 @@ public class MetroTrackSelectorBasic {
         }
         @Override
         public String toString() {
-            return "[MetroTrackSelector none]";
+            return "(MetroTrackSelector type: 'none)";
         }
     }
     public static MetroTrackSelector none() {
@@ -57,7 +57,7 @@ public class MetroTrackSelectorBasic {
 
         @Override
         public String toString() {
-            return "(#MetroTrackSelector all)";
+            return "(MetroTrackSelector type: 'all)";
         }
     }
     public static MetroTrackSelector all() {

@@ -9,10 +9,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-import gnu.lists.EmptyList;
 import gnu.lists.IString;
 import gnu.lists.LList;
 import gnu.lists.Pair;
@@ -256,6 +256,7 @@ public interface PulsarLib {
         static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }
         static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }
         static void logWarn (String msg             ) { LOGGER.log(Level.WARNING,  msg      ); }
+        static final boolean AUTO_EXET = false;
 
         protected abstract Pulsar getPulsar();
 
@@ -370,6 +371,7 @@ public interface PulsarLib {
         public static final Object SELT_KEY_EXEC    = Symbol.valueOf("exec");
         public static final Object SELT_KEY_CONST   = Symbol.valueOf("const");
         
+        private static final Object[] emptyArray = new Object[0];
         public static MetroTrackSelector readParamSelt1(Object value) {
             if ( value == null || Boolean.FALSE.equals(value) ) {
                 return MetroTrackSelectorBasic.all();
@@ -382,7 +384,7 @@ public interface PulsarLib {
             } else if ( value instanceof Procedure ) {
                 return MetroTrackSelectorBasic.invokable( SchemeInvokable.create((Procedure) value) );
             } else {
-                throw new IllegalArgumentException("unsupported argument " + value );
+                return MetroTrackSelectorBasic.getFactoryMap().getFactory( Objects.toString(value)).create(emptyArray);
             }
         }
         public static MetroTrackSelector readParamSelt2( Object[] args ) {
@@ -1468,25 +1470,25 @@ public interface PulsarLib {
         }
 
 
-        public static void exetProc1(
+        public static void exetProcParse(
+            Collection<? extends Object> argList,
             List<MetroTrackSelector> selectors,
-            List<MetroTrackManipulator> manipulators,
-            Collection<? extends Object> args )
+            List<MetroTrackManipulator> manipulators )
         {
-            for ( Object o : args ) {
+            for ( Object o : argList ) {
                 if ( o instanceof MetroTrackSelector ) {
                     selectors.add((MetroTrackSelector) o);
                 } else if ( o instanceof MetroTrackManipulator ) {
                     manipulators.add((MetroTrackManipulator) o);
                 } else if ( o instanceof Collection ) {
-                    exetProc1( selectors, manipulators, (Collection<? extends Object>)o);
+                    exetProcParse( (Collection<? extends Object>)o, selectors, manipulators);
                 } else {
                     logWarn( "an unsupported object was detected and ignored " + o );
                 }
             }
         }
 
-        public static List<MetroTrack> exetProc2(
+        public static List<MetroTrack> exetProcCall(
             Metro metro,
             List<MetroTrackSelector> trackSelectors,
             List<MetroTrackManipulator> trackManipulators,
@@ -1501,16 +1503,26 @@ public interface PulsarLib {
             return selectedTracks;
         }
         
-        public static List<MetroTrack> exetProc(Metro metro, Object[] args) {
+        public static void exetProc(
+            Metro metro,
+            List<Object> argList,
+            List<MetroTrackSelector> trackSelectors,
+            List<MetroTrackManipulator> trackManipulators,
+            List<MetroTrack> selectedTracks) 
+        {
+            exetProcParse(argList, trackSelectors, trackManipulators);
+            exetProcCall(metro, trackSelectors, trackManipulators, selectedTracks);
+        }
+
+        public static List<MetroTrack> exetProc_no_shared( Metro metro, List<Object> argList ) {
             List<MetroTrackSelector>    trackSelectors    = new ArrayList<>();
             List<MetroTrackManipulator> trackManipulators = new ArrayList<>();
             List<MetroTrack>            selectedTracks    = new ArrayList<>(); // output
-
-            exetProc1(trackSelectors, trackManipulators, Arrays.asList(args));
-            exetProc2(metro, trackSelectors, trackManipulators, selectedTracks);
+            exetProc(metro, argList, trackSelectors, trackManipulators, selectedTracks);
             return selectedTracks;
         }
 
+        
         public final Procedure executeTrackProc = new ExecuteTrackProc(new String[] { "execute-track", "exet" });
         @Override
         public Procedure getExecuteTrack() { return executeTrackProc; }
@@ -1518,9 +1530,9 @@ public interface PulsarLib {
             public ExecuteTrackProc(String[] names) {
                 super(names);
             }
-            List<MetroTrackSelector>    trackSelectors    = new ArrayList<>();
-            List<MetroTrackManipulator> trackManipulators = new ArrayList<>();
-            List<MetroTrack>            selectedTracks    = new ArrayList<>(); // output
+            private final List<MetroTrackSelector>    trackSelectors    = new ArrayList<>();
+            private final List<MetroTrackManipulator> trackManipulators = new ArrayList<>();
+            private final List<MetroTrack>            selectedTracks    = new ArrayList<>(); // output
 
             @Override
             public synchronized Object applyN(Object[] args) throws Throwable {
@@ -1528,9 +1540,7 @@ public interface PulsarLib {
                 trackManipulators.clear();
                 selectedTracks.clear();
                 Metro metro = getPulsar();
-                
-                exetProc1(trackSelectors, trackManipulators, Arrays.asList(args));
-                exetProc2(metro, trackSelectors, trackManipulators, selectedTracks);
+                exetProc( metro, Arrays.asList(args), trackSelectors, trackManipulators, selectedTracks );
                 return LList.makeList(selectedTracks);
             }
         }
@@ -1885,11 +1895,34 @@ public interface PulsarLib {
             public RemoveTrackProc(String[] names) {
                 super(names);
             }
+
+            // Reuse the objects for passing parameters to reduce the garbage-collector load.  
+            final Map<String, Object> namedArgs = new HashMap<>();
+            final List<Object> plainArgs = new ArrayList<>();
+            final Object[] trackManipulators = new Object[1]; 
+
             @Override
-            public Object applyN(Object[] args) throws Throwable {
-                ArrayList<MetroTrack> tracks = readParamTracks(args);
-                getPulsar().removeTrack(tracks, null );
-                return EmptyList.emptyList;
+            public synchronized Object applyN(Object[] args) throws Throwable {
+                namedArgs.clear();
+                plainArgs.clear();
+                SchemeValues.parseArguments(args, namedArgs, plainArgs);
+                
+                MetroTrackSynchronizer trackSynchronizer = 
+                    (MetroTrackSynchronizer) namedArgs.get("stop");
+                
+                MetroTrackSelector trackSelector = readParamSelt(plainArgs.toArray(new Object[plainArgs.size()]));
+                MetroTrackManipulator trackManipulator = readParamMant( 
+                    "remt", 
+                    trackSelector, 
+                    trackSynchronizer);
+                
+                if ( AUTO_EXET ) {
+                    trackManipulators[0] = trackManipulator;
+                    Object result = executeTrackProc.applyN( trackManipulators );
+                    return result;
+                } else {
+                    return trackManipulator;
+                }
             }
         }
 
@@ -1928,10 +1961,14 @@ public interface PulsarLib {
                     "putt", 
                     trackSelectors, 
                     trackSynchronizer);
-                
-                trackManipulators[0] = trackManipulator;
-                
-                return executeTrackProc.applyN( trackManipulators );
+
+                if ( AUTO_EXET ) {
+                    trackManipulators[0] = trackManipulator;
+                    Object result = executeTrackProc.applyN( trackManipulators );
+                    return result;
+                } else {
+                    return trackManipulator;
+                }
             }
         }
 

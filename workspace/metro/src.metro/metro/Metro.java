@@ -516,9 +516,9 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
                     measureLengthInFramess2 = this.getMeasureLengthInFrames();
                     tracks2.addAll( this.tracks );
                     messageQueue2.addAll( this.messageQueue );
-                    registeringTracks.addAll( this.registeringTracksSnapshot0 );
-                    removingTracks.addAll( this.removingTracksSnapshot0 );
-                    unregisteringTracks.addAll( this.unregisteringTracksSnapshot0 );
+                    registeringTracks.addAll( this.registeringTracks);      // << FIXED ?
+                    removingTracks.addAll( this.removingTracks );           // << FIXED ?
+                    unregisteringTracks.addAll( this.unregisteringTracks ); // << FIXED ?
                     this.unregisteringTracks.clear();
                     this.registeringTracks.clear();
                     this.removingTracks.clear();
@@ -554,6 +554,7 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
                 synchronized ( this.getMetroLock()) {
                     this.tracks.removeAll( unregisteringTracks );
                     this.tracks.addAll( registeringTracks );
+                    
 //                    logInfo( "registering" + registeringTracks );
 //                    logInfo( "unregistering" + unregisteringTracks );
                 }
@@ -812,11 +813,12 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
                     this.removingTracks.addAll( removingTracksSnapshot );
                     this.tracks.clear();
                     this.tracks.addAll( finalTracksSnapshot );
+                    
+                    if ( ! removingTracksSnapshot.isEmpty() ) {
+                        notifyTrackChange("");
+                    }
                 }
 
-                if ( ! removingTracksSnapshot.isEmpty() ) {
-                    notifyTrackChange("");
-                }
 
             }
             return true;

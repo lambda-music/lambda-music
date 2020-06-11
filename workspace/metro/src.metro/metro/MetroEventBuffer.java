@@ -84,8 +84,8 @@ class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroEvent
         return receive( new MetroMessageEvent( "exec", offset, runnable ) ); 
     }
     @Override
-    public MetroEvent tracks(double offset, MetroTrackManipulator trackManipulator) {
-        return receive( new MetroTrackEvent( "tracks", offset, null, trackManipulator )); 
+    public MetroEvent exet(double offset, MetroTrackManipulator trackManipulator) {
+        return receive( new MetroTrackManipulatorEvent( "exet", offset, trackManipulator )); 
     }
     public double getActualLength() {
         double max = 0;

@@ -98,7 +98,7 @@ public class MetroTrack {
     }
     @Override
     public String toString() {
-        return "#" + MetroTrack.class.getSimpleName() + ":" + this.getName() + "#";
+        return "(" + MetroTrack.class.getSimpleName() + " name: '" + this.getName() + ")";
     }
     
 

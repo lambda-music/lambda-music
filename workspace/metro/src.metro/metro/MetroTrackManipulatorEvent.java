@@ -27,7 +27,7 @@ import java.util.logging.Level;
 
 import lamu.lib.log.Logger;
 
-public class MetroTrackEvent extends DefaultMetroEvent implements MetroEventOutput {
+public class MetroTrackManipulatorEvent extends DefaultMetroEvent implements MetroEventOutput {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -35,20 +35,19 @@ public class MetroTrackEvent extends DefaultMetroEvent implements MetroEventOutp
     public static final String PUT_TRACKS="PUT_TRACKS";
     public static final String REMOVE_TRACKS="REMOVE_TRACKS";
     
-    private final String operation;
     private final MetroTrackManipulator trackManipulator;
-    public MetroTrackEvent( String id, double offset, String operation, MetroTrackManipulator trackManipulator ) {
+    public MetroTrackManipulatorEvent( String id, double offset, MetroTrackManipulator trackManipulator ) {
         super(id, offset);
-        this.operation = operation;
         this.trackManipulator = trackManipulator;
-    }
-    public String getOperation() {
-        return operation;
     }
     @Override
     public String toString() {
-        return "(MidiTrackEvent " + getTypeName() + ")";
+        return "(MidiTrackManipulatorEvent value: " + trackManipulator + ")";
     }
+    public MetroTrackManipulator getTrackManipulator() {
+        return trackManipulator;
+    }
+    
     @Override
     public void process(Metro metro, long cursor) {
     }
@@ -65,6 +64,7 @@ public class MetroTrackEvent extends DefaultMetroEvent implements MetroEventOutp
         List<MetroTrack> finalizingTracks, 
         List<MetroTrack> unregisteringTracks)
     {
+        logInfo( "MetroTrackManipulatorEvent" );
         trackManipulator.manipulateTracks(tracks, registeringTracks, finalizingTracks, unregisteringTracks);
     }
 }
