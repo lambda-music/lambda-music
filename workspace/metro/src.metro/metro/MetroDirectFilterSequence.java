@@ -202,10 +202,10 @@ public class MetroDirectFilterSequence implements MetroSequence {
     }
 
     @Override
-    public void progressBuffer(Metro metro, MetroTrack track, long measureLengthInFrames) throws MetroException {
+    public void advanceBuffer(Metro metro, MetroTrack track, long measureLengthInFrames) throws MetroException {
     }
     @Override
-    public void progressCursor(
+    public void advanceCursor(
         Metro metro, 
         MetroTrack track, 
         long nframes,

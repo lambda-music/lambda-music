@@ -85,12 +85,12 @@ public class SchemeRecorderSequence implements MetroSequence, MetroReadable, Inv
         this.playing = playing;
     }
     @Override
-    public void progressBuffer(Metro metro, MetroTrack track, long measureLengthInFrames) throws MetroException {
+    public void advanceBuffer(Metro metro, MetroTrack track, long measureLengthInFrames) throws MetroException {
     }
 
     private volatile long totalCursor = 0;
     @Override
-    public void progressCursor(
+    public void advanceCursor(
         Metro metro, 
         MetroTrack track, 
         long nframes,

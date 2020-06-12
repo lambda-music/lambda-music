@@ -26,10 +26,10 @@ public class MetroThruSequence implements MetroSequence {
         return outputPort;
     }
     @Override
-    public void progressBuffer(Metro metro, MetroTrack track, long measureLengthInFrames) throws MetroException {
+    public void advanceBuffer(Metro metro, MetroTrack track, long measureLengthInFrames) throws MetroException {
     }
     @Override
-    public void progressCursor(
+    public void advanceCursor(
         Metro metro, MetroTrack track, 
         long nframes,
         long measureLengthInFrames, List<MetroMidiEvent> inputMidiEvents, List<MetroMidiEvent> outputMidiEvents, List<MetroTrack> tracks, List<MetroTrack> registeringTracks, List<MetroTrack> finalizingTracks, List<MetroTrack> unregisteringTracks) throws MetroException 

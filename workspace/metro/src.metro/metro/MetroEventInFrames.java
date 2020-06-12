@@ -5,7 +5,7 @@ import java.util.List;
 public interface MetroEventInFrames extends MetroEventProcess {
     /**
      * Check if the position of this event is inside the duration specified in the
-     * parameter. See {@link MetroTrack#progressCursor(Metro, MetroTrack, long, long, List, List, List, List, List, List) } for further
+     * parameter. See {@link MetroTrack#advanceCursor(Metro, MetroTrack, long, long, List, List, List, List, List, List) } for further
      * information.
      * 
      * This methods is called as a callback of JACKAudio processing; this method

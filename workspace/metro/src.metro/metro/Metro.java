@@ -545,10 +545,10 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
                     }
 
                     for ( MetroTrack track : tracks2  ) {
-                        track.getSequence().progressBuffer( this, track, measureLengthInFramess2 );
+                        track.getSequence().advanceBuffer( this, track, measureLengthInFramess2 );
                     }
                     for ( MetroTrack track : registeringTracks  ) {
-                        track.getSequence().progressBuffer( this, track, measureLengthInFramess2 );
+                        track.getSequence().advanceBuffer( this, track, measureLengthInFramess2 );
                     }
                 }
                 synchronized ( this.getMetroLock()) {
@@ -748,7 +748,7 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
                             track.registeringTracks.clear();
                             track.removingTracks.clear(); 
                             track.unregisteringTracks.clear();
-                            track.getSequence().progressCursor( this, track, 
+                            track.getSequence().advanceCursor( this, track, 
                                 l_nframes, 
                                 measureLengthInFrames, 
                                 track.inputMidiEvents,

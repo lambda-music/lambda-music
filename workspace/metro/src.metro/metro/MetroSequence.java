@@ -11,7 +11,7 @@ public interface MetroSequence {
      * @param measureLengthInFrames
      * @throws MetroException
      */
-    public abstract void progressBuffer(Metro metro, MetroTrack track, long measureLengthInFrames) throws MetroException;
+    public abstract void advanceBuffer(Metro metro, MetroTrack track, long measureLengthInFrames) throws MetroException;
     
     /**
      * 
@@ -27,7 +27,7 @@ public interface MetroSequence {
      * @param unregisteringTracks
      * @throws MetroException
      */
-    public abstract void progressCursor(Metro metro, MetroTrack track, 
+    public abstract void advanceCursor(Metro metro, MetroTrack track, 
         long nframes, 
         long measureLengthInFrames, 
         List<MetroMidiEvent> inputMidiEvents, 

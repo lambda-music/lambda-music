@@ -294,7 +294,7 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
     
 
     @Override
-    public void progressCursor( 
+    public void advanceCursor( 
         Metro metro, 
         MetroTrack track,
         long nframes, 
@@ -615,7 +615,7 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
     private final ArrayList<MetroEventBuffer> share_buffersTmp  = new ArrayList<>();
 
     @Override
-    public void progressBuffer( Metro metro, MetroTrack track, long measureLengthInFrames) throws MetroException {
+    public void advanceBuffer( Metro metro, MetroTrack track, long measureLengthInFrames) throws MetroException {
         double backwardBufferLength;
         double forewardBufferLength;
         int backwardBufferCount;
