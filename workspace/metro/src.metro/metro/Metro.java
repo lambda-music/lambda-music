@@ -107,16 +107,21 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
     private final ArrayList<MetroTrack> unregisteringTracks = new ArrayList<MetroTrack>();
     private final ArrayList<MetroTrack> removingTracks = new ArrayList<MetroTrack>();
 
+    // Number 0 for Snapshots for run()
     private final ArrayList<MetroTrackManipulator>  messageQueueSnapshot0 = new ArrayList<MetroTrackManipulator>();
     private final ArrayList<MetroTrack> tracksSnapshot0 = new ArrayList<MetroTrack>(256);
     private final ArrayList<MetroTrack> registeringTracksSnapshot0 = new ArrayList<MetroTrack>(256);
     private final ArrayList<MetroTrack> unregisteringTracksSnapshot0 = new ArrayList<MetroTrack>(256);
     private final ArrayList<MetroTrack> removingTracksSnapshot0 = new ArrayList<MetroTrack>(256);
     
+    // Number 1 for Snapshots for process()
+    private final ArrayList<MetroTrackManipulator> messageQueueSnapshot1 = new ArrayList<MetroTrackManipulator>();
     private final ArrayList<MetroTrack> tracksSnapshot1 = new ArrayList<MetroTrack>(256);
     private final ArrayList<MetroTrack> finalTracksSnapshot1 = new ArrayList<MetroTrack>(256);
     private final ArrayList<MetroMidiEvent> finalInputMidiEvents1 = new ArrayList<MetroMidiEvent>(1024);
     private final ArrayList<MetroMidiEvent> finalOutputMidiEvents1 = new ArrayList<MetroMidiEvent>(1024);
+    private final ArrayList<MetroTrack> registeringTracksSnapshot1 = new ArrayList<MetroTrack>(256);
+    private final ArrayList<MetroTrack> unregisteringTracksSnapshot1 = new ArrayList<MetroTrack>(256);
     private final ArrayList<MetroTrack> removingTracksSnapshot1 = new ArrayList<MetroTrack>(256);
 
     private volatile MetroTrack mainTrack = null; 
@@ -477,11 +482,14 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
 //            }
 //        }
 //    }
+    /**
+     * This method foreces to clear the all currently playing tracks. Note that the
+     * clean up procedures of the tracks are not properly called.
+     */
     public void clearTracks() {
         checkState();
         synchronized ( this.getMetroLock() ) {
             this.tracks.clear();
-            this.notifyTrackChange("update");
         }
     }
 
@@ -497,6 +505,9 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
             //          String s = this.debugQueue.take();
             //          System.err.println( s );
 
+            if ( true )
+                throw new RuntimeException("YEAH");
+            
             try {
                 long measureLengthInFramess2;
                 List<MetroTrack> tracks2         = tracksSnapshot0;
@@ -702,15 +713,21 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
             for ( MetroPort p : Metro.this.outputPortList )
                 JackMidi.clearBuffer( p.jackPort );
 
+            ArrayList<MetroTrackManipulator> messageQueueSnapshot = this.messageQueueSnapshot1;
             ArrayList<MetroTrack> tracksSnapshot = this.tracksSnapshot1;
             ArrayList<MetroTrack> finalTracksSnapshot = this.finalTracksSnapshot1;
             ArrayList<MetroMidiEvent> finalInputMidiEventList = this.finalInputMidiEvents1;
             ArrayList<MetroMidiEvent> finalOutputMidiEventList = this.finalOutputMidiEvents1;
+            ArrayList<MetroTrack> registeringTracksSnapshot = this.registeringTracksSnapshot1; 
+            ArrayList<MetroTrack> unregisteringTracksSnapshot = this.unregisteringTracksSnapshot1; 
             ArrayList<MetroTrack> removingTracksSnapshot = this.removingTracksSnapshot1; 
+            messageQueueSnapshot.clear();
             tracksSnapshot.clear();
             finalTracksSnapshot.clear();
             finalInputMidiEventList.clear();
             finalOutputMidiEventList.clear();
+            registeringTracksSnapshot.clear();
+            unregisteringTracksSnapshot.clear();
             removingTracksSnapshot.clear();
 
             synchronized ( this.getMetroLock() ) {
@@ -729,10 +746,46 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
 
                 synchronized ( this.getMetroLock() ) {
                     tracksSnapshot.addAll( this.tracks );
+                    messageQueueSnapshot.addAll( this.messageQueue );
+                    this.messageQueue.clear();
                 }
 
-                finalTracksSnapshot.addAll( tracksSnapshot );
+                // 1. messages
+                //  (Fri, 12 Jun 2020 16:00:50 +0900)
+                if ( ! messageQueueSnapshot.isEmpty() ) {
+                    ArrayList<MetroTrack> registeringTracksTemp = new ArrayList<MetroTrack>();
+                    ArrayList<MetroTrack> unregisteringTracksTemp = new ArrayList<MetroTrack>();
+                    ArrayList<MetroTrack> removingTracksTemp = new ArrayList<MetroTrack>();
 
+                    logInfo("some messages are arrived!!!!!");
+ 
+                    // Note that processing `tracksSnapshot`, not the `finalTracksSnapshot`.
+                    for ( MetroTrackManipulator message : messageQueueSnapshot ) {
+                        registeringTracksTemp.clear();
+                        unregisteringTracksTemp.clear();
+                        try {
+                            // 1.1 Process
+                            message.manipulateTracks( 
+                                tracksSnapshot,
+                                registeringTracksTemp, 
+                                removingTracksTemp, 
+                                unregisteringTracksTemp );
+                        } catch ( Throwable e ) {
+                            logError( "An error occured in a message object", e);
+                        }
+                        // 1.2. Preparing the final track list. 
+                        tracksSnapshot.addAll( registeringTracksTemp );
+                        // 1.3. Preparing the final track list.
+                        tracksSnapshot.removeAll( unregisteringTracksTemp );
+                        // 1.4 Reflect it to the removing track list.
+                        removingTracksSnapshot.addAll( removingTracksTemp );
+                    }
+                }
+
+                // 2 
+                finalTracksSnapshot.addAll( tracksSnapshot );
+                
+                // 3. tracks
                 {
                     int trackLoopCount = 0;
                     ArrayList<MetroTrack> currTrackList = tracksSnapshot;
@@ -742,12 +795,14 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
                             break;
                         }
                         ArrayList<MetroTrack> nextTrackList = new ArrayList<>();
+
                         for ( MetroTrack track : currTrackList ) {
                             track.inputMidiEvents.addAll( finalInputMidiEventList );
                             track.outputMidiEvents.clear();
                             track.registeringTracks.clear();
                             track.removingTracks.clear(); 
                             track.unregisteringTracks.clear();
+                            // 3.1 Process
                             track.getSequence().advanceCursor( this, track, 
                                 l_nframes, 
                                 measureLengthInFrames, 
@@ -758,17 +813,18 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
                                 track.removingTracks, 
                                 track.unregisteringTracks );
 
-                            // 2. Preparing the final track list. 
+                            // 3.2. Preparing the final track list. 
                             finalTracksSnapshot.addAll( track.registeringTracks );
-                            // 3. Preparing the final track list.
+                            // 3.3. Preparing the final track list.
                             finalTracksSnapshot.removeAll( track.unregisteringTracks );
-
+                            // 3.4 Reflect it to the removing track list.
                             removingTracksSnapshot.addAll( track.removingTracks );
-
-                            // Prepare the next track.
+                            // 3.5 Prepare the next track.
                             nextTrackList.addAll( track.registeringTracks );
                             nextTrackList.removeAll( track.unregisteringTracks );
                         }
+                        
+                        
                         if ( nextTrackList.isEmpty() ) {
                             break;
                         } else {
@@ -809,8 +865,14 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
                     //                      e.getData().length 
                     //                      );
                 }
+                
+                for ( MetroTrack t : removingTracks ) {
+                    t.remove( this, null );
+                }
+
                 synchronized ( this.getMetroLock() ) {
-                    this.removingTracks.addAll( removingTracksSnapshot );
+//                    this.removingTracks.addAll( removingTracksSnapshot );
+                    this.removingTracks.clear();
                     this.tracks.clear();
                     this.tracks.addAll( finalTracksSnapshot );
                     

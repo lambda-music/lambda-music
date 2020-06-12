@@ -125,6 +125,27 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
         }
     }
     
+    private volatile boolean bufferRequested = true;
+    synchronized void requestBuffer() {
+        this.bufferRequested = true;
+    }
+    synchronized void resetBufferRequested() {
+        this.bufferRequested = false;
+    }
+    synchronized boolean isBufferRequested() {
+        return bufferRequested;
+    }
+    
+    synchronized void checkBuffer( Metro metro, MetroTrack track, long measureLengthInFrames ) throws MetroException {
+        if ( ! isBufferRequested() ) {
+            return;
+        } else {
+            advanceBuffer(metro, track, measureLengthInFrames);
+            resetBufferRequested();
+        }
+    }
+    
+    
     @Override
     public double getPosition( Metro metro ) {
         synchronized ( metro.getMetroLock() ) {
@@ -135,7 +156,6 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
             }
         }
     }
-
     
     @Override
     public long getCurrentLengthInFrames(Metro metro) {
@@ -315,10 +335,17 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
         
         synchronized ( metro.getMetroLock() ) {
             synchronized ( metro.getMetroLock() ) {
+                // Check Buffer
+                checkBuffer(metro, track, measureLengthInFrames);
+
                 // Before everything, initialize synchronizing status with the track.
                 // In most case, this method does nothing and returns immediately.
                 synchronizeTrack( metro, track, tracks, measureLengthInFrames );
+                
+                // 
                 reprepareTrack( metro, measureLengthInFrames );
+                
+
 
                 currentCursor      = this.cursor;
                 nextCursor         = currentCursor + nframes;
@@ -401,6 +428,7 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
                     }
                     if ( done ) {
                         metro.notifyTrackChange("update");
+                        requestBuffer();
                     }
                 }
                 //            logInfo( "this.cursor:" + getName() + ":"  + this.cursor );
@@ -615,7 +643,7 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
     private final ArrayList<MetroEventBuffer> share_buffersTmp  = new ArrayList<>();
 
     @Override
-    public void advanceBuffer( Metro metro, MetroTrack track, long measureLengthInFrames) throws MetroException {
+    public void advanceBuffer( Metro metro, MetroTrack track, long measureLengthInFrames) {
         double backwardBufferLength;
         double forewardBufferLength;
         int backwardBufferCount;
