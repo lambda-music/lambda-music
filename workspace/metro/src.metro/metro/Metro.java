@@ -516,9 +516,9 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
                     measureLengthInFramess2 = this.getMeasureLengthInFrames();
                     tracks2.addAll( this.tracks );
                     messageQueue2.addAll( this.messageQueue );
-                    registeringTracks.addAll( this.registeringTracks);      // << FIXED ?
-                    removingTracks.addAll( this.removingTracks );           // << FIXED ?
-                    unregisteringTracks.addAll( this.unregisteringTracks ); // << FIXED ?
+                    registeringTracks.addAll( this.registeringTracks);      // << FIXED ? (Fri, 12 Jun 2020 12:49:48 +0900)
+                    removingTracks.addAll( this.removingTracks );           // << FIXED ? (Fri, 12 Jun 2020 12:49:48 +0900)
+                    unregisteringTracks.addAll( this.unregisteringTracks ); // << FIXED ? (Fri, 12 Jun 2020 12:49:48 +0900)
                     this.unregisteringTracks.clear();
                     this.registeringTracks.clear();
                     this.removingTracks.clear();
