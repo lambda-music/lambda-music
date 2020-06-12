@@ -56,6 +56,7 @@ import lamu.lib.log.LogFormatter;
 import lamu.lib.log.Logger;
 import lamu.lib.swing.AcceleratorKeyList;
 import lamu.lib.swing.Action2;
+import lamu.lib.threads.LamuThreadLocal;
 
 public class KawapadFrame extends JFrame implements ApplicationComponent {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -104,7 +105,7 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
     //
     //////////////////////////////////////////////////////////////////////////////////////////
     
-    private static ThreadLocal<KawapadFrame> threadLocal = new ThreadLocal<KawapadFrame>();
+    private static LamuThreadLocal<KawapadFrame> threadLocal = new LamuThreadLocal<KawapadFrame>();
     public static final KawapadFrame getCurrent() {
         return threadLocal.get();
     }

@@ -16,8 +16,8 @@ public class PulsarCommon {
     public static MetroSequenceFactory createListSequenceFactory( LList pair ) {
         return SchemeSequenceFactory.create( PulsarProcedureFactory.createConstantList(pair));
     }
-    public static SchemeSequence createSequence( Procedure procedure ){
-        return new SchemeSequence( procedure );
+    public static SchemeSequence createSequence(Runnable initializer, Procedure procedure ){
+        return new SchemeSequence( initializer, procedure );
     }
     public static MetroSequenceFactory createDynamicProcedureSequenceFactory( Procedure procedure ) {
         return SchemeSequenceFactory.createDynamic( procedure );

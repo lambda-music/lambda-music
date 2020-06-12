@@ -3,6 +3,7 @@ package pulsar;
 import gnu.lists.LList;
 import gnu.mapping.Procedure;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure0;
+import lamu.lib.threads.LamuThreadLocalInitializer;
 
 final class ConstantListProcedure extends MultipleNamedProcedure0 {
     private final LList pair;
@@ -16,8 +17,10 @@ final class ConstantListProcedure extends MultipleNamedProcedure0 {
 }
 
 final class DynamicPulsarProcedureFactory implements PulsarProcedureFactory {
+    private final LamuThreadLocalInitializer threadLocalInitializer;
     private final Procedure procedure;
     public DynamicPulsarProcedureFactory(Procedure procedure) {
+        this.threadLocalInitializer = new LamuThreadLocalInitializer();
         try {
             Object object = procedure.apply0();
             if (!(object instanceof Procedure) ) {
@@ -31,6 +34,8 @@ final class DynamicPulsarProcedureFactory implements PulsarProcedureFactory {
     }
     @Override
     public Procedure createProcedure() throws IllegalStateException {
+        this.threadLocalInitializer.restore();
+        
         Procedure newp;
         try {
             newp = (Procedure) procedure.apply0();
@@ -46,12 +51,15 @@ final class DynamicPulsarProcedureFactory implements PulsarProcedureFactory {
 }
 
 final class ConstantPulsarProcedureFactory implements PulsarProcedureFactory {
+    private final LamuThreadLocalInitializer threadLocalInitializer;
     private final Procedure procedure;
     public ConstantPulsarProcedureFactory(Procedure procedure) {
+        this.threadLocalInitializer = new LamuThreadLocalInitializer();
         this.procedure = procedure;
     }
     @Override
     public Procedure createProcedure() throws IllegalStateException {
+        this.threadLocalInitializer.restore();
         return procedure;
     }
     @Override

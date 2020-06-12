@@ -19,6 +19,7 @@ import gnu.lists.Consumer;
 import gnu.mapping.CallContext;
 import kawa.Shell;
 import kawa.standard.Scheme;
+import lamu.lib.threads.LamuThreadLocal;
 
 class SchemeEvaluatorImplementation {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -62,7 +63,7 @@ class SchemeEvaluatorImplementation {
         }
     }
 
-    static final ThreadLocal<File> currentBaseFile = new ThreadLocal<File>();
+    static final LamuThreadLocal<File> currentBaseFile = new LamuThreadLocal<File>();
 
     static final Pattern PAT_CURRENT_FILE = Pattern.compile( Pattern.quote( "#!current-file" ) + "\\b", Pattern.MULTILINE );
     static final Pattern PAT_CURRENT_DIR  = Pattern.compile( Pattern.quote( "#!current-dir"  ) + "\\b", Pattern.MULTILINE);

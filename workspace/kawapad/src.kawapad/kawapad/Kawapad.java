@@ -112,6 +112,7 @@ import lamu.lib.swing.AutomatedActionField;
 import lamu.lib.swing.MenuInitializer;
 import lamu.lib.swing.TextAction2;
 import lamu.lib.swing.doc.ActionDocumentFormatter;
+import lamu.lib.threads.LamuThreadLocal;
 
 /**
  */
@@ -393,7 +394,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     //
     //////////////////////////////////////////////////////////////////////////////////////////
     
-    private static ThreadLocal<Kawapad> threadLocal = new ThreadLocal<Kawapad>();
+    private static LamuThreadLocal<Kawapad> threadLocal = new LamuThreadLocal<Kawapad>();
     public static final Kawapad getCurrent() {
         return threadLocal.get();
     }

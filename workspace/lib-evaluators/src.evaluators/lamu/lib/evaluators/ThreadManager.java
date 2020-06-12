@@ -1,9 +1,10 @@
 package lamu.lib.evaluators;
 
 import lamu.lib.evaluators.AsyncThreadManager.AsyncThreadManagerThread;
+import lamu.lib.threads.LamuThreadLocal;
 
 public interface ThreadManager {
-    public static final ThreadLocal<ThreadManager> threadLocal = new ThreadLocal<>();
+    public static final LamuThreadLocal<ThreadManager> threadLocal = new LamuThreadLocal<>();
     public static ThreadManager getCurrent(){
         return threadLocal.get();
     }

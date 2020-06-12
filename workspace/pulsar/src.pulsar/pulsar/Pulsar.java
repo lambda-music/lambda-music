@@ -32,11 +32,17 @@ import java.util.logging.Level;
 
 import javax.swing.JComboBox;
 
+import org.jaudiolibs.jnajack.JackClient;
+
+import gnu.expr.Language;
+import gnu.mapping.Environment;
 import gnu.mapping.Symbol;
 import lamu.lib.Invokable;
 import lamu.lib.apps.ApplicationComponent;
 import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.log.Logger;
+import lamu.lib.threads.LamuThreadLocal;
+import lamu.lib.threads.LamuThreadLocalInitializer;
 import metro.Metro;
 import metro.MetroException;
 import pulsar.PulsarLib.PulsarLibDelegator;
@@ -144,6 +150,8 @@ public class Pulsar extends Metro implements PulsarLib, PulsarLibDelegator, Appl
 //      registerLocalSchemeInitializers( this.schemeSecretary, this );
     }
     
+    final LamuThreadLocalInitializer threadLocalInitializer;
+    
     /**
      * Creates an instance of Pulsar object without opening any specific scheme
      * file. When a user creates an object by this constructor, the sequencer
@@ -155,6 +163,38 @@ public class Pulsar extends Metro implements PulsarLib, PulsarLibDelegator, Appl
      */
     public Pulsar() {
         super();
+        /*
+         * Overview of the Reasong Creating ThreadLocalInitializer is Performed Here
+         * =========================================================================
+         * 
+         * The main reason Pulsar needs needs a ThreadLocal initializer is to initialize
+         * the JACKAudio thread.
+         * 
+         * Pulsar is very likely to be instanciated by the a thread of a Kawapad
+         * instance. the thread is very likely to consist a set of ThreadLocal objects
+         * which should already be initialized.
+         * 
+         * Creating a new ThreadLocal initializer creates a snapshot of the current
+         * values which are stored in these ThreadLocal objects. The snapshot will be
+         * used for initializing the thread which comes from JACKAudio.
+         * 
+         * The procedures which are invoked in the JACK thread should refer the
+         * ThreadLocal objects which are initialized by the THreadLocal-initializer.
+         * 
+         * (Sat, 13 Jun 2020 03:06:05 +0900)
+         */
+        this.threadLocalInitializer = new LamuThreadLocalInitializer();
+        {
+            Environment env = Environment.getCurrent();
+            Language language = Language.getDefaultLanguage();
+            this.threadLocalInitializer.addInitializer( new Runnable() {
+                @Override
+                public void run() {
+                    Environment.setCurrent(env);
+                    Language.setCurrentLanguage( language );
+                }
+            });
+        }
     }
     
     public void init() {
@@ -366,12 +406,21 @@ public class Pulsar extends Metro implements PulsarLib, PulsarLibDelegator, Appl
         return pulsarLibImplementation;
     }
     
-    private static final ThreadLocal<Metro> currentMetroLocal = new ThreadLocal<>();
+    private static final LamuThreadLocal<Metro> currentMetroLocal = new LamuThreadLocal<>();
     public static final Metro getCurrentMetro() {
         return currentMetroLocal.get();
     }
     public static final void setCurrentMetro( Metro metro ) {
         currentMetroLocal.set(metro);
+    }
+    
+    @Override
+    public boolean process(JackClient client, int nframes) {
+        // (Sat, 13 Jun 2020 03:26:16 +0900)
+        // This initialization should be done only the first time;
+        // in the second time or later, the method returns immediatelly.
+        this.threadLocalInitializer.restore();
+        return super.process(client, nframes);
     }
 }
     

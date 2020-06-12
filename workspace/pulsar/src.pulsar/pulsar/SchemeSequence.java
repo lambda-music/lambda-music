@@ -85,6 +85,8 @@ public class SchemeSequence extends MetroBufferedSequence implements Invokable {
         }
         return pairs;
     }
+    
+    final Runnable initializer;
 
     /*
      * Note (XXX_SYNC_01):
@@ -93,10 +95,12 @@ public class SchemeSequence extends MetroBufferedSequence implements Invokable {
      * 
      */
     final Invokable invokable;
-    public SchemeSequence ( Invokable procedure ) {
+    public SchemeSequence ( Runnable initializer, Invokable procedure ) {
+        this.initializer = initializer;
         this.invokable = procedure;
     }
-    public SchemeSequence( Procedure procedure ) {
+    public SchemeSequence( Runnable initializer, Procedure procedure ) {
+        this.initializer = initializer;
         this.invokable = SchemeInvokable.create(procedure);
     }
     @Override

@@ -9,5 +9,5 @@
   (import (lamu notes))
   (import (lamu music))
   (import (lamu song))
-  (import (lamu pulsar))
   (import (lamu evaluators)))
+  (import (lamu pulsar))

@@ -10,6 +10,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
 
 import lamu.lib.log.Logger;
+import lamu.lib.threads.LamuThreadLocal;
 
 public interface Evaluator {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -17,7 +18,7 @@ public interface Evaluator {
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
 
-    public static final ThreadLocal<Evaluator> threadLocal = new ThreadLocal<>();
+    public static final LamuThreadLocal<Evaluator> threadLocal = new LamuThreadLocal<>();
     public static Evaluator getCurrent(){
         return threadLocal.get();
     }

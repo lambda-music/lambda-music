@@ -26,6 +26,7 @@ import lamu.lib.apps.ApplicationComponent;
 import lamu.lib.evaluators.MultiplexEvaluator;
 import lamu.lib.evaluators.SchemeResult;
 import lamu.lib.log.Logger;
+import lamu.lib.threads.LamuThreadLocal;
 
 
 /**
@@ -128,7 +129,7 @@ public class SchemeHttp implements ApplicationComponent {
         boolean check( HttpExchange httpExchange );
     }
 
-    public static final ThreadLocal<SchemeHttp> threadLocal = new ThreadLocal<>();
+    public static final LamuThreadLocal<SchemeHttp> threadLocal = new LamuThreadLocal<>();
     public static SchemeHttp getCurrent(){
         return threadLocal.get();
     }

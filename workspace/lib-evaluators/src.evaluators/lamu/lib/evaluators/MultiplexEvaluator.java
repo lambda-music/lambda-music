@@ -20,6 +20,7 @@ import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure1;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure2;
 import lamu.lib.log.Logger;
+import lamu.lib.threads.LamuThreadLocal;
 
 public class MultiplexEvaluator implements Evaluator, ApplicationComponent {
     public static interface MultipleEvaluatorListener {
@@ -70,7 +71,7 @@ public class MultiplexEvaluator implements Evaluator, ApplicationComponent {
     //
     //////////////////////////////////////////////////////////////////////////////////////////
 
-    private static final ThreadLocal<MultiplexEvaluator> threadLocal = new ThreadLocal<>();
+    private static final LamuThreadLocal<MultiplexEvaluator> threadLocal = new LamuThreadLocal<>();
     public static MultiplexEvaluator getCurrent() {
         return threadLocal.get();
     }
