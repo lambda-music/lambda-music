@@ -130,7 +130,9 @@ public class MetroTrack {
                 syncSequence.setStopSynchronizer(trackSynchronizer);
             syncSequence.stop(metro, this);
         } else {
-            metro.unregisterTrack(Arrays.asList(this));
+            metro.manipulateTrack(Arrays.asList(
+                MetroTrackManipulatorBasic.unregistering(
+                    MetroTrackSelectorBasic.constant(this))));
         }
     }
 }

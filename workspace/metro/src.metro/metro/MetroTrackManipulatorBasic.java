@@ -36,7 +36,7 @@ public class MetroTrackManipulatorBasic {
     }
 
 
-    public static MetroTrackManipulator removing(MetroTrackSelector selector) {
+    public static MetroTrackManipulator removing(MetroTrackSelector trackSelector) {
         class MetroTrackRemover implements MetroTrackManipulator {
             private final MetroTrackSelector selector;
 
@@ -58,17 +58,20 @@ public class MetroTrackManipulatorBasic {
                 selector.selectTracks(currentTracks, removingTracks);
             }
         }
-        return new MetroTrackRemover(selector);
+        return new MetroTrackRemover(trackSelector);
+    }
+    public static MetroTrackManipulator removing( MetroTrackSelector trackSelector, MetroTrackSynchronizer trackSynchronizer ) {
+        MetroTrackManipulator trackManipulator = removing( trackSelector );
+        if ( trackSynchronizer != null )
+            trackManipulator = synchronizedStopper(trackManipulator, trackSynchronizer);
+        return trackManipulator;
     }
 
     static {
         final class RemovingFactory implements MetroTrackManipulatorFactory {
             @Override
             public MetroTrackManipulator create(MetroTrackSelector trackSelector, MetroTrackSynchronizer trackSynchronizer) {
-                MetroTrackManipulator trackManipulator = removing( trackSelector );
-                if ( trackSynchronizer != null )
-                    trackManipulator = synchronizedStopper(trackManipulator, trackSynchronizer);
-                return trackManipulator;
+                return removing( trackSelector, trackSynchronizer );
             }
         }
         MetroTrackManipulatorFactory factory = new RemovingFactory();
@@ -249,9 +252,7 @@ public class MetroTrackManipulatorBasic {
         }
     }
 
-    public static MetroTrackManipulator synchronizedStopper(
-        MetroTrackManipulator manipulator,
-        MetroTrackSynchronizer trackSynchronizer) {
+    public static MetroTrackManipulator synchronizedStopper( MetroTrackManipulator manipulator, MetroTrackSynchronizer trackSynchronizer) {
         if (trackSynchronizer == null)
             return manipulator;
         else

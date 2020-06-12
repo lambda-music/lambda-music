@@ -27,5 +27,4 @@ public interface MetroGett extends MetroReft {
             selectedTracks);
         return selectedTracks;
     }
-
 }

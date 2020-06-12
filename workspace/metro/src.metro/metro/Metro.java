@@ -26,7 +26,6 @@ package metro;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -103,25 +102,13 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
     
     private final ArrayList<MetroTrackManipulator>  messageQueue = new ArrayList<MetroTrackManipulator>();
     private final ArrayList<MetroTrack> tracks = new ArrayList<MetroTrack>();
-    private final ArrayList<MetroTrack> registeringTracks = new ArrayList<MetroTrack>();
-    private final ArrayList<MetroTrack> unregisteringTracks = new ArrayList<MetroTrack>();
-    private final ArrayList<MetroTrack> removingTracks = new ArrayList<MetroTrack>();
 
-    // Number 0 for Snapshots for run()
-    private final ArrayList<MetroTrackManipulator>  messageQueueSnapshot0 = new ArrayList<MetroTrackManipulator>();
-    private final ArrayList<MetroTrack> tracksSnapshot0 = new ArrayList<MetroTrack>(256);
-    private final ArrayList<MetroTrack> registeringTracksSnapshot0 = new ArrayList<MetroTrack>(256);
-    private final ArrayList<MetroTrack> unregisteringTracksSnapshot0 = new ArrayList<MetroTrack>(256);
-    private final ArrayList<MetroTrack> removingTracksSnapshot0 = new ArrayList<MetroTrack>(256);
-    
     // Number 1 for Snapshots for process()
     private final ArrayList<MetroTrackManipulator> messageQueueSnapshot1 = new ArrayList<MetroTrackManipulator>();
     private final ArrayList<MetroTrack> tracksSnapshot1 = new ArrayList<MetroTrack>(256);
     private final ArrayList<MetroTrack> finalTracksSnapshot1 = new ArrayList<MetroTrack>(256);
     private final ArrayList<MetroMidiEvent> finalInputMidiEvents1 = new ArrayList<MetroMidiEvent>(1024);
     private final ArrayList<MetroMidiEvent> finalOutputMidiEvents1 = new ArrayList<MetroMidiEvent>(1024);
-    private final ArrayList<MetroTrack> registeringTracksSnapshot1 = new ArrayList<MetroTrack>(256);
-    private final ArrayList<MetroTrack> unregisteringTracksSnapshot1 = new ArrayList<MetroTrack>(256);
     private final ArrayList<MetroTrack> removingTracksSnapshot1 = new ArrayList<MetroTrack>(256);
 
     private volatile MetroTrack mainTrack = null; 
@@ -499,105 +486,7 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
     @Override
     public void run()  {
         logInfo("Metro.run()");
-
-        while ( true ) {
-            //          logInfo("Metro.run()");
-            //          String s = this.debugQueue.take();
-            //          System.err.println( s );
-
-            if ( true )
-                throw new RuntimeException("YEAH");
-            
-            try {
-                long measureLengthInFramess2;
-                List<MetroTrack> tracks2         = tracksSnapshot0;
-                List<MetroTrackManipulator> messageQueue2 = this.messageQueueSnapshot0;
-                List<MetroTrack> registeringTracks = this.registeringTracksSnapshot0;
-                List<MetroTrack> removingTracks = this.removingTracksSnapshot0;
-                List<MetroTrack> unregisteringTracks = this.unregisteringTracksSnapshot0;
-
-                tracks2.clear();
-                messageQueue2.clear();
-                registeringTracks.clear();
-                unregisteringTracks.clear();
-                removingTracks.clear();
-
-                synchronized ( this.getMetroLock() ) {
-                synchronized ( this.getMetroLock() ) {
-                    measureLengthInFramess2 = this.getMeasureLengthInFrames();
-                    tracks2.addAll( this.tracks );
-                    messageQueue2.addAll( this.messageQueue );
-                    registeringTracks.addAll( this.registeringTracks);      // << FIXED ? (Fri, 12 Jun 2020 12:49:48 +0900)
-                    removingTracks.addAll( this.removingTracks );           // << FIXED ? (Fri, 12 Jun 2020 12:49:48 +0900)
-                    unregisteringTracks.addAll( this.unregisteringTracks ); // << FIXED ? (Fri, 12 Jun 2020 12:49:48 +0900)
-                    this.unregisteringTracks.clear();
-                    this.registeringTracks.clear();
-                    this.removingTracks.clear();
-                    this.messageQueue.clear();
-                }
-                    
-//                    logInfo( "Metro:run" );
-
-                {
-                    for ( MetroTrackManipulator message : messageQueue2 ) {
-                        try {
-                            message.manipulateTracks( 
-                                tracks2,
-                                registeringTracks, 
-                                removingTracks, 
-                                unregisteringTracks );
-                        } catch ( Throwable e ) {
-                            logError( "An error occured in a message object", e);
-                        }
-                    }
-
-                    for ( MetroTrack t : removingTracks ) {
-                        t.remove( this, null );
-                    }
-
-                    for ( MetroTrack track : tracks2  ) {
-                        track.getSequence().advanceBuffer( this, track, measureLengthInFramess2 );
-                    }
-                    for ( MetroTrack track : registeringTracks  ) {
-                        track.getSequence().advanceBuffer( this, track, measureLengthInFramess2 );
-                    }
-                }
-                synchronized ( this.getMetroLock()) {
-                    this.tracks.removeAll( unregisteringTracks );
-                    this.tracks.addAll( registeringTracks );
-                    
-//                    logInfo( "registering" + registeringTracks );
-//                    logInfo( "unregistering" + unregisteringTracks );
-                }
-
-                synchronized ( this.getMetroLock()) {
-                    
-                    // METRO_LOCK_WAIT
-                    // XXX ??? why not zero?? (Thu, 01 Aug 2019 11:49:55 +0900)
-                    /*
-                     * Note : originally this loop was designed to be executed only when other
-                     * threads eagerly call getMetroLocl().notifyEvent(). But later, it appeared to
-                     * be like that checking if the number of the buffers is sufficient only sometime
-                     * causes buffer-underflow when it comes to fast tempo music.     
-                     * 
-                     * Therefore, I changed this value to 1 to obtain faster looping.
-                     * 
-                     * Also note that looping excessively fast causes holding getMetroLock() longer time;
-                     * this very likely leads Pulsar works jumpy. 
-                     */
-                    this.getMetroLock().wait();
-                }
-                }
-            } catch ( InterruptedException e ) {
-                // ignore
-                logWarn( "interrupted" );
-                break;
-            } catch ( Throwable e ) {
-                logError("", e);
-            }
-            //              logInfo( this.tracks.size() );
-            //              Thread.sleep(0);
-        }
+        //
         logInfo("Metro.run() : exited");
     }
     public static <T> List<T> createSnapshot(List<T> list) {
@@ -718,19 +607,16 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
             ArrayList<MetroTrack> finalTracksSnapshot = this.finalTracksSnapshot1;
             ArrayList<MetroMidiEvent> finalInputMidiEventList = this.finalInputMidiEvents1;
             ArrayList<MetroMidiEvent> finalOutputMidiEventList = this.finalOutputMidiEvents1;
-            ArrayList<MetroTrack> registeringTracksSnapshot = this.registeringTracksSnapshot1; 
-            ArrayList<MetroTrack> unregisteringTracksSnapshot = this.unregisteringTracksSnapshot1; 
             ArrayList<MetroTrack> removingTracksSnapshot = this.removingTracksSnapshot1; 
+
             messageQueueSnapshot.clear();
             tracksSnapshot.clear();
             finalTracksSnapshot.clear();
             finalInputMidiEventList.clear();
             finalOutputMidiEventList.clear();
-            registeringTracksSnapshot.clear();
-            unregisteringTracksSnapshot.clear();
             removingTracksSnapshot.clear();
 
-            synchronized ( this.getMetroLock() ) {
+            {
                 for ( Iterator<MetroPort> pi = this.inputPortList.iterator(); pi.hasNext(); ) {
                     MetroPort inputPort = pi.next();
 
@@ -757,8 +643,6 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
                     ArrayList<MetroTrack> unregisteringTracksTemp = new ArrayList<MetroTrack>();
                     ArrayList<MetroTrack> removingTracksTemp = new ArrayList<MetroTrack>();
 
-                    logInfo("some messages are arrived!!!!!");
- 
                     // Note that processing `tracksSnapshot`, not the `finalTracksSnapshot`.
                     for ( MetroTrackManipulator message : messageQueueSnapshot ) {
                         registeringTracksTemp.clear();
@@ -824,7 +708,6 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
                             nextTrackList.removeAll( track.unregisteringTracks );
                         }
                         
-                        
                         if ( nextTrackList.isEmpty() ) {
                             break;
                         } else {
@@ -857,31 +740,16 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
                             e.getMidiData().length 
                             );
                     }
-
-                    //              JackMidi.eventWrite( 
-                    //                      Metro.this.outputPortList.get( e.getOutputPortNo() ), 
-                    //                      e.getOffsetInFrames() - this.cursor, 
-                    //                      e.getData(), 
-                    //                      e.getData().length 
-                    //                      );
                 }
                 
-                for ( MetroTrack t : removingTracks ) {
+                for ( MetroTrack t : removingTracksSnapshot ) {
                     t.remove( this, null );
                 }
 
                 synchronized ( this.getMetroLock() ) {
-//                    this.removingTracks.addAll( removingTracksSnapshot );
-                    this.removingTracks.clear();
                     this.tracks.clear();
                     this.tracks.addAll( finalTracksSnapshot );
-                    
-                    if ( ! removingTracksSnapshot.isEmpty() ) {
-                        notifyTrackChange("");
-                    }
                 }
-
-
             }
             return true;
         } catch (JackException ex) {
@@ -905,134 +773,11 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
             throw new IllegalArgumentException();
     }
     
-    // @see METRO_LOCK_WAIT
-    /**
-     * <b>The following description is obsolete.(Tue, 12 May 2020 02:35:12 +0900)</b><br/>
-     * <p>
-     * Any caller of the methods {@link #registerTrack(MetroTrack)} and
-     * {@link #unregisterTrack(MetroTrack)} has responsibility to call
-     * {@link #notifyTrackChange(Object)} method after calling. When multiple tracks are
-     * registered/unregistered at once, the caller must call
-     * {@link #notifyTrackChange(Object)} at least once a session and not necessarily call
-     * every time registering a track.
-     * <p>
-     * It is preferable that a user who performs any bulk-registering calls
-     * {@link #notifyTrackChange(Object)} method only once after the registering a set of
-     * track and they should avoid to redundantly call {@link #notifyTrackChange(Object)}
-     * multiple times.
-     * <p>
-     * Any caller of this method should place the calling inside a synchronized
-     * block of an object which you can retrieve by {@link #getMetroLock()} method;
-     * otherwise you will get an unexpected result.
-     * <p>
-     * 
-     * <pre>
-     * synchronized (getMetroLock()) {
-     *  MetroTrack track = createTrack(...);
-     *  registerTrack(track);
-     *  notifyCheckBuffer();
-     * }
-     * </pre>
-     * @param message TODO
-     * @param track
-     */
-
     public void notifyTrackChange( Object message ) {
-        synchronized ( this.getMetroLock() ) {
-            if ( entrantCount == 0 ) {
-                this.getMetroLock().notify();
-            }
-        }
-    }
-    private volatile int entrantCount =0;
-    public void enterTrackChangeBlock() {
-        synchronized ( this.getMetroLock() ) {
-            this.entrantCount ++;
-        }
-    }
-    public void leaveTrackChangeBlock() {
-        synchronized ( this.getMetroLock() ) {
-            this.entrantCount --;
-            if ( this.entrantCount < 0 ) {
-                logWarn( String.format( 
-                    "this.entrantCount < 0 %d Corrected the invalid value of entrantCount.",
-                    this.entrantCount ) );
-                this.entrantCount = 0;
-            }
-        }
-    }
-
-    /*
-     * NOTE :
-     * 
-     * Note that  There is no `this.logics`. Instead of that all of MetroSequence objects are 
-     * wrapped by Track and stored as `this.tracks`.   
-     * (Sat, 18 Aug 2018 19:03:18 +0900)
-     */
-
-    /*
-     * NOTE : DON'T FORGET THIS
-     * 
-     * Two methods registerTrack() and unregisterTrack() are registering 
-     * the given track object via two queues : registeredTracks / unregisteredTracks.
-     * These lists are referred by Metro.run() method which is executed by another thread. 
-     * 
-     */
-    
-    /**
-     * Register a track and play.
-     * 
-     */
-    
-    
-    /**
-     * This registers the specified track.  This method should be called with
-     * the same protocol with {@link #registerTrack(MetroTrack)} method. 
-     * @see {@link #registerTrack(MetroTrack)}
-     * @param track
-     */
-    public void registerTrack( Collection<MetroTrack> trackList ) {
-        checkState();
-        if ( DEBUG ) 
-            logInfo( "MetroTrack#registerTrack(Collection)" );
-        
-        if ( trackList == null )
-            throw new NullPointerException( "the passed list is null" );
-
-        synchronized (getMetroLock()) {
-            this.registeringTracks.addAll( trackList );
-            // ADDED (Sun, 10 May 2020 23:10:26 +0900)
-            notifyTrackChange("register-track");
-        }
-        
-        // ???
-        for ( MetroTrack track : trackList ) {
-            if ( Metro.mainTrackName.equals( track.getName() ) ) {
-                this.mainTrack = track;
-                break;
-            }
-        }
+        // TODO
+        // THIS METHOD IS TO BE REMOVED (Fri, 12 Jun 2020 17:37:35 +0900)
     }
     
-    /**
-     * This method unregister the specified track.  This method should be called with
-     * the same protocol with {@link #registerTrack(MetroTrack)} method. 
-     * @see {@link #registerTrack(MetroTrack)}
-     * @param track
-     */
-    public void unregisterTrack( Collection<MetroTrack> trackList ) {
-        checkState();
-
-        if ( DEBUG ) 
-            logInfo( "MetroTrack#unregisterTrack(Collection)" );
-
-        if ( trackList == null )
-            throw new NullPointerException();
-        
-        synchronized (getMetroLock()) {
-            this.unregisteringTracks.addAll( trackList );
-        }
-    }
     
     /**
      * Post a new message which is denoted by a runnable objects. The messages are

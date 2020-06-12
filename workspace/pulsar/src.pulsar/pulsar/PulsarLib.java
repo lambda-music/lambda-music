@@ -73,7 +73,6 @@ public interface PulsarLib {
     Procedure getGetTempo();
     Procedure getGetBarsPerSecond();
     Procedure getRewind();
-    Procedure getSimultaneous();
     Procedure getExecuteTrack();
     Procedure getGetTrack();
     Procedure getGetTrackPosition();
@@ -146,10 +145,6 @@ public interface PulsarLib {
         }
         public default Procedure getGetTrackPosition() {
             return getPulsarLibImplementation().getGetTrackPosition();
-        }
-
-        public default Procedure getSimultaneous() {
-            return getPulsarLibImplementation().getSimultaneous();
         }
 
         public default Procedure getRewind() {
@@ -1419,57 +1414,6 @@ public interface PulsarLib {
             }
         }
 
-        public final Procedure simultaneousProc = new SimultaneousProc(new String[] { "simultaneous", "simul" });
-        @Override
-        public Procedure getSimultaneous() { return simultaneousProc; }
-        public final class SimultaneousProc extends MultipleNamedProcedureN {
-            public SimultaneousProc(String[] names) {
-                super(names);
-            }
-
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                Pulsar pulsar = getPulsar();
-                synchronized ( pulsar.getMetroLock() ) {
-                    try {
-                        pulsar.enterTrackChangeBlock();
-                        for ( int i=0; i<args.length; i++ ) {
-                            Object arg = args[i];
-                            if ( arg instanceof Procedure ) {
-                                ((Procedure)arg).apply0();
-                            } else {
-                                logWarn( "The value in args[" + i + "] was not a procedure. Ignored. "  );
-                            }
-                        }
-                    } finally {
-                        pulsar.leaveTrackChangeBlock();
-                        pulsar.notifyTrackChange("update");
-                    }
-                }
-                return SchemeValues.NO_RESULT;
-            }
-        }
-
-        public static final SimultaneousDoc simultaneousDoc = new SimultaneousDoc();
-        public static final class SimultaneousDoc extends PulsarProceduralDescriptiveDoc {
-            {
-                setCategory( Pulsar.DOCS_ID );
-                setNames( "simultaneous", "simul" );
-                setParameterDescription( "[procedure]..." );
-                addParameter( 0, "subproc", "procedure", null, true, "a subprocedure to execute by this procedure. " ); 
-                setReturnValueDescription( "::void" );
-                setShortDescription( "executes passed the procedures \"simultaneously\". " );
-                setLongDescription( ""
-                                    + "This procedure is designed to add multiple tracks to the sequencer and and let the tracks start "
-                                    + "to play simultaneously. While the interpreter is executing this procedure, the thread "
-                                    + "that is processing tracks in order to generate the music data is blocked. "
-                                    + "Therefore, it is guaranteed that the sequencer starts to process the added tracks simultaneously. "
-                                    + "" 
-                                    + THROWS_AN_ERROR_IF_NOT_OPEN );
-            }
-        }
-
-
         public static void exetProcParse(
             Collection<? extends Object> argList,
             List<MetroTrackSelector> selectors,
@@ -2131,7 +2075,6 @@ public interface PulsarLib {
             SchemeValues.defineLambda( env, setTempoProc );
             SchemeValues.defineLambda( env, getBarsPerSecondProc );
             SchemeValues.defineLambda( env, rewindProc );
-            SchemeValues.defineLambda( env, simultaneousProc );
             SchemeValues.defineLambda( env, executeTrackProc );
             SchemeValues.defineLambda( env, getTrackProc );
             SchemeValues.defineLambda( env, getTrackPositionProc );

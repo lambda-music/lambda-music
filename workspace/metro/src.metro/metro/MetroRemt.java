@@ -20,6 +20,9 @@ public interface MetroRemt extends MetroMant {
      *    
      */
     default void removeTrack( MetroTrackSelector trackSelector, MetroTrackSynchronizer trackSynchronizer ) {
-        manipulateTrack( Arrays.asList( MetroTrackManipulatorBasic.removing(trackSelector)));
+        manipulateTrack( Arrays.asList( MetroTrackManipulatorBasic.removing(trackSelector, trackSynchronizer )));
+    };
+    default void killTrack( MetroTrackSelector trackSelector ) {
+        manipulateTrack( Arrays.asList( MetroTrackManipulatorBasic.unregistering(trackSelector)));
     };
 }
