@@ -1231,17 +1231,24 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
                 if ( e.getClickCount() == 1) {
                     e.consume();
                     if (setCaretPositionIfNotInTheCurrentSelection( kawapad, e.getPoint())) {
+                        KawapadSelection.expandSelectedParentheses(kawapad);
+                    }
+                } else if (e.getClickCount() == 2 ) {
+                    // Currently, this block does not work. The reason is unknown.
+                    e.consume();
+                    if (setCaretPositionIfNotInTheCurrentSelection( kawapad, e.getPoint())) {
                         KawapadSelection.expandSelectedParenthesesToTheOuterMost(kawapad);
                     }
-                    
-                    String text = getTextDefault();
-                    if ( text == null || text.trim().equals("") ) {
-                        logInfo( "no text is selected" );
-                    } else {
-                        if ( ( e.getModifiers() & MouseEvent.CTRL_MASK) != 0 ) {
-                            RUN_ACTION.actionPerformed( KAWAPAD_ACTION_EVENT );
+                    if ( false ) {
+                        String text = getTextDefault();
+                        if ( text == null || text.trim().equals("") ) {
+                            logInfo( "no text is selected" );
                         } else {
-                            EVALUATE_ACTION.actionPerformed( KAWAPAD_ACTION_EVENT );
+                            if ( ( e.getModifiers() & MouseEvent.CTRL_MASK) != 0 ) {
+                                RUN_ACTION.actionPerformed( KAWAPAD_ACTION_EVENT );
+                            } else {
+                                EVALUATE_ACTION.actionPerformed( KAWAPAD_ACTION_EVENT );
+                            }
                         }
                     }
                 } else {
