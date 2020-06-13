@@ -449,25 +449,6 @@ JACK, it throws an exception.
 
 --------------------------------------------------------
 
-SIMULTANEOUS
-====================
-
-#### SYNOPSIS ####
-    (simultaneous|simul [subproc::procedure]...)::void
-
-### DESCRIPTION ###
-executes passed the procedures "simultaneously". This procedure is designed to
-add multiple tracks to the sequencer and and let the tracks start to play
-simultaneously. While the interpreter is executing this procedure, the thread that is
-processing tracks in order to generate the music data is blocked. Therefore, it is
-guaranteed that the sequencer starts to process the added tracks simultaneously. In case
-the current sequencer system has not established any connection to the JACK, it
-throws an exception.
-
-
-
---------------------------------------------------------
-
 GET-TRACK
 ====================
 

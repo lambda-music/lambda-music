@@ -43,6 +43,11 @@
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src.threadlocals">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
     </target>
     <target name="clean">
         <delete dir="bin"/>
@@ -60,6 +65,7 @@
             <src path="src.commons"/>
             <src path="src.apps"/>
             <src path="src.streams"/>
+            <src path="src.threadlocals"/>
             <classpath refid="lib-lamucommons.classpath"/>
         </javac>
     </target>

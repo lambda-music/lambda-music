@@ -63,9 +63,4 @@
         <ant antfile="build.xml" dir="${pulsar.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${pulsar.location}" inheritAll="false" target="build"/>
     </target>
-    <target name="MetroDirectFilterSequence">
-        <java classname="metro.MetroDirectFilterSequence" failonerror="true" fork="yes">
-            <classpath refid="metro.classpath"/>
-        </java>
-    </target>
 </project>
