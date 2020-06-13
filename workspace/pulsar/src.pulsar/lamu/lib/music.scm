@@ -1745,15 +1745,15 @@
                (cons 'val #f)))
       #f)))
 
-(define debug-append-notes #t)
+(define debug-append-notes #f)
 
 (define (append-notes . args )
   (if debug-append-notes (begin
-                           (display '==================)
+                           (display-warn '==================)
                            (newline)
                            (display args)
                            (newline)
-                           (display '==================)
+                           (display-warn '==================)
                            ))
   (let-values (((notes len)
                 (let loop ((bars args)

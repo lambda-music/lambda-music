@@ -413,7 +413,6 @@ public class Pulsar extends Metro implements PulsarLib, PulsarLibDelegator, Appl
     public static final void setCurrentMetro( Metro metro ) {
         currentMetroLocal.set(metro);
     }
-    
     @Override
     public boolean process(JackClient client, int nframes) {
         // (Sat, 13 Jun 2020 03:26:16 +0900)
@@ -422,5 +421,14 @@ public class Pulsar extends Metro implements PulsarLib, PulsarLibDelegator, Appl
         this.threadLocalInitializer.restore();
         return super.process(client, nframes);
     }
+    
+    
+    @Override
+    public void run() {
+        // See process()
+        this.threadLocalInitializer.restore();
+        super.run();
+    }
+
 }
     

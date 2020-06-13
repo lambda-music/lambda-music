@@ -98,9 +98,9 @@ class SchemeEvaluatorImplementation {
             script = PAT_CURRENT_DIR.matcher( script ).replaceAll(  currentDirectoryPath ) ;
         }
 
-        logInfo( "#!current-file:" + currentFile );
-        logInfo( "#!currentDirectory:" + currentDirectory);
-        logInfo( "=== Execute Scheme ===\n" + script + "\n==============\n");
+//        logInfo( "#!current-file:" + currentFile );
+//        logInfo( "#!currentDirectory:" + currentDirectory);
+//        logInfo( "\n=== Execute Scheme ===\n" + script + "\n==============\n");
 
         Reader bufferedScriptReader = new StringReader( script );
         try {
