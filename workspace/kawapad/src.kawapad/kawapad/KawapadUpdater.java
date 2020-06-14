@@ -81,6 +81,10 @@ public class KawapadUpdater {
         @Override
         public void receive( SchemeResult schemeResult ) {
             if ( schemeResult.isSucceeded() ) {
+
+                // See  KawapadHistoryPair
+                this.kawapad.addResultHistory( schemeResult.getValue() );
+                
                 if ( schemeResult.isDocument() ) {
                     procDocument( schemeResult );
                 } else if ( doInsertText ) {

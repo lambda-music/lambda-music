@@ -38,8 +38,10 @@ import java.lang.invoke.MethodHandles;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -235,6 +237,41 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         super.paintComponent(g);
 //        g.drawRect(100, 100 , 100, 100);
     }
+    
+    private final ArrayDeque<Object> resultHistoryQueue = new ArrayDeque<Object>();
+    public synchronized void addResultHistory( Object value ) {
+        if (    value != null         && 
+                value != Values.empty && 
+            ! ( value instanceof KawapadHistoryObject) ) 
+        {
+            this.resultHistoryQueue.addFirst( value );
+        }
+        
+        // Limit the length of the result history queue.
+        while ( 32 < this.resultHistoryQueue.size() ) {
+            this.resultHistoryQueue.removeLast();
+        }
+    }
+    public synchronized List<Object> getResultHistoryAsScheme( int size ) {
+        return PairFactory.makeList( KawapadHistoryPair.FACTORY, getResultHistory().subList(0, size ) );
+    }
+    public synchronized List<Object> getResultHistoryAsScheme() {
+        return PairFactory.makeList( KawapadHistoryPair.FACTORY, getResultHistory());
+    }
+    public synchronized ArrayList<Object> getResultHistory() {
+        ArrayList<Object> arrayList = new ArrayList<Object>( this.resultHistoryQueue );
+        return arrayList;
+    }
+    public synchronized void setResultHistory( Collection<Object> history ) {
+        this.resultHistoryQueue.clear();
+        this.resultHistoryQueue.addAll( history );
+    }
+    
+    
+    public synchronized void clearResultHistory() {
+        this.resultHistoryQueue.clear();
+    }
+    public static final Object RESULT_HISTORY_MARKER = "KAWAPAD_RESULT_HISTORY";
     
     public Kawapad( MultiplexEvaluator multiplexEvaluator ) {
         super();
