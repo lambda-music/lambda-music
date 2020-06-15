@@ -210,18 +210,18 @@ public class MetroTrackSynchronizerBasic {
         getFactoryMap().addFactory("parallel", factory);
         getFactoryMap().addFactory("para", factory);
         getFactoryMap().addFactory("p", factory);
-        
-        getFactoryMap().addFactory("head", factory);
-        getFactoryMap().addFactory("h", factory);
+
+        getFactoryMap().addFactory("join", factory);
+        getFactoryMap().addFactory("j", factory);
     } 
 
     /////////////////////////////////////////////////////////////////////////////
     //
-    // Parallel Bottom Synchronizer 
+    // Parallel Tail Synchronizer 
     //
     /////////////////////////////////////////////////////////////////////////////
-    static final class ParallelBottomTrackSynchronizer extends BasicTrackSynchronizer {
-        public ParallelBottomTrackSynchronizer(MetroTrackSelector syncTrack, double syncOffset) {
+    static final class ParallelTailTrackSynchronizer extends BasicTrackSynchronizer {
+        public ParallelTailTrackSynchronizer(MetroTrackSelector syncTrack, double syncOffset) {
             super(syncTrack, syncOffset);
         }
         @Override
@@ -241,7 +241,7 @@ public class MetroTrackSynchronizerBasic {
     }
 
     public static MetroTrackSynchronizer parallelBottom(MetroTrackSelector syncTrack, double syncOffset) {
-        return new ParallelBottomTrackSynchronizer(syncTrack, syncOffset);
+        return new ParallelTailTrackSynchronizer(syncTrack, syncOffset);
     }
     static final class ParallelBottomTrackSynchronizerFactory implements MetroTrackSynchronizerFactory {
         @Override
@@ -251,8 +251,8 @@ public class MetroTrackSynchronizerBasic {
     }
     static {
         MetroTrackSynchronizerFactory factory = new ParallelBottomTrackSynchronizerFactory();
-        getFactoryMap().addFactory("bottom", factory);
-        getFactoryMap().addFactory("b", factory);
+        getFactoryMap().addFactory("tail", factory);
+        getFactoryMap().addFactory("t", factory);
     } 
 
     
@@ -313,5 +313,9 @@ public class MetroTrackSynchronizerBasic {
         getFactoryMap().addFactory("serial", factory);
         getFactoryMap().addFactory("seri", factory);
         getFactoryMap().addFactory("s", factory);
+
+        getFactoryMap().addFactory("head", factory);
+        getFactoryMap().addFactory("h", factory);
+
     }
 }
