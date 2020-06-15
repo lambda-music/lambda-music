@@ -20,6 +20,15 @@ public class SchemeEvaluatorUtils {
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
     
+    /**
+     * 
+     * @param threadInitializer
+     *     Specify a thread initializer; null if no initializer is to be specified.
+     * @param fileType
+     * @param scriptFile
+     * 
+     * @return
+     */
     public static Object executeStatic( Runnable threadInitializer, String fileType, File scriptFile ) {
         // Read user's configuration file. If any problem is occurred, print its
         // stacktrace in the stderr, and then continue the process.
@@ -39,6 +48,14 @@ public class SchemeEvaluatorUtils {
             return null;
         }
     }
+    /**
+     * 
+     * @param threadInitializer
+     *     Specify a thread initializer; null if no initializer is to be specified.
+     * @param schemeScriptString
+     * @param currentURI
+     * @return
+     */
     public static Object executeStatic( Runnable threadInitializer, String schemeScriptString, String currentURI ) {
         try {
             SchemeResult result = new SchemeEvaluator().evaluate( threadInitializer, schemeScriptString , currentURI );
@@ -50,6 +67,21 @@ public class SchemeEvaluatorUtils {
             return null;
         }
     }
+
+    
+    public static Object executeStatic2( Runnable threadInitializer, String schemeScriptString, String currentURI ) {
+        try {
+            SchemeResult result = MultiplexEvaluator.createLocal().evaluate( threadInitializer, schemeScriptString , currentURI );
+            result.throwIfError();
+            return result.getValue(); 
+        } catch (Throwable e) {
+                SimpleConsole.getConsole().addText(e);
+            logError( "Ignored an error : ", e );
+            return null;
+        }
+    }
+    
+
     
     public static File useResolve( File f ) {
         File file = SchemeEvaluatorImplementation.currentBaseFile.get();

@@ -30,6 +30,7 @@ import lamu.lib.args.ArgsCommandState;
 import lamu.lib.args.ArgsNamedArgument;
 import lamu.lib.args.forking.ForkedProcess;
 import lamu.lib.evaluators.EvaluatorLib;
+import lamu.lib.evaluators.SchemeEvaluatorUtils;
 import lamu.lib.evaluators.repl.SimpleReplService;
 import lamu.lib.helps.LamuDocument;
 import lamu.lib.log.LogFormatter;
@@ -61,6 +62,9 @@ public class LamuApplication {
     }
 
     static void loadBasicClasses() {
+        // Load the basic modules for creating document objects.
+        SchemeEvaluatorUtils.executeStatic2(null, "(import(lamu lang))", "LamuApplication#loadBasicClasses()");
+        
         // For documentation.
         ForceLoadingClass.force(PulsarLib_Notes.class);
         ForceLoadingClass.force(PulsarGuiUtils.class);

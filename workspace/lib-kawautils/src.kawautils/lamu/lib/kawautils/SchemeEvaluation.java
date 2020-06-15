@@ -3,6 +3,7 @@ package lamu.lib.kawautils;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.invoke.MethodHandles;
+import java.net.URL;
 import java.util.logging.Level;
 
 import gnu.expr.Language;
@@ -20,12 +21,20 @@ public class SchemeEvaluation {
 
     // Execute script in the current context; that is, it is done without any initialization for threads/environmens. 
     public static void executeResourceInTheCurrentContext( Class parentClass, String resourcePath ) {
+        logInfo(String.format( "executeResourceInTheCurrentContext() parentClass=%s resourcePath=%s " , parentClass, resourcePath ));
+        executeResourceInTheCurrentContext(parentClass.getResource( resourcePath ));
+    }
+    
+    public static void executeResourceInTheCurrentContext(URL scriptURL) {
+        logInfo("executeResourceInTheCurrentContext() resource:" + scriptURL);
+        
         Scheme scheme = (Scheme) Language.getDefaultLanguage();
         if ( scheme == null ) {
             throw new IllegalStateException( "missing the current default language" );
         }
-        try ( Reader schemeScript = new InputStreamReader( parentClass.getResource( resourcePath ).openStream() ); ) {
-            scheme.eval( new InPort( schemeScript, Path.valueOf( resourcePath ) ) );
+        
+        try ( Reader schemeScript = new InputStreamReader( scriptURL.openStream() ); ) {
+            scheme.eval( new InPort( schemeScript, Path.valueOf( scriptURL ) ) );
         } catch (Throwable e) {
             logError( "" , e );
         }
