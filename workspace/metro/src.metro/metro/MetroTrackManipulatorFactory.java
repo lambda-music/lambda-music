@@ -1,7 +1,7 @@
 package metro;
 
 public interface MetroTrackManipulatorFactory {
-    MetroTrackManipulator create( MetroTrackSelector trackSelector, MetroTrackSynchronizer trackSynchronizer );
+    MetroTrackManipulator create( Object... args );
     
 //    default MetroTrackManipulator create( List<MetroTrackSelector> trackSelectors, MetroTrackSynchronizer trackSynchronizer ) {
 //        MetroTrackManipulator[] result = new MetroTrackManipulator[ trackSelectors.size() ];

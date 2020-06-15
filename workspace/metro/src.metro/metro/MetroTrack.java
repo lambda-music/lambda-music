@@ -49,7 +49,7 @@ public class MetroTrack {
         }
     }
     /**
-     * This constructor should be called only by {@link Metro#putTracks(Collection, MetroTrackSynchronizer)}
+     * This constructor should be called only by {@link Metro#putTracks(Collection, MetroTrackSynchronizer, MetroTrackSynchronizer)}
      *  
      * @param name
      * @param tags
@@ -131,7 +131,7 @@ public class MetroTrack {
             syncSequence.stop(metro, this);
         } else {
             metro.manipulateTrack(Arrays.asList(
-                MetroTrackManipulatorBasic.unregistering(
+                MetroTrackManipulatorBasic.unregister(
                     MetroTrackSelectorBasic.constant(this))));
         }
     }

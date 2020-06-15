@@ -110,9 +110,10 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
     }
 
     public void removeGracefully(Metro metro, long syncOffset ) {
+        logInfo( "removeGracefully:" + syncOffset );
         synchronized ( metro.getMetroLock() ) {
             // added (Sat, 23 May 2020 16:03:20 +0900)
-            this.totalCurosrMax = this.totalCursor + syncOffset;
+            this.totalCurosrMax = this.totalCursor + (syncOffset * -1);
         }
     }
     @Override
@@ -120,8 +121,8 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
         synchronized ( metro.getMetroLock() ) {
             List<MetroTrack> tracksSnapshot = metro.replicateAllTracks();
             long currentLengthInFrames = getCurrentLengthInFrames(metro);
-            long syncronizeTrack = stopSynchronizer.syncronizeTrack( metro, track, tracksSnapshot, currentLengthInFrames);
-            removeGracefully(metro, syncronizeTrack );
+            long syncOffset = stopSynchronizer.syncronizeTrack( metro, track, tracksSnapshot, currentLengthInFrames);
+            removeGracefully(metro, syncOffset );
         }
     }
     
@@ -882,7 +883,7 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
 //                            }
 //                        });
                         buf.exet(0, 
-                            MetroTrackManipulatorBasic.unregistering( 
+                            MetroTrackManipulatorBasic.unregister( 
                                 MetroTrackSelectorBasic.constant( track )));
                         buf.length( endingLength  );
                         initNewBuffer(buf, barLengthInFrames);

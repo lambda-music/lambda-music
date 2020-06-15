@@ -81,8 +81,9 @@ public interface PulsarLib {
     Procedure getSyncTrack();
     Procedure getNewTrack();
     Procedure getNewRecordingTrack();
-    Procedure getRemoveTrack();
     Procedure getPutTrack();
+    Procedure getRemoveTrack();
+    Procedure getReplaceTrack();
     Procedure getNotifyTrackChange();
     Procedure getListTracks();
     Procedure getClearTracks();
@@ -117,9 +118,11 @@ public interface PulsarLib {
         public default Procedure getPutTrack() {
             return getPulsarLibImplementation().getPutTrack();
         }
-
         public default Procedure getRemoveTrack() {
             return getPulsarLibImplementation().getRemoveTrack();
+        }
+        public default Procedure getReplaceTrack() {
+            return getPulsarLibImplementation().getPutTrack();
         }
         public default Procedure getNewRecordingTrack() {
             return getPulsarLibImplementation().getNewRecordingTrack();
@@ -347,15 +350,8 @@ public interface PulsarLib {
          * @param args
          * @return
          */
-        public static MetroTrackManipulator readParamMant(
-            String name, 
-            MetroTrackSelector trackSelector, 
-            MetroTrackSynchronizer trackSynchronizer ) 
-        {
-            return MetroTrackManipulatorBasic
-                .getFactoryMap()
-                .getFactory(name)
-                .create(trackSelector, trackSynchronizer);
+        public static MetroTrackManipulator readParamMant( String name, Object ... args ) {
+            return MetroTrackManipulatorBasic .getFactoryMap() .getFactory(name).create( args );
         }
 
         
@@ -1596,20 +1592,14 @@ public interface PulsarLib {
             @Override
             public Object applyN(Object[] args) throws Throwable {
                 switch ( args.length ) {
-                    case 2:
-                        return readParamMant(
-                            SchemeValues.anyToString( args[0] ),
-                            (MetroTrackSelector) args[1], 
-                            null
-                            );
-                    case 3:
-                        return readParamMant(
-                            SchemeValues.anyToString( args[0] ),
-                            (MetroTrackSelector) args[1],
-                            (MetroTrackSynchronizer) args[2]
-                            );
+                    case 0:
+                        return readParamMant( "idle" );
+                    case 1:
+                        return readParamMant( SchemeValues.anyToString( args[0] ) );
                     default :
-                        throw new IllegalArgumentException( "number of the arguments must be 2 or 3" );
+                        return readParamMant( 
+                            SchemeValues.anyToString( args[0] ),
+                            Arrays.copyOfRange(args, 1, args.length ) );
                 }
             }
         }
@@ -1905,6 +1895,55 @@ public interface PulsarLib {
                     "putt", 
                     trackSelectors, 
                     trackSynchronizer);
+
+                if ( AUTO_EXET ) {
+                    trackManipulators[0] = trackManipulator;
+                    Object result = executeTrackProc.applyN( trackManipulators );
+                    return result;
+                } else {
+                    return trackManipulator;
+                }
+            }
+        }
+
+        public static final LamuDocument replaceTrackDoc = trackManagementTemplateDoc.processArguments( 
+            "replace",
+            ""
+            + "The sequencer starts to play the added track and it gives the user some controls on "
+            + "how it starts playing the track."
+        ).setNames( "put-track", "putt" );
+            
+        public final Procedure replaceTrackProc = new ReplaceTrackProc(new String[] { "replace-track", "rept" });
+        @Override
+        public Procedure getReplaceTrack() { return replaceTrackProc; }
+        public final class ReplaceTrackProc extends MultipleNamedProcedureN {
+            public ReplaceTrackProc(String[] names) {
+                super(names);
+            }
+            
+            // Reuse the objects for passing parameters to reduce the garbage-collector load.  
+            final Map<String, Object> namedArgs = new HashMap<>();
+            final List<Object> plainArgs = new ArrayList<>();
+            final Object[] trackManipulators = new Object[1]; 
+            
+            @Override
+            public synchronized Object applyN(Object[] args) throws Throwable {
+                namedArgs.clear();
+                plainArgs.clear();
+                SchemeValues.parseArguments(args, namedArgs, plainArgs);
+                
+                MetroTrackSynchronizer startSynchronizer = 
+                    (MetroTrackSynchronizer) namedArgs.get("start");
+                MetroTrackSynchronizer stopSynchronizer = 
+                    (MetroTrackSynchronizer) namedArgs.get("stop");
+                
+                plainArgs.add(0, "newt");
+                MetroTrackSelector trackSelectors = readParamSelt(plainArgs.toArray(new Object[plainArgs.size()]));
+                MetroTrackManipulator trackManipulator = readParamMant( 
+                    "rept", 
+                    trackSelectors,
+                    startSynchronizer,
+                    stopSynchronizer );
 
                 if ( AUTO_EXET ) {
                     trackManipulators[0] = trackManipulator;

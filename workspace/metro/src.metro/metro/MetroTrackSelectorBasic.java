@@ -23,6 +23,8 @@ public class MetroTrackSelectorBasic {
         return factoryMap;
     }
 
+
+
     static final class MetroTrackSelectorNone implements MetroTrackSelector {
         static final MetroTrackSelector INSTANCE = new MetroTrackSelectorNone();
         @Override
@@ -503,4 +505,83 @@ public class MetroTrackSelectorBasic {
         getFactoryMap().addFactory( "le" , factory );
     }
     
+    static abstract class SynchronizerSelector implements MetroTrackSelector {
+        private final MetroTrackSelector trackSelector;
+        private MetroTrackSynchronizer trackSynchronizer;
+        public SynchronizerSelector(MetroTrackSelector trackSelector, MetroTrackSynchronizer trackSynchronzier ) {
+            this.trackSelector = trackSelector;
+            this.trackSynchronizer = trackSynchronzier;
+        }
+
+        @Override
+        public void selectTracks(List<MetroTrack> currentTracks, List<MetroTrack> selectedTracks) {
+            trackSelector.selectTracks(currentTracks, selectedTracks );
+            for ( MetroTrack ct : selectedTracks ) {
+                 proc( ct.getSequence(), trackSynchronizer );
+            }
+        }
+
+        protected abstract void proc(MetroSequence sequence, MetroTrackSynchronizer trackSynchronizer);
+        @Override
+        public String toString() {
+            return String.format( "(MetroTrackSelector type: 'synchronizer value: %s sync-value: %s)",  trackSelector , trackSynchronizer );
+        }
+    }
+    
+    public static final MetroTrackSelector synchronizedStarter( MetroTrackSelector trackSelector, MetroTrackSynchronizer trackSynchronizer ) {
+        final class StartSynchronizerSelector extends SynchronizerSelector {
+            public StartSynchronizerSelector(MetroTrackSelector trackSelector, MetroTrackSynchronizer trackSynchronzier) {
+                super(trackSelector, trackSynchronzier);
+            }
+            @Override
+            protected void proc(MetroSequence sequence, MetroTrackSynchronizer trackSynchronizer) {
+                if ( sequence instanceof MetroSynchronizedStarter ) {
+                    ((MetroSynchronizedStarter)sequence).setStartSynchronizer(trackSynchronizer);
+                }
+            }
+        }
+        return new StartSynchronizerSelector(trackSelector, trackSynchronizer);
+    }
+
+    
+    static {
+        final class StartSynchronizerFactory implements MetroTrackSelectorFactory {
+            @Override
+            public MetroTrackSelector create(Object[] args) {
+                MetroTrackSelectorFactory.checkArgs(args, 2);
+                return synchronizedStarter((MetroTrackSelector) args[0],(MetroTrackSynchronizer) args[1] );
+            }
+        }
+        MetroTrackSelectorFactory factory = new StartSynchronizerFactory();
+        getFactoryMap().addFactory( "start-synchronizer" , factory );
+        getFactoryMap().addFactory( "start-sync" , factory );
+    }
+
+    public static final MetroTrackSelector synchronizedStopper( MetroTrackSelector trackSelector, MetroTrackSynchronizer trackSynchronizer ) {
+        final class StopSynchronizerSelector extends SynchronizerSelector {
+            public StopSynchronizerSelector(MetroTrackSelector trackSelector, MetroTrackSynchronizer trackSynchronzier) {
+                super(trackSelector, trackSynchronzier);
+            }
+            @Override
+            protected void proc(MetroSequence sequence, MetroTrackSynchronizer trackSynchronizer) {
+                if ( sequence instanceof MetroSynchronizedStopper ) {
+                    ((MetroSynchronizedStopper)sequence).setStopSynchronizer(trackSynchronizer);
+                }
+            }
+        }
+        return new StopSynchronizerSelector(trackSelector, trackSynchronizer);
+    }
+    
+    static {
+        final class StopSynchronizerFactory implements MetroTrackSelectorFactory {
+            @Override
+            public MetroTrackSelector create(Object[] args) {
+                MetroTrackSelectorFactory.checkArgs(args, 2);
+                return synchronizedStopper((MetroTrackSelector) args[0],(MetroTrackSynchronizer) args[1] );
+            }
+        }
+        MetroTrackSelectorFactory factory = new StopSynchronizerFactory();
+        getFactoryMap().addFactory( "stop-synchronizer" , factory );
+        getFactoryMap().addFactory( "stop-sync" , factory );
+    }
 }

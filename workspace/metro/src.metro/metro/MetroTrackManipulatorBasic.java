@@ -26,7 +26,8 @@ public class MetroTrackManipulatorBasic {
     static {
         final class IdleFactory implements MetroTrackManipulatorFactory {
             @Override
-            public MetroTrackManipulator create(MetroTrackSelector trackSelector, MetroTrackSynchronizer trackSynchronizer) {
+            public MetroTrackManipulator create( Object... args ) {
+                logWarn( "*************** AN IDLE MANIPULATOR WAS EXECUTED ***************" );
                 return MetroTrackManipulator.IDLE; 
             }
         }
@@ -61,16 +62,19 @@ public class MetroTrackManipulatorBasic {
         return new MetroTrackRemover(trackSelector);
     }
     public static MetroTrackManipulator removing( MetroTrackSelector trackSelector, MetroTrackSynchronizer trackSynchronizer ) {
-        MetroTrackManipulator trackManipulator = removing( trackSelector );
         if ( trackSynchronizer != null )
-            trackManipulator = synchronizedStopper(trackManipulator, trackSynchronizer);
+            trackSelector = MetroTrackSelectorBasic.synchronizedStopper(trackSelector, trackSynchronizer);
+        MetroTrackManipulator trackManipulator = removing( trackSelector );
         return trackManipulator;
     }
 
     static {
         final class RemovingFactory implements MetroTrackManipulatorFactory {
             @Override
-            public MetroTrackManipulator create(MetroTrackSelector trackSelector, MetroTrackSynchronizer trackSynchronizer) {
+            public MetroTrackManipulator create(Object... args) {
+                MetroTrackSelector     trackSelector     = 0 < args.length ? (MetroTrackSelector)args[0]     : null;
+                MetroTrackSynchronizer trackSynchronizer = 1 < args.length ? (MetroTrackSynchronizer)args[1] : null;
+
                 return removing( trackSelector, trackSynchronizer );
             }
         }
@@ -82,7 +86,7 @@ public class MetroTrackManipulatorBasic {
     }
 
     
-    public static MetroTrackManipulator registering(MetroTrackSelector selector) {
+    public static MetroTrackManipulator register(MetroTrackSelector selector) {
         class MetroTrackRegisterer implements MetroTrackManipulator {
             private final MetroTrackSelector selector;
 
@@ -109,10 +113,14 @@ public class MetroTrackManipulatorBasic {
     static {
         final class RegisteringFactory implements MetroTrackManipulatorFactory {
             @Override
-            public MetroTrackManipulator create(MetroTrackSelector trackSelector, MetroTrackSynchronizer trackSynchronizer) {
-                MetroTrackManipulator trackManipulator = registering( trackSelector );
+            public MetroTrackManipulator create( Object... args ) {
+                MetroTrackSelector     trackSelector     = 0 < args.length ? (MetroTrackSelector)args[0]     : null;
+                MetroTrackSynchronizer trackSynchronizer = 1 < args.length ? (MetroTrackSynchronizer)args[1] : null;
+                MetroTrackManipulator trackManipulator = register( trackSelector );
+                
                 if ( trackSynchronizer != null )
-                    trackManipulator = synchronizedStarter( trackManipulator, trackSynchronizer );
+                    trackSelector = MetroTrackSelectorBasic.synchronizedStarter(trackSelector, trackSynchronizer );
+
                 return trackManipulator;
             }
         }
@@ -124,7 +132,7 @@ public class MetroTrackManipulatorBasic {
     }
 
 
-    public static MetroTrackManipulator unregistering(MetroTrackSelector selector) {
+    public static MetroTrackManipulator unregister(MetroTrackSelector selector) {
         class MetroTrackUnregisterer implements MetroTrackManipulator {
             private final MetroTrackSelector selector;
 
@@ -152,10 +160,13 @@ public class MetroTrackManipulatorBasic {
     static {
         final class UnregisteringFactory implements MetroTrackManipulatorFactory {
             @Override
-            public MetroTrackManipulator create(MetroTrackSelector trackSelector, MetroTrackSynchronizer trackSynchronizer) {
-                MetroTrackManipulator trackManipulator = unregistering( trackSelector );
+            public MetroTrackManipulator create(Object... args) {
+                MetroTrackSelector     trackSelector     = 0 < args.length ? (MetroTrackSelector)args[0]     : null;
+                MetroTrackSynchronizer trackSynchronizer = 1 < args.length ? (MetroTrackSynchronizer)args[1] : null;
+
                 if ( trackSynchronizer != null )
-                    trackManipulator = synchronizedStopper(trackManipulator, trackSynchronizer);
+                    trackSelector = MetroTrackSelectorBasic.synchronizedStopper(trackSelector, trackSynchronizer );
+                MetroTrackManipulator trackManipulator = unregister( trackSelector );
                 return trackManipulator;
             }
         }
@@ -167,6 +178,7 @@ public class MetroTrackManipulatorBasic {
     }
 
     
+    @Deprecated
     private static class MetroTrackSynchronizedStarter implements MetroTrackManipulator {
         private final MetroTrackManipulator  manipulator;
         private final MetroTrackSynchronizer trackSynchronizer;
@@ -204,6 +216,7 @@ public class MetroTrackManipulatorBasic {
         }
     }
 
+    @Deprecated
     public static MetroTrackManipulator synchronizedStarter(
         MetroTrackManipulator manipulator,
         MetroTrackSynchronizer trackSynchronizer) 
@@ -214,6 +227,7 @@ public class MetroTrackManipulatorBasic {
             return new MetroTrackSynchronizedStarter(manipulator, trackSynchronizer);
     }
 
+    @Deprecated
     static class MetroTrackSynchronizedStopper implements MetroTrackManipulator {
         private final MetroTrackManipulator  manipulator;
         private final MetroTrackSynchronizer trackSynchronizer;
@@ -252,12 +266,16 @@ public class MetroTrackManipulatorBasic {
         }
     }
 
+    @Deprecated
     public static MetroTrackManipulator synchronizedStopper( MetroTrackManipulator manipulator, MetroTrackSynchronizer trackSynchronizer) {
         if (trackSynchronizer == null)
             return manipulator;
         else
             return new MetroTrackSynchronizedStopper(manipulator, trackSynchronizer);
     }
+    
+    
+    ///
     
     static class MetroTrackManipulatorMultiple implements MetroTrackManipulator {
         private final List<MetroTrackManipulator> manipulators;
@@ -298,32 +316,41 @@ public class MetroTrackManipulatorBasic {
     }
 
     
-    public static MetroTrackManipulator replace( MetroTrackSelector trackSelector, MetroTrackSynchronizer trackSynchronizer )  {
+    public static MetroTrackManipulator replace( 
+        MetroTrackSelector trackSelector, 
+        MetroTrackSynchronizer startSynchronizer, 
+        MetroTrackSynchronizer stopSynchronizer )  
+    {
         ArrayList<MetroTrack> selectedTracks = new ArrayList<>();
         MetroTrackSelector.resolveSelector( Arrays.asList( trackSelector ) ,selectedTracks );
-        return replace( selectedTracks, trackSynchronizer );
+        return replace( selectedTracks, startSynchronizer, stopSynchronizer );
     }
 
-    public static MetroTrackManipulator replace( List<MetroTrack> tracks, MetroTrackSynchronizer trackSynchronizer )  {
+    public static MetroTrackManipulator replace( 
+        List<MetroTrack> tracks, 
+        MetroTrackSynchronizer startSynchronizer, 
+        MetroTrackSynchronizer stopSynchronizer)  
+    {
         return multiple(
-                MetroTrackManipulatorBasic.synchronizedStopper(
                     MetroTrackManipulatorBasic.removing( 
-                        MetroTrackSelectorBasic.correspondingNamedTrack(tracks)),
-                    trackSynchronizer),
-                MetroTrackManipulatorBasic.synchronizedStarter(
-                    MetroTrackManipulatorBasic.registering(
-                        MetroTrackSelectorBasic.trackConstant(tracks)),
-                    trackSynchronizer));
+                        MetroTrackSelectorBasic.synchronizedStopper(
+                            MetroTrackSelectorBasic.correspondingNamedTrack(tracks),
+                            stopSynchronizer)),
+                
+                    MetroTrackManipulatorBasic.register(
+                        MetroTrackSelectorBasic.synchronizedStarter(
+                            MetroTrackSelectorBasic.trackConstant(tracks), 
+                            startSynchronizer )));
     }
 
     static {
         final class ReplaceFactory implements MetroTrackManipulatorFactory {
             @Override
-            public MetroTrackManipulator create(
-                MetroTrackSelector trackSelector,
-                MetroTrackSynchronizer trackSynchronizer) 
-            {
-                return replace( trackSelector, trackSynchronizer );
+            public MetroTrackManipulator create( Object... args) {
+                MetroTrackSelector     trackSelector     = 0 < args.length ? (MetroTrackSelector)args[0]     : null;
+                MetroTrackSynchronizer startSynchronizer = 1 < args.length ? (MetroTrackSynchronizer)args[1] : null;
+                MetroTrackSynchronizer stopSynchronizer  = 2 < args.length ? (MetroTrackSynchronizer)args[2] : null;
+                return replace( trackSelector, startSynchronizer, stopSynchronizer );
             }
         }
         
