@@ -6,6 +6,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JSpinner;
+import javax.swing.SpinnerModel;
 import javax.swing.WindowConstants;
 
 /**
@@ -16,6 +17,12 @@ import javax.swing.WindowConstants;
  *
  */
 public class JDraggableSpinner extends JSpinner {
+    public JDraggableSpinner() {
+        super();
+    }
+    public JDraggableSpinner(SpinnerModel model) {
+        super(model);
+    }
     public static void main(String[] args) {
         JFrame frame = new JFrame();
         Container pane = frame.getContentPane();

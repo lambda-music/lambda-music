@@ -36,7 +36,6 @@ public class JSpinnerDragger {
             DefaultEditor                  defaultEditor = (DefaultEditor) editor;
             JFormattedTextField            textField     = defaultEditor.getTextField();
             DraggableSpinnerUIMouseHandler handler       = new DraggableSpinnerUIMouseHandler(spinner, false);
-            textField.setCursor(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
             textField.addMouseListener(handler);
             textField.addMouseMotionListener(handler);
         }
@@ -49,6 +48,17 @@ public class JSpinnerDragger {
     public static JSpinner install(JSpinner spinner, float multiplier) {
         new JSpinnerDragger(spinner, multiplier);
         return spinner;
+    }
+
+    public static void setCursor(JSpinner spinner, int cursorType) {
+        JComponent editor = spinner.getEditor();
+        if (editor instanceof DefaultEditor) {
+            DefaultEditor                  defaultEditor = (DefaultEditor) editor;
+            JFormattedTextField            textField     = defaultEditor.getTextField();
+            Cursor cursor = Cursor.getPredefinedCursor(cursorType);
+            textField.setCursor( cursor);
+            spinner.setCursor(cursor);
+        }
     }
 
     private class DraggableSpinnerUIMouseHandler implements MouseListener, MouseMotionListener {
@@ -71,9 +81,9 @@ public class JSpinnerDragger {
         public void mouseDragged(MouseEvent e) {
             int delta = 0;
             if ( bothDirection ) {
-                delta =
-                    (mousePoint.y - e.getPoint().y) +
-                    ( -(mousePoint.x - e.getPoint().x) );
+                delta =(int)(
+                    ( (mousePoint.y - e.getPoint().y) * -0.5d ) +
+                    ( (mousePoint.x - e.getPoint().x) * -0.5d ));
             } else {
                 if (vertical) {
                     delta = mousePoint.y - e.getPoint().y;
@@ -89,6 +99,7 @@ public class JSpinnerDragger {
             if (!enabled) {
                 enabled = true;
                 mousePoint.setLocation(e.getPoint());
+                setCursor(spinner, Cursor.MOVE_CURSOR );
                 return;
             }
             if ((e.getModifiers() & InputEvent.CTRL_MASK) != 0) {
@@ -118,7 +129,9 @@ public class JSpinnerDragger {
         }
 
         public void mouseClicked(MouseEvent e) {}
-        public void mouseReleased(MouseEvent e) {}
+        public void mouseReleased(MouseEvent e) {
+            setCursor(spinner, Cursor.DEFAULT_CURSOR);
+        }
         public void mouseMoved(MouseEvent e) {}
         public void mouseEntered(MouseEvent e) {}
         public void mouseExited(MouseEvent e) {}
