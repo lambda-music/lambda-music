@@ -6,10 +6,18 @@ public class UndoManagers {
 //      return new InsignificantUndoManager();
 //      return new LazyGroupedUndoManager();
 //      return new SimpleCompoundUndoManager();
-        return new CompoundGroupedUndoManager();
+//      return new CompoundGroupedUndoManager();
 //      return new OriginalCompoundUndoManager( kawapad );
 //      return new NewGroupedUndoManager();
 //      return new ReimplementedUndoManager();
+        
+// YET ANOTHER ATTEMPT ON JUNE 2020 >>>  
+//      return new JavaSLGroupedUndoManager();
+//      return new EmptyGroupedUndoManager();
+//      return new CompoundGroupedUndoManager();
+        return new EditOnlyUndoManager();
+// YET ANOTHER ATTEMPT ON JUNE 2020 <<<  
+
     }
     
 }
