@@ -9,7 +9,7 @@
 |kawapad-undo-action|Undo|  CTRL-Z  |
 |kawapad-redo-action|Redo|  SHIFT-CTRL-Z  |
 |kawapad-debug|Debug|  CTRL-ALT-BACK_QUOTE  |
-|unselect|Deselect|  ESCAPE  |
+|unselect|Deselect|    |
 |paste-from-clipboard|Paste|  CTRL-V  |
 |kawapad-search-action|Search|  CTRL-L  |
 |caret-backward|caret-backward|  LEFT, CTRL-B  |
@@ -24,6 +24,7 @@
 |page-down|page-down|    |
 |kawapad-scroll-up|kawapad-scroll-up|    |
 |kawapad-scroll-down|kawapad-scroll-down|    |
+|kawapad-cancel-search-box|Cancel Search|    |
 |kawapad-disable-content-assist|Disable Content Assist|    |
 |kawapad-enable-content-assist|Enable Content Assist|  CTRL-SPACE  |
 |kawapad-select-evaluate|Select and Evaluate|  CTRL-ENTER  |
