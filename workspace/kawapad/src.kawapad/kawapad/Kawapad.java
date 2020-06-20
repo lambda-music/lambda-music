@@ -924,7 +924,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         {
             putValue( Action2.CAPTION, "Deselect" );
             putValue( Action.MNEMONIC_KEY , (int) 's' );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "ESCAPE" );
+//            AcceleratorKeyList.putAcceleratorKeyList( this, "ESCAPE" );
         }
     }
 
@@ -1147,7 +1147,23 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     {
         AcceleratorKeyList.putAcceleratorKeyList( KAWAPAD_SCROLL_DOWN_ACTION /*, "ctrl DOWN" */ );
     }
+
+    public static final String KAWAPAD_CANCEL_SEARCH_BOX = "kawapad-cancel-search-box";
     
+    // INTEGRATED_ACTIONS (Sat, 20 Jun 2020 09:14:25 +0900)
+    @AutomatedActionField
+    public final Action CANCEL_SEARCH_BOX_ACTION = new TextAction2(KAWAPAD_CANCEL_SEARCH_BOX) {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            searchBox.hideSearchBox(); 
+        }
+        {
+            putValue( Action2.CAPTION, "Cancel Search" );
+            putValue( Action.MNEMONIC_KEY, (int)'s' );
+//            AcceleratorKeyList.putAcceleratorKeyList( this, "ESCAPE" );
+        }
+    };
+
     public static final String KAWAPAD_DISABLE_CONTENT_ASSIST = "kawapad-disable-content-assist";
     public static final String KAWAPAD_ENABLE_CONTENT_ASSIST = "kawapad-enable-content-assist";
     
@@ -1222,7 +1238,8 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
                 offsetTTL--;
                 offset = -1;
             }
-            KawapadTemporaryParenthesisHighlighter.forceClearHighlightedParenthesis();
+            if ( ! searchBox.isVisible() )
+                KawapadTemporaryParenthesisHighlighter.forceClearHighlightedParenthesis();
             updateHighlight( kawapad, offset );
         }
         private void updateMatchingParentheses2(int i) {
@@ -2071,6 +2088,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         public void actionPerformed(ActionEvent e) {
             UNSELECT_ACTION.actionPerformed( e );
             DISABLE_CONTENT_ASSIST_ACTION.actionPerformed( e );
+            CANCEL_SEARCH_BOX_ACTION.actionPerformed(e); // ADDED (Sat, 20 Jun 2020 09:09:34 +0900)
         }
         {
             putValue( Action2.CAPTION, "Unselect" );
@@ -3246,14 +3264,18 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
 
     static class ConfirmType { 
         static final Kawapad.ConfirmType OPEN_FILE = new ConfirmType( 
-            "Do you save the changes before closing the current document?", 
-            "Open a file" );
+            "Do you save the current document before opening another?", 
+            "Open a File" );
         static final Kawapad.ConfirmType CREATE_NEW_FILE = new ConfirmType( 
-            "Do you save the changes before closing the current document?", 
-            "Create a new file" );
+            "Do you save the current document before creating a new file?", 
+            "Creatuing a New File" );
         static final Kawapad.ConfirmType CLOSE_WINDOW = new ConfirmType( 
-                "Do you save the changes before closing the current document?", 
-                "Closing the current window" );
+            "Do you save the current document before closing the window ?", 
+            "Closing the Window" );
+        
+        static final Kawapad.ConfirmType CLOSE = new ConfirmType( // ADDED (Sat, 20 Jun 2020 21:10:06 +0900) 
+            "Are you sure you want to close the current document?", 
+            "Closing the Window" );
         final String caption;
         final String title;
         public ConfirmType(String caption, String title) {
@@ -3261,23 +3283,40 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
             this.title = title;
         }
     }
+    
+    public boolean confirmProc(Kawapad.ConfirmType confirmType) throws IOException {
+        int i = JOptionPane.showConfirmDialog( 
+            null, 
+            confirmType.caption,
+            confirmType.title , 
+            JOptionPane.YES_NO_CANCEL_OPTION  );
+
+        if ( i == JOptionPane.YES_OPTION ) {
+            if ( currentFile == null ) {
+                return saveFileAs();
+            } else {
+                saveFile();
+                return true;
+            }
+        } else if ( i == JOptionPane.NO_OPTION ) {
+            return true; 
+        } else {
+            return false;
+        }
+    }
+    public boolean confirmCloseProc(Kawapad.ConfirmType confirmType) throws IOException {
+        int i = JOptionPane.showConfirmDialog( 
+            null, 
+            confirmType.caption,
+            confirmType.title , 
+            JOptionPane.OK_CANCEL_OPTION  );
+
+        return i == JOptionPane.OK_OPTION ;
+    }
+
     public boolean confirmSave( Kawapad.ConfirmType confirmType ) throws IOException {
         if ( fileModified ) {
-            int i = JOptionPane.showConfirmDialog( this, 
-                    confirmType.caption,
-                    confirmType.title , JOptionPane.YES_NO_CANCEL_OPTION  );
-            if ( i == JOptionPane.YES_OPTION ) {
-                if ( currentFile == null ) {
-                    return saveFileAs();
-                } else {
-                    saveFile();
-                    return true;
-                }
-            } else if ( i == JOptionPane.NO_OPTION ) {
-                return true; 
-            } else {
-                return false;
-            }
+            return confirmProc(confirmType);
         } else {
             return true;
         }
@@ -3446,7 +3485,11 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
             public void windowClosing(WindowEvent we) {
                 boolean result;
                 try {
-                    result = confirmSave( ConfirmType.CLOSE_WINDOW );
+                    if ( fileModified ) {
+                        result = confirmSave( ConfirmType.CLOSE_WINDOW );
+                    } else {
+                        result = confirmCloseProc( ConfirmType.CLOSE );
+                    }
                 } catch (IOException e) {
                     logError( "" , e );
                     result = false;

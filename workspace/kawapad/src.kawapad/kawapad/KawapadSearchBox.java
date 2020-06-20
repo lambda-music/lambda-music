@@ -102,6 +102,8 @@ public class KawapadSearchBox implements ComponentListener, HierarchyListener {
             BorderFactory.createEmptyBorder(0,10,0,10) ) );
         field.getDocument().addDocumentListener( searchTextFieldListener );
         field.addKeyListener(searchTextFieldListener);
+        field.setEditable(true);
+        field.setFocusable(true);
         return field;
     }
 
@@ -126,6 +128,7 @@ public class KawapadSearchBox implements ComponentListener, HierarchyListener {
     public synchronized void updateStatusField() {
         if ( searchTextFieldPopup != null ) {
             searchTextFieldPopup.hide();
+            searchTextFieldPopup = null;
         }
         
         if ( ! this.visible ) {
@@ -137,18 +140,15 @@ public class KawapadSearchBox implements ComponentListener, HierarchyListener {
             logWarn("kawapad has no parent");
         }
         
-        searchTextField.setPreferredSize( new Dimension( parent.getWidth(),  30 ));
+        this.searchTextField.setPreferredSize( new Dimension( parent.getWidth(),  20 ));
         Point loc = new Point(0,0);
         SwingUtilities.convertPointToScreen( loc, parent );
         Rectangle size = kawapad.getVisibleRect();
         logInfo ( "" + size.height );
-        searchTextFieldPopup = popupFactory.getPopup( kawapad, searchTextField, loc.x, loc.y + size.height - 30  );
-        searchTextFieldPopup.show();
+        this.searchTextFieldPopup = popupFactory.getPopup( kawapad, searchTextField, loc.x, loc.y + size.height + 0  );
+        this.searchTextFieldPopup.show();
     }
 
-    public synchronized void hideStatusField() {
-    }
-    
     Container lastParent = null;
     @Override
     public void hierarchyChanged(HierarchyEvent e) {
@@ -187,11 +187,12 @@ public class KawapadSearchBox implements ComponentListener, HierarchyListener {
             this.setText( word );
         }
         this.setVisible( true  );
-        this.searchTextField.requestFocus();
-        
+        this.searchTextField.requestFocus(true);
+        logInfo("requestFocus");
     }
     public void hideSearchBox() {
         this.setVisible( false );
         this.kawapad.requestFocus();
+        logInfo("kawapad.requestFocus");
     }
 }

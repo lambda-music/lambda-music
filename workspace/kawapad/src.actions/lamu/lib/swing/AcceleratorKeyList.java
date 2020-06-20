@@ -89,11 +89,13 @@ public class AcceleratorKeyList {
                 // Ignore it.
                 logWarn( "Could not initialize keystrokes for " + action.toString() );
             } else {
-                c.getInputMap().put(acceleratorKey, name );
+                logInfo( "addActionToInputMap1:" + name + "/" + acceleratorKey );
+                c.getInputMap( JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(acceleratorKey, name );
             }
         } else {
             for ( KeyStroke keyStroke : keyStrokes ) {
-                c.getInputMap().put( keyStroke, name );
+                logInfo( "addActionToInputMap2:" + name + "/" + keyStroke );
+                c.getInputMap( JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put( keyStroke, name );
             }
         }
     }
