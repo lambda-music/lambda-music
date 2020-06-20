@@ -377,6 +377,7 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
     }
     
     public static void outputKeyStrokeReference() throws IOException {
+        Kawapad.ENABLED_CONFIRMATION = false;
         KawapadFrame kawapadFrame = createStaticInstance( );
         try {
             Thread.sleep( 2048 );
@@ -388,9 +389,8 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
     }
 
     public static void outputDocument() throws IOException {
+        Kawapad.ENABLED_CONFIRMATION = false;
         ForceLoadingClass.force( Kawapad.class );
-        
-        
         KawapadFrame kawapadFrame = createStaticInstance();
         try {
             Thread.sleep( 2048 );

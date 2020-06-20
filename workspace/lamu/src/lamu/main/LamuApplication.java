@@ -116,8 +116,8 @@ public class LamuApplication {
         };
         
         availableCommands.add( new ArgsCommandFork( "lamu", LamuApplication.class, forkListener ));
-        availableCommands.add( new ArgsCommandLoad( "load" ) );
-        availableCommands.add( new ArgsCommandExec( DEFAULT_COMMAND_EXEC ) );
+        availableCommands.add( new ArgsCommandLoad( "load" ) ); // "load" may be obsolete; (Sun, 21 Jun 2020 05:22:12 +0900)
+        availableCommands.add( new ArgsCommandExec( DEFAULT_COMMAND_EXEC ) ); // "exec" does the shebang.
         availableCommands.add( new ArgsCommandEcho( "echo" ) );
         availableCommands.addAll( ArgsCommandMacro.load( getInitFile() ) );
 
@@ -126,10 +126,13 @@ public class LamuApplication {
                     DEFAULT_COMMAND_LOAD + " " + 
                     " create scheme + repl $*{--load=$} +" ));
 
+        
+        // "open" open the file by the Kawapad editor.
         availableCommands.add( ArgsCommandMacro.create( 
                     DEFAULT_COMMAND_OPEN + " " + 
                     " create scheme + repl + gui $*{$} +" ));
         
+        // "default" is an alias of "exec".
         availableCommands.add( ArgsCommandMacro.create( 
             DEFAULT_COMMAND + " " + 
             DEFAULT_COMMAND_EXEC + " $*{$}" ));

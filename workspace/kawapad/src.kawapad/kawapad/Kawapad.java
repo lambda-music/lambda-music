@@ -123,7 +123,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
-    
+
     public static interface KawapadListener {
         public abstract void process( Kawapad kawadapd );
     }
@@ -141,6 +141,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     
     ////////////////////////////////////////////////////////////////////////////
 
+    public static boolean ENABLED_CONFIRMATION = true;
     private static final boolean DEBUG_UNDO_BUFFER = true;
     static final boolean DEBUG = false;
     static final boolean DEBUG_PARENTHESIS = false;
@@ -3285,6 +3286,11 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     }
     
     public boolean confirmProc(Kawapad.ConfirmType confirmType) throws IOException {
+        // ADDED >> (Sun, 21 Jun 2020 05:07:30 +0900) 
+        if ( ! ENABLED_CONFIRMATION )
+            return true;
+        // <<<
+        
         int i = JOptionPane.showConfirmDialog( 
             null, 
             confirmType.caption,
@@ -3305,6 +3311,10 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         }
     }
     public boolean confirmCloseProc(Kawapad.ConfirmType confirmType) throws IOException {
+        // ADDED >> (Sun, 21 Jun 2020 05:07:30 +0900) 
+        if ( ! ENABLED_CONFIRMATION )
+            return true;
+        // <<<
         int i = JOptionPane.showConfirmDialog( 
             null, 
             confirmType.caption,
