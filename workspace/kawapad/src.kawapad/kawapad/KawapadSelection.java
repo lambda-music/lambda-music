@@ -62,18 +62,38 @@ public class KawapadSelection {
         }
     }
 
+    private static int calcDynamicDirection(final int currDot, int posL, int posR, int direction ) {
+        if (direction != 0 )
+            return direction;
+        
+        if ( Math.abs( posL - currDot ) < Math.abs( posR - currDot ) ) {
+            direction = 1;
+        } else {
+            direction = -1;
+        }
+        return direction;
+    }
+
     static boolean expandSelectedParentheses(KawapadParenthesisStack stack, CharSequence text, Caret caret) {
-        int currDot = caret.getDot();
-        int currMark = caret.getMark();
+        final int currDot = caret.getDot();
+        final int currMark = caret.getMark();
         int leftPos;
         int rightPos;
+        int direction;
         if (currDot < currMark) {
             leftPos = currDot;
             rightPos = currMark - THE_FINAL_CORRECTION;
+            direction = -1;
+        } else if (currDot == currMark) {
+            leftPos = currMark;
+            rightPos = currDot - THE_FINAL_CORRECTION;
+            direction = 0; // zero denotes "dynamic-direction".
         } else {
             leftPos = currMark;
             rightPos = currDot - THE_FINAL_CORRECTION;
+            direction = +1;
         }
+        
 
         // if there is a selection area now, it is to expand one on the left side.
         if (leftPos != rightPos)
@@ -118,8 +138,14 @@ public class KawapadSelection {
                 synchronized (stack) {
                     try {
                         stack.setLocked(true);
-                        caret.setDot(posL);
-                        caret.moveDot(posR - diff + THE_FINAL_CORRECTION);
+                        int d = calcDynamicDirection(currDot, posL, posR, direction );
+                        if ( d < 0 ) {
+                            caret.setDot(posL);
+                            caret.moveDot(posR - diff + THE_FINAL_CORRECTION);
+                        } else {
+                            caret.setDot(posR - diff + THE_FINAL_CORRECTION);
+                            caret.moveDot(posL);
+                        }
                         stack.push(currMark, currDot);
                         return true;
                     } finally {
@@ -139,8 +165,14 @@ public class KawapadSelection {
                 synchronized (stack) {
                     try {
                         stack.setLocked(true);
-                        caret.setDot(posL - diff);
-                        caret.moveDot(posR + THE_FINAL_CORRECTION);
+                        int d = calcDynamicDirection( currDot, posL, posR, direction );
+                        if ( d < 0 ) {
+                            caret.setDot(posL - diff);
+                            caret.moveDot(posR + THE_FINAL_CORRECTION);
+                        } else {
+                            caret.setDot(posR + THE_FINAL_CORRECTION);
+                            caret.moveDot(posL - diff);
+                        }
                         stack.push(currMark, currDot);
                         return true;
                     } finally {
@@ -151,7 +183,7 @@ public class KawapadSelection {
             return false;
         }
     }
-
+    
     public interface CharSelector {
         boolean select(char ch);
     }
