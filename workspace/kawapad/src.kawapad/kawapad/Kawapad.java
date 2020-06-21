@@ -1371,7 +1371,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
                 } else {
                     textualIncrement.TEXTUAL_INCREMENT_ACTION.actionPerformed( KAWAPAD_ACTION_EVENT ); 
                 }
-            } else if ((( e.getModifiers() == MouseWheelEvent.ALT_MASK )) && 
+            } else if ((( e.getModifiers() == MouseWheelEvent.CTRL_MASK )) && 
                 (e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL ) ) 
             {
                 e.consume();
@@ -1382,7 +1382,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
                     PARENTHESIS_SELECT_RIGHT_ACTION.actionPerformed( KAWAPAD_ACTION_EVENT );
 //                    textualIncrement.TEXTUAL_INCREMENT_ACTION.actionPerformed(KAWAPAD_ACTION_EVENT); 
                 }
-            } else if ((( e.getModifiers() == MouseWheelEvent.CTRL_MASK ) ) && 
+            } else if ((( e.getModifiers() == MouseWheelEvent.ALT_MASK ) ) && 
                 (e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL ) )
             {
                 e.consume();
@@ -3285,17 +3285,28 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         }
     }
     
-    public boolean confirmProc(Kawapad.ConfirmType confirmType) throws IOException {
+    boolean confirmSaveProc(Kawapad.ConfirmType confirmType) throws IOException {
         // ADDED >> (Sun, 21 Jun 2020 05:07:30 +0900) 
         if ( ! ENABLED_CONFIRMATION )
             return true;
         // <<<
+
+        Object[] options = {
+            UIManager.getString("OptionPane.yesButtonText"),
+            UIManager.getString("OptionPane.noButtonText"),
+            UIManager.getString("OptionPane.cancelButtonText")
+        };
+        String defaultOption = UIManager.getString("OptionPane.cancelButtonText");
         
-        int i = JOptionPane.showConfirmDialog( 
+        int i = JOptionPane.showOptionDialog( 
             null, 
             confirmType.caption,
             confirmType.title , 
-            JOptionPane.YES_NO_CANCEL_OPTION  );
+            JOptionPane.YES_NO_CANCEL_OPTION,
+            JOptionPane.QUESTION_MESSAGE,
+            null,
+            options,
+            defaultOption );
 
         if ( i == JOptionPane.YES_OPTION ) {
             if ( currentFile == null ) {
@@ -3310,23 +3321,32 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
             return false;
         }
     }
-    public boolean confirmCloseProc(Kawapad.ConfirmType confirmType) throws IOException {
+    public boolean confirmClose(Kawapad.ConfirmType confirmType) throws IOException {
         // ADDED >> (Sun, 21 Jun 2020 05:07:30 +0900) 
         if ( ! ENABLED_CONFIRMATION )
             return true;
         // <<<
-        int i = JOptionPane.showConfirmDialog( 
-            null, 
+        Object[] options = {
+            UIManager.getString("OptionPane.okButtonText"),
+            UIManager.getString("OptionPane.cancelButtonText")
+        };
+        String defaultOption = UIManager.getString("OptionPane.cancelButtonText");
+        int i = JOptionPane.showOptionDialog(
+            null,
             confirmType.caption,
             confirmType.title , 
-            JOptionPane.OK_CANCEL_OPTION  );
+            JOptionPane.OK_CANCEL_OPTION,
+            JOptionPane.QUESTION_MESSAGE,
+            null,
+            options,
+            defaultOption );
 
         return i == JOptionPane.OK_OPTION ;
     }
 
     public boolean confirmSave( Kawapad.ConfirmType confirmType ) throws IOException {
         if ( fileModified ) {
-            return confirmProc(confirmType);
+            return confirmSaveProc(confirmType);
         } else {
             return true;
         }
@@ -3498,7 +3518,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
                     if ( fileModified ) {
                         result = confirmSave( ConfirmType.CLOSE_WINDOW );
                     } else {
-                        result = confirmCloseProc( ConfirmType.CLOSE );
+                        result = confirmClose( ConfirmType.CLOSE );
                     }
                 } catch (IOException e) {
                     logError( "" , e );
