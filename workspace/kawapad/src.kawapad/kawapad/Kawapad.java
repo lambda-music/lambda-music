@@ -483,10 +483,10 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
             Kawapad.logWarn( "Ignored because currently no text is selected. " );
         }
     }
-    public void evaluate( String schemeScript,  boolean doInsertText, boolean doReplaceText, boolean doReset ) {
+    public void evaluate( String schemeScript,  boolean doInsertText, boolean doReplaceText, boolean doResetFileModified ) {
         this.evaluate( 
             schemeScript, 
-            KawapadUpdater.create( kawapad, schemeScript, doInsertText, doReplaceText, true, doReset ) );
+            KawapadUpdater.create( kawapad, schemeScript, doInsertText, doReplaceText, true, doResetFileModified ) );
     }
     
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -3812,7 +3812,90 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     }
     
     
-    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 
+    //  Function Keys
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    class FunctionKeyAction extends TextAction2 {
+        private String script;
+        FunctionKeyAction(String name, String script, String caption, char mnemonic, String keyStroke) {
+            super( name );
+            this.script = script;
+            putValue( Action2.CAPTION, "Execute " + caption );
+            putValue( Action.MNEMONIC_KEY , (int) mnemonic );
+            AcceleratorKeyList.putAcceleratorKeyList( this, keyStroke );
+        }
+        public FunctionKeyAction(int i) {
+            this( 
+                "function-key-" + i,
+                "(function-key-" + i + ")",
+                "Execute F" + i,
+                (""+i).charAt(0),
+                "F" + i );
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            boolean doInsertText;
+            if ( ( e.getModifiers() & MouseEvent.SHIFT_MASK) != 0 ) {
+                doInsertText = true;
+            } else {
+                doInsertText = false;
+            }
+            evaluate( this.script, doInsertText, true, false );
+        }
+    }
+
+    @AutomatedActionField
+    public final Action FUNCTION_KEY1_ACTION = new FunctionKeyAction( 1 );
+    @AutomatedActionField
+    public final Action FUNCTION_KEY2_ACTION = new FunctionKeyAction( 2 );
+    @AutomatedActionField
+    public final Action FUNCTION_KEY3_ACTION = new FunctionKeyAction( 3 );
+    @AutomatedActionField
+    public final Action FUNCTION_KEY4_ACTION = new FunctionKeyAction( 4 );
+    @AutomatedActionField
+    public final Action FUNCTION_KEY5_ACTION = new FunctionKeyAction( 5 );
+    @AutomatedActionField
+    public final Action FUNCTION_KEY6_ACTION = new FunctionKeyAction( 6 );
+    @AutomatedActionField
+    public final Action FUNCTION_KEY7_ACTION = new FunctionKeyAction( 7 );
+    @AutomatedActionField
+    public final Action FUNCTION_KEY8_ACTION = new FunctionKeyAction( 8 );
+    @AutomatedActionField
+    public final Action FUNCTION_KEY9_ACTION = new FunctionKeyAction( 9 );
+    @AutomatedActionField
+    public final Action FUNCTION_KEY10_ACTION = new FunctionKeyAction( 10 );
+    @AutomatedActionField
+    public final Action FUNCTION_KEY11_ACTION = new FunctionKeyAction( 11 );
+    @AutomatedActionField
+    public final Action FUNCTION_KEY12_ACTION = new FunctionKeyAction( 12 );
+    @AutomatedActionField
+    public final Action FUNCTION_KEY13_ACTION = new FunctionKeyAction( 13 );
+    @AutomatedActionField
+    public final Action FUNCTION_KEY14_ACTION = new FunctionKeyAction( 14 );
+    @AutomatedActionField
+    public final Action FUNCTION_KEY15_ACTION = new FunctionKeyAction( 15 );
+    @AutomatedActionField
+    public final Action FUNCTION_KEY16_ACTION = new FunctionKeyAction( 16 );
+    @AutomatedActionField
+    public final Action FUNCTION_KEY17_ACTION = new FunctionKeyAction( 17 );
+    @AutomatedActionField
+    public final Action FUNCTION_KEY18_ACTION = new FunctionKeyAction( 18 );
+    @AutomatedActionField
+    public final Action FUNCTION_KEY19_ACTION = new FunctionKeyAction( 19 );
+    @AutomatedActionField
+    public final Action FUNCTION_KEY20_ACTION = new FunctionKeyAction( 20 );
+    @AutomatedActionField
+    public final Action FUNCTION_KEY21_ACTION = new FunctionKeyAction( 21 );
+    @AutomatedActionField
+    public final Action FUNCTION_KEY22_ACTION = new FunctionKeyAction( 22 );
+    @AutomatedActionField
+    public final Action FUNCTION_KEY23_ACTION = new FunctionKeyAction( 23 );
+    @AutomatedActionField
+    public final Action FUNCTION_KEY24_ACTION = new FunctionKeyAction( 24 );
+
     
     
     

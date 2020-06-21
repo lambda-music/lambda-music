@@ -50,7 +50,7 @@ public class AcceleratorKeyList {
     public static KeyStroke getKeyStroke( String s ) {
         KeyStroke keyStroke = KeyStroke.getKeyStroke( s );
         if ( keyStroke == null )
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException( "an illegal keystroke was detected : " + s  );
         return keyStroke;
     }
     public static KeyStroke getKeyStroke(int keyCode, int modifiers) {
