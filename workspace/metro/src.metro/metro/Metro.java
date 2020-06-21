@@ -357,7 +357,7 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
 
 //            // this thread should not be controlled by the open/close commands.
 //            // (Sat, 03 Aug 2019 16:45:11 +0900)  
-            initThread();
+            createThread();
             
         } catch (JackException ex) {
             if (!status.isEmpty()) {
@@ -371,8 +371,8 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
     }
     
     // INIT_02
-    void initThread() {
-        this.thread = new Thread( this , "MetroSequencer" );
+    protected void createThread() {
+        this.thread = new Thread( this , "Metro" );
         this.thread.start();
 //        INIT_02
 //        this.postMessage( new Runnable() {
@@ -383,7 +383,7 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
 //      });
     }
     // INIT_02
-    void finalizeThread() {
+    protected void destroyThread() {
         if ( thread != null ) {
             thread.interrupt();
             try {
@@ -440,7 +440,7 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
                 logError("", e);
             }
             try {
-                finalizeThread();
+                destroyThread();
             } catch ( Exception e ) {
                 logError("", e);
             }
@@ -488,13 +488,31 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
      */
     @Override
     public void run()  {
-        logInfo("Metro.run()");
+        try {
+            beginLoop();
+        } catch ( Throwable t ) {
+            logError( "error occured in beginLoop()", t );
+        }
+        bufferingLoop();
+        try {
+            endLoop();
+        } catch ( Throwable t ) {
+            logError( "error occured in endLoop()", t );
+        }
+    }
+    protected void beginLoop()  {
+    }
+    protected void endLoop()  {
+    }
+    
+    protected void bufferingLoop() {
+        logInfo( "Metro.bufferingLoop()" );
         while( ! Thread.interrupted() ) {
             int nframes = last_nframes;
             // If 
             if ( nframes < 0 ) {
                 try {
-                    logInfo("run() : waiting...");
+                    logInfo( "bufferingLoop() : waiting..." );
                     Thread.sleep(200);
                 } catch (InterruptedException e) {
                     break;
@@ -504,16 +522,16 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
             
             MetroOutputBuffer outputEventBuffer = this.outputBufferPool.get();
             outputEventBuffer.init( nframes );
-            process0( nframes, outputEventBuffer.eventList );
+            processBuffering( nframes, outputEventBuffer.eventList );
             try {
                 // The `put` method blocks until the queue is vacant.
                 this.outputBufferQueue.put( outputEventBuffer );
             } catch (InterruptedException e) {
-                logWarn( "Metro.run() " + e.getMessage() );
+                logWarn( "Metro.bufferingLoop() " + e.getMessage() );
                 break;
             }
         }
-        logInfo("Metro.run() : exited");
+        logInfo( "Metro.bufferingLoop() : exited" );
     }
     public static <T> List<T> createSnapshot(List<T> list) {
         return list.isEmpty() ? Collections.EMPTY_LIST : new ArrayList<>( list );
@@ -639,6 +657,10 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
      */
     @Override
     public boolean process( JackClient client, int nframes ) {
+        return processPlaying(nframes);
+    }
+    
+    protected boolean processPlaying(int nframes) {
         this.last_nframes = nframes;
         
         MetroOutputBuffer outputBuffer=null;
@@ -692,7 +714,7 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
         }
     }
     
-    boolean process0( int nframes, ArrayList<MetroMidiEvent> outputEventList ) {
+    protected boolean processBuffering( int nframes, ArrayList<MetroMidiEvent> outputEventList ) {
         if ( ! this.playing ) {
             return true;
         }

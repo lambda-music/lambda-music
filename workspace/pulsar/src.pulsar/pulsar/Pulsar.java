@@ -386,8 +386,28 @@ public class Pulsar extends Metro implements PulsarLib, PulsarLibDelegator, Appl
             proc.apply(pulsar, from, to );
         }
     }
-    
-    
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    //
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    private Language currentLanguage=null;    
+    private Environment currentEnvironment =null;    
+    @Override
+    protected void createThread() {
+        super.createThread();
+        this.currentLanguage = Language.getDefaultLanguage(); 
+        this.currentEnvironment = Environment.getCurrent(); 
+    }
+    @Override
+    protected void beginLoop() {
+        super.beginLoop();
+        Language.setCurrentLanguage( this.currentLanguage );
+        Environment.setCurrent( this.currentEnvironment ); 
+    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
