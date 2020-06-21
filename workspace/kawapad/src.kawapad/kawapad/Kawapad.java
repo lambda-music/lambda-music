@@ -3820,12 +3820,12 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
 
     class FunctionKeyAction extends TextAction2 {
         private String script;
-        FunctionKeyAction(String name, String script, String caption, char mnemonic, String keyStroke) {
+        FunctionKeyAction(String name, String script, String caption, char mnemonic, String ... keyStrokes ) {
             super( name );
             this.script = script;
             putValue( Action2.CAPTION, "Execute " + caption );
             putValue( Action.MNEMONIC_KEY , (int) mnemonic );
-            AcceleratorKeyList.putAcceleratorKeyList( this, keyStroke );
+            AcceleratorKeyList.putAcceleratorKeyList( this, keyStrokes );
         }
         public FunctionKeyAction(int i) {
             this( 
@@ -3833,7 +3833,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
                 "(function-key-" + i + ")",
                 "Execute F" + i,
                 (""+i).charAt(0),
-                "F" + i );
+                "F" + i , "control F" + i, "shift F" + i  );
         }
         @Override
         public void actionPerformed(ActionEvent e) {
