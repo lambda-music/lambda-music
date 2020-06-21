@@ -90,12 +90,18 @@ public class AcceleratorKeyList {
                 logWarn( "Could not initialize keystrokes for " + action.toString() );
             } else {
                 logInfo( "addActionToInputMap1:" + name + "/" + acceleratorKey );
-                c.getInputMap( JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(acceleratorKey, name );
+                // MODIFIED (Sun, 21 Jun 2020 10:54:31 +0900) >>>
+                // c.getInputMap( JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(acceleratorKey, name );
+                c.getInputMap(  ).put(acceleratorKey, name );
+                // MODIFIED (Sun, 21 Jun 2020 10:54:31 +0900) <<<
             }
         } else {
             for ( KeyStroke keyStroke : keyStrokes ) {
                 logInfo( "addActionToInputMap2:" + name + "/" + keyStroke );
-                c.getInputMap( JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put( keyStroke, name );
+                // MODIFIED (Sun, 21 Jun 2020 10:54:31 +0900) >>>
+                // c.getInputMap( JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put( keyStroke, name );
+                c.getInputMap( ).put( keyStroke, name );
+                // MODIFIED (Sun, 21 Jun 2020 10:54:31 +0900) <<<
             }
         }
     }
