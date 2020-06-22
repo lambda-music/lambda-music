@@ -19,7 +19,9 @@ public class SchemeEvaluatorUtils {
     public static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
-    
+
+    public static String USE_MAINFILE = "main.scm";
+
     /**
      * 
      * @param threadInitializer
@@ -92,6 +94,13 @@ public class SchemeEvaluatorUtils {
         }
         
         File resolvedFile = new File( file.getParentFile(), f.getPath() );
+        
+        // ADDED (Mon, 22 Jun 2020 13:47:21 +0900) >>>
+        if ( resolvedFile.isDirectory() ) {
+            resolvedFile = new File( resolvedFile, USE_MAINFILE );
+        }
+        // ADDED (Mon, 22 Jun 2020 13:47:21 +0900) <<<
+        
         return resolvedFile;
     }
     
