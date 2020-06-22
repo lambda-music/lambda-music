@@ -50,8 +50,8 @@ public class SchemeEvaluatorUtils {
             return null;
         }
     }
+
     /**
-     * 
      * @param threadInitializer
      *     Specify a thread initializer; null if no initializer is to be specified.
      * @param schemeScriptString
@@ -83,17 +83,93 @@ public class SchemeEvaluatorUtils {
         }
     }
     
-
+    /**
+     * Resolve the given relative path to the absolute path with the <i>base-file</i> which
+     * is determined by <i>currentBaseFile</i> with some conditions to mutate the given path.
+     * This method implements a simple module system based on the directory system.
+     * <p/>
+     * This method has two conditions to determine when to mutate the given path.
+     * <ul>
+     * <li>If the given path does not exist, the method modifies the path to its parent directory.</li>
+     * <li>If the given path is pointing a directory file, the method modifies the 
+     * path to point to a file by appending the file-name `main.scm`.</li>
+     * </ul>
+     * This behavior effectively implements a simple module system based on the directory system;
+     * consider the following situations:
+     * <ul>
+     * <li>
+     * The main-module file is located in a directory and the other submodule files are placed to the same directory.<p/>
+     * <pre>
+     * -main.scm  
+     *   +sub01.scm
+     *   +sub02.scm
+     * ---
+     * main.scm:
+     *   (use "sub01.scm")  
+     *   (use "sub02.scm")  
+     * </pre>
+     * </li>
+     * <li>
+     * The main-module file is located in a directory and the other submodule files are placed to subdirectories.<p/>
+     * <pre>
+     * -main.scm  
+     *   +sub01/main.scm
+     *   +sub02/main.scm
+     * ---
+     * main.scm:
+     *   (use "sub01")  
+     *   (use "sub02")  
+     * </pre>
+     * </li>
+     * <li>
+     * There is a common module directory and the directory where the main-module is placed is placed to the common
+     * module direcoty as well as the other submodule directories.    
+     * <pre>
+     * - common-modules 
+     *   +main01/main.scm  
+     *   +sub01/main.scm
+     *   +sub02/main.scm
+     * ---
+     * main01/main.scm:
+     *   (use "sub01")  
+     *   (use "sub02")  
+     * </pre>
+     * </li>
+     * </ul> 
+     * <p/>
+     * A module directory name should be unique in the entire module directory name set.
+     * <p> 
+     * @param file
+     *    the file path to be resolved
+     * @return
+     *    the resolved file path
+     */
+    public static File useResolve( File file ) {
+        return useResolveProc( SchemeEvaluator.getCurrentBaseFile(), file);
+    }
     
-    public static File useResolve( File f ) {
-        File file = SchemeEvaluatorImplementation.currentBaseFile.get();
-        if ( file == null ) {
-            throw new IllegalStateException( 
-                "NO BAE FILE DEFINED ERROR : " +
-                "Currently no base file is defined. Please save the current editting file, before loading files." );
+    /**
+     * The implementation part of {@link #useResolve(File)}. This method is intended to provide
+     * tha way to share the algorithm of path resolving which is done in {@link #useResolve(File)}.  
+     *  
+     * @param baseFile
+     *    the base file in which is to be resolved with
+     * @param file
+     *    the file path to be resolved.
+     * @return
+     *    the resolved file path
+     */
+    public static File useResolveProc( File baseFile, File file ) {
+        File resolvedFile;
+        if ( file.isAbsolute()  ) {
+            resolvedFile = file;
+        } else {
+            resolvedFile = new File( baseFile.getParentFile(), file.getPath() );
+            if ( ! resolvedFile.exists() ) {
+                // See the comment.
+                resolvedFile = new File( baseFile.getParentFile().getParentFile(), file.getPath() );
+            }
         }
-        
-        File resolvedFile = new File( file.getParentFile(), f.getPath() );
         
         // ADDED (Mon, 22 Jun 2020 13:47:21 +0900) >>>
         if ( resolvedFile.isDirectory() ) {
@@ -114,7 +190,19 @@ public class SchemeEvaluatorUtils {
         }
     }
 
-    public static Object use( File f ) throws IOException {
+    /**
+     * Evaluate the specified file with the current context in the means of the state of ThreadManager object instances.
+     * The specified file path is altered by some conditions. To learn how it alters the path, see {@link #useResolve(File)}.  
+     * 
+     * @param file
+     *    specifies the file to evaluate
+     * @return
+     *    the result of the evaluation
+     * @throws IOException
+     * 
+     * @see #useResolve
+     */
+    public static Object use( File file ) throws IOException {
         Evaluator evaluator = Evaluator.getCurrent();
         if ( evaluator == null ) {
             throw new IllegalStateException("NO EVALUATOR ERROR : currently, no evaluator was configured.");
@@ -126,7 +214,7 @@ public class SchemeEvaluatorUtils {
         }
 
         EvaluatorReceiverImplementation resultReceiver = new EvaluatorReceiverImplementation();
-        File resolvedFile = useResolve(f);
+        File resolvedFile = useResolve(file);
 
         AsyncEvaluator.executeAsync(
             threadManager, 
@@ -145,6 +233,18 @@ public class SchemeEvaluatorUtils {
         }
         return resultReceiver.schemeResult.getValue();
     }
+    
+    /**
+     * Read the specified file as either a lisp's symbol list or a symbol. The given
+     * filename will be resolved with the same algorithm as {@link #useResolve(File)}
+     * method.
+     * 
+     * @param file
+     *    the file to be read
+     * @return  
+     *    a symbol or a symbol list
+     * @throws IOException
+     */
     public static Object useRead( File file ) throws IOException {
         File resolvedFile = useResolve(file);
         return 

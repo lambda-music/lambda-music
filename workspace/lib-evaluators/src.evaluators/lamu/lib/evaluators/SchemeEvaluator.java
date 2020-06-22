@@ -15,7 +15,24 @@ public class SchemeEvaluator implements Evaluator, NameCaptionHolder {
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
+
     
+    /**
+     * This method returns the current base file.
+     * See {@link SchemeEvaluatorImplementation#currentBaseFile } for further information.
+     * @return
+     *    the path to the current base-file
+     */
+    public static File getCurrentBaseFile() {
+        File currentFile = SchemeEvaluatorImplementation.currentBaseFile.get();
+        if ( currentFile == null ) {
+            throw new IllegalStateException( 
+                "NO BASE FILE DEFINED ERROR : " +
+                "Currently no base file is defined. Please save the current editting file, before loading files." );
+        }
+        return currentFile;
+    }
+
     public abstract interface SchemeEngineListener {
         public abstract void execute( Scheme scheme );
     }

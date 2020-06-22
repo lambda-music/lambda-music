@@ -197,7 +197,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     
     ////////////////////////////////////////////////////////////////////////////
 
-    Kawapad kawapad=this;
+    Kawapad kawapad = this;
     @Deprecated
     String instanceID = newUniqueID();
     @Deprecated
@@ -478,7 +478,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
                 new StringReader( schemeScript ), 
                 evaluator, 
                 receiver, 
-                kawapad.getCurrentFile(), 
+                currentFile, 
                 "scratchpad" );
         } else {
             Kawapad.logWarn( "Ignored because currently no text is selected. " );
@@ -3145,12 +3145,19 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         }
     }
 
-    // ADDED (Fri, 05 Jun 2020 02:09:15 +0900)
+    // ADDED (Tue, 23 Jun 2020 03:59:07 +0900)
+    // MODIFIED  (Tue, 23 Jun 2020 04:26:34 +0900)
+    /**
+     * The method to resolve the given file path with the current opening/editting file.
+     * @param file
+     * @return
+     */
     public File resolveFile( File file ) {
-        if ( ! file.isAbsolute()  ) {
-            file = new File( getCurrentDirectory(), file.getPath() );
-        }
-        return file;
+        // Note that the FILENAME will be removed in the #useResolveProc.
+        // #useResolveProc only accepts a path to main-file, not a path to main-directory.
+        // (Tue, 23 Jun 2020 04:01:26 +0900)
+        String FILENAME = "main.scm";
+        return SchemeEvaluatorUtils.useResolveProc( new File( getCurrentDirectory(), FILENAME ), file );
     }
     
     static final FileFilter SCHEME_FILE_FILTER = new FileFilter() {

@@ -63,11 +63,32 @@ class SchemeEvaluatorImplementation {
         }
     }
 
+    /**
+     * The <i>currentBaseFile</i> is automatically initialized by
+     * {@link SchemeEvaluatorImplementation} class. The base-file is usually
+     * initialized based on the currently editing/opening file by a editor-program,
+     * preprosessor, etc. For example, Kawapad initializes this variable by the
+     * currently open file.
+     * <p/> 
+     * In order to learn how it is initialized, see the source code of 
+     * {@link SchemeEvaluatorImplementation#evaluateSchemeProc(kawa.standard.Scheme, Runnable, java.io.Reader, File, String)}
+     * method.
+     * <p/>
+     */
     static final LamuThreadLocal<File> currentBaseFile = new LamuThreadLocal<File>();
 
     static final Pattern PAT_CURRENT_FILE = Pattern.compile( Pattern.quote( "#!current-file" ) + "\\b", Pattern.MULTILINE );
     static final Pattern PAT_CURRENT_DIR  = Pattern.compile( Pattern.quote( "#!current-dir"  ) + "\\b", Pattern.MULTILINE);
     
+    /**
+     * 
+     * @param scheme
+     * @param threadInitializer
+     * @param scriptReader
+     * @param currentFile
+     * @param schemeScriptURI
+     * @return
+     */
     static SchemeResult evaluateSchemeProc( 
         Scheme scheme, Runnable threadInitializer, 
         Reader scriptReader, File currentFile, String schemeScriptURI )

@@ -26,6 +26,13 @@ public class procs implements Runnable {
 
     public static final String NAMEDARG_DIRECTORY = "dir";
     public static final CreateProcessProc createProcessProc = new CreateProcessProc(new String[] { "create-process", "newp" });
+    
+    /**
+     * See {@link lamu.lib.evaluators.SchemeEvaluatorUtils#useResolve(File)}
+     * The `dir:` named parameter specifies the current directory. Note that this parameter is not easily
+     * determined unless using the special values of SchemeEvaluator : <code>#!current-dir</code> / <code>#!current-file</code>
+     * For further information, see SchemeEvaluator.
+     */
     public static final class CreateProcessProc extends MultipleNamedProcedureN {
         public CreateProcessProc(String[] names) {
             super(names);
@@ -48,6 +55,13 @@ public class procs implements Runnable {
             // The new way to set the current directory. (Sun, 03 May 2020 02:35:09 +0900)
             if ( namedArgs.containsKey(NAMEDARG_DIRECTORY)) {
                 sb.directory( new File(SchemeValues.toString( namedArgs.get(NAMEDARG_DIRECTORY))).getCanonicalFile());
+            } else {
+                /*
+                 * This should be very useful but I am afraid of side-effects; therefore, leave it disabled.  
+                 * (Tue, 23 Jun 2020 02:14:30 +0900) >>>
+                 * // sb.directory( SchemeEvaluator.getCurrentBaseFile().getParentFile() );
+                 * (Tue, 23 Jun 2020 02:14:30 +0900) <<<
+                 */
             }
             
 //            // XXX ??? (Tue, 24 Mar 2020 06:09:27 +0900) <<< This should be integrated.
