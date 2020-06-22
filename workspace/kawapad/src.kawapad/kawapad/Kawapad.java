@@ -53,6 +53,7 @@ import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -3163,12 +3164,17 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
             return f.getName().endsWith(".scm");
         }
     };
+
+    public static String WINDOW_TITLE = "";
+    public static String WINDOW_TITLE_NEW = "[New File]";
+    
     public void openNewProc() {
         fileModified = false;
         currentFile = null;
         getUndoManager().discardAllEdits();
         kawapad.setText("");
-//          JOptionPane.showMessageDialog( this, "OPEN NEW" );
+        setTitle( WINDOW_TITLE_NEW );
+        // JOptionPane.showMessageDialog( this, "OPEN NEW" );
     }
     public void openNew() throws IOException {
         if ( ! confirmSave( ConfirmType.CREATE_NEW_FILE) ) {
@@ -3180,6 +3186,13 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     private void openFileProc(File file) throws IOException {
         // ADDED (Fri, 05 Jun 2020 02:09:15 +0900)
         file = resolveFile( file );
+        
+        // ADDED (Mon, 22 Jun 2020 13:47:21 +0900) >>>
+        if ( file.exists() && file.isDirectory() ) {
+            file = new File( file, SchemeEvaluatorUtils.USE_MAINFILE );
+        }
+        // ADDED (Mon, 22 Jun 2020 13:47:21 +0900) <<<
+        
         if ( ( ! file.exists() ) || ( ! file.isFile() ) ) {
             file.getParentFile().mkdirs();
             if ( ! file.createNewFile() ) {
@@ -3190,7 +3203,19 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
             String s = new String( Files.readAllBytes( file.toPath() ),  Charset.defaultCharset() );
             setTextProc( file, s );
         }
+        {
+            setTitle( file.toString() );
+        }
 
+    }
+    
+    public void setTitle(String title) {
+        JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        if ( frame != null ) {
+            frame.setTitle( title + WINDOW_TITLE );                
+        } else {
+            logError( "failed to setTitle", new Exception() );
+        }
     }
     /**
      *  
@@ -3356,6 +3381,8 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         Files.write(filePath.toPath(), kawapad.getText().getBytes( Charset.defaultCharset() ), StandardOpenOption.CREATE , StandardOpenOption.TRUNCATE_EXISTING );
         this.fileModified = false;
         this.currentFile = filePath;
+        setTitle( filePath.toString() );
+
 //          JOptionPane.showMessageDialog(this, "SAVE FILE!" + file );
     }
 

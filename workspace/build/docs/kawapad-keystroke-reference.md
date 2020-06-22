@@ -69,3 +69,27 @@ Kawapad Keystroke Reference
 |kawapad-save-file|Save|  CTRL-S  |
 |kawapad-save-file-as|Save as|  SHIFT-CTRL-S  |
 |kawapad-close|Close|  CTRL-W  |
+|function-key-1|Execute Execute F1|  F1, CTRL-F1, SHIFT-F1  |
+|function-key-2|Execute Execute F2|  F2, CTRL-F2, SHIFT-F2  |
+|function-key-3|Execute Execute F3|  F3, CTRL-F3, SHIFT-F3  |
+|function-key-4|Execute Execute F4|  F4, CTRL-F4, SHIFT-F4  |
+|function-key-5|Execute Execute F5|  F5, CTRL-F5, SHIFT-F5  |
+|function-key-6|Execute Execute F6|  F6, CTRL-F6, SHIFT-F6  |
+|function-key-7|Execute Execute F7|  F7, CTRL-F7, SHIFT-F7  |
+|function-key-8|Execute Execute F8|  F8, CTRL-F8, SHIFT-F8  |
+|function-key-9|Execute Execute F9|  F9, CTRL-F9, SHIFT-F9  |
+|function-key-10|Execute Execute F10|  F10, CTRL-F10, SHIFT-F10  |
+|function-key-11|Execute Execute F11|  F11, CTRL-F11, SHIFT-F11  |
+|function-key-12|Execute Execute F12|  F12, CTRL-F12, SHIFT-F12  |
+|function-key-13|Execute Execute F13|  F13, CTRL-F13, SHIFT-F13  |
+|function-key-14|Execute Execute F14|  F14, CTRL-F14, SHIFT-F14  |
+|function-key-15|Execute Execute F15|  F15, CTRL-F15, SHIFT-F15  |
+|function-key-16|Execute Execute F16|  F16, CTRL-F16, SHIFT-F16  |
+|function-key-17|Execute Execute F17|  F17, CTRL-F17, SHIFT-F17  |
+|function-key-18|Execute Execute F18|  F18, CTRL-F18, SHIFT-F18  |
+|function-key-19|Execute Execute F19|  F19, CTRL-F19, SHIFT-F19  |
+|function-key-20|Execute Execute F20|  F20, CTRL-F20, SHIFT-F20  |
+|function-key-21|Execute Execute F21|  F21, CTRL-F21, SHIFT-F21  |
+|function-key-22|Execute Execute F22|  F22, CTRL-F22, SHIFT-F22  |
+|function-key-23|Execute Execute F23|  F23, CTRL-F23, SHIFT-F23  |
+|function-key-24|Execute Execute F24|  F24, CTRL-F24, SHIFT-F24  |
