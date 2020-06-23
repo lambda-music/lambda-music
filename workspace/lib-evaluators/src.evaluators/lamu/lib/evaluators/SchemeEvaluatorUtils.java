@@ -160,14 +160,23 @@ public class SchemeEvaluatorUtils {
      *    the resolved file path
      */
     public static File useResolveProc( File baseFile, File file ) {
+        if (baseFile==null)
+            throw new IllegalArgumentException( "baseFile cannot be null" );
+        if (file == null)
+            throw new IllegalArgumentException( "file cannot be null" );
+        
         File resolvedFile;
         if ( file.isAbsolute()  ) {
             resolvedFile = file;
         } else {
             resolvedFile = new File( baseFile.getParentFile(), file.getPath() );
             if ( ! resolvedFile.exists() ) {
-                // See the comment.
-                resolvedFile = new File( baseFile.getParentFile().getParentFile(), file.getPath() );
+                try {
+                    // See the comment.
+                    resolvedFile = new File( baseFile.getParentFile().getParentFile(), file.getPath() );
+                } catch ( NullPointerException e ) {
+                    logInfo( "could not get parent file (" + baseFile + ") " +  e.getMessage() );
+                }
             }
         }
         
