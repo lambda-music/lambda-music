@@ -201,11 +201,14 @@ class SchemeEvaluatorImplementation {
                         ctx.consumer = out;
                     }
 
-                    // {@link kawa.Shell#runFile(InputStream, Path, gnu.mapping.Environment, boolean, int) }
-                    Object resultValue = scheme.eval( new InPort( bufferedScriptReader, Path.valueOf( schemeScriptURI ) ) );
-                    // Object result = Shell.run( schemeScript, schemeScriptURI, scheme.getEnvironment(), true, 0 ); 
-
-                    return SchemeResult.createSucceededByObject( resultValue );
+                    try {
+                        // {@link kawa.Shell#runFile(InputStream, Path, gnu.mapping.Environment, boolean, int) }
+                        Object resultValue = scheme.eval( new InPort( bufferedScriptReader, Path.valueOf( schemeScriptURI ) ) );
+                        // Object result = Shell.run( schemeScript, schemeScriptURI, scheme.getEnvironment(), true, 0 ); 
+                        return SchemeResult.createSucceededByObject( resultValue );
+                    } catch ( EvaluatorAborted e ) {
+                        return SchemeResult.createSucceededByObject( e.getValue() );
+                    }
                 } catch (Throwable e) {
                     logError( "** Execute Scheme *** error ", e ); 
 

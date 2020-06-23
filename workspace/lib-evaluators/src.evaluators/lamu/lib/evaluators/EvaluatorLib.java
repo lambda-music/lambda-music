@@ -6,9 +6,11 @@ import java.util.Arrays;
 
 import gnu.lists.LList;
 import gnu.mapping.Environment;
+import gnu.mapping.Values;
 import kawa.standard.Scheme;
 import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure0;
+import lamu.lib.kawautils.procedures.MultipleNamedProcedure0or1;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure1;
 
 public class EvaluatorLib {
@@ -104,6 +106,29 @@ public class EvaluatorLib {
         }
     }
 
+    /**
+     * `abort` procedure aborts the currently executing code and passes the
+     * specified value as a result of the evaluation. If no argument is specified,
+     * the result of the evaluation will be {@link Values#empty}.
+     * <p/>
+     * For further information, see the source code of 
+     * {@link SchemeEvaluatorImplementation#evaluateSchemeProc(Scheme, Runnable, Reader, File, String)} method.
+     */
+    public static final AbortEvaluatorProc abortEvaluatorProc = new AbortEvaluatorProc(new String[] { "abort" });
+    public static final class AbortEvaluatorProc extends MultipleNamedProcedure0or1 {
+        public AbortEvaluatorProc(String[] names) {
+            super(names);
+        }
+        @Override
+        public Object apply0() throws Throwable {
+            throw new EvaluatorAborted();
+        }
+        @Override
+        public Object apply1( Object arg ) throws Throwable {
+            throw new EvaluatorAborted(arg);
+        }
+    }
+
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // Scheme Initializer 
@@ -124,5 +149,6 @@ public class EvaluatorLib {
         SchemeValues.defineLambda( env, use );
         SchemeValues.defineLambda( env, useRead );
         SchemeValues.defineLambda( env, currentThreads );
+        SchemeValues.defineLambda( env, abortEvaluatorProc );
     }
 }
