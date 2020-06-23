@@ -171,7 +171,10 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
         if ( ! isOpened )
             throw new IllegalStateException( "not opened" );
     }
-
+    public String getClientName() {
+        checkState();
+        return this.client.getName();
+    }
     public boolean getPlaying() {
         checkState();
         return this.playing;

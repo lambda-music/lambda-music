@@ -51,6 +51,7 @@ public interface PulsarLib {
     Procedure getIsOpen();
     Procedure getOpen();
     Procedure getClose();
+    Procedure getGetClientName();
     Procedure getOpenOutput();
     Procedure getOpenInput();
     Procedure getCloseOutput();
@@ -234,6 +235,10 @@ public interface PulsarLib {
 
         public default Procedure getOpenOutput() {
             return getPulsarLibImplementation().getOpenOutput();
+        }
+
+        public default Procedure getGetClientName() {
+            return getPulsarLibImplementation().getGetClientName();
         }
 
         public default Procedure getClose() {
@@ -707,6 +712,18 @@ public interface PulsarLib {
             }
         }
 
+        public final GetClientNameProc getClientNameProc = new GetClientNameProc(new String[] { "get-client-name" });
+        @Override
+        public Procedure getGetClientName() { return getClientNameProc; }
+        public final class GetClientNameProc extends MultipleNamedProcedureN {
+            public GetClientNameProc(String[] names) {
+                super(names);
+            }
+            @Override
+            public Object applyN(Object[] args) throws Throwable {
+                return SchemeValues.toSchemeString(getPulsar().getClientName());
+            }
+        }
 
         public static final PulsarProceduralDescriptiveDoc openPortTemplateDoc = new OpenPortTemplateDoc(); 
         public static final class OpenPortTemplateDoc extends PulsarProceduralDescriptiveDoc {{
@@ -2092,6 +2109,7 @@ public interface PulsarLib {
             SchemeValues.defineLambda( env, isOpenProc );
             SchemeValues.defineLambda( env, openProc );
             SchemeValues.defineLambda( env, closeProc );
+            SchemeValues.defineLambda( env, getClientNameProc );
             SchemeValues.defineLambda( env, openOutputProc );
             SchemeValues.defineLambda( env, openInputProc );
             SchemeValues.defineLambda( env, closeOutputProc );
