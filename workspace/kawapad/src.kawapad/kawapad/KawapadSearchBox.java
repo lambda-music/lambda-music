@@ -124,6 +124,9 @@ public class KawapadSearchBox implements ComponentListener, HierarchyListener {
 
     private final PopupFactory popupFactory = PopupFactory.getSharedInstance();
     
+    public static final int SEARCH_BOX_WIDTH_MARGIN = 100;
+    public static final int SEARCH_BOX_HEIGHT = 30;
+    
     Popup searchTextFieldPopup; 
     public synchronized void updateStatusField() {
         if ( searchTextFieldPopup != null ) {
@@ -140,8 +143,8 @@ public class KawapadSearchBox implements ComponentListener, HierarchyListener {
             logWarn("kawapad has no parent");
         }
         
-        this.searchTextField.setPreferredSize( new Dimension( parent.getWidth(),  20 ));
-        Point loc = new Point(0,0);
+        this.searchTextField.setPreferredSize( new Dimension( parent.getWidth() / 2,  SEARCH_BOX_HEIGHT ));
+        Point loc = new Point(parent.getWidth() /2, SEARCH_BOX_HEIGHT * -1 );
         SwingUtilities.convertPointToScreen( loc, parent );
         Rectangle size = kawapad.getVisibleRect();
         logInfo ( "" + size.height );
