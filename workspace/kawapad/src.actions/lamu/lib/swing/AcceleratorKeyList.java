@@ -2,6 +2,8 @@ package lamu.lib.swing;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -28,8 +30,15 @@ public class AcceleratorKeyList {
         action.putValue( Action.ACCELERATOR_KEY, keyStrokeList.get(0) );
         action.putValue( AcceleratorKeyList.ACCELERATOR_KEY_LIST, keyStrokeList );
     }
+    public static void putAcceleratorKeyList( Action action ) {
+        putAcceleratorKeyList( action, Collections.emptyList() );
+    }
+
     public static void putAcceleratorKeyList( Action action, String ... keyStrokeStrings ) {
         putAcceleratorKeyList( action, getKeyStrokeList( keyStrokeStrings ) );
+    }
+    public static void putAcceleratorKeyList( Action action, KeyStroke ... keyStrokes ) {
+        putAcceleratorKeyList( action, new ArrayList<>( Arrays.asList( keyStrokes )));
     }
     public static List<KeyStroke> getKeyStrokeList( String... keyStrokeStrings ) {
         ArrayList<KeyStroke> keyStrokeList = new ArrayList<>( keyStrokeStrings.length );

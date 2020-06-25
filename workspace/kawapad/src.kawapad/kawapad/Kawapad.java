@@ -1000,6 +1000,73 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     public final Action SEARCH_ACTION = new SearchAction( KAWAPAD_SEARCH );
 
 
+    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+	private static int getLineNumber(String[] lines, int position ) {
+		int accumulated =0;
+    	for ( int i=0; i<lines.length ; i++  ) {
+    		accumulated += lines[i].length();
+    		if ( position < accumulated  ) {
+    			return i;
+    		}
+    	}
+    	return -1;
+	}
+	private static int getPositionByLineNumber(String[] lines, int lineNumber ) {
+		int accumulated =0;
+    	for ( int i=0; i<lines.length ; i++  ) {
+    		if ( i == lineNumber ) {
+    			return accumulated;
+    		}
+    		accumulated += lines[i].length() + LINE_SEPARATOR.length();
+    	}
+    	return accumulated;
+	}
+
+    public static final String KAWAPAD_GOTO_LINE = "kawapad-goto-line-action"; 
+    class GotoLineAction extends TextAction2 {
+        public GotoLineAction(String name ) {
+            super(name);
+        }
+
+        public void actionPerformed(ActionEvent actionEvent) {
+        	String[] lines = getText().split("\n");
+        	
+        	int position = getCaret().getDot();
+        	int lineNumber = getLineNumber(lines, position );
+        	
+        	Object value = JOptionPane.showInputDialog( 
+        			null,  
+        			String.format( "Enter the line number ( 0 ~ %d )", lines.length ),
+        			"Go to Line", 
+        			JOptionPane.QUESTION_MESSAGE,
+        			null,
+        			null,
+        			lineNumber );
+        	
+        	if ( value != null ) {
+        		try {
+        			int newLineNumber = Integer.parseInt((String)value);
+        			if ( lines.length < newLineNumber ) {
+        				JOptionPane.showMessageDialog(null, "wrong number", "error", JOptionPane.WARNING_MESSAGE );
+        			} else {
+        				getCaret().setDot( getPositionByLineNumber(lines, newLineNumber ) );
+        			}
+        		} catch (NumberFormatException e ) {
+        			JOptionPane.showMessageDialog(null, "wrong number", "error", JOptionPane.WARNING_MESSAGE );
+        		}
+        	}
+        }
+
+        {
+            putValue( Action2.CAPTION, "Search" );
+            putValue( Action.MNEMONIC_KEY , (int) 's' );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "control K"  );
+        }
+    }
+    // INTEGRATED_ACTIONS (Wed, 11 Sep 2019 08:26:57 +0900)
+    @AutomatedActionField
+    public final Action GOTO_LINE_ACTION = new GotoLineAction( KAWAPAD_GOTO_LINE );
+
     
     //////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -1689,7 +1756,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         {
             putValue( Action2.CAPTION, "Interrupt" );
             putValue( Action.MNEMONIC_KEY , (int) 'i' );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl K" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "ctrl shift alt K" );
         }
     }
     
@@ -2966,7 +3033,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     public final Action SEARCH_NEXT_ACTION = new SearchTextAction( KAWAPAD_SEARCH_NEXT, +1, true ) {
         {
             putValue( Action2.CAPTION, "Unselect" );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "control DOWN",  "control 8" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "control DOWN", "control PERIOD",  "control 8" );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };
@@ -2978,7 +3045,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     public final Action SEARCH_PREV_ACTION = new SearchTextAction( KAWAPAD_SEARCH_PREV, -1, true  ) {
         {
             putValue( Action2.CAPTION, "Unselect" );
-            AcceleratorKeyList.putAcceleratorKeyList( this, "control UP", "control 3" );
+            AcceleratorKeyList.putAcceleratorKeyList( this, "control UP", "control COMMA", "control 3" );
 //              putValue( Action.MNEMONIC_KEY , (int) 'd' );
         }
     };

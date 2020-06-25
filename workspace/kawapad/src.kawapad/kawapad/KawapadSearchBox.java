@@ -10,11 +10,13 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
 
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JTextField;
 import javax.swing.Popup;
@@ -65,26 +67,44 @@ public class KawapadSearchBox implements ComponentListener, HierarchyListener {
         @Override
         public void keyPressed(KeyEvent e) {
             logInfo( "keyPressed" + e  );
-            switch ( e.getKeyCode() ) {
-                case KeyEvent.VK_ENTER :
-                    kawapad.requestFocus();
-                    break;
-                case KeyEvent.VK_UP :
-                    e.consume();
-                    kawapad.SEARCH_PREV_ACTION.actionPerformed( new ActionEvent(kawapad, (int) System.currentTimeMillis(), "" ) );
-                    Kawapad.highlightSpecificWord(kawapad, getText() );
-                    break;
-                case KeyEvent.VK_DOWN :
-                    e.consume();
-                    kawapad.SEARCH_NEXT_ACTION.actionPerformed( new ActionEvent(kawapad, (int) System.currentTimeMillis(), "" ) );
-                    Kawapad.highlightSpecificWord(kawapad, getText() );
-                    break;
-                case KeyEvent.VK_ESCAPE :
-                    KawapadSearchBox.this.hideSearchBox();
-                    break;
-
+            if ( (e.getModifiers() & InputEvent.CTRL_MASK) != 0 ) {
+            	switch ( e.getKeyCode() ) {
+            	case KeyEvent.VK_COMMA :
+            		e.consume();
+            		callAction(kawapad.SEARCH_PREV_ACTION);
+            		break;
+            	case KeyEvent.VK_PERIOD :
+            		e.consume();
+            		callAction(kawapad.SEARCH_NEXT_ACTION);
+            		break;
+            	case KeyEvent.VK_ESCAPE :
+            		KawapadSearchBox.this.hideSearchBox();
+            		break;
+            	}
+            } else {
+            	switch ( e.getKeyCode() ) {
+            	case KeyEvent.VK_ENTER :
+            		kawapad.requestFocus();
+            		break;
+            	case KeyEvent.VK_UP :
+            		e.consume();
+            		callAction(kawapad.SEARCH_PREV_ACTION);
+            		break;
+            	case KeyEvent.VK_DOWN :
+            		e.consume();
+            		callAction(kawapad.SEARCH_NEXT_ACTION);
+            		break;
+            	case KeyEvent.VK_ESCAPE :
+            		KawapadSearchBox.this.hideSearchBox();
+            		break;
+            	}
             }
         }
+
+		private void callAction(Action action) {
+			action.actionPerformed( new ActionEvent(kawapad, (int) System.currentTimeMillis(), "" ) );
+    		Kawapad.highlightSpecificWord( kawapad, getText() );
+		}
         @Override
         public void keyTyped(KeyEvent e) {
         }
