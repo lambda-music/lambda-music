@@ -21,6 +21,8 @@ final class DynamicPulsarProcedureFactory implements PulsarProcedureFactory {
     private final Procedure procedure;
     public DynamicPulsarProcedureFactory(Procedure procedure) {
         this.threadLocalInitializer = new LamuThreadLocalInitializer();
+        // Examine the specified procedure to check if it returns a procedure;
+        // otherwise, raise an exception.
         try {
             Object object = procedure.apply0();
             if (!(object instanceof Procedure) ) {

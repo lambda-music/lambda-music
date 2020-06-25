@@ -156,7 +156,7 @@ public class LamuApplication {
      * 
      * If the first element is not TRIGGER_FOR_ADVANCED_COMMAND_MODE, regard it as
      * the "default mode". Let's put the TRIGGER_FOR_ADVANCED_COMMAND_MODE and a
-     * propert default command name which fits to the condition.
+     * property default command name which fits to the condition.
      * 
      * @param arguments
      *    the target argument list
@@ -187,7 +187,7 @@ public class LamuApplication {
                 arguments.addAll( 0, Arrays.asList(  TRIGGER_FOR_ADVANCED_COMMAND_MODE, DEFAULT_COMMAND_EXEC ) );
                 
             } else if ( outNamedArgs.containsKey( "load" )) {
-                // --load is equivalent to --command=load. The purpos of this command is mainly
+                // --load is equivalent to --command=load. The purpose of this command is mainly
                 // to support shebang. Shebang accepts only one command-line argument with only one filename;
                 // shebang cannot accept command-line arguments more than two.
                 

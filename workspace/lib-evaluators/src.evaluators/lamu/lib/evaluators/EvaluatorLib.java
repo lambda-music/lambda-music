@@ -4,14 +4,18 @@ import java.io.File;
 import java.io.Reader;
 import java.util.Arrays;
 
+import gnu.expr.Language;
 import gnu.lists.LList;
 import gnu.mapping.Environment;
+import gnu.mapping.Procedure;
+import gnu.mapping.ProcedureN;
 import gnu.mapping.Values;
 import kawa.standard.Scheme;
 import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure0;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure0or1;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure1;
+import lamu.lib.threads.LamuThreadLocalInitializer;
 
 public class EvaluatorLib {
     public static final MultipleNamedProcedure0 currentEvaluatorProc = new CurrentEvaluatorProc(new String[] { "current-evaluator" });
@@ -129,6 +133,69 @@ public class EvaluatorLib {
         }
     }
 
+    /**
+	 * The `tether` makes the specified procedure to thread-independent. When a
+	 * thread creates a procedure and passes the procedure to another routine which
+	 * is occationally executed by other threads, the passed procedure is usually
+	 * not able to be executed correctly because those settings which are stored in
+	 * {@link ThreadLocal} are lost when the procedure comes to another thread.
+	 * Espacially the lost of the two critical setting in Kawa:
+	 * {@link Language#getDefaultLanguage()} and {@link Environment#getCurrent()} is
+	 * very problematic.
+	 * <p/>
+	 * This procedure wraps the specified procedure by another procedure which
+	 * restores the current {@link ThreadLocal} settings. The wrapped procedure is
+	 * thread-independent; therefore, it can be safely executed in other threads.
+	 * <p/>
+	 * This `tether` procedure creates a snapshot of the settings stored in the
+	 * {@link ThreadLocal} (which is at least known to this Evaluator) of the
+	 * current thread, then creates a wrapper procedure to restore the snapshot.
+	 * <p/>
+	 * If `tether` procedure is called with no argument, the result procedure simply
+	 * restores the created snapshots.
+	 */
+    public static final TetherProc tetherProc = new TetherProc(new String[] { "tether" });
+    private static final class TetheredProcedure extends ProcedureN {
+		private final Procedure procedure;
+		private final LamuThreadLocalInitializer initializer;
+		private final Environment env;
+		private final Language lang;
+		private TetheredProcedure(String name, Procedure procedure) {
+			super(name);
+			this.procedure = procedure;
+			this.initializer = new LamuThreadLocalInitializer();
+			this.env = Environment.getCurrent();
+			this.lang = Language.getDefaultLanguage();
+		}
+		@Override
+		public Object applyN(Object[] args) throws Throwable {
+			initializer.restore();
+			Environment.setCurrent(env);
+			Language.setCurrentLanguage(lang);
+			if ( procedure == null ) {
+				return Values.empty;
+			} else {
+				return procedure.applyN(args);
+			}
+		}
+	}
+    public static final class TetherProc extends MultipleNamedProcedure0or1 {
+		public TetherProc(String[] names) {
+            super(names);
+        }
+		@Override
+		public Object apply0() throws Throwable {
+			return new TetheredProcedure( "tethered", null );
+		}
+        @Override
+        public Object apply1( Object arg ) throws Throwable {
+        	Procedure procedure = (Procedure) arg;
+			String name = procedure.getName();
+			if ( name == null ) name = "procedure";
+			return new TetheredProcedure("tethered-" + name, procedure);
+        }
+    }
+
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // Scheme Initializer 
@@ -150,5 +217,6 @@ public class EvaluatorLib {
         SchemeValues.defineLambda( env, useRead );
         SchemeValues.defineLambda( env, currentThreads );
         SchemeValues.defineLambda( env, abortEvaluatorProc );
+        SchemeValues.defineLambda( env, tetherProc );
     }
 }

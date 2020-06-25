@@ -39,7 +39,6 @@ import metro.MetroTrackManipulator;
 import metro.MetroTrackManipulatorBasic;
 import metro.MetroTrackSelector;
 import metro.MetroTrackSelectorBasic;
-import metro.MetroTrackSelectorFactory;
 import metro.MetroTrackSynchronizer;
 import metro.MetroTrackSynchronizerBasic;
 import metro.MetroTrackSynchronizerFactory;
@@ -387,15 +386,14 @@ public interface PulsarLib {
             if ( args.length < 2 )
                 throw new IllegalArgumentException( "the number of arguments < 2 " );
             
-            Object key = args[0];
-            
-            String stringKey = SchemeValues.anyToString(key);
-            
-            MetroTrackSelectorFactory factory = 
-                MetroTrackSelectorBasic.getFactoryMap().getFactory(stringKey);
-            
-            return factory.create( Arrays.copyOfRange(args, 1, args.length ));
+            String key = SchemeValues.anyToString(args[0]);
+            Object[] values = Arrays.copyOfRange(args, 1, args.length );
+            return readParamSeltProc(key, values);
         }
+		private static MetroTrackSelector readParamSeltProc(String key, Object[] values) {
+			return MetroTrackSelectorBasic.getFactoryMap().getFactory(key).create(values);
+		}
+        
         public static Object readParamSelt2old(Object key, Object value) {
             if ( SELT_KEY_NAME.equals( key ) ) {
                 // name
@@ -441,6 +439,12 @@ public interface PulsarLib {
                     return readParamSelt2(args);
             }
         }
+
+        // ADDED (Thu, 25 Jun 2020 23:56:05 +0900) >>>
+        public static MetroTrackSelector readParamGett( Object[] args ) {
+        	return readParamSeltProc("name", args);
+        }
+        // ADDED (Thu, 25 Jun 2020 23:56:05 +0900) <<<
 
         
         public static MetroTrackSynchronizer readParamSynct1(Object value) {
@@ -1502,7 +1506,6 @@ public interface PulsarLib {
             }
         }
         
-        
         public final Procedure getTrackProc = new GetTrackProc(new String[] { "get-track", "gett" });
         @Override
         public Procedure getGetTrack() { return getTrackProc; }
@@ -1513,11 +1516,12 @@ public interface PulsarLib {
 
             @Override
             public Object applyN(Object[] args) throws Throwable {
-                return readParamSelt(args);
+                // ADDED (Thu, 25 Jun 2020 23:56:05 +0900) >>>
+                return readParamGett(args);
+                // ADDED (Thu, 25 Jun 2020 23:56:05 +0900) <<<
             }
         }
 
-        
         public static final GetTrackDoc getTrackDoc = new GetTrackDoc();
         public static final class GetTrackDoc extends PulsarProceduralDescriptiveDoc {
             {
@@ -1535,8 +1539,6 @@ public interface PulsarLib {
                                     + THROWS_AN_ERROR_IF_NOT_OPEN );
             }
         }
-        
-        
         
         
         public final Procedure getTrackPositionProc = new GetTrackPositionProc(new String[] { "get-track-position", "gettp" });
