@@ -2,88 +2,37 @@ Lamu API Reference
 ======================
 
 
-PRINT-STACK-TRACE
+NEWT
 ====================
 
 #### SYNOPSIS ####
-    (print-stack-trace)::void
+    (newt [notations::procedure/(list notation)]...)::MetroTrack
 
 ### DESCRIPTION ###
-||print-stack-trace|| returns the current stack trace as a string.
+newt creates a new track. A track is a basic unit of music in Pulsar music
+sequencer. A track contains a procedure to create a notation list. When a user added a
+track to the sequencer, the sequencer asks what to play next to the track. The
+sequencer plays it and asks to the track again when it finished to play the notation
+list. The length of a notation list which a track creates is usually one measure; but
+it can be any length. The sequencer can have multiple tracks. There is no limit on
+maximum number of tracks. It is necessary to add the track which is created by newt
+procedure to the sequencer by \(put-track\) procedure. See \(help put-track\) for further
+information. In case the current sequencer system has not established any connection to the
+JACK, it throws an exception.
 
 
 
 --------------------------------------------------------
 
-DISPLAY-WARN
+NEW-RECORDING-TRACK
 ====================
 
 #### SYNOPSIS ####
-    (display-warn value::any)::void
+    (new-recording-track|rect [notations::procedure/(list notation)]...)::MetroTrack
 
 ### DESCRIPTION ###
-||display-warn|| output the specified value to the standard error stream.
-
-
-
---------------------------------------------------------
-
-NEWLINE-WARN
-====================
-
-#### SYNOPSIS ####
-    (newline-warn)::void
-
-### DESCRIPTION ###
-||newline-warn|| output a line terminator to the standard error stream.
-
-
-
---------------------------------------------------------
-
-TYPEOF
-====================
-
-#### SYNOPSIS ####
-    (typeof value::any)::string
-
-### DESCRIPTION ###
-||typeof|| returns a Java class name of the specified value. In case the
-specified value is a ||null|| of Java, this procedure returns "null" as a string value.
-
-
-
---------------------------------------------------------
-
-RANDOM
-====================
-
-#### SYNOPSIS ####
-    (random|rnd [range::number=1])::number
-
-### DESCRIPTION ###
-||random|| generates a random number. This procedure adopts Mersenne Twister a
-random number generating algorithm. If an argument \[range\] is specified, the return
-value will be within 0<= x <\[range\]. If the argument is omitted, the range value
-defaults to 1.
-
-
-
---------------------------------------------------------
-
-LUCK
-====================
-
-#### SYNOPSIS ####
-    (luck [probability::number=0.5])::boolean
-
-### DESCRIPTION ###
-||luck|| is a procedure that returns a random boolean value. The first
-argument is the value of probability where the larger value causes the more probability
-of returning \#t. When the specified value is equals or less than zero, the
-returning value is always \#f. When the specified value is equals or larger than one the
-returning value is always \#t. The only parameter can be omitted and in that case the
-default value one is applied.
+new-recording-track creates a new track. In case the current sequencer system
+has not established any connection to the JACK, it throws an exception.
 
 
 
@@ -449,22 +398,6 @@ JACK, it throws an exception.
 
 --------------------------------------------------------
 
-GET-TRACK
-====================
-
-#### SYNOPSIS ####
-    (get-track|gett [track-spec::any]...)::void
-
-### DESCRIPTION ###
-||get-track|| retrieves multiple tracks which are specified as track-spec
-arguments. The tracks are stored in a linked list. See \(help about-track-spec\). In case
-the current sequencer system has not established any connection to the JACK, it
-throws an exception.
-
-
-
---------------------------------------------------------
-
 GET-TRACK-POSITION
 ====================
 
@@ -498,42 +431,6 @@ selected to the result.
 
 In case the current sequencer system has not established any connection to the
 JACK, it throws an exception.
-
-
-
---------------------------------------------------------
-
-NEW-TRACK
-====================
-
-#### SYNOPSIS ####
-    (new-track|newt [notations::procedure/(list notation)]...)::MetroTrack
-
-### DESCRIPTION ###
-new-track creates a new track. A track is a basic unit of music in Pulsar music
-sequencer. A track contains a procedure to create a notation list. When a user added a
-track to the sequencer, the sequencer asks what to play next to the track. The
-sequencer plays it and asks to the track again when it finished to play the notation
-list. The length of a notation list which a track creates is usually one measure; but
-it can be any length. The sequencer can have multiple tracks. There is no limit on
-maximum number of tracks. It is necessary to add the track which is created by
-new-track procedure to the sequencer by \(put-track\) procedure. See \(help put-track\)
-for further information. In case the current sequencer system has not established
-any connection to the JACK, it throws an exception.
-
-
-
---------------------------------------------------------
-
-NEW-RECORDING-TRACK
-====================
-
-#### SYNOPSIS ####
-    (new-recording-track|rect [notations::procedure/(list notation)]...)::MetroTrack
-
-### DESCRIPTION ###
-new-recording-track creates a new track. In case the current sequencer system
-has not established any connection to the JACK, it throws an exception.
 
 
 
@@ -611,60 +508,104 @@ length which unit is a measure-length.
 
 --------------------------------------------------------
 
-NOTIFY-TRACK-CHANGE
+GET-TRACK
 ====================
 
 #### SYNOPSIS ####
-    (notify-track-change|nott)::void
+    (get-track|gett [track-spec::any]...)::void
 
 ### DESCRIPTION ###
-notifies the sequencer that the track was added/deleted. When any tracks are
-added/deleted on the sequencer, the modification is not immediately reflects to the current
-state of the sequencer. After a series of adding/deleting tracks is performed by a
-user,the the user is mandated to call this procedure. This procedure notifies the
-sequencer that some tracks. And calling this procedure guarantees the tracks
-added/deleted on the sequencer are properly processed immediately.
+||get-track|| retrieves multiple tracks which are specified as track-spec
+arguments. The tracks are stored in a linked list. See \(help about-track-spec\). In case
+the current sequencer system has not established any connection to the JACK, it
+throws an exception.
 
 
 
 --------------------------------------------------------
 
-LIST-TRACKS
+PRINT-STACK-TRACE
 ====================
 
 #### SYNOPSIS ####
-    (list-tracks|lstt)::(list track ...)
+    (print-stack-trace)::void
 
 ### DESCRIPTION ###
-||list-tracks|| retrieves all tracks on the current sequencer. The order of
-the tracks in the result of this procedure follows the first-in-last-out
-manner. That is, \(car \(list-tracks\)\) always returns the last added track.
+||print-stack-trace|| returns the current stack trace as a string.
 
 
 
 --------------------------------------------------------
 
-CLEAR-TRACKS
+DISPLAY-WARN
 ====================
 
 #### SYNOPSIS ####
-    (clear-tracks|clet)::void
+    (display-warn value::any)::void
 
 ### DESCRIPTION ###
-||clear-tracks|| removes all tracks on the current sequencer immediately.
+||display-warn|| output the specified value to the standard error stream.
 
 
 
 --------------------------------------------------------
 
-GET-MAIN-TRACK
+NEWLINE-WARN
 ====================
 
 #### SYNOPSIS ####
-    (get-main-track|getmt)::void
+    (newline-warn)::void
 
 ### DESCRIPTION ###
-||get-main-track|| retrieves the reference to the current main track.
+||newline-warn|| output a line terminator to the standard error stream.
+
+
+
+--------------------------------------------------------
+
+TYPEOF
+====================
+
+#### SYNOPSIS ####
+    (typeof value::any)::string
+
+### DESCRIPTION ###
+||typeof|| returns a Java class name of the specified value. In case the
+specified value is a ||null|| of Java, this procedure returns "null" as a string value.
+
+
+
+--------------------------------------------------------
+
+RANDOM
+====================
+
+#### SYNOPSIS ####
+    (random|rnd [range::number=1])::number
+
+### DESCRIPTION ###
+||random|| generates a random number. This procedure adopts Mersenne Twister a
+random number generating algorithm. If an argument \[range\] is specified, the return
+value will be within 0<= x <\[range\]. If the argument is omitted, the range value
+defaults to 1.
+
+
+
+--------------------------------------------------------
+
+LUCK
+====================
+
+#### SYNOPSIS ####
+    (luck [probability::number=0.5])::boolean
+
+### DESCRIPTION ###
+||luck|| is a procedure that returns a random boolean value. The first
+argument is the value of probability where the larger value causes the more probability
+of returning \#t. When the specified value is equals or less than zero, the
+returning value is always \#f. When the specified value is equals or larger than one the
+returning value is always \#t. The only parameter can be omitted and in that case the
+default value one is applied.
 
 
 

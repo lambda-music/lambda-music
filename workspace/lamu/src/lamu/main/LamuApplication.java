@@ -44,6 +44,7 @@ import pulsar.Pulsar;
 import pulsar.PulsarLib;
 import pulsar.PulsarLib_Notes;
 import pulsar.PulsarLib_Procs;
+import pulsar.PulsarLib_Static;
 
 public class LamuApplication {
     static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
@@ -70,6 +71,7 @@ public class LamuApplication {
         ForceLoadingClass.force(PulsarGuiUtils.class);
         ForceLoadingClass.force(PulsarLib_Procs.class);
         ForceLoadingClass.force(PulsarLib_Notes.class);
+        ForceLoadingClass.force(PulsarLib_Static.class );
         ForceLoadingClass.force(PulsarLib.PulsarLibImplementation.class);
         ForceLoadingClass.force(PulsarLib.class);
         ForceLoadingClass.force(lamu.help.class );

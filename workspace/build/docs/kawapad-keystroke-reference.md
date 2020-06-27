@@ -11,6 +11,7 @@ Kawapad Keystroke Reference
 |unselect|Deselect|    |
 |paste-from-clipboard|Paste|  CTRL-V  |
 |kawapad-search-action|Search|  CTRL-L  |
+|kawapad-goto-line-action|Search|  CTRL-K  |
 |caret-backward|caret-backward|  LEFT, CTRL-B  |
 |caret-forward|caret-forward|  RIGHT, CTRL-F  |
 |selection-backward|selection-backward|  SHIFT-LEFT, SHIFT-CTRL-B  |
@@ -30,7 +31,7 @@ Kawapad Keystroke Reference
 |kawapad-evaluate|Select, Evaluate and Replace|  SHIFT-CTRL-ENTER  |
 |kawapad-evaluate|Evaluate|  CTRL-E  |
 |kawapad-run|Run|  CTRL-R  |
-|kawapad-interrupt|Interrupt|  CTRL-K  |
+|kawapad-interrupt|Interrupt|  SHIFT-CTRL-ALT-K  |
 |kawapad-simple-parenthesis-jump-left|Go to the Previous Parenthesis|  CTRL-ALT-UP, CTRL-ALT-P  |
 |kawapad-simple-parenthesis-jump-right|Go to the Next Parenthesis|  CTRL-ALT-DOWN, CTRL-ALT-N  |
 |kawapad-parenthesis-sel-jump-left|Lookup the Pair of Parenthesis on the Left and Select|  SHIFT-ALT-UP, SHIFT-ALT-P  |
@@ -62,8 +63,8 @@ Kawapad Keystroke Reference
 |kawapad-close-parenthesis|Close Parenthesis|    |
 |delete-next|Delete with the Corresponding Parenthesis|  DELETE  |
 |delete-previous|Delete Previous with the Corresponding Parenthesis|  BACK_SPACE  |
-|kawapad-search-next|Unselect|  CTRL-DOWN, CTRL-8  |
-|kawapad-search-prev|Unselect|  CTRL-UP, CTRL-3  |
+|kawapad-search-next|Unselect|  CTRL-DOWN, CTRL-PERIOD, CTRL-8  |
+|kawapad-search-prev|Unselect|  CTRL-UP, CTRL-COMMA, CTRL-3  |
 |kawapad-open-new|Open New|    |
 |kawapad-open-file|Open|  CTRL-O  |
 |kawapad-save-file|Save|  CTRL-S  |

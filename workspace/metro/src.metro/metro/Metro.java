@@ -113,17 +113,17 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
     private final ArrayList<MetroMidiEvent> finalOutputMidiEvents1 = new ArrayList<MetroMidiEvent>(1024);
     private final ArrayList<MetroTrack> removingTracksSnapshot1 = new ArrayList<MetroTrack>(256);
 
-    private volatile MetroTrack mainTrack = null; 
-    /**
-     * A field which tracks a reference to the main track by best effort.
-     * This field occasionally points to an outdated main track.
-     * This field is not used by the internal process; This is intended to
-     * be used as a cache of the referencde to the main track in order to 
-     * avoid searching the main track frequently.  
-     */
-    public MetroTrack getMainTrack() {
-        return mainTrack;
-    }
+//    private volatile MetroTrack mainTrack = null; 
+//    /**
+//     * A field which tracks a reference to the main track by best effort.
+//     * This field occasionally points to an outdated main track.
+//     * This field is not used by the internal process; This is intended to
+//     * be used as a cache of the referencde to the main track in order to 
+//     * avoid searching the main track frequently.  
+//     */
+//    public MetroTrack getMainTrack() {
+//        return mainTrack;
+//    }
     
     // zero means that to get the current bpm from Jack Transport.
     private double beatsPerMinute = 60;
@@ -933,6 +933,9 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
     @Override
     public void referTracks( List<MetroTrackSelector> trackSelectors, List<MetroTrack> selectedTracks ) {
         MetroTrackSelector.executeSelector(this, trackSelectors, selectedTracks);
+    }
+    public void referPorts( List<MetroPortSelector> portSelectors, List<MetroPort> selectedInputPorts , List<MetroPort> selectedOutputPorts ) {
+    	MetroPortSelector.executeSelector( this, portSelectors, selectedInputPorts , selectedOutputPorts );
     }
     
     @Override

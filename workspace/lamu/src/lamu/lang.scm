@@ -9,5 +9,7 @@
   (import (lamu notes))
   (import (lamu music))
   (import (lamu song))
-  (import (lamu evaluators)))
+  (import (lamu evaluators))
   (import (lamu pulsar))
+  (import (pulsar PulsarLib_Static ))
+  )

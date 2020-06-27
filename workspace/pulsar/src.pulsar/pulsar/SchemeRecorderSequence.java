@@ -1,6 +1,8 @@
 package pulsar;
 
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -17,9 +19,10 @@ import metro.MetroCollector;
 import metro.MetroException;
 import metro.MetroMidiEvent;
 import metro.MetroPort;
+import metro.MetroPortSelector;
 import metro.MetroReadable;
-import metro.MetroTrack;
 import metro.MetroSequence;
+import metro.MetroTrack;
 import metro.SimpleMetroEventBuffer;
 
 
@@ -29,27 +32,23 @@ public class SchemeRecorderSequence implements MetroSequence, MetroReadable, Inv
     static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }
     static void logWarn (String msg             ) { LOGGER.log(Level.WARNING,  msg      ); }
 
-    public static SchemeRecorderSequence create( 
-        List<MetroPort> inputPorts, List<MetroPort> outputPorts, double recordLength, boolean loop ) {
-        return new SchemeRecorderSequence( inputPorts, outputPorts, recordLength, loop );
+    public static SchemeRecorderSequence create( MetroPortSelector portSelector, double recordLength, boolean loop ) {
+        return new SchemeRecorderSequence( portSelector, recordLength, loop );
     }
 
-    final SchemeSimpleMidiReceiver receiver;
-    private List<MetroPort>  inputPorts;
-    private List<MetroPort>  outputPorts;
+    private MetroPortSelector portSelector= null;
+    private SchemeSimpleMidiReceiver receiver;
+    private final List<MetroPort>  inputPorts = new ArrayList<MetroPort>();
+    private final List<MetroPort>  outputPorts = new ArrayList<MetroPort>();;
     private double recordLength;
     @SuppressWarnings("unused")
     private boolean loop;
     private volatile LList notations = EmptyList.emptyList;
-    
-    public SchemeRecorderSequence( List<MetroPort> inputPorts, List<MetroPort> outputPorts, double recordLength, boolean loop ) {
-        this.inputPorts = inputPorts;
-        this.outputPorts = outputPorts;
+
+    public SchemeRecorderSequence( MetroPortSelector portSelector, double recordLength, boolean loop ) {
+		this.portSelector = portSelector;
         this.recordLength = recordLength;
         this.loop = loop;
-        this.receiver = new SchemeSimpleMidiReceiver(); 
-        if ( 0 < outputPorts.size() )
-            this.receiver.setPort( outputPorts.get(0) );
     }
     public List<MetroPort> getInputPorts() {
         return inputPorts;
@@ -69,6 +68,15 @@ public class SchemeRecorderSequence implements MetroSequence, MetroReadable, Inv
             throw new RuntimeException( e );
         }
     }
+	boolean initialized=false;
+    private void init( Metro metro, MetroTrack track ) {
+    	metro.referPorts( Arrays.asList(this.portSelector), this.inputPorts, this.outputPorts );
+    	this.receiver = new SchemeSimpleMidiReceiver(); 
+        if ( 0 < outputPorts.size() )
+            this.receiver.setPort( outputPorts.get(0) );
+        
+        this.initialized = true;
+	}
 
     private boolean recording = true;
     public void setRecording(boolean recording) {
@@ -96,6 +104,9 @@ public class SchemeRecorderSequence implements MetroSequence, MetroReadable, Inv
         long nframes,
         long measureLengthInFrames, List<MetroMidiEvent> inputMidiEvents, List<MetroMidiEvent> outputMidiEvents, List<MetroTrack> tracks, List<MetroTrack> registeringTracks, List<MetroTrack> finalizingTracks, List<MetroTrack> unregisteringTracks) throws MetroException 
     {
+		if ( ! initialized ) 
+    		init( metro, track );
+    	
         try {
             long currentPos;
             if ( 0 < this.recordLength ) {
@@ -146,7 +157,8 @@ public class SchemeRecorderSequence implements MetroSequence, MetroReadable, Inv
     }
 
     
-    static final Symbol recordingOn  = Symbol.valueOf( "rec-on" );
+
+	static final Symbol recordingOn  = Symbol.valueOf( "rec-on" );
     static final Symbol recordingOff = Symbol.valueOf( "rec-off" );
     @Override
     public Object invoke(Object... args) {

@@ -6,9 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -74,26 +72,26 @@ public interface PulsarLib {
     Procedure getGetBarsPerSecond();
     Procedure getRewind();
     Procedure getExecuteTrack();
-    Procedure getGetTrack();
+//    Procedure getGetTrack();
     Procedure getGetTrackPosition();
-    Procedure getManipulateTrack();
-    Procedure getSelectTrack();
-    Procedure getSyncTrack();
-    Procedure getNewTrack();
-    Procedure getNewRecordingTrack();
-    Procedure getPutTrack();
-    Procedure getRemoveTrack();
-    Procedure getReplaceTrack();
-    Procedure getNotifyTrackChange();
-    Procedure getListTracks();
-    Procedure getClearTracks();
-    Procedure getGetMainTrack();
+//    Procedure getManipulateTrack();
+//    Procedure getSelectTrack();
+//    Procedure getSyncTrack();
+//    Procedure getNewTrack();
+//    Procedure getNewRecordingTrack();
+//    Procedure getPutTrack();
+//    Procedure getRemoveTrack();
+//    Procedure getReplaceTrack();
+//    Procedure getNotifyTrackChange();
+//    Procedure getListTracks();
+//    Procedure getClearTracks();
+//    Procedure getGetMainTrack();
     public static abstract interface PulsarLibDelegator extends PulsarLib {
         abstract PulsarLib getPulsarLibImplementation();
-        @Override
-        default Procedure getGetMainTrack() {
-            return getPulsarLibImplementation().getGetMainTrack();
-        }
+//        @Override
+//        default Procedure getGetMainTrack() {
+//            return getPulsarLibImplementation().getGetMainTrack();
+//        }
         @Override
         public default Procedure getGetCurrentPulsar() {
             return getPulsarLibImplementation().getGetCurrentPulsar();
@@ -103,49 +101,51 @@ public interface PulsarLib {
             return getPulsarLibImplementation().getIsCurrentPulsarPresent();
         }
 
-        public default Procedure getClearTracks() {
-            return getPulsarLibImplementation().getClearTracks();
-        }
+//        obsolete
+//        public default Procedure getClearTracks() {
+//            return getPulsarLibImplementation().getClearTracks();
+//        }
 
-        public default Procedure getListTracks() {
-            return getPulsarLibImplementation().getListTracks();
-        }
+//        obsolete
+//        public default Procedure getListTracks() {
+//            return getPulsarLibImplementation().getListTracks();
+//        }
 
-        public default Procedure getNotifyTrackChange() {
-            return getPulsarLibImplementation().getNotifyTrackChange();
-        }
+//        public default Procedure getNotifyTrackChange() {
+//            return getPulsarLibImplementation().getNotifyTrackChange();
+//        }
 
-        public default Procedure getPutTrack() {
-            return getPulsarLibImplementation().getPutTrack();
-        }
-        public default Procedure getRemoveTrack() {
-            return getPulsarLibImplementation().getRemoveTrack();
-        }
-        public default Procedure getReplaceTrack() {
-            return getPulsarLibImplementation().getPutTrack();
-        }
-        public default Procedure getNewRecordingTrack() {
-            return getPulsarLibImplementation().getNewRecordingTrack();
-        }
-        public default Procedure getManipulateTrack() {
-            return getPulsarLibImplementation().getManipulateTrack();
-        }
-        public default Procedure getSelectTrack() {
-            return getPulsarLibImplementation().getSelectTrack();
-        }
-        public default Procedure getSyncTrack() {
-            return getPulsarLibImplementation().getSyncTrack();
-        }
+//        public default Procedure getPutTrack() {
+//            return getPulsarLibImplementation().getPutTrack();
+//        }
+//        public default Procedure getRemoveTrack() {
+//            return getPulsarLibImplementation().getRemoveTrack();
+//        }
+//        public default Procedure getReplaceTrack() {
+//            return getPulsarLibImplementation().getReplaceTrack();
+//        }
+//        public default Procedure getNewRecordingTrack() {
+//            return getPulsarLibImplementation().getNewRecordingTrack();
+//        }
+//        public default Procedure getManipulateTrack() {
+//            return getPulsarLibImplementation().getManipulateTrack();
+//        }
+//        public default Procedure getSelectTrack() {
+//            return getPulsarLibImplementation().getSelectTrack();
+//        }
+//        public default Procedure getSyncTrack() {
+//            return getPulsarLibImplementation().getSyncTrack();
+//        }
 
-        public default Procedure getNewTrack() {
-            return getPulsarLibImplementation().getNewTrack();
-        }
+//        public default Procedure getNewTrack() {
+//            return getPulsarLibImplementation().getNewTrack();
+//        }
         default Procedure getExecuteTrack() {
             return getPulsarLibImplementation().getExecuteTrack();
         }
-        public default Procedure getGetTrack() {
-            return getPulsarLibImplementation().getGetTrack();
-        }
+//        public default Procedure getGetTrack() {
+//            return getPulsarLibImplementation().getGetTrack();
+//        }
         public default Procedure getGetTrackPosition() {
             return getPulsarLibImplementation().getGetTrackPosition();
         }
@@ -557,11 +557,11 @@ public interface PulsarLib {
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         
 
-        private static final String THROWS_AN_ERROR_IF_NOT_OPEN = 
+        static final String THROWS_AN_ERROR_IF_NOT_OPEN = 
             "In case the current sequencer system has not established any connection to the JACK, " + 
                 "it throws an exception. ";
 
-        private static final String ALTERS_THE_CURRENT_STATE =
+        static final String ALTERS_THE_CURRENT_STATE =
             "This procedure alters the current sequencer system's state. ";
         
         public static abstract class PulsarProceduralDescriptiveDoc extends LamuDocument {
@@ -1506,40 +1506,40 @@ public interface PulsarLib {
             }
         }
         
-        public final Procedure getTrackProc = new GetTrackProc(new String[] { "get-track", "gett" });
-        @Override
-        public Procedure getGetTrack() { return getTrackProc; }
-        public final class GetTrackProc extends MultipleNamedProcedureN {
-            public GetTrackProc(String[] names) {
-                super(names);
-            }
-
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                // ADDED (Thu, 25 Jun 2020 23:56:05 +0900) >>>
-                return readParamGett(args);
-                // ADDED (Thu, 25 Jun 2020 23:56:05 +0900) <<<
-            }
-        }
-
-        public static final GetTrackDoc getTrackDoc = new GetTrackDoc();
-        public static final class GetTrackDoc extends PulsarProceduralDescriptiveDoc {
-            {
-                setCategory( Pulsar.DOCS_ID );
-                setNames( "get-track", "gett" );
-                setParameterDescription( "[track-spec]..." );
-                addParameter( 0, "track-spec", "any", null, true, "a subprocedure to execute by this procedure. See (help about-track-spec). " ); 
-            
-                setReturnValueDescription( "::void" );
-                setShortDescription( "||<name/>|| retrieves multiple tracks which are specified as track-spec arguments. " );
-                setLongDescription( ""
-                                    + "The tracks are stored in a linked list. "
-                                    + "See (help about-track-spec). "
-                                    + "" 
-                                    + THROWS_AN_ERROR_IF_NOT_OPEN );
-            }
-        }
-        
+//        public static final Procedure getTrackProc = new GetTrackProc(new String[] { "get-track", "gett" });
+//        @Override
+//        public Procedure getGetTrack() { return getTrackProc; }
+//        public static final class GetTrackProc extends MultipleNamedProcedureN {
+//            public GetTrackProc(String[] names) {
+//                super(names);
+//            }
+//
+//            @Override
+//            public Object applyN(Object[] args) throws Throwable {
+//                // ADDED (Thu, 25 Jun 2020 23:56:05 +0900) >>>
+//                return readParamGett(args);
+//                // ADDED (Thu, 25 Jun 2020 23:56:05 +0900) <<<
+//            }
+//        }
+//
+//        public static final GetTrackDoc getTrackDoc = new GetTrackDoc();
+//        public static final class GetTrackDoc extends PulsarProceduralDescriptiveDoc {
+//            {
+//                setCategory( Pulsar.DOCS_ID );
+//                setNames( "get-track", "gett" );
+//                setParameterDescription( "[track-spec]..." );
+//                addParameter( 0, "track-spec", "any", null, true, "a subprocedure to execute by this procedure. See (help about-track-spec). " ); 
+//            
+//                setReturnValueDescription( "::void" );
+//                setShortDescription( "||<name/>|| retrieves multiple tracks which are specified as track-spec arguments. " );
+//                setLongDescription( ""
+//                                    + "The tracks are stored in a linked list. "
+//                                    + "See (help about-track-spec). "
+//                                    + "" 
+//                                    + THROWS_AN_ERROR_IF_NOT_OPEN );
+//            }
+//        }
+//        
         
         public final Procedure getTrackPositionProc = new GetTrackPositionProc(new String[] { "get-track-position", "gettp" });
         @Override
@@ -1601,165 +1601,93 @@ public interface PulsarLib {
             }
         }
 
-        public final Procedure manipulateTrackProc = new ManipulateTrackProc( new String[] { "manipulate-track", "mant" });
-        @Override
-        public Procedure getManipulateTrack() { return manipulateTrackProc; }
-        public static final class ManipulateTrackProc extends MultipleNamedProcedureN {
-            public ManipulateTrackProc(String[] names) {
-                super(names);
-            }
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                switch ( args.length ) {
-                    case 0:
-                        return readParamMant( "idle" );
-                    case 1:
-                        return readParamMant( SchemeValues.anyToString( args[0] ) );
-                    default :
-                        return readParamMant( 
-                            SchemeValues.anyToString( args[0] ),
-                            Arrays.copyOfRange(args, 1, args.length ) );
-                }
-            }
-        }
+//        public final Procedure manipulateTrackProc = new ManipulateTrackProc( new String[] { "manipulate-track", "mant" });
+//        @Override
+//        public Procedure getManipulateTrack() { return manipulateTrackProc; }
+//        public static final class ManipulateTrackProc extends MultipleNamedProcedureN {
+//            public ManipulateTrackProc(String[] names) {
+//                super(names);
+//            }
+//            @Override
+//            public Object applyN(Object[] args) throws Throwable {
+//                switch ( args.length ) {
+//                    case 0:
+//                        return readParamMant( "idle" );
+//                    case 1:
+//                        return readParamMant( SchemeValues.anyToString( args[0] ) );
+//                    default :
+//                        return readParamMant( 
+//                            SchemeValues.anyToString( args[0] ),
+//                            Arrays.copyOfRange(args, 1, args.length ) );
+//                }
+//            }
+//        }
 
-        public final Procedure selectTrackProc = new SelectTrackProc( new String[] { "select-track", "selt" });
-        @Override
-        public Procedure getSelectTrack() { return selectTrackProc; }
-        public static final class SelectTrackProc extends MultipleNamedProcedureN {
-            public SelectTrackProc(String[] names) {
-                super(names);
-            }
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                return readParamSelt(args);
-            }
-        }
+//        public final Procedure selectTrackProc = new SelectTrackProc( new String[] { "select-track", "selt" });
+//        @Override
+//        public Procedure getSelectTrack() { return selectTrackProc; }
+//        public static final class SelectTrackProc extends MultipleNamedProcedureN {
+//            public SelectTrackProc(String[] names) {
+//                super(names);
+//            }
+//            @Override
+//            public Object applyN(Object[] args) throws Throwable {
+//                return readParamSelt(args);
+//            }
+//        }
 
         
-        public final Procedure syncTrackProc = new SyncTrackProc( new String[] { "sync-track", "synct" });
-        @Override
-        public Procedure getSyncTrack() { return syncTrackProc; }
-        public static final class SyncTrackProc extends MultipleNamedProcedureN {
-            public SyncTrackProc(String[] names) {
-                super(names);
-            }
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                return readParamSynct(args);
-            }
-        }
+//        public final Procedure syncTrackProc = new SyncTrackProc( new String[] { "sync-track", "synct" });
+//        @Override
+//        public Procedure getSyncTrack() { return syncTrackProc; }
+//        public static final class SyncTrackProc extends MultipleNamedProcedureN {
+//            public SyncTrackProc(String[] names) {
+//                super(names);
+//            }
+//            @Override
+//            public Object applyN(Object[] args) throws Throwable {
+//                return readParamSynct(args);
+//            }
+//        }
 
-        public final Procedure newTrackProc = new NewTrackProc( new String[] { "new-track", "newt" });
-        @Override
-        public Procedure getNewTrack() { return newTrackProc; }
-        public static final class NewTrackProc extends MultipleNamedProcedureN {
-            public NewTrackProc(String[] names) {
-                super(names);
-            }
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                return readParamNewTrack(args);
-            }
-        }
+//        public static final Procedure newTrackProc = new NewTrackProc( new String[] { "new-track", "newt" });
+//        @Override
+//        public Procedure getNewTrack() { return newTrackProc; }
+//        public static final class NewTrackProc extends MultipleNamedProcedureN {
+//            public NewTrackProc(String[] names) {
+//                super(names);
+//            }
+//            @Override
+//            public Object applyN(Object[] args) throws Throwable {
+//                return readParamNewTrack(args);
+//            }
+//        }
+//
+//        public static final NewTrackDoc newTrackDoc = new NewTrackDoc();
+//        public static final class NewTrackDoc extends PulsarProceduralDescriptiveDoc {
+//            {
+//                setCategory( Pulsar.DOCS_ID );
+//                setNames( "new-track" , "newt" );
+//                setParameterDescription( "[procedure/(list notation)]..." );
+//                addParameter( 0, "notations", "procedure/(list notation)", null, true, "The contents of the track. " );
+//                setReturnValueDescription( "::MetroTrack" );
+//                setShortDescription( "<name/> creates a new track." );
+//                setLongDescription( ""
+//                                    + "A track is a basic unit of music in Pulsar music sequencer. "
+//                                    + "A track contains a procedure to create a notation list. "
+//                                    + "When a user added a track to the sequencer, "
+//                                    + "the sequencer asks what to play next to the track. "
+//                                    + "The sequencer plays it and asks to the track again when it finished to play the notation list. "
+//                                    + "The length of a notation list which a track creates is usually one measure; "
+//                                    + "but it can be any length. "
+//                                    + "The sequencer can have multiple tracks. There is no limit on maximum number of tracks. "
+//                                    + "It is necessary to add the track which is created by <name/> procedure to the "
+//                                    + "sequencer by (put-track) procedure. See (help put-track) for further information. "
+//                                    + "" 
+//                                    + THROWS_AN_ERROR_IF_NOT_OPEN );
+//            }
+//        }
 
-        public static final NewTrackDoc newTrackDoc = new NewTrackDoc();
-        public static final class NewTrackDoc extends PulsarProceduralDescriptiveDoc {
-            {
-                setCategory( Pulsar.DOCS_ID );
-                setNames( "new-track" , "newt" );
-                setParameterDescription( "[procedure/(list notation)]..." );
-                addParameter( 0, "notations", "procedure/(list notation)", null, true, "The contents of the track. " );
-                setReturnValueDescription( "::MetroTrack" );
-                setShortDescription( "<name/> creates a new track." );
-                setLongDescription( ""
-                                    + "A track is a basic unit of music in Pulsar music sequencer. "
-                                    + "A track contains a procedure to create a notation list. "
-                                    + "When a user added a track to the sequencer, "
-                                    + "the sequencer asks what to play next to the track. "
-                                    + "The sequencer plays it and asks to the track again when it finished to play the notation list. "
-                                    + "The length of a notation list which a track creates is usually one measure; "
-                                    + "but it can be any length. "
-                                    + "The sequencer can have multiple tracks. There is no limit on maximum number of tracks. "
-                                    + "It is necessary to add the track which is created by <name/> procedure to the "
-                                    + "sequencer by (put-track) procedure. See (help put-track) for further information. "
-                                    + "" 
-                                    + THROWS_AN_ERROR_IF_NOT_OPEN );
-            }
-        }
-
-        public final Procedure newRecordingTrackProc = new NewRecordTrackProc( new String[] { "new-recording-track", "rect" });
-        @Override
-        public Procedure getNewRecordingTrack() { return newRecordingTrackProc; }
-        public final class NewRecordTrackProc extends MultipleNamedProcedureN {
-            public NewRecordTrackProc(String[] names) {
-                super(names);
-            }
-
-            @Override
-            public Object applyN(Object[] args) throws Throwable {
-                Pulsar current = getPulsar();
-                List<MetroPort> inputPorts;
-                List<MetroPort> outputPorts;
-                double recordLength;
-                boolean looper;
-       
-                switch ( args.length  ){
-                    case 0 :
-                    case 1 : 
-                    case 2 : 
-                        throw new IllegalArgumentException();
-                    case 3 : 
-                    case 4 : 
-                    case 5 : 
-                    {
-                        {
-                            List<MetroPort> ports = readParamPort( args[0], current.getInputPorts() );
-                            if ( ports.size() == 0 )
-                                throw new IllegalArgumentException("could not find input port " + args[0] );
-                            inputPorts = ports; 
-                        }
-                        {
-                            List<MetroPort> ports = readParamPort( args[1], current.getOutputPorts() );
-                            if ( ports.size() == 0 )
-                                throw new IllegalArgumentException("could not find output port " + args[1] );
-                            outputPorts = ports; 
-                        }
-                        
-                        if ( 3< args.length ) {
-                            recordLength = SchemeValues.toDouble( args[2] );
-                        } else {
-                            recordLength = -1;
-                        }
-                        if ( 4< args.length ) {
-                            looper = SchemeValues.toBoolean( args[3] );
-                        } else {
-                            looper = true;
-                        }
-                        break;
-                    }
-                    
-                    default :
-                        throw new IllegalArgumentException();
-                }
-                return PulsarCommon.createRecordingSequence( inputPorts, outputPorts, recordLength, looper );
-            }
-        }
-
-        public static final NewRecordingTrackDoc newRecordingTrackDoc = new NewRecordingTrackDoc();
-        public static final class NewRecordingTrackDoc extends PulsarProceduralDescriptiveDoc {
-            {
-                setCategory( Pulsar.DOCS_ID );
-                setNames( "new-recording-track" , "rect" );
-                setParameterDescription( "[procedure/(list notation)]..." );
-                addParameter( 0, "notations", "procedure/(list notation)", null, true, "The contents of the track. " );
-                setReturnValueDescription( "::MetroTrack" );
-                setShortDescription( "<name/> creates a new track." );
-                setLongDescription( ""
-                                    + "" 
-                                    + THROWS_AN_ERROR_IF_NOT_OPEN );
-            }
-        }
 
         public static final AboutNotationDoc aboutNotationDoc = new AboutNotationDoc();
         public static final class AboutNotationDoc extends PulsarProceduralDescriptiveDoc {
@@ -1833,277 +1761,279 @@ public interface PulsarLib {
         }
 
 
-        public static final LamuDocument removeTrackDoc = trackManagementTemplateDoc.processArguments( 
-            "removes",
-                  ""
-                + "The sequencer remove the specified track. Eventually the track stops playing. "
-                + "And it gives the user some controls on "
-                + "how it stops playing the track. "    
-            ).setNames( "remove-track", "remt" );
-
-        public final Procedure removeTrackProc = new RemoveTrackProc(new String[] { "remove-track", "remt" });
-        @Override
-        public Procedure getRemoveTrack() { return removeTrackProc; }
-        public final class RemoveTrackProc extends MultipleNamedProcedureN {
-            public RemoveTrackProc(String[] names) {
-                super(names);
-            }
-
-            // Reuse the objects for passing parameters to reduce the garbage-collector load.  
-            final Map<String, Object> namedArgs = new HashMap<>();
-            final List<Object> plainArgs = new ArrayList<>();
-            final Object[] trackManipulators = new Object[1]; 
-
-            @Override
-            public synchronized Object applyN(Object[] args) throws Throwable {
-                namedArgs.clear();
-                plainArgs.clear();
-                SchemeValues.parseArguments(args, namedArgs, plainArgs);
-                
-                MetroTrackSynchronizer trackSynchronizer = 
-                    (MetroTrackSynchronizer) namedArgs.get("stop");
-                
-                MetroTrackSelector trackSelector = readParamSelt(plainArgs.toArray(new Object[plainArgs.size()]));
-                MetroTrackManipulator trackManipulator = readParamMant( 
-                    "remt", 
-                    trackSelector, 
-                    trackSynchronizer);
-                
-                if ( AUTO_EXET ) {
-                    trackManipulators[0] = trackManipulator;
-                    Object result = executeTrackProc.applyN( trackManipulators );
-                    return result;
-                } else {
-                    return trackManipulator;
-                }
-            }
-        }
-
-        public static final LamuDocument putTrackDoc = trackManagementTemplateDoc.processArguments( 
-            "put",
-            ""
-            + "The sequencer starts to play the added track and it gives the user some controls on "
-            + "how it starts playing the track."
-        ).setNames( "put-track", "putt" );
-            
-        public final Procedure putTrackProc = new PutTrackProc(new String[] { "put-track", "putt" });
-        @Override
-        public Procedure getPutTrack() { return putTrackProc; }
-        public final class PutTrackProc extends MultipleNamedProcedureN {
-            public PutTrackProc(String[] names) {
-                super(names);
-            }
-            
-            // Reuse the objects for passing parameters to reduce the garbage-collector load.  
-            final Map<String, Object> namedArgs = new HashMap<>();
-            final List<Object> plainArgs = new ArrayList<>();
-            final Object[] trackManipulators = new Object[1]; 
-            
-            @Override
-            public synchronized Object applyN(Object[] args) throws Throwable {
-                namedArgs.clear();
-                plainArgs.clear();
-                SchemeValues.parseArguments(args, namedArgs, plainArgs);
-                
-                MetroTrackSynchronizer trackSynchronizer = 
-                    (MetroTrackSynchronizer) namedArgs.get("start");
-                
-                plainArgs.add(0, "newt");
-                MetroTrackSelector trackSelectors = readParamSelt(plainArgs.toArray(new Object[plainArgs.size()]));
-                MetroTrackManipulator trackManipulator = readParamMant( 
-                    "putt", 
-                    trackSelectors, 
-                    trackSynchronizer);
-
-                if ( AUTO_EXET ) {
-                    trackManipulators[0] = trackManipulator;
-                    Object result = executeTrackProc.applyN( trackManipulators );
-                    return result;
-                } else {
-                    return trackManipulator;
-                }
-            }
-        }
-
-        public static final LamuDocument replaceTrackDoc = trackManagementTemplateDoc.processArguments( 
-            "replace",
-            ""
-            + "The sequencer starts to play the added track and it gives the user some controls on "
-            + "how it starts playing the track."
-        ).setNames( "put-track", "putt" );
-            
-        public final Procedure replaceTrackProc = new ReplaceTrackProc(new String[] { "replace-track", "rept" });
-        @Override
-        public Procedure getReplaceTrack() { return replaceTrackProc; }
-        public final class ReplaceTrackProc extends MultipleNamedProcedureN {
-            public ReplaceTrackProc(String[] names) {
-                super(names);
-            }
-            
-            // Reuse the objects for passing parameters to reduce the garbage-collector load.  
-            final Map<String, Object> namedArgs = new HashMap<>();
-            final List<Object> plainArgs = new ArrayList<>();
-            final Object[] trackManipulators = new Object[1]; 
-            
-            @Override
-            public synchronized Object applyN(Object[] args) throws Throwable {
-                namedArgs.clear();
-                plainArgs.clear();
-                SchemeValues.parseArguments(args, namedArgs, plainArgs);
-                
-                MetroTrackSynchronizer startSynchronizer = 
-                    (MetroTrackSynchronizer) namedArgs.get("start");
-                MetroTrackSynchronizer stopSynchronizer = 
-                    (MetroTrackSynchronizer) namedArgs.get("stop");
-                
-                plainArgs.add(0, "newt");
-                MetroTrackSelector trackSelectors = readParamSelt(plainArgs.toArray(new Object[plainArgs.size()]));
-                MetroTrackManipulator trackManipulator = readParamMant( 
-                    "rept", 
-                    trackSelectors,
-                    startSynchronizer,
-                    stopSynchronizer );
-
-                if ( AUTO_EXET ) {
-                    trackManipulators[0] = trackManipulator;
-                    Object result = executeTrackProc.applyN( trackManipulators );
-                    return result;
-                } else {
-                    return trackManipulator;
-                }
-            }
-        }
+//        public static final LamuDocument removeTrackDoc = trackManagementTemplateDoc.processArguments( 
+//            "removes",
+//                  ""
+//                + "The sequencer remove the specified track. Eventually the track stops playing. "
+//                + "And it gives the user some controls on "
+//                + "how it stops playing the track. "    
+//            ).setNames( "remove-track", "remt" );
+//
+//        public final Procedure removeTrackProc = new RemoveTrackProc(new String[] { "remove-track", "remt" });
+//        @Override
+//        public Procedure getRemoveTrack() { return removeTrackProc; }
+//        public final class RemoveTrackProc extends MultipleNamedProcedureN {
+//            public RemoveTrackProc(String[] names) {
+//                super(names);
+//            }
+//
+//            // Reuse the objects for passing parameters to reduce the garbage-collector load.  
+//            final Map<String, Object> namedArgs = new HashMap<>();
+//            final List<Object> plainArgs = new ArrayList<>();
+//            final Object[] trackManipulators = new Object[1]; 
+//
+//            @Override
+//            public synchronized Object applyN(Object[] args) throws Throwable {
+//                namedArgs.clear();
+//                plainArgs.clear();
+//                SchemeValues.parseArguments(args, namedArgs, plainArgs);
+//                
+//                MetroTrackSynchronizer trackSynchronizer = 
+//                    (MetroTrackSynchronizer) namedArgs.get("stop");
+//                
+//                MetroTrackSelector trackSelector = readParamSelt(plainArgs.toArray(new Object[plainArgs.size()]));
+//                MetroTrackManipulator trackManipulator = readParamMant( 
+//                    "remt", 
+//                    trackSelector, 
+//                    trackSynchronizer);
+//                
+//                if ( AUTO_EXET ) {
+//                    trackManipulators[0] = trackManipulator;
+//                    Object result = executeTrackProc.applyN( trackManipulators );
+//                    return result;
+//                } else {
+//                    return trackManipulator;
+//                }
+//            }
+//        }
+//
+//        public static final LamuDocument putTrackDoc = trackManagementTemplateDoc.processArguments( 
+//            "put",
+//            ""
+//            + "The sequencer starts to play the added track and it gives the user some controls on "
+//            + "how it starts playing the track."
+//        ).setNames( "put-track", "putt" );
+//            
+//        public final Procedure putTrackProc = new PutTrackProc(new String[] { "put-track", "putt" });
+//        @Override
+//        public Procedure getPutTrack() { return putTrackProc; }
+//        public final class PutTrackProc extends MultipleNamedProcedureN {
+//            public PutTrackProc(String[] names) {
+//                super(names);
+//            }
+//            
+//            // Reuse the objects for passing parameters to reduce the garbage-collector load.  
+//            final Map<String, Object> namedArgs = new HashMap<>();
+//            final List<Object> plainArgs = new ArrayList<>();
+//            final Object[] trackManipulators = new Object[1]; 
+//            
+//            @Override
+//            public synchronized Object applyN(Object[] args) throws Throwable {
+//                namedArgs.clear();
+//                plainArgs.clear();
+//                SchemeValues.parseArguments(args, namedArgs, plainArgs);
+//                
+//                MetroTrackSynchronizer trackSynchronizer = 
+//                    (MetroTrackSynchronizer) namedArgs.get("start");
+//                
+//                plainArgs.add(0, "newt");
+//                MetroTrackSelector trackSelectors = readParamSelt(plainArgs.toArray(new Object[plainArgs.size()]));
+//                MetroTrackManipulator trackManipulator = readParamMant( 
+//                    "putt", 
+//                    trackSelectors, 
+//                    trackSynchronizer);
+//
+//                if ( AUTO_EXET ) {
+//                    trackManipulators[0] = trackManipulator;
+//                    Object result = executeTrackProc.applyN( trackManipulators );
+//                    return result;
+//                } else {
+//                    return trackManipulator;
+//                }
+//            }
+//        }
+//
+//        public static final LamuDocument replaceTrackDoc = trackManagementTemplateDoc.processArguments( 
+//            "replace",
+//            ""
+//            + "The sequencer starts to play the added track and it gives the user some controls on "
+//            + "how it starts playing the track."
+//        ).setNames( "put-track", "putt" );
+//            
+//        public final Procedure replaceTrackProc = new ReplaceTrackProc(new String[] { "replace-track", "rept" });
+//        @Override
+//        public Procedure getReplaceTrack() { return replaceTrackProc; }
+//        public final class ReplaceTrackProc extends MultipleNamedProcedureN {
+//            public ReplaceTrackProc(String[] names) {
+//                super(names);
+//            }
+//            
+//            // Reuse the objects for passing parameters to reduce the garbage-collector load.  
+//            final Map<String, Object> namedArgs = new HashMap<>();
+//            final List<Object> plainArgs = new ArrayList<>();
+//            final Object[] trackManipulators = new Object[1]; 
+//            
+//            @Override
+//            public synchronized Object applyN(Object[] args) throws Throwable {
+//                namedArgs.clear();
+//                plainArgs.clear();
+//                SchemeValues.parseArguments(args, namedArgs, plainArgs);
+//                
+//                MetroTrackSynchronizer startSynchronizer = 
+//                    (MetroTrackSynchronizer) namedArgs.get("start");
+//                MetroTrackSynchronizer stopSynchronizer = 
+//                    (MetroTrackSynchronizer) namedArgs.get("stop");
+//                
+//                plainArgs.add(0, "newt");
+//                MetroTrackSelector trackSelectors = readParamSelt(plainArgs.toArray(new Object[plainArgs.size()]));
+//                MetroTrackManipulator trackManipulator = readParamMant( 
+//                    "rept", 
+//                    trackSelectors,
+//                    startSynchronizer,
+//                    stopSynchronizer );
+//
+//                if ( AUTO_EXET ) {
+//                    trackManipulators[0] = trackManipulator;
+//                    Object result = executeTrackProc.applyN( trackManipulators );
+//                    return result;
+//                } else {
+//                    return trackManipulator;
+//                }
+//            }
+//        }
 
         
-        public final Procedure notifyTrackChangeProc = new NotifyTrackChangeProc(new String[] { "notify-track-change", "nott" });
-        @Override
-        public Procedure getNotifyTrackChange() { return notifyTrackChangeProc; }
-        public final class NotifyTrackChangeProc extends MultipleNamedProcedure0 {
-            public NotifyTrackChangeProc(String[] names) {
-                super(names);
-            }
+//        public final Procedure notifyTrackChangeProc = new NotifyTrackChangeProc(new String[] { "notify-track-change", "nott" });
+//        @Override
+//        public Procedure getNotifyTrackChange() { return notifyTrackChangeProc; }
+//        public final class NotifyTrackChangeProc extends MultipleNamedProcedure0 {
+//            public NotifyTrackChangeProc(String[] names) {
+//                super(names);
+//            }
+//
+//            @Override
+//            public Object apply0() throws Throwable {
+//                getPulsar().notifyTrackChange("update");
+//                return SchemeValues.NO_RESULT;
+//            }
+//        }
+//
+//        public static final NotifyTrackChangeDoc notifyTrackChangeDoc = new NotifyTrackChangeDoc();
+//        public static final class NotifyTrackChangeDoc extends PulsarProceduralDescriptiveDoc {
+//            {
+//                setCategory( Pulsar.DOCS_ID );
+//                setNames( "notify-track-change", "nott" );
+//                setParameterDescription( "" );
+//                setReturnValueDescription( "::void" );
+//                setShortDescription( "notifies the sequencer that the track was added/deleted." );
+//                setLongDescription( ""
+//                                    + "When any tracks are added/deleted on the sequencer, the "
+//                                    + "modification is not immediately reflects to the current state of "
+//                                    + "the sequencer. After a series of adding/deleting tracks is performed by a user,"
+//                                    + "the the user is mandated to call this procedure. "
+//                                    + "This procedure notifies the sequencer that "
+//                                    + "some tracks. And calling this procedure guarantees the tracks added/deleted "
+//                                    + "on the sequencer are properly processed immediately. " 
+//                                 );
+//            }
+//        }
 
-            @Override
-            public Object apply0() throws Throwable {
-                getPulsar().notifyTrackChange("update");
-                return SchemeValues.NO_RESULT;
-            }
-        }
+//        public final ListTracksProc listTracksProc = new ListTracksProc(new String[] { "list-tracks", "lstt" });
+//        @Override
+//        public Procedure getListTracks() { return listTracksProc; }
+//        public final class ListTracksProc extends MultipleNamedProcedure0 {
+//            public ListTracksProc(String[] names) {
+//                super(names);
+//            }
+//
+//            @Override
+//            public Object apply0() throws Throwable {
+//                List<MetroTrack> tempAllTracks = getPulsar().replicateAllTracks(); 
+//                ArrayList<Object> list = new ArrayList<>( tempAllTracks.size() );
+//                for ( MetroTrack track :  tempAllTracks ) {
+//                    list.add( track );
+//                }
+//                Collections.reverse(list);
+//                
+//                return Pair.makeList(list);
+//       
+//            }
+//        }
+//
+//        public static final ListTracksDoc listTracksDoc = new ListTracksDoc();
+//        public static final class ListTracksDoc extends PulsarProceduralDescriptiveDoc {
+//            {
+//                setCategory( Pulsar.DOCS_ID );
+//                setNames( "list-tracks", "lstt" );
+//                setParameterDescription( "" );
+//                setReturnValueDescription( "::(list track ...)" );
+//                setShortDescription( "||<name/>|| retrieves all tracks on the current sequencer. " );
+//                setLongDescription( ""
+//                                    + "The order of the tracks in the result of this procedure follows the first-in-last-out manner. "
+//                                    + "That is, (car (<name/>)) always returns the last added track. "
+//                                    + "" 
+//                                 );
+//            }
+//        }
 
-        public static final NotifyTrackChangeDoc notifyTrackChangeDoc = new NotifyTrackChangeDoc();
-        public static final class NotifyTrackChangeDoc extends PulsarProceduralDescriptiveDoc {
-            {
-                setCategory( Pulsar.DOCS_ID );
-                setNames( "notify-track-change", "nott" );
-                setParameterDescription( "" );
-                setReturnValueDescription( "::void" );
-                setShortDescription( "notifies the sequencer that the track was added/deleted." );
-                setLongDescription( ""
-                                    + "When any tracks are added/deleted on the sequencer, the "
-                                    + "modification is not immediately reflects to the current state of "
-                                    + "the sequencer. After a series of adding/deleting tracks is performed by a user,"
-                                    + "the the user is mandated to call this procedure. "
-                                    + "This procedure notifies the sequencer that "
-                                    + "some tracks. And calling this procedure guarantees the tracks added/deleted "
-                                    + "on the sequencer are properly processed immediately. " 
-                                 );
-            }
-        }
+//        obsolete
+//        public final MultipleNamedProcedure0 clearTracksProc = new ClearTracksProc(new String[] { "clear-tracks", "clet" });
+//        @Override
+//        public Procedure getClearTracks() { return clearTracksProc; }
+//        public final class ClearTracksProc extends MultipleNamedProcedure0 {
+//            public ClearTracksProc(String[] names) {
+//                super(names);
+//            }
+//
+//            @Override
+//            public Object apply0() throws Throwable {
+//                getPulsar().clearTracks();
+//                return SchemeValues.NO_RESULT;
+//            }
+//        }
+//
+//        public static final ClearTracksDoc clearTracksDoc = new ClearTracksDoc();
+//        public static final class ClearTracksDoc extends PulsarProceduralDescriptiveDoc {
+//            {
+//                setCategory( Pulsar.DOCS_ID );
+//                setNames( "clear-tracks", "clet" );
+//                setParameterDescription( "" );
+//                setReturnValueDescription( "::void" );
+//                setShortDescription( "||<name/>|| removes all tracks on the current sequencer immediately. " );
+//                setLongDescription( ""
+//                                    + "" 
+//                                 );
+//            }
+//        }
 
-        public final ListTracksProc listTracksProc = new ListTracksProc(new String[] { "list-tracks", "lstt" });
-        @Override
-        public Procedure getListTracks() { return listTracksProc; }
-        public final class ListTracksProc extends MultipleNamedProcedure0 {
-            public ListTracksProc(String[] names) {
-                super(names);
-            }
-
-            @Override
-            public Object apply0() throws Throwable {
-                List<MetroTrack> tempAllTracks = getPulsar().replicateAllTracks(); 
-                ArrayList<Object> list = new ArrayList<>( tempAllTracks.size() );
-                for ( MetroTrack track :  tempAllTracks ) {
-                    list.add( track );
-                }
-                Collections.reverse(list);
-                
-                return Pair.makeList(list);
-       
-            }
-        }
-
-        public static final ListTracksDoc listTracksDoc = new ListTracksDoc();
-        public static final class ListTracksDoc extends PulsarProceduralDescriptiveDoc {
-            {
-                setCategory( Pulsar.DOCS_ID );
-                setNames( "list-tracks", "lstt" );
-                setParameterDescription( "" );
-                setReturnValueDescription( "::(list track ...)" );
-                setShortDescription( "||<name/>|| retrieves all tracks on the current sequencer. " );
-                setLongDescription( ""
-                                    + "The order of the tracks in the result of this procedure follows the first-in-last-out manner. "
-                                    + "That is, (car (<name/>)) always returns the last added track. "
-                                    + "" 
-                                 );
-            }
-        }
-
-        public final MultipleNamedProcedure0 clearTracksProc = new ClearTracksProc(new String[] { "clear-tracks", "clet" });
-        @Override
-        public Procedure getClearTracks() { return clearTracksProc; }
-        public final class ClearTracksProc extends MultipleNamedProcedure0 {
-            public ClearTracksProc(String[] names) {
-                super(names);
-            }
-
-            @Override
-            public Object apply0() throws Throwable {
-                getPulsar().clearTracks();
-                return SchemeValues.NO_RESULT;
-            }
-        }
-
-        public static final ClearTracksDoc clearTracksDoc = new ClearTracksDoc();
-        public static final class ClearTracksDoc extends PulsarProceduralDescriptiveDoc {
-            {
-                setCategory( Pulsar.DOCS_ID );
-                setNames( "clear-tracks", "clet" );
-                setParameterDescription( "" );
-                setReturnValueDescription( "::void" );
-                setShortDescription( "||<name/>|| removes all tracks on the current sequencer immediately. " );
-                setLongDescription( ""
-                                    + "" 
-                                 );
-            }
-        }
-
-        public final Procedure getMainTrackProc = new GetMainTrackProc(new String[] { "get-main-track", "getmt" });
-        @Override
-        public Procedure getGetMainTrack() { return getMainTrackProc; }
-        public final class GetMainTrackProc extends MultipleNamedProcedure0 {
-            public GetMainTrackProc(String[] names) {
-                super(names);
-            }
-
-            @Override
-            public Object apply0() throws Throwable {
-                return SchemeValues.javaNullCheck( getPulsar().getMainTrack() );
-            }
-        }
-
-        public static final GetMainTrackDoc getMainTrackDoc = new GetMainTrackDoc();
-        public static final class GetMainTrackDoc extends PulsarProceduralDescriptiveDoc {
-            {
-                setCategory( Pulsar.DOCS_ID );
-                setNames( "get-main-track", "getmt" );
-                setParameterDescription( "" );
-                setReturnValueDescription( "::void" );
-                setShortDescription( "||<name/>|| retrieves the reference to the current main track." );
-                setLongDescription( ""
-                                  + "" 
-                                 );
-            }
-        }
+//        obsolete
+//        public final Procedure getMainTrackProc = new GetMainTrackProc(new String[] { "get-main-track", "getmt" });
+//        @Override
+//        public Procedure getGetMainTrack() { return getMainTrackProc; }
+//        public final class GetMainTrackProc extends MultipleNamedProcedure0 {
+//            public GetMainTrackProc(String[] names) {
+//                super(names);
+//            }
+//
+//            @Override
+//            public Object apply0() throws Throwable {
+//                return SchemeValues.javaNullCheck( getPulsar().getMainTrack() );
+//            }
+//        }
+//
+//        public static final GetMainTrackDoc getMainTrackDoc = new GetMainTrackDoc();
+//        public static final class GetMainTrackDoc extends PulsarProceduralDescriptiveDoc {
+//            {
+//                setCategory( Pulsar.DOCS_ID );
+//                setNames( "get-main-track", "getmt" );
+//                setParameterDescription( "" );
+//                setReturnValueDescription( "::void" );
+//                setShortDescription( "||<name/>|| retrieves the reference to the current main track." );
+//                setLongDescription( ""
+//                                  + "" 
+//                                 );
+//            }
+//        }
         
         public void initScheme( Environment env ) {
             SchemeValues.defineLambda( env, currentPulsarProc );
@@ -2135,19 +2065,19 @@ public interface PulsarLib {
             SchemeValues.defineLambda( env, getBarsPerSecondProc );
             SchemeValues.defineLambda( env, rewindProc );
             SchemeValues.defineLambda( env, executeTrackProc );
-            SchemeValues.defineLambda( env, getTrackProc );
+//            SchemeValues.defineLambda( env, getTrackProc );
             SchemeValues.defineLambda( env, getTrackPositionProc );
-            SchemeValues.defineLambda( env, manipulateTrackProc );
-            SchemeValues.defineLambda( env, selectTrackProc );
-            SchemeValues.defineLambda( env, syncTrackProc );
-            SchemeValues.defineLambda( env, newTrackProc );
-            SchemeValues.defineLambda( env, newRecordingTrackProc );
-            SchemeValues.defineLambda( env, removeTrackProc );
-            SchemeValues.defineLambda( env, putTrackProc );
-            SchemeValues.defineLambda( env, notifyTrackChangeProc );
-            SchemeValues.defineLambda( env, listTracksProc );
-            SchemeValues.defineLambda( env, clearTracksProc );
-            SchemeValues.defineLambda( env, getMainTrackProc );
+//            SchemeValues.defineLambda( env, manipulateTrackProc );
+//            SchemeValues.defineLambda( env, selectTrackProc );
+//            SchemeValues.defineLambda( env, syncTrackProc );
+//            SchemeValues.defineLambda( env, newTrackProc );
+//            SchemeValues.defineLambda( env, newRecordingTrackProc );
+//            SchemeValues.defineLambda( env, removeTrackProc );
+//            SchemeValues.defineLambda( env, putTrackProc );
+//            SchemeValues.defineLambda( env, notifyTrackChangeProc );
+//            SchemeValues.defineLambda( env, listTracksProc );
+//            SchemeValues.defineLambda( env, clearTracksProc );
+//            SchemeValues.defineLambda( env, getMainTrackProc );
             SchemeValues.defineVar( env, getPulsar(), Arrays.asList( "pu" ) );
         }
         

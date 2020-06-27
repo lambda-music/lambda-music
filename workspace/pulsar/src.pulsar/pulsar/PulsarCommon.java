@@ -1,14 +1,13 @@
 package pulsar;
 
 import java.util.Arrays;
-import java.util.List;
 
 import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 import gnu.mapping.Symbol;
 import gnu.math.IntNum;
-import metro.MetroPort;
+import metro.MetroPortSelector;
 import metro.MetroSequence;
 import metro.MetroSequenceFactory;
 
@@ -30,13 +29,14 @@ public class PulsarCommon {
 //        MetroSyncType syncType, 
 //        MetroSyncTrack syncTrack, 
 //        double syncOffset, 
-        List<MetroPort> inputPorts, 
-        List<MetroPort> outputPorts,
-        double recordLength, 
-        boolean looper 
+//        List<MetroPort> inputPorts, 
+//        List<MetroPort> outputPorts,
+    		MetroPortSelector portSelector,
+	        double recordLength, 
+	        boolean looper 
         ) 
     {
-        return SchemeRecorderSequence.create( inputPorts, outputPorts, recordLength, looper );
+        return SchemeRecorderSequence.create( portSelector, recordLength, looper );
     }
     static LList createRestBar(int intValue) {
         return 
