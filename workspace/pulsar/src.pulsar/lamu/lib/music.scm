@@ -1799,35 +1799,37 @@
  |#
 
 
+
 ; === repeat ===
 ; repeat the passed notes.
 (define (repeat times lst )
   (apply append-notes (map ccons (make-list times lst ))))
-
+; this procedure may be obsolete. (Sat, 27 Jun 2020 09:28:38 +0900)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define make-perc (lambda (port chan note len)
-                    (lambda (mark enab  pos velo . args )
-                      (let ((port port)
-                            (chan chan)
-                            (note note)
-                            (len len)
-                            (args args )) 
-                        (if (not (null? args)) 
-                          (begin
-                            (set! len (car args))
-                            (set! args (cdr args))))
-
-                        (list (cons 'type 'note  )
-                              (cons 'mark  mark )
-                              (cons 'enab  enab )
-                              (cons 'port  port )
-                              (cons 'chan  chan )
-                              (cons 'pos   pos  )
-                              (cons 'note  note )
-                              (cons 'len   len  )
-                              (cons 'velo  velo ))))))
+;; moved to ats's drum-kit (Sat, 27 Jun 2020 09:28:38 +0900)
+;; (define make-perc (lambda (port chan note len)
+;;                     (lambda (mark enab  pos velo . args )
+;;                       (let ((port port)
+;;                             (chan chan)
+;;                             (note note)
+;;                             (len len)
+;;                             (args args )) 
+;;                         (if (not (null? args)) 
+;;                           (begin
+;;                             (set! len (car args))
+;;                             (set! args (cdr args))))
+;; 
+;;                         (list (cons 'type 'note  )
+;;                               (cons 'mark  mark )
+;;                               (cons 'enab  enab )
+;;                               (cons 'port  port )
+;;                               (cons 'chan  chan )
+;;                               (cons 'pos   pos  )
+;;                               (cons 'note  note )
+;;                               (cons 'len   len  )
+;;                               (cons 'velo  velo ))))))
 
 
 (define noop (lambda args #f))

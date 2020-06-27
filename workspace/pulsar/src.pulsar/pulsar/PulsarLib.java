@@ -1653,7 +1653,7 @@ public interface PulsarLib {
         public final Procedure newTrackProc = new NewTrackProc( new String[] { "new-track", "newt" });
         @Override
         public Procedure getNewTrack() { return newTrackProc; }
-        public final class NewTrackProc extends MultipleNamedProcedureN {
+        public static final class NewTrackProc extends MultipleNamedProcedureN {
             public NewTrackProc(String[] names) {
                 super(names);
             }
