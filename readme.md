@@ -16,7 +16,8 @@ style="color:darkcyan;border:1px solid darkcyan;border-radius:5px
 - [Lamu REPL Processor Specification](./docs/repl.md)
 - [Lamu API Reference](./workspace/build/docs/lamu-api-reference.md)
 - [Lamu GUI Extension API Reference](./workspace/build/docs/lamu-gui-extension-api-reference.md)
-- [Lamu Notation Reference](./workspace/build/docs/lamu-notation-reference.md)
+- [Lamu Notation API](./docs/notation.md)
+- [Lamu Notation API Reference](./workspace/build/docs/lamu-notation-reference.md)
 - [KawaPad API Reference](./workspace/build/docs/kawapad-api-reference.md)
 - [KawaPad Keystroke Reference](./workspace/build/docs/kawapad-keystroke-reference.md)
 
