@@ -94,6 +94,7 @@ public class LamuApplication {
     
     static final String TRIGGER_FOR_ADVANCED_COMMAND_MODE = "advanced";
     static final String DEFAULT_COMMAND_OPEN = "open";
+    static final String DEFAULT_COMMAND_EDIT = "edit";
     static final String DEFAULT_COMMAND_EXEC = "exec";
     static final String DEFAULT_COMMAND_LOAD = "load";
     static final String DEFAULT_COMMAND      = "default";
@@ -133,7 +134,12 @@ public class LamuApplication {
         availableCommands.add( ArgsCommandMacro.create( 
                     DEFAULT_COMMAND_OPEN + " " + 
                     " create scheme + repl + gui $*{$} +" ));
-        
+
+        // "open" open the file by the Kawapad editor.
+        availableCommands.add( ArgsCommandMacro.create( 
+                    DEFAULT_COMMAND_EDIT + " " + 
+                    " create scheme + repl + kawapad $*{$} +" ));
+
         // "default" is an alias of "exec".
         availableCommands.add( ArgsCommandMacro.create( 
             DEFAULT_COMMAND + " " + 
@@ -200,6 +206,12 @@ public class LamuApplication {
                 // --open/-o are equivalent to --command=open
                 logInfo( "default mode command : --open" );
                 arguments.addAll( 0, Arrays.asList(  TRIGGER_FOR_ADVANCED_COMMAND_MODE, DEFAULT_COMMAND_OPEN ) );
+            } else if ( outNamedArgs.containsKey( "edit" ) || outNamedArgs.containsKey( "d" ) ) {
+            	// ADDED (Sun, 28 Jun 2020 10:12:32 +0900) >>>
+                // --edit/-d are equivalent to --command=edit
+                logInfo( "default mode command : --edit" );
+                arguments.addAll( 0, Arrays.asList(  TRIGGER_FOR_ADVANCED_COMMAND_MODE, DEFAULT_COMMAND_EDIT) );
+            	// ADDED (Sun, 28 Jun 2020 10:12:32 +0900) <<<
             } else {
                 // The default command. This is equivalent to `--command=default`. See  DEFAULT_COMMAND.
                 arguments.addAll( 0, Arrays.asList(  TRIGGER_FOR_ADVANCED_COMMAND_MODE, DEFAULT_COMMAND ) );
