@@ -287,23 +287,6 @@ public class KawapadTextualIncrement implements MenuInitializer {
 
         {
             if ( foundSubstr == null ) {
-                Matcher m = NUMBER_PATTERN.matcher( targetStr );
-                if ( m.find() ) {
-                    try {
-                        String numStr = targetStr.substring( m.start(), m.end());
-                        String strResult = fractionAdd( numStr, direction );
-                        
-                        if ( strResult != null ) {
-                            foundSubstr = strResult.toString();
-                            foundBeginPos = m.start() + beginPos;
-                            foundEndPos   = m.end()   + beginPos;
-                        }
-                    } catch (Throwable e) {
-                        Kawapad.logWarn( "TextualIncrementalAddon.replace():"+e.getMessage() );
-                    }
-                }
-            }
-            if ( foundSubstr == null ) {
                 if ( 0 <= direction ) {
                     incrementalSymbols.sort( COMPARATOR_FROM );
                 } else {
@@ -336,7 +319,25 @@ public class KawapadTextualIncrement implements MenuInitializer {
                     }
                 }
             }
-        }
+
+            if ( foundSubstr == null ) {
+                Matcher m = NUMBER_PATTERN.matcher( targetStr );
+                if ( m.find() ) {
+                    try {
+                        String numStr = targetStr.substring( m.start(), m.end());
+                        String strResult = fractionAdd( numStr, direction );
+                        
+                        if ( strResult != null ) {
+                            foundSubstr = strResult.toString();
+                            foundBeginPos = m.start() + beginPos;
+                            foundEndPos   = m.end()   + beginPos;
+                        }
+                    } catch (Throwable e) {
+                        Kawapad.logWarn( "TextualIncrementalAddon.replace():"+e.getMessage() );
+                    }
+                }
+            }
+}
         
         Kawapad kawapad = ((Kawapad)target);
         
