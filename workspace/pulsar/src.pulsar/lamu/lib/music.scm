@@ -547,6 +547,33 @@
     c))
 
 
+; n:map
+; Define a single field record to specify the n-mapper. 
+; This record is used to wrap a procedure.
+;
+; (n note: (n:map (lambda(x) (+ x 1 )))
+;     (melody "do re mi" ))
+; 
+; If a procedure wrapped by n:map record is specified on any parameters of (n) 
+; procedure, the specified procedure was called with every value which was 
+; preexisting in the specified notes.  The code above effectively transposed 
+; the specified melody.
+; 
+; The function is implemented in alist-set! procedure. Formery it invokes every
+; procedure in the values and it cannot distinguish whether use the value as it is or 
+; invoke it as a mapper procedure. This prevends users to specify procedures as 
+; values; this is where n:map comes in.
+; 
+; Added (Sun, 28 Jun 2020 13:57:02 +0900)
+;  
+; alist-set! procedure 
+(define-record-type :n:map
+                    (n:map value)
+                    n:map?
+                    (value n:map-get ))
+
+
+
 ; This function tries to update the specified association list element.  If no
 ; element which key is eq? to the passed key, it creates a new element with
 ; the specified values.
@@ -555,14 +582,14 @@
   (let ((p (assq k alist)))
     (if p
       (begin
-        (if (procedure? v) 
-          (set-cdr! p (v (cdr p)))
+        (if (n:map? v) 
+          (set-cdr! p ((n:map-get v) (cdr p)))
           (set-cdr! p  v))
         alist)
       (begin
-        (if (procedure? v) 
+        (if (n:map? v) 
           (cons
-            (cons k (v #f))
+            (cons k ((n:map-get v) #f))
             alist)
           (cons
             (cons k v)
