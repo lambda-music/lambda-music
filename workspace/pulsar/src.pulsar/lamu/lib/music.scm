@@ -325,8 +325,8 @@
 
               (let ((notes notes))
                 (if (and 
-                      ; added (Mon, 29 Jun 2020 14:43:48 +0900)
-                      (eq? 'go-to-param default-param-proc)
+                      ; (Mon, 29 Jun 2020 16:28:11 +0900)
+                      (= 0 (length mapvals))
                       (= 0 (length notes)))
                   ; If no note was specified, the `params` object becomes a note object.
                   (begin
@@ -486,10 +486,30 @@
 ;                                   ((chan . 4) (note . 65) (pos .  3/4) (velo . 0.1)))
 ; 
 
-(define (notation . args)
-  (apply n-implementation (cons* 'go-to-notes append args )))
+; Defined a macro for n-proc (Mon, 29 Jun 2020 16:39:16 +0900)
+(define ( n-macro-proc . args )
+  (cons* 'n-implementation 
+         ''go-to-notes 
+         'append 
+         (map (lambda (x)
+                (cond
+                  ((eq? x  '<<)
+                   <<: )
+                  ((eq? x  '>>)
+                   >>:)
+                  (else
+                    x)))
+              args)))
 
-(define n notation)
+(define-macro n n-macro-proc)
+
+
+; the old version of n-proc (Mon, 29 Jun 2020 16:39:16 +0900)
+; (define (notation . args)
+;   (apply n-implementation (cons* 'go-to-notes append args )))
+
+; REMOVED the alias (Mon, 29 Jun 2020 16:39:16 +0900)
+; (define notation n)
 
 ; Note: by historical reason, there were three variation of (n).
 ;
@@ -507,10 +527,76 @@
 ; (Wed, 07 Aug 2019 00:09:17 +0900)
 
 
+(define (n-pipeline-macro-proc . args )
+  (fold-right 
+    (lambda (curr accum) 
+      (let ((npmp-elem (apply n-macro-proc curr )))
+        (if (not (null? accum ))
+          (set-cdr! 
+            (last-pair npmp-elem )
+            (cons accum '())))
+        npmp-elem))
+    '()
+    args))
+
+(define-macro n-pipeline n-pipeline-macro-proc)
+
+#|
+ | n-pipeline is a macro that sequencially calls (n) procedure with the
+ | specified parameter list. See the folowing example:
+ |
+ | (n-pipeline
+ |   (type: 'note  )
+ |   (note: << 10 20 30 ))
+ |
+ | yields
+ | 
+ | (((type . note) (note . 10))
+ |  ((type . note) (note . 20))
+ |  ((type . note) (note . 30)))
+ |
+ | ## Inside n-pipeline ##
+ |
+ | (require 'syntax-utils)
+ | (expand '(n-pipeline
+ |            ( note: >> 10 20 30 )
+ |            (type: 'note  )))
+ | yields
+ |
+ | (n-implementation (quote go-to-notes) append note: >>: 10 20 30
+ |  (n-implementation (quote go-to-notes) append type: (quote note)))
+ | 
+ | (Tue, 30 Jun 2020 07:43:51 +0900)
+ |
+ |#
+
+
+
+; Creates a procedure that creates notes by pipelining.
+(define (make-n-pipeline params . args )
+  (eval (cons* 'lambda 
+               params
+               (list (apply n-pipeline-macro-proc
+                            args )))))
+
+#| example of make-n-pipeline
+ | ((make-n-pipeline '()
+ |          '(note: 1 )
+ |          '(velo: 1 )
+ |          '(port: 'aa )
+ |          '(pos: << 1 2 3)))
+ | 
+ | (((type . #f) (note . 1) (port . aa) (pos . 1) (velo . 1))
+ |  ((type . #f) (note . 1) (port . aa) (pos . 2) (velo . 1))
+ |  ((type . #f) (note . 1) (port . aa) (pos . 3) (velo . 1)))
+ |#
+
+
+
 ; (display make-help )
 ; (newline)
 ; (raise 'hello)
-(make-help  notation '((names "notation" "n" ) 
+(make-help  n '((names  "n" ) 
                        (params (0 
                                 ("arg" "any" #f #t "see description ")))
                        ;(params (0
