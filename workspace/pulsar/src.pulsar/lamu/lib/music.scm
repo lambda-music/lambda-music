@@ -324,7 +324,10 @@
                                                                        (symbol->string default-param-proc)))))))))))))
 
               (let ((notes notes))
-                (if (= 0 (length notes))
+                (if (and 
+                      ; added (Mon, 29 Jun 2020 14:43:48 +0900)
+                      (eq? 'go-to-param default-param-proc)
+                      (= 0 (length notes)))
                   ; If no note was specified, the `params` object becomes a note object.
                   (begin
                     (if debug-n-implementation (begin
@@ -339,6 +342,27 @@
                   (begin
                     (if debug-n-implementation (begin
                                                  (display "n-implementation yes we have notes")))
+
+                    ;; If the length of notes is less than the length of the maximum length of mapvals, 
+                    ;; let notes the same length as the maximum length of mapvals by adding empty notes.
+                    (set! notes
+                      (let ((mapvals-max (fold (lambda (curr-elem1 max-val1)
+                                                 ; curr-elem is a cons cell where car is a key value and cdr is a value; an alist element.
+                                                 (let ((curr-val1 (length (cdr curr-elem1))))
+                                                   (if (< max-val1 curr-val1 )
+                                                     curr-val1
+                                                     max-val1))) 0 mapvals) ))
+                        (let notes-to-mapvals-loop (( notes (reverse notes) ))
+                          (if (< (length notes) mapvals-max )
+                            ;then
+                            (notes-to-mapvals-loop (cons (list (cons 'type #f)) notes))
+                            ;else
+                            (reverse notes)))))
+                    
+                    
+
+
+                    ;; Applying `default-param-name`
                     (set! notes 
                       (map (lambda (note)
                              (if (not (notation? note))
@@ -360,6 +384,7 @@
                              note)
                            notes))
 
+                    ;; Applying `mapvals`
                     ;             curr-var last-var
                     (set! notes
                       (fold (lambda(a-mapval notes)
