@@ -125,6 +125,28 @@
        (symbol? (caar e))
        (not (pair?   (cdar e)))))
 
+#|
+ | ADDED (Tue, 30 Jun 2020 09:45:36 +0900)
+ | 
+ | (notation-list? (melody "do re mi"))
+ | #t
+ | 
+ | (notation-list? (list 1 1 2  (melody "do re mi") ))
+ | #f
+ | 
+ | (notation? (car (melody "do re mi")))
+ | #t
+ |
+ |#
+(define (notation-list? list-e)
+  (and (list? list-e )
+       (fold (lambda (kar kdr )
+               (and kdr (notation? kar))
+               ) #t list-e )))
+
+
+
+
 ; this function retrieves the note type value.
 ; ex)
 ; (get-notation-type '((type . note )( 1 2) ) )
@@ -268,7 +290,10 @@
 
                                   (if (or 
                                         (null? args)
-                                        (keyword? (car args)))
+                                        (keyword? (car args))
+                                        (notation-list? (car args)) ; ADDED (Tue, 30 Jun 2020 09:21:12 +0900)
+                                        (notation? (car args)) ; ADDED (Tue, 30 Jun 2020 09:21:12 +0900)
+                                        )
                                     ;then go to the next of n-loop1
                                     (n-loop1 (+ idx 1)      args  params newvals (cons (cons k (reverse additional-mapvals)) mapvals )  notes default-param-name target-notation?)
                                     
@@ -500,8 +525,12 @@
                   (else
                     x)))
               args)))
+; (define-macro n n-macro-proc)
 
-(define-macro n n-macro-proc)
+(define (n-proc . args)
+  (apply n-implementation (cons* 'go-to-notes append args )))
+
+(define n n-proc)
 
 
 ; the old version of n-proc (Mon, 29 Jun 2020 16:39:16 +0900)

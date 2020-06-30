@@ -130,7 +130,7 @@ public class SchemeSequence extends MetroBufferedSequence implements Invokable {
             PulsarNoteListParser.getInstance().parseAll( metro, track, notations, buffer, (MetroCollector<T>) MetroCollector.NULL );
             
         } catch ( Exception e ) {
-            LOGGER.log(Level.SEVERE, "", e);
+            LOGGER.log(Level.SEVERE, buffer.toString() , e);
         }
     }
 }
