@@ -264,6 +264,7 @@
                   (if (null? args)
                     ; end the n-loop1
                     (values params mapvals notes default-param-name target-notation?)
+
                     ; process n-loop1
                     (let ((e (car args)))
                       (cond
@@ -357,7 +358,44 @@
 
                                ; Treat as a normal parameter name.
                                (else
-                                (n-loop1 (+ idx 1) (cdr args) (cons (cons k v) params) newvals mapvals notes default-param-name target-notation?))))))
+                                (if #f
+                                  ; version 1
+                                  (n-loop1 (+ idx 1) (cdr args) (cons (cons k v) params) newvals mapvals notes default-param-name target-notation?)
+
+                                  ; version 2 (copied from `mapvals`)
+                                  (let n-loop-3 ((additional-mapvals '()) )
+                                    (if (or 
+                                          (null? args)
+                                          (keyword? (car args))
+                                          (notation-list? (car args))
+                                          (notation? (car args)))    
+
+                                      ;then go to the next of n-loop1
+
+                                      (let ((new-mapvals (if (null? additional-mapvals)
+                                                            mapvals
+                                                            ; all elments go to mapvals
+                                                            (cons (cons k (reverse additional-mapvals)) mapvals )))
+                                             (new-params  (if (null? additional-mapvals) 
+                                                            params 
+                                                            ; the only first element goes to params
+                                                            (cons (cons k (last additional-mapvals )) params ))))
+
+                                        (n-loop1 (+ idx 1)      args  new-params newvals new-mapvals  notes default-param-name target-notation?))
+
+                                      ;else go to the next of n-loop-3
+                                      (let ((vv (car args)))
+                                        (set! vv (if (pair? vv)
+                                                   vv
+                                                   (list vv)))
+                                        (set! vv (reverse vv))
+                                        (set! idx (+ idx 1))
+
+                                        ; advance to next element, again.
+                                        (set! args (cdr args))
+
+                                        (n-loop-3 (append  vv additional-mapvals ))))))
+                                )))))
 
                         ((pair? e)
                          ; error check
@@ -553,6 +591,26 @@
 ;                                   ((chan . 4) (note . 64) (pos .  1/2) (velo . 0.1))
 ;                                   ((chan . 4) (note . 65) (pos .  3/4) (velo . 0.1)))
 ; 
+
+
+; ### About The Modification on (Wed, 01 Jul 2020 13:46:44 +0900)
+; << >> is not necessary anymore; << is default.
+; The first element is applyed as `params`.
+#|
+ | (n type: 'note (n velo: 1 2 3)) 
+ |   (((type . note) (velo . 1))
+ |   ((type . note) (velo . 2))
+ |   ((type . note) (velo . 3)))
+ | 
+ | (notation type: 'note velo: 2 3 4 )
+ |   (((type . note) (velo . 2))
+ |   ((type . note) (velo . 3))
+ |   ((type . note) (velo . 4)))
+ |#
+
+
+
+
 
 ; Defined a macro for n-proc (Mon, 29 Jun 2020 16:39:16 +0900)
 (define ( n-macro-proc . args )
