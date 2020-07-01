@@ -119,11 +119,14 @@
   | >> MODIFIED now it is not as above. (Tue, 30 Jul 2019 14:18:12 +0900)
   |#
 ; renamed note? -> notation? (Tue, 30 Jul 2019 14:29:43 +0900)
-(define (notation? e)
-  (and (pair? e)
-       (pair? (car e ))
-       (symbol? (caar e))
-       (not (pair?   (cdar e)))))
+
+; Version 2
+; (define (notation? e)
+;   (and (pair? e)
+;        (pair? (car e ))
+;        (symbol? (caar e))
+;        (not (pair?   (cdar e)))))
+
 
 #|
  | ADDED (Tue, 30 Jun 2020 09:45:36 +0900)
@@ -138,12 +141,51 @@
  | #t
  |
  |#
-(define (notation-list? list-e)
-  (and (list? list-e )
-       (fold (lambda (kar kdr )
-               (and kdr (notation? kar))
-               ) #t list-e )))
+; Version 2
+; (define (notation-list? list-e)
+;   (and (list? list-e )
+;        (fold (lambda (kar kdr )
+;                (and kdr (notation? kar))
+;                ) #t list-e )))
 
+
+#|
+ | Predicates for Notation
+ |  Version 3  ADDED (Wed, 01 Jul 2020 10:50:01 +0900)
+ |#
+(define (notation-value? e)
+  (and (pair? e)
+       (symbol? (car e))))
+
+(define (notation? e)
+  (and (list? e)
+       (not
+         (any (lambda(ee)
+                (not (notation-value? ee)))
+              e))))
+#|
+ | (notation? '()) ; #t
+ | (notation? '(())) ; #f
+ | (notation? '(1 2 3)) ; #f
+ | (notation? '( ( a 2 ) )) ; #t
+ | (notation? '((a 2 3)(b 2 3))) ; #t
+ | (notation? '( ( a  1 2 3 ) )) ; #t
+ |#
+
+(define (notation-list? e)
+  (and (list? e)
+       (not
+         (any (lambda (ee)
+                (not (notation? ee)))
+              e))))
+
+#|
+ | (notation-list? (melody "do re mi")) ; #t
+ | (notation-list? '( 1)) ; #f
+ | (notation-list? '(( a . 1 ))) ; #f
+ | (notation-list? '((( a . 1) ))) ; #t
+ | (notation-list? '((( "a" . 1) ))) ; #f
+ |#
 
 
 
@@ -232,7 +274,7 @@
                            ; then
                            (raise '(invalid-argument-error . "insufficient number of argument error" ))
 
-                           ;else
+                           ; else
                            ; if the current value is a keyword, then treat it as a property name.
                            ; Treat the next value as a property value.
                            ; (n velo: xx chan: aa ... )
@@ -292,8 +334,8 @@
                                         (null? args)
                                         (keyword? (car args))
                                         (notation-list? (car args)) ; ADDED (Tue, 30 Jun 2020 09:21:12 +0900)
-                                        (notation? (car args)) ; ADDED (Tue, 30 Jun 2020 09:21:12 +0900)
-                                        )
+                                        (notation? (car args))) ; ADDED (Tue, 30 Jun 2020 09:21:12 +0900)
+                                        
                                     ;then go to the next of n-loop1
                                     (n-loop1 (+ idx 1)      args  params newvals (cons (cons k (reverse additional-mapvals)) mapvals )  notes default-param-name target-notation?)
                                     
@@ -304,12 +346,13 @@
                                                  (list vv)))
                                       (set! vv (reverse vv))
                                       (set! idx (+ idx 1))
-                                      (n-loop1-2 (append  vv additional-mapvals ) )))))
+                                      (n-loop1-2 (append  vv additional-mapvals ))))))
 
                                ; targ: set "target-notation?" (Thu, 08 Aug 2019 18:48:01 +0900)
                                ((eq? k 'targ )
                                 (if (not (procedure? v))
                                   (raise (cons 'illegal-argument-exception "non procedure value was passed to targ: " ) ))
+
                                 (n-loop1 (+ idx 1) (cdr args) params newvals mapvals notes default-param-name v))
 
                                ; Treat as a normal parameter name.
