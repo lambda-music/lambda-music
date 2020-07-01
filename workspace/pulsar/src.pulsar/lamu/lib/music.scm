@@ -397,14 +397,28 @@
                                         (n-loop-3 (append  vv additional-mapvals ))))))
                                 )))))
 
-                        ((pair? e)
-                         ; error check
-                         (if (circular-list? e )
-                           (raise '( invalid-argument-error . "a circular list is not allowed here." ) ))
+                        ((list? e)
+                         ; Let it accept only lists. (Wed, 01 Jul 2020 15:16:52 +0900)
+                         ; This enables (n type: 'note '() '() '() ) to get zero result.
+                         (cond
+                           ; error if the specified element is a circular list.
+                           ((circular-list? e )
+                            (raise '( invalid-argument-error . "a circular list is not allowed here." ) ))
 
-                         (if (notation? e)
-                           (n-loop1 (+ idx 1 ) (cdr args) params newvals mapvals (append-proc notes (list e)) default-param-name target-notation?)
-                           (n-loop1 (+ idx 1 ) (cdr args) params newvals mapvals (append-proc notes       e)  default-param-name target-notation?)))
+                           ; ignore if it is a null-list.
+                           ((null? e)
+                            (n-loop1 (+ idx 1 ) (cdr args) params newvals mapvals notes  default-param-name target-notation?))
+
+                           ; error if the specified list is a notation.
+                           ((notation? e)
+                            (raise "n-proc accepts only notation-lists; it is illegal to specify any notations here." ))
+
+                           (else
+                             (n-loop1 (+ idx 1 ) (cdr args) params newvals mapvals (append-proc notes       e)  default-param-name target-notation?))))
+
+                         ; (if (notation? e)
+                         ;   (n-loop1 (+ idx 1 ) (cdr args) params newvals mapvals (append-proc notes (list e)) default-param-name target-notation?)
+                         ;   (n-loop1 (+ idx 1 ) (cdr args) params newvals mapvals (append-proc notes       e)  default-param-name target-notation?))
                         (else 
                           ; when it is neither a parameter nor a note.
                           (cond 
@@ -593,10 +607,11 @@
 ; 
 
 
-; ### About The Modification on (Wed, 01 Jul 2020 13:46:44 +0900)
-; << >> is not necessary anymore; << is default.
-; The first element is applyed as `params`.
 #|
+ | ## About The Modification on (Wed, 01 Jul 2020 13:46:44 +0900)
+ |  << >> is not necessary anymore; << is default.
+ |  The first element is applyed as `params`.
+ | 
  | (n type: 'note (n velo: 1 2 3)) 
  |   (((type . note) (velo . 1))
  |   ((type . note) (velo . 2))
@@ -606,6 +621,26 @@
  |   (((type . note) (velo . 2))
  |   ((type . note) (velo . 3))
  |   ((type . note) (velo . 4)))
+ |
+ | ## (n type: 'note '() '() '() ) to get zero result.
+ | 
+ | (n type: 'note '())
+ |  ;  (((type . note)))
+ | 
+ | (n type: 'note '() '())
+ |  ;  (((type . note)))
+ | 
+ | (n type: 'note '() '() '())
+ |  ;  (((type . note)))
+ | 
+ | (n type: 'note '(()))
+ |  ;  (((type . note)))
+ | 
+ | 
+ | (n type: 'note '(()()))
+ |  ;  (((type . note))
+ |  ;  ((type . note)))
+ | 
  |#
 
 
