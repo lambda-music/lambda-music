@@ -247,345 +247,401 @@
                                (display 'args)
                                (display args)
                                (newline)))
-  (let-values (((params mapvals notes default-param-name target-notation?)
-                ; parsing the args; filtering them into params and notes.
-                (let n-loop1 ((idx 0) ; note that idx is not precisely tracked here.
-                           (args args)
-                           (params '())
-                           (newvals '())
-                           (mapvals '())
-                           (notes '())
-                           (default-param-name #f)
-                           (target-notation? default-note?))
-                  (if debug-n-implementation (begin
-                                               (display 'append-proc-args)
-                                               (display args)
-                                               (newline)))
-                  (if (null? args)
-                    ; end the n-loop1
-                    (values params mapvals notes default-param-name target-notation?)
+  (let ((params '())
+        (newvals '())
+        (mapvals '())
+        (notes '())
+        (default-param-name #f)
+        (target-notation? default-note?)) 
 
-                    ; process n-loop1
-                    (let ((e (car args)))
-                      (cond
-                        ((keyword? e)
-                         ; advance to next element.
-                         (set! args (cdr args))
-                         (if (null? args)
-                           ; then
-                           (raise '(invalid-argument-error . "insufficient number of argument error" ))
+    ; parsing the args; filtering them into params and notes.
+    (let n-loop1 ((idx 0) ; note that idx is not precisely tracked here.
+                  (args args))
+      (if debug-n-implementation (begin
+                                   (display 'append-proc-args)
+                                   (display args)
+                                   (newline)))
+      (if (null? args)
+        ; end the n-loop1
+        (begin
+          ;(values params (reverse mapvals) notes default-param-name target-notation?)
+          (set! mapvals (reverse mapvals)))
 
-                           ; else
-                           ; if the current value is a keyword, then treat it as a property name.
-                           ; Treat the next value as a property value.
-                           ; (n velo: xx chan: aa ... )
-                           (let ((k (string->symbol (keyword->string e)))
-                                 (v (car args)))
+        ; process n-loop1
+        (let ((e (car args)))
+          (cond
+            ((keyword? e)
+             ; advance to next element.
+             (set! args (cdr args))
+             (if (null? args)
+               ; then
+               (raise '(invalid-argument-error . "insufficient number of argument error" ))
 
-                             ; Check special property value(s).
-                             (cond
-                               ; About ">>"
-                               ; Treat >>: as the default parameter specifier.  We treat a parameter that
-                               ; was passed with a value >>: as "default-param-name"; when a non-note
-                               ; value is specified in the note list, we treat the value as a
-                               ; property value of the "default-param-name".  For further information,
-                               ; see the examples in the comment following.
-                               ((and (keyword? v) (string=? (keyword->string v) ">>" ))
-                                (if debug-n-implementation (begin
-                                                             (display "n-implementation >> called k=")
-                                                             (display k)
-                                                             (newline)))
-                                (let n-loop1-1 ()
-                                  ; advance to next element, again.
-                                  (set! args (cdr args))
-                                  (if (or 
-                                        (null? args)
-                                        (keyword? (car args)))
-                                    ;then
-                                    (n-loop1 (+ idx 1) args                        params newvals mapvals notes k target-notation?)
-                                    ;else
-                                    (let ((vv #f)
-                                          (vv-note-list '()))
-                                      (set! vv (car args))
-                                      (set! vv (if (pair? vv)
-                                                 vv
-                                                 (list vv)))
+               ; else
+               ; if the current value is a keyword, then treat it as a property name.
+               ; Treat the next value as a property value.
+               ; (n velo: xx chan: aa ... )
+               (let ((k (string->symbol (keyword->string e)))
+                     (v (car args)))
 
-                                      ; Creating note for each value; note that the result of (list (cons key value)) is a note.
-                                      (set! vv-note-list (map (lambda(vvv) (list (cons k vvv ))) vv ))
-
-                                      ; Append the created notes to the `notes`.
-                                      (set! notes (append-proc notes vv-note-list))
-                                      (n-loop1-1)))))
-
-                               ; About "<<"  
-                               ; Treat <<: as the mapping value list specifier aka "mapvals". When <<: is specified,
-                               ; the process takes the next value of the current value, and set it as "vv" in this code 
-                               ; and treat it as a mapvals. The value should be a list; otherwise the result is unspecified.
-                               ; This should be checked before the execution, but it does not in the current state. todo.
-                               ; A mapvals is a cons cell which consists the key and the value list. (Mon, 16 Sep 2019 11:18:10 +0900)
-                               ((and (keyword? v) (string=? (keyword->string v) "<<" ) )
-
-                                ; added loop processing (Mon, 29 Jun 2020 11:05:32 +0900) 
-                                (let n-loop1-2 ((additional-mapvals '()) )
-                                  ; advance to next element, again.
-                                  (set! args (cdr args))
-
-                                  (if (or 
-                                        (null? args)
-                                        (keyword? (car args))
-                                        (notation-list? (car args)) ; ADDED (Tue, 30 Jun 2020 09:21:12 +0900)
-                                        (notation? (car args))) ; ADDED (Tue, 30 Jun 2020 09:21:12 +0900)
-                                        
-                                    ;then go to the next of n-loop1
-                                    (n-loop1 (+ idx 1)      args  params newvals (cons (cons k (reverse additional-mapvals)) mapvals )  notes default-param-name target-notation?)
-                                    
-                                    ;else go to the next of n-loop1-2
-                                    (let ((vv (car args)))
-                                      (set! vv (if (pair? vv)
-                                                 vv
-                                                 (list vv)))
-                                      (set! vv (reverse vv))
-                                      (set! idx (+ idx 1))
-                                      (n-loop1-2 (append  vv additional-mapvals ))))))
-
-                               ; targ: set "target-notation?" (Thu, 08 Aug 2019 18:48:01 +0900)
-                               ((eq? k 'targ )
-                                (if (not (procedure? v))
-                                  (raise (cons 'illegal-argument-exception "non procedure value was passed to targ: " ) ))
-
-                                (n-loop1 (+ idx 1) (cdr args) params newvals mapvals notes default-param-name v))
-
-                               ; Treat as a normal parameter name.
-                               (else
-                                (if #f
-                                  ; version 1
-                                  (n-loop1 (+ idx 1) (cdr args) (cons (cons k v) params) newvals mapvals notes default-param-name target-notation?)
-
-                                  ; version 2 (copied from `mapvals`)
-                                  (let n-loop-3 ((additional-mapvals '()) )
-                                    (if (or 
-                                          (null? args)
-                                          (keyword? (car args))
-                                          (notation-list? (car args))
-                                          (notation? (car args)))    
-
-                                      ;then go to the next of n-loop1
-
-                                      (let ((new-mapvals (if (null? additional-mapvals)
-                                                            mapvals
-                                                            ; all elments go to mapvals
-                                                            (cons (cons k (reverse additional-mapvals)) mapvals )))
-                                             (new-params  (if (null? additional-mapvals) 
-                                                            params 
-                                                            ; the only first element goes to params
-                                                            (cons (cons k (last additional-mapvals )) params ))))
-
-                                        (n-loop1 (+ idx 1)      args  new-params newvals new-mapvals  notes default-param-name target-notation?))
-
-                                      ;else go to the next of n-loop-3
-                                      (let ((vv (car args)))
-                                        (set! vv (if (pair? vv)
-                                                   vv
-                                                   (list vv)))
-                                        (set! vv (reverse vv))
-                                        (set! idx (+ idx 1))
-
-                                        ; advance to next element, again.
-                                        (set! args (cdr args))
-
-                                        (n-loop-3 (append  vv additional-mapvals ))))))
-                                )))))
-
-                        ((list? e)
-                         ; Let it accept only lists. (Wed, 01 Jul 2020 15:16:52 +0900)
-                         ; This enables (n type: 'note '() '() '() ) to get zero result.
-                         (cond
-                           ; error if the specified element is a circular list.
-                           ((circular-list? e )
-                            (raise '( invalid-argument-error . "a circular list is not allowed here." ) ))
-
-                           ; ignore if it is a null-list.
-                           ((null? e)
-                            (n-loop1 (+ idx 1 ) (cdr args) params newvals mapvals notes  default-param-name target-notation?))
-
-                           ; error if the specified list is a notation.
-                           ((notation? e)
-                            (raise "n-proc accepts only notation-lists; it is illegal to specify any notations here." ))
-
-                           (else
-                             (n-loop1 (+ idx 1 ) (cdr args) params newvals mapvals (append-proc notes       e)  default-param-name target-notation?))))
-
-                         ; (if (notation? e)
-                         ;   (n-loop1 (+ idx 1 ) (cdr args) params newvals mapvals (append-proc notes (list e)) default-param-name target-notation?)
-                         ;   (n-loop1 (+ idx 1 ) (cdr args) params newvals mapvals (append-proc notes       e)  default-param-name target-notation?))
-                        (else 
-                          ; when it is neither a parameter nor a note.
-                          (cond 
-                            ((eq? 'go-to-param default-param-proc)
-                             ; default it to params.
-                             (cond
-                               ((= idx 0)
-                                (n-loop1 (+ idx 1) (cdr args) (cons (cons 'note e) params) newvals mapvals notes default-param-name target-notation?))
-                               ((= idx 1)
-                                (n-loop1 (+ idx 1) (cdr args) (cons (cons 'pos  e) params) newvals mapvals notes default-param-name target-notation?))
-                               ((= idx 2)
-                                (n-loop1 (+ idx 1) (cdr args) (cons (cons 'velo e) params) newvals mapvals notes default-param-name target-notation?))
-                               (else
-                                 (raise '(invalid-argument-error . "illegal position as a default parameter value" ))))
-                             ; otherwise, default it to notes.
-                             )
-                            ((eq? 'go-to-notes default-param-proc )
-                             (n-loop1 (+ idx 1) (cdr args) params newvals mapvals (append-proc notes (list e)) default-param-name target-notation?))
-                            ((eq? 'go-to-error default-param-proc )
-                             (raise '(invalid-argument-error . "default parameter is not allowed here." ) ))
-                            (else
-                              (raise '(internal-error . (string-append "mysterious internal error " 
-                                                                       (symbol->string default-param-proc)))))))))))))
-
-              (let ((notes notes))
-                (if (and 
-                      ; (Mon, 29 Jun 2020 16:28:11 +0900)
-                      (= 0 (length mapvals))
-                      (= 0 (length notes)))
-                  ; If no note was specified, the `params` object becomes a note object.
-                  (begin
+                 ; Check special property value(s).
+                 (cond
+                   ; About ">>"
+                   ; Treat >>: as the default parameter specifier.  We treat a parameter that
+                   ; was passed with a value >>: as "default-param-name"; when a non-note
+                   ; value is specified in the note list, we treat the value as a
+                   ; property value of the "default-param-name".  For further information,
+                   ; see the examples in the comment following.
+                   ((and (keyword? v) (string=? (keyword->string v) ">>" ))
                     (if debug-n-implementation (begin
-                                                 (display "n-implementation no note")))
-                    (set! notes
-                      (sort-note-properties 
-                        (cleanup-note-properties 
-                          (reverse params))))
-                    notes)
+                                                 (display "n-implementation >> called k=")
+                                                 (display k)
+                                                 (newline)))
+                    (let n-loop1-1 ()
+                      ; advance to next element, again.
+                      (set! args (cdr args))
+                      (if (or 
+                            (null? args)
+                            (keyword? (car args)))
+                        ;then
+                        (begin
+                          ;(n-loop1 (+ idx 1) args                        params newvals mapvals notes k target-notation?)
+                          (set! default-param-name k) 
+                          (n-loop1 (+ idx 1) args))
 
-                  ; Otherwise, apply the params to the passed note objects.
-                  (begin
-                    (if debug-n-implementation (begin
-                                                 (display "n-implementation yes we have notes")))
+                        ;else
+                        (let ((vv #f)
+                              (vv-note-list '()))
+                          (set! vv (car args))
+                          (set! vv (if (pair? vv)
+                                     vv
+                                     (list vv)))
 
-                    ;; If the length of notes is less than the length of the maximum length of mapvals, 
-                    ;; let notes the same length as the maximum length of mapvals by adding empty notes.
-                    (set! notes
-                      (let ((mapvals-max (fold (lambda (curr-elem1 max-val1)
-                                                 ; curr-elem is a cons cell where car is a key value and cdr is a value; an alist element.
-                                                 (let ((curr-val1 (length (cdr curr-elem1))))
-                                                   (if (< max-val1 curr-val1 )
-                                                     curr-val1
-                                                     max-val1))) 0 mapvals) ))
-                        (let notes-to-mapvals-loop (( notes (reverse notes) ))
-                          (if (< (length notes) mapvals-max )
+                          ; Creating note for each value; note that the result of (list (cons key value)) is a note.
+                          (set! vv-note-list (map (lambda(vvv) (list (cons k vvv ))) vv ))
+
+                          ; Append the created notes to the `notes`.
+                          (set! notes (append-proc notes vv-note-list))
+                          (n-loop1-1)))))
+
+                   ; About "<<"  
+                   ; Treat <<: as the mapping value list specifier aka "mapvals". When <<: is specified,
+                   ; the process takes the next value of the current value, and set it as "vv" in this code 
+                   ; and treat it as a mapvals. The value should be a list; otherwise the result is unspecified.
+                   ; This should be checked before the execution, but it does not in the current state. todo.
+                   ; A mapvals is a cons cell which consists the key and the value list. (Mon, 16 Sep 2019 11:18:10 +0900)
+                   ((and (keyword? v) (string=? (keyword->string v) "<<" ) )
+
+                    ; added loop processing (Mon, 29 Jun 2020 11:05:32 +0900) 
+                    (let n-loop1-2 ((additional-mapvals '()) )
+                      ; advance to next element, again.
+                      (set! args (cdr args))
+
+                      (if (or 
+                            (null? args)
+                            (keyword? (car args))
+                            (notation-list? (car args)) ; ADDED (Tue, 30 Jun 2020 09:21:12 +0900)
+                            (notation? (car args))) ; ADDED (Tue, 30 Jun 2020 09:21:12 +0900)
+
+                        ;then go to the next of n-loop1
+                        (begin
+                          ; (n-loop1 (+ idx 1)      args  params newvals (cons (cons k (reverse additional-mapvals)) mapvals )  notes default-param-name target-notation?)
+                          (set! mapvals (cons (cons k (reverse additional-mapvals)) mapvals ))
+                          (n-loop1 (+ idx 1) args))
+
+                        ;else go to the next of n-loop1-2
+                        (let ((vv (car args)))
+                          (set! vv (if (pair? vv)
+                                     vv
+                                     (list vv)))
+                          (set! vv (reverse vv))
+                          (set! idx (+ idx 1))
+                          (n-loop1-2 (append  vv additional-mapvals ))))))
+
+                   ; targ: set "target-notation?" (Thu, 08 Aug 2019 18:48:01 +0900)
+                   ((eq? k 'targ )
+                    (if (not (procedure? v))
+                      (raise (cons 'illegal-argument-exception "non procedure value was passed to targ: " ) ))
+
+                    (begin 
+                      ; (n-loop1 (+ idx 1) (cdr args) params newvals mapvals notes default-param-name v)
+                      (set! target-notation? v )
+                      (n-loop1 (+ idx 1) (cdr args))))
+
+                   ; Treat as a normal parameter name.
+                   (else
+                     (if #f
+                       ; version 1
+                       (begin 
+                         ; (n-loop1 (+ idx 1) (cdr args) (cons (cons k v) params) newvals mapvals notes default-param-name target-notation?)
+                         (set! params (cons (cons k v) params))
+                         (n-loop1 (+ idx 1) (cdr args)))
+
+                       ; version 2 (copied from `mapvals`)
+                       (let n-loop-3 ((additional-mapvals '()) )
+                         (if (or 
+                               (null? args)
+                               (keyword? (car args))
+                               (notation-list? (car args))
+                               (notation? (car args)))    
+
+                           ;then go to the next of n-loop1
+                           (let ((new-mapvals 
+                                   (if (null? additional-mapvals)
+                                     ;then
+                                     mapvals
+
+                                     ;else all elments go to mapvals
+                                     (let ((mapvals-elem0 (assq k mapvals)))
+                                       (if mapvals-elem0 
+                                         (begin
+                                           (set-cdr! mapvals-elem0 (append 
+                                                                     (cdr mapvals-elem0)
+                                                                     (reverse additional-mapvals)))
+                                           mapvals)
+                                         (cons (cons k (reverse additional-mapvals)) mapvals ))
+                                       )))
+
+                                 (new-params  
+                                   (if (null? additional-mapvals) 
+                                     params 
+                                     ; the only first element goes to params
+                                     (cons (cons k (last additional-mapvals )) params ))))
+
+                             (begin 
+                               ; (n-loop1 (+ idx 1)      args  new-params newvals new-mapvals  notes default-param-name target-notation?)
+                               (set! params new-params )
+                               (set! mapvals new-mapvals)
+                               (n-loop1 (+ idx 1) args)))
+
+                           ;else go to the next of n-loop-3
+                           (let ((vv (car args)))
+                             (set! vv (if (pair? vv)
+                                        vv
+                                        (list vv)))
+                             (set! vv (reverse vv))
+                             (set! idx (+ idx 1))
+
+                             ; advance to next element, again.
+                             (set! args (cdr args))
+
+                             (n-loop-3 (append  vv additional-mapvals )))))))))))
+
+            ((list? e)
+             ; Let it accept only lists. (Wed, 01 Jul 2020 15:16:52 +0900)
+             ; This enables (n type: 'note '() '() '() ) to get zero result.
+             (cond
+               ; error if the specified element is a circular list.
+               ((circular-list? e )
+                (raise '( invalid-argument-error . "a circular list is not allowed here." ) ))
+
+               ; ignore if it is a null-list.
+               ((null? e)
+
+                (begin 
+                  ; (n-loop1 (+ idx 1 ) (cdr args) params newvals mapvals notes  default-param-name target-notation?)
+                  (n-loop1 (+ idx 1 ) (cdr args))))
+
+               ; error if the specified list is a notation.
+               ((notation? e)
+                (raise "n-proc accepts only notation-lists; it is illegal to specify any notations here." ))
+
+               (else
+                 (begin 
+                   ; (n-loop1 (+ idx 1 ) (cdr args) params newvals mapvals (append-proc notes       e)  default-param-name target-notation?)
+                   (set! notes (append-proc notes e))
+                   (n-loop1 (+ idx 1 ) (cdr args))))))
+
+            ; (if (notation? e)
+            ;   (begin 
+            ;      (n-loop1 (+ idx 1 ) (cdr args) params newvals mapvals (append-proc notes (list e)) default-param-name target-notation?))
+            ;   (begin 
+            ;      (n-loop1 (+ idx 1 ) (cdr args) params newvals mapvals (append-proc notes       e)  default-param-name target-notation?)))
+
+            (else 
+              ; when it is neither a parameter nor a note.
+              (cond 
+                ((eq? 'go-to-param default-param-proc)
+                 ; default it to params.
+                 (cond
+                   ((= idx 0)
+                    (begin 
+                      ; (n-loop1 (+ idx 1) (cdr args) (cons (cons 'note e) params) newvals mapvals notes default-param-name target-notation?)
+                      (set! params (cons (cons 'note e) params))
+                      (n-loop1 (+ idx 1) (cdr args))))
+                   ((= idx 1)
+                    (begin 
+                      ; (n-loop1 (+ idx 1) (cdr args) (cons (cons 'pos  e) params) newvals mapvals notes default-param-name target-notation?)
+                      (set! params (cons (cons 'pos  e) params))
+                      (n-loop1 (+ idx 1) (cdr args))))
+                   ((= idx 2)
+                    (begin 
+                      ; (n-loop1 (+ idx 1) (cdr args) (cons (cons 'velo e) params) newvals mapvals notes default-param-name target-notation?)
+                      (set! params (cons (cons 'velo e) params))
+                      (n-loop1 (+ idx 1) (cdr args))))
+                   (else
+                     (raise '(invalid-argument-error . "illegal position as a default parameter value" ))))
+                 ; otherwise, default it to notes.
+                 )
+                ((eq? 'go-to-notes default-param-proc )
+                 (begin 
+                   ; (n-loop1 (+ idx 1) (cdr args) params newvals mapvals (append-proc notes (list e)) default-param-name target-notation?)
+                   (set! notes (append-proc notes (list e)))
+                   (n-loop1 (+ idx 1) (cdr args))))
+
+                ((eq? 'go-to-error default-param-proc )
+                 (raise '(invalid-argument-error . "default parameter is not allowed here." ) ))
+                (else
+                  (raise '(internal-error . (string-append "mysterious internal error " 
+                                                           (symbol->string default-param-proc))))))))))) ; end of n-loop1
+
+    (let ((notes notes))
+      (if (and 
+            ; (Mon, 29 Jun 2020 16:28:11 +0900)
+            (= 0 (length mapvals))
+            (= 0 (length notes)))
+        ; If no note was specified, the `params` object becomes a note object.
+        (begin
+          (if debug-n-implementation (begin
+                                       (display "n-implementation no note")))
+          (set! notes
+            (list
+              (sort-note-properties 
+                (cleanup-note-properties 
+                  (reverse params)))))
+          notes)
+
+        ; Otherwise, apply the params to the passed note objects.
+        (begin
+          (if debug-n-implementation (begin
+                                       (display "n-implementation yes we have notes")))
+
+          ;; If the length of notes is less than the length of the maximum length of mapvals, 
+          ;; let notes the same length as the maximum length of mapvals by adding empty notes.
+          (set! notes
+            (let ((mapvals-max (fold (lambda (curr-elem1 max-val1)
+                                       ; curr-elem is a cons cell where car is a key value and cdr is a value; an alist element.
+                                       (let ((curr-val1 (length (cdr curr-elem1))))
+                                         (if (< max-val1 curr-val1 )
+                                           curr-val1
+                                           max-val1))) 0 mapvals) ))
+              (let notes-to-mapvals-loop (( notes (reverse notes) ))
+                (if (< (length notes) mapvals-max )
+                  ;then
+                  (notes-to-mapvals-loop (cons '() notes))
+                  ;else
+                  (reverse notes)))))
+
+
+
+
+          ;; Applying `default-param-name`.
+          (set! notes 
+            (map (lambda (note)
+                   (if (not (notation? note))
+                     (if default-param-name
+                       (set! note (list (cons  default-param-name note )))
+                       (raise '( illegal-state-error . "no default-param-name was specified." ))))
+                   note)
+                 notes))
+
+          ; ## Applying  `targ params` ##
+          ; If every element in mapvals consists a value list which length is 1, then apply `targs`.
+          (if (not (any (lambda (e)
+                          ; e is an element of mapvals;
+                          ; kar is a key and kdr is a value consists a list.
+                          (< 1 (length (cdr e))))
+                        mapvals))
+            (set! notes 
+              (map (lambda (note)
+                     (if (target-notation? note)
+                       (set! note
+                         (notation-set-all! params note)))
+                     note)
+                   notes)))
+
+          ;; Applying `mapvals`
+          ;             curr-var last-var
+          (set! notes
+            (fold (lambda(a-mapval notes)
+                    ; We return the result of the map and it goes to
+                    ; fold's result. It will come back as 'notes' at
+                    ; the next turn.
+                    (let ((prop-name  (car a-mapval))
+                          (prop-vals  (cdr a-mapval)))
+
+                      (let n-loop2 ((notes notes)
+                                    (prop-vals prop-vals ))
+                        (if (null? notes)
+                          ;then
+                          '()
+                          ;else
+                          (if (null? prop-vals) 
                             ;then
-                            (notes-to-mapvals-loop (cons (list (cons 'type #f)) notes))
+                            (cons (car notes)
+                                  (n-loop2 (cdr notes) prop-vals))
                             ;else
-                            (reverse notes)))))
-                    
-                    
+                            (let ((a-note     (car notes))
+                                  (a-prop-val (car prop-vals)))
 
+                              (if (target-notation? a-note) 
+                                ;then
+                                (cons
+                                  ; the current value
 
-                    ;; Applying `default-param-name`
-                    (set! notes 
-                      (map (lambda (note)
-                             (if (not (notation? note))
-                               (if default-param-name
-                                 (set! note (list (cons  default-param-name note )))
-                                 (raise '( illegal-state-error . "no default-param-name was specified." ))))
+                                  (notation-set! prop-name a-prop-val a-note)
+                                  ;(sort-note-properties 
+                                  ;  (cleanup-note-properties
+                                  ;    (cons
+                                  ;      (cons prop-name a-prop-val)
+                                  ;      a-note)))
+                                  ; the next value
+                                  (n-loop2 (cdr notes) (cdr prop-vals)))
+                                ;else
+                                ; note that we do not cdr the prop-vals to remain on the current value.
+                                (cons a-note (n-loop2 (cdr notes)    prop-vals )))))))
+                      ;(if #f
+                      ;  (map (lambda(a-note a-prop-val)
+                      ;         (if (target-notation? a-note) 
+                      ;           ;then
+                      ;           (sort-note-properties 
+                      ;             (cleanup-note-properties
+                      ;               (cons
+                      ;                 (cons prop-name a-prop-val)
+                      ;                 a-note)))
+                      ;           ;else
+                      ;           a-note))
+                      ;       notes
+                      ;       prop-vals))
 
-                             (if (target-notation? note)
-                               (set! note 
-                                 (notation-set-all! params note)
-                                 ;(sort-note-properties 
-                                 ;  (cleanup-note-properties
-                                 ;    (append 
-                                 ;      ; duplicate each association. dont let it shared from multiple notes.
-                                 ;      ; (Wed, 31 Jul 2019 16:19:53 +0900)
-                                 ;      (ccons (reverse params))
-                                 ;      note )))
-                                 ))
-                             note)
-                           notes))
+                      ))
+                  notes 
+                  mapvals))
 
-                    ;; Applying `mapvals`
-                    ;             curr-var last-var
-                    (set! notes
-                      (fold (lambda(a-mapval notes)
-                              ; We return the result of the map and it goes to
-                              ; fold's result. It will come back as 'notes' at
-                              ; the next turn.
-                              (let ((prop-name  (car a-mapval))
-                                    (prop-vals  (cdr a-mapval)))
-
-                                (let n-loop2 ((notes notes)
-                                           (prop-vals prop-vals ))
-                                  (if (null? notes)
-                                    ;then
-                                    '()
-                                    ;else
-                                    (if (null? prop-vals) 
-                                      ;then
-                                      (cons (car notes)
-                                            (n-loop2 (cdr notes) prop-vals))
-                                      ;else
-                                      (let ((a-note     (car notes))
-                                            (a-prop-val (car prop-vals)))
-
-                                        (if (target-notation? a-note) 
-                                          ;then
-                                          (cons
-                                            ; the current value
-
-                                            (notation-set! prop-name a-prop-val a-note)
-                                            ;(sort-note-properties 
-                                            ;  (cleanup-note-properties
-                                            ;    (cons
-                                            ;      (cons prop-name a-prop-val)
-                                            ;      a-note)))
-                                            ; the next value
-                                            (n-loop2 (cdr notes) (cdr prop-vals)))
-                                          ;else
-                                          ; note that we do not cdr the prop-vals to remain on the current value.
-                                          (cons a-note (n-loop2 (cdr notes)    prop-vals )))))))
-                                ;(if #f
-                                ;  (map (lambda(a-note a-prop-val)
-                                ;         (if (target-notation? a-note) 
-                                ;           ;then
-                                ;           (sort-note-properties 
-                                ;             (cleanup-note-properties
-                                ;               (cons
-                                ;                 (cons prop-name a-prop-val)
-                                ;                 a-note)))
-                                ;           ;else
-                                ;           a-note))
-                                ;       notes
-                                ;       prop-vals))
-                                
-                                ))
-                            notes 
-                            mapvals))
-
-                    ; Eliminate the duplicate len-notes except the last len-note.
-                    ; Search len-notes (n type: 'len ) and then append the last len-note
-                    ; to the other notes.
-                    (set! notes (let* ((notes notes)
-                                       (len-notes   (filter (lambda(note) 
-                                                              (begin
-                                                                (eq? 'len (cdr (or (assq 'type note)
-                                                                                   (cons 'type #f)))))) 
-                                                            notes))
-                                       (other-notes (filter (lambda(note) 
-                                                              (not 
-                                                                (eq? 'len (cdr (or (assq 'type note)
-                                                                                   (cons 'type #f)))))) 
-                                                            notes)))
-                                  ; (display len-notes)
-                                  ; (newline)
-                                  (if (= 0 (length len-notes))
-                                    ;then *RETURN*
-                                    notes
-                                    ;else *RETURN*
-                                    (append other-notes
-                                            (last-pair len-notes)))))
-                    notes)))
-              ))
+          ; Eliminate the duplicate len-notes except the last len-note.
+          ; Search len-notes (n type: 'len ) and then append the last len-note
+          ; to the other notes.
+          (set! notes (let* ((notes notes)
+                             (len-notes   (filter (lambda(note) 
+                                                    (begin
+                                                      (eq? 'len (cdr (or (assq 'type note)
+                                                                         (cons 'type #f)))))) 
+                                                  notes))
+                             (other-notes (filter (lambda(note) 
+                                                    (not 
+                                                      (eq? 'len (cdr (or (assq 'type note)
+                                                                         (cons 'type #f)))))) 
+                                                  notes)))
+                        ; (display len-notes)
+                        ; (newline)
+                        (if (= 0 (length len-notes))
+                          ;then *RETURN*
+                          notes
+                          ;else *RETURN*
+                          (append other-notes
+                                  (last-pair len-notes)))))
+          notes)))
+    ))
 
 ; === note ===
 ; This function creates a note. "n" stands for "notation". 
@@ -644,7 +700,16 @@
  |#
 
 
-
+#|
+ | problem 
+ |
+ | (n velo: 1 2 3 velo: 1 3 4 5 6 pos: 3 4 5 )
+ | (((type . #f) (pos . 3) (velo . 1))
+ | ((type . #f) (pos . 4) (velo . 2))
+ | ((type . #f) (pos . 5) (velo . 3))
+ | ((type . #f) (pos . 3) (velo . 5))
+ | ((type . #f) (pos . 3) (velo . 6)))
+ |#
 
 
 ; Defined a macro for n-proc (Mon, 29 Jun 2020 16:39:16 +0900)
