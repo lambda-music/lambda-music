@@ -248,9 +248,9 @@
                                (display args)
                                (newline)))
   (let ((params '())
-        (newvals '())
         (mapvals '())
         (notes '())
+        (join-mode 'outer) ; this variable should be either 'outer or 'inner .
         (default-param-name #f)
         (target-notation? default-note?)) 
 
@@ -367,6 +367,14 @@
                       ; (n-loop1 (+ idx 1) (cdr args) params newvals mapvals notes default-param-name v)
                       (set! target-notation? v )
                       (n-loop1 (+ idx 1) (cdr args))))
+                   ; join: set the join-mode .
+                   ((eq? k 'join )
+                    (if (or (eq? v 'outer) 
+                            (eq? v 'inner))
+                      #t
+                      (raise "join: should be either 'inner or 'outer"))
+                    (set! join-mode v)
+                    (n-loop1 (+ idx 1) (cdr args)))
 
                    ; Treat as a normal parameter name.
                    (else
@@ -500,8 +508,11 @@
             ; (Mon, 29 Jun 2020 16:28:11 +0900)
             (= 0 (length mapvals))
             (= 0 (length notes)))
-        ; If no note was specified, the `params` object becomes a note object.
+        ;then
         (begin
+          ; If no note was specified, the `params` object becomes a note object.
+          ; Note that this block is not executed anymore since the default 
+          ; behavior always lets mapvals larger than zero.
           (if debug-n-implementation (begin
                                        (display "n-implementation no note")))
           (set! notes
@@ -511,14 +522,16 @@
                   (reverse params)))))
           notes)
 
-        ; Otherwise, apply the params to the passed note objects.
+        ;else
         (begin
+          ; Otherwise, apply the params to the passed note objects.
           (if debug-n-implementation (begin
                                        (display "n-implementation yes we have notes")))
 
           ;; If the length of notes is less than the length of the maximum length of mapvals, 
           ;; let notes the same length as the maximum length of mapvals by adding empty notes.
-          (set! notes
+          (if (eq? join-mode 'outer )
+           (set! notes
             (let ((mapvals-max (fold (lambda (curr-elem1 max-val1)
                                        ; curr-elem is a cons cell where car is a key value and cdr is a value; an alist element.
                                        (let ((curr-val1 (length (cdr curr-elem1))))
@@ -530,9 +543,7 @@
                   ;then
                   (notes-to-mapvals-loop (cons '() notes))
                   ;else
-                  (reverse notes)))))
-
-
+                  (reverse notes))))))
 
 
           ;; Applying `default-param-name`.
@@ -545,8 +556,9 @@
                    note)
                  notes))
 
-          ; ## Applying  `targ params` ##
+          ; Applying  `targ params` 
           ; If every element in mapvals consists a value list which length is 1, then apply `targs`.
+          ; Execute only when the length of all mapval is less or equal to one.
           (if (not (any (lambda (e)
                           ; e is an element of mapvals;
                           ; kar is a key and kdr is a value consists a list.
@@ -709,6 +721,17 @@
  | ((type . #f) (pos . 5) (velo . 3))
  | ((type . #f) (pos . 3) (velo . 5))
  | ((type . #f) (pos . 3) (velo . 6)))
+ |#
+
+
+#| Added join: (Thu, 02 Jul 2020 19:09:23 +0900)
+ |
+ | (n velo: 1 2 3 join: 'inner )
+ | ; ()
+ | (n velo: 1 2 3 join: 'inner '(()()()) )
+ | ; (((velo . 1)) ((velo . 2)) ((velo . 3)))
+ | (n velo: 1 2 3 join: 'outer )
+ | ;(((velo . 1)) ((velo . 2)) ((velo . 3)))
  |#
 
 
@@ -913,14 +936,18 @@
 
 
 ; This function performs deep copy on a cons cell.
-; Currently this funciton is not used.
-; (Sun, 28 Jul 2019 13:43:45 +0900)
-(define (ccons c)
+; Currently this funciton is not used. (Sun, 28 Jul 2019 13:43:45 +0900)
+; Renamed to cons-copy from ccons. (Thu, 02 Jul 2020 18:48:54 +0900)
+(define (cons-copy c)
   (if (pair? c)
     (cons 
-     (ccons (car c)) 
-     (ccons (cdr c)))
+     (cons-copy (car c)) 
+     (cons-copy (cdr c)))
     c))
+
+
+; for the backward-compatibility
+(define ccons cons-copy )
 
 
 ; n:map
@@ -995,7 +1022,7 @@
 ; other. For further information, I forgot.
 ; (Sun, 28 Jul 2019 13:48:04 +0900)
 (define (t . args) 
-  (set! args (ccons args))
+  (set! args (cons-copy args))
   (let ((notes (reverse (let loop (( args args))
                           (if (null? args)
                             '()      
@@ -2206,7 +2233,7 @@
 ; === repeat ===
 ; repeat the passed notes.
 (define (repeat times lst )
-  (apply append-notes (map ccons (make-list times lst ))))
+  (apply append-notes (map cons-copy (make-list times lst ))))
 ; this procedure may be obsolete. (Sat, 27 Jun 2020 09:28:38 +0900)
 
 
@@ -2409,7 +2436,7 @@
                                                                                                      current-notation))
 
                                                                                             ;initial value for the current-notation
-                                                                                            (mov! pos-val (ccons notations))
+                                                                                            (mov! pos-val (cons-copy notations))
                                                                                             ; skip the first one element.
                                                                                             (cdr arg-keys)
                                                                                             ; skip the first one element.
@@ -2497,7 +2524,7 @@
                                                                                    (tra! 
                                                                                      (/            total-length  total-count)
                                                                                      (/ (* current total-length) total-count)
-                                                                                     (ccons notations)))
+                                                                                     (cons-copy notations)))
                                                                                  target-args))))))
                                         '())
                                   (list
