@@ -1,6 +1,7 @@
 package lamu.lib.evaluators;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
@@ -143,8 +144,9 @@ public class SchemeEvaluatorUtils {
      *    the file path to be resolved
      * @return
      *    the resolved file path
+     * @throws FileNotFoundException 
      */
-    public static File useResolve( File file ) {
+    public static File useResolve( File file ) throws FileNotFoundException {
         return useResolveProc( SchemeEvaluator.getCurrentBaseFile(), file);
     }
     
@@ -158,35 +160,45 @@ public class SchemeEvaluatorUtils {
      *    the file path to be resolved.
      * @return
      *    the resolved file path
+     *    
+     * @throws FileNotFoundException 
      */
-    public static File useResolveProc( File baseFile, File file ) {
+    public static File useResolveProc( File baseFile, File file ) throws FileNotFoundException {
         if (baseFile==null)
             throw new IllegalArgumentException( "baseFile cannot be null" );
         if (file == null)
             throw new IllegalArgumentException( "file cannot be null" );
         
-        File resolvedFile;
+        File resolvedFile=null;
         if ( file.isAbsolute()  ) {
             resolvedFile = file;
         } else {
-            resolvedFile = new File( baseFile.getParentFile(), file.getPath() );
-            if ( ! resolvedFile.exists() ) {
-                try {
-                    // See the comment.
-                    resolvedFile = new File( baseFile.getParentFile().getParentFile(), file.getPath() );
-                } catch ( NullPointerException e ) {
-                    logInfo( "could not get parent file (" + baseFile + ") " +  e.getMessage() );
-                }
-            }
+        	File newBaseFile = baseFile;
+        	
+        	// In order to avoid infinite loop, limit the maximum loop count to 1000. 
+        	for(int i=0;i<1000;i++) {
+        		// See the comment.
+        		newBaseFile = newBaseFile.getParentFile();
+        		if ( newBaseFile == null ) {
+        			throw new FileNotFoundException( file + " from " + baseFile + " does not exist" );
+        		}
+        		
+        		File newFile = new File( newBaseFile, file.getPath() );
+        		if ( newFile.exists() ) {
+        			resolvedFile = newFile;
+        			break;
+        		}
+        	}
         }
         
-        // ADDED (Mon, 22 Jun 2020 13:47:21 +0900) >>>
+        if ( resolvedFile == null )
+        	throw new IllegalStateException( "could not resolve " +  file + " from " + baseFile + "." );
+
         if ( resolvedFile.isDirectory() ) {
             resolvedFile = new File( resolvedFile, USE_MAINFILE );
         }
-        // ADDED (Mon, 22 Jun 2020 13:47:21 +0900) <<<
-        
         return resolvedFile;
+        
     }
     
     static final class EvaluatorReceiverImplementation implements EvaluatorReceiver {

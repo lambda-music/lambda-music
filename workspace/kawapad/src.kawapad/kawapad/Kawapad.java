@@ -32,6 +32,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
@@ -3218,13 +3219,14 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
      * The method to resolve the given file path with the current opening/editting file.
      * @param file
      * @return
+     * @throws FileNotFoundException 
      */
     public File resolveFile( File file ) {
-        // Note that the FILENAME will be removed in the #useResolveProc.
-        // #useResolveProc only accepts a path to main-file, not a path to main-directory.
-        // (Tue, 23 Jun 2020 04:01:26 +0900)
-        String FILENAME = "main.scm";
-        return SchemeEvaluatorUtils.useResolveProc( new File( getCurrentDirectory(), FILENAME ), file );
+        try {
+			return SchemeEvaluatorUtils.useResolveProc( getCurrentDirectory(), file );
+		} catch (FileNotFoundException e) {
+			return new File( getCurrentDirectory(), file.getPath() );
+		}
     }
     
     static final FileFilter SCHEME_FILE_FILTER = new FileFilter() {
@@ -3258,8 +3260,10 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
     }
 
     private void openFileProc(File file) throws IOException {
-        // ADDED (Fri, 05 Jun 2020 02:09:15 +0900)
-        file = resolveFile( file );
+    	// >> REMOVED (Sat, 04 Jul 2020 07:00:20 +0900)
+        // // ADDED (Fri, 05 Jun 2020 02:09:15 +0900)
+        // file = resolveFile( file );
+    	// << REMOVED (Sat, 04 Jul 2020 07:00:20 +0900)
         
         // ADDED (Mon, 22 Jun 2020 13:47:21 +0900) >>>
         if ( file.exists() && file.isDirectory() ) {
@@ -3268,10 +3272,12 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         // ADDED (Mon, 22 Jun 2020 13:47:21 +0900) <<<
         
         if ( ( ! file.exists() ) || ( ! file.isFile() ) ) {
-            file.getParentFile().mkdirs();
-            if ( ! file.createNewFile() ) {
-                throw new RuntimeException( "cannot create the specified file (" + file.getPath() + ")" );
-            }
+        	// >> MOVED (Sat, 04 Jul 2020 07:00:20 +0900)
+            // file.getParentFile().mkdirs();
+            // if ( ! file.createNewFile() ) {
+            //     throw new RuntimeException( "cannot create the specified file (" + file.getPath() + ")" );
+            // }
+        	// << MOVED (Sat, 04 Jul 2020 07:00:20 +0900)
             setTextProc( file, "\n#| empty file |#\n\n" );
         } else {
             String s = new String( Files.readAllBytes( file.toPath() ),  Charset.defaultCharset() );
@@ -3451,11 +3457,20 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         }
     }
 
-    private void saveFileProc(File filePath) throws IOException {
-        Files.write(filePath.toPath(), kawapad.getText().getBytes( Charset.defaultCharset() ), StandardOpenOption.CREATE , StandardOpenOption.TRUNCATE_EXISTING );
+    private void saveFileProc(File file) throws IOException {
+    	// >> MOVED FROM openFileProc() (Sat, 04 Jul 2020 07:00:20 +0900)
+    	if ( ! file.exists() ) {
+    		file.getParentFile().mkdirs();
+    		if ( ! file.createNewFile() ) {
+    			throw new RuntimeException( "cannot create the specified file (" + file.getPath() + ")" );
+    		}
+    	}
+    	// << MOVED FROM openFileProc() (Sat, 04 Jul 2020 07:00:20 +0900)
+    	
+        Files.write(file.toPath(), kawapad.getText().getBytes( Charset.defaultCharset() ), StandardOpenOption.CREATE , StandardOpenOption.TRUNCATE_EXISTING );
         this.fileModified = false;
-        this.currentFile = filePath;
-        setTitle( filePath.toString() );
+        this.currentFile = file;
+        setTitle( file.toString() );
 
 //          JOptionPane.showMessageDialog(this, "SAVE FILE!" + file );
     }
