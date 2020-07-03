@@ -531,19 +531,46 @@
           ;; If the length of notes is less than the length of the maximum length of mapvals, 
           ;; let notes the same length as the maximum length of mapvals by adding empty notes.
           (if (eq? join-mode 'outer )
-           (set! notes
-            (let ((mapvals-max (fold (lambda (curr-elem1 max-val1)
-                                       ; curr-elem is a cons cell where car is a key value and cdr is a value; an alist element.
-                                       (let ((curr-val1 (length (cdr curr-elem1))))
-                                         (if (< max-val1 curr-val1 )
-                                           curr-val1
-                                           max-val1))) 0 mapvals) ))
-              (let notes-to-mapvals-loop (( notes (reverse notes) ))
-                (if (< (length notes) mapvals-max )
+            (set! notes
+              (let ((mapvals-max (fold (lambda (curr-elem1 max-val1)
+                                         (if (circular-list? (cdr curr-elem1))
+                                           (raise "circular list is not allowed here" ))
+
+                                         ; curr-elem is a cons cell where car is a key value and cdr is a value; an alist element.
+                                         (let ((curr-val1 (length (cdr curr-elem1))))
+                                           (if (< max-val1 curr-val1 )
+                                             curr-val1
+                                             max-val1)))
+                                       0
+                                       mapvals)))
+                (let notes-to-mapvals-loop (( notes (reverse notes) ))
+                  (if (< (length notes) mapvals-max )
+                    ;then
+                    (notes-to-mapvals-loop (cons '() notes))
+
+                    ;else
+                    (reverse notes))))))
+
+          (if (eq? join-mode 'inner )
+            (set! notes
+              (let ((mapvals-min (fold (lambda (curr-elem2 max-val2)
+                                         ; It should ignore any circular list; TODO
+                                         (if (circular-list? (cdr curr-elem2))
+                                           (raise "circular list is not allowed here" ))
+                                         ; curr-elem is a cons cell where car is a key value and cdr is a value; an alist element.
+                                         (let ((curr-val2 (length (cdr curr-elem2))))
+                                           (if (< max-val2 curr-val2 )
+                                             curr-val2
+                                             max-val2)))
+                                       0
+                                       mapvals)))
+
+                (if (< mapvals-min (length notes) )
                   ;then
-                  (notes-to-mapvals-loop (cons '() notes))
+                  (take notes mapvals-min )
+                  
                   ;else
-                  (reverse notes))))))
+                  notes))))
 
 
           ;; Applying `default-param-name`.
