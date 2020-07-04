@@ -3219,13 +3219,14 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
      * The method to resolve the given file path with the current opening/editting file.
      * @param file
      * @return
-     * @throws FileNotFoundException 
      */
     public File resolveFile( File file ) {
         try {
 			return SchemeEvaluatorUtils.useResolveProc( getCurrentDirectory(), file );
 		} catch (FileNotFoundException e) {
 			return new File( getCurrentDirectory(), file.getPath() );
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
     }
     
@@ -3326,6 +3327,11 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         }
         openFileProc( filePath );
     }
+    public void resolveAndOpenFile( File filePath ) throws IOException {
+    	
+    }
+    
+    
     
     public void openFile() throws IOException {
         if ( ! confirmSave( ConfirmType.OPEN_FILE ) ) {
@@ -3663,7 +3669,7 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
              * directory of the new Kawapad is not set yet at this point.
              */
             newKawapad.openFile(
-                this.resolveFile(f));
+            		this.resolveFile(f));
         return kawapadFrame; 
     }
 

@@ -571,7 +571,8 @@ public class LamuApplicationBuilder extends ArgsCommandBuild {
             for ( String s : fileNameList ) {
                 try {
                     if ( first ) { 
-                        frame.getKawapad().openFile( new File(s) );
+                        frame.getKawapad().openFile( 
+                        		frame.getKawapad().resolveFile(new File(s)));
                     } else {
                         frame.getKawapad().createKawapadFrame( new File(s) );
                     }

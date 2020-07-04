@@ -8,6 +8,8 @@ import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 
@@ -144,9 +146,9 @@ public class SchemeEvaluatorUtils {
      *    the file path to be resolved
      * @return
      *    the resolved file path
-     * @throws FileNotFoundException 
+     * @throws IOException 
      */
-    public static File useResolve( File file ) throws FileNotFoundException {
+    public static File useResolve( File file ) throws IOException {
         return useResolveProc( SchemeEvaluator.getCurrentBaseFile(), file);
     }
     
@@ -160,10 +162,11 @@ public class SchemeEvaluatorUtils {
      *    the file path to be resolved.
      * @return
      *    the resolved file path
-     *    
-     * @throws FileNotFoundException 
+     * @throws FileNotFoundException if the file cannot be resolved to any existing file
+     * @throws IOException if any IOException occured when resolving the path 
      */
-    public static File useResolveProc( File baseFile, File file ) throws FileNotFoundException {
+    public static File useResolveProc( File baseFile, File file ) throws IOException, FileNotFoundException {
+    	logInfo("useResolveProc: baseFile:" + baseFile + " file:" + file );
         if (baseFile==null)
             throw new IllegalArgumentException( "baseFile cannot be null" );
         if (file == null)
@@ -173,30 +176,36 @@ public class SchemeEvaluatorUtils {
         if ( file.isAbsolute()  ) {
             resolvedFile = file;
         } else {
+    		final List<File> roots = Arrays.asList( File.listRoots() );
+
         	File newBaseFile = baseFile;
         	
-        	// In order to avoid infinite loop, limit the maximum loop count to 1000. 
-        	for(int i=0;i<1000;i++) {
-        		// See the comment.
-        		newBaseFile = newBaseFile.getParentFile();
-        		if ( newBaseFile == null ) {
-        			throw new FileNotFoundException( file + " from " + baseFile + " does not exist" );
-        		}
+        	// In order to avoid infinite loop, limit the maximum loop count to 1024. 
+        	for(int i=0;i<1024;i++) {
         		
         		File newFile = new File( newBaseFile, file.getPath() );
         		if ( newFile.exists() ) {
         			resolvedFile = newFile;
         			break;
         		}
+
+				if ( roots.contains(newBaseFile.getCanonicalFile() ))
+        			break;
+
+        		// See the comment.
+        		// newBaseFile = newBaseFile.getParentFile();
+        		// Modified (Sat, 04 Jul 2020 17:52:59 +0900)
+        		newBaseFile = new File( newBaseFile, ".." );
         	}
         }
         
         if ( resolvedFile == null )
-        	throw new IllegalStateException( "could not resolve " +  file + " from " + baseFile + "." );
+        	throw new FileNotFoundException( "could not resolve " +  file + " from " + baseFile + "." );
 
         if ( resolvedFile.isDirectory() ) {
             resolvedFile = new File( resolvedFile, USE_MAINFILE );
         }
+    	logInfo("useResolveProc: resolved to : " + resolvedFile );
         return resolvedFile;
         
     }

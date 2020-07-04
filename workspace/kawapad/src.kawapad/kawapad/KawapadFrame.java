@@ -404,9 +404,10 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
     public static void start(File f ) throws IOException {
         KawapadFrame kawapadFrame = createStaticInstance( );
         if ( f != null )
-            kawapadFrame.kawapad.openFile( f );
+            kawapadFrame.getKawapad().openFile(
+            		kawapadFrame.getKawapad().resolveFile( f ) );
         else
-            kawapadFrame.kawapad.openIntro();
+            kawapadFrame.getKawapad().openIntro();
     }
     public static void start() throws IOException {
         start( null );
