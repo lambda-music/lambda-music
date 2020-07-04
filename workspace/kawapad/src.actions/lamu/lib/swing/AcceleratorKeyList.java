@@ -98,7 +98,8 @@ public class AcceleratorKeyList {
                 // Ignore it.
                 logWarn( "Could not initialize keystrokes for " + action.toString() );
             } else {
-                logInfo( "addActionToInputMap1:" + name + "/" + acceleratorKey );
+            	if ( DEBUG )
+            		logInfo( "addActionToInputMap1:" + name + "/" + acceleratorKey );
                 // MODIFIED (Sun, 21 Jun 2020 10:54:31 +0900) >>>
                 // c.getInputMap( JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(acceleratorKey, name );
                 c.getInputMap(  ).put(acceleratorKey, name );
@@ -106,7 +107,8 @@ public class AcceleratorKeyList {
             }
         } else {
             for ( KeyStroke keyStroke : keyStrokes ) {
-                logInfo( "addActionToInputMap2:" + name + "/" + keyStroke );
+            	if ( DEBUG )
+            		logInfo( "addActionToInputMap2:" + name + "/" + keyStroke );
                 // MODIFIED (Sun, 21 Jun 2020 10:54:31 +0900) >>>
                 // c.getInputMap( JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put( keyStroke, name );
                 c.getInputMap( ).put( keyStroke, name );
