@@ -250,7 +250,9 @@ public class NoteListParser {
         NoteListMap           map    = NoteListMap.createAlist( metro, notation );
         Symbol                type   = map.get( ID_TYPE, SYMBOL_THRU, SYMBOL_NULL );
         if ( type == null ) {
-            logError( "Error : notation type was not specified.", new Exception() );
+            logError(
+            		SchemePrinter.prettyPrintProc(notation),
+            		new Exception("Error : notation type was not specified." ));
         } else {
             NoteListParserElement parser = this.get( type );
             if ( parser == null ) {
