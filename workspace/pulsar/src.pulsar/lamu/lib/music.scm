@@ -2458,10 +2458,10 @@
                                                                                               (apply n  
                                                                                                      (list
                                                                                                        arg-key
-                                                                                                       (lambda (curr-value) 
+                                                                                                       (n:map (lambda (curr-value) 
                                                                                                          ; (display (format "arg-op:~a curr-value:~a arg-value:~a" arg-op curr-value arg-value ))
                                                                                                          ; (newline)
-                                                                                                         (arg-op curr-value arg-value)) 
+                                                                                                         (arg-op curr-value arg-value)))
                                                                                                        current-notation)))
 
                                                                                             ;initial value for the current-notation
