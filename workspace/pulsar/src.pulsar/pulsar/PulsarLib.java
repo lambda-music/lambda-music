@@ -355,6 +355,11 @@ public interface PulsarLib {
          * @return
          */
         public static MetroTrackManipulator readParamMant( String name, Object ... args ) {
+        	for ( int i=0; i<args.length; i++ ) {
+        		if ( args[i] instanceof Procedure ) {
+        			args[i] = new SchemeInvokable( (Procedure) args[i] );
+        		}
+        	}
             return MetroTrackManipulatorBasic .getFactoryMap() .getFactory(name).create( args );
         }
 

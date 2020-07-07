@@ -149,7 +149,7 @@ public class SchemeEvaluatorUtils {
      * @throws IOException 
      */
     public static File useResolve( File file ) throws IOException {
-        return useResolveProc( SchemeEvaluator.getCurrentBaseFile(), file);
+        return useResolveProc( SchemeEvaluator.getCurrentBaseFile().getParentFile() , file);
     }
     
     /**
@@ -185,8 +185,11 @@ public class SchemeEvaluatorUtils {
         		
         		File newFile = new File( newBaseFile, file.getPath() );
         		if ( newFile.exists() ) {
+                	logInfo("useResolveProc: found" + newFile );
         			resolvedFile = newFile;
         			break;
+        		} else {
+                	logInfo("useResolveProc: not found: " + newFile );
         		}
 
 				if ( roots.contains(newBaseFile.getCanonicalFile() ))

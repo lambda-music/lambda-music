@@ -36,9 +36,10 @@ import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroBufferedSequence;
 import metro.MetroCollector;
+import metro.MetroTraceableSequence;
 import metro.MetroTrack;
 
-public class SchemeSequence extends MetroBufferedSequence implements Invokable {
+public class SchemeSequence extends MetroBufferedSequence implements Invokable, MetroTraceableSequence {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) {
         LOGGER.log(Level.SEVERE, msg, e);
@@ -124,6 +125,8 @@ public class SchemeSequence extends MetroBufferedSequence implements Invokable {
             // Call the invokable to get a note list of the next measure.
             Collection<Object> notations = (Collection<Object>)invokable.invoke();
             
+            
+            
             // Parse the retrieved list to execute.
             // MOVED FROM SchemeSequence (Wed, 06 Nov 2019 17:07:05 +0900)
             // MOVED AGAIN FROM NoteListParser (Thu, 02 Jan 2020 18:00:29 +0900)
@@ -133,4 +136,15 @@ public class SchemeSequence extends MetroBufferedSequence implements Invokable {
             LOGGER.log(Level.SEVERE, buffer.toString() , e);
         }
     }
+    
+    private boolean tracingEnabled=false;
+    @Override
+    public boolean isTracingEnabled() {
+    	return tracingEnabled;
+    }
+    @Override
+    public void setTracingEnabled(boolean tracingEnabled) {
+    	this.tracingEnabled = tracingEnabled;
+    }
+
 }

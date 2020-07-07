@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
+import lamu.lib.Invokable;
 import lamu.lib.log.Logger;
 
 public class MetroTrackManipulatorBasic {
@@ -344,19 +345,74 @@ public class MetroTrackManipulatorBasic {
     }
 
     static {
-        final class ReplaceFactory implements MetroTrackManipulatorFactory {
-            @Override
-            public MetroTrackManipulator create( Object... args) {
-                MetroTrackSelector     trackSelector     = 0 < args.length ? (MetroTrackSelector)args[0]     : null;
-                MetroTrackSynchronizer startSynchronizer = 1 < args.length ? (MetroTrackSynchronizer)args[1] : null;
-                MetroTrackSynchronizer stopSynchronizer  = 2 < args.length ? (MetroTrackSynchronizer)args[2] : null;
-                return replace( trackSelector, startSynchronizer, stopSynchronizer );
-            }
-        }
+    	final class ReplaceFactory implements MetroTrackManipulatorFactory {
+    		/**
+    		 * @param args
+    		 * <ul>
+    		 * <li>[0] track selector</li>
+    		 * <li>[1] start synchronizer</li>
+    		 * <li>[2] stop synchronizer</li>
+    		 * </ul>
+    		 */
+    		@Override
+    		public MetroTrackManipulator create( Object... args) {
+    			MetroTrackSelector     trackSelector     = 0 < args.length ? (MetroTrackSelector)args[0]     : null;
+    			MetroTrackSynchronizer startSynchronizer = 1 < args.length ? (MetroTrackSynchronizer)args[1] : null;
+    			MetroTrackSynchronizer stopSynchronizer  = 2 < args.length ? (MetroTrackSynchronizer)args[2] : null;
+    			return replace( trackSelector, startSynchronizer, stopSynchronizer );
+    		}
+    	}
         
         MetroTrackManipulatorFactory factory = new ReplaceFactory();
         getFactoryMap().addFactory( "replace-tracks", factory );
         getFactoryMap().addFactory( "replace" , factory );
         getFactoryMap().addFactory( "rept" , factory );
     }
+    
+    static class ProcessTrackManipulator implements MetroTrackManipulator {
+		private MetroTrackSelector trackSelector;
+		private Invokable invokable;
+		public ProcessTrackManipulator(MetroTrackSelector trackSelector, Invokable invokable) {
+			this.trackSelector = trackSelector;
+			this.invokable = invokable;
+		}
+
+		@Override
+		public void manipulateTracks(
+				List<MetroTrack> currentTracks, List<MetroTrack> registeringTracks,
+				List<MetroTrack> removingTracks, List<MetroTrack> unregisteringTracks) 
+		{
+			List<MetroTrack> selectedTracks = new ArrayList<MetroTrack>();
+			trackSelector.selectTracks(currentTracks, selectedTracks);
+			invokable.invoke((Object[])selectedTracks.toArray());
+		}
+    }
+    
+    static {
+    	final class ExecuteFactory implements MetroTrackManipulatorFactory {
+    		/**
+    		 * @param args
+    		 * [0] Invokable object
+    		 */
+    		@Override
+    		public MetroTrackManipulator create( Object... args) {
+    			MetroTrackSelector     trackSelector     = 0 < args.length ? (MetroTrackSelector)args[0]  : null;
+    			Invokable              invokable         = 1 < args.length ? (Invokable)args[1]           : null;
+    			if ( trackSelector == null )
+    				throw new IllegalArgumentException("track selecter == null");
+    			if ( invokable == null )
+    				throw new IllegalArgumentException( "invokable == null" );
+    			
+    			return new ProcessTrackManipulator( trackSelector, invokable );
+    		}
+    	}
+        
+        MetroTrackManipulatorFactory factory = new ExecuteFactory();
+        getFactoryMap().addFactory( "process-tracks", factory );
+        getFactoryMap().addFactory( "process", factory );
+        getFactoryMap().addFactory( "proc" , factory );
+    }
+    
+    
+    
 }
