@@ -3,23 +3,19 @@ package lamu.lib.log;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
-import javax.swing.SwingUtilities;
-
-public class LogFormatter extends Formatter {
+public class LamuLogFormatter extends Formatter {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE,   msg, e   ); }
     static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }
     static void logWarn (String msg             ) { LOGGER.log(Level.WARNING,  msg      ); }
     
-    public LogFormatter() {
+    public LamuLogFormatter() {
     }
     
     static Optional<Thread> getThread(long threadId) {
@@ -82,23 +78,7 @@ public class LogFormatter extends Formatter {
             return s.substring(0,length);
     }
     
-    private static Formatter getMinimalFormatter() {
-        return new LogFormatter();
-    }
-    public static void main(final String... args) {
-        init();
-        logInfo("Hello from the main thread");
-        SwingUtilities.invokeLater(() -> logInfo("Hello from the event dispatch thread"));
-    }
-    public static void init() {
-        getDefaultConsoleHandler().get(0).setFormatter( getMinimalFormatter() );
-    }
-    
-    static List<java.util.logging.Handler> getDefaultConsoleHandler() {
-        // All the loggers inherit configuration from the root logger. See:
-        // https://docs.oracle.com/javase/8/docs/technotes/guides/logging/overview.html#a1.3
-        java.util.logging.Logger rootLogger = java.util.logging.Logger.getLogger("");
-        // The root logger's first handler is the default ConsoleHandler
-        return Arrays.asList( rootLogger.getHandlers() );
+    public static Formatter create() {
+        return new LamuLogFormatter();
     }
 }

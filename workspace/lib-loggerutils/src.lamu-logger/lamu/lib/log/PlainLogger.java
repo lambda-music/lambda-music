@@ -3,7 +3,6 @@ package lamu.lib.log;
 import java.util.logging.Level;
 
 public class PlainLogger {
-    
     String format = "[%10s] [%-5s] %s";
     public String getFormat() {
         return format;

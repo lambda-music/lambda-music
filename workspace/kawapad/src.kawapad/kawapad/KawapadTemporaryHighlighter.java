@@ -28,9 +28,10 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import javax.swing.text.Highlighter.HighlightPainter;
-import javax.swing.text.JTextComponent;
 
 import lamu.lib.log.Logger;
+
+import javax.swing.text.JTextComponent;
 
 public class KawapadTemporaryHighlighter {
     protected static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

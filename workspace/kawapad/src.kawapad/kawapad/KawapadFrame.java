@@ -52,7 +52,7 @@ import lamu.lib.apps.ApplicationComponent;
 import lamu.lib.apps.ApplicationVessel;
 import lamu.lib.evaluators.MultiplexEvaluator;
 import lamu.lib.helps.LamuAbstractDocument;
-import lamu.lib.log.LogFormatter;
+import lamu.lib.log.LamuLoggers;
 import lamu.lib.log.Logger;
 import lamu.lib.swing.AcceleratorKeyList;
 import lamu.lib.swing.Action2;
@@ -359,7 +359,7 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
     public static void main(String[] args) throws IOException {
         System.err.println( "*** Welcome to Kawapad *** " );
         System.err.println( "VERSION : " + Version.get( KawapadFrame.class ) );
-        LogFormatter.init();
+        LamuLoggers.installOnDefaultHandler();
         if ( 0 < args.length  ) {
             if ( args[0].equals( "--version" ) ) {
                 System.out.println( Version.get( KawapadFrame.class ) );
@@ -402,12 +402,12 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
     }
     
     public static void start(File f ) throws IOException {
-        KawapadFrame kawapadFrame = createStaticInstance( );
-        if ( f != null )
-            kawapadFrame.getKawapad().openFile(
-            		kawapadFrame.getKawapad().resolveFile( f ) );
-        else
-            kawapadFrame.getKawapad().openIntro();
+    	KawapadFrame kawapadFrame = createStaticInstance( );
+    	if ( f != null )
+    		kawapadFrame.getKawapad().openFile(
+    				kawapadFrame.getKawapad().resolveFile( f ) );
+    	else
+    		kawapadFrame.getKawapad().openIntro();
     }
     public static void start() throws IOException {
         start( null );

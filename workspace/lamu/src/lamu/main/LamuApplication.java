@@ -14,6 +14,7 @@ import java.util.logging.Level;
 
 import kawapad.Kawapad;
 import kawapad.KawapadTextualIncrement;
+import kawapad.logging.KawapadLoggers;
 import lamu.lib.ConsoleChecker;
 import lamu.lib.ForceLoadingClass;
 import lamu.lib.Version;
@@ -33,7 +34,6 @@ import lamu.lib.evaluators.EvaluatorLib;
 import lamu.lib.evaluators.SchemeEvaluatorUtils;
 import lamu.lib.evaluators.repl.SimpleReplService;
 import lamu.lib.helps.LamuDocument;
-import lamu.lib.log.LogFormatter;
 import lamu.lib.log.Logger;
 import lamu.lib.procs.InstanceManagerComponent;
 import lamu.lib.streams.NullStream;
@@ -306,7 +306,7 @@ public class LamuApplication {
         {
             String s = System.getProperty( "lamu.enable-lamu-formatter" );
             if ( s!=null && ! "".equals(s) ) {
-                lamu.lib.log.LogFormatter.init();
+                lamu.lib.log.LamuLoggers.installOnDefaultHandler();
             }
         }
         {
@@ -365,8 +365,11 @@ public class LamuApplication {
         // }
 
         // Revived (Fri, 24 Apr 2020 15:43:57 +0900)
-        LogFormatter.init();
-
+    	// LamuLoggers.installOnDefaultHandler();
+        
+        // Added (Tue, 07 Jul 2020 20:56:15 +0900) 
+        KawapadLoggers.installOnDefaultHandler();
+        
         // Initialize Kawa import path in the first place.
         initKawaImportPath();
 

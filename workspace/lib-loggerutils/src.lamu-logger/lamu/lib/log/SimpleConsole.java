@@ -22,7 +22,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 public class SimpleConsole extends JFrame {
-    public static SimpleConsole console=null;
+    public static SimpleConsole console = null;
     public static synchronized SimpleConsole getConsole() {
         if ( console == null ) {
             console = new SimpleConsole();
