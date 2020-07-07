@@ -14,7 +14,7 @@ import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
 
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public class AcceleratorKeyList {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

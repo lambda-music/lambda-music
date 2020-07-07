@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public class Args {
     static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());

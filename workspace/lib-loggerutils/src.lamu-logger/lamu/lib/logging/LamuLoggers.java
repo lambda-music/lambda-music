@@ -1,4 +1,4 @@
-package lamu.lib.log;
+package lamu.lib.logging;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;

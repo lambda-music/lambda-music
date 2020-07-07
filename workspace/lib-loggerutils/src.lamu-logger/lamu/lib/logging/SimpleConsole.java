@@ -1,4 +1,4 @@
-package lamu.lib.log;
+package lamu.lib.logging;
 
 import java.awt.Component;
 import java.awt.Window;

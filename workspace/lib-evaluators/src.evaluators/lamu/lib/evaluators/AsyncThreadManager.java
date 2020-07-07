@@ -7,7 +7,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public final class AsyncThreadManager implements ThreadManager {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

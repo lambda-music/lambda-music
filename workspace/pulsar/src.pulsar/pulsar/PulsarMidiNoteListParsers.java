@@ -55,7 +55,7 @@ import java.util.logging.Level;
 
 import gnu.lists.LList;
 import gnu.mapping.Symbol;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroCollector;

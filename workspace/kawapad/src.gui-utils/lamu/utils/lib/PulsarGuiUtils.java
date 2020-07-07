@@ -34,7 +34,7 @@ import lamu.lib.helps.LamuDocument;
 import lamu.lib.kawautils.SchemeInvokable;
 import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedureN;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public class PulsarGuiUtils {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

@@ -39,7 +39,7 @@ import gnu.lists.Pair;
 import gnu.mapping.Symbol;
 import lamu.lib.kawautils.SchemePrinter;
 import lamu.lib.kawautils.SchemeValues;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroCollector;

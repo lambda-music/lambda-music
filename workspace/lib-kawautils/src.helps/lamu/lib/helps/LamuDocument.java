@@ -12,7 +12,7 @@ import java.util.logging.Level;
 import gnu.mapping.Symbol;
 import lamu.lib.evaluators.SchemeDocument;
 import lamu.lib.kawautils.SchemeValues;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public class LamuDocument implements Cloneable  {
     static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());

@@ -26,7 +26,7 @@ import java.util.logging.Level;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.UndoableEdit;
 
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public abstract interface GroupedUndoManager extends UndoableEdit, UndoableEditListener {
     public static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

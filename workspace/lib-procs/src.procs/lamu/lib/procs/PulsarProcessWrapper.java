@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 /**
  * It seems that if a class has an abstract method, Kawa cannot call the method

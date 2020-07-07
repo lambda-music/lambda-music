@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public class ForkedProcessUtil {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

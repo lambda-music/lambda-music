@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 import gnu.mapping.Values;
 import lamu.lib.kawautils.SchemePrinter;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public final class SchemeResult {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

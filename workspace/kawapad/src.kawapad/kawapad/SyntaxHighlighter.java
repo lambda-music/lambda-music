@@ -22,7 +22,7 @@ import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 
 import kawapad.SyntaxHighlighterDocumentAttribute.ArrayDocumentAttribute;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 /**
  * See https://stackoverflow.com/a/28773736 by diadyne

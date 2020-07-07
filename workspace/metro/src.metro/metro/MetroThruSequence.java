@@ -4,7 +4,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.logging.Level;
 
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public class MetroThruSequence implements MetroSequence {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

@@ -11,7 +11,7 @@ import javax.swing.SpringLayout;
 
 import gnu.lists.IString;
 import gnu.mapping.Symbol;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public class SpringLayoutUtil {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

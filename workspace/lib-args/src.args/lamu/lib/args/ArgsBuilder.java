@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.logging.Level;
 
 import lamu.lib.apps.ApplicationComponent;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public class ArgsBuilder {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

@@ -8,7 +8,7 @@ import java.util.logging.Level;
 import gnu.expr.Language;
 import gnu.mapping.Environment;
 import kawa.standard.Scheme;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public class SchemeEvaluator implements Evaluator, NameCaptionHolder {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

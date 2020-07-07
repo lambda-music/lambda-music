@@ -30,7 +30,7 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
 
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 
 /**

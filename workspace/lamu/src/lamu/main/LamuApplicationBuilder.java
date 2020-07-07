@@ -36,7 +36,7 @@ import lamu.lib.evaluators.http.SchemeHttp.UserAuthentication;
 import lamu.lib.evaluators.repl.ReplServer;
 import lamu.lib.evaluators.repl.SimpleReplService;
 import lamu.lib.helps.LamuAbstractDocument;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 import lamu.lib.streams.LoggerStream;
 import lamu.lib.streams.NullOutputStream;
 import lamu.lib.streams.NullStream;

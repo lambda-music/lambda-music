@@ -8,7 +8,7 @@ import java.util.logging.Level;
 
 import javax.swing.Action;
 
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public class AutomatedActions {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

@@ -23,7 +23,7 @@ package metro;
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
 
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 /** @formatter:off */
 /**

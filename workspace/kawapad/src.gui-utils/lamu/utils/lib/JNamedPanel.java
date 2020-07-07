@@ -14,7 +14,7 @@ import java.util.logging.Level;
 import javax.swing.JPanel;
 
 import gnu.mapping.Procedure;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public class JNamedPanel extends JPanel implements JSelectableUserObject {
     public JNamedPanel() {

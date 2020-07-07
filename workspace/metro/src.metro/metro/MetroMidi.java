@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 // DON'T PERFORM AUTOMATIC FORMAT ON THIS FILE!!! THAT GONNA BE A DISASTER!!
 /** @formatter:off */  

@@ -14,8 +14,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 
 import lamu.lib.kawautils.SchemeValues;
-import lamu.lib.log.Logger;
-import lamu.lib.log.SimpleConsole;
+import lamu.lib.logging.Logger;
+import lamu.lib.logging.SimpleConsole;
 
 public class SchemeEvaluatorUtils {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

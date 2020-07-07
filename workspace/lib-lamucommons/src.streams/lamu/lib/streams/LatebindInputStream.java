@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
 
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public abstract class LatebindInputStream extends InputStream {
     protected static final Logger LOGGER = Logger.getLogger(MethodHandles.lookup().lookupClass().getName());

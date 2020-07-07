@@ -26,7 +26,7 @@ import gnu.math.DFloNum;
 import gnu.math.IntNum;
 import gnu.math.Quantity;
 import lamu.lib.kawautils.procedures.MultipleNamed;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public class SchemeValues {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

@@ -11,7 +11,7 @@ import gnu.kawa.io.InPort;
 import gnu.kawa.io.Path;
 import gnu.mapping.Environment;
 import kawa.standard.Scheme;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public class SchemeEvaluation {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

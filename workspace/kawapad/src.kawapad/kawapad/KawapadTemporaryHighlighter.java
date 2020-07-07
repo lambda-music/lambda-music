@@ -29,7 +29,7 @@ import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import javax.swing.text.Highlighter.HighlightPainter;
 
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 import javax.swing.text.JTextComponent;
 

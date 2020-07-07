@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroEvent,byte[]> implements MetroDumper {
     public static MetroEventBuffer create() {

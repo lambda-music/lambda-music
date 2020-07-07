@@ -5,7 +5,7 @@ import java.util.logging.Level;
 
 import gnu.lists.Pair;
 import gnu.mapping.Symbol;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 /**
  * This class was formerly called "Descriptive" class.

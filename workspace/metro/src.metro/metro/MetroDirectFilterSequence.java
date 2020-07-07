@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.logging.Level;
 
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public class MetroDirectFilterSequence implements MetroSequence {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

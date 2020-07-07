@@ -14,7 +14,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.logging.Level;
 
 import lamu.lib.apps.ApplicationComponent;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 /**
  * SisoServer stands for SImple SOcket Server.

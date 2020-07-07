@@ -61,7 +61,7 @@ import gnu.math.IntNum;
 import lamu.lib.Invokable;
 import lamu.lib.kawautils.SchemeInvokable;
 import lamu.lib.kawautils.SchemeValues;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public abstract class SchemeNewFactory {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

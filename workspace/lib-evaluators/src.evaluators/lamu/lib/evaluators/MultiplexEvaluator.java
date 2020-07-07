@@ -19,7 +19,7 @@ import lamu.lib.apps.ApplicationComponent;
 import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure1;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure2;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 import lamu.lib.threads.LamuThreadLocal;
 
 public class MultiplexEvaluator implements Evaluator, ApplicationComponent {

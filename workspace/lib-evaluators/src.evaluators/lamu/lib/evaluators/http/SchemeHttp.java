@@ -25,7 +25,7 @@ import com.sun.net.httpserver.HttpServer;
 import lamu.lib.apps.ApplicationComponent;
 import lamu.lib.evaluators.MultiplexEvaluator;
 import lamu.lib.evaluators.SchemeResult;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 import lamu.lib.threads.LamuThreadLocal;
 
 

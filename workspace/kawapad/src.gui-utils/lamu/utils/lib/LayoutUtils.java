@@ -12,7 +12,7 @@ import java.util.logging.Level;
 import gnu.lists.AbstractSequence;
 import gnu.lists.Pair;
 import lamu.lib.kawautils.SchemeValues;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public class LayoutUtils {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

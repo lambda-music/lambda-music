@@ -23,7 +23,7 @@ import javax.swing.text.Segment;
 
 import lamu.lib.evaluators.Evaluator;
 import lamu.lib.evaluators.EvaluatorUtils;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public class KawapadContentAssist {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

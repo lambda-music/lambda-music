@@ -4,7 +4,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.logging.Level;
 
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public class MetroVoidSequence implements MetroSequence {
     private static final MetroVoidSequence INSTANCE = new MetroVoidSequence();

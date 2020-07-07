@@ -34,7 +34,7 @@ import lamu.lib.evaluators.EvaluatorLib;
 import lamu.lib.evaluators.SchemeEvaluatorUtils;
 import lamu.lib.evaluators.repl.SimpleReplService;
 import lamu.lib.helps.LamuDocument;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 import lamu.lib.procs.InstanceManagerComponent;
 import lamu.lib.streams.NullStream;
 import lamu.lib.streams.SisoReceiver;
@@ -306,7 +306,7 @@ public class LamuApplication {
         {
             String s = System.getProperty( "lamu.enable-lamu-formatter" );
             if ( s!=null && ! "".equals(s) ) {
-                lamu.lib.log.LamuLoggers.installOnDefaultHandler();
+                lamu.lib.logging.LamuLoggers.installOnDefaultHandler();
             }
         }
         {

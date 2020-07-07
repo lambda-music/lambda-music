@@ -13,7 +13,7 @@ import lamu.lib.helps.LamuDocument;
 import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure1;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedureN;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 import lamu.lib.procs.PulsarProcessWrapper;
 
 public class procs implements Runnable {

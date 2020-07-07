@@ -8,7 +8,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 
-import lamu.lib.log.PlainLogger;
+import lamu.lib.logging.PlainLogger;
 
 /**
  * Close all of the processes when the JVM shuts down. 

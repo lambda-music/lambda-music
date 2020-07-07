@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.logging.Level;
 
 import lamu.lib.CurrentObject;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public interface ThreadInitializer<T> extends Runnable, ThreadInitializerOwner {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

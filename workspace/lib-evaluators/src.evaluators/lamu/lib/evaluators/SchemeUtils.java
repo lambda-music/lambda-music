@@ -45,7 +45,7 @@ import gnu.mapping.Symbol;
 import gnu.math.Quantity;
 import kawa.standard.Scheme;
 import lamu.lib.kawautils.SchemeValues;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public class SchemeUtils {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

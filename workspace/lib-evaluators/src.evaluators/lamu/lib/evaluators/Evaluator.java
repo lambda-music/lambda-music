@@ -9,7 +9,7 @@ import java.io.StringReader;
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
 
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 import lamu.lib.threads.LamuThreadLocal;
 
 public interface Evaluator {

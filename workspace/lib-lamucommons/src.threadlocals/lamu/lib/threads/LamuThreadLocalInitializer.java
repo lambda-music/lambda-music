@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public class LamuThreadLocalInitializer implements Runnable {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

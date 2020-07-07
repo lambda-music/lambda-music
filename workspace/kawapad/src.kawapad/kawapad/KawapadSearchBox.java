@@ -28,7 +28,7 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.Segment;
 
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public class KawapadSearchBox implements ComponentListener, HierarchyListener {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

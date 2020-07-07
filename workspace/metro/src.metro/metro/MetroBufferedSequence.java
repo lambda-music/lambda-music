@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.logging.Level;
 
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 /**
  * 

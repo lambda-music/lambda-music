@@ -31,7 +31,7 @@ import gnu.mapping.Procedure;
 import lamu.lib.Invokable;
 import lamu.lib.kawautils.SchemeInvokable;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedureN;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroBufferedSequence;

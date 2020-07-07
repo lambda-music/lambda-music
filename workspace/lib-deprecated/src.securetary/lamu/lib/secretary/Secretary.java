@@ -4,7 +4,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
 
 import lamu.lib.Invokable;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public class Secretary<R> extends SecretaryMessageQueue<R> {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

@@ -9,7 +9,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 
 import lamu.lib.Invokable;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 public class MetroTrackSelectorBasic {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );

@@ -24,7 +24,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 import java.util.logging.Level;
 
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 /**
  * This class represents all events which should be processed in a bar. 

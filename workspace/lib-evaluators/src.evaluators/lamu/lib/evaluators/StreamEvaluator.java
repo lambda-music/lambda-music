@@ -13,7 +13,7 @@ import gnu.mapping.Symbol;
 import lamu.lib.evaluators.repl.ReplClient;
 import lamu.lib.evaluators.repl.ReplClient.ReplClientResultReceiver;
 import lamu.lib.kawautils.SchemeValues;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 import lamu.lib.streams.NullOutputStream;
 import lamu.lib.streams.SisoReceiver;
 import lamu.lib.streams.Stream;

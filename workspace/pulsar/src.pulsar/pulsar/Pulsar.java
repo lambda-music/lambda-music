@@ -40,7 +40,7 @@ import gnu.mapping.Symbol;
 import lamu.lib.Invokable;
 import lamu.lib.apps.ApplicationComponent;
 import lamu.lib.kawautils.SchemeValues;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 import lamu.lib.threads.LamuThreadLocal;
 import lamu.lib.threads.LamuThreadLocalInitializer;
 import metro.Metro;

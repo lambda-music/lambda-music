@@ -1,6 +1,6 @@
 package lamu.lib.evaluators;
 
-import lamu.lib.log.SimpleConsole;
+import lamu.lib.logging.SimpleConsole;
 
 public interface EvaluatorReceiver {
     EvaluatorReceiver REPORT_ERROR = new EvaluatorReceiver() {

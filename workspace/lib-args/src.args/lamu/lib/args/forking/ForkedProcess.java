@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.logging.Level;
 
 import lamu.lib.apps.ApplicationComponent;
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 import lamu.lib.procs.InstanceManager;
 import lamu.lib.streams.Stream;
 

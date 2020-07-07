@@ -1,4 +1,4 @@
-package lamu.lib.log;
+package lamu.lib.logging;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

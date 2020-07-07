@@ -34,7 +34,7 @@ import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
 
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 
 /**
  * (Fri, 05 Oct 2018 14:03:54 +0900)

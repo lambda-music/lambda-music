@@ -10,7 +10,7 @@ import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 
-import lamu.lib.log.Logger;
+import lamu.lib.logging.Logger;
 import lamu.lib.streams.SisoReceiver;
 import lamu.lib.streams.SisoReceiverListener;
 import lamu.lib.streams.SisoReceiverMessage;
