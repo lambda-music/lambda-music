@@ -392,7 +392,7 @@ public class MetroTrackManipulatorBasic {
     	final class ExecuteFactory implements MetroTrackManipulatorFactory {
     		/**
     		 * @param args
-    		 * [0] Invokable object
+    		 * [0] a Track Selector
     		 */
     		@Override
     		public MetroTrackManipulator create( Object... args) {
@@ -414,5 +414,42 @@ public class MetroTrackManipulatorBasic {
     }
     
     
+    static {
+    	final class TronFactory implements MetroTrackManipulatorFactory {
+    		/**
+    		 * @param args
+    		 * [0] a Track Selector
+    		 */
+    		@Override
+    		public MetroTrackManipulator create( Object... args) {
+    			MetroTrackSelector     trackSelector     = 0 < args.length ? (MetroTrackSelector)args[0]  : null;
+    			if ( trackSelector == null )
+    				throw new IllegalArgumentException("track selecter == null");
+    			return new ProcessTrackManipulator( trackSelector, SetTracing.TRON );
+    		}
+    	}
+        
+        MetroTrackManipulatorFactory factory = new TronFactory();
+        getFactoryMap().addFactory( "trace-on", factory );
+        getFactoryMap().addFactory( "tron", factory );
+    }
+    static {
+    	final class TroffFactory implements MetroTrackManipulatorFactory {
+    		/**
+    		 * @param args
+    		 * [0] a Track Selector
+    		 */
+    		@Override
+    		public MetroTrackManipulator create( Object... args) {
+    			MetroTrackSelector     trackSelector     = 0 < args.length ? (MetroTrackSelector)args[0]  : null;
+    			if ( trackSelector == null )
+    				throw new IllegalArgumentException("track selecter == null");
+    			return new ProcessTrackManipulator( trackSelector, SetTracing.TROFF );
+    		}
+    	}
+        MetroTrackManipulatorFactory factory = new TroffFactory();
+        getFactoryMap().addFactory( "trace-off", factory );
+        getFactoryMap().addFactory( "troff", factory );
+    }
     
 }

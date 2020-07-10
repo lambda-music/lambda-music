@@ -30,6 +30,7 @@ import gnu.lists.Pair;
 import gnu.mapping.Procedure;
 import lamu.lib.Invokable;
 import lamu.lib.kawautils.SchemeInvokable;
+import lamu.lib.kawautils.SchemePrinter;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedureN;
 import lamu.lib.logging.Logger;
 import metro.Metro;
@@ -125,7 +126,9 @@ public class SchemeSequence extends MetroBufferedSequence implements Invokable, 
             // Call the invokable to get a note list of the next measure.
             Collection<Object> notations = (Collection<Object>)invokable.invoke();
             
-            
+            if ( tracingEnabled ) {
+            	LOGGER.log(Level.SEVERE, SchemePrinter.printSchemeValue(notations));
+            }
             
             // Parse the retrieved list to execute.
             // MOVED FROM SchemeSequence (Wed, 06 Nov 2019 17:07:05 +0900)
