@@ -31,7 +31,7 @@ public class LamuApplicationLibrary {
     }
 
     public static KawapadFrame createKawapadGui( MultiplexEvaluator multiplexEvaluator ) {
-        return new KawapadFrame( multiplexEvaluator, true, "Scheme Scratch Pad" );
+        return new KawapadFrame( multiplexEvaluator, true, "Scheme Scratch Pad", true );
     }
 
 

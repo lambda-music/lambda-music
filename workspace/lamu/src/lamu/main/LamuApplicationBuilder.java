@@ -347,6 +347,9 @@ public class LamuApplicationBuilder extends ArgsCommandBuild {
                     else
                         frame.setShutdownWhenClose( false );
 
+                    // Create a logger (Fri, 10 Jul 2020 17:18:29 +0900)
+                    parser.getValueStack( FRAME ).add( KawapadFrame.createLoggingKawapad().getKawapadFrame() );
+
                     parser.getValueStack( FRAME ).push( frame );
                     parser.getValueStack( KAWAPAD ).push( frame.getKawapad() );
 
@@ -390,6 +393,9 @@ public class LamuApplicationBuilder extends ArgsCommandBuild {
                     else
                         frame.setShutdownWhenClose( false );
 
+                    // Create a logger (Fri, 10 Jul 2020 17:18:29 +0900)
+                    parser.getValueStack( FRAME ).add( KawapadFrame.createLoggingKawapad().getKawapadFrame() );
+                    
                     parser.getValueStack( FRAME ).push( frame );
                     parser.getValueStack( KAWAPAD ).push( frame.getKawapad() );
                     parser.getValueStack( RUNNABLE_INIT ).push( new KawapadLoader( frame, fileNameList ));
@@ -399,6 +405,8 @@ public class LamuApplicationBuilder extends ArgsCommandBuild {
                             //                                pulsar.init();
                         }
                     });
+                    
+
                 }
             };
         }

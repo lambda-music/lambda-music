@@ -43,6 +43,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -139,7 +140,12 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
      * environments. This map is intended to be used as a place to keep values
      * without environments. (Sat, 17 Aug 2019 13:10:44 +0900)
      */
-    public static final Map<Object,Object> memoMap = new HashMap<Object,Object>();
+    public static final Map<Object,Object> memoStaticMap = Collections.synchronizedMap( new HashMap<Object,Object>() );
+    
+    private final Map<Object,Object> memoMap = Collections.synchronizedMap( new HashMap<Object,Object>() );
+    public Map<Object, Object> getMemoMap() {
+		return memoMap;
+	}
     
     ////////////////////////////////////////////////////////////////////////////
 
@@ -3373,6 +3379,15 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         evaluate( "(require lamu.help)(eval '(help about-intro))", true, true, true );
 
     }
+    
+    private boolean enabledConfirmation = true;
+    public void setEnabledConfirmation(boolean enabledConfirmation) {
+		this.enabledConfirmation = enabledConfirmation;
+	}
+    public boolean isEnabledConfirmation() {
+		return enabledConfirmation;
+	}
+    
 
     static class ConfirmType { 
         static final Kawapad.ConfirmType OPEN_FILE = new ConfirmType( 
@@ -3401,6 +3416,9 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         if ( ! ENABLED_CONFIRMATION )
             return true;
         // <<<
+        
+        if ( ! enabledConfirmation )
+        	return true;
 
         Object[] options = {
             UIManager.getString("OptionPane.yesButtonText"),
@@ -3437,6 +3455,10 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         if ( ! ENABLED_CONFIRMATION )
             return true;
         // <<<
+        
+        if ( ! enabledConfirmation )
+        	return true;
+
         Object[] options = {
             UIManager.getString("OptionPane.okButtonText"),
             UIManager.getString("OptionPane.cancelButtonText")
@@ -3635,28 +3657,35 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
         return new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent we) {
-                boolean result;
-                try {
-                    if ( fileModified ) {
-                        result = confirmSave( ConfirmType.CLOSE_WINDOW );
-                    } else {
-                        result = confirmClose( ConfirmType.CLOSE );
-                    }
-                } catch (IOException e) {
-                    logError( "" , e );
-                    result = false;
-                }
-                if ( result ) {
+            	// ADDED (Thu, 09 Jul 2020 21:39:53 +0900)
+            	// checking enabledConfirmation  
+            	if ( ! enabledConfirmation ) {
                     onClose.run();
-                } else {
-                    // Stay open
-                }
+            	} else {
+            		boolean result;
+            		try {
+            			if ( fileModified ) {
+            				result = confirmSave( ConfirmType.CLOSE_WINDOW );
+            			} else {
+            				result = confirmClose( ConfirmType.CLOSE );
+            			}
+            		} catch (IOException e) {
+            			logError( "" , e );
+            			result = false;
+            		}
+            		if ( result ) {
+            			onClose.run();
+            		} else {
+            			// Stay open
+            		}
+            	}
+            	
             }
         };
     }
     
     public KawapadFrame createKawapadFrame( File f ) throws IOException {
-        KawapadFrame kawapadFrame = new KawapadFrame( this.kawapad.getEvaluator(), false, "Kawapad" );
+        KawapadFrame kawapadFrame = new KawapadFrame( this.kawapad.getEvaluator(), false, "Kawapad", true );
         Kawapad newKawapad = kawapadFrame.getKawapad();
         kawapadFrame.processInit();
         if ( f != null )
@@ -3668,8 +3697,8 @@ public class Kawapad extends JTextPane implements MenuInitializer, ApplicationCo
              * itself. It cannot open the specified file properly because the current
              * directory of the new Kawapad is not set yet at this point.
              */
-            newKawapad.openFile(
-            		this.resolveFile(f));
+        	newKawapad.openFile(this.resolveFile(f));
+        
         return kawapadFrame; 
     }
 

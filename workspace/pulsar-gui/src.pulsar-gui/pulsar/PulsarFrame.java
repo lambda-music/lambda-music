@@ -162,7 +162,7 @@ public class PulsarFrame extends KawapadFrame implements ApplicationComponent {
 
 
     PulsarFrame( MultiplexEvaluator multiplexEvaluator, boolean shutdownWhenClose, String caption ) {
-        super( multiplexEvaluator, shutdownWhenClose, caption == null ? PULSAR_DEFAULT_CAPTION : caption );
+        super( multiplexEvaluator, shutdownWhenClose, caption == null ? PULSAR_DEFAULT_CAPTION : caption, true );
         
         //          DELETED >>> INIT_02 (Sat, 03 Aug 2019 15:47:41 +0900)
         //          PulsarGui.invokeLocalSchemeInitializers( schemeSecretary, PulsarGui.this );

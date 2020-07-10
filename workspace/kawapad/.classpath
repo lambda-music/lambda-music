@@ -8,5 +8,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/lib-loggerutils"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/lib-evaluators"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/lib-lamucommons"/>
+	<classpathentry kind="src" path="src.kawapad-logger"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

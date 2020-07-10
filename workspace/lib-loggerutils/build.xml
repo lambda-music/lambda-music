@@ -26,6 +26,7 @@
         <mkdir dir="bin"/>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src.lamu-logger">
+                <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
@@ -66,5 +67,10 @@
         <ant antfile="build.xml" dir="${pulsar.location}" inheritAll="false" target="build"/>
         <ant antfile="build.xml" dir="${pulsar-gui.location}" inheritAll="false" target="clean"/>
         <ant antfile="build.xml" dir="${pulsar-gui.location}" inheritAll="false" target="build"/>
+    </target>
+    <target name="LamuLoggers">
+        <java classname="lamu.lib.logging.LamuLoggers" failonerror="true" fork="yes">
+            <classpath refid="lib-loggerutils.classpath"/>
+        </java>
     </target>
 </project>

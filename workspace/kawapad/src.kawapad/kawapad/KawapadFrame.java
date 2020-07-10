@@ -46,6 +46,8 @@ import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
+import kawapad.logging.KawapadFormatter;
+import kawapad.logging.KawapadHandler;
 import lamu.lib.ForceLoadingClass;
 import lamu.lib.Version;
 import lamu.lib.apps.ApplicationComponent;
@@ -167,7 +169,7 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
     public KawapadFrame( 
             MultiplexEvaluator multiplexEvaluator, 
             boolean shutdownWhenClose,
-            String title 
+            String title, boolean visible 
             ) throws HeadlessException 
     {
         super(title);
@@ -289,25 +291,42 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
             this.addWindowListener( kawapad.createCloseQuery( new Runnable() {
                 @Override
                 public void run() {
-                    if ( KawapadFrame.this.isShutdownWhenClose() ) {
-                        KawapadFrame.this.requestQuit();
-                    } else {
-                        KawapadFrame.this.processQuit();
-                    }
+                	if ( KawapadFrame.this.hideOnClose ) {
+        				KawapadFrame.this.setVisible(false);
+            		} else {
+            			if ( KawapadFrame.this.isShutdownWhenClose() ) {
+            				KawapadFrame.this.requestQuit();
+            			} else {
+            				KawapadFrame.this.processQuit();
+            			}
+            		}
                 }
             }));
-            
-            setVisible(true);
         }
-        
-        SwingUtilities.invokeLater( new Runnable() {
-            @Override
-            public void run() {
-                kawapad.requestFocus();
-            }
-        } );
+
+        if ( visible ) {
+			setVisible(true);
+        	SwingUtilities.invokeLater( new Runnable() {
+        		@Override
+        		public void run() {
+        			kawapad.requestFocus();
+        		}
+        	});
+        } else {
+			setVisible(false);
+        }
     }
-    
+    // ADDED (Thu, 09 Jul 2020 21:43:33 +0900) >>>
+    boolean hideOnClose = false;
+    public boolean isHideOnClose() {
+		return hideOnClose;
+	}
+	public void setHideOnClose(boolean hideOnClose) {
+		this.hideOnClose = hideOnClose;
+	}
+	// ADDED (Thu, 09 Jul 2020 21:43:33 +0900) <<<
+	
+	
     public void requestClose() {
         this.dispatchEvent( new WindowEvent(this, WindowEvent.WINDOW_CLOSING ));
     }
@@ -317,6 +336,7 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
      * to INIT_03 (see the comment in the source code), the constructor cannot call
      * this method directory; we decided to mandate the users to call this method
      * manually.
+     * @param visible TODO
      */
 
 //  ADDED >>> (Tue, 06 Aug 2019 09:29:54 +0900)
@@ -347,15 +367,33 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
-    public static KawapadFrame createStaticInstance( ) {
+    public static KawapadFrame createStaticInstance(boolean visible ) {
         MultiplexEvaluator multiplexEvaluator = MultiplexEvaluator.createLocal();
-        KawapadFrame kawapadFrame = new KawapadFrame( multiplexEvaluator, true, "Scheme Scratch Pad" );
-        ApplicationVessel v = new ApplicationVessel("KawapadVessel");
-        v.add( kawapadFrame );
-        kawapadFrame.setParentApplicationComponent( kawapadFrame );
-        v.requestInit();
+        KawapadFrame kawapadFrame = new KawapadFrame( multiplexEvaluator, true, "Scheme Scratch Pad", visible );
+        
+        ApplicationVessel vessel = new ApplicationVessel("KawapadVessel");
+        vessel.add( kawapadFrame );
+        
+//        This maybe incorrect. REMOVED  
+//        (Fri, 10 Jul 2020 17:04:32 +0900)>>>
+//        kawapadFrame.setParentApplicationComponent( kawapadFrame );
+//        (Fri, 10 Jul 2020 17:04:32 +0900) <<<
+
+//        createLoggingKawapad(vessel);
+        
+        vessel.requestInit();
         return kawapadFrame;
     }
+	public static void createLoggingKawapad(ApplicationVessel vessel) {
+		vessel.add( createLoggingKawapad().getKawapadFrame() );
+	}
+	public static KawapadHandler createLoggingKawapad() {
+		KawapadHandler kawapadHandler = new KawapadHandler();
+		kawapadHandler.setFormatter( new KawapadFormatter() );
+		kawapadHandler.setLevel( java.util.logging.Level.SEVERE );
+		LamuLoggers.getRootLogger().addHandler( kawapadHandler );
+		return kawapadHandler;
+	}
     public static void main(String[] args) throws IOException {
         System.err.println( "*** Welcome to Kawapad *** " );
         System.err.println( "VERSION : " + Version.get( KawapadFrame.class ) );
@@ -378,7 +416,7 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
     
     public static void outputKeyStrokeReference() throws IOException {
         Kawapad.ENABLED_CONFIRMATION = false;
-        KawapadFrame kawapadFrame = createStaticInstance( );
+        KawapadFrame kawapadFrame = createStaticInstance(false );
         try {
             Thread.sleep( 2048 );
         } catch ( InterruptedException e ) {
@@ -391,7 +429,7 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
     public static void outputDocument() throws IOException {
         Kawapad.ENABLED_CONFIRMATION = false;
         ForceLoadingClass.force( Kawapad.class );
-        KawapadFrame kawapadFrame = createStaticInstance();
+        KawapadFrame kawapadFrame = createStaticInstance(false);
         try {
             Thread.sleep( 2048 );
         } catch ( InterruptedException e ) {
@@ -402,12 +440,14 @@ public class KawapadFrame extends JFrame implements ApplicationComponent {
     }
     
     public static void start(File f ) throws IOException {
-    	KawapadFrame kawapadFrame = createStaticInstance( );
-    	if ( f != null )
+    	KawapadFrame kawapadFrame = createStaticInstance(true);
+    	if ( f != null ) {
     		kawapadFrame.getKawapad().openFile(
     				kawapadFrame.getKawapad().resolveFile( f ) );
-    	else
+    	} else {
     		kawapadFrame.getKawapad().openIntro();
+    		
+    	}
     }
     public static void start() throws IOException {
         start( null );

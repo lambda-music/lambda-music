@@ -11,5 +11,6 @@
   (import (lamu song))
   (import (lamu evaluators))
   (import (lamu pulsar))
+  (import (lamu logger))
   (import (pulsar PulsarLib_Static ))
   )

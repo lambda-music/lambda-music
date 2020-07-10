@@ -33,7 +33,6 @@ import lamu.lib.args.forking.ForkedProcess;
 import lamu.lib.evaluators.EvaluatorLib;
 import lamu.lib.evaluators.SchemeEvaluatorUtils;
 import lamu.lib.evaluators.repl.SimpleReplService;
-import lamu.lib.helps.LamuDocument;
 import lamu.lib.logging.Logger;
 import lamu.lib.procs.InstanceManagerComponent;
 import lamu.lib.streams.NullStream;
@@ -86,7 +85,7 @@ public class LamuApplication {
         ForceLoadingClass.force(Pulsar.class);
         ForceLoadingClass.force(PulsarLib_Procs.class);
         
-        LamuDocument.debugOut();
+//        LamuDocument.debugOut();
     }
     static File getInitFile() {
         return new File( System.getProperty("user.home"), ".lamu/default-arguments.conf");
