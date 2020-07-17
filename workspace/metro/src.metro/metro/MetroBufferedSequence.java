@@ -56,13 +56,145 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
     public abstract <T> void generateBuffer( Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer );
 
     
-    /*
-     * This list object must be referred with synchronization.
+    /**
+     * Get the buffered event sets.
+     * <p/>
+     * This list must be accessed inside a synchronized block with {@link Metro#getMetroLock() }.
+     * <pre>
      * synchronized ( this.getMetroTrackLock() ) {
      *    ... getBuffers() ...
      * }
+     * </pre>
      */
     private Queue<MetroEventBuffer> buffers = new ArrayDeque<>();
+    
+    
+    
+    /**
+     * This interface defines how 
+     * {@link MetroBufferedSequence#calcBufferStatus(Collection, double, long, MetroEventBufferSelector) } 
+     * method selects the specified buffer. 
+     */
+    static interface MetroEventBufferSelector {
+    	boolean select( double position, MetroEventBuffer buffer );
+    	static MetroEventBufferSelector bySeqNo( long seqNo ) {
+			return new MetroEventBufferSelector() {
+				@Override
+				public boolean select( double position, MetroEventBuffer buffer ) {
+					return buffer.getSeqNo() == seqNo;
+				}
+			};
+    	}
+    	static MetroEventBufferSelector byPosition( double lookupPosition ) {
+			return new MetroEventBufferSelector() {
+				@Override
+				public boolean select(double position, MetroEventBuffer buffer) {
+					return lookupPosition < position + buffer.getLength();
+				}
+			};
+    	}
+    }
+    
+	/**
+	 * This method must be called inside a synchronized block with
+	 * {@link Metro#getMetroLock() }. See {@link #buffers } for further
+	 * information.
+	 * 
+	 * If the current status is invalid in ways such as being underflow, being not
+	 * initialized yet or others, this method returns zero; otherwise, this returns
+	 * a newly created {@link MetroTrackBufferStatus} object.
+	 * 
+	 * @return the current status object; null when the current status is invalid.
+	 */
+	public static MetroTrackBufferStatus calcBufferStatus( Collection<MetroEventBuffer> buffers, double currentPosition, long currentBufferSeqNo, MetroEventBufferSelector selector ) {
+		// the specified buffer
+		MetroEventBuffer buffer = null;
+		// the current buffer
+		MetroEventBuffer currentBuffer = null;
+		// the result object
+		MetroTrackBufferStatus status = new MetroTrackBufferStatus();
+		
+		/*        
+		 * (Thu, 16 Jul 2020 14:26:48 +0900)
+		 *               v current position
+		 *            -----------------------------------....
+		 *  REF     __|__x____|_____|_______|____|_____|_ ... 
+		 * MAIN    |_____x__|_____|____|____|______|_____ ...
+		 * 
+		 * At first, you have to look up the buffer by seqno to know its position in MAIN.
+		 * In the second, you have to look up the buffer by MAIN position in REF
+		 * MAIN's position -  REF's position == "THE DIFFERENCE"
+		 *  
+		 */
+		
+		// Looking for the starting point (currentBuffer) and the ending point (buffer)
+		// and accumulate length of the buffers between the two exclude the ending point.
+		double position = 0.0d - currentPosition;
+
+		for ( MetroEventBuffer e : buffers ) {
+    		// Look up the starting point:
+    		if ( e.getSeqNo() == currentBufferSeqNo ) {
+    			if ( currentBuffer == null ) {
+    				if ( buffer != null ) {
+        				logInfo("calcBufferStatusByBufferSeqNo result=##ILLEGAL01-0##");
+        				return null;
+    				}
+    				currentBuffer = e;
+    			} else {
+    				logInfo("calcBufferStatusByBufferSeqNo result=##ILLEGAL01-1##");
+    				return null;
+    			}
+    		}
+    		
+    		// Look up the ending point:
+    		if ( selector.select( position, e ) ) {
+    			if ( buffer == null ) {
+    				if ( currentBuffer == null ) {
+        				logInfo("calcBufferStatusByBufferSeqNo result=##ILLEGAL02-0##");
+        				return null;
+    				}
+    				buffer = e;
+    			} else {
+    				logInfo("calcBufferStatusByBufferSeqNo result=##ILLEGAL02-1##");
+    				return null;
+    			}
+    		}
+    		
+    		// If the starting point is found
+    		if ( currentBuffer != null ) {
+    			if ( buffer == null ) {
+    				position += e.getLength();
+    			} else {
+    				break;
+    			}
+    		}
+    	}
+    	
+    	if ( buffer == null || currentBuffer == null ) {
+			logInfo("calcBufferStatusByBufferSeqNo result=##ILLEGAL03##");
+			return null;
+    	}
+    	
+    	status.setCurrentBufferSeqNo(currentBuffer.getSeqNo());
+    	status.setCurrentBufferLength(currentBuffer.getLength());
+    	status.setCurrentBufferPosition(0.0d);
+    	
+    	status.setBufferSeqNo(buffer.getSeqNo());
+    	status.setBufferLength(buffer.getLength());
+    	status.setBufferPosition( position );
+    	
+    	status.setCurrentPosition( currentPosition );
+    	
+    	return status;
+	}    
+    
+	public MetroTrackBufferStatus getBufferStatus( Metro metro, MetroEventBufferSelector selector ) {
+		synchronized ( metro.getMetroLock() ) {
+			return calcBufferStatus( this.buffers, this.getPosition(metro), this.currentBufferSeqNo, selector ); 
+		}
+	}
+    
+
     
     private volatile long totalCurosrMax = Long.MAX_VALUE;
     private volatile long totalCursor = 0;
@@ -291,8 +423,8 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
      *                cursor=1.5                                           <=== a past buffer 
      *  cursor=2.5                                                         <=== a past buffer
      * 
-     * - Assume the length of all buffer is 1.0d; it may vary in practical. 
-     * - Note that some buffer have events which surpass the length of their buffer.
+     * - We assume the length of all buffer is 1.0d; it may vary in practical. 
+     * - Note that some buffer has events which surpass the length of their buffer.
      * - Every buffer has events of which position value is conveyed on a relative coordinate system.  
      * - The `cursor` value must translate to the current buffer's coordinate sytem.
      * 
