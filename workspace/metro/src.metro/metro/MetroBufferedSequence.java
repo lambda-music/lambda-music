@@ -54,7 +54,6 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
     private volatile boolean enabled = true;
 
     public abstract <T> void generateBuffer( Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer );
-
     
     /**
      * Get the buffered event sets.
@@ -67,8 +66,6 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
      * </pre>
      */
     private Queue<MetroEventBuffer> buffers = new ArrayDeque<>();
-    
-    
     
     /**
      * This interface defines how 
@@ -269,11 +266,32 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
         return bufferRequested;
     }
     
-    synchronized void checkBuffer( Metro metro, MetroTrack track, long measureLengthInFrames ) throws MetroException {
+    synchronized void checkBuffer(
+			Metro metro, 
+			MetroTrack track, 
+			long nframes, 
+			long measureLengthInFrames, 
+			List<MetroMidiEvent> inputMidiEvents, 
+			List<MetroMidiEvent> outputMidiEvents,
+			List<MetroTrack> tracks, 
+			List<MetroTrack> registeringTracks, 
+			List<MetroTrack> finalizingTracks, 
+			List<MetroTrack> unregisteringTracks ) throws MetroException 
+    {
         if ( ! isBufferRequested() ) {
             return;
         } else {
-            processBuffer(metro, track, measureLengthInFrames);
+			processBuffer(
+					metro, 
+					track, 
+					nframes, 
+					measureLengthInFrames, 
+					inputMidiEvents,
+					outputMidiEvents,
+					tracks,
+					registeringTracks, 
+					finalizingTracks, 
+					unregisteringTracks);
             resetBufferRequested();
         }
     }
@@ -468,8 +486,18 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
         
         synchronized ( metro.getMetroLock() ) {
             synchronized ( metro.getMetroLock() ) {
-                // Check Buffer
-                checkBuffer(metro, track, measureLengthInFrames);
+                // Update the buffer list. 
+                checkBuffer(
+                		metro, 
+                		track, 
+                		nframes, 
+                		measureLengthInFrames, 
+                		inputMidiEvents, 
+                		outputMidiEvents, 
+                		tracks, 
+                		registeringTracks, 
+                		finalizingTracks, 
+                		unregisteringTracks );
 
                 // Before everything, initialize synchronizing status with the track.
                 // In most case, this method does nothing and returns immediately.
@@ -785,7 +813,18 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
      * @param measureLengthInFrames
      * @throws MetroException
      */
-    public void processBuffer( Metro metro, MetroTrack track, long measureLengthInFrames) {
+    public void processBuffer(
+			Metro metro, 
+			MetroTrack track, 
+			long nframes, 
+			long measureLengthInFrames, 
+			List<MetroMidiEvent> inputMidiEvents, 
+			List<MetroMidiEvent> outputMidiEvents,
+			List<MetroTrack> tracks, 
+			List<MetroTrack> registeringTracks, 
+			List<MetroTrack> finalizingTracks, 
+			List<MetroTrack> unregisteringTracks ) throws MetroException 
+    {
         double backwardBufferLength;
         double forewardBufferLength;
         int backwardBufferCount;
@@ -948,8 +987,10 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
             for ( int i=0; i<buffersToRemove; i++ )
                 this.buffers.remove();
         }
-
     }
+    
+    
+    
     
     // ADDED (Sun, 10 May 2020 02:10:20 +0900) BUFFER_SEQ_NO
     /**
