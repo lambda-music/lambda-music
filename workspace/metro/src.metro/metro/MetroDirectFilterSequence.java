@@ -200,12 +200,9 @@ public class MetroDirectFilterSequence implements MetroSequence {
         }
         buffer.removeAll( removingNoteList );
     }
-
+    
     @Override
-    public void advanceBuffer(Metro metro, MetroTrack track, long measureLengthInFrames) throws MetroException {
-    }
-    @Override
-    public void advanceCursor(
+    public void process(
         Metro metro, 
         MetroTrack track, 
         long nframes,

@@ -55,10 +55,7 @@ public class MetroDirectRecorderSequence implements MetroSequence {
     private volatile int totalCursor = 0;
     
     @Override
-    public void advanceBuffer(Metro metro, MetroTrack track, long measureLengthInFrames) throws MetroException {
-    }
-    @Override
-    public void advanceCursor(
+    public void process(
         Metro metro, MetroTrack track, 
         long nframes,
         long measureLengthInFrames, List<MetroMidiEvent> inputMidiEvents, List<MetroMidiEvent> outputMidiEvents, List<MetroTrack> tracks, List<MetroTrack> registeringTracks, List<MetroTrack> finalizingTracks, List<MetroTrack> unregisteringTracks ) throws MetroException 

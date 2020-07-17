@@ -816,7 +816,7 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
                             track.removingTracks.clear(); 
                             track.unregisteringTracks.clear();
                             // 3.1 Process
-                            track.getSequence().advanceCursor( this, track, 
+                            track.getSequence().process( this, track, 
                                 nframes, 
                                 measureLengthInFrames, 
                                 track.inputMidiEvents,

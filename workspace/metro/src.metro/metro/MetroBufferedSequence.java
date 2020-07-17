@@ -273,7 +273,7 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
         if ( ! isBufferRequested() ) {
             return;
         } else {
-            advanceBuffer(metro, track, measureLengthInFrames);
+            processBuffer(metro, track, measureLengthInFrames);
             resetBufferRequested();
         }
     }
@@ -447,7 +447,7 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
     
 
     @Override
-    public void advanceCursor( 
+    public void process( 
         Metro metro, 
         MetroTrack track,
         long nframes, 
@@ -775,8 +775,17 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
     private final ArrayList<MetroEventBuffer> share_buffersToAdd  = new ArrayList<>();
     private final ArrayList<MetroEventBuffer> share_buffersTmp  = new ArrayList<>();
 
-    @Override
-    public void advanceBuffer( Metro metro, MetroTrack track, long measureLengthInFrames) {
+    
+    // This method was formerly checkBuffer()
+    // Moved from MetroSequence (Fri, 17 Jul 2020 16:04:24 +0900)
+    /**
+     * 
+     * @param metro
+     * @param track
+     * @param measureLengthInFrames
+     * @throws MetroException
+     */
+    public void processBuffer( Metro metro, MetroTrack track, long measureLengthInFrames) {
         double backwardBufferLength;
         double forewardBufferLength;
         int backwardBufferCount;

@@ -3,18 +3,7 @@ package metro;
 import java.util.List;
 
 public interface MetroSequence {
-    // This method was formerly checkBuffer()
     /**
-     * 
-     * @param metro
-     * @param track
-     * @param measureLengthInFrames
-     * @throws MetroException
-     */
-    public abstract void advanceBuffer(Metro metro, MetroTrack track, long measureLengthInFrames) throws MetroException;
-    
-    /**
-     * 
      * @param metro
      * @param track
      * @param nframes
@@ -27,7 +16,7 @@ public interface MetroSequence {
      * @param unregisteringTracks
      * @throws MetroException
      */
-    public abstract void advanceCursor(Metro metro, MetroTrack track, 
+    public abstract void process(Metro metro, MetroTrack track, 
         long nframes, 
         long measureLengthInFrames, 
         List<MetroMidiEvent> inputMidiEvents, 
