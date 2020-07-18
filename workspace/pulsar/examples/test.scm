@@ -17,7 +17,7 @@
                  len:  << (cl 1/4 ) 
                  pos:  << (cl 0/4 1/4 2/4 3/4 4/4 )
                  note: >> 60 61 62 63 64  )
-              (n type: 'len val: 5/4 ))
+              (n type: 'end pos: 5/4 ))
             )
       's (gett 'main))
 
@@ -38,7 +38,7 @@ trackset-manager
   (n chan: 0 port: 0 
      (p
        (p type: 'note chan: 0 port: 0 len: 0.5 pos: 0 velo: 1.0 note: >> (iota 400 ) )
-       (p type: 'len val: 1 )
+       (p type: 'end pos: 1 )
        (n type: 'quit )
        )
 
@@ -173,14 +173,14 @@ trackset-manager
 (put! 'cnt 
       (n
         (n type: 'note port: 1 chan: 0 velo: 0.7 len: 0.5 note: << (iota 10 60)  pos: >> (ap 10 3 ) )
-        (n type: 'len val: 3 )) 'parallel 'main
+        (n type: 'end pos: 3 )) 'parallel 'main
       )
 (kill! 'cnt)
 
 (put! 'cnt22
           (n
             (n type: 'note port: 1 chan: 0 velo: 0.7 len: 0.5 note: << (iota 10 60)  pos: >> (ap 10 5 ) )
-            (n type: 'len val: 2 )) 'parallel 'main
+            (n type: 'end pos: 2 )) 'parallel 'main
           )
 
 (kill! 'cnt22 )
@@ -213,7 +213,7 @@ trackset-manager
   (n chan: 0 port: 0 
      (p
        (p type: 'note chan: 0 port: 0 len: 0.5 pos: 0 velo: 1.0 note: >> (iota 200 ) )
-       (p type: 'len val: 1 ))
+       (p type: 'end pos: 1 ))
 
      (s
        (repeat 2 (melody '( o 4 sol 1/32 re mi sol end )))

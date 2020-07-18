@@ -176,7 +176,7 @@
                   (display-warn 'end-song )
                   (newline-warn)
                   ; *RETURN* return null for the next position to indicate the song is finished.
-                  (values 'command-end (n (n type: 'len val: measure-length)(n type: 'quit)) '() measure-length ))
+                  (values 'command-end (n (n type: 'end pos: measure-length)(n type: 'quit)) '() measure-length ))
                  ; play command
                  ((eq? proc-command 'play )
                   ;*RETURN*  note that proc-command-argument could be 'repeat-last
@@ -214,10 +214,10 @@
              ; *RETURN* if the current value is a number, treat it as measure length 
              ; and return the current location.
              (set! measure-length song-next-val )
-             (values 'command-none (n (n type: 'len val: measure-length)) (cdr song-next-pos) measure-length ))
+             (values 'command-none (n (n type: 'end pos: measure-length)) (cdr song-next-pos) measure-length ))
             ((eq? song-next-val #f)
              ; *RETURN* return the current location
-             (values 'command-none (n (n type: 'len val: measure-length)) (cdr song-next-pos) measure-length ))
+             (values 'command-none (n (n type: 'end pos: measure-length)) (cdr song-next-pos) measure-length ))
             (else
               (raise (format "an unsupported value was found ~a" song-next-val )))))))))
 
@@ -314,7 +314,7 @@
                           (melody "do re mi fi")
                           (n type: 'putt id: 'hello2 styp: 'i pos: 0 
                              proc: (n port: "h2" chan: 0 (melody "do re mi")) )
-                          (n type: 'len val: 2))
+                          (n type: 'end pos: 2))
 
                        ; A notation list
                        (n port: "fluidsynth" chan: 1 
@@ -332,7 +332,7 @@
                        ; A notation list to clean up.
                        (n (n type: 'remt id: 'hello   pos: 1 )
                           (n type: 'remt id: 'hello2  pos: 1 )
-                          (n type: 'len val: 2)
+                          (n type: 'end pos: 2)
                           )
                        )))))
 
