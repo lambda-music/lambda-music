@@ -300,10 +300,10 @@ public class NoteListCommon {
         return Pair.make( ID_OFFSET, J2S_DOUBLE.convert( value ) );
     }
     static double readMapEndOffset( NoteListMap map ) {
-        return map.get( ID_VALUE, S2J_DOUBLE, DEFAULT_VALUE_DOUBLE_BAR_LENGTH );
+        return map.get( ID_OFFSET, S2J_DOUBLE, DEFAULT_VALUE_DOUBLE_BAR_LENGTH );
     }
     static Pair writeMapEndOffset( double value ) {
-        return Pair.make( ID_VALUE, J2S_DOUBLE.convert( value ) );
+        return Pair.make( ID_OFFSET, J2S_DOUBLE.convert( value ) );
     }
     
     

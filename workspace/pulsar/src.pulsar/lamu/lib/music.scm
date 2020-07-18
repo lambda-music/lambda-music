@@ -223,7 +223,7 @@
 
 (define default-note? (make-default-notation-type-checker 'note))
 (define note? (make-notation-type-checker 'note))
-(define len?  (make-notation-type-checker 'len))
+(define len?  (make-notation-type-checker 'end))
 
 
 
@@ -658,17 +658,17 @@
                   mapvals))
 
           ; Eliminate the duplicate len-notes except the last len-note.
-          ; Search len-notes (n type: 'len ) and then append the last len-note
+          ; Search len-notes (n type: 'end ) and then append the last len-note
           ; to the other notes.
           (set! notes (let* ((notes notes)
                              (len-notes   (filter (lambda(note) 
                                                     (begin
-                                                      (eq? 'len (cdr (or (assq 'type note)
+                                                      (eq? 'end (cdr (or (assq 'type note)
                                                                          (cons 'type #f)))))) 
                                                   notes))
                              (other-notes (filter (lambda(note) 
                                                     (not 
-                                                      (eq? 'len (cdr (or (assq 'type note)
+                                                      (eq? 'end (cdr (or (assq 'type note)
                                                                          (cons 'type #f)))))) 
                                                   notes)))
                         ; (display len-notes)
@@ -1832,9 +1832,9 @@
                      (if (null? notes)
                        ; end of the loop
                        (cons
-                         (list (cons 'type  'len )
+                         (list (cons 'type  'end )
                                ; CAUTION : 'val not 'value (Tue, 23 Oct 2018 14:25:27 +0900)
-                               (cons 'val state-position ))
+                               (cons 'pos   state-position ))
                          '())
 
                        ; the loop proc
@@ -2193,13 +2193,13 @@
           (find (lambda (note)
                   (and 
                     (notation? note) 
-                    (eq? 'len (cdr (or (assq 'type note)
+                    (eq? 'end (cdr (or (assq 'type note)
                                        (cons 'type #f))))))
                 (reverse notes))))
     (if len-note
       ; CAUTION : 'val not 'value you make mistakes quite often. (Wed, 31 Jul 2019 12:13:46 +0900)
-      (cdr (or (assq 'val len-note)
-               (cons 'val #f)))
+      (cdr (or (assq 'pos len-note)
+               (cons 'pos #f)))
       #f)))
 
 (define debug-append-notes #f)
@@ -2238,14 +2238,14 @@
                           (raise "no 'len' note was found" ))))))))
               (append
                 (filter (lambda(note)
-                          (not (eq? 'len (cdr (or (assq 'type note )
+                          (not (eq? 'end (cdr (or (assq 'type note )
                                                   (cons 'type #f))))))
                         notes)
                 (list
                   (list
-                    (cons 'type 'len)
+                    (cons 'type 'end)
                     ; CAUTION : 'val not 'value (Tue, 23 Oct 2018 14:25:27 +0900)
-                    (cons 'val len)))
+                    (cons 'pos len)))
                 )))
 #| 
  | (append-notes 
@@ -2294,9 +2294,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define len (lambda (value) 
   (list
-    (cons 'type 'len) 
+    (cons 'type 'end) 
     ; CAUTION : 'val not 'value (Tue, 23 Oct 2018 14:25:27 +0900)
-    (cons 'val  value ))))
+    (cons 'pos  value ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define mov! (lambda (value notes)
@@ -2322,8 +2322,6 @@
 (define sca! (lambda (value notes)
               (for-each (lambda (v) 
                           (let ((e (assq 'pos v)))
-                            (if e (set-cdr! e (* value (cdr e)))))
-                          (let ((e (assq 'len v)))
                             (if e (set-cdr! e (* value (cdr e))))))
                         notes)
               notes))
@@ -2430,7 +2428,7 @@
                   (set! notations 
                     (n
                       (n type: 'note velo: 1 pos: notations  )
-                      (n type: 'len val: 1 ))))
+                      (n type: 'end  pos: 1 ))))
 
                 ; shrink the notation to the proper size.
                 (set! notations 
@@ -2492,12 +2490,12 @@
                                                            ; That is, process every list in the arg-values .
                                                            arg-values)))
                 (set! final-result-notations (filter (lambda(x) 
-                                                       (not (eq? 'len 
+                                                       (not (eq? 'end 
                                                                  (cdr (or (assq 'type x)
                                                                           (cons 'type 'unknown))))))
                                                      final-result-notations))
                 (set! final-result-notations (n 
-                                               (n type: 'len val: total-length)
+                                               (n type: 'end pos: total-length)
                                                final-result-notations ))
                 (reverse final-result-notations))))
 
@@ -2556,7 +2554,13 @@
                                             (newline)
                                             (append result
                                                     (filter (lambda (x)
-                                                              (not (eq? 'len (cdar x))))
+                                                              ;; ## 'len or 'end ? ##
+                                                              ;; I am renaming type: 'len to type: 'end now. Today is Jul 18, 2020.
+                                                              ;; I could not figure out if this 'len is (type: 'len) or (n type: 'note len: xx)
+                                                              ;; I gave up to distinguish it since `rep2` is not used anymore.
+                                                              ;; Leave it as it is. 
+                                                              ;;  (Sat, 18 Jul 2020 23:18:28 +0900)
+                                                              (not (eq? 'len (cdar x)))) 
                                                             (apply repeat-type (append 
                                                                                  (list 
                                                                                    (tra! 
@@ -2569,11 +2573,11 @@
                                     (iota total-count))
                                   args))              
                     (list
-                      (n type: 'len val: total-length)))))))
+                      (n type: 'end pos: total-length)))))))
 
 ; (define (bret name len) 
 ;   (let* ((old-tra (gett name ))
-;          (new-tra (putt (newt name (n (n type: 'len val: len ))) 'p name )))
+;          (new-tra (putt (newt name (n (n type: 'end pos: len ))) 'p name )))
 ;     (putt old-tra 'serial name )))
 
 (define (bret name fill-in-track next-track) 
@@ -2654,7 +2658,7 @@
                                          ; if no argument is specified, return the next bar.
                                          (if (null? current-pos) 
                                            (n
-                                             (n type: 'len val: 1 )
+                                             (n type: 'end pos: 1 )
                                              (n type: 'quit ))
 
                                            (let ((result (car current-pos)))
@@ -2693,7 +2697,7 @@
                                    len: 1/4 ))
                               (iota beat-count)))
                        (iota bar-count)))
-    (list (n type: 'len val: bar-count ))))
+    (list (n type: 'end pos: bar-count ))))
 
 
 
