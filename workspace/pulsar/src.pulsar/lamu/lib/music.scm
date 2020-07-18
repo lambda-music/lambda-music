@@ -2310,13 +2310,22 @@
               notes))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; (define sca! (lambda (value notes)
+;               (map (lambda (v) 
+;                      (let ((e (or (assq 'pos v)
+;                                   (cons 'pos 0)))) 
+;                        (set-cdr! e (* value (cdr e))))
+;                      v)
+;                    notes)
+;               notes))
+
 (define sca! (lambda (value notes)
-              (map (lambda (v) 
-                     (let ((e (or (assq 'pos v)
-                                  (cons 'pos 0)))) 
-                       (set-cdr! e (* value (cdr e))))
-                     v)
-                   notes)
+              (for-each (lambda (v) 
+                          (let ((e (assq 'pos v)))
+                            (if e (set-cdr! e (* value (cdr e)))))
+                          (let ((e (assq 'len v)))
+                            (if e (set-cdr! e (* value (cdr e))))))
+                        notes)
               notes))
 
 (define tra! (lambda (sca mov notes)
