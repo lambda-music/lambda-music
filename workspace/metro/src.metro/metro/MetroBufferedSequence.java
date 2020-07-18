@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.logging.Level;
 
@@ -53,7 +54,7 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
 
     private volatile boolean enabled = true;
 
-    public abstract <T> void generateBuffer( Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer );
+    public abstract <T> void generateBuffer( Metro metro, MetroTrack track, MetroBufferedMidiReceiverFactory<T> bufferFactory );
     
     /**
      * Get the buffered event sets.
@@ -898,10 +899,22 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
                                 // Initialize the seq no; this value will be reflected to `this.currentBufferSeqNo`.
                                 currentBufferSeqNo = 0;
                                 {
-                                    buffersTmp.clear();
-                                    for ( long i=theLastBufferSeqNo; i<currentBufferSeqNo; i++ ) {
-                                        this.createNewBuffer( metro, track, measureLengthInFrames, buffersTmp );
+                                	// MODIFIED (Sat, 18 Jul 2020 00:57:29 +0900) >>>
+                                    // buffersTmp.clear();
+                                    // for ( long i=theLastBufferSeqNo; i<currentBufferSeqNo; i++ ) {
+                                    // 	   this.createNewBuffer( metro, track, measureLengthInFrames, buffersTmp );
+                                    // }
+                                	buffersTmp.clear();
+                                	// Limit the maximum count of the loop in order to avoid infinite loop.
+                                    for( int i=0;i<4096; i++) {
+                                    	if ( theLastBufferSeqNo + buffersTmp.size() < currentBufferSeqNo ) {
+                                    		this.createNewBuffer( metro, track, measureLengthInFrames, buffersTmp );
+                                    	} else {
+                                    		break;
+                                    	}
                                     }
+                                	// MODIFIED (Sat, 18 Jul 2020 00:57:29 +0900) <<<
+
                                     buffers.addAll( buffersTmp );
                                     buffersToAdd.addAll( buffersTmp );
                                 }
@@ -988,8 +1001,63 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
                 this.buffers.remove();
         }
     }
+
     
     
+    final class MetroEventBufferFactory implements MetroBufferedMidiReceiverFactory<MetroEvent> {
+    	MetroEventBufferFactory() {
+		}
+    	private long barLengthInFrames;
+    	List<MetroEventBuffer> bufferList;
+    	double length;
+    	long actualLength;
+    	long endPosition;
+    	void preInit( long barLengthInFrames, List<MetroEventBuffer> bufferList ) {
+    		this.bufferList = bufferList;
+			this.barLengthInFrames = barLengthInFrames;
+    		this.length = 0;
+    		this.endPosition =-1;
+    	}
+		@Override
+    	public MetroBufferedMidiReceiver<MetroEvent> create() {
+            MetroEventBuffer buf = MetroEventBuffer.create();
+            this.bufferList.add( buf );
+    		return buf;
+    	}
+		void postInit() {
+			for ( MetroEventBuffer buffer : bufferList ) {
+				initNewBuffer(buffer, barLengthInFrames);
+				this.length += buffer.getLength();
+				this.actualLength += buffer.getActualLength();
+				if ( buffer.endCalled() && this.endPosition < 0 ) {
+					this.endPosition = this.actualLength;
+				}
+				if ( DEBUG_BUF && ( buffer.size() >0 ) )
+					logInfo( buffer.dump("") );
+			}
+		}
+		public double getLength() {
+			return this.length;
+		}
+		public long getActualLength() {
+			return actualLength;
+		}
+		public boolean endCalled() {
+			return 0<=this.endPosition;
+		}
+		public long getEndPosition() {
+			return this.endPosition;
+		}
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder();
+			for ( Object o : bufferList )  {
+				sb.append( Objects.toString(o) ).append( "\n\n" );
+			}
+			return sb.toString();
+		}
+    }
+    final MetroEventBufferFactory bufferFactory = new MetroEventBufferFactory();
     
     
     // ADDED (Sun, 10 May 2020 02:10:20 +0900) BUFFER_SEQ_NO
@@ -1005,30 +1073,45 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
     private double createNewBuffer( Metro metro, MetroTrack track, long barLengthInFrames, List<MetroEventBuffer> result ) {
         double length=0.0d;
         synchronized ( metro.getMetroLock() ) {
-
             {
                 boolean endCalled=false;
                 double endingLength=0.0d;
+                // MODIFIED (Sat, 18 Jul 2020 01:30:22 +0900) >>>
+                //  {
+                //    	MetroEventBuffer buf = MetroEventBuffer.create();
+                //    	this.generateBuffer( metro, track, buf );
+                //    	this.initNewBuffer(buf, barLengthInFrames);
+                //
+                //    	if ( DEBUG_BUF && ( buf.size() >0 ) )
+                //    		logInfo( buf.dump("") );
+                //
+                //    	result.add( buf );
+                //    	length += buf.getLength();
+                //
+                //    	// 1. ending 1
+                //    	if ( buf.endCalled() ) {
+                //    		endCalled = true;
+                //    		endingLength = buf.getActualLength();
+                //    		if ( endingLength < 1 )
+                //    			endingLength = 1;
+                //    	}
+                //  }
                 {
-                    
-                    MetroEventBuffer buf = MetroEventBuffer.create();
-                    this.generateBuffer( metro, track, buf );
-                    this.initNewBuffer(buf, barLengthInFrames);
-                    
-                    if ( DEBUG_BUF && ( buf.size() >0 ) )
-                        logInfo( buf.dump("") );
-                    
-                    result.add( buf );
-                    length += buf.getLength();
+                	this.bufferFactory.preInit(barLengthInFrames,result);
+                    this.generateBuffer( metro, track, bufferFactory );
+                    this.bufferFactory.postInit();
+                    length += this.bufferFactory.getLength();
                     
                     // 1. ending 1
-                    if ( buf.endCalled() ) {
+                    if ( this.bufferFactory.endCalled() ) {
                         endCalled = true;
-                        endingLength = buf.getActualLength();
+                        endingLength = this.bufferFactory.getEndPosition();
                         if ( endingLength < 1 )
                             endingLength = 1;
                     }
                 }
+                // MODIFIED (Sat, 18 Jul 2020 01:30:22 +0900) <<<
+
 
                 if ( endCalled ) {
                     if ( DEBUG )

@@ -22,12 +22,15 @@ package pulsar;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 
 import gnu.lists.LList;
 import gnu.lists.Pair;
 import gnu.mapping.Procedure;
+import gnu.mapping.Values;
 import lamu.lib.Invokable;
 import lamu.lib.kawautils.SchemeInvokable;
 import lamu.lib.kawautils.SchemePrinter;
@@ -35,6 +38,7 @@ import lamu.lib.kawautils.procedures.MultipleNamedProcedureN;
 import lamu.lib.logging.Logger;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
+import metro.MetroBufferedMidiReceiverFactory;
 import metro.MetroBufferedSequence;
 import metro.MetroCollector;
 import metro.MetroTraceableSequence;
@@ -111,7 +115,7 @@ public class SchemeSequence extends MetroBufferedSequence implements Invokable, 
     }
     
     @Override
-    public <T> void generateBuffer(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer) {
+    public <T> void generateBuffer(Metro metro, MetroTrack track, MetroBufferedMidiReceiverFactory<T> bufferFactory ) {
         // System.out.println("Metro.sequence.new MetroSequence() {...}.initBuffer()" );
 //      buf.humanize( 0.0d, 3 );
         try {
@@ -122,21 +126,36 @@ public class SchemeSequence extends MetroBufferedSequence implements Invokable, 
             // metro.getThreadInitializerCollection().run();
             Pulsar.setCurrentMetro(metro);
 
-            
             // Call the invokable to get a note list of the next measure.
-            Collection<Object> notations = (Collection<Object>)invokable.invoke();
-            
-            if ( tracingEnabled ) {
-            	LOGGER.log(Level.SEVERE, SchemePrinter.printSchemeValue(notations));
+            Object result = invokable.invoke();
+
+            // Parse the result
+            List<Object> resultList;
+            if ( result instanceof Values ) {
+            	resultList = Arrays.asList((Object[])((Values)result).getValues() );
+            } else {
+            	resultList = Arrays.asList( result );
             }
-            
-            // Parse the retrieved list to execute.
-            // MOVED FROM SchemeSequence (Wed, 06 Nov 2019 17:07:05 +0900)
-            // MOVED AGAIN FROM NoteListParser (Thu, 02 Jan 2020 18:00:29 +0900)
-            PulsarNoteListParser.getInstance().parseAll( metro, track, notations, buffer, (MetroCollector<T>) MetroCollector.NULL );
-            
+
+            for ( Object o : resultList ) {
+            	Collection<Object> notations = (Collection<Object>)o;
+            	if ( tracingEnabled ) {
+            		LOGGER.log(Level.SEVERE, SchemePrinter.printSchemeValue(notations));
+            	}
+            	
+            	// Parse the retrieved list to execute.
+            	// MOVED FROM SchemeSequence (Wed, 06 Nov 2019 17:07:05 +0900)
+            	// MOVED AGAIN FROM NoteListParser (Thu, 02 Jan 2020 18:00:29 +0900)
+            	MetroBufferedMidiReceiver<T> buffer = bufferFactory.create();
+            	PulsarNoteListParser.getInstance().parseAll( 
+            			metro, 
+            			track, 
+            			notations, 
+            			buffer, 
+            			(MetroCollector<T>) MetroCollector.NULL );
+            }
         } catch ( Exception e ) {
-            LOGGER.log(Level.SEVERE, buffer.toString() , e);
+            LOGGER.log(Level.SEVERE, bufferFactory.toString() , e );
         }
     }
     
