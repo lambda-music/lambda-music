@@ -1025,6 +1025,11 @@ public abstract class MetroBufferedSequence implements MetroSequence, MetroSynch
     		return buf;
     	}
 		void postInit() {
+			if ( bufferList.isEmpty() ) {
+				MetroEventBuffer b = MetroEventBuffer.create();
+				b.end();
+				bufferList.add(b);
+			}
 			for ( MetroEventBuffer buffer : bufferList ) {
 				initNewBuffer(buffer, barLengthInFrames);
 				this.length += buffer.getLength();
