@@ -2655,7 +2655,7 @@
                                          (if (null? current-pos) 
                                            (n
                                              (n type: 'len val: 1 )
-                                             (n type: 'end ))
+                                             (n type: 'quit ))
 
                                            (let ((result (car current-pos)))
                                              (set! current-pos (cdr current-pos))

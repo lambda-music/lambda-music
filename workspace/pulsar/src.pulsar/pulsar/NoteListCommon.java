@@ -299,6 +299,14 @@ public class NoteListCommon {
     static Pair writeMapOffset( double value) {
         return Pair.make( ID_OFFSET, J2S_DOUBLE.convert( value ) );
     }
+    static double readMapEndOffset( NoteListMap map ) {
+        return map.get( ID_VALUE, S2J_DOUBLE, DEFAULT_VALUE_DOUBLE_BAR_LENGTH );
+    }
+    static Pair writeMapEndOffset( double value ) {
+        return Pair.make( ID_VALUE, J2S_DOUBLE.convert( value ) );
+    }
+    
+    
     static int readMapNote( NoteListMap map ) {
         return map.get( ID_NOTE, S2J_INTEGER, DEFAULT_VALUE_NOTE );
     }

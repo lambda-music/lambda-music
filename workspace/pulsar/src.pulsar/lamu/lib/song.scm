@@ -176,7 +176,7 @@
                   (display-warn 'end-song )
                   (newline-warn)
                   ; *RETURN* return null for the next position to indicate the song is finished.
-                  (values 'command-end (n (n type: 'len val: measure-length)(n type: 'end)) '() measure-length ))
+                  (values 'command-end (n (n type: 'len val: measure-length)(n type: 'quit)) '() measure-length ))
                  ; play command
                  ((eq? proc-command 'play )
                   ;*RETURN*  note that proc-command-argument could be 'repeat-last

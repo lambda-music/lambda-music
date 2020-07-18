@@ -39,7 +39,7 @@ trackset-manager
      (p
        (p type: 'note chan: 0 port: 0 len: 0.5 pos: 0 velo: 1.0 note: >> (iota 400 ) )
        (p type: 'len val: 1 )
-       (n type: 'end )
+       (n type: 'quit )
        )
 
      (s
@@ -98,7 +98,7 @@ trackset-manager
                                                 (display 'hello)
                                                 (newline)
                                                 ))
-                (n type: 'end )
+                (n type: 'quit )
                 ))
 
 (add! 'm1 (n type: note pos: >> (ap 4 1) ) )

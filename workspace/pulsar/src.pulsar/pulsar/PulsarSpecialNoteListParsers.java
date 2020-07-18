@@ -316,6 +316,10 @@ public class PulsarSpecialNoteListParsers {
             // Now the bar length default to 1.0d. See the comment of DEFAULT_BAR_LENGTH.  
             double value    =  readMapDoubleValueBarLength( map );
 
+//            // ADDED (Sat, 18 Jul 2020 20:04:10 +0900) >>>
+//            double offset    = readMapEndOffset( map );  
+//            // <<<
+            
             // LOGGER.log( Level.INFO, "a len note = " + value );
             result.add(((MetroBufferedMidiReceiver<T>)buffer).length( value ));
         }
@@ -419,14 +423,13 @@ public class PulsarSpecialNoteListParsers {
             buffer.exet(offset, MetroTrackManipulatorBasic.multiple( new ArrayList<>( trackManipulators )));
         }
     }
-
     
     public static final EndEventParser PARSER_END = new EndEventParser();
     static { register( PARSER_END ); } 
     static final class EndEventParser extends SpecialNoteListParserElement {
         {
-            this.shortName = s( "end" );
-            this.longName  = s( "end-track" );
+            this.shortName = s( "quit" );
+            this.longName  = s( "quit-track" );
             this.parameters = Arrays.asList(
 //              new NoteListParserElementParameter.Default(
 //                  "","","","",
