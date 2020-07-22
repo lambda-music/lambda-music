@@ -2280,11 +2280,12 @@
 
 
 
-; === repeat ===
-; repeat the passed notes.
-(define (repeat times lst )
-  (apply append-notes (map cons-copy (make-list times lst ))))
-; this procedure may be obsolete. (Sat, 27 Jun 2020 09:28:38 +0900)
+;; REMOVED (Wed, 22 Jul 2020 20:56:01 +0900)
+;; ; === repeat ===
+;; ; repeat the passed notes.
+;; (define (repeat times lst )
+;;   (apply append-notes (map cons-copy (make-list times lst ))))
+;; ; this procedure may be obsolete. (Sat, 27 Jun 2020 09:28:38 +0900)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
