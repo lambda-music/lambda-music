@@ -605,71 +605,80 @@
                           ; kar is a key and kdr is a value consists a list.
                           (< 1 (length (cdr e))))
                         mapvals))
+            ;then
             (set! notes 
               (map (lambda (note)
                      (if (target-notation? note)
                        (set! note
                          (notation-set-all! params note)))
                      note)
-                   notes)))
+                   notes))
 
-          ;; Applying `mapvals`
-          ;             curr-var last-var
-          (set! notes
-            (fold (lambda(a-mapval notes)
-                    ; We return the result of the map and it goes to
-                    ; fold's result. It will come back as 'notes' at
-                    ; the next turn.
-                    (let ((prop-name  (car a-mapval))
-                          (prop-vals  (cdr a-mapval)))
+            ;else 
+            (set! notes
+              ; Applying `mapvals`
+              ;             curr-var last-var
+              (fold (lambda(a-mapval notes)
+                      ; We return the result of the map and it goes to
+                      ; fold's result. It will come back as 'notes' at
+                      ; the next turn.
+                      (let ((prop-name  (car a-mapval))
+                            (prop-vals  (cdr a-mapval)))
 
-                      (let n-loop2 ((notes notes)
-                                    (prop-vals prop-vals ))
-                        (if (null? notes)
-                          ;then
-                          '()
-                          ;else
-                          (if (null? prop-vals) 
+                        (let n-loop2 ((notes notes)
+                                      (prop-vals prop-vals ))
+                          (if (null? notes)
                             ;then
-                            (cons (car notes)
-                                  (n-loop2 (cdr notes) prop-vals))
+                            '()
                             ;else
-                            (let ((a-note     (car notes))
-                                  (a-prop-val (car prop-vals)))
+                            (if (null? prop-vals) 
+                              ;then
+                              (let ()
+                                (display (cons-copy (car notes)) (severe-logger))
+                                (newline (severe-logger))
+                                (cons (car notes)
+                                      (n-loop2 (cdr notes) prop-vals)))
+                              ;else
+                              (let ((a-note     (car notes))
+                                    (a-prop-val (car prop-vals)))
+                                (display (cons-copy a-note) (severe-logger))
+                                (newline (severe-logger))
 
-                              (if (target-notation? a-note) 
-                                ;then
-                                (cons
-                                  ; the current value
+                                (if (target-notation? a-note) 
+                                  ;then
+                                  (cons
+                                    ; the current value
 
-                                  (notation-set! prop-name a-prop-val a-note)
-                                  ;(sort-note-properties 
-                                  ;  (cleanup-note-properties
-                                  ;    (cons
-                                  ;      (cons prop-name a-prop-val)
-                                  ;      a-note)))
-                                  ; the next value
-                                  (n-loop2 (cdr notes) (cdr prop-vals)))
-                                ;else
-                                ; note that we do not cdr the prop-vals to remain on the current value.
-                                (cons a-note (n-loop2 (cdr notes)    prop-vals )))))))
-                      ;(if #f
-                      ;  (map (lambda(a-note a-prop-val)
-                      ;         (if (target-notation? a-note) 
-                      ;           ;then
-                      ;           (sort-note-properties 
-                      ;             (cleanup-note-properties
-                      ;               (cons
-                      ;                 (cons prop-name a-prop-val)
-                      ;                 a-note)))
-                      ;           ;else
-                      ;           a-note))
-                      ;       notes
-                      ;       prop-vals))
+                                    (notation-set! prop-name a-prop-val a-note)
+                                    ;(sort-note-properties 
+                                    ;  (cleanup-note-properties
+                                    ;    (cons
+                                    ;      (cons prop-name a-prop-val)
+                                    ;      a-note)))
+                                    ; the next value
+                                    (n-loop2 (cdr notes) (cdr prop-vals)))
+                                  ;else
+                                  ; note that we do not cdr the prop-vals to remain on the current value.
+                                  (cons a-note (n-loop2 (cdr notes)    prop-vals )))))))
+                        ;(if #f
+                        ;  (map (lambda(a-note a-prop-val)
+                        ;         (if (target-notation? a-note) 
+                        ;           ;then
+                        ;           (sort-note-properties 
+                        ;             (cleanup-note-properties
+                        ;               (cons
+                        ;                 (cons prop-name a-prop-val)
+                        ;                 a-note)))
+                        ;           ;else
+                        ;           a-note))
+                        ;       notes
+                        ;       prop-vals))
 
-                      ))
-                  notes 
-                  mapvals))
+                        ))
+                    notes 
+                    mapvals))
+            )
+
 
           ; Eliminate the duplicate len-notes except the last len-note.
           ; Search len-notes (n type: 'end ) and then append the last len-note
