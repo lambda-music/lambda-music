@@ -634,15 +634,16 @@
                             (if (null? prop-vals) 
                               ;then
                               (let ()
-                                (display (cons-copy (car notes)) (severe-logger))
-                                (newline (severe-logger))
+                                ; (display (cons-copy (car notes)) (severe-logger))
+                                ; (newline (severe-logger))
+
                                 (cons (car notes)
                                       (n-loop2 (cdr notes) prop-vals)))
                               ;else
                               (let ((a-note     (car notes))
                                     (a-prop-val (car prop-vals)))
-                                (display (cons-copy a-note) (severe-logger))
-                                (newline (severe-logger))
+                                ; (display (cons-copy a-note) (severe-logger))
+                                ; (newline (severe-logger))
 
                                 (if (target-notation? a-note) 
                                   ;then
@@ -2409,8 +2410,8 @@
                                        result-alist))))
 
 ; (rep size: 3 repeat: 5 offset: -1/10 pattern: 0 velo: * 1 1 1 pos: + 1 1 1 )
-(define rep (lambda args
-              (let* ((parsed-args  (parse-named-arguments args))
+(define rep (lambda input-args
+              (let* ((parsed-args  (parse-named-arguments input-args))
                      (total-length (cadr (or (assq 'length:  parsed-args  )
                                              (cons 'length:    (list 1)  ))))
                      (repeat-count (cadr (or (assq 'repeat:  parsed-args  )
@@ -2522,8 +2523,8 @@
                                                      final-result-notations))
                 (set! final-result-notations (n 
                                                (n type: 'end pos: total-length)
-                                               final-result-notations ))
-                (reverse final-result-notations))))
+                                               (reverse final-result-notations)))
+                final-result-notations)))
 
 (define rep2 (lambda args
               (let ((total-length (first  args   ))
