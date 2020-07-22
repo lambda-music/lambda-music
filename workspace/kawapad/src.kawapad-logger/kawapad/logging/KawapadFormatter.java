@@ -4,6 +4,8 @@ import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.logging.LogRecord;
 
+import lamu.lib.kawautils.SchemeThrowablePrinter;
+
 public class KawapadFormatter extends java.util.logging.Formatter {
 	private final SimpleDateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
 	@Override
@@ -29,28 +31,7 @@ public class KawapadFormatter extends java.util.logging.Formatter {
 		else
 			return "\"" + str + "\"";
 	}
-	private static Object formatThrown(Throwable thrown) {
-		if ( thrown == null)
-			return "";
-		StringBuilder sb = new StringBuilder();
-		String INDENT = "    ";
-		sb.append("\n");
-		sb.append("  (throwable  ");
-		sb.append("\""). append( thrown.getMessage() ).append( "\"\n" );
-		for( StackTraceElement e : thrown.getStackTrace() ) {
-			sb.append(INDENT).append("(" ).append(
-						e.getClassName() + 
-						"." + 
-						e.getMethodName() + 
-						" . " + 
-						"\"" + 
-						e.getFileName() + 
-						":" + 
-						e.getLineNumber() +  
-						"\"");   
-			sb.append(")\n");
-		}
-		sb.append("  )");
-		return sb.toString();
+	private static final Object formatThrown(Throwable thrown) {
+		return SchemeThrowablePrinter.throwableToSchemeList(thrown);
 	}
 }

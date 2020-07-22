@@ -1,14 +1,11 @@
 package lamu.lib.evaluators;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
-import java.util.regex.Pattern;
 
 import gnu.mapping.Values;
 import lamu.lib.kawautils.SchemePrinter;
+import lamu.lib.kawautils.SchemeThrowablePrinter;
 import lamu.lib.logging.Logger;
 
 public final class SchemeResult {
@@ -17,13 +14,6 @@ public final class SchemeResult {
     static void logInfo (String msg             ) { LOGGER.log(Level.INFO,     msg      ); }
     static void logWarn (String msg             ) { LOGGER.log(Level.WARNING,  msg      ); }
 
-    static String doubleQuote( String s ) {
-        return "\"" + escapeDoubleQuotation(s) + "\"";
-    }
-    static Pattern ESCAPE_DOUBLE_QUOTATIONS = Pattern.compile( "\"" );
-    static String escapeDoubleQuotation( String s ) {
-        return ESCAPE_DOUBLE_QUOTATIONS.matcher(s).replaceAll( "\\\\\"" );
-    }
 
     public static SchemeResult create(boolean isDocument, Object value, String valueAsString, Throwable error) {
         return new SchemeResult( isDocument, value, valueAsString, error );
@@ -49,28 +39,12 @@ public final class SchemeResult {
     }
 
     public static SchemeResult createError( String message ) {
-        return SchemeResult.create( false, null, doubleQuote( message ) , null /* THIS IS BOGUS */ );
+        return SchemeResult.create( false, null, SchemeThrowablePrinter.doubleQuote( message ) , null /* THIS IS BOGUS */ );
     }
-
     public static SchemeResult createError( Throwable e ) {
-        StringWriter sw = new StringWriter();
-        PrintWriter w = new PrintWriter( sw );
-        try {
-            e.printStackTrace( w );
-            w.flush();
-            sw.flush();
-            return SchemeResult.create( false, null, doubleQuote( sw.toString() ), e );
-        } finally {
-            try {
-                sw.close();
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
-            w.close();
-        }
+		return SchemeResult.create( false, null, SchemeThrowablePrinter.throwableToSchemeList(e), e );
     }
-
-    public static final Object UNKNOWN_CONTENT = new Object();
+	public static final Object UNKNOWN_CONTENT = new Object();
     
     private final boolean isDocument;
     private final Object value;
