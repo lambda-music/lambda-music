@@ -209,16 +209,27 @@
   (lambda (e) 
     (eq? type (get-notation-type e ))))
 
-(define (make-default-notation-type-checker type)
+
+(define (make-default-notation-type-checker types)
+  (set! types (if (list? types) 
+                types 
+                (list types)))
+
   (lambda (e) 
-    (let ((t (get-notation-type e )))
+    ; Get the type of the notation object
+    (let ((notation-type (get-notation-type e )))
       (or
-        ; This is very important because if you do not allow
+        ; This "(not notation-type)" is very important because if you do not allow
         ; to set properties on the notations which have no type node,
         ; you just cannot set (type: 'note).
         ; (Tue, 13 Aug 2019 16:29:53 +0900)
-        (not t )
-        (eq? type t)))))
+        (not notation-type)
+
+        ; check if any element in the list `types` matches to the retrieved notation-type.
+        (fold (lambda (kar kdr)
+                (or kdr (eq? notation-type kar)))
+              #f
+              types)))))
 
 
 (define default-note? (make-default-notation-type-checker 'note))
@@ -360,8 +371,11 @@
 
                    ; targ: set "target-notation?" (Thu, 08 Aug 2019 18:48:01 +0900)
                    ((eq? k 'targ )
+                    (if (or (symbol? v) (list? v))
+                      (set! v (make-default-notation-type-checker v)))
+
                     (if (not (procedure? v))
-                      (raise (cons 'illegal-argument-exception "non procedure value was passed to targ: " ) ))
+                      (raise (cons 'illegal-argument-exception "non procedure value was passed to targ: " )))
 
                     (begin 
                       ; (n-loop1 (+ idx 1) (cdr args) params newvals mapvals notes default-param-name v)
@@ -2322,6 +2336,8 @@
 (define sca! (lambda (value notes)
               (for-each (lambda (v) 
                           (let ((e (assq 'pos v)))
+                            (if e (set-cdr! e (* value (cdr e)))))
+                          (let ((e (assq 'len v)))
                             (if e (set-cdr! e (* value (cdr e))))))
                         notes)
               notes))
