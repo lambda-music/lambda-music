@@ -2420,6 +2420,7 @@
                                              (cons 'offset:    (list 0) ))))
                      (notations    (cadr (or (assq 'pattern: parsed-args  )
                                              (cons 'pattern:   (list 1) ))))
+                     (mandatory-args (list 'length: 'repeat: 'offset: 'pattern: ))
 
                      (args         (cons* 
                                      ; add a special argument, pos:
@@ -2427,7 +2428,7 @@
 
                                      ; remove all already refered parameters.
                                      (fold (lambda (x result)
-                                             (if (memv (car x) (list 'length: 'repeat: 'offset: 'pattern: )) 
+                                             (if (memv (car x) mandatory-args) 
                                                result
                                                (cons x result )))
                                            '()
