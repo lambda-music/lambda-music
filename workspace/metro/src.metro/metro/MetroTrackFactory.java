@@ -6,28 +6,35 @@ class DefaultMetroTrackFactory implements MetroTrackFactory {
     private Object name;
     private Collection<Object> tags;
     private MetroSequenceFactory sequenceFactory;
+    private MetroTrackMode trackMode;
     private MetroTrackSynchronizer startSynchronizer;
     private MetroTrackSynchronizer stopSynchronizer;
+    
+    /**
+     * Create a track factory object. For further information, see
+     * {@link MetroTrack#create(Object, Collection, MetroSequence, MetroTrackMode, MetroTrackSynchronizer, MetroTrackSynchronizer)}.
+     * 
+     * @param name              
+     * @param tags              
+     * @param sequenceFactory
+     * @param trackMode 
+     * @param startSynchronizer
+     * @param stopSynchronizer
+     */
     DefaultMetroTrackFactory(
-        Object name, Collection<Object> tags, MetroSequenceFactory sequenceFactory,
+        Object name, 
+        Collection<Object> tags, 
+        MetroSequenceFactory sequenceFactory,
+        MetroTrackMode trackMode, 
         MetroTrackSynchronizer startSynchronizer, MetroTrackSynchronizer stopSynchronizer )
     {
         super();
         this.name              = name;
         this.tags              = tags;
         this.sequenceFactory   = sequenceFactory;
+        this.trackMode         = trackMode;
         this.startSynchronizer = startSynchronizer;
         this.stopSynchronizer  = stopSynchronizer;
-    }
-    DefaultMetroTrackFactory(
-        Object name, Collection<Object> tags, MetroSequenceFactory sequenceFactory )
-    {
-        super();
-        this.name              = name;
-        this.tags              = tags;
-        this.sequenceFactory   = sequenceFactory;
-        this.startSynchronizer = null;
-        this.stopSynchronizer  = null;
     }
 
     @Override
@@ -36,7 +43,8 @@ class DefaultMetroTrackFactory implements MetroTrackFactory {
             name, 
             tags,
             sequenceFactory.createSequence(),
-            startSynchronizer,
+            trackMode,
+            startSynchronizer, 
             stopSynchronizer );
     }
     @Override
@@ -56,13 +64,14 @@ class DefaultMetroTrackFactory implements MetroTrackFactory {
  */
 public interface MetroTrackFactory {
     public static MetroTrackFactory createDefault(
-        Object name, Collection<Object> tags, MetroSequenceFactory sequenceFactory,
-        MetroTrackSynchronizer startSynchronizer, MetroTrackSynchronizer stopSynchronizer ) 
+        Object name, 
+        Collection<Object> tags, 
+        MetroSequenceFactory sequenceFactory,
+        MetroTrackMode trackMode, 
+        MetroTrackSynchronizer startSynchronizer,
+        MetroTrackSynchronizer stopSynchronizer ) 
     {
-        return new DefaultMetroTrackFactory( name, tags, sequenceFactory, startSynchronizer, stopSynchronizer );
-    }
-    public static MetroTrackFactory createDefault(Object name, Collection<Object> tags, MetroSequenceFactory sequenceFactory) {
-        return new DefaultMetroTrackFactory( name, tags, sequenceFactory );
+        return new DefaultMetroTrackFactory( name, tags, sequenceFactory, trackMode, startSynchronizer, stopSynchronizer );
     }
 
     

@@ -133,7 +133,7 @@ public class MetroMidiMessage implements MetroMidiReceiver<byte[]> {
         return INSTANCE;
     }
     private static final MetroMidiMessage INSTANCE = new MetroMidiMessage();
-    private MetroMidiMessage() {
+    protected MetroMidiMessage() {
     }
     
     /** @formatter:on */

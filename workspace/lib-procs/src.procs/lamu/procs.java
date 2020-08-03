@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import gnu.mapping.Environment;
 import gnu.mapping.Values;
 import lamu.lib.helps.LamuDocument;
+import lamu.lib.kawautils.SchemeNamedArgs;
 import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedure1;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedureN;
@@ -42,7 +43,7 @@ public class procs implements Runnable {
         public Object applyN(Object[] args) throws Throwable {
             HashMap<String,Object> namedArgs = new HashMap<>();
             ArrayList<Object> plainArgs = new ArrayList<>();
-            SchemeValues.parseArguments(args, namedArgs, plainArgs);
+            SchemeNamedArgs.parseArguments(args, namedArgs, plainArgs);
             
    //                List l =  new ArrayList( Arrays.asList( args ) );
    //                l.add( 0, Keyword.make( "directory" ) );

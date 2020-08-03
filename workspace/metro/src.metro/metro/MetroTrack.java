@@ -10,14 +10,41 @@ public class MetroTrack {
     public static MetroTrack create( Object name, Collection<Object> tags, MetroSequence sequence ){
         return new MetroTrack( name, tags, sequence );
     }
-    public static MetroTrack create( Object name, Collection<Object> tags, MetroSequence sequence,
-        MetroTrackSynchronizer startSynchronizer,
+    
+    /**
+     * Create a track object.
+     * 
+     * @param name              Specifies the object which represents the track; can
+     *                          be any object value of any type.
+     * @param tags              Specifies the tag objects. Each tag object can be
+     *                          any value of any type. Specify null if no tag is
+     *                          specified; the value is automatically replaced with
+     *                          an empty list.
+     * @param sequence
+     * @param trackMode TODO
+     * @param startSynchronizer Specifies the start synchronizer for the track; null if no start synchronizer is necessary. 
+     *                          See {@link MetroTrackSynchronizer}.               
+     * @param stopSynchronizer  Specifies the stop  synchronizer for the track; null if no stop synchronizer is necessary.
+     *                          See {@link MetroTrackSynchronizer}.                
+     * 
+     * @return                  The created track object.
+     * 
+     */
+    public static MetroTrack create( 
+        Object name, 
+        Collection<Object> tags, 
+        MetroSequence sequence,
+        MetroTrackMode trackMode,
+        MetroTrackSynchronizer startSynchronizer, 
         MetroTrackSynchronizer stopSynchronizer )
     {
         MetroTrack metroTrack = new MetroTrack( name, tags, sequence );
-        if ( sequence instanceof MetroSynchronizedStarter )
+        if ( trackMode != null ) {
+            metroTrack.setTrackMode( trackMode );
+        }
+        if ( (startSynchronizer != null) && (sequence instanceof MetroSynchronizedStarter) )
             ((MetroSynchronizedStarter)sequence).setStartSynchronizer(startSynchronizer);
-        if ( sequence instanceof MetroSynchronizedStopper )
+        if ( (stopSynchronizer != null ) && (sequence instanceof MetroSynchronizedStopper) )
             ((MetroSynchronizedStopper)sequence).setStopSynchronizer(stopSynchronizer);
         return metroTrack;
     }
@@ -109,12 +136,28 @@ public class MetroTrack {
     long getUniqueID() {
         return uniqueID;
     }
+
+    /**
+     * @see metro.MetroMidiOutputSignalAnalyzer#getTrackMode()
+     */
+    public MetroTrackMode getTrackMode() {
+        return this.midiAnalyzer.getTrackMode();
+    }
+    
+    /**
+     * @param mode
+     * @see metro.MetroMidiOutputSignalAnalyzer#setTrackMode(metro.MetroTrackMode)
+     */
+    public void setTrackMode(MetroTrackMode mode) {
+        midiAnalyzer.setTrackMode(mode);
+    }
     
     final List<MetroMidiEvent> inputMidiEvents = new ArrayList<>();
     final List<MetroMidiEvent> outputMidiEvents = new ArrayList<>();
     final List<MetroTrack> registeringTracks = new ArrayList<>();
     final List<MetroTrack> removingTracks = new ArrayList<>();
     final List<MetroTrack> unregisteringTracks = new ArrayList<>();
+    final MetroMidiOutputSignalAnalyzer midiAnalyzer = new MetroMidiOutputSignalAnalyzer();
 
     // ADDED (Thu, 07 May 2020 13:03:35 +0900)    
     /**

@@ -523,7 +523,7 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
                 continue;
             }
             
-            MetroOutputBuffer outputEventBuffer = this.outputBufferPool.get();
+            MetroOutputBuffer outputEventBuffer = this.outputBufferPool.withdraw();
             outputEventBuffer.init( nframes );
             processBuffering( nframes, outputEventBuffer.eventList );
             try {
@@ -702,7 +702,7 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
         } finally {
             // Recycle the buffer.
             if ( outputBuffer !=null )
-                outputBufferPool.add( outputBuffer );
+                outputBufferPool.deposit( outputBuffer );
         }
     }
 
@@ -825,6 +825,12 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
                                 track.registeringTracks, 
                                 track.removingTracks, 
                                 track.unregisteringTracks );
+
+                            // (Sun, 02 Aug 2020 01:50:25 +0900)
+                            // sort every event in the current track 
+                            track.outputMidiEvents.sort( MetroMidiEvent.COMPARATOR );
+                            // additional works for pyly/mono mode 
+                            track.midiAnalyzer.process( track.outputMidiEvents );
 
                             // 3.2. Preparing the final track list. 
                             finalTracksSnapshot.addAll( track.registeringTracks );

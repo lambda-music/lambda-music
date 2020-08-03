@@ -27,8 +27,6 @@ import lamu.lib.kawautils.procedures.MultipleNamedProcedureN;
 import lamu.lib.logging.Logger;
 import metro.Metro;
 import metro.MetroPort;
-import metro.MetroSequence;
-import metro.MetroSequenceFactory;
 import metro.MetroSyncType;
 import metro.MetroSynchronizable;
 import metro.MetroTrack;
@@ -40,7 +38,6 @@ import metro.MetroTrackSelectorBasic;
 import metro.MetroTrackSynchronizer;
 import metro.MetroTrackSynchronizerBasic;
 import metro.MetroTrackSynchronizerFactory;
-import metro.MetroVoidSequence;
 
 public interface PulsarLib {
     Procedure getGetCurrentPulsar();
@@ -261,23 +258,6 @@ public interface PulsarLib {
         static final boolean AUTO_EXET = false;
 
         protected abstract Pulsar getPulsar();
-
-        /**
-         *  
-         * @param object
-         * @return
-         *    a newly created list which can safely be modified.
-         */
-        static List<Object> readParamTrackName( Object object ) { 
-            object = SchemeValues.schemeNullCheck( object );
-            
-            if ( object instanceof Pair ) {
-                return new ArrayList<>( (Pair)object );
-            } else {
-                return new ArrayList<>( Arrays.asList( SchemeValues.schemeNullCheck( object ) ) );
-            }
-        }
-        
         
         static double readParamSyncOffset(Object object) {
             return SchemeValues.toDouble( object );
@@ -290,22 +270,6 @@ public interface PulsarLib {
                 return MetroSyncType.toSyncType( SchemeValues.toString( object ) );
             }
         }
-        static MetroSequenceFactory readParamSequenceFactory(Object arg) {
-            if ( arg  == null ) {
-                return MetroVoidSequence.getFactory();
-            } else if ( arg instanceof MetroSequence ) {
-                return PulsarCommon.createConstantSequenceFactory((MetroSequence)arg);
-            } else if ( arg instanceof Procedure ) {
-                return PulsarCommon.createDynamicProcedureSequenceFactory((Procedure) arg);
-            } else if ( arg  instanceof LList ) {
-                return PulsarCommon.createListSequenceFactory((LList)arg);
-            } else if ( arg  instanceof Number ) {
-                return PulsarCommon.createListSequenceFactory(PulsarCommon.createRestBar(SchemeValues.toInteger(arg)));
-            } else {
-                throw new IllegalArgumentException( "unsupported type of the argument (" + arg + ")" );
-            }
-        }
-                
         
         protected static List<Object> readParamPortName( Object arg ) {
             if ( arg instanceof Pair ) {
@@ -473,6 +437,7 @@ public interface PulsarLib {
             double syncOffset = 2< args.length ? SchemeValues.toDouble(args[2]) : 0.0d;
             return readParamSynct3(syncType, syncTrack, syncOffset);
         }
+
         public static MetroTrackSynchronizer readParamSynct( Object[] args ) {
             switch ( args.length  ){
                 case 0 : 
@@ -509,50 +474,14 @@ public interface PulsarLib {
             }
             return tracks;
         }
-
-        // ADDED (Mon, 08 Jun 2020 23:22:13 +0900)
-        public static MetroTrackFactory readParamNewTrack(Object[] args) {
-            switch ( args.length ) {
-            case 0:
-                throw new IllegalArgumentException();
-            case 1:
-                return MetroTrackFactory.createDefault( 
-                    null, 
-                    null, 
-                    readParamSequenceFactory(args[0]));
-            case 2: {
-                List<Object> lst = readParamTrackName( args[0] );
-                return MetroTrackFactory.createDefault( 
-                    lst.remove(0), 
-                    lst, 
-                    readParamSequenceFactory(args[1]));
-            }
-            case 3: {
-                List<Object> lst = readParamTrackName( args[0] );
-                return MetroTrackFactory.createDefault( 
-                    lst.remove(0), 
-                    lst,
-                    readParamSequenceFactory(args[1]),
-                    (MetroTrackSynchronizer) args[2],
-                    null);
-            }
-            case 4: {
-                List<Object> lst = readParamTrackName( args[0] );
-                return MetroTrackFactory.createDefault( 
-                    lst.remove(0), 
-                    lst,
-                    readParamSequenceFactory(args[1]),
-                    (MetroTrackSynchronizer) args[2],
-                    (MetroTrackSynchronizer) args[3]);
-            }
-            default :
-                throw new IllegalArgumentException();
-            }
+        
+        public static MetroTrackFactory readParamNewTrack(Object[] args0) {
+            return PulsarParamReader_newt.readParamNewTrack(args0);
         }
+
         public static MetroTrackSelector readParamNewTrackSelector(Object[] args) {
             return MetroTrackSelectorBasic.trackFactory( readParamNewTrack( args ) );
         }
-        
 
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -569,6 +498,7 @@ public interface PulsarLib {
         static final String ALTERS_THE_CURRENT_STATE =
             "This procedure alters the current sequencer system's state. ";
         
+
         public static abstract class PulsarProceduralDescriptiveDoc extends LamuDocument {
             public PulsarProceduralDescriptiveDoc() {
             }

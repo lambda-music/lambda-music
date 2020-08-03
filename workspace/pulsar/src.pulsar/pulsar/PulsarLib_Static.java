@@ -11,6 +11,7 @@ import java.util.Map;
 import gnu.expr.SourceName;
 import gnu.mapping.Procedure;
 import lamu.lib.helps.LamuDocument;
+import lamu.lib.kawautils.SchemeNamedArgs;
 import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.kawautils.procedures.MultipleNamedProcedureN;
 import metro.MetroPort;
@@ -220,7 +221,7 @@ public final class PulsarLib_Static {
 		public synchronized Object applyN(Object[] args) throws Throwable {
 			namedArgs.clear();
 			plainArgs.clear();
-			SchemeValues.parseArguments(args, namedArgs, plainArgs);
+			SchemeNamedArgs.parseArguments(args, namedArgs, plainArgs);
 
 			MetroTrackSynchronizer trackSynchronizer = 
 					(MetroTrackSynchronizer) namedArgs.get("stop");
@@ -260,7 +261,7 @@ public final class PulsarLib_Static {
 		public synchronized Object applyN(Object[] args) throws Throwable {
 			namedArgs.clear();
 			plainArgs.clear();
-			SchemeValues.parseArguments(args, namedArgs, plainArgs);
+			SchemeNamedArgs.parseArguments(args, namedArgs, plainArgs);
 
 			MetroTrackSynchronizer trackSynchronizer = 
 					(MetroTrackSynchronizer) namedArgs.get("start");
@@ -299,7 +300,7 @@ public final class PulsarLib_Static {
 		public synchronized Object applyN(Object[] args) throws Throwable {
 			namedArgs.clear();
 			plainArgs.clear();
-			SchemeValues.parseArguments(args, namedArgs, plainArgs);
+			SchemeNamedArgs.parseArguments(args, namedArgs, plainArgs);
 
 			MetroTrackSynchronizer startSynchronizer = 
 					(MetroTrackSynchronizer) namedArgs.get("start");

@@ -282,7 +282,7 @@ public abstract class MetroMidi {
         return MASK_7BIT & message[2];
     }
     
-    private static MetroMidi lookupMidi( MetroMidiEvent event ) {
+    public static MetroMidi lookupMidi( MetroMidiEvent event ) {
         byte[] message = event.getMidiData();
         int command  = ( (0b011110000 & message[0] ) >> 4 );
         int channel  = ( (0b000001111 & message[0] )      );
@@ -398,7 +398,7 @@ public abstract class MetroMidi {
         }
         @Override
         public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver, MASK_4BIT & message[0], MASK_7BIT & message[1], MASK_7BIT & message[2] );
+            return callMidi( receiver, MASK_4BIT & message[0], MASK_7BIT & message[1], MetroMidiMessageGen.i2dVelocity((MASK_7BIT & message[2] )));
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {

@@ -3,22 +3,27 @@ package metro;
 import java.util.ArrayDeque;
 
 public abstract class Pool<T> {
-    protected abstract T create();
     private final ArrayDeque<T> queue = new ArrayDeque<T>();
-    public Pool( int initialSize ) {
+    protected Pool( int initialSize ) {
         for ( int i=0; i<initialSize; i++ ) {
             this.queue.add( create() );
         }
     }
-    public synchronized void add( T o ) {
-        this.queue.add( o );
+    protected abstract T create();
+    protected T initializeValue( T o ) {
+    	return o;
     }
-    
-    public synchronized T get() {
+    public synchronized T withdraw() {
         if ( queue.isEmpty() ) {
-            return create();
+            return initializeValue( create() );
         } else {
-            return queue.poll();
+            return initializeValue( queue.poll() );
         }
+    }
+    protected T finalizeValue( T o ) {
+    	return o;
+    }
+    public synchronized void deposit( T o ) {
+        this.queue.add( finalizeValue(o) );
     }
 }
