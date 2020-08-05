@@ -104,6 +104,7 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
     
     private final ArrayList<MetroTrackManipulator>  messageQueue = new ArrayList<MetroTrackManipulator>();
     private final ArrayList<MetroTrack> tracks = new ArrayList<MetroTrack>();
+    private final ArrayList<MetroTrack> realtimeTracks = new ArrayList<MetroTrack>();
 
     // Number 1 for Snapshots for process()
     private final ArrayList<MetroTrackManipulator> messageQueueSnapshot1 = new ArrayList<MetroTrackManipulator>();
@@ -662,7 +663,8 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
     public boolean process( JackClient client, int nframes ) {
         return processPlaying(nframes);
     }
-    
+
+
     protected boolean processPlaying(int nframes) {
         this.last_nframes = nframes;
         
@@ -673,31 +675,98 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
 
 //            logInfo( "this.outputBufferQueue.size():" + this.outputBufferQueue.size() );
             outputBuffer = outputBufferQueue.poll( OUTPUT_BUFFER_QUEUE_TIMEOUT, TimeUnit.MILLISECONDS );
-//            outputBuffer = outputBufferQueue.take();
+            
             if ( outputBuffer == null ) {
                 // That is, now the buffer queue is suffered by buffer underrun.
                 // It could simply be ignored; we can wait until the buffer queue backs to the normal state.
-                logWarn("process() : 1. buffer underrun"); 
-                return true;
+                logWarn("process() : 1. buffer underrun");
+
+                // We have no buffer at this point; we have to prepare it for later use. 
+                outputBuffer = outputBufferPool.withdraw();
+                outputBuffer.init( nframes );
+                
             } else if ( outputBuffer.nframes != nframes ) {
                 // If the current nframes is not equal to the nframes on the buffer,
                 // ignore the buffer. Though, rarely will this happen in the normal situation.
-                logWarn("process() : 2. nframes changed "); 
-                return true;
-            } else {
+                logWarn("process() : 2. nframes changed ");
+                
+                // Clear the buffer for later use.
+                outputBuffer.init( nframes );
+            }
+
+            
+            if ( true /* ! this.realtimeTracks.isEmpty()*/ ) {
+                // 1. Process realtime tracks.
+                
+                // 1.1. check the current measure length in frames;
+                long measureLengthInFrames=-1;
                 try {
-                    eventWrite( outputBuffer.eventList );
-                } catch (JackException e) {
-                    logError( "ERROR" , e);
-                    return false;
+                    measureLengthInFrames = getMeasureLengthInFrames();
+                } catch (MetroException e1) {
+                    logError("", e1);
                 }
+                
+                // 1.2. Read Midi events from JACK.
+                ArrayList<MetroMidiEvent> finalInputMidiEventList = finalInputMidiEvents1;
+                for ( Iterator<MetroPort> pi = this.inputPortList.iterator(); pi.hasNext(); ) {
+                    MetroPort inputPort = pi.next();
+                    
+                    int eventCount = JackMidi.getEventCount( inputPort.jackPort );
+                    for (int i = 0; i < eventCount; ++i) {
+                        JackMidi.eventGet( this.midiEvent, inputPort.jackPort, i );
+                        int size = this.midiEvent.size();
+                        byte[] data = new byte[size];
+                        this.midiEvent.read( data );
+                        finalInputMidiEventList.add( new DefaultMetroMidiEvent( this.midiEvent.time(), inputPort, data ) );
+                    }
+                }
+                
+                // 1.3 Call the sequences.
+                if ( measureLengthInFrames  < 0 ) {
+                } else {
+                    for ( MetroTrack track : realtimeTracks ) {
+                        try {
+                            track.inputMidiEvents.clear();
+                            track.outputMidiEvents.clear();
+                            track.registeringTracks.clear();
+                            track.finalizingTracks.clear();
+                            track.unregisteringTracks.clear();
+                            track.inputMidiEvents.addAll(finalInputMidiEventList);
+                            track.getSequence().process( this, track, 
+                                nframes, 
+                                measureLengthInFrames, 
+                                track.inputMidiEvents, 
+                                track.outputMidiEvents, 
+                                realtimeTracks, 
+                                track.registeringTracks,
+                                track.finalizingTracks,
+                                track.unregisteringTracks );
+                            
+                            // 1.4 Add the output Midi events to the final event list. 
+                            outputBuffer.eventList.addAll( track.outputMidiEvents );
+                        } catch (MetroException e) {
+                            logError("", e);
+                        }
+                    }
+                }
+                
+                // 1.5 sort every event in the final event list. 
+                outputBuffer.eventList.sort( MetroMidiEvent.COMPARATOR );
+            }
+            
+            // Do output.
+            try {
+                eventWrite( outputBuffer.eventList );
+            } catch (JackException e) {
+                logError( "ERROR" , e);
+                return false;
             }
             return true;
         } catch (InterruptedException e1) {
-            e1.printStackTrace();
+            logError( "INTERRUPTED:" , e1);
             return false;
         } catch (JackException e1) {
-            e1.printStackTrace();
+            logError( "JACK-ERROR" , e1);
             return false;
         } finally {
             // Recycle the buffer.
@@ -746,19 +815,6 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
             removingTracksSnapshot.clear();
 
             {
-                for ( Iterator<MetroPort> pi = this.inputPortList.iterator(); pi.hasNext(); ) {
-                    MetroPort inputPort = pi.next();
-
-                    int eventCount = JackMidi.getEventCount( inputPort.jackPort );
-                    for (int i = 0; i < eventCount; ++i) {
-                        JackMidi.eventGet( this.midiEvent, inputPort.jackPort, i );
-                        int size = this.midiEvent.size();
-                        byte[] data = new byte[size];
-                        this.midiEvent.read( data );
-                        finalInputMidiEventList.add( new DefaultMetroMidiEvent( this.midiEvent.time(), inputPort, data ) );
-                    }
-                }
-
                 synchronized ( this.getMetroLock() ) {
                     tracksSnapshot.addAll( this.tracks );
                     messageQueueSnapshot.addAll( this.messageQueue );
@@ -880,9 +936,6 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
                 }
             }
             return true;
-        } catch (JackException ex) {
-            logError( "ERROR" , ex);
-            return false;
         } catch (Throwable t) {
             logError( "ERROR" , t);
             return false;

@@ -156,6 +156,7 @@ public class MetroTrack {
     final List<MetroMidiEvent> outputMidiEvents = new ArrayList<>();
     final List<MetroTrack> registeringTracks = new ArrayList<>();
     final List<MetroTrack> removingTracks = new ArrayList<>();
+    final List<MetroTrack> finalizingTracks = new ArrayList<>(); // used only in realtimeTrack (Thu, 06 Aug 2020 04:14:15 +0900)
     final List<MetroTrack> unregisteringTracks = new ArrayList<>();
     final MetroMidiOutputSignalAnalyzer midiAnalyzer = new MetroMidiOutputSignalAnalyzer();
 
