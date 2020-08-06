@@ -246,6 +246,12 @@ public class PulsarSpecialNoteListParsers {
                 );
 
         }
+
+        /**
+         * This returns multiple Midi commands. 
+         * This may be the only command sends multiple Midi commands.
+         * See {@link pulsar.NoteListParser#parse(Metro, MetroTrack, LList, MetroBufferedMidiReceiver, MetroCollector)}.
+         */
         @Override
         public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer, NoteListMap map, MetroCollector<T> result) {
             boolean enabled      = readMapEnabled( map );
@@ -274,8 +280,13 @@ public class PulsarSpecialNoteListParsers {
 //            if ( length < 0 )
 //                length = DEFAULT_NOTE_LENGTH;
 
-            result.add( buffer.noteOn( offset            , port, channel, note, velocity ) );
-            result.add( buffer.noteOff( offset + length  , port, channel, note, velocity ) );
+            
+            /*
+             * This returns multiple Midi commands. 
+             * This is the only command sends multiple Midi commands.
+             */
+            result.collect( buffer.noteOn( offset            , port, channel, note, velocity ) );
+            result.collect( buffer.noteOff( offset + length  , port, channel, note, velocity ) );
         }
     }
 
@@ -305,7 +316,7 @@ public class PulsarSpecialNoteListParsers {
         @Override
         public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T> buffer, NoteListMap map, MetroCollector<T> result) {
         	double offset    = readMapEndOffset( map );  
-            result.add(((MetroBufferedMidiReceiver<T>)buffer).length( offset ));
+            result.collect(((MetroBufferedMidiReceiver<T>)buffer).length( offset ));
         }
         public LList length(double value ) {
             return list(
@@ -353,7 +364,7 @@ public class PulsarSpecialNoteListParsers {
             double value    =  readMapDoubleValueBarLength( map );
 
             // LOGGER.log( Level.INFO, "a len note = " + value );
-            result.add(((MetroBufferedMidiReceiver<T>)buffer).length( value ));
+            result.collect(((MetroBufferedMidiReceiver<T>)buffer).length( value ));
         }
         public LList length(double value ) {
             return list(

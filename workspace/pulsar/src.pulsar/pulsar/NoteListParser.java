@@ -20,10 +20,7 @@
 
 package pulsar;
 
-import static pulsar.NoteListCommon.ID_NULL;
-import static pulsar.NoteListCommon.ID_TYPE;
-import static pulsar.NoteListCommon.SYMBOL_NULL;
-import static pulsar.NoteListCommon.SYMBOL_THRU;
+import static pulsar.NoteListCommon.*;
 
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
@@ -230,6 +227,22 @@ public class NoteListParser {
         }
     }
     
+    /**
+     * Note that some buffer commands send multiple commands at once; therefore, the
+     * return values from the {@link MetroBufferedMidiReceiver} cannot simply be
+     * returned as a return value of the method. This is where
+     * {@link MetroCollector} comes in. 
+     * See {@link PulsarSpecialNoteListParsers.NoteEventParser#parseEvent(
+     * Metro, MetroTrack, MetroBufferedMidiReceiver, NoteListMap, MetroCollector)}
+     * for further information.
+     * 
+     * @param <T>
+     * @param metro
+     * @param track
+     * @param notation
+     * @param buffer
+     * @param result
+     */
     public <T> void parse( Metro metro, MetroTrack track, LList notation, MetroBufferedMidiReceiver<T> buffer, MetroCollector<T> result ) {
         // MODIFIED (Sun, 19 Apr 2020 09:48:14 +0900) TODO UPDATE THE DOCUMENTATION
         // metro.getThreadInitializerCollection().initialize();

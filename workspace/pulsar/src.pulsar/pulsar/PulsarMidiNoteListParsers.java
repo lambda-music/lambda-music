@@ -208,7 +208,7 @@ public class PulsarMidiNoteListParsers {
         public <T> void parseEvent(Metro metro, MetroTrack track, MetroBufferedMidiReceiver<T>  buffer, NoteListMap map, MetroCollector<T> result ) {
             double offset    = readMapOffset( map );  
             MetroPort port   = readMapPort( map );
-            result.add( buffer.error( offset, port, "unknown error" ) );
+            result.collect( buffer.error( offset, port, "unknown error" ) );
         }
 
         public LList error(double offset, MetroPort port, String message) {
@@ -245,7 +245,7 @@ public class PulsarMidiNoteListParsers {
             int note         = readMapNote( map );  
             double velocity  = readMapVelocity( map );
             
-            result.add( buffer.noteOn( offset, port, channel, note, velocity ) );
+            result.collect( buffer.noteOn( offset, port, channel, note, velocity ) );
         }
         public LList noteOn(double offset, MetroPort port, int channel, int note, double velocity) {
             return list(
@@ -292,7 +292,7 @@ public class PulsarMidiNoteListParsers {
             int note         = readMapNote( map );  
             double velocity  = readMapVelocity( map );
             
-            result.add( buffer.noteOff( offset, port, channel, note, velocity ) );
+            result.collect( buffer.noteOff( offset, port, channel, note, velocity ) );
         }
         public LList noteOff(double offset, MetroPort port, int channel, int note, double velocity) {
             return list(
@@ -335,7 +335,7 @@ public class PulsarMidiNoteListParsers {
             int note         = readMapNote( map );  
             double pressure  = readMapDoubleValue( map );
 
-            result.add( buffer.keyPressure( offset , port, channel, note, pressure ) );
+            result.collect( buffer.keyPressure( offset , port, channel, note, pressure ) );
         }
         public LList keyPressure(double offset, MetroPort port, int channel, int note, double pressure) {
             return list(
@@ -378,7 +378,7 @@ public class PulsarMidiNoteListParsers {
             int controlNumber = readMapKey( map ); 
             int controlValue  = readMapIntegerValueDefault0( map ); 
 
-            result.add( buffer.controlChange( offset, port, channel, controlNumber, controlValue ) );
+            result.collect( buffer.controlChange( offset, port, channel, controlNumber, controlValue ) );
         }
         public LList controlChange(double offset, MetroPort port, int channel, int controlNumber, int controlValue) {
             return list(
@@ -412,7 +412,7 @@ public class PulsarMidiNoteListParsers {
 //            int value        = map.get( ID_VALUE, S2J_INTEGER, DEFAULT_VALUE_INTEGER_0 );
 //            int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.programChange( offset , port, channel, value ) );
+            result.collect( buffer.programChange( offset , port, channel, value ) );
         }
         public LList programChange(double offset, MetroPort port, int channel, int programNumber) {
             return list(
@@ -443,7 +443,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             double pressureValue     = readMapDoubleValue( map );
 
-            result.add( buffer.channelPressure( offset , port, channel, pressureValue ) );
+            result.collect( buffer.channelPressure( offset , port, channel, pressureValue ) );
         }
         public LList channelPressure(double offset, MetroPort port, int channel, double pressureValue) {
             return list(
@@ -483,7 +483,7 @@ public class PulsarMidiNoteListParsers {
             int channel           = readMapChannel( map ); 
             double pitchBendValue = readMapDoubleValue( map );
 
-            result.add( buffer.pitchBend( offset , port, channel, pitchBendValue ) );
+            result.collect( buffer.pitchBend( offset , port, channel, pitchBendValue ) );
         }
         public LList pitchBend(double offset, MetroPort port, int channel, double pitchBendValue) {
             return list(
@@ -525,7 +525,7 @@ public class PulsarMidiNoteListParsers {
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
 
-            result.add( buffer.cc_allSoundOff( offset , port, channel ) );
+            result.collect( buffer.cc_allSoundOff( offset , port, channel ) );
         }
         public LList cc_allSoundOff(double offset, MetroPort port, int channel) {
             return list(
@@ -554,7 +554,7 @@ public class PulsarMidiNoteListParsers {
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
 
-            result.add( buffer.cc_resetAllControllers( offset , port, channel ) );
+            result.collect( buffer.cc_resetAllControllers( offset , port, channel ) );
         }
         public LList cc_resetAllControllers(double offset, MetroPort port, int channel) {
             return list(
@@ -586,7 +586,7 @@ public class PulsarMidiNoteListParsers {
 //            boolean on       = map.get( ID_VALUE , S2J_BOOLEAN, DEFAULT_VALUE_FALSE );
 //          boolean on       = map.containsKey( ID_VALUE    ) ? SchemeUtils.toBoolean(      map.get(ID_VALUE     ) ) : false; 
 
-            result.add( buffer.cc_localControls( offset , port, channel, on ) );
+            result.collect( buffer.cc_localControls( offset , port, channel, on ) );
         }
         public LList cc_localControls(double offset, MetroPort port, int channel, boolean on) {
             return list(
@@ -616,7 +616,7 @@ public class PulsarMidiNoteListParsers {
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
 
-            result.add( buffer.cc_allNoteOff( offset , port, channel ) );
+            result.collect( buffer.cc_allNoteOff( offset , port, channel ) );
         }
         public LList cc_allNoteOff(double offset, MetroPort port, int channel) {
             return list(
@@ -645,7 +645,7 @@ public class PulsarMidiNoteListParsers {
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
 
-            result.add( buffer.cc_omniModeOff( offset , port, channel ) );
+            result.collect( buffer.cc_omniModeOff( offset , port, channel ) );
         }
         public LList cc_omniModeOff(double offset, MetroPort port, int channel) {
             return list(
@@ -674,7 +674,7 @@ public class PulsarMidiNoteListParsers {
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
 
-            result.add( buffer.cc_omniModeOn( offset , port, channel ) );
+            result.collect( buffer.cc_omniModeOn( offset , port, channel ) );
         }
         public LList cc_omniModeOn(double offset, MetroPort port, int channel) {
             return list(
@@ -704,7 +704,7 @@ public class PulsarMidiNoteListParsers {
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
 
-            result.add( buffer.cc_monoModeOn( offset , port, channel ) );
+            result.collect( buffer.cc_monoModeOn( offset , port, channel ) );
         }
         public LList cc_monoModeOn(double offset, MetroPort port, int channel) {
             return list(
@@ -733,7 +733,7 @@ public class PulsarMidiNoteListParsers {
             MetroPort port   = readMapPort( map );
             int channel      = readMapChannel( map ); 
 
-            result.add( buffer.cc_polyModeOn( offset , port, channel ) );
+            result.collect( buffer.cc_polyModeOn( offset , port, channel ) );
         }
         public LList cc_polyModeOn(double offset, MetroPort port, int channel) {
             return list(
@@ -766,7 +766,7 @@ public class PulsarMidiNoteListParsers {
             int pos        = readMapIntegerValueDefault0( map );
 //            int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.songPositionPointer( offset , port, pos ) );
+            result.collect( buffer.songPositionPointer( offset , port, pos ) );
         }
         public LList songPositionPointer(double offset, MetroPort port, int pos) {
             return list(
@@ -798,7 +798,7 @@ public class PulsarMidiNoteListParsers {
             int songNumber        = readMapIntegerValueDefault0( map );
 //            int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.songSelect( offset , port, songNumber ) );
+            result.collect( buffer.songSelect( offset , port, songNumber ) );
         }
         public LList songSelect(double offset, MetroPort port, int songNumber) {
             return list(
@@ -827,7 +827,7 @@ public class PulsarMidiNoteListParsers {
             MetroPort port   = readMapPort( map );
 //            int channel      = readMapChannel( map ); 
 
-            result.add( buffer.endOfExclusive( offset , port ) );
+            result.collect( buffer.endOfExclusive( offset , port ) );
         }
         public LList endOfExclusive(double offset, MetroPort port) {
             return list(
@@ -855,7 +855,7 @@ public class PulsarMidiNoteListParsers {
             MetroPort port   = readMapPort( map );
 //            int channel      = readMapChannel( map ); 
 
-            result.add( buffer.clock( offset , port ) );
+            result.collect( buffer.clock( offset , port ) );
         }
         public LList clock(double offset, MetroPort port) {
             return list(
@@ -884,7 +884,7 @@ public class PulsarMidiNoteListParsers {
             MetroPort port   = readMapPort( map );
 //            int channel      = readMapChannel( map ); 
 
-            result.add( buffer.start( offset , port ) );
+            result.collect( buffer.start( offset , port ) );
         }
         public LList start(double offset, MetroPort port) {
             return list(
@@ -912,7 +912,7 @@ public class PulsarMidiNoteListParsers {
             MetroPort port   = readMapPort( map );
 //            int channel      = readMapChannel( map ); 
 
-            result.add( buffer.cont( offset , port ) );
+            result.collect( buffer.cont( offset , port ) );
         }
         public LList cont(double offset, MetroPort port) {
             return list(
@@ -940,7 +940,7 @@ public class PulsarMidiNoteListParsers {
             MetroPort port   = readMapPort( map );
 //            int channel      = readMapChannel( map ); 
 
-            result.add( buffer.stop( offset , port ) );
+            result.collect( buffer.stop( offset , port ) );
         }
         public LList stop(double offset, MetroPort port) {
             return list(
@@ -968,7 +968,7 @@ public class PulsarMidiNoteListParsers {
             MetroPort port   = readMapPort( map );
 //            int channel      = readMapChannel( map ); 
 
-            result.add( buffer.reset( offset , port ) );
+            result.collect( buffer.reset( offset , port ) );
         }
         public LList reset(double offset, MetroPort port) {
             return list(
@@ -997,7 +997,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_bankSelect( offset, port, channel, value ) );
+            result.collect( buffer.cc_bankSelect( offset, port, channel, value ) );
         }
         public LList cc_bankSelect(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1027,7 +1027,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_modulation( offset, port, channel, value ) );
+            result.collect( buffer.cc_modulation( offset, port, channel, value ) );
         }
         public LList cc_modulation(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1058,7 +1058,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_breathController( offset, port, channel, value ) );
+            result.collect( buffer.cc_breathController( offset, port, channel, value ) );
         }
         public LList cc_breathController(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1089,7 +1089,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_footController( offset, port, channel, value ) );
+            result.collect( buffer.cc_footController( offset, port, channel, value ) );
         }
         public LList cc_footController(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1120,7 +1120,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_portamentoTime( offset, port, channel, value ) );
+            result.collect( buffer.cc_portamentoTime( offset, port, channel, value ) );
         }
         public LList cc_portamentoTime(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1151,7 +1151,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_dataEntryMsb( offset, port, channel, value ) );
+            result.collect( buffer.cc_dataEntryMsb( offset, port, channel, value ) );
         }
         public LList cc_dataEntryMsb(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1182,7 +1182,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_volume( offset, port, channel, value ) );
+            result.collect( buffer.cc_volume( offset, port, channel, value ) );
         }
         public LList cc_volume(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1213,7 +1213,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_balance( offset, port, channel, value ) );
+            result.collect( buffer.cc_balance( offset, port, channel, value ) );
         }
         public LList cc_balance(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1244,7 +1244,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_pan( offset, port, channel, value ) );
+            result.collect( buffer.cc_pan( offset, port, channel, value ) );
         }
         public LList cc_pan(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1275,7 +1275,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_expression( offset, port, channel, value ) );
+            result.collect( buffer.cc_expression( offset, port, channel, value ) );
         }
         public LList cc_expression(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1306,7 +1306,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_effectController1( offset, port, channel, value ) );
+            result.collect( buffer.cc_effectController1( offset, port, channel, value ) );
         }
         public LList cc_effectController1(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1337,7 +1337,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_effectController2( offset, port, channel, value ) );
+            result.collect( buffer.cc_effectController2( offset, port, channel, value ) );
         }
         public LList cc_effectController2(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1368,7 +1368,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_sustainPedal( offset, port, channel, value ) );
+            result.collect( buffer.cc_sustainPedal( offset, port, channel, value ) );
         }
         public LList cc_sustainPedal(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1399,7 +1399,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_portamentoSwitch( offset, port, channel, value ) );
+            result.collect( buffer.cc_portamentoSwitch( offset, port, channel, value ) );
         }
         public LList cc_portamentoSwitch(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1430,7 +1430,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_sostenutoSwitch( offset, port, channel, value ) );
+            result.collect( buffer.cc_sostenutoSwitch( offset, port, channel, value ) );
         }
         public LList cc_sostenutoSwitch(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1461,7 +1461,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_pedalSwitch( offset, port, channel, value ) );
+            result.collect( buffer.cc_pedalSwitch( offset, port, channel, value ) );
         }
         public LList cc_pedalSwitch(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1492,7 +1492,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_legatoSwitch( offset, port, channel, value ) );
+            result.collect( buffer.cc_legatoSwitch( offset, port, channel, value ) );
         }
         public LList cc_legatoSwitch(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1523,7 +1523,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_hold2( offset, port, channel, value ) );
+            result.collect( buffer.cc_hold2( offset, port, channel, value ) );
         }
         public LList cc_hold2(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1554,7 +1554,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_soundController1( offset, port, channel, value ) );
+            result.collect( buffer.cc_soundController1( offset, port, channel, value ) );
         }
         public LList cc_soundController1(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1585,7 +1585,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_soundController2( offset, port, channel, value ) );
+            result.collect( buffer.cc_soundController2( offset, port, channel, value ) );
         }
         public LList cc_soundController2(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1616,7 +1616,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_soundController3( offset, port, channel, value ) );
+            result.collect( buffer.cc_soundController3( offset, port, channel, value ) );
         }
         public LList cc_soundController3(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1647,7 +1647,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_soundController4( offset, port, channel, value ) );
+            result.collect( buffer.cc_soundController4( offset, port, channel, value ) );
         }
         public LList cc_soundController4(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1678,7 +1678,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_soundController5( offset, port, channel, value ) );
+            result.collect( buffer.cc_soundController5( offset, port, channel, value ) );
         }
         public LList cc_soundController5(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1709,7 +1709,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_soundController6( offset, port, channel, value ) );
+            result.collect( buffer.cc_soundController6( offset, port, channel, value ) );
         }
         public LList cc_soundController6(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1740,7 +1740,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_soundController7( offset, port, channel, value ) );
+            result.collect( buffer.cc_soundController7( offset, port, channel, value ) );
         }
         public LList cc_soundController7(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1771,7 +1771,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_soundController8( offset, port, channel, value ) );
+            result.collect( buffer.cc_soundController8( offset, port, channel, value ) );
         }
         public LList cc_soundController8(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1802,7 +1802,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_soundController9( offset, port, channel, value ) );
+            result.collect( buffer.cc_soundController9( offset, port, channel, value ) );
         }
         public LList cc_soundController9(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1833,7 +1833,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_soundController10( offset, port, channel, value ) );
+            result.collect( buffer.cc_soundController10( offset, port, channel, value ) );
         }
         public LList cc_soundController10(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1864,7 +1864,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_generalPurpose01( offset, port, channel, value ) );
+            result.collect( buffer.cc_generalPurpose01( offset, port, channel, value ) );
         }
         public LList cc_generalPurpose01(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1895,7 +1895,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_generalPurpose02( offset, port, channel, value ) );
+            result.collect( buffer.cc_generalPurpose02( offset, port, channel, value ) );
         }
         public LList cc_generalPurpose02(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1926,7 +1926,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_generalPurpose03( offset, port, channel, value ) );
+            result.collect( buffer.cc_generalPurpose03( offset, port, channel, value ) );
         }
         public LList cc_generalPurpose03(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1957,7 +1957,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_generalPurpose04( offset, port, channel, value ) );
+            result.collect( buffer.cc_generalPurpose04( offset, port, channel, value ) );
         }
         public LList cc_generalPurpose04(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -1988,7 +1988,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_portamento( offset, port, channel, value ) );
+            result.collect( buffer.cc_portamento( offset, port, channel, value ) );
         }
         public LList cc_portamento(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -2019,7 +2019,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_effect1( offset, port, channel, value ) );
+            result.collect( buffer.cc_effect1( offset, port, channel, value ) );
         }
         public LList cc_effect1(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -2050,7 +2050,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_effect2( offset, port, channel, value ) );
+            result.collect( buffer.cc_effect2( offset, port, channel, value ) );
         }
         public LList cc_effect2(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -2081,7 +2081,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_effect3( offset, port, channel, value ) );
+            result.collect( buffer.cc_effect3( offset, port, channel, value ) );
         }
         public LList cc_effect3(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -2112,7 +2112,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_effect4( offset, port, channel, value ) );
+            result.collect( buffer.cc_effect4( offset, port, channel, value ) );
         }
         public LList cc_effect4(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -2143,7 +2143,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_effect5( offset, port, channel, value ) );
+            result.collect( buffer.cc_effect5( offset, port, channel, value ) );
         }
         public LList cc_effect5(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -2174,7 +2174,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_dataIncrement( offset, port, channel, value ) );
+            result.collect( buffer.cc_dataIncrement( offset, port, channel, value ) );
         }
         public LList cc_dataIncrement(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -2205,7 +2205,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_dataDecrement( offset, port, channel, value ) );
+            result.collect( buffer.cc_dataDecrement( offset, port, channel, value ) );
         }
         public LList cc_dataDecrement(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -2236,7 +2236,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_nrpnLsb( offset, port, channel, value ) );
+            result.collect( buffer.cc_nrpnLsb( offset, port, channel, value ) );
         }
         public LList cc_nrpnLsb(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -2267,7 +2267,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_nrpnMsb( offset, port, channel, value ) );
+            result.collect( buffer.cc_nrpnMsb( offset, port, channel, value ) );
         }
         public LList cc_nrpnMsb(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -2298,7 +2298,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_rpnLsb( offset, port, channel, value ) );
+            result.collect( buffer.cc_rpnLsb( offset, port, channel, value ) );
         }
         public LList cc_rpnLsb(double offset, MetroPort port, int channel, int value) {
             return list(
@@ -2330,7 +2330,7 @@ public class PulsarMidiNoteListParsers {
             int channel      = readMapChannel( map ); 
             int value        = readMapIntegerValueDefault0( map );
 
-            result.add( buffer.cc_rpnMsb( offset, port, channel, value ) );
+            result.collect( buffer.cc_rpnMsb( offset, port, channel, value ) );
         }
         public LList cc_rpnMsb(double offset, MetroPort port, int channel, int value) {
             return list(

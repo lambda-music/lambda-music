@@ -20,7 +20,7 @@ public abstract class MetroDirectToBufferedMidiReceiver<OUTER,INNER> implements 
             return result;
         }
     }
-    public static <T> MetroDirectToBufferedMidiReceiver<T,T> createRecorder( MetroBufferedMidiReceiver<T> receiver ) {
+    public static <T> MetroDirectToBufferedMidiReceiver<T,T> createDefault( MetroBufferedMidiReceiver<T> receiver ) {
         return new MetroDirectToBufferedMidiReceiver.Default<T>( receiver );
     }
 
