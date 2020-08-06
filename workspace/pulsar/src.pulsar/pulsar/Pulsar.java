@@ -41,7 +41,6 @@ import lamu.lib.Invokable;
 import lamu.lib.apps.ApplicationComponent;
 import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.logging.Logger;
-import lamu.lib.threads.LamuThreadLocal;
 import lamu.lib.threads.LamuThreadLocalInitializer;
 import metro.Metro;
 import metro.MetroException;
@@ -426,13 +425,6 @@ public class Pulsar extends Metro implements PulsarLib, PulsarLibDelegator, Appl
         return pulsarLibImplementation;
     }
     
-    private static final LamuThreadLocal<Metro> currentMetroLocal = new LamuThreadLocal<>();
-    public static final Metro getCurrentMetro() {
-        return currentMetroLocal.get();
-    }
-    public static final void setCurrentMetro( Metro metro ) {
-        currentMetroLocal.set(metro);
-    }
     @Override
     public boolean process(JackClient client, int nframes) {
         // (Sat, 13 Jun 2020 03:26:16 +0900)

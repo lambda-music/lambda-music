@@ -453,4 +453,102 @@ public class MetroTrackManipulatorBasic {
         getFactoryMap().addFactory( "troff", factory );
     }
     
+    
+    /**
+     * This class depends on {@link Metro#getCurrentMetro()}. See {@link Metro#run()}
+     * to know how it is initialized.  
+     */
+    public static MetroTrackManipulator registerRealtime(MetroTrackSelector selector) {
+        class MetroTrackRealtimeRegisterer implements MetroTrackManipulator {
+            private final MetroTrackSelector selector;
+
+            public MetroTrackRealtimeRegisterer(MetroTrackSelector selector) {
+                this.selector = selector;
+            }
+            @Override
+            public void manipulateTracks(
+                List<MetroTrack> currentTracks,
+                List<MetroTrack> registeringTracks,
+                List<MetroTrack> removingTracks,
+                List<MetroTrack> unregisteringTracks)
+            {
+                ArrayList<MetroTrack> registeringRealtimeTracks= new ArrayList<MetroTrack>();
+                selector.selectTracks(currentTracks, registeringRealtimeTracks);
+                Metro.getCurrentMetro().registerRealtimeTrack( registeringRealtimeTracks );
+            }
+            @Override
+            public String toString() {
+                return String.format("(mant type: %s value: %s)", "rputt", selector );
+            }
+        }
+        return new MetroTrackRealtimeRegisterer(selector);
+    }
+    
+    static {
+        final class RegisteringRealtimeFactory implements MetroTrackManipulatorFactory {
+            @Override
+            public MetroTrackManipulator create( Object... args ) {
+                MetroTrackSelector     trackSelector     = 0 < args.length ? (MetroTrackSelector)args[0]     : null;
+                MetroTrackSynchronizer trackSynchronizer = 1 < args.length ? (MetroTrackSynchronizer)args[1] : null;
+                MetroTrackManipulator trackManipulator = register( trackSelector );
+                
+                if ( trackSynchronizer != null )
+                    trackSelector = MetroTrackSelectorBasic.synchronizedStarter(trackSelector, trackSynchronizer );
+
+                return trackManipulator;
+            }
+        }
+        MetroTrackManipulatorFactory factory = new RegisteringRealtimeFactory();
+        getFactoryMap().addFactory( "rputt" , factory );
+    }
+
+
+    /**
+     * This class depends on {@link Metro#getCurrentMetro()}. See {@link Metro#run()}
+     * to know how it is initialized.  
+     */
+    public static MetroTrackManipulator unregisterRealtime(MetroTrackSelector selector) {
+        class MetroTrackRealtimeUnregisterer implements MetroTrackManipulator {
+            private final MetroTrackSelector selector;
+
+            public MetroTrackRealtimeUnregisterer(MetroTrackSelector selector) {
+                this.selector = selector;
+            }
+            @Override
+            public void manipulateTracks(
+                List<MetroTrack> currentTracks,
+                List<MetroTrack> registeringTracks,
+                List<MetroTrack> removingTracks,
+                List<MetroTrack> unregisteringTracks)
+            {
+                ArrayList<MetroTrack> registeringRealtimeTracks= new ArrayList<MetroTrack>();
+                selector.selectTracks(currentTracks, registeringRealtimeTracks);
+                Metro.getCurrentMetro().unregisterRealtimeTrack( registeringRealtimeTracks );
+            }
+            @Override
+            public String toString() {
+                return String.format("(mant type: %s value: %s)", "rremt", selector );
+            }
+        }
+        return new MetroTrackRealtimeUnregisterer(selector);
+    }
+    
+    static {
+        final class UnregisteringRealtimeFactory implements MetroTrackManipulatorFactory {
+            @Override
+            public MetroTrackManipulator create( Object... args ) {
+                MetroTrackSelector     trackSelector     = 0 < args.length ? (MetroTrackSelector)args[0]     : null;
+                MetroTrackSynchronizer trackSynchronizer = 1 < args.length ? (MetroTrackSynchronizer)args[1] : null;
+                MetroTrackManipulator trackManipulator = register( trackSelector );
+                
+                if ( trackSynchronizer != null )
+                    trackSelector = MetroTrackSelectorBasic.synchronizedStarter(trackSelector, trackSynchronizer );
+
+                return trackManipulator;
+            }
+        }
+        MetroTrackManipulatorFactory factory = new UnregisteringRealtimeFactory();
+        getFactoryMap().addFactory( "rremt" , factory );
+    }
+
 }

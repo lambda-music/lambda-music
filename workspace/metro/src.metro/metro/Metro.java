@@ -52,6 +52,7 @@ import org.jaudiolibs.jnajack.JackTransportState;
 
 import lamu.lib.Invokable;
 import lamu.lib.logging.Logger;
+import lamu.lib.threads.LamuThreadLocal;
 
 /**
  * 
@@ -492,6 +493,8 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
      */
     @Override
     public void run()  {
+        setCurrentMetro(this);
+
         try {
             beginLoop();
         } catch ( Throwable t ) {
@@ -661,11 +664,14 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
      */
     @Override
     public boolean process( JackClient client, int nframes ) {
+        Metro.setCurrentMetro(this);
+
         return processPlaying(nframes);
     }
 
 
     protected boolean processPlaying(int nframes) {
+        
         this.last_nframes = nframes;
         
         MetroOutputBuffer outputBuffer=null;
@@ -695,9 +701,8 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
             }
 
             
+            // 1. Process realtime tracks.
             if ( true /* ! this.realtimeTracks.isEmpty()*/ ) {
-                // 1. Process realtime tracks.
-                
                 // 1.1. check the current measure length in frames;
                 long measureLengthInFrames=-1;
                 try {
@@ -722,7 +727,7 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
                 }
                 
                 // 1.3 Call the sequences.
-                if ( measureLengthInFrames  < 0 ) {
+                if ( measureLengthInFrames < 0 ) {
                 } else {
                     for ( MetroTrack track : realtimeTracks ) {
                         try {
@@ -1028,6 +1033,14 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
         }
     }
 
+    public static final LamuThreadLocal<Metro> currentMetroLocal = new LamuThreadLocal<>();
+    public static final void setCurrentMetro( Metro metro ) {
+        Metro.currentMetroLocal.set(metro);
+    }
+    public static final Metro getCurrentMetro() {
+        return Metro.currentMetroLocal.get();
+    }
+    
     public static long calcMeasureLengthInFrames( Metro metro, JackClient client, JackPosition position) throws MetroException {
         // logInfo("Metro.offerNewBuffer()" + this.buffers.size() );
         // beat per minute
@@ -1060,5 +1073,15 @@ public class Metro implements MetroReft,MetroMant,MetroPutt,MetroGett,MetroRemt,
     }
     
     
+    public void registerRealtimeTrack(ArrayList<MetroTrack> registeringRealtimeTracks) {
+        synchronized ( this.getMetroLock() ) {
+            this.realtimeTracks.addAll(registeringRealtimeTracks);
+        }
+    }
+    public void unregisterRealtimeTrack(ArrayList<MetroTrack> registeringRealtimeTracks) {
+        synchronized ( this.getMetroLock() ) {
+            this.realtimeTracks.removeAll(registeringRealtimeTracks);
+        }
+    }
     
 }

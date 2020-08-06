@@ -124,7 +124,7 @@ public class SchemeSequence extends MetroBufferedSequence implements Invokable, 
             
             // MODIFIED (Sun, 19 Apr 2020 09:48:14 +0900) TODO UPDATE THE DOCUMENTATION
             // metro.getThreadInitializerCollection().run();
-            Pulsar.setCurrentMetro(metro);
+            Metro.setCurrentMetro(metro);
 
             // Call the invokable to get a note list of the next measure.
             Object result = invokable.invoke();

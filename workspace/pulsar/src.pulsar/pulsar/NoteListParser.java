@@ -204,7 +204,7 @@ public class NoteListParser {
     public <T> void parseAll( Metro metro, MetroTrack track, Collection<Object> inputList, MetroBufferedMidiReceiver<T> buffer, MetroCollector<T> result ) {
         // MODIFIED (Sun, 19 Apr 2020 09:48:14 +0900) TODO UPDATE THE DOCUMENTATION
         // metro.getThreadInitializerCollection().initialize();
-        Pulsar.setCurrentMetro(metro);
+        Metro.setCurrentMetro(metro);
 
         try {
             if ( inputList != null ) {
@@ -233,7 +233,7 @@ public class NoteListParser {
     public <T> void parse( Metro metro, MetroTrack track, LList notation, MetroBufferedMidiReceiver<T> buffer, MetroCollector<T> result ) {
         // MODIFIED (Sun, 19 Apr 2020 09:48:14 +0900) TODO UPDATE THE DOCUMENTATION
         // metro.getThreadInitializerCollection().initialize();
-        Pulsar.setCurrentMetro(metro);
+        Metro.setCurrentMetro(metro);
 
         try {
             parseProc( metro, track, notation, buffer, result );

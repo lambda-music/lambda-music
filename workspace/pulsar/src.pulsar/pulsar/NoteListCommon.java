@@ -239,13 +239,13 @@ public class NoteListCommon {
                 return (MetroPort)o;
             } else if ( o instanceof Number ) {
                 int i = ((Number)o).intValue();
-                Metro metro = Pulsar.getCurrentMetro();
+                Metro metro = Metro.getCurrentMetro();
                 List<MetroPort> list = metro.getOutputPorts();
                 if ( i<0  ||  list.size() <= i )
                     throw new IllegalStateException( i + " is not proper. list size=" + list.size() );
                 return list.get(i);
             } else {
-                Metro metro = Pulsar.getCurrentMetro();
+                Metro metro = Metro.getCurrentMetro();
                 List<MetroPort> portList = metro.searchOutputPort( o );
                 if ( portList.isEmpty() ) {
                     throw new IllegalArgumentException( "'" + o + "' does not exists" );
@@ -259,7 +259,7 @@ public class NoteListCommon {
     static final NoteListValueGenerator<MetroPort> DEFAULT_VALUE_PORT = new NoteListValueGenerator<MetroPort>() {
         @Override
         public MetroPort generate() {
-            Metro metro = Pulsar.getCurrentMetro();
+            Metro metro = Metro.getCurrentMetro();
             List<MetroPort> list = metro.getOutputPorts();
             if ( list.isEmpty() )
                 throw new IllegalStateException();
