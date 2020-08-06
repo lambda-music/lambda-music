@@ -21,10 +21,15 @@
 package metro;
 
 /**
- * https://www.midi.org/specifications-old/item/table-1-summary-of-midi-message
+ * See https://www.midi.org/specifications-old/item/table-1-summary-of-midi-message
+ * 
+ * The method {@link MetroMidiMessages#receive(MetroMidiReceiver, byte[])} plays the important role
+ * for Various Midi receivers such as {@link MetroMidiReceiver} and {@link MetroBufferedMidiReceiver}.
+ * See {@link MetroMidiReceiver} and {@link MetroBufferedMidiReceiver}.
+ *  
  * @author ats
  */
-public final class MetroMidiMessageGen {
+public final class MetroMidiMessages {
     //  NOTEOFF,
     //  NOTEON,
     //  KEYPRESSURE, // AKA AFTERTOUCH
@@ -163,7 +168,7 @@ public final class MetroMidiMessageGen {
      * Specifying pitch bend value by a double-float numeric value. 
      * Range is ( -1 <= pitchBendValue <= 1 ) 
      * The resolution relies on only fourteen bits; thus any value change 
-     * less than 0.0001 ( 1.0d/8192 ≒ 0.0001 ) will not have any effect 
+     * less than 0.0001 ( 1.0d/8192 :=: 0.0001 ) will not have any effect 
      * on the output value.
      */
     public static byte[] pitchBend( int ch, double pitchBendValue ) {
@@ -242,6 +247,7 @@ public final class MetroMidiMessageGen {
     }
     
     /**
+     * See the documentation of the class {@link MetroMidiMessages};
      * Note that receivers' methods could return null.
      * 
      * @param receiver

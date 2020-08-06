@@ -1,8 +1,18 @@
 package metro;
 
-public abstract class MetroBufferedToNonBufferedMidiReceiver<OUTER,INNER> implements MetroBufferedMidiReceiver<OUTER> {
+/**
+ * See {@link MetroDirectToBufferedMidiReceiver}.
+ * 
+ * There are two type of Midi receivers: {@link MetroMidiReceiver} and {@link MetroBufferedMidiReceiver}. 
+ * Both two classes are often intercahngablly converted to one another with {@link MetroBufferedToDirectMidiReceiver} and
+ * {@link MetroDirectToBufferedMidiReceiver}.
+ * 
+ * @param <OUTER>
+ * @param <INNER>
+ */
+public abstract class MetroBufferedToDirectMidiReceiver<OUTER,INNER> implements MetroBufferedMidiReceiver<OUTER> {
     private final MetroMidiReceiver<INNER> receiver;
-    public MetroBufferedToNonBufferedMidiReceiver( MetroMidiReceiver<INNER> receiver ) {
+    public MetroBufferedToDirectMidiReceiver( MetroMidiReceiver<INNER> receiver ) {
         this.receiver = receiver;
     }
     public abstract OUTER receive( String id, double offset, MetroPort outputPort, INNER data );

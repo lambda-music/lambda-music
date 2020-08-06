@@ -9,7 +9,7 @@ import java.util.logging.Level;
 
 import lamu.lib.logging.Logger;
 
-class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroEvent,byte[]> implements MetroDumper {
+class MetroEventBuffer extends MetroBufferedToDirectMidiReceiver<MetroEvent,byte[]> implements MetroDumper {
     public static MetroEventBuffer create() {
         return new MetroEventBuffer();
     }
@@ -18,7 +18,7 @@ class MetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroEvent
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
     static void logWarn(String msg)               { LOGGER.log(Level.WARNING, msg);   }
     MetroEventBuffer() {
-        super( MetroMidiMessage.getInstance() );
+        super( MetroMidiMessageReceiver.getInstance() );
     }
     
     private boolean endCalled=false;

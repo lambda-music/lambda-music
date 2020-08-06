@@ -1,7 +1,17 @@
 package metro;
 
-public abstract class MetroMidiReceiverBufferer<OUTER,INNER> implements MetroMidiReceiver<OUTER> {
-    public static class Default<T> extends MetroMidiReceiverBufferer<T,T> {
+/**
+ * See {@link MetroBufferedToDirectMidiReceiver}.
+ * 
+ * There are two type of Midi receivers: {@link MetroMidiReceiver} and {@link MetroBufferedMidiReceiver}. 
+ * Both two classes are often intercahngablly converted to one another with {@link MetroBufferedToDirectMidiReceiver} and
+ * {@link MetroDirectToBufferedMidiReceiver}.
+ * 
+ * @param <OUTER>
+ * @param <INNER>
+ */
+public abstract class MetroDirectToBufferedMidiReceiver<OUTER,INNER> implements MetroMidiReceiver<OUTER> {
+    public static class Default<T> extends MetroDirectToBufferedMidiReceiver<T,T> {
         public Default(MetroBufferedMidiReceiver<T> receiver) {
             super( receiver );
         }
@@ -10,12 +20,12 @@ public abstract class MetroMidiReceiverBufferer<OUTER,INNER> implements MetroMid
             return result;
         }
     }
-    public static <T> MetroMidiReceiverBufferer<T,T> createRecorder( MetroBufferedMidiReceiver<T> receiver ) {
-        return new MetroMidiReceiverBufferer.Default<T>( receiver );
+    public static <T> MetroDirectToBufferedMidiReceiver<T,T> createRecorder( MetroBufferedMidiReceiver<T> receiver ) {
+        return new MetroDirectToBufferedMidiReceiver.Default<T>( receiver );
     }
 
     private final MetroBufferedMidiReceiver<INNER> receiver;
-    public MetroMidiReceiverBufferer( MetroBufferedMidiReceiver<INNER> receiver ) {
+    public MetroDirectToBufferedMidiReceiver( MetroBufferedMidiReceiver<INNER> receiver ) {
         this.receiver = receiver;
     }
     private volatile MetroPort port;

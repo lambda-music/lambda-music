@@ -21,7 +21,12 @@
 package metro;
 
 /**
- * @see MetroMidiReceiver .
+ * See {@link MetroMidiReceiver}.
+ * 
+ * There are two type of Midi receivers: {@link MetroMidiReceiver} and this {@link MetroBufferedMidiReceiver}. 
+ * Both two classes are often intercahngablly converted to one another. See {@link MetroBufferedToDirectMidiReceiver} and
+ * {@link MetroDirectToBufferedMidiReceiver}.
+ *
  * @author Ats Oka
  */
 public interface MetroBufferedMidiReceiver<T> {

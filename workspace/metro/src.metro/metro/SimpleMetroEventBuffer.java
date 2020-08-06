@@ -31,7 +31,7 @@ import lamu.lib.logging.Logger;
  * 
  * @author Ats Oka
  */
-public class SimpleMetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiver<MetroMidiEvent,byte[]>  {
+public class SimpleMetroEventBuffer extends MetroBufferedToDirectMidiReceiver<MetroMidiEvent,byte[]>  {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
     static void logError(String msg, Throwable e) { LOGGER.log(Level.SEVERE, msg, e); }
     static void logInfo(String msg)               { LOGGER.log(Level.INFO, msg);      } 
@@ -55,11 +55,11 @@ public class SimpleMetroEventBuffer extends MetroBufferedToNonBufferedMidiReceiv
     }
 
     public SimpleMetroEventBuffer( long oneBarLengthInFrames ) {
-        super( MetroMidiMessage.getInstance() );
+        super( MetroMidiMessageReceiver.getInstance() );
         this.oneBarLengthInFrames = oneBarLengthInFrames;
     }
     public SimpleMetroEventBuffer() {
-        super( MetroMidiMessage.getInstance() );
+        super( MetroMidiMessageReceiver.getInstance() );
     }
     
     private volatile Collection resultList;

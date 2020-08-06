@@ -22,7 +22,12 @@ package metro;
 
 /**
  * 
- * @see MetroBufferedMidiReceiver
+ * This class is often used with the medhod {@link MetroMidiMessages#receive(MetroMidiReceiver, byte[])}.
+ * See the {@link MetroMidiMessages} class.
+ * 
+ * There are two type of Midi receivers: {@link MetroBufferedMidiReceiver} and this {@link MetroMidiReceiver}.
+ * Both two classes are often intercahngablly converted to one another. See {@link MetroBufferedToDirectMidiReceiver} and
+ * {@link MetroDirectToBufferedMidiReceiver}.
  * 
  * @author Ats Oka
  * @param <T>

@@ -353,7 +353,7 @@ public abstract class MetroMidi {
     public static final int MASK_7BIT = 0b01111111;
 
     
-    static final MetroMidiMessage MESSAGE_GEN = MetroMidiMessage.getInstance();
+    static final MetroMidiMessageReceiver MESSAGE_GEN = MetroMidiMessageReceiver.getInstance();
     public static final MetroMidiError MIDI_ERROR = new MetroMidiError();
     public static final class MetroMidiError extends MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, String message ) {
@@ -391,14 +391,14 @@ public abstract class MetroMidi {
             return MESSAGE_GEN.noteOn( ch, note, velocity );
         }
         public byte[] createMidiMessage( int ch, int note, double velocity ) {
-            return MetroMidiMessageGen.noteOn (ch, note, velocity );
+            return MetroMidiMessages.noteOn (ch, note, velocity );
         }
         public <T> T execute( MetroMidiReceiver<T> receiver, int ch, int note, double velocity ) {
             return receiver.noteOn( ch, note, velocity ); 
         }
         @Override
         public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver, MASK_4BIT & message[0], MASK_7BIT & message[1], MetroMidiMessageGen.i2dVelocity((MASK_7BIT & message[2] )));
+            return callMidi( receiver, MASK_4BIT & message[0], MASK_7BIT & message[1], MetroMidiMessages.i2dVelocity((MASK_7BIT & message[2] )));
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -424,7 +424,7 @@ public abstract class MetroMidi {
             return MESSAGE_GEN.noteOff(ch, note, velocity );
         }
         public byte[] createMidiMessage( int ch, int note, double velocity ) {
-            return MetroMidiMessageGen.noteOff(ch, note, velocity );
+            return MetroMidiMessages.noteOff(ch, note, velocity );
         }
         public <T> T execute( MetroMidiReceiver<T> receiver, int ch, int note, double velocity ) {
             return receiver.noteOff (ch, note, velocity );
@@ -465,7 +465,7 @@ public abstract class MetroMidi {
             return MESSAGE_GEN.keyPressure( ch, note, value );
         }
         public byte[] createMidiMessage( int ch, int note, double value ) {
-            return MetroMidiMessageGen.keyPressure( ch, note, value );
+            return MetroMidiMessages.keyPressure( ch, note, value );
         }
 
         public <T> T execute( MetroMidiReceiver<T> receiver, int ch, int note, double value ) {
@@ -502,7 +502,7 @@ public abstract class MetroMidi {
             return MESSAGE_GEN.controlChange(ch, controlNumber, controlValue );
         }
         public byte[] createMidiMessage( int ch, int controlNumber, int controlValue ) {
-            return MetroMidiMessageGen.controlChange(ch, controlNumber, controlValue );
+            return MetroMidiMessages.controlChange(ch, controlNumber, controlValue );
         }
         public <T> T execute( MetroMidiReceiver<T> receiver, int ch, int controlNumber, int controlValue ) {
             return receiver.controlChange( ch, controlNumber, controlValue );
@@ -536,7 +536,7 @@ public abstract class MetroMidi {
             return MESSAGE_GEN.programChange( ch, value );
         }
         public byte[] createMidiMessage( int ch, int value ) {
-            return MetroMidiMessageGen.programChange( ch, value );
+            return MetroMidiMessages.programChange( ch, value );
         }
         public <T> T execute( MetroMidiReceiver<T> receiver, int ch, int value ) {
             return receiver.programChange ( ch, value );
@@ -576,7 +576,7 @@ public abstract class MetroMidi {
             return MESSAGE_GEN.channelPressure( ch, value );
         }
         public byte[] createMidiMessage( int ch, double value ) {
-            return MetroMidiMessageGen.channelPressure( ch, value );
+            return MetroMidiMessages.channelPressure( ch, value );
         }
         public <T> T execute( MetroMidiReceiver<T> receiver , int ch, double value ) {
             return receiver.channelPressure ( ch, value );
@@ -613,7 +613,7 @@ public abstract class MetroMidi {
             return MESSAGE_GEN.pitchBend( ch, value );
         }
         public byte[] createMidiMessage(int ch, double value) {
-            return MetroMidiMessageGen.pitchBend( ch, value );
+            return MetroMidiMessages.pitchBend( ch, value );
         }
         public <T> T execute( MetroMidiReceiver<T> receiver ,int ch, double value) {
             return receiver.pitchBend ( ch, value );
@@ -699,7 +699,7 @@ public abstract class MetroMidi {
             return MESSAGE_GEN.cc_allSoundOff ( ch );
         }
         public byte[] createMidiMessage(int ch) {
-            return MetroMidiMessageGen.cc_allSoundOff( ch );
+            return MetroMidiMessages.cc_allSoundOff( ch );
         }
         public <T> T execute( MetroMidiReceiver<T> receiver ,int ch) {
             return receiver.cc_allSoundOff ( ch );
@@ -735,7 +735,7 @@ public abstract class MetroMidi {
             return MESSAGE_GEN.cc_resetAllControllers ( ch );
         }
         public byte[] createMidiMessage(int ch) {
-            return MetroMidiMessageGen.cc_resetAllControllers( ch );
+            return MetroMidiMessages.cc_resetAllControllers( ch );
         }
         public <T> T execute( MetroMidiReceiver<T> receiver ,int ch) {
             return receiver.cc_resetAllControllers ( ch );
@@ -771,7 +771,7 @@ public abstract class MetroMidi {
             return MESSAGE_GEN.cc_localControls ( ch, value );
         }
         public byte[] createMidiMessage(int ch,boolean value ) {
-            return MetroMidiMessageGen.cc_localControls( ch, value ) ;
+            return MetroMidiMessages.cc_localControls( ch, value ) ;
         }
         public <T> T execute( MetroMidiReceiver<T> receiver ,int ch,boolean value ) {
             return receiver.cc_localControls ( ch, value );
@@ -807,7 +807,7 @@ public abstract class MetroMidi {
             return MESSAGE_GEN.cc_allNoteOff ( ch );
         }
         public byte[] createMidiMessage(int ch) {
-            return MetroMidiMessageGen.cc_allNoteOff( ch );
+            return MetroMidiMessages.cc_allNoteOff( ch );
         }
         public <T> T execute( MetroMidiReceiver<T> receiver ,int ch) {
             return receiver.cc_allNoteOff ( ch );
@@ -842,7 +842,7 @@ public abstract class MetroMidi {
             return MESSAGE_GEN.cc_omniModeOff ( ch );
         }
         public byte[] createMidiMessage(int ch) {
-            return MetroMidiMessageGen.cc_omniModeOff( ch );
+            return MetroMidiMessages.cc_omniModeOff( ch );
         }
         public <T> T execute( MetroMidiReceiver<T> receiver ,int ch) {
             return receiver.cc_omniModeOff ( ch );
@@ -877,7 +877,7 @@ public abstract class MetroMidi {
             return MESSAGE_GEN.cc_omniModeOn ( ch );
         }
         public byte[] createMidiMessage(int ch) {
-            return MetroMidiMessageGen.cc_omniModeOn( ch );
+            return MetroMidiMessages.cc_omniModeOn( ch );
         }
         public <T> T execute( MetroMidiReceiver<T> receiver ,int ch) {
             return receiver.cc_omniModeOn ( ch );
@@ -912,7 +912,7 @@ public abstract class MetroMidi {
             return MESSAGE_GEN.cc_monoModeOn ( ch );
         }
         public byte[] createMidiMessage(int ch) {
-            return MetroMidiMessageGen.cc_monoModeOn( ch );
+            return MetroMidiMessages.cc_monoModeOn( ch );
         }
         public <T> T execute( MetroMidiReceiver<T> receiver ,int ch) {
             return receiver.cc_monoModeOn ( ch );
@@ -948,7 +948,7 @@ public abstract class MetroMidi {
             return MESSAGE_GEN.cc_polyModeOn ( ch );
         }
         public byte[] createMidiMessage(int ch) {
-            return MetroMidiMessageGen.cc_polyModeOn( ch );
+            return MetroMidiMessages.cc_polyModeOn( ch );
         }
         public <T> T execute( MetroMidiReceiver<T> receiver ,int ch) {
             return receiver.cc_polyModeOn ( ch );
@@ -1076,7 +1076,7 @@ public abstract class MetroMidi {
             return MESSAGE_GEN.songPositionPointer ( value );
         }
         public byte[] createMidiMessage( int value ) {
-            return MetroMidiMessageGen.songPositionPointer( value );
+            return MetroMidiMessages.songPositionPointer( value );
         }
         public <T> T execute( MetroMidiReceiver<T> receiver , int value ) {
             return receiver.songPositionPointer ( value );
@@ -1111,7 +1111,7 @@ public abstract class MetroMidi {
             return MESSAGE_GEN.songSelect ( value );
         }
         public byte[] createMidiMessage(int value) {
-            return MetroMidiMessageGen.songSelect( value );
+            return MetroMidiMessages.songSelect( value );
         }
         public <T> T execute( MetroMidiReceiver<T> receiver ,int value) {
             return receiver.songSelect ( value );
@@ -1187,7 +1187,7 @@ public abstract class MetroMidi {
             return MESSAGE_GEN.endOfExclusive();
         }
         public byte[] createMidiMessage() {
-            return MetroMidiMessageGen.endOfExclusive();
+            return MetroMidiMessages.endOfExclusive();
         }
         public <T> T execute( MetroMidiReceiver<T> receiver ) {
             return receiver.endOfExclusive();
@@ -1220,7 +1220,7 @@ public abstract class MetroMidi {
             return MESSAGE_GEN.clock();
         }
         public byte[] createMidiMessage() {
-            return MetroMidiMessageGen.clock();
+            return MetroMidiMessages.clock();
         }
         public <T> T execute( MetroMidiReceiver<T> receiver ) {
             return receiver.clock ();
@@ -1254,7 +1254,7 @@ public abstract class MetroMidi {
             return MESSAGE_GEN.start ();
         }
         public byte[] createMidiMessage() {
-            return MetroMidiMessageGen.start();
+            return MetroMidiMessages.start();
         }
         public <T> T execute( MetroMidiReceiver<T> receiver ) {
             return receiver.start ();
@@ -1287,7 +1287,7 @@ public abstract class MetroMidi {
             return MESSAGE_GEN.cont();
         }
         public byte[] createMidiMessage() {
-            return MetroMidiMessageGen.cont();
+            return MetroMidiMessages.cont();
         }
         public <T> T execute( MetroMidiReceiver<T> receiver ) {
             return receiver.cont();
@@ -1320,7 +1320,7 @@ public abstract class MetroMidi {
             return MESSAGE_GEN.stop ();
         }
         public byte[] createMidiMessage() {
-            return MetroMidiMessageGen.stop();
+            return MetroMidiMessages.stop();
         }
         public <T> T execute( MetroMidiReceiver<T> receiver ) {
             return receiver.stop();
@@ -1392,7 +1392,7 @@ public abstract class MetroMidi {
             return MESSAGE_GEN.reset ();
         }
         public byte[] createMidiMessage() {
-            return MetroMidiMessageGen.reset();
+            return MetroMidiMessages.reset();
         }
         public <T> T execute( MetroMidiReceiver<T> receiver ) {
             return receiver.reset ();

@@ -127,7 +127,7 @@ import metro.MetroMidi.MetroMidiSongPositionPointer;
 import metro.MetroMidi.MetroMidiSongSelect;
 import metro.MetroMidi.MetroMidiStart;
 import metro.MetroMidi.MetroMidiStop;
-import metro.MetroMidiMessageGen;
+import metro.MetroMidiMessages;
 import metro.MetroPort;
 import metro.MetroTrack;
 
@@ -264,7 +264,7 @@ public class PulsarMidiNoteListParsers {
                 writeMapPort( port ),
                 writeMapChannel( channel ), 
                 writeMapNote( note ),
-                writeMapVelocity( MetroMidiMessageGen.i2dVelocity( velocity ) )
+                writeMapVelocity( MetroMidiMessages.i2dVelocity( velocity ) )
             );
         }
     }
@@ -311,7 +311,7 @@ public class PulsarMidiNoteListParsers {
                 writeMapPort( port ),
                 writeMapChannel( channel ), 
                 writeMapNote( note ),  
-                writeMapVelocity( MetroMidiMessageGen.i2dVelocity( velocity ) )
+                writeMapVelocity( MetroMidiMessages.i2dVelocity( velocity ) )
                 );
         }
     }
@@ -354,7 +354,7 @@ public class PulsarMidiNoteListParsers {
                 writeMapPort(port),
                 writeMapChannel(channel), 
                 writeMapNote(note),  
-                writeMapDoubleValue( MetroMidiMessageGen.i2dPressure( pressure ))
+                writeMapDoubleValue( MetroMidiMessages.i2dPressure( pressure ))
             );
         }
     }
@@ -460,7 +460,7 @@ public class PulsarMidiNoteListParsers {
                     writeMapOffset(offset),  
                     writeMapPort(port),
                     writeMapChannel(channel), 
-                    writeMapDoubleValue( MetroMidiMessageGen.i2dPressure( pressureValue ))
+                    writeMapDoubleValue( MetroMidiMessages.i2dPressure( pressureValue ))
                 );
         }
     }
@@ -500,7 +500,7 @@ public class PulsarMidiNoteListParsers {
                     writeMapOffset(offset),  
                     writeMapPort(port),
                     writeMapChannel(channel), 
-                    writeMapDoubleValue( MetroMidiMessageGen.i2dPitchBend( pitchBendValue ))
+                    writeMapDoubleValue( MetroMidiMessages.i2dPitchBend( pitchBendValue ))
                 );
         }
     }
