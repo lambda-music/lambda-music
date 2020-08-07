@@ -2,6 +2,7 @@ package pulsar;
 
 import gnu.lists.LList;
 import metro.MetroBufferedMidiReceiver;
+import metro.MetroCollector;
 import metro.MetroDirectToBufferedMidiReceiver;
 import metro.MetroMidiEvent;
 import metro.MetroMidiMessages;
@@ -20,9 +21,8 @@ public class SchemeSimpleMidiFilter {
         this.receiver.setPort( port );
     }
 
-    public LList receive(MetroMidiEvent e, long currentPos, long oneBarLengthInFrames ) {
+    public void receive( MetroCollector<LList> result, MetroMidiEvent e, long currentPos, long oneBarLengthInFrames ) {
         this.receiver.setOffset( ( (double)(currentPos + e.getMidiOffset() ) / (double)oneBarLengthInFrames ) );
-        LList list = MetroMidiMessages.receive( this.receiver, e.getMidiData() );
-        return list;
+        MetroMidiMessages.receive( this.receiver, e.getMidiData(), result );
     }
 }

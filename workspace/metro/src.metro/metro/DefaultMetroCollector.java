@@ -1,14 +1,14 @@
 package metro;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
-public class DefaultMetroReceiver<T> implements MetroCollector<T> {
+public class DefaultMetroCollector<T> implements MetroCollector<T> {
     private final List<T> list;
-    public DefaultMetroReceiver() {
-        this.list = new LinkedList<T>();
+    public DefaultMetroCollector() {
+        this.list = new ArrayList<T>();
     }
-    public DefaultMetroReceiver(List<T> list) {
+    public DefaultMetroCollector(List<T> list) {
         super();
         this.list = list;
     }

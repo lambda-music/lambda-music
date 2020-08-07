@@ -39,87 +39,87 @@ public interface MetroMidiReceiver<T> {
     
     // special
     public boolean endCalled();
-    public T end();
-    public T error( String string );
+    public void end( MetroCollector<T> result );
+    public void error(MetroCollector<T> result, String string );
     
     // basic
-    public T noteOn(int channel, int note, double velocity );
-    public T noteOn(int channel, int note, int velocity );
-    public T noteOff(int channel, int note, double velocity);
-    public T noteOff(int channel, int note, int velocity );
-    public T keyPressure(int channel, int note, double pressure);
-    public T keyPressure(int channel, int note, int pressure);
-    public T controlChange(int channel, int controlNumber, int controlValue );
-    public T programChange( int ch, int programNumber );
-    public T channelPressure( int ch, double pressureValue );
-    public T channelPressure( int ch, int pressureValue );
-    public T pitchBend( int ch, double pitchBendValue );
-    public T pitchBend( int ch, int pitchBendValue );
+    public void noteOn(MetroCollector<T> result, int channel, int note, double velocity );
+    public void noteOn(MetroCollector<T> result, int channel, int note, int velocity );
+    public void noteOff(MetroCollector<T> result, int channel, int note, double velocity);
+    public void noteOff(MetroCollector<T> result, int channel, int note, int velocity );
+    public void keyPressure(MetroCollector<T> result, int channel, int note, double pressure);
+    public void keyPressure(MetroCollector<T> result, int channel, int note, int pressure);
+    public void controlChange(MetroCollector<T> result, int channel, int controlNumber, int controlValue );
+    public void programChange(MetroCollector<T> result, int ch, int programNumber );
+    public void channelPressure(MetroCollector<T> result, int ch, double pressureValue );
+    public void channelPressure(MetroCollector<T> result, int ch, int pressureValue );
+    public void pitchBend(MetroCollector<T> result, int ch, double pitchBendValue );
+    public void pitchBend(MetroCollector<T> result, int ch, int pitchBendValue );
 
-    public T cc_allSoundOff( int ch ); 
-    public T cc_resetAllControllers( int ch ); 
-    public T cc_localControls( int ch, boolean on ); 
-    public T cc_allNoteOff( int ch ); 
-    public T cc_omniModeOff( int ch ); 
-    public T cc_omniModeOn( int ch ); 
-    public T cc_monoModeOn( int ch ); 
-    public T cc_polyModeOn( int ch ); 
+    public void cc_allSoundOff(MetroCollector<T> result, int ch ); 
+    public void cc_resetAllControllers(MetroCollector<T> result, int ch ); 
+    public void cc_localControls(MetroCollector<T> result, int ch, boolean on ); 
+    public void cc_allNoteOff(MetroCollector<T> result, int ch ); 
+    public void cc_omniModeOff(MetroCollector<T> result, int ch ); 
+    public void cc_omniModeOn(MetroCollector<T> result, int ch ); 
+    public void cc_monoModeOn(MetroCollector<T> result, int ch ); 
+    public void cc_polyModeOn(MetroCollector<T> result, int ch ); 
 
     // system
-    public T songPositionPointer( int pos ); 
-    public T songSelect( int songNumber ); 
-    public T endOfExclusive(); 
-    public T clock(); 
-    public T start(); 
-    public T cont(); 
-    public T stop(); 
-    public T reset();
+    public void songPositionPointer(MetroCollector<T> result, int pos ); 
+    public void songSelect(MetroCollector<T> result, int songNumber ); 
+    public void endOfExclusive(MetroCollector<T> result ); 
+    public void clock(MetroCollector<T> result ); 
+    public void start(MetroCollector<T> result ); 
+    public void cont(MetroCollector<T> result ); 
+    public void stop(MetroCollector<T> result ); 
+    public void reset(MetroCollector<T> result );
     
     // control change
-    public T cc_bankSelect( int channel, int value ) ;
-    public T cc_modulation( int channel, int value ) ;
-    public T cc_breathController( int channel, int value ) ;
-    public T cc_footController( int channel, int value ) ;
-    public T cc_portamentoTime( int channel, int value ) ;
-    public T cc_dataEntryMsb( int channel, int value ) ;
-    public T cc_volume( int channel, int value ) ;
-    public T cc_balance( int channel, int value ) ;
-    public T cc_pan( int channel, int value ) ;
-    public T cc_expression( int channel, int value ) ;
-    public T cc_effectController1( int channel, int value ) ;
-    public T cc_effectController2( int channel, int value ) ;
-    public T cc_sustainPedal( int channel, int value ) ;
-    public T cc_portamentoSwitch( int channel, int value ) ;
-    public T cc_sostenutoSwitch( int channel, int value ) ;
-    public T cc_pedalSwitch( int channel, int value ) ;
-    public T cc_legatoSwitch( int channel, int value ) ;
-    public T cc_hold2( int channel, int value ) ;
-    public T cc_soundController1( int channel, int value ) ;
-    public T cc_soundController2( int channel, int value ) ;
-    public T cc_soundController3( int channel, int value ) ;
-    public T cc_soundController4( int channel, int value ) ;
-    public T cc_soundController5( int channel, int value ) ;
-    public T cc_soundController6( int channel, int value ) ;
-    public T cc_soundController7( int channel, int value ) ;
-    public T cc_soundController8( int channel, int value ) ;
-    public T cc_soundController9( int channel, int value ) ;
-    public T cc_soundController10( int channel, int value ) ;
-    public T cc_generalPurpose01( int channel, int value ) ;
-    public T cc_generalPurpose02( int channel, int value ) ;
-    public T cc_generalPurpose03( int channel, int value ) ;
-    public T cc_generalPurpose04( int channel, int value ) ;
-    public T cc_portamento( int channel, int value ) ;
-    public T cc_effect1( int channel, int value ) ;
-    public T cc_effect2( int channel, int value ) ;
-    public T cc_effect3( int channel, int value ) ;
-    public T cc_effect4( int channel, int value ) ;
-    public T cc_effect5( int channel, int value ) ;
-    public T cc_dataIncrement( int channel, int value ) ;
-    public T cc_dataDecrement( int channel, int value ) ;
-    public T cc_nrpnLsb( int channel, int value ) ;
-    public T cc_nrpnMsb( int channel, int value ) ;
-    public T cc_rpnLsb( int channel, int value ) ;
-    public T cc_rpnMsb( int channel, int value ) ;
+    public void cc_bankSelect(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_modulation(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_breathController(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_footController(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_portamentoTime(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_dataEntryMsb(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_volume(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_balance(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_pan(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_expression(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_effectController1(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_effectController2(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_sustainPedal(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_portamentoSwitch(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_sostenutoSwitch(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_pedalSwitch(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_legatoSwitch(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_hold2(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_soundController1(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_soundController2(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_soundController3(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_soundController4(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_soundController5(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_soundController6(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_soundController7(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_soundController8(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_soundController9(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_soundController10(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_generalPurpose01(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_generalPurpose02(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_generalPurpose03(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_generalPurpose04(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_portamento(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_effect1(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_effect2(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_effect3(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_effect4(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_effect5(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_dataIncrement(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_dataDecrement(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_nrpnLsb(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_nrpnMsb(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_rpnLsb(MetroCollector<T> result, int channel, int value ) ;
+    public void cc_rpnMsb(MetroCollector<T> result, int channel, int value ) ;
     
     static abstract class Default<T> implements MetroMidiReceiver<T> {
         protected abstract T defaultValue();
@@ -129,304 +129,304 @@ public interface MetroMidiReceiver<T> {
             return endCalled;
         }
         @Override
-        public T end() {
+        public void end(MetroCollector<T> result) {
             this.endCalled = true;
-            return voidValue( "end" );
+            result.collect( voidValue( "end" ));
         }
         @Override
-        public T error( String string ) {
-            return voidValue( string );
+        public void error(MetroCollector<T> result, String string ) {
+            result.collect( voidValue( string ));
         }
         @Override
-        public T noteOn(int channel, int note, int velocity) {
-            return defaultValue();
+        public void noteOn(MetroCollector<T> result,int channel, int note, int velocity) {
+            result.collect( defaultValue());
         }
         @Override
-        public T noteOff(int channel, int note, int velocity) {
-            return defaultValue();
+        public void noteOff(MetroCollector<T> result,int channel, int note, int velocity) {
+            result.collect( defaultValue());
         }
         @Override
-        public T keyPressure(int channel, int note, int pressure) {
-            return defaultValue();
+        public void keyPressure(MetroCollector<T> result,int channel, int note, int pressure) {
+            result.collect( defaultValue());
         }
         @Override
-        public T controlChange(int channel, int controlNumber, int controlValue) {
-            return defaultValue();
+        public void controlChange(MetroCollector<T> result,int channel, int controlNumber, int controlValue) {
+            result.collect( defaultValue());
         }
         @Override
-        public T programChange(int ch, int programNumber) {
-            return defaultValue();
+        public void programChange(MetroCollector<T> result,int ch, int programNumber) {
+            result.collect( defaultValue());
         }
         @Override
-        public T channelPressure(int ch, int pressureValue) {
-            return defaultValue();
+        public void channelPressure(MetroCollector<T> result,int ch, int pressureValue) {
+            result.collect( defaultValue());
         }
         @Override
-        public T pitchBend(int ch, int pitchBendValue) {
-            return defaultValue();
+        public void pitchBend(MetroCollector<T> result,int ch, int pitchBendValue) {
+            result.collect( defaultValue());
         }
         @Override
-        public T noteOn(int channel, int note, double velocity) {
-            return defaultValue();
+        public void noteOn(MetroCollector<T> result,int channel, int note, double velocity) {
+            result.collect( defaultValue());
         }
         @Override
-        public T noteOff(int channel, int note, double velocity) {
-            return defaultValue();
+        public void noteOff(MetroCollector<T> result,int channel, int note, double velocity) {
+            result.collect( defaultValue());
         }
         @Override
-        public T keyPressure(int channel, int note, double pressure) {
-            return defaultValue();
+        public void keyPressure(MetroCollector<T> result,int channel, int note, double pressure) {
+            result.collect( defaultValue());
         }
         @Override
-        public T channelPressure(int ch, double pressureValue) {
-            return defaultValue();
+        public void channelPressure(MetroCollector<T> result,int ch, double pressureValue) {
+            result.collect( defaultValue());
         }
         @Override
-        public T pitchBend(int ch, double pitchBendValue) {
-            return defaultValue();
+        public void pitchBend(MetroCollector<T> result,int ch, double pitchBendValue) {
+            result.collect( defaultValue());
         }
 
         
         @Override
-        public T cc_allSoundOff(int ch) {
-            return defaultValue();
+        public void cc_allSoundOff(MetroCollector<T> result,int ch) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_resetAllControllers(int ch) {
-            return defaultValue();
+        public void cc_resetAllControllers(MetroCollector<T> result,int ch) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_localControls(int ch, boolean on) {
-            return defaultValue();
+        public void cc_localControls(MetroCollector<T> result,int ch, boolean on) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_allNoteOff(int ch) {
-            return defaultValue();
+        public void cc_allNoteOff(MetroCollector<T> result,int ch) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_omniModeOff(int ch) {
-            return defaultValue();
+        public void cc_omniModeOff(MetroCollector<T> result,int ch) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_omniModeOn(int ch) {
-            return defaultValue();
+        public void cc_omniModeOn(MetroCollector<T> result,int ch) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_monoModeOn(int ch) {
-            return defaultValue();
+        public void cc_monoModeOn(MetroCollector<T> result,int ch) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_polyModeOn(int ch) {
-            return defaultValue();
+        public void cc_polyModeOn(MetroCollector<T> result,int ch) {
+            result.collect( defaultValue());
         }
         @Override
-        public T songPositionPointer(int pos) {
-            return defaultValue();
+        public void songPositionPointer(MetroCollector<T> result,int pos) {
+            result.collect( defaultValue());
         }
         @Override
-        public T songSelect(int songNumber) {
-            return defaultValue();
+        public void songSelect(MetroCollector<T> result,int songNumber) {
+            result.collect( defaultValue());
         }
         @Override
-        public T endOfExclusive() {
-            return defaultValue();
+        public void endOfExclusive(MetroCollector<T> result) {
+            result.collect( defaultValue());
         }
         @Override
-        public T clock() {
-            return defaultValue();
+        public void clock(MetroCollector<T> result) {
+            result.collect( defaultValue());
         }
         @Override
-        public T start() {
-            return defaultValue();
+        public void start(MetroCollector<T> result) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cont() {
-            return defaultValue();
+        public void cont(MetroCollector<T> result) {
+            result.collect( defaultValue());
         }
         @Override
-        public T stop() {
-            return defaultValue();
+        public void stop(MetroCollector<T> result) {
+            result.collect( defaultValue());
         }
         @Override
-        public T reset() {
-            return defaultValue();
+        public void reset(MetroCollector<T> result) {
+            result.collect( defaultValue());
         }
 
         @Override
-        public T cc_bankSelect( int channel, int value ) {
-            return defaultValue();
+        public void cc_bankSelect(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_modulation( int channel, int value ) {
-            return defaultValue();
+        public void cc_modulation(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_breathController( int channel, int value ) {
-            return defaultValue();
+        public void cc_breathController(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_footController( int channel, int value ) {
-            return defaultValue();
+        public void cc_footController(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_portamentoTime( int channel, int value ) {
-            return defaultValue();
+        public void cc_portamentoTime(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_dataEntryMsb( int channel, int value ) {
-            return defaultValue();
+        public void cc_dataEntryMsb(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_volume( int channel, int value ) {
-            return defaultValue();
+        public void cc_volume(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_balance( int channel, int value ) {
-            return defaultValue();
+        public void cc_balance(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_pan( int channel, int value ) {
-            return defaultValue();
+        public void cc_pan(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_expression( int channel, int value ) {
-            return defaultValue();
+        public void cc_expression(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_effectController1( int channel, int value ) {
-            return defaultValue();
+        public void cc_effectController1(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_effectController2( int channel, int value ) {
-            return defaultValue();
+        public void cc_effectController2(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_sustainPedal( int channel, int value ) {
-            return defaultValue();
+        public void cc_sustainPedal(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_portamentoSwitch( int channel, int value ) {
-            return defaultValue();
+        public void cc_portamentoSwitch(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_sostenutoSwitch( int channel, int value ) {
-            return defaultValue();
+        public void cc_sostenutoSwitch(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_pedalSwitch( int channel, int value ) {
-            return defaultValue();
+        public void cc_pedalSwitch(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_legatoSwitch( int channel, int value ) {
-            return defaultValue();
+        public void cc_legatoSwitch(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_hold2( int channel, int value ) {
-            return defaultValue();
+        public void cc_hold2(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_soundController1( int channel, int value ) {
-            return defaultValue();
+        public void cc_soundController1(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_soundController2( int channel, int value ) {
-            return defaultValue();
+        public void cc_soundController2(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_soundController3( int channel, int value ) {
-            return defaultValue();
+        public void cc_soundController3(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_soundController4( int channel, int value ) {
-            return defaultValue();
+        public void cc_soundController4(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_soundController5( int channel, int value ) {
-            return defaultValue();
+        public void cc_soundController5(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_soundController6( int channel, int value ) {
-            return defaultValue();
+        public void cc_soundController6(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_soundController7( int channel, int value ) {
-            return defaultValue();
+        public void cc_soundController7(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_soundController8( int channel, int value ) {
-            return defaultValue();
+        public void cc_soundController8(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_soundController9( int channel, int value ) {
-            return defaultValue();
+        public void cc_soundController9(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_soundController10( int channel, int value ) {
-            return defaultValue();
+        public void cc_soundController10(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_generalPurpose01( int channel, int value ) {
-            return defaultValue();
+        public void cc_generalPurpose01(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_generalPurpose02( int channel, int value ) {
-            return defaultValue();
+        public void cc_generalPurpose02(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_generalPurpose03( int channel, int value ) {
-            return defaultValue();
+        public void cc_generalPurpose03(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_generalPurpose04( int channel, int value ) {
-            return defaultValue();
+        public void cc_generalPurpose04(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_portamento( int channel, int value ) {
-            return defaultValue();
+        public void cc_portamento(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_effect1( int channel, int value ) {
-            return defaultValue();
+        public void cc_effect1(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_effect2( int channel, int value ) {
-            return defaultValue();
+        public void cc_effect2(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_effect3( int channel, int value ) {
-            return defaultValue();
+        public void cc_effect3(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_effect4( int channel, int value ) {
-            return defaultValue();
+        public void cc_effect4(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_effect5( int channel, int value ) {
-            return defaultValue();
+        public void cc_effect5(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_dataIncrement( int channel, int value ) {
-            return defaultValue();
+        public void cc_dataIncrement(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_dataDecrement( int channel, int value ) {
-            return defaultValue();
+        public void cc_dataDecrement(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_nrpnLsb( int channel, int value ) {
-            return defaultValue();
+        public void cc_nrpnLsb(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_nrpnMsb( int channel, int value ) {
-            return defaultValue();
+        public void cc_nrpnMsb(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_rpnLsb( int channel, int value ) {
-            return defaultValue();
+        public void cc_rpnLsb(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
         @Override
-        public T cc_rpnMsb( int channel, int value ) {
-            return defaultValue();
+        public void cc_rpnMsb(MetroCollector<T> result, int channel, int value ) {
+            result.collect( defaultValue());
         }
     }
     
@@ -438,304 +438,304 @@ public interface MetroMidiReceiver<T> {
             return endCalled;
         }
         @Override
-        public T end() {
+        public void end(MetroCollector<T> result) {
             this.endCalled = true;
-            return format("end" , "" );
+            result.collect(format("end" , "" ));
         }
         @Override
-        public T error(String string) {
-            return format("error" , "String string", string );
+        public void error(MetroCollector<T> result,String string) {
+            result.collect(format("error" , "String string", string ));
         }
         @Override
-        public T noteOn(int channel, int note, int velocity) {
-            return format( "noteOn", "int channel, int note, int velocity",channel,note,velocity );
+        public void noteOn(MetroCollector<T> result,int channel, int note, int velocity) {
+            result.collect(format( "noteOn", "int channel, int note, int velocity",channel,note,velocity ));
         }
         @Override
-        public T noteOff(int channel, int note, int velocity) {
-            return format( "noteOff", "int channel, int note, int velocity",channel,note,velocity );
+        public void noteOff(MetroCollector<T> result,int channel, int note, int velocity) {
+            result.collect(format( "noteOff", "int channel, int note, int velocity",channel,note,velocity ));
         }
         @Override
-        public T keyPressure(int channel, int note, int pressure) {
-            return format( "keyPressure", "int channel, int note, int pressure",channel,note,pressure );
+        public void keyPressure(MetroCollector<T> result,int channel, int note, int pressure) {
+            result.collect(format( "keyPressure", "int channel, int note, int pressure",channel,note,pressure ));
         }
         @Override
-        public T controlChange(int channel, int controlNumber, int controlValue) {
-            return format( "controlChange", "int channel, int controlNumber, int controlValue",channel,controlNumber,controlValue );
+        public void controlChange(MetroCollector<T> result,int channel, int controlNumber, int controlValue) {
+            result.collect(format( "controlChange", "int channel, int controlNumber, int controlValue",channel,controlNumber,controlValue ));
         }
         @Override
-        public T programChange(int ch, int programNumber) {
-            return format( "programChange", "int ch, int programNumber",ch,programNumber );
+        public void programChange(MetroCollector<T> result,int ch, int programNumber) {
+            result.collect(format( "programChange", "int ch, int programNumber",ch,programNumber ));
         }
         @Override
-        public T channelPressure(int ch, int pressureValue) {
-            return format( "channelPressure", "int ch, int pressureValue",ch,pressureValue );
+        public void channelPressure(MetroCollector<T> result,int ch, int pressureValue) {
+            result.collect(format( "channelPressure", "int ch, int pressureValue",ch,pressureValue ));
         }
         @Override
-        public T pitchBend(int ch, int pitchBendValue) {
-            return format( "pitchBend", "int ch, int pitchBendValue",ch,pitchBendValue );
+        public void pitchBend(MetroCollector<T> result,int ch, int pitchBendValue) {
+            result.collect(format( "pitchBend", "int ch, int pitchBendValue",ch,pitchBendValue ));
         }
         @Override
-        public T noteOn(int channel, int note, double velocity) {
-            return format( "noteOn", "int channel, int note, double velocity",channel,note,velocity );
+        public void noteOn(MetroCollector<T> result,int channel, int note, double velocity) {
+            result.collect(format( "noteOn", "int channel, int note, double velocity",channel,note,velocity ));
         }
         @Override
-        public T noteOff(int channel, int note, double velocity) {
-            return format( "noteOff", "int channel, int note, double velocity",channel,note,velocity );
+        public void noteOff(MetroCollector<T> result,int channel, int note, double velocity) {
+            result.collect(format( "noteOff", "int channel, int note, double velocity",channel,note,velocity ));
         }
         @Override
-        public T keyPressure(int channel, int note, double pressure) {
-            return format( "keyPressure", "int channel, int note, double pressure",channel,note,pressure );
+        public void keyPressure(MetroCollector<T> result,int channel, int note, double pressure) {
+            result.collect(format( "keyPressure", "int channel, int note, double pressure",channel,note,pressure ));
         }
         @Override
-        public T channelPressure(int ch, double pressureValue) {
-            return format( "channelPressure", "int ch, double pressureValue",ch,pressureValue );
+        public void channelPressure(MetroCollector<T> result,int ch, double pressureValue) {
+            result.collect(format( "channelPressure", "int ch, double pressureValue",ch,pressureValue ));
         }
         @Override
-        public T pitchBend(int ch, double pitchBendValue) {
-            return format( "pitchBend", "int ch, double pitchBendValue",ch,pitchBendValue );
+        public void pitchBend(MetroCollector<T> result,int ch, double pitchBendValue) {
+            result.collect(format( "pitchBend", "int ch, double pitchBendValue",ch,pitchBendValue ));
         }
 
         
         @Override
-        public T cc_allSoundOff(int ch) {
-            return format( "cc_allSoundOff", "int ch",ch );
+        public void cc_allSoundOff(MetroCollector<T> result,int ch) {
+            result.collect(format( "cc_allSoundOff", "int ch",ch ));
         }
         @Override
-        public T cc_resetAllControllers(int ch) {
-            return format( "cc_resetAllControllers", "int ch",ch );
+        public void cc_resetAllControllers(MetroCollector<T> result,int ch) {
+            result.collect(format( "cc_resetAllControllers", "int ch",ch ));
         }
         @Override
-        public T cc_localControls(int ch, boolean on) {
-            return format( "cc_localControls", "int ch, boolean on",ch,on );
+        public void cc_localControls(MetroCollector<T> result,int ch, boolean on) {
+            result.collect(format( "cc_localControls", "int ch, boolean on",ch,on ));
         }
         @Override
-        public T cc_allNoteOff(int ch) {
-            return format( "cc_allNoteOff", "int ch",ch );
+        public void cc_allNoteOff(MetroCollector<T> result,int ch) {
+            result.collect(format( "cc_allNoteOff", "int ch",ch ));
         }
         @Override
-        public T cc_omniModeOff(int ch) {
-            return format( "cc_omniModeOff", "int ch",ch );
+        public void cc_omniModeOff(MetroCollector<T> result,int ch) {
+            result.collect(format( "cc_omniModeOff", "int ch",ch ));
         }
         @Override
-        public T cc_omniModeOn(int ch) {
-            return format( "cc_omniModeOn", "int ch",ch );
+        public void cc_omniModeOn(MetroCollector<T> result,int ch) {
+            result.collect(format( "cc_omniModeOn", "int ch",ch ));
         }
         @Override
-        public T cc_monoModeOn(int ch) {
-            return format( "cc_monoModeOn", "int ch",ch );
+        public void cc_monoModeOn(MetroCollector<T> result,int ch) {
+            result.collect(format( "cc_monoModeOn", "int ch",ch ));
         }
         @Override
-        public T cc_polyModeOn(int ch) {
-            return format( "cc_polyModeOn", "int ch",ch );
+        public void cc_polyModeOn(MetroCollector<T> result,int ch) {
+            result.collect(format( "cc_polyModeOn", "int ch",ch ));
         }
         @Override
-        public T songPositionPointer(int pos) {
-            return format( "songPositionPointer", "int pos",pos );
+        public void songPositionPointer(MetroCollector<T> result,int pos) {
+            result.collect(format( "songPositionPointer", "int pos",pos ));
         }
         @Override
-        public T songSelect(int songNumber) {
-            return format( "songSelect", "int songNumber",songNumber );
+        public void songSelect(MetroCollector<T> result,int songNumber) {
+            result.collect(format( "songSelect", "int songNumber",songNumber ));
         }
         @Override
-        public T endOfExclusive() {
-            return format( "endOfExclusive", "" );
+        public void endOfExclusive(MetroCollector<T> result) {
+            result.collect(format( "endOfExclusive", "" ));
         }
         @Override
-        public T clock() {
-            return format( "clock", "" );
+        public void clock(MetroCollector<T> result) {
+            result.collect(format( "clock", "" ));
         }
         @Override
-        public T start() {
-            return format( "start", "" );
+        public void start(MetroCollector<T> result) {
+            result.collect(format( "start", "" ));
         }
         @Override
-        public T cont() {
-            return format( "cont", "" );
+        public void cont(MetroCollector<T> result) {
+            result.collect(format( "cont", "" ));
         }
         @Override
-        public T stop() {
-            return format( "stop", "" );
+        public void stop(MetroCollector<T> result) {
+            result.collect(format( "stop", "" ));
         }
         @Override
-        public T reset() {
-            return format( "reset", "" );
+        public void reset(MetroCollector<T> result) {
+            result.collect(format( "reset", "" ));
         }
 
         @Override
-        public T cc_bankSelect( int channel, int value ) {
-            return format( "cc_bankSelect", " int channel, int value ", channel,value  );
+        public void cc_bankSelect(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_bankSelect", " int channel, int value ", channel,value  ));
         }
         @Override
-        public T cc_modulation( int channel, int value ) {
-            return format( "cc_modulation", " int channel, int value ", channel,value  );
+        public void cc_modulation(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_modulation", " int channel, int value ", channel,value  ));
         }
         @Override
-        public T cc_breathController( int channel, int value ) {
-            return format( "cc_breathController", " int channel, int value ",channel,value  );
+        public void cc_breathController(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_breathController", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_footController( int channel, int value ) {
-            return format( "cc_footController", " int channel, int value ",channel,value  );
+        public void cc_footController(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_footController", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_portamentoTime( int channel, int value ) {
-            return format( "cc_portamentoTime", " int channel, int value ",channel,value  );
+        public void cc_portamentoTime(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_portamentoTime", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_dataEntryMsb( int channel, int value ) {
-            return format( "cc_dataEntryMsb", " int channel, int value ",channel,value  );
+        public void cc_dataEntryMsb(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_dataEntryMsb", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_volume( int channel, int value ) {
-            return format( "cc_volume", " int channel, int value ",channel,value  );
+        public void cc_volume(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_volume", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_balance( int channel, int value ) {
-            return format( "cc_balance", " int channel, int value ",channel,value  );
+        public void cc_balance(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_balance", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_pan( int channel, int value ) {
-            return format( "cc_pan", " int channel, int value ",channel,value  );
+        public void cc_pan(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_pan", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_expression( int channel, int value ) {
-            return format( "cc_expression", " int channel, int value ",channel,value  );
+        public void cc_expression(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_expression", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_effectController1( int channel, int value ) {
-            return format( "cc_effectController1", " int channel, int value ",channel,value  );
+        public void cc_effectController1(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_effectController1", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_effectController2( int channel, int value ) {
-            return format( "cc_effectController2", " int channel, int value ",channel,value  );
+        public void cc_effectController2(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_effectController2", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_sustainPedal( int channel, int value ) {
-            return format( "cc_sustainPedal", " int channel, int value ",channel,value  );
+        public void cc_sustainPedal(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_sustainPedal", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_portamentoSwitch( int channel, int value ) {
-            return format( "cc_portamentoSwitch", " int channel, int value ",channel,value  );
+        public void cc_portamentoSwitch(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_portamentoSwitch", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_sostenutoSwitch( int channel, int value ) {
-            return format( "cc_sostenutoSwitch", " int channel, int value ",channel,value  );
+        public void cc_sostenutoSwitch(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_sostenutoSwitch", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_pedalSwitch( int channel, int value ) {
-            return format( "cc_pedalSwitch", " int channel, int value ",channel,value  );
+        public void cc_pedalSwitch(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_pedalSwitch", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_legatoSwitch( int channel, int value ) {
-            return format( "cc_legatoSwitch", " int channel, int value ",channel,value  );
+        public void cc_legatoSwitch(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_legatoSwitch", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_hold2( int channel, int value ) {
-            return format( "cc_hold2", " int channel, int value ",channel,value  );
+        public void cc_hold2(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_hold2", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_soundController1( int channel, int value ) {
-            return format( "cc_soundController1", " int channel, int value ",channel,value  );
+        public void cc_soundController1(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_soundController1", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_soundController2( int channel, int value ) {
-            return format( "cc_soundController2", " int channel, int value ",channel,value  );
+        public void cc_soundController2(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_soundController2", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_soundController3( int channel, int value ) {
-            return format( "cc_soundController3", " int channel, int value ",channel,value  );
+        public void cc_soundController3(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_soundController3", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_soundController4( int channel, int value ) {
-            return format( "cc_soundController4", " int channel, int value ",channel,value  );
+        public void cc_soundController4(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_soundController4", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_soundController5( int channel, int value ) {
-            return format( "cc_soundController5", " int channel, int value ",channel,value  );
+        public void cc_soundController5(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_soundController5", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_soundController6( int channel, int value ) {
-            return format( "cc_soundController6", " int channel, int value ",channel,value  );
+        public void cc_soundController6(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_soundController6", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_soundController7( int channel, int value ) {
-            return format( "cc_soundController7", " int channel, int value ",channel,value  );
+        public void cc_soundController7(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_soundController7", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_soundController8( int channel, int value ) {
-            return format( "cc_soundController8", " int channel, int value ",channel,value  );
+        public void cc_soundController8(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_soundController8", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_soundController9( int channel, int value ) {
-            return format( "cc_soundController9", " int channel, int value ",channel,value  );
+        public void cc_soundController9(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_soundController9", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_soundController10( int channel, int value ) {
-            return format( "cc_soundController10", " int channel, int value ",channel,value  );
+        public void cc_soundController10(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_soundController10", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_generalPurpose01( int channel, int value ) {
-            return format( "cc_generalPurpose01", " int channel, int value ",channel,value  );
+        public void cc_generalPurpose01(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_generalPurpose01", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_generalPurpose02( int channel, int value ) {
-            return format( "cc_generalPurpose02", " int channel, int value ",channel,value  );
+        public void cc_generalPurpose02(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_generalPurpose02", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_generalPurpose03( int channel, int value ) {
-            return format( "cc_generalPurpose03", " int channel, int value ",channel,value  );
+        public void cc_generalPurpose03(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_generalPurpose03", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_generalPurpose04( int channel, int value ) {
-            return format( "cc_generalPurpose04", " int channel, int value ",channel,value  );
+        public void cc_generalPurpose04(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_generalPurpose04", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_portamento( int channel, int value ) {
-            return format( "cc_portamento", " int channel, int value ",channel,value  );
+        public void cc_portamento(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_portamento", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_effect1( int channel, int value ) {
-            return format( "cc_effect1", " int channel, int value ",channel,value  );
+        public void cc_effect1(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_effect1", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_effect2( int channel, int value ) {
-            return format( "cc_effect2", " int channel, int value ",channel,value  );
+        public void cc_effect2(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_effect2", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_effect3( int channel, int value ) {
-            return format( "cc_effect3", " int channel, int value ",channel,value  );
+        public void cc_effect3(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_effect3", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_effect4( int channel, int value ) {
-            return format( "cc_effect4", " int channel, int value ",channel,value  );
+        public void cc_effect4(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_effect4", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_effect5( int channel, int value ) {
-            return format( "cc_effect5", " int channel, int value ",channel,value  );
+        public void cc_effect5(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_effect5", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_dataIncrement( int channel, int value ) {
-            return format( "cc_dataIncrement", " int channel, int value ",channel,value  );
+        public void cc_dataIncrement(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_dataIncrement", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_dataDecrement( int channel, int value ) {
-            return format( "cc_dataDecrement", " int channel, int value ",channel,value  );
+        public void cc_dataDecrement(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_dataDecrement", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_nrpnLsb( int channel, int value ) {
-            return format( "cc_nrpnLsb", " int channel, int value ",channel,value  );
+        public void cc_nrpnLsb(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_nrpnLsb", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_nrpnMsb( int channel, int value ) {
-            return format( "cc_nrpnMsb", " int channel, int value ",channel,value  );
+        public void cc_nrpnMsb(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_nrpnMsb", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_rpnLsb( int channel, int value ) {
-            return format( "cc_rpnLsb", " int channel, int value ",channel,value  );
+        public void cc_rpnLsb(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_rpnLsb", " int channel, int value ",channel,value  ));
         }
         @Override
-        public T cc_rpnMsb( int channel, int value ) {
-            return format( "cc_rpnMsb", " int channel, int value ", channel, value  );
+        public void cc_rpnMsb(MetroCollector<T> result, int channel, int value ) {
+            result.collect(format( "cc_rpnMsb", " int channel, int value ", channel, value  ));
         }
     }
     public static class FormatString extends Formatter<String> {

@@ -198,7 +198,7 @@ public final class MetroMidiMessages {
     public static byte[] cc_polyModeOn( int ch ) {
         return controlChange(ch, 127, 0 ); 
     }
-    
+
     //// SYSTEM
 
     public static byte[] songPositionPointer( int pos ) {
@@ -254,32 +254,37 @@ public final class MetroMidiMessages {
      * @param message
      * @return
      */
-    public static <T> T receive( MetroMidiReceiver<T> receiver, byte[] message ) {
+    public static <T> void receive( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
         if ( message == null || message.length == 0 ) {
-            return receiver.error( "no data" );
+            receiver.error( result, "no data" );
         }
         
         int command  = ( 0b11110000 & message[0] );
         int channel  = ( 0b00001111 & message[0] );
         switch ( command ) {
             case 0b10010000 : 
-                return receiver.noteOn(  channel, message[1], message[2] );
+                receiver.noteOn( result, channel, message[1], message[2] );
+                return;
             
             case 0b10000000 : 
-                return receiver.noteOff( channel, message[1], message[2] );
+                receiver.noteOff( result, channel, message[1], message[2] );
+                return;
             
             case 0b10100000 : 
-                return receiver.keyPressure( channel, message[1], message[2] );
+                receiver.keyPressure( result, channel, message[1], message[2] );
+                return;
 
             case 0b11000000 : 
-                return receiver.programChange( channel, message[1] );
+                receiver.programChange( result, channel, message[1] );
+                return;
             case 0b11010000 : 
-                return receiver.channelPressure( channel, message[1] );
+                receiver.channelPressure( result, channel, message[1] );
+                return;
             case 0b11100000 : 
-                return receiver.pitchBend( channel,
+                receiver.pitchBend( result, channel,
                         ( 0b01111111 & message[1] ) | 
                         ( (0b01111111 & message[2] ) << 7 ) );
-
+                return;
             case 0b11110000 : 
                 /* 
                  * The followings are special channel mode messages which
@@ -288,195 +293,257 @@ public final class MetroMidiMessages {
                  */
                 switch ( channel ) {
                     case 0b00000010 :
-                        return receiver.songPositionPointer(
+                        receiver.songPositionPointer(result,
                                 ( 0b01111111 & message[1] ) | 
                                 ( (0b01111111 & message[2] ) << 7 ) );
+                        return;
                     case 0b00000011 :
-                        return receiver.songSelect( 0b01111111 & message[1] );
+                        receiver.songSelect( result, 0b01111111 & message[1] );
+                        return;
                     case 0b00000111 :
-                        return receiver.endOfExclusive() ;
+                        receiver.endOfExclusive(result) ;
+                        return;
                     case 0b00001000 :
-                        return receiver.clock() ;
+                        receiver.clock(result);
+                        return;
                     case 0b00001010 :
-                        return receiver.start() ;
+                        receiver.start(result);
+                        return;
                     case 0b00001011 :
-                        return receiver.cont() ;
+                        receiver.cont(result);
+                        return;
                     case 0b00001100 :
-                        return receiver.stop() ;
+                        receiver.stop(result);
+                        return;
                     case 0b00001111 :
-                        return receiver.reset() ;
+                        receiver.reset(result);
+                        return;
                     default :
-                        return receiver.error( "unknown control change for all channels" );
+                        receiver.error(result, "unknown control change for all channels" );
+                        return;
                 }
 
             case 0b10110000 : {
-                T value = receiver.controlChange( channel, message[1], message[2] ) ;
-                if ( value != null )
-                    return value;
+                // TODO !!
+                receiver.controlChange(result, channel, message[1], message[2] ) ;
             
                 switch ( message[1] ) {
                     /*
                      * Channel Mode Messages
                      */
                     case MetroMidi.CC_ALL_SOUND_OFF : // case 120 :
-                        return receiver.cc_allSoundOff( channel ); 
+                        receiver.cc_allSoundOff( result, channel ); 
+                        return;
                     case MetroMidi.CC_RESET_ALL_CONTROLLERS : // case 121
-                        return receiver.cc_resetAllControllers( channel ); 
+                        receiver.cc_resetAllControllers( result, channel ); 
+                        return;
                     case MetroMidi.CC_LOCAL_CONTROLS : // case 122 :
-                        return receiver.cc_localControls( channel, message[2] != 0 ); 
+                        receiver.cc_localControls( result, channel, message[2] != 0 ); 
+                        return;
                     case MetroMidi.CC_ALL_NOTE_OFF : // case 123 :
-                        return receiver.cc_allNoteOff( channel ); 
+                        receiver.cc_allNoteOff( result, channel ); 
+                        return;
                     case MetroMidi.CC_OMNI_MODE_OFF : // case 124 :
-                        return receiver.cc_omniModeOff( channel ); 
+                        receiver.cc_omniModeOff( result, channel ); 
+                        return;
                     case MetroMidi.CC_OMNI_MODE_ON : // case 125 :
-                        return receiver.cc_omniModeOn( channel ); 
+                        receiver.cc_omniModeOn( result, channel ); 
+                        return;
                     case MetroMidi.CC_MONO_MODE_ON : // case 126 :
-                        return receiver.cc_monoModeOn( channel ); 
+                        receiver.cc_monoModeOn( result, channel ); 
+                        return;
                     case MetroMidi.CC_POLY_MODE_ON : // case 127 :
-                        return receiver.cc_polyModeOn( channel );
+                        receiver.cc_polyModeOn( result, channel );
+                        return;
                         
                     /*
                      * Normal Messages
                      */
                     case MetroMidi.CC_BANK_SELECT :
-                        return receiver.cc_bankSelect( channel, 0xff & message[2] ) ;
+                        receiver.cc_bankSelect( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_MODULATION :
-                        return receiver.cc_modulation( channel, 0xff & message[2] ) ;
+                        receiver.cc_modulation( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_BREATH_CTRL :
-                        return receiver.cc_breathController( channel, 0xff & message[2] ) ;
+                        receiver.cc_breathController( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_FOOT_CTRL :
-                        return receiver.cc_footController( channel, 0xff & message[2] ) ;
+                        receiver.cc_footController( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_PORTAMENTO_TIME :
-                        return receiver.cc_portamentoTime( channel, 0xff & message[2] ) ;
+                        receiver.cc_portamentoTime( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_DATA_ENTRY_MSB :
-                        return receiver.cc_dataEntryMsb( channel, 0xff & message[2] ) ;
+                        receiver.cc_dataEntryMsb( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_VOLUME :
-                        return receiver.cc_volume( channel, 0xff & message[2] ) ;
+                        receiver.cc_volume( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_BALANCE :
-                        return receiver.cc_balance( channel, 0xff & message[2] ) ;
+                        receiver.cc_balance( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_PAN :
-                        return receiver.cc_pan( channel, 0xff & message[2] ) ;
+                        receiver.cc_pan( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_EXPRESSION :
-                        return receiver.cc_expression( channel, 0xff & message[2] ) ;
+                        receiver.cc_expression( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_EFFECT_CTRL_1 :
-                        return receiver.cc_effectController1( channel, 0xff & message[2] ) ;
+                        receiver.cc_effectController1( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_EFFECT_CTRL_2 :
-                        return receiver.cc_effectController2( channel, 0xff & message[2] ) ;
+                        receiver.cc_effectController2( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_SUSTAIN_PEDAL :
-                        return receiver.cc_sustainPedal( channel, 0xff & message[2] ) ;
+                        receiver.cc_sustainPedal( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_PORTAMENTO_SWITCH :
-                        return receiver.cc_portamentoSwitch( channel, 0xff & message[2] ) ;
+                        receiver.cc_portamentoSwitch( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_SOSTENUTO_SWITCH :
-                        return receiver.cc_sostenutoSwitch( channel, 0xff & message[2] ) ;
+                        receiver.cc_sostenutoSwitch( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_SOFT_PEDAL_SWITCH :
-                        return receiver.cc_pedalSwitch( channel, 0xff & message[2] ) ;
+                        receiver.cc_pedalSwitch( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_LEGATO_FOOTSWITCH :
-                        return receiver.cc_legatoSwitch( channel, 0xff & message[2] ) ;
+                        receiver.cc_legatoSwitch( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_HOLD_2 :
-                        return receiver.cc_hold2( channel, 0xff & message[2] ) ;
+                        receiver.cc_hold2( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_SOUND_CTRL_01 :
-                        return receiver.cc_soundController1( channel, 0xff & message[2] ) ;
+                        receiver.cc_soundController1( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_SOUND_CTRL_02 :
-                        return receiver.cc_soundController2( channel, 0xff & message[2] ) ;
+                        receiver.cc_soundController2( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_SOUND_CTRL_03 :
-                        return receiver.cc_soundController3( channel, 0xff & message[2] ) ;
+                        receiver.cc_soundController3( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_SOUND_CTRL_04 :
-                        return receiver.cc_soundController4( channel, 0xff & message[2] ) ;
+                        receiver.cc_soundController4( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_SOUND_CTRL_05 :
-                        return receiver.cc_soundController5( channel, 0xff & message[2] ) ;
+                        receiver.cc_soundController5( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_SOUND_CTRL_06 :
-                        return receiver.cc_soundController6( channel, 0xff & message[2] ) ;
+                        receiver.cc_soundController6( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_SOUND_CTRL_07 :
-                        return receiver.cc_soundController7( channel, 0xff & message[2] ) ;
+                        receiver.cc_soundController7( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_SOUND_CTRL_08 :
-                        return receiver.cc_soundController8( channel, 0xff & message[2] ) ;
+                        receiver.cc_soundController8( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_SOUND_CTRL_09 :
-                        return receiver.cc_soundController9( channel, 0xff & message[2] ) ;
+                        receiver.cc_soundController9( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_SOUND_CTRL_10 :
-                        return receiver.cc_soundController10( channel, 0xff & message[2] ) ;
+                        receiver.cc_soundController10( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_GENERAL_PURPOSE_01 :
-                        return receiver.cc_generalPurpose01( channel, 0xff & message[2] ) ;
+                        receiver.cc_generalPurpose01( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_GENERAL_PURPOSE_02 :
-                        return receiver.cc_generalPurpose02( channel, 0xff & message[2] ) ;
+                        receiver.cc_generalPurpose02( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_GENERAL_PURPOSE_03 :
-                        return receiver.cc_generalPurpose03( channel, 0xff & message[2] ) ;
+                        receiver.cc_generalPurpose03( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_GENERAL_PURPOSE_04 :
-                        return receiver.cc_generalPurpose04( channel, 0xff & message[2] ) ;
+                        receiver.cc_generalPurpose04( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_PORTAMENTO_CC_CTRL :
-                        return receiver.cc_portamento( channel, 0xff & message[2] ) ;
+                        receiver.cc_portamento( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_EFFECT_1_DEPTH :
-                        return receiver.cc_effect1( channel, 0xff & message[2] ) ;
+                        receiver.cc_effect1( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_EFFECT_2_DEPTH :
-                        return receiver.cc_effect2( channel, 0xff & message[2] ) ;
+                        receiver.cc_effect2( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_EFFECT_3_DEPTH :
-                        return receiver.cc_effect3( channel, 0xff & message[2] ) ;
+                        receiver.cc_effect3( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_EFFECT_4_DEPTH :
-                        return receiver.cc_effect4( channel, 0xff & message[2] ) ;
+                        receiver.cc_effect4( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_EFFECT_5_DEPTH :
-                        return receiver.cc_effect5( channel, 0xff & message[2] ) ;
+                        receiver.cc_effect5( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_DATA_INCREMENT :
-                        return receiver.cc_dataIncrement( channel, 0xff & message[2] ) ;
+                        receiver.cc_dataIncrement( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_DATA_DECREMENT :
-                        return receiver.cc_dataDecrement( channel, 0xff & message[2] ) ;
+                        receiver.cc_dataDecrement( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_NRPN_LSB :
-                        return receiver.cc_nrpnLsb( channel, 0xff & message[2] ) ;
+                        receiver.cc_nrpnLsb( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_NRPN_MSB :
-                        return receiver.cc_nrpnMsb( channel, 0xff & message[2] ) ;
+                        receiver.cc_nrpnMsb( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_RPN_LSB :
-                        return receiver.cc_rpnLsb( channel, 0xff & message[2] ) ;
+                        receiver.cc_rpnLsb( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     case MetroMidi.CC_RPN_MSB :
-                        return receiver.cc_rpnMsb( channel, 0xff & message[2] ) ;
+                        receiver.cc_rpnMsb( result, channel, 0xff & message[2] ) ;
+                        return;
 
                     default :
-                        return receiver.error( "unknown control change" );
+                        receiver.error( result, "unknown control change" );
+                        return;
                 }
             }
         }
         
-        return receiver.error( "Unknown Type" );
+        receiver.error( result, "Unknown Type" );
+        return;
     }    
     
     public static String toStri(byte[] bytes) {
@@ -490,17 +557,19 @@ public final class MetroMidiMessages {
     }
     
     public static void main(String[] args) {
-        System.out.println( receive( 
+        receive(
+            (v)->System.out.println(v), 
             new MetroMidiReceiver.Default<String>() {
                 @Override
                 protected String defaultValue() {
                     return "";
                 }
                 @Override
-                public String pitchBend(int ch, int pitchBendValue) {
-                    return String.format( "Channel : %x , Value : %x", ch ,  pitchBendValue );
+                public void pitchBend(MetroCollector<String> result, int ch, int pitchBendValue) {
+                    result.collect( String.format( "Channel : %x , Value : %x", ch ,  pitchBendValue ));
                 }
-            }, pitchBend(1, 0x1ff0 ) ));
+            }, 
+            pitchBend(1, 0x1ff0 ));
         
         System.out.println( toStri( pitchBend(1, 0x1ff0 ) ) );
     }

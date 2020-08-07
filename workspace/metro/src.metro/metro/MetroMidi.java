@@ -215,7 +215,7 @@ public abstract class MetroMidi {
         return getLongName();
     }
     
-    public abstract <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message );
+    public abstract <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message );
     public abstract void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event );
      
     static final Logger LOGGER = Logger.getLogger( MetroMidi.class.getName() );
@@ -317,16 +317,16 @@ public abstract class MetroMidi {
     
     public static <T> void receiveMidiMessage( MetroMidiReceiver<T> receiver, List<MetroMidiEvent> in) {
         for ( MetroMidiEvent e : in ) {
-            System.err.println( receiveMidiMessage( receiver, e ) );
+            receiveMidiMessage((v)->System.err.println(v), receiver, e );
         }
     }
 
-    public static <T> T receiveMidiMessage( MetroMidiReceiver<T> receiver, MetroMidiEvent event ) {
+    public static <T> void receiveMidiMessage( MetroCollector<T> result, MetroMidiReceiver<T> receiver, MetroMidiEvent event ) {
         MetroMidi midi = lookupMidi( event );
         if ( midi == null ) {
-            return null;
+//            return null;
         } else {
-            return midi.receiveMidi( receiver, event.getMidiData() );
+            midi.receiveMidi( result, receiver, event.getMidiData() );
         }
     }
     public static <T> void receiveMidiMessage( MetroBufferedMidiReceiver receiver, List<MetroMidiEvent> in) {
@@ -359,12 +359,12 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, String message ) {
             receiver.error( offset, port, message );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, String message ) {
-            return receiver.error( message );
+        public <T> void callMidi(MetroCollector<T> result,  MetroMidiReceiver<T> receiver, String message ) {
+            receiver.error( result, message );
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver, "unknown error" );
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver, "unknown error" );
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -384,21 +384,21 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int ch, int note, double velocity ) {
             receiver.noteOn( offset, port, ch, note, velocity );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int ch, int note, double velocity ) {
-            return receiver.noteOn( ch, note, velocity );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int ch, int note, double velocity ) {
+            receiver.noteOn( result, ch, note, velocity );
         }
-        public byte[] createMidi( int ch, int note, double velocity ) {
-            return MESSAGE_GEN.noteOn( ch, note, velocity );
+        public void createMidi(MetroCollector<byte[]> result, int ch, int note, double velocity ) {
+            MESSAGE_GEN.noteOn( result, ch, note, velocity );
         }
         public byte[] createMidiMessage( int ch, int note, double velocity ) {
             return MetroMidiMessages.noteOn (ch, note, velocity );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int ch, int note, double velocity ) {
-            return receiver.noteOn( ch, note, velocity ); 
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int ch, int note, double velocity ) {
+            receiver.noteOn( result, ch, note, velocity ); 
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver, MASK_4BIT & message[0], MASK_7BIT & message[1], MetroMidiMessages.i2dVelocity((MASK_7BIT & message[2] )));
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver, MASK_4BIT & message[0], MASK_7BIT & message[1], MetroMidiMessages.i2dVelocity((MASK_7BIT & message[2] )));
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -417,21 +417,21 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver,  double offset, MetroPort port, int ch, int note, double velocity ) {
             receiver.noteOff( offset, port, ch, note, velocity );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver,  int ch, int note, double velocity ) {
-            return receiver.noteOff(ch, note, velocity);
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver,  int ch, int note, double velocity ) {
+            receiver.noteOff( result,ch, note, velocity);
         }
-        public byte[] createMidi( int ch, int note, double velocity ) {
-            return MESSAGE_GEN.noteOff(ch, note, velocity );
+        public void createMidi(MetroCollector<byte[]> result, int ch, int note, double velocity ) {
+            MESSAGE_GEN.noteOff(result, ch, note, velocity );
         }
         public byte[] createMidiMessage( int ch, int note, double velocity ) {
             return MetroMidiMessages.noteOff(ch, note, velocity );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int ch, int note, double velocity ) {
-            return receiver.noteOff (ch, note, velocity );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int ch, int note, double velocity ) {
+            receiver.noteOff ( result,ch, note, velocity );
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver, MASK_4BIT & message[0], MASK_7BIT & message[1], MASK_7BIT & message[2] );
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver, MASK_4BIT & message[0], MASK_7BIT & message[1], MASK_7BIT & message[2] );
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -453,27 +453,27 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int ch, int note, double value ) {
             receiver.keyPressure( offset, port, ch, note, value );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int ch, int note, double value ) {
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int ch, int note, double value ) {
             // NOTICE this is the double version. (Mon, 28 Oct 2019 03:19:24 +0900)
-            return receiver.keyPressure( ch, note, value );
+            receiver.keyPressure( result, ch, note, value );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int ch, int note, int value ) {
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int ch, int note, int value ) {
             // NOTICE this is the int version. (Mon, 28 Oct 2019 03:19:24 +0900)
-            return receiver.keyPressure( ch, note, value );
+            receiver.keyPressure( result, ch, note, value );
         }
-        public byte[] createMidi(  int ch, int note, double value ) {
-            return MESSAGE_GEN.keyPressure( ch, note, value );
+        public void createMidi(MetroCollector<byte[]> result,  int ch, int note, double value ) {
+            MESSAGE_GEN.keyPressure(result, ch, note, value );
         }
         public byte[] createMidiMessage( int ch, int note, double value ) {
             return MetroMidiMessages.keyPressure( ch, note, value );
         }
 
-        public <T> T execute( MetroMidiReceiver<T> receiver, int ch, int note, double value ) {
-            return receiver.keyPressure ( ch, note, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int ch, int note, double value ) {
+            receiver.keyPressure ( result, ch, note, value );
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver, 
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver, 
                 MASK_4BIT & message[0], MASK_7BIT & message[1], MASK_7BIT & message[2] );
         }
         @Override
@@ -495,21 +495,21 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int ch, int controlNumber, int controlValue ) {
             receiver.controlChange( offset, port, ch, controlNumber, controlValue );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int ch, int controlNumber, int controlValue ) {
-            return receiver.controlChange(ch, controlNumber, controlValue );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int ch, int controlNumber, int controlValue ) {
+            receiver.controlChange( result,ch, controlNumber, controlValue );
         }
-        public byte[] createMidi(  int ch, int controlNumber, int controlValue ) {
-            return MESSAGE_GEN.controlChange(ch, controlNumber, controlValue );
+        public void createMidi(MetroCollector<byte[]> result,  int ch, int controlNumber, int controlValue ) {
+            MESSAGE_GEN.controlChange(result,ch, controlNumber, controlValue );
         }
         public byte[] createMidiMessage( int ch, int controlNumber, int controlValue ) {
             return MetroMidiMessages.controlChange(ch, controlNumber, controlValue );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int ch, int controlNumber, int controlValue ) {
-            return receiver.controlChange( ch, controlNumber, controlValue );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int ch, int controlNumber, int controlValue ) {
+            receiver.controlChange( result, ch, controlNumber, controlValue );
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver, MASK_4BIT & message[0], MASK_7BIT & message[1], MASK_7BIT & message[2] );
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver, MASK_4BIT & message[0], MASK_7BIT & message[1], MASK_7BIT & message[2] );
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -529,21 +529,21 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int ch, int value ) {
             receiver.programChange( offset, port, ch, value );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver,  int ch, int value ) {
-            return receiver.programChange( ch, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver,  int ch, int value ) {
+            receiver.programChange( result, ch, value );
         }
-        public byte[] createMidi( int ch, int value ) {
-            return MESSAGE_GEN.programChange( ch, value );
+        public void createMidi(MetroCollector<byte[]> result, int ch, int value ) {
+            MESSAGE_GEN.programChange(result, ch, value );
         }
         public byte[] createMidiMessage( int ch, int value ) {
             return MetroMidiMessages.programChange( ch, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int ch, int value ) {
-            return receiver.programChange ( ch, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int ch, int value ) {
+            receiver.programChange ( result, ch, value );
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver, 
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver, 
                     MASK_4BIT & message[0], MASK_7BIT & message[1]  );
         }
         @Override
@@ -564,26 +564,26 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int ch, double value ) {
             receiver.channelPressure( offset, port, ch, value );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver,  int ch, double value ) {
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver,  int ch, double value ) {
             // NOTICE this is the double version. (Mon, 28 Oct 2019 03:19:24 +0900)
-            return receiver.channelPressure( ch, value );
+            receiver.channelPressure( result, ch, value );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver,  int ch, int value ) {
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver,  int ch, int value ) {
             // NOTICE this is the int version. (Mon, 28 Oct 2019 03:19:24 +0900)
-            return receiver.channelPressure( ch, value );
+            receiver.channelPressure( result, ch, value );
         }
-        public byte[] callMidi( int ch, double value ) {
-            return MESSAGE_GEN.channelPressure( ch, value );
+        public void callMidi(MetroCollector<byte[]> result, int ch, double value ) {
+            MESSAGE_GEN.channelPressure(result, ch, value );
         }
         public byte[] createMidiMessage( int ch, double value ) {
             return MetroMidiMessages.channelPressure( ch, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver , int ch, double value ) {
-            return receiver.channelPressure ( ch, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver , int ch, double value ) {
+            receiver.channelPressure ( result, ch, value );
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver, MASK_4BIT & message[0], MASK_7BIT & message[1]  );
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver, MASK_4BIT & message[0], MASK_7BIT & message[1]  );
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -603,24 +603,24 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int ch, double value) {
             receiver.pitchBend( offset, port, ch, value );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int ch, double value) {
-            return receiver.pitchBend( ch, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int ch, double value) {
+            receiver.pitchBend( result, ch, value );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int ch, int value) {
-            return receiver.pitchBend( ch, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int ch, int value) {
+            receiver.pitchBend( result, ch, value );
         }
-        public byte[] callMidi( int ch, double value) {
-            return MESSAGE_GEN.pitchBend( ch, value );
+        public void callMidi(MetroCollector<byte[]> result, int ch, double value) {
+            MESSAGE_GEN.pitchBend(result, ch, value );
         }
         public byte[] createMidiMessage(int ch, double value) {
             return MetroMidiMessages.pitchBend( ch, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver ,int ch, double value) {
-            return receiver.pitchBend ( ch, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver ,int ch, double value) {
+            receiver.pitchBend ( result, ch, value );
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver, MASK_4BIT & message[0], MASK_7BIT & message[1]  );
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver, MASK_4BIT & message[0], MASK_7BIT & message[1]  );
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -643,20 +643,20 @@ public abstract class MetroMidi {
 
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver , int value ) {
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver , int value ) {
             throw new UnsupportedOperationException();
         }
-        public byte[] createMidi( int value ) {
+        public void createMidi(MetroCollector<byte[]> result, int value ) {
             throw new UnsupportedOperationException();
         }
         public byte[] createMidiMessage( int value ) {
             throw new UnsupportedOperationException();
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver , int value ) {
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver , int value ) {
             throw new UnsupportedOperationException();
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
             throw new UnsupportedOperationException();
         }
         @Override
@@ -692,21 +692,21 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int ch) {
             receiver.cc_allSoundOff ( offset, port, ch );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver ,int ch) {
-            return receiver.cc_allSoundOff ( ch );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver ,int ch) {
+            receiver.cc_allSoundOff ( result, ch );
         }
-        public byte[] createMidi(int ch) {
-            return MESSAGE_GEN.cc_allSoundOff ( ch );
+        public void createMidi(MetroCollector<byte[]> result,int ch) {
+            MESSAGE_GEN.cc_allSoundOff (result, ch );
         }
         public byte[] createMidiMessage(int ch) {
             return MetroMidiMessages.cc_allSoundOff( ch );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver ,int ch) {
-            return receiver.cc_allSoundOff ( ch );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver ,int ch) {
+            receiver.cc_allSoundOff ( result, ch );
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver, MASK_4BIT & message[0] );
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver, MASK_4BIT & message[0] );
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -728,21 +728,21 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int ch) {
             receiver.cc_resetAllControllers ( offset, port, ch );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver ,int ch) {
-            return receiver.cc_resetAllControllers ( ch );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver ,int ch) {
+            receiver.cc_resetAllControllers ( result, ch );
         }
-        public byte[] createMidi(int ch) {
-            return MESSAGE_GEN.cc_resetAllControllers ( ch );
+        public void createMidi(MetroCollector<byte[]> result,int ch) {
+            MESSAGE_GEN.cc_resetAllControllers (result, ch );
         }
         public byte[] createMidiMessage(int ch) {
             return MetroMidiMessages.cc_resetAllControllers( ch );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver ,int ch) {
-            return receiver.cc_resetAllControllers ( ch );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver ,int ch) {
+            receiver.cc_resetAllControllers ( result, ch );
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver, MASK_4BIT & message[0]  );
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver, MASK_4BIT & message[0]  );
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -764,21 +764,21 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int ch,boolean value ) {
             receiver.cc_localControls ( offset, port, ch, value );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver ,int ch, boolean value ) {
-            return receiver.cc_localControls( ch, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver ,int ch, boolean value ) {
+            receiver.cc_localControls( result, ch, value );
         }
-        public byte[] createMidi(int ch, boolean value ) {
-            return MESSAGE_GEN.cc_localControls ( ch, value );
+        public void createMidi(MetroCollector<byte[]> result,int ch, boolean value ) {
+            MESSAGE_GEN.cc_localControls (result, ch, value );
         }
         public byte[] createMidiMessage(int ch,boolean value ) {
             return MetroMidiMessages.cc_localControls( ch, value ) ;
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver ,int ch,boolean value ) {
-            return receiver.cc_localControls ( ch, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver ,int ch,boolean value ) {
+            receiver.cc_localControls ( result, ch, value );
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver, MASK_4BIT & message[0], (MASK_7BIT & message[2] ) != 0 );
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver, MASK_4BIT & message[0], (MASK_7BIT & message[2] ) != 0 );
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -800,21 +800,21 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int ch) {
             receiver.cc_allNoteOff ( offset, port, ch );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver ,int ch) {
-            return receiver.cc_allNoteOff ( ch );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver ,int ch) {
+            receiver.cc_allNoteOff ( result, ch );
         }
-        public byte[] createMidi(int ch) {
-            return MESSAGE_GEN.cc_allNoteOff ( ch );
+        public void createMidi(MetroCollector<byte[]> result,int ch) {
+            MESSAGE_GEN.cc_allNoteOff (result, ch );
         }
         public byte[] createMidiMessage(int ch) {
             return MetroMidiMessages.cc_allNoteOff( ch );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver ,int ch) {
-            return receiver.cc_allNoteOff ( ch );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver ,int ch) {
+            receiver.cc_allNoteOff ( result, ch );
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver, MASK_4BIT & message[0]);
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver, MASK_4BIT & message[0]);
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -835,21 +835,21 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int ch) {
             receiver.cc_omniModeOff ( offset, port, ch );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver ,int ch) {
-            return receiver.cc_omniModeOff ( ch );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver ,int ch) {
+            receiver.cc_omniModeOff ( result, ch );
         }
-        public byte[] createMidi(int ch) {
-            return MESSAGE_GEN.cc_omniModeOff ( ch );
+        public void createMidi(MetroCollector<byte[]> result,int ch) {
+            MESSAGE_GEN.cc_omniModeOff (result, ch );
         }
         public byte[] createMidiMessage(int ch) {
             return MetroMidiMessages.cc_omniModeOff( ch );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver ,int ch) {
-            return receiver.cc_omniModeOff ( ch );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver ,int ch) {
+            receiver.cc_omniModeOff ( result, ch );
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver, MASK_4BIT & message[0]);
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver, MASK_4BIT & message[0]);
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -870,21 +870,21 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int ch) {
             receiver.cc_omniModeOn ( offset, port, ch );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver ,int ch) {
-            return receiver.cc_omniModeOn ( ch );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver ,int ch) {
+            receiver.cc_omniModeOn ( result, ch );
         }
-        public byte[] createMidi(int ch) {
-            return MESSAGE_GEN.cc_omniModeOn ( ch );
+        public void createMidi(MetroCollector<byte[]> result,int ch) {
+            MESSAGE_GEN.cc_omniModeOn (result, ch );
         }
         public byte[] createMidiMessage(int ch) {
             return MetroMidiMessages.cc_omniModeOn( ch );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver ,int ch) {
-            return receiver.cc_omniModeOn ( ch );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver ,int ch) {
+            receiver.cc_omniModeOn ( result, ch );
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver, MASK_4BIT & message[0]);
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver, MASK_4BIT & message[0]);
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -905,21 +905,21 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port, int ch) {
             receiver.cc_monoModeOn ( offset, port, ch );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver ,int ch) {
-            return receiver.cc_monoModeOn ( ch );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver ,int ch) {
+            receiver.cc_monoModeOn ( result, ch );
         }
-        public byte[] createMidi(int ch) {
-            return MESSAGE_GEN.cc_monoModeOn ( ch );
+        public void createMidi(MetroCollector<byte[]> result,int ch) {
+            MESSAGE_GEN.cc_monoModeOn (result, ch );
         }
         public byte[] createMidiMessage(int ch) {
             return MetroMidiMessages.cc_monoModeOn( ch );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver ,int ch) {
-            return receiver.cc_monoModeOn ( ch );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver ,int ch) {
+            receiver.cc_monoModeOn ( result, ch );
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver, MASK_4BIT & message[0] );
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver, MASK_4BIT & message[0] );
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -941,21 +941,21 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int ch) {
             receiver.cc_polyModeOn ( offset, port, ch );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver ,int ch) {
-            return receiver.cc_polyModeOn ( ch );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver ,int ch) {
+            receiver.cc_polyModeOn ( result, ch );
         }
-        public byte[] createMidi(int ch) {
-            return MESSAGE_GEN.cc_polyModeOn ( ch );
+        public void createMidi(MetroCollector<byte[]> result,int ch) {
+            MESSAGE_GEN.cc_polyModeOn (result, ch );
         }
         public byte[] createMidiMessage(int ch) {
             return MetroMidiMessages.cc_polyModeOn( ch );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver ,int ch) {
-            return receiver.cc_polyModeOn ( ch );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver ,int ch) {
+            receiver.cc_polyModeOn ( result, ch );
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver, MASK_4BIT & message[0]);
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver, MASK_4BIT & message[0]);
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -984,12 +984,12 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
             // TODO
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver , int value ) {
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver , int value ) {
             // TODO
             throw new UnsupportedOperationException();
             
         }
-        public byte[] createMidi( int value ) {
+        public void createMidi(MetroCollector<byte[]> result, int value ) {
             // TODO
             throw new UnsupportedOperationException();
         }
@@ -997,12 +997,12 @@ public abstract class MetroMidi {
             // TODO
             throw new UnsupportedOperationException();
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver , int value ) {
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver , int value ) {
             // TODO
             throw new UnsupportedOperationException();
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
             // TODO
             throw new UnsupportedOperationException();
         }
@@ -1027,12 +1027,12 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port, int value ) {
             // TODO
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver , int value ) {
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver , int value ) {
             // TODO
             throw new UnsupportedOperationException();
             
         }
-        public byte[] createMidi( int value ) {
+        public void createMidi(MetroCollector<byte[]> result, int value ) {
             // TODO
             throw new UnsupportedOperationException();
         }
@@ -1040,14 +1040,13 @@ public abstract class MetroMidi {
             // TODO
             throw new UnsupportedOperationException();
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver , int value ) {
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver , int value ) {
             // TODO
             throw new UnsupportedOperationException();
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
             // TODO
-            return null;
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -1069,21 +1068,21 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port, int value ) {
             receiver.songPositionPointer ( offset, port, value );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver , int value ) {
-            return receiver.songPositionPointer ( value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver , int value ) {
+            receiver.songPositionPointer ( result, value );
         }
-        public byte[] createMidi( int value ) {
-            return MESSAGE_GEN.songPositionPointer ( value );
+        public void createMidi(MetroCollector<byte[]> result, int value ) {
+            MESSAGE_GEN.songPositionPointer (result, value );
         }
         public byte[] createMidiMessage( int value ) {
             return MetroMidiMessages.songPositionPointer( value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver , int value ) {
-            return receiver.songPositionPointer ( value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver , int value ) {
+            receiver.songPositionPointer ( result, value );
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver, (MASK_7BIT & message[2] ) << 7 | ( MASK_7BIT & message[1] ) );
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver, (MASK_7BIT & message[2] ) << 7 | ( MASK_7BIT & message[1] ) );
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -1104,21 +1103,21 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port,int value) {
             receiver.songSelect ( offset, port, value );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver ,int value) {
-            return receiver.songSelect ( value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver ,int value) {
+            receiver.songSelect ( result, value );
         }
-        public byte[] createMidi(int value) {
-            return MESSAGE_GEN.songSelect ( value );
+        public void createMidi(MetroCollector<byte[]> result,int value) {
+            MESSAGE_GEN.songSelect (result, value );
         }
         public byte[] createMidiMessage(int value) {
             return MetroMidiMessages.songSelect( value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver ,int value) {
-            return receiver.songSelect ( value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver ,int value) {
+            receiver.songSelect ( result, value );
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver, message[1] ); 
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver, message[1] ); 
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -1142,12 +1141,11 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
             // TODO
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver ) {
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver ) {
 //            // TODO
             LOGGER.log( Level.WARNING, "WARNING : UNSUPPORTED TUNE_REQUEST WAS CALLED" );
-            return null;
         }
-        public byte[] createMidi( int value ) {
+        public void createMidi(MetroCollector<byte[]> result, int value ) {
             // TODO
             throw new UnsupportedOperationException();
         }
@@ -1155,13 +1153,13 @@ public abstract class MetroMidi {
             // TODO
             throw new UnsupportedOperationException();
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver , int value ) {
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver , int value ) {
             // TODO
             throw new UnsupportedOperationException();
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver ); 
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver ); 
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -1180,21 +1178,21 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
             receiver.endOfExclusive ( offset, port );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver ) {
-            return receiver.endOfExclusive ();
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver ) {
+            receiver.endOfExclusive ( result );
         }
-        public byte[] createMidi( ) {
-            return MESSAGE_GEN.endOfExclusive();
+        public void createMidi(MetroCollector<byte[]> result ) {
+            MESSAGE_GEN.endOfExclusive(result);
         }
         public byte[] createMidiMessage() {
             return MetroMidiMessages.endOfExclusive();
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver ) {
-            return receiver.endOfExclusive();
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver ) {
+            receiver.endOfExclusive( result );
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver ); 
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver ); 
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -1213,21 +1211,21 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
             receiver.clock ( offset, port );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver ) {
-            return receiver.clock ();
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver ) {
+            receiver.clock ( result );
         }
-        public byte[] createMidi( ) {
-            return MESSAGE_GEN.clock();
+        public void createMidi(MetroCollector<byte[]> result) {
+            MESSAGE_GEN.clock(result);
         }
         public byte[] createMidiMessage() {
             return MetroMidiMessages.clock();
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver ) {
-            return receiver.clock ();
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver ) {
+            receiver.clock ( result );
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver ); 
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver ); 
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -1247,21 +1245,21 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
             receiver.start ( offset, port );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver ) {
-            return receiver.start ();
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver ) {
+            receiver.start ( result );
         }
-        public byte[] createMidi( ) {
-            return MESSAGE_GEN.start ();
+        public void createMidi(MetroCollector<byte[]> result) {
+            MESSAGE_GEN.start (result);
         }
         public byte[] createMidiMessage() {
             return MetroMidiMessages.start();
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver ) {
-            return receiver.start ();
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver ) {
+            receiver.start ( result );
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver ); 
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver ); 
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -1280,21 +1278,21 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
             receiver.cont( offset, port );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver ) {
-            return receiver.cont();
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver ) {
+            receiver.cont( result );
         }
-        public byte[] createMidi( ) {
-            return MESSAGE_GEN.cont();
+        public void createMidi(MetroCollector<byte[]> result) {
+            MESSAGE_GEN.cont(result);
         }
         public byte[] createMidiMessage() {
             return MetroMidiMessages.cont();
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver ) {
-            return receiver.cont();
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver ) {
+            receiver.cont( result );
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver ); 
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver ); 
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -1313,21 +1311,21 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
             receiver.stop ( offset, port );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver ) {
-            return receiver.stop ();
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver ) {
+            receiver.stop ( result );
         }
-        public byte[] createMidi( ) {
-            return MESSAGE_GEN.stop ();
+        public void createMidi(MetroCollector<byte[]> result) {
+            MESSAGE_GEN.stop (result);
         }
         public byte[] createMidiMessage() {
             return MetroMidiMessages.stop();
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver ) {
-            return receiver.stop();
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver ) {
+            receiver.stop( result );
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver ); 
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver ); 
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -1347,12 +1345,11 @@ public abstract class MetroMidi {
         }
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver ) {
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver ) {
           // TODO
           LOGGER.log( Level.WARNING, "WARNING : UNSUPPORTED TUNE_REQUEST WAS CALLED" );
-          return null;
         }
-        public byte[] createMidi( int value ) {
+        public void createMidi(MetroCollector<byte[]> result, int value ) {
             // TODO
             throw new UnsupportedOperationException();
         }
@@ -1360,13 +1357,13 @@ public abstract class MetroMidi {
             // TODO
             throw new UnsupportedOperationException();
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver , int value ) {
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver , int value ) {
             // TODO
             throw new UnsupportedOperationException();
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver ); 
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver ); 
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -1385,21 +1382,21 @@ public abstract class MetroMidi {
         public void callBufferedMidi( MetroBufferedMidiReceiver receiver , double offset, MetroPort port ) {
             receiver.reset ( offset, port );
         }
-        public <T> T callMidi( MetroMidiReceiver<T> receiver ) {
-            return receiver.reset ();
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver ) {
+            receiver.reset ( result );
         }
-        public byte[] createMidi( ) {
-            return MESSAGE_GEN.reset ();
+        public void createMidi(MetroCollector<byte[]> result) {
+            MESSAGE_GEN.reset (result);
         }
         public byte[] createMidiMessage() {
             return MetroMidiMessages.reset();
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver ) {
-            return receiver.reset ();
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver ) {
+            receiver.reset ( result );
         }
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver ); 
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver ); 
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -1412,11 +1409,11 @@ public abstract class MetroMidi {
     /////////////////////////////////////////////////////////////////////////////////////////////////////    
     // Define an abstract class for the control change classes.
     public static abstract class MetroControlChangeMidi extends MetroMidi {
-        public abstract <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value );
+        public abstract <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value );
         public abstract void callBufferedMidi( MetroBufferedMidiReceiver receiver, double offset, MetroPort port, int channel, int value );
         @Override
-        public final <T> T receiveMidi( MetroMidiReceiver<T> receiver, byte[] message) {
-            return callMidi( receiver, MASK_4BIT & message[0], MASK_7BIT & message[1]  );
+        public final <T> void receiveMidi( MetroCollector<T> result, MetroMidiReceiver<T> receiver, byte[] message) {
+            callMidi( result, receiver, MASK_4BIT & message[0], MASK_7BIT & message[1]  );
         }
         @Override
         public void receiveBufferedMidi( MetroBufferedMidiReceiver receiver, MetroMidiEvent event ) {
@@ -1441,14 +1438,14 @@ public abstract class MetroMidi {
             receiver.cc_bankSelect ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_bankSelect ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_bankSelect ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_bankSelect ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_bankSelect (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_bankSelect ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_bankSelect ( result, channel, value );
         }
     }
     public static final int CC_MODULATION                             = 1  ;
@@ -1467,14 +1464,14 @@ public abstract class MetroMidi {
             receiver.cc_modulation ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_modulation ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_modulation ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_modulation ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_modulation (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_modulation ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_modulation ( result, channel, value );
         }
     }
     public static final int CC_BREATH_CTRL                            = 2  ;
@@ -1493,14 +1490,14 @@ public abstract class MetroMidi {
             receiver.cc_breathController ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_breathController ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_breathController ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_breathController ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_breathController (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_breathController ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_breathController ( result, channel, value );
         }
     }
     public static final int CC_FOOT_CTRL                              = 4  ;
@@ -1519,14 +1516,14 @@ public abstract class MetroMidi {
             receiver.cc_footController ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_footController ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_footController ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_footController ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_footController (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_footController ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_footController ( result, channel, value );
         }
     }
     public static final int CC_PORTAMENTO_TIME                        = 5  ;
@@ -1545,14 +1542,14 @@ public abstract class MetroMidi {
             receiver.cc_portamentoTime ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_portamentoTime ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_portamentoTime ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_portamentoTime ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_portamentoTime (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_portamentoTime ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_portamentoTime ( result, channel, value );
         }
     }
     public static final int CC_DATA_ENTRY_MSB                         = 6  ;
@@ -1571,14 +1568,14 @@ public abstract class MetroMidi {
             receiver.cc_dataEntryMsb ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_dataEntryMsb ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_dataEntryMsb ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_dataEntryMsb ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_dataEntryMsb (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_dataEntryMsb ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_dataEntryMsb ( result, channel, value );
         }
     }
     public static final int CC_VOLUME                                 = 7  ;
@@ -1597,14 +1594,14 @@ public abstract class MetroMidi {
             receiver.cc_volume ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_volume ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_volume ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_volume ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_volume (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_volume ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_volume ( result, channel, value );
         }
     }
     public static final int CC_BALANCE                                = 8  ;
@@ -1623,14 +1620,14 @@ public abstract class MetroMidi {
             receiver.cc_balance ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_balance ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_balance ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_balance ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_balance (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_balance ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_balance ( result, channel, value );
         }
     }
     public static final int CC_PAN                                    = 10 ;
@@ -1649,14 +1646,14 @@ public abstract class MetroMidi {
             receiver.cc_pan ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_pan ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_pan ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_pan ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_pan (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_pan ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_pan ( result, channel, value );
         }
     }
     public static final int CC_EXPRESSION                             = 11 ;
@@ -1675,14 +1672,14 @@ public abstract class MetroMidi {
             receiver.cc_expression ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_expression ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_expression ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_expression ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_expression (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_expression ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_expression ( result, channel, value );
         }
     }
     public static final int CC_EFFECT_CTRL_1                          = 12 ;
@@ -1701,14 +1698,14 @@ public abstract class MetroMidi {
             receiver.cc_effectController1 ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_effectController1 ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_effectController1 ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_effectController1 ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_effectController1 (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_effectController1 ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_effectController1 ( result, channel, value );
         }
     }
     public static final int CC_EFFECT_CTRL_2                          = 13 ;
@@ -1727,14 +1724,14 @@ public abstract class MetroMidi {
             receiver.cc_effectController2 ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_effectController2 ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_effectController2 ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_effectController2 ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_effectController2 (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_effectController2 ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_effectController2 ( result, channel, value );
         }
     }
     public static final int CC_SUSTAIN_PEDAL                          = 64 ;
@@ -1753,14 +1750,14 @@ public abstract class MetroMidi {
             receiver.cc_sustainPedal ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_sustainPedal ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_sustainPedal ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_sustainPedal ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_sustainPedal (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_sustainPedal ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_sustainPedal ( result, channel, value );
         }
     }
     public static final int CC_PORTAMENTO_SWITCH                      = 65 ;
@@ -1779,14 +1776,14 @@ public abstract class MetroMidi {
             receiver.cc_portamentoSwitch ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_portamentoSwitch ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_portamentoSwitch ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_portamentoSwitch ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_portamentoSwitch (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_portamentoSwitch ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_portamentoSwitch ( result, channel, value );
         }
     }
     public static final int CC_SOSTENUTO_SWITCH                       = 66 ;
@@ -1805,14 +1802,14 @@ public abstract class MetroMidi {
             receiver.cc_sostenutoSwitch ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_sostenutoSwitch ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_sostenutoSwitch ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_sostenutoSwitch ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_sostenutoSwitch (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_sostenutoSwitch ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_sostenutoSwitch ( result, channel, value );
         }
     }
     public static final int CC_SOFT_PEDAL_SWITCH                      = 67 ;
@@ -1831,14 +1828,14 @@ public abstract class MetroMidi {
             receiver.cc_pedalSwitch ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_pedalSwitch ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_pedalSwitch ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_pedalSwitch ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_pedalSwitch (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_pedalSwitch ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_pedalSwitch ( result, channel, value );
         }
     }
     public static final int CC_LEGATO_FOOTSWITCH                      = 68 ;
@@ -1857,14 +1854,14 @@ public abstract class MetroMidi {
             receiver.cc_legatoSwitch ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_legatoSwitch ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_legatoSwitch ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_legatoSwitch ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_legatoSwitch (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_legatoSwitch ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_legatoSwitch ( result, channel, value );
         }
     }
     public static final int CC_HOLD_2                                 = 69 ;
@@ -1883,14 +1880,14 @@ public abstract class MetroMidi {
             receiver.cc_hold2 ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_hold2 ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_hold2 ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_hold2 ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_hold2 (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_hold2 ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_hold2 ( result, channel, value );
         }
     }
     public static final int CC_SOUND_CTRL_01                          = 70 ;
@@ -1909,14 +1906,14 @@ public abstract class MetroMidi {
             receiver.cc_soundController1 ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_soundController1 ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_soundController1 ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_soundController1 ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_soundController1 (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_soundController1 ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_soundController1 ( result, channel, value );
         }
     }
     public static final int CC_SOUND_CTRL_02                          = 71 ;
@@ -1935,14 +1932,14 @@ public abstract class MetroMidi {
             receiver.cc_soundController2 ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_soundController2 ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_soundController2 ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_soundController2 ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_soundController2 (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_soundController2 ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_soundController2 ( result, channel, value );
         }
     }
     public static final int CC_SOUND_CTRL_03                          = 72 ;
@@ -1961,14 +1958,14 @@ public abstract class MetroMidi {
             receiver.cc_soundController3 ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_soundController3 ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_soundController3 ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_soundController3 ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_soundController3 (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_soundController3 ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_soundController3 ( result, channel, value );
         }
     }
     public static final int CC_SOUND_CTRL_04                          = 73 ;
@@ -1987,14 +1984,14 @@ public abstract class MetroMidi {
             receiver.cc_soundController4 ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_soundController4 ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_soundController4 ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_soundController4 ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_soundController4 (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_soundController4 ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_soundController4 ( result, channel, value );
         }
     }
     public static final int CC_SOUND_CTRL_05                          = 74 ;
@@ -2013,14 +2010,14 @@ public abstract class MetroMidi {
             receiver.cc_soundController5 ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_soundController5 ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_soundController5 ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_soundController5 ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_soundController5 (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_soundController5 ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_soundController5 ( result, channel, value );
         }
     }
     public static final int CC_SOUND_CTRL_06                          = 75 ;
@@ -2039,14 +2036,14 @@ public abstract class MetroMidi {
             receiver.cc_soundController6 ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_soundController6 ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_soundController6 ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_soundController6 ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_soundController6 (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_soundController6 ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_soundController6 ( result, channel, value );
         }
     }
     public static final int CC_SOUND_CTRL_07                          = 76 ;
@@ -2065,14 +2062,14 @@ public abstract class MetroMidi {
             receiver.cc_soundController7 ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_soundController7 ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_soundController7 ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_soundController7 ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_soundController7 (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_soundController7 ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_soundController7 ( result, channel, value );
         }
     }
     public static final int CC_SOUND_CTRL_08                          = 77 ;
@@ -2091,14 +2088,14 @@ public abstract class MetroMidi {
             receiver.cc_soundController8 ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_soundController8 ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_soundController8 ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_soundController8 ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_soundController8 (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_soundController8 ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_soundController8 ( result, channel, value );
         }
     }
     public static final int CC_SOUND_CTRL_09                          = 78 ;
@@ -2117,14 +2114,14 @@ public abstract class MetroMidi {
             receiver.cc_soundController9 ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_soundController9 ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_soundController9 ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_soundController9 ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_soundController9 (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_soundController9 ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_soundController9 ( result, channel, value );
         }
     }
     public static final int CC_SOUND_CTRL_10                          = 79 ;
@@ -2143,14 +2140,14 @@ public abstract class MetroMidi {
             receiver.cc_soundController10 ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_soundController10 ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_soundController10 ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_soundController10 ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_soundController10 (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_soundController10 ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_soundController10 ( result, channel, value );
         }
     }
     public static final int CC_GENERAL_PURPOSE_01                     = 80 ;
@@ -2169,14 +2166,14 @@ public abstract class MetroMidi {
             receiver.cc_generalPurpose01 ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_generalPurpose01 ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_generalPurpose01 ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_generalPurpose01 ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_generalPurpose01 (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_generalPurpose01 ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_generalPurpose01 ( result, channel, value );
         }
     }
     public static final int CC_GENERAL_PURPOSE_02                     = 81 ;
@@ -2195,14 +2192,14 @@ public abstract class MetroMidi {
             receiver.cc_generalPurpose02 ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_generalPurpose02 ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_generalPurpose02 ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_generalPurpose02 ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_generalPurpose02 (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_generalPurpose02 ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_generalPurpose02 ( result, channel, value );
         }
     }
     public static final int CC_GENERAL_PURPOSE_03                     = 82 ;
@@ -2221,14 +2218,14 @@ public abstract class MetroMidi {
             receiver.cc_generalPurpose03 ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_generalPurpose03 ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_generalPurpose03 ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_generalPurpose03 ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_generalPurpose03 (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_generalPurpose03 ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_generalPurpose03 ( result, channel, value );
         }
     }
     public static final int CC_GENERAL_PURPOSE_04                     = 83 ;
@@ -2247,14 +2244,14 @@ public abstract class MetroMidi {
             receiver.cc_generalPurpose04 ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_generalPurpose04 ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_generalPurpose04 ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_generalPurpose04 ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_generalPurpose04 (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_generalPurpose04 ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_generalPurpose04 ( result, channel, value );
         }
     }
     public static final int CC_PORTAMENTO_CC_CTRL                     = 84 ;
@@ -2273,14 +2270,14 @@ public abstract class MetroMidi {
             receiver.cc_portamento ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_portamento ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_portamento ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_portamento ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_portamento (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_portamento ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_portamento ( result, channel, value );
         }
     }
     public static final int CC_EFFECT_1_DEPTH                         = 91 ;
@@ -2299,14 +2296,14 @@ public abstract class MetroMidi {
             receiver.cc_effect1 ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_effect1 ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_effect1 ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_effect1 ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_effect1 (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_effect1 ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_effect1 ( result, channel, value );
         }
     }
     public static final int CC_EFFECT_2_DEPTH                         = 92 ;
@@ -2325,14 +2322,14 @@ public abstract class MetroMidi {
             receiver.cc_effect2 ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_effect2 ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_effect2 ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_effect2 ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_effect2 (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_effect2 ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_effect2 ( result, channel, value );
         }
     }
     public static final int CC_EFFECT_3_DEPTH                         = 93 ;
@@ -2351,14 +2348,14 @@ public abstract class MetroMidi {
             receiver.cc_effect3 ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_effect3 ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_effect3 ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_effect3 ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_effect3 (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_effect3 ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_effect3 ( result, channel, value );
         }
     }
     public static final int CC_EFFECT_4_DEPTH                         = 94 ;
@@ -2377,14 +2374,14 @@ public abstract class MetroMidi {
             receiver.cc_effect4 ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_effect4 ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_effect4 ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_effect4 ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_effect4 (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_effect4 ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_effect4 ( result, channel, value );
         }
     }
     public static final int CC_EFFECT_5_DEPTH                         = 95 ;
@@ -2403,14 +2400,14 @@ public abstract class MetroMidi {
             receiver.cc_effect5 ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_effect5 ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_effect5 ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_effect5 ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_effect5 (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_effect5 ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_effect5 ( result, channel, value );
         }
     }
     public static final int CC_DATA_INCREMENT                         = 96 ;
@@ -2429,14 +2426,14 @@ public abstract class MetroMidi {
             receiver.cc_dataIncrement ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_dataIncrement ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_dataIncrement ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_dataIncrement ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_dataIncrement (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_dataIncrement ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_dataIncrement ( result, channel, value );
         }
     }
     public static final int CC_DATA_DECREMENT                         = 97 ;
@@ -2455,14 +2452,14 @@ public abstract class MetroMidi {
             receiver.cc_dataDecrement ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_dataDecrement ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_dataDecrement ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_dataDecrement ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_dataDecrement (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_dataDecrement ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_dataDecrement ( result, channel, value );
         }
     }
     public static final int CC_NRPN_LSB                               = 98 ;
@@ -2481,14 +2478,14 @@ public abstract class MetroMidi {
             receiver.cc_nrpnLsb ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_nrpnLsb ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_nrpnLsb ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_nrpnLsb ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_nrpnLsb (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_nrpnLsb ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_nrpnLsb ( result, channel, value );
         }
     }
     public static final int CC_NRPN_MSB                               = 99 ;
@@ -2507,14 +2504,14 @@ public abstract class MetroMidi {
             receiver.cc_nrpnMsb ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_nrpnMsb ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_nrpnMsb ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_nrpnMsb ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_nrpnMsb (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_nrpnMsb ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_nrpnMsb ( result, channel, value );
         }
     }
     public static final int CC_RPN_LSB                                = 100;
@@ -2533,14 +2530,14 @@ public abstract class MetroMidi {
             receiver.cc_rpnLsb ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_rpnLsb ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_rpnLsb ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_rpnLsb ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_rpnLsb (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_rpnLsb ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_rpnLsb ( result, channel, value );
         }
     }
     public static final int CC_RPN_MSB                                = 101;
@@ -2559,14 +2556,14 @@ public abstract class MetroMidi {
             receiver.cc_rpnMsb ( offset, port, channel, value );
         }
         @Override
-        public <T> T callMidi( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_rpnMsb ( channel, value );
+        public <T> void callMidi(MetroCollector<T> result, MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_rpnMsb ( result, channel, value );
         }
-        public byte[] createMidi( int channel, int value ) {
-            return MESSAGE_GEN.cc_rpnMsb ( channel, value );
+        public void createMidi(MetroCollector<byte[]> result, int channel, int value ) {
+            MESSAGE_GEN.cc_rpnMsb (result, channel, value );
         }
-        public <T> T execute( MetroMidiReceiver<T> receiver, int channel, int value ) {
-            return receiver.cc_rpnMsb ( channel, value );
+        public <T> void execute( MetroCollector<T> result,MetroMidiReceiver<T> receiver, int channel, int value ) {
+            receiver.cc_rpnMsb ( result, channel, value );
         }
     }
     
