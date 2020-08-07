@@ -52,19 +52,19 @@ public class PulsarParamReader_newt {
     /**
      * 
      */
-    static MetroSequenceFactory readParamSequenceFactory(Object arg) {
-        if ( arg  == null ) {
+    static MetroSequenceFactory readParamSequenceFactory( Object value) {
+        if ( value  == null ) {
             return MetroVoidSequence.getFactory();
-        } else if ( arg instanceof MetroSequence ) {
-            return PulsarCommon.createConstantSequenceFactory((MetroSequence)arg);
-        } else if ( arg instanceof Procedure ) {
-            return PulsarCommon.createDynamicProcedureSequenceFactory((Procedure) arg);
-        } else if ( arg  instanceof LList ) {
-            return PulsarCommon.createListSequenceFactory((LList)arg);
-        } else if ( arg  instanceof Number ) {
-            return PulsarCommon.createListSequenceFactory(PulsarCommon.createRestBar(SchemeValues.toInteger(arg)));
+        } else if ( value instanceof MetroSequence ) {
+            return PulsarCommon.createConstantSequenceFactory((MetroSequence)value);
+        } else if ( value instanceof Procedure ) {
+            return PulsarCommon.createDynamicProcedureSequenceFactory((Procedure) value);
+        } else if ( value  instanceof LList ) {
+            return PulsarCommon.createListSequenceFactory((LList)value);
+        } else if ( value  instanceof Number ) {
+            return PulsarCommon.createListSequenceFactory(PulsarCommon.createRestBar(SchemeValues.toInteger(value)));
         } else {
-            throw new IllegalArgumentException( "unsupported type of the argument (" + arg + ")" );
+            throw new IllegalArgumentException( "unsupported type of the argument (" + value + ")" );
         }
     }
     

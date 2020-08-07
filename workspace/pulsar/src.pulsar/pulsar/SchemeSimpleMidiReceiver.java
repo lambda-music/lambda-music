@@ -22,4 +22,7 @@ public class SchemeSimpleMidiReceiver {
         LList list = MetroMidiMessages.receive( this.receiver, e.getMidiData() );
         return list;
     }
+    public LList receive(MetroMidiEvent e ) {
+        return MetroMidiMessages.receive( this.receiver, e.getMidiData() );
+    }
 }

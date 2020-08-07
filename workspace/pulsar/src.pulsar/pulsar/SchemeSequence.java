@@ -55,13 +55,13 @@ public class SchemeSequence extends MetroBufferedSequence implements Invokable, 
     static void logWarn(String msg) {
         LOGGER.log(Level.WARNING, msg);
     }
-    
+
     static final class SchemeSequenceDefaultProcedure extends MultipleNamedProcedureN {
         private final LList notations;
         SchemeSequenceDefaultProcedure(LList notations) {
             this.notations = notations;
         }
-        
+
         @Override
         public Object applyN(Object[] args) throws Throwable {
             return notations;
@@ -91,7 +91,7 @@ public class SchemeSequence extends MetroBufferedSequence implements Invokable, 
         }
         return pairs;
     }
-    
+
     final Runnable initializer;
 
     /*
@@ -113,15 +113,15 @@ public class SchemeSequence extends MetroBufferedSequence implements Invokable, 
     public Object invoke(Object... args) {
         return invokable.invoke( args );
     }
-    
+
     @Override
     public <T> void generateBuffer(Metro metro, MetroTrack track, MetroBufferedMidiReceiverFactory<T> bufferFactory ) {
         // System.out.println("Metro.sequence.new MetroSequence() {...}.initBuffer()" );
-//      buf.humanize( 0.0d, 3 );
+        //      buf.humanize( 0.0d, 3 );
         try {
-//            SchemeEvaluator.initializeCurrentThread( ((Pulsar)metro).getSchemeEngine().getSchemeEvaluator().getScheme() );
-//            ((Pulsar)metro).getThreadInitializer().run();
-            
+            //            SchemeEvaluator.initializeCurrentThread( ((Pulsar)metro).getSchemeEngine().getSchemeEvaluator().getScheme() );
+            //            ((Pulsar)metro).getThreadInitializer().run();
+
             // MODIFIED (Sun, 19 Apr 2020 09:48:14 +0900) TODO UPDATE THE DOCUMENTATION
             // metro.getThreadInitializerCollection().run();
             Metro.setCurrentMetro(metro);
@@ -132,41 +132,41 @@ public class SchemeSequence extends MetroBufferedSequence implements Invokable, 
             // Parse the result
             List<Object> resultList;
             if ( result instanceof Values ) {
-            	resultList = Arrays.asList((Object[])((Values)result).getValues() );
+                resultList = Arrays.asList((Object[])((Values)result).getValues() );
             } else {
-            	resultList = Arrays.asList( result );
+                resultList = Arrays.asList( result );
             }
 
             for ( Object o : resultList ) {
-            	Collection<Object> notations = (Collection<Object>)o;
-            	if ( tracingEnabled ) {
-            		LOGGER.log(Level.SEVERE, SchemePrinter.printSchemeValue(notations));
-            	}
-            	
-            	// Parse the retrieved list to execute.
-            	// MOVED FROM SchemeSequence (Wed, 06 Nov 2019 17:07:05 +0900)
-            	// MOVED AGAIN FROM NoteListParser (Thu, 02 Jan 2020 18:00:29 +0900)
-            	MetroBufferedMidiReceiver<T> buffer = bufferFactory.create();
-            	PulsarNoteListParser.getInstance().parseAll( 
-            			metro, 
-            			track, 
-            			notations, 
-            			buffer, 
-            			(MetroCollector<T>) MetroCollector.NULL );
+                Collection<Object> notations = (Collection<Object>)o;
+                if ( tracingEnabled ) {
+                    LOGGER.log(Level.SEVERE, SchemePrinter.printSchemeValue(notations));
+                }
+
+                // Parse the retrieved list to execute.
+                // MOVED FROM SchemeSequence (Wed, 06 Nov 2019 17:07:05 +0900)
+                // MOVED AGAIN FROM NoteListParser (Thu, 02 Jan 2020 18:00:29 +0900)
+                MetroBufferedMidiReceiver<T> buffer = bufferFactory.create();
+                PulsarNoteListParser.getInstance().parseAll( 
+                    metro, 
+                    track, 
+                    notations, 
+                    buffer, 
+                    (MetroCollector<T>) MetroCollector.NULL );
             }
         } catch ( Exception e ) {
             LOGGER.log(Level.SEVERE, bufferFactory.toString() , e );
         }
     }
-    
+
     private boolean tracingEnabled=false;
     @Override
     public boolean isTracingEnabled() {
-    	return tracingEnabled;
+        return tracingEnabled;
     }
     @Override
     public void setTracingEnabled(boolean tracingEnabled) {
-    	this.tracingEnabled = tracingEnabled;
+        this.tracingEnabled = tracingEnabled;
     }
 
 }

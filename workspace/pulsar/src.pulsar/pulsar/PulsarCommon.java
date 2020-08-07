@@ -38,6 +38,11 @@ public class PulsarCommon {
     {
         return SchemeRecorderSequence.create( portSelector, recordLength, looper );
     }
+    
+    public static MetroSequenceFactory createDynamicProcedureFilterSequenceFactory( MetroPortSelector portSelector, Procedure procedure ) {
+        return SchemeFilterSequenceFactory.createDynamic( portSelector, procedure );
+    }
+
     static LList createRestBar(int intValue) {
         return 
                 LList.makeList( Arrays.asList( 

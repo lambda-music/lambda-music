@@ -46,7 +46,7 @@ public class SchemeRecorderSequence implements MetroSequence, MetroReadable, Inv
     private volatile LList notations = EmptyList.emptyList;
 
     public SchemeRecorderSequence( MetroPortSelector portSelector, double recordLength, boolean loop ) {
-		this.portSelector = portSelector;
+        this.portSelector = portSelector;
         this.recordLength = recordLength;
         this.loop = loop;
     }
@@ -56,7 +56,7 @@ public class SchemeRecorderSequence implements MetroSequence, MetroReadable, Inv
     public List<MetroPort> getOutputPorts() {
         return outputPorts;
     }
-    
+
     SimpleMetroEventBuffer eventBuffer = new SimpleMetroEventBuffer();
 
     static final Procedure reverse = (Procedure) gnu.kawa.slib.srfi1.reverse.get();
@@ -68,15 +68,15 @@ public class SchemeRecorderSequence implements MetroSequence, MetroReadable, Inv
             throw new RuntimeException( e );
         }
     }
-	boolean initialized=false;
+    boolean initialized=false;
     private void init( Metro metro, MetroTrack track ) {
-    	metro.referPorts( Arrays.asList(this.portSelector), this.inputPorts, this.outputPorts );
-    	this.receiver = new SchemeSimpleMidiReceiver(); 
+        metro.referPorts( Arrays.asList(this.portSelector), this.inputPorts, this.outputPorts );
+        this.receiver = new SchemeSimpleMidiReceiver(); 
         if ( 0 < outputPorts.size() )
             this.receiver.setPort( outputPorts.get(0) );
-        
+
         this.initialized = true;
-	}
+    }
 
     private boolean recording = true;
     public void setRecording(boolean recording) {
@@ -95,22 +95,22 @@ public class SchemeRecorderSequence implements MetroSequence, MetroReadable, Inv
 
     private volatile long totalCursor = 0;
     @Override
-	public void process(
-			Metro metro, 
-			MetroTrack track, 
-			long nframes, 
-			long measureLengthInFrames,
-			List<MetroMidiEvent> inputMidiEvents, 
-			List<MetroMidiEvent> outputMidiEvents, 
-			List<MetroTrack> tracks,
-			List<MetroTrack> registeringTracks, 
-			List<MetroTrack> finalizingTracks, 
-			List<MetroTrack> unregisteringTracks)
-			throws MetroException 
+    public void process(
+        Metro metro, 
+        MetroTrack track, 
+        long nframes, 
+        long measureLengthInFrames,
+        List<MetroMidiEvent> inputMidiEvents, 
+        List<MetroMidiEvent> outputMidiEvents, 
+        List<MetroTrack> tracks,
+        List<MetroTrack> registeringTracks, 
+        List<MetroTrack> finalizingTracks, 
+        List<MetroTrack> unregisteringTracks)
+            throws MetroException 
     {
-		if ( ! initialized ) 
-    		init( metro, track );
-    	
+        if ( ! initialized ) 
+            init( metro, track );
+
         try {
             long currentPos;
             if ( 0 < this.recordLength ) {
@@ -131,19 +131,19 @@ public class SchemeRecorderSequence implements MetroSequence, MetroReadable, Inv
                     }
                 }
             }
-            
+
             if ( playing ) {
                 double from = ((double)totalCursor           ) / (double)measureLengthInFrames;
                 double to   = ((double)totalCursor + nframes ) / (double)measureLengthInFrames;
-                
+
                 this.eventBuffer.setCursorOffset( totalCursor );
                 this.eventBuffer.setOneBarLengthInFrames( measureLengthInFrames );
                 this.eventBuffer.setResultList( outputMidiEvents );
-                
+
                 for ( Object notation : this.notations ) {
                     Object a = SchemeValues.alistGet( NoteListCommon.ID_OFFSET , (LList)notation, Boolean.FALSE );
                     if ( a instanceof Boolean ) {
-                        
+
                     } else {
                         double d = SchemeValues.toDouble( a );
                         if ( from <= d && d < to ) {
@@ -160,18 +160,18 @@ public class SchemeRecorderSequence implements MetroSequence, MetroReadable, Inv
         }
     }
 
-    
 
-	static final Symbol recordingOn  = Symbol.valueOf( "rec-on" );
+
+    static final Symbol recordingOn  = Symbol.valueOf( "rec-on" );
     static final Symbol recordingOff = Symbol.valueOf( "rec-off" );
     @Override
     public Object invoke(Object... args) {
         if ( 0 < args.length ) {
             if ( recordingOff.equals( args[0] ) ) {
-                
+
             }
         }
         return null;
     }
-    
+
 }
