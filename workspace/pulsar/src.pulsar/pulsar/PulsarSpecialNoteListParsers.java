@@ -40,12 +40,12 @@ import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.logging.Logger;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
-import metro.MetroCollector;
 import metro.MetroPort;
 import metro.MetroTrack;
 import metro.MetroTrackManipulator;
 import metro.MetroTrackManipulatorBasic;
 import metro.MetroTrackSelector;
+import metro.MetroCollector;
 import pulsar.PulsarLib.PulsarLibImplementation;
 
 /**

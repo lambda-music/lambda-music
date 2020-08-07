@@ -40,9 +40,9 @@ import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
 import metro.MetroBufferedMidiReceiverFactory;
 import metro.MetroBufferedSequence;
-import metro.MetroCollector;
 import metro.MetroTraceableSequence;
 import metro.MetroTrack;
+import metro.MetroCollector;
 
 public class SchemeSequence extends MetroBufferedSequence implements Invokable, MetroTraceableSequence {
     static final Logger LOGGER = Logger.getLogger( MethodHandles.lookup().lookupClass().getName() );
@@ -152,7 +152,7 @@ public class SchemeSequence extends MetroBufferedSequence implements Invokable, 
             			track, 
             			notations, 
             			buffer, 
-            			(MetroCollector<T>) MetroCollector.NULL );
+            			(MetroCollector<T>) MetroCollector.VOID );
             }
         } catch ( Exception e ) {
             LOGGER.log(Level.SEVERE, bufferFactory.toString() , e );

@@ -15,7 +15,6 @@ import lamu.lib.Invokable;
 import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.logging.Logger;
 import metro.Metro;
-import metro.MetroCollector;
 import metro.MetroException;
 import metro.MetroMidiEvent;
 import metro.MetroPort;
@@ -23,6 +22,7 @@ import metro.MetroPortSelector;
 import metro.MetroReadable;
 import metro.MetroSequence;
 import metro.MetroTrack;
+import metro.MetroCollector;
 import metro.SimpleMetroEventBuffer;
 
 
@@ -150,7 +150,7 @@ public class SchemeRecorderSequence implements MetroSequence, MetroReadable, Inv
                             logInfo( Double.toString( from ) );
                             // MOVED FROM SchemeSequence (Wed, 06 Nov 2019 17:07:05 +0900)
                             // MOVED AGAIN FROM NoteListParser (Thu, 02 Jan 2020 18:00:29 +0900)
-                            PulsarNoteListParser.getInstance().parse( metro, null, (LList)notation, this.eventBuffer, MetroCollector.NULL );
+                            PulsarNoteListParser.getInstance().parse( metro, null, (LList)notation, this.eventBuffer, MetroCollector.VOID );
                         }
                     }
                 }

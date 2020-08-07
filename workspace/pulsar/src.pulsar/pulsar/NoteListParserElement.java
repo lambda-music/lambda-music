@@ -27,8 +27,8 @@ import java.util.Map;
 import gnu.mapping.Symbol;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
-import metro.MetroCollector;
 import metro.MetroTrack;
+import metro.MetroCollector;
 
 /**
  * An instance of {@link NoteListParserElement} is a representation of a type of

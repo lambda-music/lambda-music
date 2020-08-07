@@ -39,8 +39,8 @@ import lamu.lib.kawautils.SchemeValues;
 import lamu.lib.logging.Logger;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
-import metro.MetroCollector;
 import metro.MetroTrack;
+import metro.MetroCollector;
 
 /**
  * {@link NoteListParser} receives a cons cell of Scheme language which contains

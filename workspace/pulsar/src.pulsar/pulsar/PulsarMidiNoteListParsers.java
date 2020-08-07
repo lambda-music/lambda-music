@@ -58,7 +58,6 @@ import gnu.mapping.Symbol;
 import lamu.lib.logging.Logger;
 import metro.Metro;
 import metro.MetroBufferedMidiReceiver;
-import metro.MetroCollector;
 import metro.MetroMidi;
 import metro.MetroMidi.MetroMidiAllNoteOff;
 import metro.MetroMidi.MetroMidiAllSoundOff;
@@ -130,6 +129,7 @@ import metro.MetroMidi.MetroMidiStop;
 import metro.MetroMidiMessages;
 import metro.MetroPort;
 import metro.MetroTrack;
+import metro.MetroCollector;
 
 /**
  * Defines MIDI events.
